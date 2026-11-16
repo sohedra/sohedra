@@ -44,7 +44,8 @@ You need Node.js 26.13.1 or later and pnpm 12.21 or later (see `devEngines` in `
 pnpm install
 ```
 
-`pnpm install` also sets up a pre-commit hook that formats and lints the files you commit.
+`pnpm install` also sets up git hooks: they format and lint the files you commit, and run the checks
+before you push.
 
 pnpm refuses a dependency version published less than a day ago. Use an older version; exceptions
 are the maintainer's call.

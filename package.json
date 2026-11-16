@@ -29,7 +29,8 @@
 		"yaml": "^2.9.1"
 	},
 	"simple-git-hooks": {
-		"pre-commit": "pnpm exec lint-staged --concurrent false"
+		"pre-commit": "pnpm exec lint-staged --concurrent false",
+		"pre-push": "pnpm lint && pnpm format:check && pnpm check && pnpm build && pnpm test"
 	},
 	"lint-staged": {
 		"*": [
