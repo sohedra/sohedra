@@ -1,0 +1,55 @@
+{
+	"name": "@sohedra/monorepo",
+	"private": true,
+	"description": "Svelte for the web and for native apps",
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sohedra/sohedra.git"
+	},
+	"type": "module",
+	"scripts": {
+		"prepare": "simple-git-hooks",
+		"build": "pnpm -r build",
+		"check": "pnpm -r check",
+		"test": "pnpm -r test",
+		"lint": "oxlint --no-error-on-unmatched-pattern && node scripts/check-repo.ts",
+		"lint:fix": "oxlint --fix --no-error-on-unmatched-pattern",
+		"labels:sync": "node scripts/sync-labels.ts",
+		"format": "oxfmt",
+		"format:check": "oxfmt --check"
+	},
+	"devDependencies": {
+		"@types/node": "^26.6.6",
+		"lint-staged": "^17.6.1",
+		"oxfmt": "^0.78.0",
+		"oxlint": "^1.93.0",
+		"oxlint-tsgolint": "^7.0.2007",
+		"simple-git-hooks": "^2.14.0",
+		"yaml": "^2.9.1"
+	},
+	"simple-git-hooks": {
+		"pre-commit": "pnpm exec lint-staged --concurrent false"
+	},
+	"lint-staged": {
+		"*": [
+			"oxfmt --no-error-on-unmatched-pattern"
+		],
+		"*.{js,mjs,cjs,ts,mts,cts,svelte}": [
+			"oxlint --fix --no-error-on-unmatched-pattern"
+		]
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "pnpm",
+			"version": "12.21.0",
+			"onFail": "warn"
+		},
+		"runtime": {
+			"name": "node",
+			"version": "^26.13.1",
+			"onFail": "error"
+		}
+	},
+	"packageManager": "pnpm@12.21.0"
+}

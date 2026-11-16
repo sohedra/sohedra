@@ -1,0 +1,23 @@
+name: Documentation
+description: Something in the docs is wrong, missing or unclear.
+type: Task
+labels: ["status:needs-triage"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      description: A link to the page or file.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What's wrong, missing or unclear
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested wording
+      description: Optional. Docs fixes are welcome as pull requests too.

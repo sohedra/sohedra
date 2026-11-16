@@ -1,0 +1,39 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An RFC proposes a design for a new feature, an API change or a new package. Keep it short and concrete. The maintainer decides, and the decision is recorded here and in the docs.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem this solves, for whom, and why now.
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Design
+      description: The proposed API and behavior, with examples.
+    validations:
+      required: true
+  - type: textarea
+    id: teaching
+    attributes:
+      label: How we teach it
+      description: How the docs explain it to someone new to Sohedra.
+    validations:
+      required: true
+  - type: textarea
+    id: drawbacks
+    attributes:
+      label: Drawbacks
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Other designs you considered, and why this one.
+    validations:
+      required: true

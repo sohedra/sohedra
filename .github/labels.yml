@@ -1,0 +1,44 @@
+# Every label in sohedra/sohedra. A label that isn't here doesn't exist: `pnpm labels:sync` creates
+# and updates these on GitHub and deletes the rest. `pnpm lint` checks that issue and discussion
+# forms only use labels from this file. Descriptions say when to apply a label (100 characters at
+# most). Add a `pkg:<folder>` label in the pull request that adds the package.
+
+- name: platform:ios
+  color: "0E8A16"
+  description: Happens only on iOS. Skip when every platform is affected.
+- name: platform:android
+  color: "0E8A16"
+  description: Happens only on Android. Skip when every platform is affected.
+- name: platform:web
+  color: "0E8A16"
+  description: Happens only on the web. Skip when every platform is affected.
+
+- name: status:needs-triage
+  color: "FBCA04"
+  description: Not triaged yet. Set by the forms; removed when triaged.
+- name: status:needs-repro
+  color: "FBCA04"
+  description: Waiting for a reproduction. Closed after 7 days without one.
+- name: status:needs-info
+  color: "FBCA04"
+  description: Waiting for the author. Reminded after 14 days, closed after 21.
+
+- name: blocked:lynx
+  color: "5319E7"
+  description: Needs a fix in Lynx first. Link the upstream issue in a comment.
+- name: blocked:svelte
+  color: "5319E7"
+  description: Needs a fix in Svelte first. Link the upstream issue in a comment.
+- name: blocked:sveltekit
+  color: "5319E7"
+  description: Needs a fix in SvelteKit first. Link the upstream issue in a comment.
+
+- name: breaking change
+  color: "D93F0B"
+  description: Changes public API or behavior; ships only in a major release.
+- name: good first issue
+  color: "7057FF"
+  description: Small, well-described change for a first-time contributor.
+- name: help wanted
+  color: "008672"
+  description: Accepted, but not planned soon; a pull request is welcome.

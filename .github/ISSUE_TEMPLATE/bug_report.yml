@@ -1,0 +1,92 @@
+name: Bug report
+description: Something in Sohedra doesn't work as documented.
+type: Bug
+labels: ["status:needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Search the [open issues](https://github.com/sohedra/sohedra/issues) first: someone may have reported it already. Questions go to [Q&A](https://github.com/sohedra/sohedra/discussions/categories/q-a).
+
+        Write the report in your own words. If AI helped you find the bug, say so under "Anything else".
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where does it happen?
+      multiple: true
+      options:
+        - Web, in a client-side Svelte app
+        - Web, in a SvelteKit app
+        - iOS
+        - Android
+    validations:
+      required: true
+  - type: dropdown
+    id: native-setup
+    attributes:
+      label: On iOS or Android, how do you run it?
+      multiple: true
+      options:
+        - Not on iOS or Android
+        - Lynx Explorer
+        - My own app build
+        - A simulator or emulator
+        - A real device
+    validations:
+      required: true
+  - type: input
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: |
+        A link that shows the bug. While nothing is published, that's a branch in your fork of this repository that changes a playground until it shows the bug. Without a reproduction, the issue is closed after 7 days.
+      placeholder: https://github.com/you/sohedra/tree/slider-bug
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What to run and what to do, step by step.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: What you expected, and what happened
+    validations:
+      required: true
+  - type: dropdown
+    id: without-sohedra
+    attributes:
+      label: Does it happen without Sohedra?
+      description:
+        In plain Svelte or SvelteKit for a web bug, or in a plain Lynx app for a native one. This
+        tells us whether the bug belongs upstream.
+      options:
+        - I didn't try
+        - "No"
+        - "Yes"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: The versions you use.
+      render: text
+      value: |
+        Sohedra packages:
+        Svelte:
+        SvelteKit (if used):
+        Lynx:
+        Node.js:
+        OS:
+        Device and OS version (if native):
+    validations:
+      required: true
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else
+      description: Logs, screenshots, what you've tried, or how AI helped.

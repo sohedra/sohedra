@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/sohedra/sohedra/discussions/categories/q-a
+    about: Questions go to Q&A in Discussions, where answers can be marked and found later.
+  - name: Suggest an idea
+    url: https://github.com/sohedra/sohedra/discussions/categories/ideas
+    about: Feature ideas go to Ideas in Discussions.
+  - name: Propose a design (RFC)
+    url: https://github.com/sohedra/sohedra/discussions/categories/rfcs
+    about: Design proposals go to RFCs in Discussions.
+  - name: Report a security vulnerability
+    url: https://github.com/sohedra/sohedra/security/advisories/new
+    about: Report it privately, not in a public issue.
