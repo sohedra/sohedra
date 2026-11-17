@@ -92,4 +92,18 @@ describe("a layoutchange listener added in code", () => {
 			["box", moved],
 		]);
 	});
+
+	it("measures again once the element had no listener: a layout heard before may be stale", async () => {
+		const { page, log, tap, measured } = await layout();
+		await tap("listen");
+		page.engine.fire(page.byClass("box"), { type: "layoutchange", detail: { width: 1 } });
+		await page.settle();
+		await tap("unlisten");
+		// Laid out again while nothing listens: Lynx sends nothing.
+		page.engine.respondWith(() => ({ code: 0, data: { width: 2 } }));
+		log.length = 0;
+		await tap("listen");
+		expect(log).toEqual([["box", { width: 2 }]]);
+		expect(measured()).toHaveLength(2);
+	});
 });

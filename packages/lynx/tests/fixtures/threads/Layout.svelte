@@ -4,6 +4,7 @@
 	type Layout = { detail: unknown };
 	let { log }: { log: unknown[] } = $props();
 	let fresh = $state(false);
+	let off: (() => void) | undefined;
 	const nodes: Record<string, Element> = {};
 	const keep = (name: string) => (node: unknown) => {
 		nodes[name] = node as Element;
@@ -18,9 +19,10 @@
 	onlayoutchange={(event: Layout) => log.push(["markup", event.detail])}
 	{@attach keep("heard")}
 ></view>
-<view class="listen" ontap={() => on(nodes["box"]!, "layoutchange", hear("box"))}>
+<view class="listen" ontap={() => (off = on(nodes["box"]!, "layoutchange", hear("box")))}>
 	<text>listen</text>
 </view>
+<view class="unlisten" ontap={() => off?.()}><text>unlisten</text></view>
 <view class="listen-heard" ontap={() => on(nodes["heard"]!, "layoutchange", hear("late"))}>
 	<text>listen to heard</text>
 </view>
