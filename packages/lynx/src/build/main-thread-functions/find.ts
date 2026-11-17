@@ -89,31 +89,41 @@ export interface ScriptFunctions {
 	topLevel: Set<Node>;
 }
 
+/** Add the names of the program's imports marked `with { runtime: "shared" }` to `shared`. */
+function sharedImports(program: Node, shared: Set<string>): void {
+	for (const statement of program.body) {
+		if (statement.type !== "ImportDeclaration") continue;
+		const isShared = statement.attributes?.some(
+			(attribute: Node) =>
+				(attribute.key.name ?? attribute.key.value) === "runtime" &&
+				attribute.value.value === "shared",
+		);
+		if (isShared) for (const specifier of statement.specifiers) shared.add(specifier.local.name);
+	}
+}
+
 /**
  * Find the script's main-thread functions and what each captures. Also, for
  * an instance script: its `$state` names, and the functions declared at its
- * top level.
+ * top level. `outer` is the program of a component's module script, around
+ * its instance script.
  */
 export function findFunctions(options: {
 	program: Node;
 	instance: boolean;
 	fail: Fail;
+	outer?: Node;
 }): ScriptFunctions {
-	const { program, instance, fail } = options;
+	const { program, instance, fail, outer } = options;
 	const found: Found[] = [];
 	/** Imports marked `with { runtime: "shared" }`: the main thread imports them too. */
 	const shared = new Set<string>();
 	const deepState = new Set<string>();
 	const topLevel = new Set<Node>();
+	sharedImports(program, shared);
+	if (outer) sharedImports(outer, shared);
 	for (const statement of program.body) {
-		if (statement.type === "ImportDeclaration") {
-			const isShared = statement.attributes?.some(
-				(attribute: Node) =>
-					(attribute.key.name ?? attribute.key.value) === "runtime" &&
-					attribute.value.value === "shared",
-			);
-			if (isShared) for (const specifier of statement.specifiers) shared.add(specifier.local.name);
-		} else if (instance && statement.type === "FunctionDeclaration") {
+		if (instance && statement.type === "FunctionDeclaration") {
 			topLevel.add(statement);
 		} else if (instance && statement.type === "VariableDeclaration") {
 			for (const declarator of statement.declarations) {
@@ -476,6 +486,12 @@ export function findFunctions(options: {
 		}
 	};
 
+	if (outer) {
+		// The module script's names are outside every function of the instance script.
+		const names = new Set<string>();
+		for (const statement of outer.body) declare(statement, names, true, true);
+		scope = { names, parent: undefined };
+	}
 	visit(program);
 	return { found, deepState, topLevel };
 }

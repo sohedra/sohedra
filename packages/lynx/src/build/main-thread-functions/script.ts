@@ -121,7 +121,8 @@ export function componentFunctions(
 		});
 	}
 	for (const { program, instance, text: scriptText, existing } of scripts) {
-		const functions = findFunctions({ program, instance, fail });
+		const outer = instance ? module : undefined;
+		const functions = findFunctions({ program, instance, fail, outer });
 		if (functions.found.length === 0) continue;
 		const emitted = emitFunctions({
 			...options,
