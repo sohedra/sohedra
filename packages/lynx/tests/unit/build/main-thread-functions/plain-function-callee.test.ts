@@ -12,7 +12,7 @@ import { evaluate } from "./output.ts";
 
 const source = `function save(n) {}
 const handler = () => { "main thread"; };
-const hold = { go() {} };
+const hold = { go: handler };
 export function f() {
   "main thread";
   save(1);
@@ -26,9 +26,8 @@ describe("the plain-function callee check", () => {
 	it("is in a development build of the background thread", () => {
 		const { code } = compileScript(source, { development: true });
 		expect(code).toMatch(/save: typeof save === "function"/);
-		// A main-thread function of the same script, and an object's method, are not plain functions called through a capture.
+		// A main-thread function of the same script is not a plain function.
 		expect(code).not.toMatch(/handler: typeof/);
-		expect(code).not.toMatch(/hold: typeof/);
 	});
 
 	it("says which function and where, with the fix", () => {
@@ -46,7 +45,8 @@ describe("the plain-function callee check", () => {
 		expect(() => run(() => {})).toThrow(
 			/`save` is a plain function, and a main-thread function calls it/,
 		);
-		// A value that is not a function (a main-thread function's object, a handle) passes.
+		// A value that is not a function (a main-thread function's object, a handle) passes, and
+		// so does an object whose method is one.
 		expect(run({ _wkltId: "x" })).toMatchObject({ _wkltId: expect.any(String) });
 	});
 
@@ -102,6 +102,54 @@ describe("the plain-function callee check", () => {
 			{ development: true },
 		);
 		expect(code).not.toContain("typeof");
+	});
+
+	/** Makes `f` from `source`'s development background code, with `scope` standing in for its imports. */
+	const made = (source: string, scope: Record<string, unknown> = {}): unknown => {
+		const { code } = compileScript(source, { development: true });
+		const body = code.replace(/^import .*$/gm, "").replace(/\bexport /g, "");
+		return evaluate(`${body}\nreturn f;`, scope);
+	};
+
+	it("covers a method of a captured plain object or namespace", () => {
+		const call = (setup: string, call: string): string =>
+			`${setup}\nexport function f() {\n  "main thread";\n  return ${call};\n}\n`;
+		expect(() => made(call("const math = { clamp(v) { return v; } };", "math.clamp(1)"))).toThrow(
+			/^`math\.clamp` is a plain function, and a main-thread function calls it/,
+		);
+		expect(() =>
+			made(call('import * as math from "./math.ts";', "math.clamp(1)"), {
+				math: Object.freeze(Object.assign(Object.create(null), { clamp: (v: number) => v })),
+			}),
+		).toThrow(/^`math\.clamp` is a plain function/);
+		expect(() => made(call("const a = { b() { return 7; } };", "a?.b()"))).toThrow(
+			/^`a\.b` is a plain function/,
+		);
+		expect(() => made(call('const a = { "b-c"() {} };', 'a["b-c"]()'))).toThrow(
+			/^`a\.b-c` is a plain function/,
+		);
+		// A main-thread function as the member, or an instance of a class (its methods are its
+		// class's, such as a main-thread value's), passes.
+		expect(() =>
+			made(call('const g = () => { "main thread"; };\nconst a = { g };', "a.g()")),
+		).not.toThrow();
+		expect(() =>
+			made(call("class Spring { set(v) {} }\nconst spring = new Spring();", "spring.set(2)")),
+		).not.toThrow();
+		expect(compileScript(call("const a = { b() {} };", "a.b()")).code).not.toContain(
+			"is a plain function",
+		);
+	});
+
+	it("covers `new` and a tagged template", () => {
+		for (const [setup, use, name] of [
+			["class Box {}", "new Box()", "Box"],
+			["function tag(parts) { return parts; }", "tag`x`", "tag"],
+		]) {
+			const source = `${setup}\nexport function f() {\n  "main thread";\n  return ${use};\n}\n`;
+			expect(() => made(source)).toThrow(`\`${name}\` is a plain function`);
+			expect(compileScript(source).code).not.toContain("typeof");
+		}
 	});
 
 	it("writes the message as code that any engine reads back unchanged", () => {

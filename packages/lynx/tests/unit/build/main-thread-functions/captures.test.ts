@@ -296,6 +296,14 @@ describe("what a main-thread function captures", () => {
 			});
 		}
 
+		it("calls a method that does not survive the trip: the development build says so", () => {
+			const source = `const a = { b() { return 7; } };\nexport function f() {\n  "main thread";\n  return a?.b();\n}\n`;
+			const { code } = compileScript(source, { thread: "background", development: true });
+			expect(() => evaluate(`${code.replace("export ", "")}\nreturn f;`)).toThrow(
+				/^`a\.b` is a plain function/,
+			);
+		});
+
 		it("captures the object before the `?.` and narrows no further", () => {
 			expect(
 				captures(`
