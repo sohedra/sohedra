@@ -7,9 +7,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { startPage } from "../../src/background/index.ts";
 import { startMainThread } from "../../src/main-thread/index.ts";
-import { readGlobal } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
-import type { BackgroundLynx } from "../../src/testing/index.ts";
 import Counter from "../fixtures/threads/Counter.svelte";
 import FrameCounter from "../fixtures/threads/FrameCounter.svelte";
 import drawFrameCounter from "../fixtures/threads/FrameCounter.svelte?first-frame";
@@ -52,17 +50,14 @@ describe("new data for the page", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("flags the first patch for data the host updated before the page started", async () => {
+	it("is not flagged for the data the page opened with, which is no update", async () => {
 		const page = startTestPage({
+			initData: { theme: "dark" },
 			mainThread: () => startMainThread(),
-			background: () => {
-				const lynx = readGlobal("lynx") as BackgroundLynx;
-				lynx.getApp()._params = { initData: {}, updateData: { theme: "dark" } };
-				startPage(Counter);
-			},
+			background: () => startPage(Counter),
 		});
 		await page.settle();
-		expect(page.engine.flushes.filter(flagged)).toHaveLength(1);
+		expect(page.engine.flushes.filter(flagged)).toHaveLength(0);
 		expect(page.lynx.background.__initData).toEqual({ theme: "dark" });
 	});
 

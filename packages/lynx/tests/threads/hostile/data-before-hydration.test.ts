@@ -1,14 +1,15 @@
-// Data the host updates before hydration: the background renders its first patch from the data the
-// first frame was drawn with, and applies the update after it, in order, as a patch of its own. An
-// update never surfaces as the developer's `hydration_mismatch`.
+// Data the host gives the page before it loads: Lynx draws the first frame from the template's data
+// with the host's over it, and gives the background both, as `_params.initData` and
+// `_params.updateData` (core/runtime/js/bindings/js_app.cc). The background renders its first patch
+// from the same, so the frame is hydrated, and nothing is an update. Data the host updates later is
+// one; a mismatch is still reported while it is on its way.
 
 import { describe, expect, it } from "@rstest/core";
 
 import { startPage } from "../../../src/background/index.ts";
 import { startMainThread } from "../../../src/main-thread/index.ts";
-import { installGlobals, readGlobal } from "../../../src/testing/globals.ts";
+import { installGlobals } from "../../../src/testing/globals.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
-import type { BackgroundLynx } from "../../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
 import FrameCounter from "../../fixtures/threads/FrameCounter.svelte";
 import { startSveltePage } from "../svelte-page.ts";
@@ -20,10 +21,11 @@ const counter = (parity: string, padding = "24px"): string =>
 const flagged = (options: unknown): boolean =>
 	(options as { triggerDataUpdated?: unknown } | undefined)?.triggerDataUpdated === true;
 
-describe("data updated before hydration", () => {
-	it("is applied after the first patch hydrates the frame, which it does not refuse", async () => {
+describe("data the host gives before the page loads", () => {
+	it("is in the background's first patch, which hydrates the frame drawn with it", async () => {
 		const page = startTestPage({
-			initData: { parity: "drawn" },
+			templateData: { parity: "template" },
+			initData: { parity: "host" },
 			mainThread: () => {
 				startMainThread();
 				installGlobals({
@@ -31,30 +33,28 @@ describe("data updated before hydration", () => {
 				});
 			},
 			background: () => {
-				const lynx = readGlobal("lynx") as BackgroundLynx;
-				lynx.getApp()._params = {
-					initData: { parity: "drawn" },
-					updateData: { parity: "updated" },
-				};
 				startPage(FrameCounter, { props: (data) => ({ parity: data["parity"] }) });
 			},
 		});
 		const drawn = page.engine.all();
+		expect(page.engine.texts()).toEqual(["Taps: 0 (host)", "Tap me"]);
 		await page.settle();
 		expect(page.errors).toEqual([]);
 		expect(page.engine.all()).toEqual(drawn);
-		// The page's components rendered from the frame's data; the update came after.
-		expect(page.engine.texts()).toEqual(["Taps: 0 (drawn)", "Tap me"]);
-		expect(page.engine.flushes.filter(flagged)).toHaveLength(1);
-		expect(page.lynx.background.__initData).toEqual({ parity: "updated" });
+		expect(page.engine.texts()).toEqual(["Taps: 0 (host)", "Tap me"]);
+		expect(page.engine.flushes.filter(flagged)).toHaveLength(0);
+		expect(page.lynx.background.__initData).toEqual({ parity: "host" });
 	});
+});
 
-	it("does not make the developer's mismatch of a frame that differs after an update", async () => {
+describe("data the host updates before hydration", () => {
+	it("does not hide a mismatch of the frame", async () => {
 		const page = startSveltePage(FrameCounter, { firstFrame: () => counter("even", "8px") });
 		page.updateData({ theme: "dark" });
 		await page.settle();
-		expect(page.errors).toEqual([]);
-		expect(page.engine.texts()).toEqual(["Taps: 0 (even)", "Tap me"]);
+		expect(page.errors.map((error) => (error as { code?: string }).code)).toEqual([
+			"hydration_mismatch",
+		]);
 		expect(page.engine.state(page.byClass("root")).inlineStyles.get("padding")).toBe("24px");
 	});
 });
