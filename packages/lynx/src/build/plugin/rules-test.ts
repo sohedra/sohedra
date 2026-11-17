@@ -1,14 +1,12 @@
 // The rules of a test run: one process plays both threads, so everything compiles as for the
-// background thread, where Svelte runs, with no Lynx engine. A component imported with the query
-// `?first-frame` is the page's main-thread copy instead: it and all it imports compile in the main
-// thread's layer, as a build's first frame does.
+// background thread, where Svelte runs, with no Lynx engine. A module of the main thread's layer
+// compiles as the main thread's; nothing of a public test run enters that layer (the binding's own
+// tests do, through ./first-frame-copies.ts).
 
 import type { ChainIdentifier, RspackChain } from "@rsbuild/core";
 
-import { PACKAGE_NAME } from "../../wire/index.ts";
 import type { Thread } from "../../wire/index.ts";
-import { LAYERS, RUNTIME_FILES, loaderPath } from "./layers.ts";
-import { mainThreadConditions } from "./resolve.ts";
+import { RUNTIME_FILES } from "./layers.ts";
 import { splitScriptRule } from "./rules-script.ts";
 import { patchSvelteSource, splitSvelteRules } from "./rules-svelte.ts";
 import type { SvelteRuleOptions } from "./rules-svelte.ts";
@@ -23,12 +21,9 @@ export interface TestRuleOptions extends SvelteRuleOptions {
 	development: boolean;
 }
 
-/** The thread of a test run's modules; the first frame's copies are the main thread's. */
+/** The thread of a test run's modules, and the one of a module of the main thread's layer. */
 const BACKGROUND: Thread = "background";
 const MAIN_THREAD: Thread = "main-thread";
-
-/** The query that imports a component's first-frame copy. */
-const FIRST_FRAME_QUERY = /[?&]first-frame(?:&|$)/;
 
 /** Set up the rules of a test run. */
 export function configureTestRules(options: TestRuleOptions): void {
@@ -51,22 +46,8 @@ export function configureTestRules(options: TestRuleOptions): void {
 	const swc = splitScriptRule({ chain, CHAIN_ID, threads });
 	// CSS stays with Rstest's own rules: there are no layers to split them by, and a test has no
 	// template to put styles in.
-	// The copy's own module starts the main thread's layer; its rule is the component rule's first.
-	chain.module
-		.rule(`${PACKAGE_NAME}:component`)
-		.oneOf(`${PACKAGE_NAME}:first-frame-copy`)
-		.resourceQuery(FIRST_FRAME_QUERY)
-		.layer(LAYERS[MAIN_THREAD])
-		.use("first-frame-copy")
-		.loader(loaderPath("first-frame-copy"))
-		.options({ startPage: RUNTIME_FILES.firstFramePage });
 	splitSvelteRules({ ...options, swc, threads });
 	patchSvelteSource(chain);
-	// Packages resolve on the main thread as in a build: to their server builds.
-	chain.module
-		.rule(`${PACKAGE_NAME}:main-thread-resolve`)
-		.issuerLayer(LAYERS[MAIN_THREAD])
-		.resolve.conditionNames.merge(mainThreadConditions(development));
 	// The marker stays an empty module: a test imports what the app guards with it.
 	chain.resolve.alias.set("background-only$", RUNTIME_FILES.backgroundOnly);
 }
