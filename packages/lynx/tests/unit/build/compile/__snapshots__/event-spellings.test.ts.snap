@@ -1,0 +1,13 @@
+// Rstest Snapshot v1
+
+exports[`an old spelling of an event attribute > \`global-bind…\` is an error that says there is no attribute for it 1`] = `
+"\`global-bindtap\` is not an event attribute.
+/app/src/Component.svelte:2:7
+
+1: <script>function f() {}</script>
+2: <view global-bindtap={f}></view>
+         ^
+
+Listen with \`on(root, "tap", handler)\` in an effect, with \`root\` from \`@sohedra/lynx\`.
+https://sohedra.com/e/global_event_attribute"
+`;

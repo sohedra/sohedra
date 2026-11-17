@@ -8,7 +8,7 @@ import path from "node:path";
 
 import { afterAll, describe, expect, it } from "@rstest/core";
 
-import { SVELTE_CONTRACT } from "../../../src/svelte/manifest.ts";
+import { SVELTE_CONTRACT } from "../../../src/svelte/index.ts";
 import type { Checks } from "./check.ts";
 import { checks as compilerChecks } from "./checks-compiler.ts";
 import { checks as runtimeChecks } from "./checks-runtime.ts";

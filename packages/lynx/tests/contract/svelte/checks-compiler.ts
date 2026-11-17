@@ -142,6 +142,42 @@ export const checks: Checks = {
 		// An `$effect`'s `import()`.
 		const program = ast.instance?.content;
 		expect(JSON.stringify(program)).toMatch(/"type":"ImportExpression"/);
+		// A script's program has positions in the whole component, which the build edits by.
+		const text = "<view></view>\n<script>let a = 1;</script>";
+		const located = parse(text, { modern: true, filename: "Positions.svelte" });
+		const content = located.instance?.content as unknown as { start: number; end: number };
+		expect(text.slice(content.start, content.end)).toBe("let a = 1;");
+		// A component without a script has none, and a module script is its own.
+		expect(parse("<view></view>", { modern: true }).instance ?? null).toBeNull();
+		expect(
+			parse("<script module>export const a = 1;</script>", { modern: true }).module,
+		).toBeTruthy();
+		// A keyed `{#each}` holds its key as an expression with positions, and its body's nodes.
+		const keyedText =
+			"<script>let rows = [1];</script>{#each rows as row (row.id)}<list-item>{row}</list-item>{/each}" +
+			"<view {ontap} {...rest}></view>";
+		const keyed = parse(keyedText, { modern: true, filename: "Keyed.svelte" });
+		const [each, host] = keyed.fragment.nodes.filter((node) => node.type !== "Text");
+		// Narrowing: the fixture's first node is the `{#each}` block.
+		const eachBlock = each as AST.EachBlock;
+		// Boundary: Svelte types its expressions without the positions it gives them.
+		const key = eachBlock.key as unknown as { start: number; end: number };
+		expect(keyedText.slice(key.start, key.end)).toBe("row.id");
+		expect(eachBlock.body.nodes[0]).toMatchObject({ type: "RegularElement", name: "list-item" });
+		// Narrowing: the fixture's second node is an element with a shorthand and a spread.
+		const [shorthand, spread] = (host as AST.RegularElement).attributes;
+		expect(shorthand).toMatchObject({ type: "Attribute", name: "ontap" });
+		expect(keyedText.charAt(shorthand!.start)).toBe("{");
+		expect(spread?.type).toBe("SpreadAttribute");
+		// `<svelte:element>` and a `css` option written as text.
+		const dynamic = parse('<svelte:options css="injected" /><svelte:element this="view" />', {
+			modern: true,
+		});
+		expect(dynamic.fragment.nodes.some((node) => node.type === "SvelteElement")).toBe(true);
+		expect(dynamic.options?.attributes[0]).toMatchObject({
+			name: "css",
+			value: [{ type: "Text", data: "injected" }],
+		});
 	},
 
 	"options-unrecognised-error": () => {

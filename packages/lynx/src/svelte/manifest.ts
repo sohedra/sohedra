@@ -78,7 +78,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/compiler/phases/1-parse/read/options.js",
 		anchor: "customRenderer",
 		reliesOn:
-			"the parsed template has `RegularElement`, `Attribute` (a bare one has the value `true`), `ExpressionTag`, `ConstTag` and `SvelteBoundary` nodes, `<svelte:options>` attributes in `options.attributes`, and `ImportExpression` in scripts",
+			"the parsed template has `RegularElement`, `SvelteElement`, `Attribute` (a bare one has the value `true`, a shorthand starts at its `{`), `SpreadAttribute`, `ExpressionTag`, `ConstTag`, `EachBlock` (with its key expression and body) and `SvelteBoundary` nodes, `<svelte:options>` attributes in `options.attributes`, a script's program with positions in the whole component, and `ImportExpression` in scripts",
 		test: COMPILER,
 	},
 	{
