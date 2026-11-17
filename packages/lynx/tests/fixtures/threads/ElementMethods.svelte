@@ -9,7 +9,10 @@
 	const record = (name: string, call: Promise<unknown>) =>
 		call.then(
 			(value) => (handles[`result-${name}`] = { ok: value }),
-			(error: Error & { code?: string }) => (handles[`result-${name}`] = { error: error.code }),
+			(error: Error & { code?: string }) => {
+				handles[`result-${name}`] = { error: error.code };
+				handles[`message-${name}`] = error.message;
+			},
 		);
 </script>
 

@@ -126,12 +126,18 @@ describe("the first UI method on an element", () => {
 		expect(page.engine.state(page.byClass("fresh")).inlineStyles.get("color")).toBe("red");
 	});
 
-	it("fails with a message that names flattening when Lynx still finds no view", async () => {
+	it("fails with a clear message when Lynx still finds no view on the screen", async () => {
 		const { page, measure } = await firstCall();
 		page.engine.respondWith(() => ({ code: 6 }));
-		await expect(measure("own")).rejects.toMatchObject({
+		const failure = measure("own");
+		await expect(failure).rejects.toMatchObject({
 			code: "element_has_no_view",
-			message: expect.stringMatching(/^Lynx could not run boundingClientRect: .*flatten/s),
+			message: expect.stringMatching(
+				/^Lynx could not run boundingClientRect: .*no view on the screen/,
+			),
+		});
+		await expect(failure).rejects.toMatchObject({
+			message: expect.not.stringContaining("flatten={false}"),
 		});
 		expect(page.errors).toEqual([]);
 	});

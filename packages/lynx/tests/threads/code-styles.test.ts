@@ -54,6 +54,18 @@ describe("a style set from code", () => {
 	});
 });
 
+describe("a custom property set from code", () => {
+	it("is set, stays through writes of style, and goes back to style with null", async () => {
+		const { tap, style, inline } = await codeStyles();
+		await style({ "--tone": "green", transform: "scale(2)" });
+		expect(inline("box")).toEqual({ color: "red", "--tone": "green", transform: "scale(2)" });
+		await tap("recolor");
+		expect(inline("box")).toEqual({ color: "blue", "--tone": "green", transform: "scale(2)" });
+		await style({ "--tone": null });
+		expect(inline("box")).toEqual({ color: "blue", transform: "scale(2)" });
+	});
+});
+
 describe("an element code never styled", () => {
 	it("costs no call to Lynx when its style is written", async () => {
 		const { page, tap, style, inline } = await codeStyles();

@@ -162,6 +162,15 @@ describe("inline styles", () => {
 		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("0.5");
 	});
 
+	it("drops a custom property added one by one, which has no style id", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__AddInlineStyle(inner, "--tone", "red");
+		f.__FlushElementTree();
+		expect(engine().state(inner).inlineStyles.has("--tone")).toBe(false);
+		expect(f.__GetComputedStyleByKey(inner, "--tone")).toBe("");
+	});
+
 	it("sets all at once from text, wiping the ones added one by one", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;

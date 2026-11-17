@@ -78,7 +78,9 @@ describe("invoke", () => {
 		const [answer] = await background(() => doomed.invoke("boundingClientRect"));
 		await expect(answer).rejects.toMatchObject({
 			code: "element_not_on_page",
-			message: expect.stringContaining("<view> is not on the page"),
+			message: expect.stringMatching(
+				/<view> is not on the page.*\n.*ElementMethods\.svelte:\d+:\d+/,
+			),
 		});
 		expect(page.engine.invocations).toEqual([]);
 	});
@@ -87,6 +89,7 @@ describe("invoke", () => {
 		const { page, handles, tap } = await methods();
 		await tap("doom");
 		expect(handles["result-doomed"]).toEqual({ error: "element_left_page" });
+		expect(handles["message-doomed"]).toMatch(/removed from the page in the same update/);
 		expect(page.engine.invocations).toEqual([]);
 		expect(page.errors).toEqual([]);
 	});

@@ -105,6 +105,7 @@ describe("finished", () => {
 		await expect(finished).rejects.toMatchObject({
 			name: "AbortError",
 			code: "animation_canceled",
+			message: expect.stringMatching(/^The animation of the <view> was canceled/),
 		});
 		await page.settle();
 		expect(listening()).toEqual([]);
@@ -119,6 +120,22 @@ describe("finished", () => {
 		await expect(finished).rejects.toMatchObject({ name: "AbortError" });
 		await page.settle();
 		expect(listening()).toEqual([]);
+	});
+
+	it("names an animation in its message only when the app named it", async () => {
+		const { page, animate } = await animated();
+		const named = page.asBackground(() =>
+			animate().effect.target.animate(KEYFRAMES, { name: "fade", duration: 100 }),
+		);
+		named.cancel();
+		await expect(named.finished).rejects.toMatchObject({
+			message: expect.stringMatching(/^The animation fade of the <view> was canceled/),
+		});
+		const unnamed = animate();
+		unnamed.cancel();
+		await expect(unnamed.finished).rejects.toMatchObject({
+			message: expect.not.stringContaining(unnamed.id),
+		});
 	});
 
 	it("is rejected already when read after cancel()", async () => {

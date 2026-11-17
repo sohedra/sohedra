@@ -18,7 +18,7 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	},
 	element_not_on_page: { method: "boundingClientRect", tag: "view" },
 	element_not_shown: { method: "boundingClientRect", tag: "view" },
-	animation_canceled: { name: "fade" },
+	animation_canceled: { tag: "view", name: "fade" },
 };
 
 // Boundary: the keys of the catalogue are its codes.
