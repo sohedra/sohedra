@@ -1,11 +1,11 @@
-// The engine fake as a target of the behaviour spec: a test page with a page element, laid out as
+// The engine fake as a target of the behavior spec: a test page with a page element, laid out as
 // a device lays it out where the spec reads it (plain views flattened, a rectangle that is not at
 // the origin), and driven as a device is.
 
 import { installGlobals, readGlobal } from "../../../src/testing/globals.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
 import type { TestLynx } from "../../../src/testing/index.ts";
-import type { EngineTarget } from "./behaviours.ts";
+import type { EngineTarget } from "./behaviors.ts";
 
 /** Where every element is, for `boundingClientRect`: the fake has no layout. */
 const RECT = { left: 20, top: 20, width: 100, height: 100 };

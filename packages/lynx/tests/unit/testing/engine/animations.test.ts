@@ -9,7 +9,7 @@ const engine = engineForEach();
 const FADE = [0, "fade", [{ opacity: 0 }, { opacity: 1 }], { duration: 300 }];
 
 describe("an animation", () => {
-	it("starts, pauses, plays again and is cancelled, by its name", () => {
+	it("starts, pauses, plays again and is canceled, by its name", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__ElementAnimate(inner, FADE);
@@ -37,7 +37,7 @@ describe("an animation", () => {
 });
 
 describe("the engine's animation events", () => {
-	it("sends animationcancel for a running or paused animation that is cancelled, to a listener", () => {
+	it("sends animationcancel for a running or paused animation that is canceled, to a listener", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		const heard: unknown[] = [];

@@ -8,7 +8,7 @@ import { engineForEach } from "./engine-fixture.ts";
 const engine = engineForEach();
 
 /** page > text > raw-text, with the text `label`. */
-function labelled(label: string) {
+function labeled(label: string) {
 	const f = engine().functions;
 	const page = f.__CreatePage("0", 0);
 	const text = f.__CreateText(0);
@@ -21,12 +21,12 @@ function labelled(label: string) {
 
 describe("queries by text", () => {
 	it("find the element that holds a raw text, from the screen", () => {
-		const { text } = labelled("Save");
+		const { text } = labeled("Save");
 		expect(screen.getByText("Save")).toBe(text);
 	});
 
 	it("follow the text as it changes, and do not find what was removed", () => {
-		const { page, text, raw } = labelled("Save");
+		const { page, text, raw } = labeled("Save");
 		engine().functions.__SetAttribute(raw, "text", "Saved");
 		expect(screen.queryByText("Save")).toBeNull();
 		expect(screen.getByText("Saved")).toBe(text);
@@ -35,7 +35,7 @@ describe("queries by text", () => {
 	});
 
 	it("can be bound to the page's element", () => {
-		const { page, text } = labelled("Open");
+		const { page, text } = labeled("Open");
 		expect(getByText(page as HTMLElement, "Open")).toBe(text);
 		expect(within(page as HTMLElement).getByText("Open")).toBe(text);
 		expect(queryByText(document.createElement("div"), "Open")).toBeNull();
@@ -44,7 +44,7 @@ describe("queries by text", () => {
 
 describe("queries by data attribute", () => {
 	it("find an element by the data attribute its dataset shows", () => {
-		const { text } = labelled("Row");
+		const { text } = labeled("Row");
 		engine().functions.__SetDataset(text, { row: 7, "drag-handle": true });
 		expect(document.querySelector("[data-row='7']")).toBe(text);
 		expect(screen.getByText("Row").closest("[data-drag-handle]")).toBe(text);

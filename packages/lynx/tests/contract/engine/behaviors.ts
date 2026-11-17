@@ -5,7 +5,7 @@
 // observation, and the runner compares it with the case's `expected`. Nothing here may need what
 // only the fake has.
 //
-// Behaviours with no device probe yet: the tree's own functions; `__SetInlineStyles` wiping the
+// Behaviors with no device probe yet: the tree's own functions; `__SetInlineStyles` wiping the
 // styles added one by one; one main-thread function per event name and type; the lifecycle events.
 // The stop bits have a weak one: one probe page returns `stopPropagation`, none the other bit.
 
@@ -34,8 +34,8 @@ export interface EngineTarget {
 	settle(): Promise<void>;
 }
 
-/** One behaviour, as a case with the observation the engine gives. */
-export interface Behaviour {
+/** One behavior, as a case with the observation the engine gives. */
+export interface Behavior {
 	/** What the engine does, in a sentence. */
 	name: string;
 	/** Where Lynx does it, as a path in lynx-family/lynx. */
@@ -84,7 +84,7 @@ function recordRuns(target: EngineTarget, returns: Map<string, unknown> = new Ma
 /** A main-thread function's value as the engine holds it: anything; here a label. */
 const fn = (label: string) => ({ type: "worklet", value: { label } });
 
-export const BEHAVIOURS: Behaviour[] = [
+export const BEHAVIORS: Behavior[] = [
 	{
 		name: "the tree: append, insert before and remove children",
 		source: "core/renderer/dom/fiber/fiber_element.cc (Element::InsertNode, RemoveNode)",
@@ -439,7 +439,7 @@ export const BEHAVIOURS: Behaviour[] = [
 		expected: { list: true, listId: true, index: 0, operationId: true },
 	},
 	{
-		name: "cancelling a running animation sends animationcancel to a listener, with its name",
+		name: "canceling a running animation sends animationcancel to a listener, with its name",
 		source: "core/animation/animation.cc (Animation::Destroy, CreateEventAndSend)",
 		async run(target) {
 			const f = target.functions;

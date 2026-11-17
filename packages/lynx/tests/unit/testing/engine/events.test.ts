@@ -329,7 +329,7 @@ describe("firing on one element", () => {
 
 describe("the order of an element's bindings", () => {
 	/** Labels for the values of main-thread functions, and a runWorklet that records them in order. */
-	function labelled(order: string[]) {
+	function labeled(order: string[]) {
 		const labels = new Map<unknown, string>();
 		worklets.use((made) => void order.push(labels.get(made) ?? "?"));
 		return (label: string) => {
@@ -342,7 +342,7 @@ describe("the order of an element's bindings", () => {
 	it("runs functions and listeners in the order they were bound, not functions first", () => {
 		const { inner, bind } = bindable();
 		const order: string[] = [];
-		const value = labelled(order);
+		const value = labeled(order);
 		engine().functions.__AddEventListener(inner, "tap", () => order.push("listener"), {});
 		bind(inner, "bindEvent", "tap", value("function"));
 		engine().dispatch(inner, "tap");
@@ -352,7 +352,7 @@ describe("the order of an element's bindings", () => {
 	it("moves a function bound again to the end of its element's bindings", () => {
 		const { inner, bind } = bindable();
 		const order: string[] = [];
-		const value = labelled(order);
+		const value = labeled(order);
 		bind(inner, "bindEvent", "tap", value("first"));
 		engine().functions.__AddEventListener(inner, "tap", () => order.push("listener"), {});
 		bind(inner, "bindEvent", "tap", value("again"));
@@ -363,7 +363,7 @@ describe("the order of an element's bindings", () => {
 	it("runs the target's capture bindings first, then the rest of its bindings in their order", () => {
 		const { outer, inner, bind } = bindable();
 		const order: string[] = [];
-		const value = labelled(order);
+		const value = labeled(order);
 		const f = engine().functions;
 		bind(inner, "bindEvent", "tap", value("inner"));
 		f.__AddEventListener(inner, "tap", () => order.push("inner listener"), {});
@@ -377,7 +377,7 @@ describe("the order of an element's bindings", () => {
 	it("runs the rest of the target's bindings after a capture-catch or a stop there, then ends", () => {
 		const { outer, inner, bind } = bindable();
 		const order: string[] = [];
-		const value = labelled(order);
+		const value = labeled(order);
 		const stopper = value("inner capture");
 		worklets.use((made) => {
 			order.push((made as { label: string }).label);
