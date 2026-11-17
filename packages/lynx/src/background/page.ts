@@ -192,9 +192,9 @@ export function startPage<Props extends Record<string, unknown>>(
 	try {
 		// Boundary: lynx-core's app keeps the data the page was opened with here.
 		const params = (app["_params"] ?? {}) as AppParams;
-		lynx.__initData = { ...params.initData, ...params.updateData };
-		// Data the host updated before the page started: the first patch shows it.
-		if (Object.keys(params.updateData ?? {}).length > 0) channel.markDataUpdated();
+		// The first patch renders the data the main thread drew the first frame from, which it
+		// hydrates; data the host updated before the page started is applied after it, in order.
+		lynx.__initData = { ...params.initData };
 		pageRenderer.setHost({
 			call: channel.call,
 			run: (handler: Handler, event: unknown) => handle(() => handler(event)),
@@ -204,6 +204,7 @@ export function startPage<Props extends Record<string, unknown>>(
 		pageRenderer.insert(root, anchor, null);
 		render(true);
 		channel.flush();
+		if (Object.keys(params.updateData ?? {}).length > 0) updateData(params.updateData);
 	} catch (error) {
 		reportError(error);
 	}
