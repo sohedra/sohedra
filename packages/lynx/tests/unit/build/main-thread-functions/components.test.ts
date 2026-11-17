@@ -236,6 +236,62 @@ describe("main-thread functions in a script of a module", () => {
 	});
 });
 
+describe("main-thread functions anywhere in the markup", () => {
+	const script = `<script lang="ts">\n  import Pan from './Pan.svelte';\n  let x = $state(1);\n  let on = $state(true);\n</script>\n`;
+
+	it.each([
+		["a component's prop", `<Pan onMove={(e) => { 'main thread'; console.log(e, x); }} />`],
+		["a spread", `<Pan {...{ onMove: (e) => { 'main thread'; console.log(e, x); } }} />`],
+		[
+			"an object in a prop",
+			`<Pan handlers={{ move: (e) => { 'main thread'; console.log(e, x); } }} />`,
+		],
+		[
+			"a branch of a prop",
+			`<Pan onMove={on ? (e) => { 'main thread'; console.log(e, x); } : undefined} />`,
+		],
+		[
+			"an element's event attribute",
+			`<view ontap={(e) => { 'main thread'; console.log(e, x); }}></view>`,
+		],
+		[
+			"a {@const}",
+			`{#if on}{@const move = (e) => { 'main thread'; console.log(e, x); }}<Pan onMove={move} />{/if}`,
+		],
+		[
+			"a {@render}",
+			`{#snippet pan(onMove)}<Pan {onMove} />{/snippet}{@render pan((e) => { 'main thread'; console.log(e, x); })}`,
+		],
+	])("in %s is compiled like one in a main-thread: attribute", async (_, markup) => {
+		const source = script + markup;
+		const background = await component(source, { thread: "background" });
+		const mainThread = await component(source, { thread: "main-thread" });
+		expect(background.functionIds).toHaveLength(1);
+		expect(mainThread.functionIds).toEqual(background.functionIds);
+		expect(readOutput(background.code).functions.map((fn) => fn.captures)).toEqual([["x"]]);
+		expect(readOutput(mainThread.code).registrations).toEqual(background.functionIds);
+		// The function is gone from the markup: the background never holds its body.
+		expect(background.code).not.toContain("'main thread'");
+	});
+
+	it("is an error where it uses a name of a function around it in the markup", async () => {
+		const source = `${script}<Pan make={(item) => (e) => { 'main thread'; console.log(item, x); }} />`;
+		const error = (await component(source).catch((thrown: Error) => thrown)) as Error & {
+			code?: string;
+		};
+		expect(error.code).toBe("main_thread_function_block_name");
+		expect(error.message).toMatch(/^The main-thread function in `make` uses `item`/);
+		expect(error.message).toMatch(/Component\.svelte:6:\d+/);
+	});
+
+	it("is an error in a spread inside an {#each} that uses the item", async () => {
+		const source = `${script}{#each [1, 2] as row}<Pan {...{ onMove: () => { 'main thread'; console.log(row); } }} />{/each}`;
+		await expect(component(source)).rejects.toThrow(
+			/^The main-thread function in `\{\.\.\.\}` uses `row`, which only exists inside the markup/,
+		);
+	});
+});
+
 describe("names that exist only in the markup", () => {
 	const wrap = (markup: string): string =>
 		`<script>let rows = $state([{ id: 1 }]); let p = Promise.resolve(1);</script>\n${markup}`;
