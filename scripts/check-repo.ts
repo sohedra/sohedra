@@ -1,7 +1,7 @@
 // Checks the repository's own setup, so decisions written in AGENTS.md and CONTRIBUTING.md can't
 // drift. Runs as part of `pnpm lint`.
 
-import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { parse } from "yaml";
@@ -103,7 +103,14 @@ const agentFiles = allFiles.filter(
 		file.endsWith("AGENTS.md") || file.startsWith(".agents/") || file.startsWith(".claude/"),
 );
 for (const file of agentFiles) {
-	if (statSync(file).isFile() && HIDDEN.test(readFileSync(file, "utf8"))) {
+	let text: string;
+	try {
+		text = readFileSync(file, "utf8");
+	} catch {
+		// A folder, or a file removed since it was listed: nothing to read.
+		continue;
+	}
+	if (HIDDEN.test(text)) {
 		problems.push(
 			`${file} contains hidden Unicode characters (zero-width, bidirectional or tag). Remove them.`,
 		);
