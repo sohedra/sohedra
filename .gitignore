@@ -22,3 +22,6 @@ vite.config.*.timestamp-*
 # Personal Claude Code settings and agent worktrees
 .claude/settings.local.json
 .claude/worktrees/
+
+# Build output of the binding (an exact path: a bare lib/ would also hide SvelteKit's src/lib/)
+packages/lynx/lib/
