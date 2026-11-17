@@ -72,6 +72,17 @@ export interface Emitted {
 	imports: string;
 }
 
+/**
+ * `text` as a JavaScript string literal. `JSON.stringify` leaves `<`, `>` and the line and paragraph
+ * separators as they are; escaping them keeps the literal one line for any engine.
+ */
+function stringLiteral(text: string): string {
+	return JSON.stringify(text).replace(
+		/[<>\u2028\u2029]/g,
+		(char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
+	);
+}
+
 /** The expression that throws when a captured value that the body calls is a plain function. */
 function guardFor(options: EmitOptions, called: Map<string, Node>): Guard | undefined {
 	// A main-thread function of this script is an object by the time it is called, not a plain function.
@@ -95,7 +106,7 @@ function guardFor(options: EmitOptions, called: Map<string, Node>): Guard | unde
 					callee.start,
 				),
 			});
-			return `typeof ${value} === "function" ? (() => { throw new Error(${JSON.stringify(message)}); })() : ${value}`;
+			return `typeof ${value} === "function" ? (() => { throw new Error(${stringLiteral(message)}); })() : ${value}`;
 		},
 	};
 }
