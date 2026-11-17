@@ -20,7 +20,7 @@ function rejection(options: Record<string, unknown>): (Error & { code?: string }
 function sentences(options: Record<string, unknown>): string[] {
 	const error = rejection(options);
 	if (error === undefined) return [];
-	return error.message.split("\n\n").map((message) => message.split("\n")[0]!);
+	return error.message.split("\n\n\n").map((message) => message.split("\n")[0]!);
 }
 
 describe("the six options", () => {

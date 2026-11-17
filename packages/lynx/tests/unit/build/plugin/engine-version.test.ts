@@ -24,7 +24,7 @@ describe("engineVersion", () => {
 
 	it("is refused when older than 4.2, with the one value to use", () => {
 		for (const version of ["3.9", "3.10", "4.1", "2.18", "4.0.9"]) {
-			const [sentence, fix] = said(version);
+			const [sentence, , fix] = said(version);
 			expect(sentence, version).toBe(
 				`\`engineVersion\` is '${version}', and the binding builds for Lynx 4.2 and later.`,
 			);
@@ -34,7 +34,7 @@ describe("engineVersion", () => {
 
 	it("is refused when newer than the encoder encodes for, with its own message", () => {
 		for (const version of ["4.4", "4.10", "5", "5.0"]) {
-			const [sentence, fix] = said(version);
+			const [sentence, , fix] = said(version);
 			expect(sentence, version).toBe(
 				`\`engineVersion\` is '${version}', and the binding's encoder encodes for Lynx 4.3 at most.`,
 			);
