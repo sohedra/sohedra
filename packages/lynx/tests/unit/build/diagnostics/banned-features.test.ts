@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { docsLink } from "../../../../src/wire/index.ts";
 import { inApp, withoutRoot } from "../app.ts";
 import { component } from "../compiling.ts";
 
@@ -54,7 +55,7 @@ describe("a feature the custom-renderer build does not support", () => {
 			expect(lines[0]).toMatch(/is not available in Svelte on Lynx\.$/);
 			expect(lines[1]).toBe(`${file}:${position}`);
 			expect(error.message).toContain("^");
-			expect(error.message).toContain(`https://sohedra.com/e/${code}`);
+			expect(error.message).toContain(docsLink(code));
 			// The package's own words stay out, and so does Svelte's talk of its renderer option.
 			expect(error.message).not.toMatch(/customRenderer|custom-renderer|@sohedra\/lynx uses/);
 			expect(withoutRoot(error.message)).toMatchSnapshot();

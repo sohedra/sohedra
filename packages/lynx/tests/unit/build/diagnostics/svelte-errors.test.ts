@@ -8,6 +8,7 @@ import {
 	compileWarnings,
 	preprocessError,
 } from "../../../../src/build/diagnostics/svelte-errors.ts";
+import { docsLink } from "../../../../src/wire/index.ts";
 import { inApp } from "../app.ts";
 import { component } from "../compiling.ts";
 
@@ -83,7 +84,7 @@ describe("compile errors", () => {
 				file,
 				"",
 				"Fix the error the preprocessor reports, or check its options in svelte.config.js.",
-				"https://sohedra.com/e/preprocess_failed",
+				docsLink("preprocess_failed"),
 			].join("\n"),
 		);
 	});

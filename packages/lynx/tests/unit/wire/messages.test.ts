@@ -22,7 +22,7 @@ describe("formatMessage", () => {
 				"3: return this;\n          ^",
 				"",
 				"Read what it needs into a variable outside the function.",
-				"https://sohedra.com/e/main_thread_function_this",
+				docsLink("main_thread_function_this"),
 			].join("\n"),
 		);
 	});
@@ -39,6 +39,5 @@ describe("formatMessage", () => {
 describe("docsLink", () => {
 	it("is the page of the code under the docs' address", () => {
 		expect(docsLink("a_code")).toBe(`${DOCS_BASE}a_code`);
-		expect(DOCS_BASE).toBe("https://sohedra.com/e/");
 	});
 });

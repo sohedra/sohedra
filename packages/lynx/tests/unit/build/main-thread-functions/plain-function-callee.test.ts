@@ -2,9 +2,11 @@
 // it. A development build says so where the function is made; a production build writes nothing
 // extra.
 
+import path from "node:path";
+
 import { describe, expect, it } from "@rstest/core";
 
-import { withoutRoot } from "../app.ts";
+import { APP_ROOT } from "../app.ts";
 import { compileScript, component } from "../compiling.ts";
 import { evaluate } from "./output.ts";
 
@@ -32,7 +34,7 @@ describe("the plain-function callee check", () => {
 	it("says which function and where, with the fix", () => {
 		const { code } = compileScript(source, { development: true });
 		const message = (/new Error\((".*?[^\\]")\)/.exec(code) ?? [])[1];
-		expect(withoutRoot(JSON.parse(message!))).toMatchSnapshot();
+		expect(JSON.parse(message!)).toMatchSnapshot();
 	});
 
 	it("throws when the function is made with a plain function in the capture", () => {
@@ -80,5 +82,37 @@ describe("the plain-function callee check", () => {
 			{ development: true },
 		);
 		expect(code).not.toContain("typeof");
+	});
+
+	it.each([
+		["save.call(null, 1)", "call"],
+		["save.apply(null, [1])", "apply"],
+		["save.bind(null, 1)()", "bind"],
+		["save?.call(null)", "optional call"],
+	])("covers %s, a call through %s", (call) => {
+		const source = `function save(n) {}\nexport function f() {\n  "main thread";\n  ${call};\n}\n`;
+		const { code } = compileScript(source, { development: true });
+		expect(code).toMatch(/save: typeof save === "function"/);
+		expect(compileScript(source, { development: false }).code).not.toContain("typeof");
+	});
+
+	it("does not cover a read of the function's own properties", () => {
+		const { code } = compileScript(
+			`function save(n) {}\nexport function f() {\n  "main thread";\n  return [save.name, save.length];\n}\n`,
+			{ development: true },
+		);
+		expect(code).not.toContain("typeof");
+	});
+
+	it("names the file by its path under the app, so two checkouts give one bundle", () => {
+		const roots = ["checkout-one", "checkout-two"].map((name) =>
+			path.join(APP_ROOT, "tests/fixtures/build", name),
+		);
+		const [one, two] = roots.map(
+			(root) => compileScript(source, { development: true, root, file: "page.ts" }).code,
+		);
+		expect(one).toBe(two);
+		expect(one).toContain("src/page.ts:6:3");
+		expect(one).not.toContain(APP_ROOT);
 	});
 });

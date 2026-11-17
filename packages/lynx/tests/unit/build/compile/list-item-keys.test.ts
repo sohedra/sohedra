@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { docsLink } from "../../../../src/wire/index.ts";
 import { component } from "../compiling.ts";
 
 const each = (item: string, key = "(row.id)"): string =>
@@ -61,7 +62,7 @@ describe("a list item with no key at all", () => {
 			"Write it directly inside a keyed `{#each}`, or give it an `item-key`.",
 		);
 		expect(warning!.message).toContain("Component.svelte:1:7");
-		expect(warning!.message).toContain("https://sohedra.com/e/list_item_without_key");
+		expect(warning!.message).toContain(docsLink("list_item_without_key"));
 	});
 
 	it("gets none in a production build", async () => {

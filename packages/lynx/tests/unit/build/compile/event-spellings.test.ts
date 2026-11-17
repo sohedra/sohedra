@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { docsLink } from "../../../../src/wire/index.ts";
 import { inApp, withoutRoot } from "../app.ts";
 import { component } from "../compiling.ts";
 
@@ -16,36 +17,38 @@ const failure = async (source: string): Promise<Error & { code?: string }> => {
 
 describe("an old spelling of an event attribute", () => {
 	it.each([
-		["bindtap", "ontap"],
-		["catchtap", "oncatchtap"],
-		["capture-bindtap", "ontapcapture"],
-		["capture-catchtap", "oncatchtapcapture"],
-		["bindscrolltolower", "onscrolltolower"],
+		["bindtap", "ontap", "bind"],
+		["catchtap", "oncatchtap", "catch"],
+		["capture-bindtap", "ontapcapture", "capture-bind"],
+		["capture-catchtap", "oncatchtapcapture", "capture-catch"],
+		["bindscrolltolower", "onscrolltolower", "bind"],
 		// Any name that starts with `bind` or `catch` and holds an expression counts, as `online` is the
 		// event `line` in Svelte.
-		["catcher", "oncatcher"],
-	])("%s is an error that names %s", async (name, replacement) => {
+		["catcher", "oncatcher", "catch"],
+	])("%s is an error that names %s", async (name, replacement, spelling) => {
 		const error = await failure(`<script>function f() {}</script>\n<view ${name}={f}></view>`);
 		expect(error.code).toBe("event_attribute_renamed");
 		expect(error.message.split("\n")[0]).toBe(
-			`\`${name}\` is Lynx's spelling of an event attribute, which a component does not write.`,
+			`\`${name}\` reads as the old \`${spelling}\` spelling of an event attribute, which a component does not write.`,
 		);
 		expect(error.message).toContain(`${file}:2:7`);
 		expect(error.message).toContain(`Write \`${replacement}\` instead.`);
-		expect(error.message).toContain("https://sohedra.com/e/event_attribute_renamed");
+		expect(error.message).toContain(docsLink("event_attribute_renamed"));
 	});
 
 	it.each([
-		["main-thread:bindtap", "main-thread:ontap"],
-		["main-thread:catchtap", "main-thread:oncatchtap"],
-		["main-thread:capture-bindtap", "main-thread:ontapcapture"],
-		["main-thread:capture-catchtap", "main-thread:oncatchtapcapture"],
-	])("%s is an error that names %s", async (name, replacement) => {
+		["main-thread:bindtap", "main-thread:ontap", "bind"],
+		["main-thread:catchtap", "main-thread:oncatchtap", "catch"],
+		["main-thread:capture-bindtap", "main-thread:ontapcapture", "capture-bind"],
+		["main-thread:capture-catchtap", "main-thread:oncatchtapcapture", "capture-catch"],
+	])("%s is an error that names %s", async (name, replacement, spelling) => {
 		const error = await failure(
 			`<script>function f() { 'main thread'; }</script>\n<view ${name}={f}></view>`,
 		);
 		expect(error.code).toBe("event_attribute_renamed");
-		expect(error.message).toContain(`\`${name}\``);
+		expect(error.message.split("\n")[0]).toBe(
+			`\`${name}\` reads as the old \`${spelling}\` spelling of an event attribute, which a component does not write.`,
+		);
 		expect(error.message).toContain(`Write \`${replacement}\` instead.`);
 	});
 
@@ -65,7 +68,7 @@ describe("an old spelling of an event attribute", () => {
 		const error = await component("<view bindtap={f}></view>", { thread: "main-thread" }).catch(
 			(thrown: Error) => thrown,
 		);
-		expect((error as Error).message).toContain("`bindtap` is Lynx's spelling");
+		expect((error as Error).message).toContain("`bindtap` reads as the old `bind` spelling");
 	});
 
 	it("is found in an element inside a block, at its place in the file as written", async () => {

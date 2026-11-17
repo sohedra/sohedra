@@ -34,7 +34,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	main_thread_function_block_name: { attribute: "main-thread:ontap", names: ["row", "index"] },
 	plain_function_in_main_thread_function: { name: "save" },
 	script_syntax_error: { reason: "Unexpected token" },
-	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap" },
+	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap", spelling: "bind" },
 	global_event_attribute: { attribute: "global-bindtap", event: "tap" },
 	list_item_without_key: {},
 };

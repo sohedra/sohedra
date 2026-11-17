@@ -49,7 +49,7 @@ https://sohedra.com/e/css_injected"
 `;
 
 exports[`the build's catalogue > event_attribute_renamed: the message 1`] = `
-"\`bindtap\` is Lynx's spelling of an event attribute, which a component does not write.
+"\`bindtap\` reads as the old \`bind\` spelling of an event attribute, which a component does not write.
 /app/src/App.svelte:2:3
 
 1: <script>
