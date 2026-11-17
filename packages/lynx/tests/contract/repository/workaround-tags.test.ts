@@ -162,6 +162,22 @@ describe("the repository", () => {
 		expect(workarounds.map((tag) => tag.file)).toEqual(["packages/x/src/lib/a.ts"]);
 	});
 
+	// Windows' `relative()` separates folders with `\`. Elsewhere a `\` is part of a name, so these
+	// files' paths come out as the strings Windows gives.
+	it("skips agent worktrees when folders are separated with a backslash", () => {
+		const root = repositoryWith({ ".claude\\worktrees/copy/a.ts": TAG, "src/a.ts": TAG });
+		const { workarounds, problems } = scanRepository(root);
+		expect(problems).toEqual([]);
+		expect(workarounds.map((tag) => tag.file)).toEqual(["src/a.ts"]);
+	});
+
+	it("lists paths with slashes when folders are separated with a backslash", () => {
+		const root = repositoryWith({ "src\\a.ts": TAG });
+		const { workarounds } = scanRepository(root);
+		expect(workarounds.map((tag) => tag.file)).toEqual(["src/a.ts"]);
+		expect(workaroundList(workarounds)).toContain("| src/a.ts:1 |");
+	});
+
 	it("reads a lib folder that is not at a package's root", () => {
 		const root = repositoryWith({ "docs/package.json": "{}", "docs/src/lib/a.ts": TAG });
 		expect(scanRepository(root).workarounds.map((tag) => tag.file)).toEqual(["docs/src/lib/a.ts"]);
