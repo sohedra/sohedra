@@ -14,6 +14,7 @@ import type { ExtendConfig, ExtendConfigFn } from "@rstest/core";
 import { PACKAGE_NAME } from "../../wire/index.ts";
 import { pluginSvelteLynx } from "../plugin/index.ts";
 import type { PluginSvelteLynxOptions } from "../plugin/index.ts";
+import { TEST_SETUP_FILE } from "../plugin/layers.ts";
 import { checkPluginOptions } from "../plugin/option-checks.ts";
 import { loadLynxConfig } from "./config-file.ts";
 import type { ConfigFileOptions } from "./config-file.ts";
@@ -54,12 +55,11 @@ const conditionsByImport: RsbuildPlugin = {
 };
 
 /**
- * What a test run needs besides the compile: its test environment (the page's elements and a
- * setup file that cleans up after each test). The package's own is added here when it exists;
- * until then a run has none and nothing stands in for it.
+ * What a test run needs besides the compile: a DOM for the page's elements, and a setup file that
+ * ends the page each test started.
  */
 function testEnvironment(): ExtendConfig {
-	return {};
+	return { testEnvironment: "jsdom", setupFiles: [TEST_SETUP_FILE] };
 }
 
 /** What every test run shares. */

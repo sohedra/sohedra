@@ -1,5 +1,6 @@
 // The Rstest presets: a config that compiles `.svelte` and scripts as a build does.
 
+import fs from "node:fs";
 import path from "node:path";
 
 import { describe, expect, it } from "@rstest/core";
@@ -29,10 +30,13 @@ describe("withSvelteLynx", () => {
 		);
 	});
 
-	it("sets no test environment: the package's own is not here yet, and nothing stands in for it", async () => {
+	it("runs a test on a DOM, with a setup file that exists", async () => {
 		const config = await configOf(withSvelteLynx());
-		expect(config["testEnvironment"]).toBeUndefined();
-		expect(config["setupFiles"]).toBeUndefined();
+		expect(config["testEnvironment"]).toBe("jsdom");
+		const setup = config["setupFiles"] as string[];
+		expect(setup).toHaveLength(1);
+		expect(path.basename(setup[0]!)).toMatch(/^setup-rstest\.(ts|js)$/);
+		expect(fs.existsSync(setup[0]!)).toBe(true);
 	});
 
 	it("bundles dependencies, so they resolve as on the background thread and not as in Node", async () => {
@@ -62,6 +66,15 @@ describe("withSvelteLynxFromConfig", { timeout: 20_000 }, () => {
 			}),
 		);
 		expect(names(config)).toContain("from-rsbuild-config");
+	});
+
+	it("runs the app's tests on the same DOM and setup file as a library's", async () => {
+		const library = await configOf(withSvelteLynx());
+		const app = await configOf(
+			withSvelteLynxFromConfig({ rootPath: path.join(configs, "rsbuild-only") }),
+		);
+		expect(app["testEnvironment"]).toBe("jsdom");
+		expect(app["setupFiles"]).toEqual(library["setupFiles"]);
 	});
 
 	it("takes the build's engine plugins that a test run has no use for out", async () => {

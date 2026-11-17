@@ -64,8 +64,10 @@
 		"@rstest/adapter-rsbuild": "^0.12.6",
 		"@rstest/core": "^0.12.6",
 		"@rstest/coverage-istanbul": "^0.12.6",
+		"@testing-library/dom": "^10.4.2",
 		"@types/node": "^26.6.6",
 		"acorn": "^8.19.0",
+		"jsdom": "^31.0.1",
 		"svelte": "https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea",
 		"typescript": "^6.0.3"
 	},
@@ -74,6 +76,8 @@
 		"@rsbuild/core": "^2.0.0",
 		"@rstest/adapter-rsbuild": "^0.12.0",
 		"@rstest/core": "^0.12.0",
+		"@testing-library/dom": "^10.4.0",
+		"jsdom": ">=28.0.0",
 		"svelte": "*"
 	},
 	"peerDependenciesMeta": {
@@ -84,6 +88,12 @@
 			"optional": true
 		},
 		"@rstest/core": {
+			"optional": true
+		},
+		"@testing-library/dom": {
+			"optional": true
+		},
+		"jsdom": {
 			"optional": true
 		}
 	}
