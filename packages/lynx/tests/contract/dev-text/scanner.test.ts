@@ -25,6 +25,7 @@ describe("the list of development text", () => {
 		expect(has("a development message after an and")).toBe(true);
 		expect(has("a development message guarded by NODE_ENV")).toBe(true);
 		expect(has("a development message after an early return")).toBe(true);
+		expect(has("a development message after an or return")).toBe(true);
 	});
 
 	it("has the text of a function only development code calls", () => {
@@ -35,6 +36,13 @@ describe("the list of development text", () => {
 		expect(has("this message ships in every build")).toBe(false);
 		expect(has("this helper also runs in production builds")).toBe(false);
 		expect(has("this text is used in both builds")).toBe(false);
+	});
+
+	it("does not have text that runs when a production test with another condition is false", () => {
+		// `!__DEV__ && x` is false in production whenever `x` is.
+		expect(has("this runs in production whenever x is false")).toBe(false);
+		expect(has("this else runs in production whenever x is false")).toBe(false);
+		expect(has("this right side runs in production whenever x is false")).toBe(false);
 	});
 
 	it("says where each text is", () => {

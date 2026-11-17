@@ -1,7 +1,7 @@
 // Source for the development-text scanner's test: which strings are only for development builds.
 
 declare const __DEV__: boolean;
-declare function report(message: string): void;
+declare function report(message: unknown): void;
 
 /** Only development code calls this one. */
 function describeOperation(name: string): string {
@@ -34,4 +34,17 @@ export function shipped(): void {
 export function both(): void {
 	if (__DEV__) report("this text is used in both builds");
 	report("this text is used in both builds");
+}
+
+export function productionAnd(x: boolean): void {
+	if (!__DEV__ && x) return;
+	report("this runs in production whenever x is false");
+	if (!__DEV__ && x) report("");
+	else report("this else runs in production whenever x is false");
+	report((!__DEV__ && x) || "this right side runs in production whenever x is false");
+}
+
+export function productionOr(x: boolean): void {
+	if (!__DEV__ || x) return;
+	report("a development message after an or return");
 }
