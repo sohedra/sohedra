@@ -11,5 +11,11 @@ export {
 } from "./main-thread-functions.ts";
 export { DOCS_BASE, docsLink, formatMessage } from "./messages.ts";
 export type { Catalogue, Entry, MessageParts } from "./messages.ts";
-export { MAIN_THREAD_PREFIX, PACKAGE_NAME, RENDERER_ENTRY, WINDOW_SIZE_ENTRY } from "./names.ts";
+export {
+	FIRST_FRAME_GLOBAL,
+	MAIN_THREAD_PREFIX,
+	PACKAGE_NAME,
+	RENDERER_ENTRY,
+	WINDOW_SIZE_ENTRY,
+} from "./names.ts";
 export type { Thread } from "./names.ts";

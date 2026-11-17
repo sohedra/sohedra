@@ -12,3 +12,6 @@ export const RENDERER_ENTRY: string = `${PACKAGE_NAME}/internal/renderer`;
 
 /** The module whose size the page's own size comes from; each thread resolves its own. */
 export const WINDOW_SIZE_ENTRY: string = `${PACKAGE_NAME}/internal/window-size`;
+
+/** The global where a page's main-thread copy records how to draw its first frame. */
+export const FIRST_FRAME_GLOBAL = "__svelteLynxFirstFrame";
