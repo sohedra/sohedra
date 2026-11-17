@@ -74,3 +74,16 @@ export interface BuildWarning {
 export function buildWarning<Code extends BuildCode>(report: Report<Code>): BuildWarning {
 	return { code: report.code, message: describe(report) };
 }
+
+/** A message to write, of any code. */
+export type AnyReport = { [Code in BuildCode]: Report<Code> }[BuildCode];
+
+/**
+ * One error for every message in `reports`, the first message's text first, so a collapsed
+ * console shows its sentence. It carries the first message's code.
+ */
+export function buildErrors(reports: [AnyReport, ...AnyReport[]]): BuildError {
+	const [first] = reports;
+	const text = reports.map((report) => describe(report as Report<BuildCode>)).join("\n\n\n");
+	return Object.assign(new Error(text), { code: first.code as string, hideStack: true as const });
+}

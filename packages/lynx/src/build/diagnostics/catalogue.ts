@@ -3,6 +3,8 @@
 // page, and snapshots every message.
 
 import type { Catalogue } from "../../wire/index.ts";
+import { SETUP_CATALOGUE } from "./catalogue-setup.ts";
+import type { SetupDetails } from "./catalogue-setup.ts";
 
 /** A message that needs nothing to be written. */
 type Plain = Record<string, never>;
@@ -13,7 +15,7 @@ interface Refused {
 }
 
 /** The details each of the build's messages is written from. */
-export interface BuildDetails {
+export interface BuildDetails extends SetupDetails {
 	preprocess_failed: { reason: string };
 	renderer_option_off: Plain;
 	css_injected: Plain;
@@ -50,6 +52,7 @@ const PAGE_EVENTS = "Listen to the page's events with `on(root, …)`.";
 
 /** Every message of the build. */
 export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
+	...SETUP_CATALOGUE,
 	preprocess_failed: {
 		message: ({ reason }) => `A preprocessor failed on this file.\n${reason}`,
 		fix: () => "Fix the error the preprocessor reports, or check its options in svelte.config.js.",
