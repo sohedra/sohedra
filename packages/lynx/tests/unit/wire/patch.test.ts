@@ -43,6 +43,18 @@ describe("a patch", () => {
 		expect(PATCH_METHOD).toMatch(/^[A-Za-z_$][\w$]*$/);
 	});
 
+	it("says when it shows the page's new data, and only then", () => {
+		expect(decodePatch(encodePatch({ page: 2, items: [], dataUpdated: true }))).toEqual({
+			v: PROTOCOL_VERSION,
+			page: 2,
+			items: [],
+			dataUpdated: true,
+		});
+		expect(
+			"dataUpdated" in decodePatch(encodePatch({ page: 2, items: [], dataUpdated: false })),
+		).toBe(false);
+	});
+
 	it("keeps its items in order, whatever their kind", () => {
 		const items: PatchItem[] = [
 			[

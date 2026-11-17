@@ -18,7 +18,8 @@ const floor = JSON.parse(
 const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 
 // Tests are grouped by kind, with a subfolder per source area (see CONTRIBUTING.md § Tests):
-//   unit/      one module at a time; those of `src/testing` on the engine fake
+//   unit/      one module at a time; those of `src/testing` and of the threads' programs on the
+//              engine fake
 //   threads/   both threads of a page on the engine fake
 //   contract/  rules about the source, the repository, the pinned Svelte build, and the engine
 //              behavior spec run on the fake
@@ -27,7 +28,13 @@ const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 //
 // The tests of the page, and of the Lynx it runs on, go through the package's own preset: a DOM,
 // the engine fake and a cleanup after each test. The rest run in Node.
-const onTheTestTree = ["tests/unit/testing/**", "tests/contract/engine/**", "tests/threads/**"];
+const onTheTestTree = [
+	"tests/unit/testing/**",
+	"tests/unit/background/**",
+	"tests/unit/globals/**",
+	"tests/contract/engine/**",
+	"tests/threads/**",
+];
 
 const config: RstestConfig = defineConfig({
 	projects: [
