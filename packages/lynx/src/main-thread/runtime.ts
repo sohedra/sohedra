@@ -165,9 +165,14 @@ export function startMainThread(): void {
 			if (state.rewriting) {
 				// Until the rewrite, the background's page is written again: only the calls wait for it.
 				if (item[0] === "call") state.held.push({ item, stamp });
-				else if (item[0] === "rewrite" && isPageRewrite(item)) {
-					state.rewriting = false;
-					replacePage();
+				else if (item[0] === "rewrite") {
+					if (isPageRewrite(item)) {
+						state.rewriting = false;
+						replacePage();
+					} else {
+						// Not the page the main thread waits for: it asks for the page again.
+						send({ t: "rewrite", nodes: [ROOT_ID] });
+					}
 				}
 				continue;
 			}

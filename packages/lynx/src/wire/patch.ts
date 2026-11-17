@@ -68,8 +68,9 @@ export type ReplyItem = ["reply", number, string];
  * The page is written again: the main thread lets go of its elements, which stay on the screen until
  * the patch's flush, and the items after this make the page again, with the same ids, from what the
  * background holds now. The answer to a rewrite message. Only the page's root (`ROOT_ID`) is
- * written again; another id is reported. A later version may write one list cell again, with the
- * same item and the background's same writing, but its own arrival rule.
+ * written again; another id is reported, and while the page waits to be written again, the page is
+ * asked for again. A later version may write one list cell again, with the same item and the
+ * background's same writing, but its own arrival rule.
  */
 export type RewriteItem = ["rewrite", number];
 
