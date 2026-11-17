@@ -56,6 +56,15 @@ const MESSAGES: [kind: string, message: ToBackground, type: string][] = [
 		},
 		TO_BACKGROUND.replies,
 	],
+	[
+		"an error with its code and where it was thrown",
+		{
+			t: "error",
+			error: { name: "Error", message: "The first frame differs.", code: "hydration_mismatch" },
+			place: { component: "src/Card.svelte", mainThreadFunction: "a1b2:onScroll" },
+		},
+		TO_BACKGROUND.replies,
+	],
 ];
 
 describe("a message to the background", () => {
@@ -75,6 +84,12 @@ describe("a message to the background", () => {
 			});
 		},
 	);
+
+	it("fails when it is made if a value cannot cross, naming the background", () => {
+		expect(() =>
+			encodeToBackground({ t: "call", id: 1, fn: 2, context: 3, params: [1n] }, 0),
+		).toThrow(/^A value sent to the background cannot be copied/);
+	});
 
 	it("has two event types, of the package's name", () => {
 		expect(TO_BACKGROUND.events).not.toBe(TO_BACKGROUND.replies);

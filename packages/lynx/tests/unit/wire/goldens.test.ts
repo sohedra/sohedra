@@ -7,10 +7,12 @@ import { describe, expect, it } from "@rstest/core";
 import {
 	decodePatch,
 	decodeToBackground,
+	encodeCall,
 	encodeCell,
 	encodePatch,
+	encodeResult,
 	encodeToBackground,
-	isCurrentPage,
+	keepsMessage,
 	listUpdateInfo,
 	OpCode,
 	PROTOCOL_VERSION,
@@ -68,9 +70,14 @@ const PATCHES: [name: string, page: number, items: PatchItem[]][] = [
 		0,
 		[
 			["ops", [[OpCode.SetAttr, 2, "class", "counter open"]]],
-			["call", 1, 2, ["invoke", "boundingClientRect", {}]],
-			["call", 2, 0, ["run", { _wkltId: "a1b2:open", _c: { to: 1 }, _execId: 3 }, [240]]],
-			["reply", 1, { ok: true, value: "saved" }],
+			["call", 1, 2, encodeCall(["invoke", "boundingClientRect", {}])],
+			[
+				"call",
+				2,
+				0,
+				encodeCall(["run", { _wkltId: "a1b2:open", _c: { to: 1 }, _execId: 3 }, [240]]),
+			],
+			["reply", 1, encodeResult({ ok: true, value: "saved" })],
 		],
 	],
 	["the reloaded page's first patch", 1, [["ops", COUNTER]]],
@@ -99,6 +106,14 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 	],
 	["a call of a background function", { t: "call", id: 1, fn: 2, context: 3, params: ["done"] }],
 	["a release", { t: "release", contexts: [3] }],
+	[
+		"an error with its code and where it was thrown",
+		{
+			t: "error",
+			error: { name: "Error", message: "The first frame differs.", code: "hydration_mismatch" },
+			place: { component: "src/Card.svelte", mainThreadFunction: "a1b2:onScroll" },
+		},
+	],
 ];
 
 describe("golden patches", () => {
@@ -112,7 +127,7 @@ describe("golden patches", () => {
 		const before = decodePatch(
 			encodePatch({ page: 0, items: [["ops", [[OpCode.SetText, 4, "Count: 2"]]]] }),
 		);
-		expect(isCurrentPage(before, 1)).toBe(false);
+		expect(keepsMessage(before, 1)).toBe(false);
 	});
 });
 

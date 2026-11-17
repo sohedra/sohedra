@@ -21,9 +21,10 @@ describe("the wire's names", () => {
 	});
 
 	it("give each way between the threads a name of its own", () => {
-		const ways = [wire.PATCH_METHOD, ...Object.values(wire.TO_BACKGROUND)];
+		const ways = [wire.PATCH_METHOD, wire.LAZY_BUNDLE_METHOD, ...Object.values(wire.TO_BACKGROUND)];
 		expect(new Set(ways).size).toBe(ways.length);
 		expect(wire.FIRST_FRAME_GLOBAL).toMatch(/^__sohedra/);
-		expect(wire.PATCH_METHOD).toMatch(/^sohedra/);
+		for (const method of [wire.PATCH_METHOD, wire.LAZY_BUNDLE_METHOD])
+			expect(method).toMatch(/^sohedra[A-Za-z]+$/);
 	});
 });
