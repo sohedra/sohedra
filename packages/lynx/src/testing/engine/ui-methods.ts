@@ -44,9 +44,15 @@ export function isFlattened(engine: EngineState, state: ElementState): boolean {
 /** The functions that reach the page's UI, over the engine's records. */
 export function uiFunctions(engine: EngineState): UiFunctions {
 	return {
-		// Answers at once; the engine answers on a later task.
+		// The UI thread runs the method, and the answer comes back on a later task
+		// (core/renderer/template_assembler.cc, LepusInvokeUIMethod). The fake decides it from the
+		// element as it is at the call.
 		__InvokeUIMethod(element, method, params, callback) {
 			const state = stateOf(engine, element, "__InvokeUIMethod", 0);
+			if (typeof method !== "string") throw argumentError("__InvokeUIMethod", 1, "text");
+			if (typeof params !== "object" || params === null) {
+				throw argumentError("__InvokeUIMethod", 2, "an object");
+			}
 			if (typeof callback !== "function") throw argumentError("__InvokeUIMethod", 3, "a function");
 			let result: InvokeResult =
 				engine.unflushed.has(state) || isFlattened(engine, state)
@@ -69,7 +75,8 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 				flushesBefore: engine.log.flushes.length,
 				code: result.code,
 			});
-			callback(result);
+			const answer = result;
+			engine.schedule(() => callback(answer));
 		},
 		__FlushElementTree(_page, options) {
 			engine.unflushed.clear();

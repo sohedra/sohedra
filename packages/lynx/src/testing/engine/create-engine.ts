@@ -1,6 +1,6 @@
 // The engine fake: what Lynx's main thread does with the page's elements, on a DOM.
 
-import { testDocument } from "../globals.ts";
+import { nextMacrotask, testDocument } from "../globals.ts";
 import { animationFunctions } from "./animations.ts";
 import type { AnimationFunctions } from "./animations.ts";
 import { createDispatcher } from "./dispatch.ts";
@@ -17,6 +17,7 @@ import type { PropertyFunctions } from "./properties.ts";
 import { stateOf } from "./state.ts";
 import type {
 	AnimationLog,
+	BackgroundEventLog,
 	BindingLog,
 	Detector,
 	ElementState,
@@ -51,6 +52,11 @@ export interface EngineOptions {
 	document?: Document;
 	/** The element the page goes in; the document's body by default. */
 	container?: Element;
+	/**
+	 * Runs what the engine answers from another thread (a UI method's result) when it comes back;
+	 * on a later macrotask by default. A test page passes its own, so that `settle()` waits for it.
+	 */
+	schedule?: (deliver: () => void) => void;
 }
 
 /** One engine: the main thread's element functions and the engine's own side of them. */
@@ -81,13 +87,13 @@ export interface Engine {
 	dispose(): void;
 
 	/**
-	 * Fires an event the way Lynx does a custom event (`scroll`, `load`), on this element only: the
-	 * main-thread functions bound to it, then its listeners. Throws when it has none.
+	 * Fires an event the way Lynx does a custom event (`scroll`, `load`): the global phase, then this
+	 * element's own bindings, with no capture and no bubble. Throws when nothing hears it.
 	 */
 	fire(element: LynxElement, name: string, event?: Record<string, unknown>): void;
 	/**
 	 * Delivers an event the way Lynx does a touch event (`tap`) along the tree: the global phase,
-	 * capture from the page down, bubble from the target up, catch and the stop bits a main-thread
+	 * capture from the page down, the target, bubble up, catch and the stop bits a main-thread
 	 * function returns.
 	 */
 	dispatch(element: LynxElement, name: string, event?: Record<string, unknown>): void;
@@ -136,6 +142,8 @@ export interface Engine {
 	readonly gestureCalls: GestureCallLog[];
 	/** Every main-thread function the engine ran, and the `eventReturnResult` it read. */
 	readonly mainThreadRuns: RunLog[];
+	/** Every event the engine sent to a handler name, for the background. */
+	readonly backgroundEvents: BackgroundEventLog[];
 	/** Every call a gesture callback made on the gesture manager. */
 	readonly gestureManagerCalls: ManagerCallLog[];
 }
@@ -147,6 +155,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		document,
 		container: options.container ?? document.body,
 		nextUid: 1,
+		nextBinding: 1,
 		page: undefined,
 		states: new WeakMap(),
 		made: new Map(),
@@ -154,6 +163,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		stale: new Set(),
 		flattening: false,
 		respond: () => ({ code: 0 }),
+		schedule: options.schedule ?? nextMacrotask,
 		log: {
 			flushes: [],
 			invocations: [],
@@ -162,6 +172,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			filings: [],
 			gestureCalls: [],
 			mainThreadRuns: [],
+			backgroundEvents: [],
 			gestureManagerCalls: [],
 		},
 	};
@@ -216,6 +227,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 				engine.log.filings,
 				engine.log.gestureCalls,
 				engine.log.mainThreadRuns,
+				engine.log.backgroundEvents,
 				engine.log.gestureManagerCalls,
 				engine.log.invocations,
 			] as { element: LynxElement }[][]) {
@@ -267,6 +279,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		filings: engine.log.filings,
 		gestureCalls: engine.log.gestureCalls,
 		mainThreadRuns: engine.log.mainThreadRuns,
+		backgroundEvents: engine.log.backgroundEvents,
 		gestureManagerCalls: engine.log.gestureManagerCalls,
 	};
 }

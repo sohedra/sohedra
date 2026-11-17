@@ -43,6 +43,7 @@ export function makeElement(engine: EngineState, tag: string): ElementState {
 		inlineStyles: new Map(),
 		listeners: [],
 		mainThreadEvents: [],
+		handlers: [],
 		filedEvents: new Set(),
 		detectors: new Map(),
 		running: new Map(),

@@ -2,9 +2,6 @@
 
 import type { ElementState } from "./state.ts";
 
-/** The DOM's `nodeType` of an element. */
-export const ELEMENT_NODE = 1;
-
 /** The DOM's `nodeType` of a text node. */
 export const TEXT_NODE = 3;
 
@@ -32,7 +29,11 @@ export function reflectAttribute(state: ElementState, name: string, value: unkno
 	}
 }
 
-/** The DOM attribute that shows a dataset key: `drag-handle` is `data-drag-handle`. */
+/**
+ * The DOM attribute that shows a dataset key: `drag-handle` is `data-drag-handle`. Lynx reads
+ * `[data-drag-handle]` the same way, as the key after `data-`
+ * (core/renderer/dom/selector/matching/attribute_selector_matching.cc).
+ */
 export function datasetAttribute(key: string): string {
 	return `data-${key}`;
 }

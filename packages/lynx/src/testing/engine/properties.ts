@@ -1,9 +1,8 @@
 // What an element carries: attributes, classes, id, dataset, inline styles, and the queries over
-// its descendants. The engine's record keeps each value as it was given, and the DOM element
+// it and its descendants. The engine's record keeps each value as it was given, and the DOM element
 // shows it.
 
 import {
-	ELEMENT_NODE,
 	attributeText,
 	dashed,
 	datasetAttribute,
@@ -12,8 +11,10 @@ import {
 	reflectStyles,
 } from "./dom.ts";
 import { receiveListUpdate } from "./lists.ts";
+import { select } from "./selectors.ts";
 import { argumentError, stateOf } from "./state.ts";
-import type { EngineState } from "./state.ts";
+import type { ElementState, EngineState } from "./state.ts";
+import { descendantsOf } from "./tree.ts";
 import type { ListUpdate, LynxElement } from "./types.ts";
 import { isFlattened } from "./ui-methods.ts";
 
@@ -56,20 +57,31 @@ function checkName(function_: string, index: number, name: unknown): void {
 
 /** The functions that set and read what an element carries, over the engine's records. */
 export function propertyFunctions(engine: EngineState): PropertyFunctions {
-	function search(
-		name: string,
-		element: LynxElement,
-		selector: string,
-		options: unknown,
-	): Element[] {
-		const state = stateOf(engine, element, name, 0);
+	function search(options: {
+		name: string;
+		element: LynxElement;
+		selector: string;
+		settings: unknown;
+		first: boolean;
+	}): LynxElement[] {
+		const { name, element, selector, settings, first } = options;
+		const root = stateOf(engine, element, name, 0);
 		if (typeof selector !== "string") throw argumentError(name, 1, "text");
-		if (typeof options !== "object" || options === null) {
+		if (typeof settings !== "object" || settings === null) {
 			throw argumentError(name, 2, "an object");
 		}
-		return state.node.nodeType === ELEMENT_NODE
-			? [...(state.node as Element).querySelectorAll(selector)]
-			: [];
+		const order = new Map(descendantsOf(root.node).map((node, index) => [node, index]));
+		const stateOfNode = (node: Node): ElementState | undefined => engine.states.get(node);
+		return select({
+			root,
+			selector,
+			first,
+			children: (state) =>
+				[...state.node.childNodes]
+					.map(stateOfNode)
+					.filter((child): child is ElementState => child !== undefined),
+			order: (state) => order.get(state.node) ?? 0,
+		}).map((state) => state.node);
 	}
 
 	return {
@@ -94,6 +106,7 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 			Object.keys(stateOf(engine, element, "__GetAttributeNames", 0).attrs),
 		__SetClasses(element, classes) {
 			const state = stateOf(engine, element, "__SetClasses", 0);
+			if (typeof classes !== "string") throw argumentError("__SetClasses", 1, "text");
 			state.classes = classes;
 			reflectAttribute(state, "class", classes === "" ? null : classes);
 		},
@@ -132,7 +145,16 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 		},
 		__AddInlineStyle(element, key, value) {
 			const state = stateOf(engine, element, "__AddInlineStyle", 0);
+			// The engine also takes a style's number, which the fake has no table for.
 			checkName("__AddInlineStyle", 1, key);
+			// The engine looks the name up as it is written, and finds no style for a JavaScript name
+			// (FiberAddInlineStyle; core/renderer/css/css_property.cc, GetPropertyID).
+			if (!key.startsWith("--") && /[A-Z]/.test(key)) {
+				throw new Error(
+					`__AddInlineStyle was given ${key}, and Lynx finds no style by that name. ` +
+						`Name it as CSS does: ${dashed(key)}.`,
+				);
+			}
 			if (value == null) state.inlineStyles.delete(key);
 			else state.inlineStyles.set(key, attributeText(value));
 			reflectStyles(state);
@@ -142,11 +164,12 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 		// FiberGetComputedStyleByKey).
 		__GetComputedStyleByKey(element, key) {
 			const state = stateOf(engine, element, "__GetComputedStyleByKey", 0);
+			if (typeof key !== "string") throw argumentError("__GetComputedStyleByKey", 1, "text");
 			return state.inlineStyles.get(key) ?? "";
 		},
-		__QuerySelector: (element, selector, options) =>
-			search("__QuerySelector", element, selector, options)[0],
-		__QuerySelectorAll: (element, selector, options) =>
-			search("__QuerySelectorAll", element, selector, options),
+		__QuerySelector: (element, selector, settings) =>
+			search({ name: "__QuerySelector", element, selector, settings, first: true })[0],
+		__QuerySelectorAll: (element, selector, settings) =>
+			search({ name: "__QuerySelectorAll", element, selector, settings, first: false }),
 	};
 }

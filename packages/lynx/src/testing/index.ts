@@ -7,6 +7,7 @@ export type { Lifecycle, LifecycleEvent, LifecycleProxy } from "./engine/lifecyc
 export type { ListHandle } from "./engine/lists.ts";
 export type {
 	AnimationLog,
+	BackgroundEventLog,
 	BindingLog,
 	Detector,
 	ElementState,

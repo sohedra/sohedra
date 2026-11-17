@@ -16,6 +16,8 @@ export interface RegisteredListener {
 	name: string;
 	listener: ListenerFunction;
 	options: ListenerOptions;
+	/** When it was bound: an element's bindings run in this order. */
+	seq: number;
 }
 
 /** A main-thread function bound to an element's event with `__AddEvent`. */
@@ -25,6 +27,19 @@ export interface BoundFunction {
 	eventName: string;
 	/** The function as the engine holds it: opaque, handed to the global `runWorklet`. */
 	value: unknown;
+	/** When it was bound: an element's bindings run in this order. */
+	seq: number;
+}
+
+/** A handler name bound to an element's event with `__AddEvent`: the engine sends it the event. */
+export interface BoundHandler {
+	/** `bindEvent`, `catchEvent`, `capture-bind`, `capture-catch` or `global-bindEvent`. */
+	eventType: string;
+	eventName: string;
+	/** The name the background knows its handler by. */
+	handler: string;
+	/** When it was bound: an element's bindings run in this order. */
+	seq: number;
 }
 
 /** A gesture detector set with `__SetGestureDetector`. */
@@ -75,7 +90,12 @@ export interface ElementState {
 	listeners: RegisteredListener[];
 	/** The main-thread functions bound to its events (`__AddEvent`), one per event name and type. */
 	mainThreadEvents: BoundFunction[];
-	/** The event types filed with a handler name (`__AddEvent` with a string), as `type:name`. */
+	/** The handler names bound to its events (`__AddEvent`), one per event name and type. */
+	handlers: BoundHandler[];
+	/**
+	 * The events its data model has a handler for (`__AddEvent` with anything but none), as
+	 * `type:name`: the engine reads `global-bindEvent` ones to find who hears the global phase.
+	 */
 	filedEvents: Set<string>;
 	/** Its gesture detectors, by the id Lynx knows each by. */
 	detectors: Map<number, Detector>;
@@ -107,6 +127,15 @@ export interface BindingLog {
 	eventType: string;
 	eventName: string;
 	value: unknown;
+}
+
+/** One event the engine sent to a handler name, for the background. */
+export interface BackgroundEventLog {
+	/** The element whose binding sent it. */
+	element: LynxElement;
+	eventType: string;
+	eventName: string;
+	handler: string;
 }
 
 /** One main-thread function the engine ran, and the `eventReturnResult` it read (0: none). */
@@ -146,6 +175,8 @@ export interface EngineLogs {
 	filings: BindingLog[];
 	gestureCalls: GestureCallLog[];
 	mainThreadRuns: RunLog[];
+	/** The events the engine sent to handler names. */
+	backgroundEvents: BackgroundEventLog[];
 	gestureManagerCalls: ManagerCallLog[];
 }
 
@@ -158,6 +189,8 @@ export interface EngineState {
 	/** Where the page goes in the document. */
 	readonly container: Element;
 	nextUid: number;
+	/** The number of the next binding: an element's bindings run in the order they were made. */
+	nextBinding: number;
 	page: LynxElement | undefined;
 	readonly states: WeakMap<Node, ElementState>;
 	/** Every element made, attached or not, by unique id. */
@@ -175,6 +208,8 @@ export interface EngineState {
 	/** Whether a plain `<view>` is flattened: off unless a test turns it on. */
 	flattening: boolean;
 	respond: Responder;
+	/** Runs `deliver` when the engine's answer comes back from another thread. */
+	readonly schedule: (deliver: () => void) => void;
 	readonly log: EngineLogs;
 }
 

@@ -48,7 +48,7 @@ export interface ListHandle {
 /** The functions that make and change lists, over the engine's records. */
 export function listFunctions(engine: EngineState): ListFunctions {
 	return {
-		__CreateList(parent, componentAtIndex, enqueueComponent, _info, componentAtIndexes) {
+		__CreateList(parent, componentAtIndex, enqueueComponent, info, componentAtIndexes) {
 			if (typeof parent !== "number") throw argumentError("__CreateList", 0, "a number");
 			if (typeof componentAtIndex !== "function") {
 				throw argumentError("__CreateList", 1, "a function");
@@ -56,7 +56,9 @@ export function listFunctions(engine: EngineState): ListFunctions {
 			if (typeof enqueueComponent !== "function") {
 				throw argumentError("__CreateList", 2, "a function");
 			}
-			const state = makeElement(engine, "list");
+			// The info may name another tag for the list.
+			const tag = (info as { tag?: unknown } | undefined)?.tag;
+			const state = makeElement(engine, typeof tag === "string" ? tag : "list");
 			state.list = {
 				componentAtIndex,
 				componentAtIndexes,

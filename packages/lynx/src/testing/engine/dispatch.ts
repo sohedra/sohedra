@@ -1,27 +1,30 @@
-// The engine's side of events: it delivers an event along the tree, runs the main-thread
-// functions bound to it, and reads back the bits that stop it. Main-thread functions run as the
-// engine runs them (lynx-family/lynx, the same at tags 3.9.1 and 4.2.0). The engine knows nothing
-// of a main-thread function but the value it was handed and one global:
-//   - an event bound with `__AddEvent(el, type, name, { type: "worklet", value })` calls
-//     `runWorklet(value, [event], { source: 1 })` and reads `eventReturnResult` from what that
-//     returns: bit 1 stops the event after the listeners of this element and phase, bit 2 at once
-//     (core/renderer/dom/fiber/fiber_element.cc, Element::FiberAddEvent;
-//     core/renderer/events/touch_event_handler.cc, FireElementWorklet and
-//     HandleEventOperations);
-//   - `target` and `currentTarget` of those events also carry `elementRefptr`, the element itself
-//     (touch_event_handler.cc, GetTargetInfo);
-//   - a `global-bind` listener (`__AddEventListener` with `closure_type: 2`, `bind_type: 5`) is
-//     heard in the engine's global phase only: for an event on any element, and only on an
-//     element that has the type filed too, which `__AddEvent(el, "global-bindEvent", name,
-//     handlerName)` does (Element::FiberAddEvent files it, ElementManager::ResolveEvents then
-//     enters the element in the table that Element::HandleGlobalEvent reads). The listener alone
-//     is heard for no event at all (FiberAddEventListener files its handler with an empty type).
+// The engine's side of events: it delivers an event along the tree, runs the main-thread functions
+// bound to it, and reads back the bits that stop it. With `enableEventHandleRefactor`, which every
+// page the plugin builds turns on, Lynx delivers both touch and custom events through its event
+// dispatcher (core/event/event_dispatcher.cc, EventDispatcher::Dispatch):
+//   - first the global phase: every element whose data model has the event's `global-bindEvent`
+//     filed, in the order the elements were made, hears it with its global bindings
+//     (core/renderer/dom/element.cc, Element::HandleGlobalEvent; the ids are a sorted set);
+//   - then capture, from the page down to the target's parent; then the target itself, its capture
+//     bindings first and then the rest in the order they were bound; then bubble, from the
+//     target's parent up. A touch event has capture and bubble (core/event/touch_event.cc); a
+//     custom event has neither, so only its target hears it, and only its non-capture bindings
+//     (core/event/event_listener.cc, EventListener::IsMatchEvent);
+//   - an element's bindings all run unless one stops at once; then a stop or a catch among those
+//     that ran ends the event (core/event/event_target.cc, EventTarget::DispatchEvent).
+// The engine knows nothing of a main-thread function but the value it was handed and one global:
+// it calls `runWorklet(value, [event], { source: 1 })` and reads `eventReturnResult` from what that
+// returns, bit 1 to stop after this element and bit 2 to stop at once (Element::FiberAddEvent's
+// listener; core/renderer/events/touch_event_handler.h, EventResult). `target` and
+// `currentTarget` of those events also carry `elementRefptr`, the element itself
+// (Element::GetEventTargetInfo).
 
 import { readGlobal } from "../globals.ts";
-import type { BoundFunction, ElementState, EngineState, RegisteredListener } from "./state.ts";
-import { elementName } from "./state.ts";
-import { descendantsOf } from "./tree.ts";
-import type { ListenerOptions, LynxElement } from "./types.ts";
+import { flagsOfOptions, flagsOfType } from "./events.ts";
+import type { BindingFlags } from "./events.ts";
+import type { BoundFunction, ElementState, EngineState } from "./state.ts";
+import { elementName, stateOf } from "./state.ts";
+import type { LynxElement } from "./types.ts";
 
 /** `RunWorkletType` (touch_event_handler.h): what the engine tells `runWorklet` it is running. */
 export const SOURCE_EVENT = 1;
@@ -31,8 +34,6 @@ const STOP_PROPAGATION = 0x1;
 const STOP_IMMEDIATE_PROPAGATION = 0x2;
 
 const GLOBAL_BIND = "global-bindEvent";
-const CAPTURE_TYPES = new Set(["capture-bind", "capture-catch"]);
-const CATCH_TYPES = new Set(["catchEvent", "capture-catch"]);
 
 type RunWorklet = (value: unknown, params: unknown[], options: { source: number }) => unknown;
 
@@ -73,34 +74,18 @@ export interface Dispatcher {
 	): boolean;
 }
 
-/** One call the engine makes for an event; `run` returns its `eventReturnResult`. */
-interface Step {
-	node: ElementState;
-	phase: "global" | "capture" | "bubble";
-	catches: boolean;
-	run: () => number;
+/** One binding of an element for one event: its flags, and how the engine runs it. */
+interface Binding extends BindingFlags {
+	seq: number;
+	/** Runs it on `current`, for an event on `target`; returns the `eventReturnResult` it read. */
+	run(target: ElementState, current: ElementState, event: Record<string, unknown>): number;
 }
 
-/** A `global-bind` listener of an element that has its type filed: the engine's global phase hears it. */
-const isGlobal = (entry: RegisteredListener): boolean =>
-	entry.options?.closure_type === 2 && entry.options.bind_type === 5;
-const heardGlobally = (state: ElementState, entry: RegisteredListener): boolean =>
-	state.filedEvents.has(`${GLOBAL_BIND}:${entry.name}`);
-
-/**
- * The engine's rule (FiberAddEventListener): `bind_type` counts only with `closure_type` 2;
- * otherwise the listener is plain, honors `capture` and never catches.
- */
-function semantics(options: ListenerOptions | undefined): { capture: boolean; catches: boolean } {
-	const type = options?.bind_type ?? 1;
-	if (options?.closure_type !== 2) return { capture: Boolean(options?.capture), catches: false };
-	return { capture: type === 2 || type === 3, catches: type === 3 || type === 4 };
-}
+/** Where an element hears an event. */
+type Phase = "global" | "capture" | "target" | "bubble";
 
 /** The engine's side of events, over the engine's records. */
 export function createDispatcher(engine: EngineState): Dispatcher {
-	const stateOfNode = (node: Node): ElementState | undefined => engine.states.get(node);
-
 	/** Runs the main-thread function bound to an event; returns the `eventReturnResult` it read. */
 	function runBound(
 		bound: BoundFunction,
@@ -122,7 +107,7 @@ export function createDispatcher(engine: EngineState): Dispatcher {
 			SOURCE_EVENT,
 		);
 		if (!ran) return 0;
-		// Only an object's `eventReturnResult` counts (FireElementWorklet).
+		// Only an object's `eventReturnResult` counts.
 		const result =
 			typeof returned === "object" && returned !== null
 				? Number((returned as { eventReturnResult?: unknown }).eventReturnResult) || 0
@@ -136,139 +121,141 @@ export function createDispatcher(engine: EngineState): Dispatcher {
 		return result;
 	}
 
-	/**
-	 * Fires an event the way Lynx does a custom event, on this element only: the main-thread
-	 * functions bound to it, then its listeners (core/renderer/events/touch_event_handler.cc,
-	 * HandleCustomEvent).
-	 */
-	function fire(element: LynxElement, name: string, event: Record<string, unknown> = {}): void {
-		const state = engine.states.get(element)!;
-		const bound = state.mainThreadEvents.filter(
-			(entry) => entry.eventName === name && entry.eventType !== GLOBAL_BIND,
-		);
-		const listeners = state.listeners.filter(
-			(entry) => entry.name === name && (!isGlobal(entry) || heardGlobally(state, entry)),
-		);
-		if (listeners.length === 0 && bound.length === 0) {
-			throw new Error(`There is no ${name} listener on ${elementName(state)} to fire.`);
+	/** An element's bindings for the event `name`, in the order they were bound. */
+	function bindingsOf(state: ElementState, name: string): Binding[] {
+		const bindings: Binding[] = [];
+		for (const bound of state.mainThreadEvents) {
+			if (bound.eventName !== name) continue;
+			bindings.push({
+				...flagsOfType(bound.eventType),
+				seq: bound.seq,
+				run: (target, current, event) => runBound(bound, target, current, event),
+			});
 		}
-		for (const entry of bound) {
-			if (runBound(entry, state, state, event) & STOP_IMMEDIATE_PROPAGATION) return;
+		for (const bound of state.handlers) {
+			if (bound.eventName !== name) continue;
+			bindings.push({
+				...flagsOfType(bound.eventType),
+				seq: bound.seq,
+				run: (_target, current) => {
+					engine.log.backgroundEvents.push({
+						element: current.node,
+						eventType: bound.eventType,
+						eventName: name,
+						handler: bound.handler,
+					});
+					return 0;
+				},
+			});
 		}
-		// Lynx sends targets as plain { id, uid, dataset }.
-		const target = targetInfo(state);
-		for (const { listener } of listeners) {
-			listener({ type: name, target, currentTarget: target, ...event });
+		for (const entry of state.listeners) {
+			if (entry.name !== name) continue;
+			bindings.push({
+				...flagsOfOptions(entry.options),
+				seq: entry.seq,
+				run: (target, current, event) => {
+					// Lynx sends a listener's targets as plain { id, uid, dataset }.
+					entry.listener({
+						type: name,
+						target: targetInfo(target),
+						currentTarget: targetInfo(current),
+						...event,
+					});
+					return 0;
+				},
+			});
 		}
+		return bindings.toSorted((a, b) => a.seq - b.seq);
+	}
+
+	/** The bindings of an element that hear an event in `phase`, in the order they run. */
+	function heard(state: ElementState, name: string, phase: Phase, capturing: boolean): Binding[] {
+		const all = bindingsOf(state, name);
+		if (phase === "global") return all.filter((binding) => binding.global);
+		const local = all.filter((binding) => !binding.global);
+		if (phase === "capture") return local.filter((binding) => binding.capture);
+		if (phase === "bubble") return local.filter((binding) => !binding.capture);
+		const own = local.filter((binding) => capturing || !binding.capture);
+		return [...own.filter((binding) => binding.capture), ...own.filter((b) => !b.capture)];
+	}
+
+	/** The elements that hear the global phase of `name`: the ones with it filed, oldest first. */
+	function globalElements(name: string): ElementState[] {
+		return [...engine.made.values()]
+			.filter((state) => state.filedEvents.has(`${GLOBAL_BIND}:${name}`))
+			.toSorted((a, b) => a.uid - b.uid);
 	}
 
 	/**
-	 * An event as Lynx delivers it along the tree: the main-thread functions bound globally, then
-	 * capture from the page down to the target, then bubble from the target up. A catch ends the
-	 * chain at its element. On one element a main-thread function runs before a listener ("Lepus
-	 * Event Handler must be in the prior position of JS Event Handler", touch_event_handler.cc,
-	 * get_handlers_f_). What a main-thread function returns can stop the rest: `stopPropagation()`
-	 * everything but its own element and phase, `stopImmediatePropagation()` everything
-	 * (HandleEventOperations; StartEventCapture, StartEventBubble and StartEventFire for the
-	 * phases).
+	 * Delivers an event along the tree as Lynx's event dispatcher does (see the top of this file).
+	 * Returns how many bindings ran.
 	 */
-	function dispatch(element: LynxElement, name: string, event: Record<string, unknown> = {}): void {
-		const origin = engine.states.get(element)!;
+	function deliver(
+		origin: ElementState,
+		name: string,
+		event: Record<string, unknown>,
+		kind: { capture: boolean; bubbles: boolean },
+	): number {
 		const path: ElementState[] = [];
-		for (
-			let state: ElementState | undefined = origin;
-			state;
-			state = state.node.parentNode ? stateOfNode(state.node.parentNode) : undefined
-		) {
-			path.unshift(state);
+		for (let node: Node | null = origin.node; node; node = node.parentNode) {
+			const state = engine.states.get(node);
+			if (!state) break;
+			path.push(state);
 		}
-		const target = targetInfo(origin);
-		const stepsAt = (node: ElementState, capture: boolean): Step[] => {
-			const phase = capture ? "capture" : "bubble";
-			const steps: Step[] = [];
-			for (const bound of node.mainThreadEvents) {
-				if (bound.eventName !== name || bound.eventType === GLOBAL_BIND) continue;
-				if (CAPTURE_TYPES.has(bound.eventType) !== capture) continue;
-				steps.push({
-					node,
-					phase,
-					catches: CATCH_TYPES.has(bound.eventType),
-					run: () => runBound(bound, origin, node, event),
-				});
-			}
-			for (const entry of node.listeners) {
-				const { capture: isCapture, catches } = semantics(entry.options);
-				if (entry.name !== name || isCapture !== capture || isGlobal(entry)) continue;
-				steps.push({
-					node,
-					phase,
-					catches,
-					run: () => {
-						entry.listener({ type: name, target, currentTarget: targetInfo(node), ...event });
-						return 0;
-					},
-				});
-			}
-			return steps;
-		};
+		const visits: { state: ElementState; phase: Phase }[] = [
+			...globalElements(name).map((state) => ({ state, phase: "global" as const })),
+			...(kind.capture
+				? path
+						.slice(1)
+						.toReversed()
+						.map((state) => ({ state, phase: "capture" as const }))
+				: []),
+			{ state: origin, phase: "target" },
+			...(kind.bubbles ? path.slice(1).map((state) => ({ state, phase: "bubble" as const })) : []),
+		];
 
-		const steps: Step[] = [];
-		const everyElement = engine.page
-			? descendantsOf(engine.page)
-					.map(stateOfNode)
-					.filter((state): state is ElementState => state !== undefined)
-			: [];
-		for (const node of everyElement) {
-			for (const bound of node.mainThreadEvents) {
-				if (bound.eventName === name && bound.eventType === GLOBAL_BIND) {
-					steps.push({
-						node,
-						phase: "global",
-						catches: false,
-						run: () => runBound(bound, origin, node, event),
-					});
+		let ran = 0;
+		for (const { state, phase } of visits) {
+			let stopped = false;
+			let caught = false;
+			for (const binding of heard(state, name, phase, kind.capture)) {
+				ran++;
+				caught ||= binding.catches;
+				const result = binding.run(origin, state, event);
+				if (result & (STOP_PROPAGATION | STOP_IMMEDIATE_PROPAGATION)) stopped = true;
+				if (result & STOP_IMMEDIATE_PROPAGATION) break;
+			}
+			if (phase === "global") {
+				if (stopped) {
+					throw new Error(
+						`A global-bind function stopped the ${name} event on ${elementName(state)}. ` +
+							"What Lynx does with a stop in its global phase is not verified, so the engine " +
+							"fake does not guess.",
+					);
 				}
+				continue;
 			}
+			if (stopped || caught) break;
 		}
-		// A global-bind listener hears an event on any element, first of all.
-		for (const node of everyElement) {
-			for (const entry of node.listeners) {
-				if (entry.name !== name || !isGlobal(entry) || !heardGlobally(node, entry)) continue;
-				steps.push({
-					node,
-					phase: "global",
-					catches: false,
-					run: () => {
-						entry.listener({ type: name, target, currentTarget: targetInfo(node), ...event });
-						return 0;
-					},
-				});
-			}
-		}
-		let caught = false;
-		for (const node of path) {
-			const found = stepsAt(node, true);
-			steps.push(...found);
-			if (found.some((step) => step.catches)) {
-				caught = true;
-				break;
-			}
-		}
-		if (!caught) {
-			for (const node of path.toReversed()) {
-				const found = stepsAt(node, false);
-				steps.push(...found);
-				if (found.some((step) => step.catches)) break;
-			}
-		}
+		return ran;
+	}
 
-		let stopped: Step | undefined;
-		for (const step of steps) {
-			if (stopped && (stopped.node !== step.node || stopped.phase !== step.phase)) continue;
-			const result = step.run();
-			if (result & STOP_IMMEDIATE_PROPAGATION) return;
-			if (result & STOP_PROPAGATION) stopped = step;
-		}
+	/**
+	 * Fires an event the way Lynx does a custom event (`scroll`, `load`), at this element: the
+	 * global phase, then the element's own non-capture bindings
+	 * (core/renderer/events/touch_event_handler.cc, HandleCustomEvent). Throws when nothing hears
+	 * it, which is a test's mistake.
+	 */
+	function fire(element: LynxElement, name: string, event: Record<string, unknown> = {}): void {
+		const state = stateOf(engine, element, "fire", 0);
+		const ran = deliver(state, name, event, { capture: false, bubbles: false });
+		if (ran === 0)
+			throw new Error(`There is no ${name} listener on ${elementName(state)} to fire.`);
+	}
+
+	/** Delivers an event the way Lynx does a touch event (`tap`), with capture and bubble. */
+	function dispatch(element: LynxElement, name: string, event: Record<string, unknown> = {}): void {
+		deliver(stateOf(engine, element, "dispatch", 0), name, event, { capture: true, bubbles: true });
 	}
 
 	/**
