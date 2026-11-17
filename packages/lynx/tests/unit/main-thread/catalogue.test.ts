@@ -17,6 +17,7 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 	element_has_no_view: { method: "boundingClientRect" },
 	element_left_page: { method: "scrollTo" },
 	first_frame_markup_unreadable: { reason: "the value of class on <view> is not quoted", at: 11 },
+	first_frame_threw: { reason: "NativeModules is not defined" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

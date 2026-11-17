@@ -19,7 +19,11 @@ describe("a first frame that cannot be drawn", () => {
 		});
 		expect(page.engine.all()).toHaveLength(1);
 		await page.settle();
-		expect(page.errors.map(String)).toEqual(["Error: the component threw"]);
+		const [error] = page.errors as (Error & { code?: string })[];
+		expect(page.errors).toHaveLength(1);
+		expect(error!.code).toBe("first_frame_threw");
+		expect(error!.cause).toEqual(new Error("the component threw"));
+		expect(error!.message).toMatchSnapshot();
 		expect(page.engine.texts()).toEqual(["Taps: 0 (even)", "Tap me"]);
 	});
 
