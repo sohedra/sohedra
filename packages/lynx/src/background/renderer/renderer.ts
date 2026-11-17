@@ -296,6 +296,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (id === undefined || !handlers.remove(id, handler)) return;
 		handlers.release(id);
 		element.events.delete(key);
+		// With no listener, Lynx sends no layout: the one heard last may go stale.
+		if (key === LAYOUT_SLOT) element.layout = null;
 		if (element.lynxId !== 0) queue.push([OpCode.SetEvent, element.lynxId, type, name, 0]);
 	}
 
