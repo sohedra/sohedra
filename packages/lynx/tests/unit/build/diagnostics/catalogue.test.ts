@@ -57,6 +57,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	single_copy_name: { given: '["./local"]' },
 	first_frame_not_boolean: { entry: "settings", given: '"yes"' },
 	css_not_stored: { file: "/app/src/Card.svelte" },
+	hot_footer_missing: { file: "/app/src/Card.svelte" },
 	spread_setter_moved: {
 		file: "/app/node_modules/svelte/src/internal/client/reactivity/props.js",
 		anchor: "get_descriptor(props, key)?.set ??",

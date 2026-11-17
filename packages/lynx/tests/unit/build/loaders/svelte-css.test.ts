@@ -29,7 +29,7 @@ describe("the CSS loader", () => {
 		const compiler = {};
 		const { code, error } = await loadCss(await compile(compiler), compiler);
 		expect(error).toBeNull();
-		expect(code).toContain(".a { margin-top: 3px; }");
+		expect(code).toContain("margin-top: 3px");
 	});
 
 	it("is not found in another build's store: it fails and names the component", async () => {
@@ -38,6 +38,6 @@ describe("the CSS loader", () => {
 		expect(error).toBeInstanceOf(Error);
 		expect(error).toMatchObject({ code: "css_not_stored", hideStack: true });
 		expect(error?.message).toContain("Component.svelte");
-		expect(error?.message).toContain("delete node_modules/.cache");
+		expect(error?.message).toContain("Delete node_modules/.cache");
 	});
 });

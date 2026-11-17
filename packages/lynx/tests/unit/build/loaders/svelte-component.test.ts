@@ -81,7 +81,7 @@ describe("a component on the background thread", () => {
 	});
 
 	it("fails with the build's message, which hides the loader's stack", async () => {
-		const { error } = await load("<view {@html x}></view>");
+		const { error } = await load("<view>{@html x}</view>");
 		expect(error).toBeInstanceOf(Error);
 		expect(error).toMatchObject({ code: "html_tag", hideStack: true });
 	});
@@ -120,7 +120,7 @@ describe("the main thread's copy", () => {
 	it("is compiled for Svelte's server renderer, with the server's internals as the build names them", async () => {
 		const { code } = await load("<view class='a'>hi</view>", { thread: "main-thread" });
 		expect(code).toContain('from "/binding/svelte/server-internals.ts"');
-		expect(code).not.toContain("$renderer");
+		expect(code).not.toContain("push_renderer");
 	});
 
 	it("carries no warning: the background's copy reported them", async () => {

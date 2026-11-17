@@ -17,7 +17,7 @@ describe("the first frame's copy of an entry", () => {
 		const { code } = await load("?entry=.%2Findex.ts&firstFrame=off");
 		expect(code).toContain('import "./index.ts";');
 		expect(code).toContain("delete");
-		expect(code).toContain("__FIRST_FRAME_RECORD__");
+		expect(code).toContain("__svelteLynxFirstFrame");
 	});
 
 	it("writes the entry as a literal that survives `<`, `>` and the line separators", async () => {

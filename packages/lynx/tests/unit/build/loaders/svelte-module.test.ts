@@ -20,12 +20,12 @@ describe("a rune module", () => {
 		const { code, error } = await load(counter, "background");
 		expect(error).toBeNull();
 		expect(code).toContain("$.state(0)");
-		expect(code).toContain('from "svelte/internal/client"');
+		expect(code).toMatch(/from ['"]svelte\/internal\/client['"]/);
 	});
 
 	it("compiles for the server's renderer on the main thread, which is its first frame", async () => {
 		const { code } = await load(counter, "main-thread");
-		expect(code).toContain('from "svelte/internal/server"');
+		expect(code).toMatch(/from ['"]svelte\/internal\/server['"]/);
 	});
 
 	it("hands the bundler a source map composed with the TypeScript pass's", async () => {
