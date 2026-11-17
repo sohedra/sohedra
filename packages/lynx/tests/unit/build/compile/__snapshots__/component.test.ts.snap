@@ -1,0 +1,12 @@
+// Rstest Snapshot v1
+
+exports[`<svelte:boundary> > with a failed snippet is an error that says async support is off, at the boundary 1`] = `
+"A \`<svelte:boundary>\` with a \`pending\` or \`failed\` snippet needs async support, which is off.
+/app/src/Component.svelte:1:1
+
+1: <svelte:boundary>
+   ^
+
+Set \`compilerOptions: { experimental: { async: true } }\` in svelte.config.js.
+https://sohedra.com/e/boundary_needs_async"
+`;
