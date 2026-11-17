@@ -4,14 +4,14 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { startPage } from "../../src/background/index.ts";
-import { startMainThread } from "../../src/main-thread/index.ts";
-import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
-import { startTestPage } from "../../src/testing/index.ts";
-import type { BackgroundLynx } from "../../src/testing/index.ts";
-import { FIRST_FRAME_GLOBAL } from "../../src/wire/index.ts";
-import FrameCounter from "../fixtures/threads/FrameCounter.svelte";
-import { startSveltePage } from "./svelte-page.ts";
+import { startPage } from "../../../src/background/index.ts";
+import { startMainThread } from "../../../src/main-thread/index.ts";
+import { installGlobals, readGlobal } from "../../../src/testing/globals.ts";
+import { startTestPage } from "../../../src/testing/index.ts";
+import type { BackgroundLynx } from "../../../src/testing/index.ts";
+import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
+import FrameCounter from "../../fixtures/threads/FrameCounter.svelte";
+import { startSveltePage } from "../svelte-page.ts";
 
 const counter = (parity: string, padding = "24px"): string =>
 	`<view class="root" style="padding: ${padding};"><text class="count">Taps: 0 (${parity})</text>` +

@@ -1,12 +1,13 @@
-// Texts never refuse hydration: a text the background rendered and the first frame lacks (Svelte's
-// server writes nothing for an empty one) is made in place, and one the frame drew that the
-// background lacks is taken off. A mismatch is named by an element, never by a text.
+// An empty text in a `<text>` (`<text>{message}</text>` with `message = ""`): Svelte's server
+// writes nothing for it, and the background has a text. Texts never refuse hydration: one the frame
+// lacks is made in place, and one the background lacks is taken off. A mismatch is named by an
+// element, never by a text.
 
 import { describe, expect, it } from "@rstest/core";
 
-import FrameTexts from "../fixtures/threads/FrameTexts.svelte";
-import drawFrameTexts from "../fixtures/threads/FrameTexts.svelte?first-frame";
-import { startSveltePage } from "./svelte-page.ts";
+import FrameTexts from "../../fixtures/threads/FrameTexts.svelte";
+import drawFrameTexts from "../../fixtures/threads/FrameTexts.svelte?first-frame";
+import { startSveltePage } from "../svelte-page.ts";
 
 function drawnTexts(props: Record<string, unknown>, drawnProps = props) {
 	const page = startSveltePage(FrameTexts, {
