@@ -14,7 +14,8 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
   | `background/`               | background thread   | `wire/`, `svelte/runtime/` |
   | `main-thread/`              | main thread         | `wire/`                    |
   | `first-frame/`              | the page's script   | `wire/`                    |
-  | `svelte/build/`, `runtime/` | Node, a thread      | nothing                    |
+  | `svelte/build/`             | Node, at build time | nothing                    |
+  | `svelte/runtime/`           | a thread            | `wire/`                    |
   | `testing/`                  | Node                | every thread's folder      |
   | `gesture/`, `host/`, `env/` | their entries       | `wire/`                    |
 

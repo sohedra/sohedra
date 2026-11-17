@@ -14,6 +14,7 @@
 // @ts-expect-error -- Svelte publishes no types for its internal modules; the casts below give these ones'.
 import * as server from "svelte/internal/server";
 
+import { escapeJsonText } from "../../wire/index.ts";
 import { CSS_PROPS_HOLDERS } from "./css-props.ts";
 
 // @ts-expect-error -- Svelte publishes no types for its internal modules.
@@ -44,9 +45,12 @@ interface ServerInternals {
 // Boundary: Svelte's server runtime, typed by the interface above.
 const svelte = server as ServerInternals;
 
-/** A value written as JSON in single quotes, with `&` and `'` escaped as HTML has them. */
+/**
+ * A value written as JSON in single quotes: `<`, `>` and the line separators escaped as JSON has
+ * them, so no markup is in it, and `&` and `'` as HTML has them.
+ */
 function typed(name: string, value: unknown): string {
-	const json = JSON.stringify(value) ?? "null";
+	const json = escapeJsonText(JSON.stringify(value) ?? "null");
 	return ` ${name}='${json.replace(/&/g, "&amp;").replace(/'/g, "&#39;")}'`;
 }
 
