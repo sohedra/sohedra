@@ -43,7 +43,7 @@ import { drawFrame } from "./frame/draw.ts";
 import { UnreadableMarkup } from "./frame/html.ts";
 import { DEV, globalScope, mainThread, readGlobal, setGlobalFunction } from "./globals.ts";
 import type { EngineMessage, LynxElement } from "./globals.ts";
-import { hydrate, replayEarly } from "./hydrate/hydrate.ts";
+import { hydrate, replayEarly, sentMismatch } from "./hydrate/hydrate.ts";
 import { clearPrevious, createMainThreadPage } from "./page.ts";
 import { isRecord, toSentEvent } from "./sent-event.ts";
 
@@ -228,7 +228,7 @@ export function startMainThread(): void {
 				t: "rewrite",
 				nodes: [ROOT_ID],
 				...(result.kind === "refused" &&
-					!state.updatedBeforeHydration && { mismatch: result.mismatch }),
+					!state.updatedBeforeHydration && { mismatch: sentMismatch(result.mismatch, DEV) }),
 			});
 			return undefined;
 		}

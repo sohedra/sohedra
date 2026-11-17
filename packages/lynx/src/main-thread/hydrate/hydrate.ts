@@ -47,3 +47,11 @@ export function hydrate(options: {
 		return { kind: "failed", error };
 	}
 }
+
+/**
+ * The mismatch as the background hears of it: a production build sends which kind of difference
+ * and where, and none of the values, which may be the app's data.
+ */
+export function sentMismatch(mismatch: HydrationMismatch, development: boolean): HydrationMismatch {
+	return development ? mismatch : { kind: mismatch.kind, node: mismatch.node };
+}
