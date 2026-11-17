@@ -81,14 +81,12 @@ describe("the main thread", () => {
 		const page = startTestPage({ mainThread: () => startMainThread() });
 		const patch = readGlobal(PATCH_METHOD) as (params: { data: string }) => void;
 		page.asMainThread(() =>
-			patch(
-				encodePatch({ page: 0, items: [["call", 0, 0, encodeCall(["style", { color: "red" }])]] }),
-			),
+			patch(encodePatch({ page: 0, items: [["call", 0, 0, encodeCall(["unref", [1]])]] })),
 		);
 		expect(page.errors).toEqual([
 			expect.objectContaining({
 				code: "call_not_supported",
-				message: expect.stringMatching(/^The main thread cannot answer a call of style yet\.\n/),
+				message: expect.stringMatching(/^The main thread cannot answer a call of unref yet\.\n/),
 			}),
 		]);
 	});

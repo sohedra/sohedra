@@ -36,6 +36,48 @@ export const checks: Checks = {
 		expect(typeof internal["push_renderer"]).toBe("function");
 	},
 
+	"events-read-current-renderer": async () => {
+		// Boundary: Svelte's internal modules have no types.
+		const state = (await importSvelte(
+			"src/internal/client/custom-renderer/state.js",
+		)) as unknown as RendererState;
+		const events = await importSvelte("src/events/index.js");
+		const on = events["on"] as (
+			target: object,
+			type: string,
+			handler: (event: unknown) => void,
+		) => () => void;
+		type Listener = (this: unknown, event: unknown) => void;
+		const listening: [string, string, Listener][] = [];
+		const renderer = (name: string) => ({
+			addEventListener: (_target: object, type: string, handler: Listener) =>
+				listening.push([name, type, handler]),
+			removeEventListener: (_target: object, type: string) =>
+				listening.push([name, `-${type}`, () => {}]),
+		});
+		// A target with no listener methods: the DOM's path would fail on it.
+		const target = {};
+		const heard: unknown[] = [];
+		const popKept = state.push_renderer(renderer("kept"));
+		try {
+			// An effect's renderer, then the one it found again once the effect ends.
+			const popEffect = state.push_renderer(renderer("effect"));
+			popEffect();
+			const off = on(target, "tap", (event) => heard.push(event));
+			off();
+		} finally {
+			popKept();
+		}
+		expect(listening.map(([name, type]) => [name, type])).toEqual([
+			["kept", "tap"],
+			["kept", "-tap"],
+		]);
+		// The handler it was given runs the developer's handler as it is, with no DOM propagation.
+		const event = { type: "tap", target: {} };
+		listening[0]![2].call(target, event);
+		expect(heard).toEqual([event]);
+	},
+
 	"server-runtime-exports": async () => {
 		const server = await importSvelte("src/internal/server/index.js");
 		for (const name of ["attr", "attributes", "escape", "css_props"]) {
