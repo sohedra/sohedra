@@ -7,6 +7,10 @@ import { readGlobal } from "../../../../src/testing/globals.ts";
 import { startTestPage } from "../../../../src/testing/index.ts";
 import type { TestLynx } from "../../../../src/testing/index.ts";
 
+/** Calls an element function as the main thread's script does: through its global. */
+const mainThreadCall = (name: string, ...args: unknown[]): unknown =>
+	(readGlobal(name) as (...args: unknown[]) => unknown)(...args);
+
 /** The page's `lynx`, as each thread's code reads it: a global. */
 const lynx = () => readGlobal("lynx") as TestLynx;
 
@@ -90,9 +94,10 @@ describe("a test page", () => {
 						order.push(`render ${JSON.stringify(event.data)}`),
 					);
 			},
-			background: () => order.push(`background, ${page.engine.flushes.length} flush`),
+			background: () => order.push("background"),
 		});
-		expect(order).toEqual(["main thread", 'render [{"count":1},{}]', "background, 1 flush"]);
+		expect(order).toEqual(["main thread", 'render [{"count":1},{}]', "background"]);
+		expect(page.engine.flushes).toHaveLength(1);
 	});
 
 	it("runs no script of its own when none is given: nothing stands in for the runtime", () => {
@@ -105,9 +110,7 @@ describe("a test page", () => {
 	it("puts the process back when it ends: the globals, the document, and the page's end said", () => {
 		const before = readGlobal("lynx");
 		const page = startTestPage({
-			mainThread: () => {
-				page.engine.functions.__CreatePage("0", 0);
-			},
+			mainThread: () => mainThreadCall("__CreatePage", "0", 0),
 		});
 		const ended: unknown[] = [];
 		page.engine.lifecycle.native.addEventListener("__DestroyLifetime", (event) =>
@@ -135,11 +138,7 @@ describe("a test page", () => {
 // Two tests in order: the preset's setup file ends the page the first one started.
 describe("a test run through the preset", () => {
 	it("starts a page and leaves it running", () => {
-		const page = startTestPage({
-			mainThread: () => {
-				page.engine.functions.__CreatePage("0", 0);
-			},
-		});
+		startTestPage({ mainThread: () => mainThreadCall("__CreatePage", "0", 0) });
 		expect(readGlobal("lynx")).toBeDefined();
 		expect(document.body.childNodes).toHaveLength(1);
 	});
