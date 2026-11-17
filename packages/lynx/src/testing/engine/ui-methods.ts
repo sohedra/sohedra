@@ -37,6 +37,7 @@ export function isFlattened(engine: EngineState, state: ElementState): boolean {
 		state.attrs["flatten"] !== "false" &&
 		state.listeners.length === 0 &&
 		state.mainThreadEvents.length === 0 &&
+		state.handlers.length === 0 &&
 		state.detectors.size === 0
 	);
 }
