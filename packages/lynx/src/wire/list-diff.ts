@@ -60,16 +60,15 @@ function typeOf(info: ListItemInfo | undefined): string {
 }
 
 function insertion(position: number, info: ListItemInfo | undefined): ListInsertion {
-	// Boundary: filled in below, with the info's own keys copied after `position` and `type`.
-	const entry = { position, type: typeOf(info) } as ListInsertion;
+	const entry: ListInsertion = { position, type: typeOf(info) };
 	if (info) for (const key in info) entry[key] = info[key];
 	return entry;
 }
 
 function update(position: number, info: ListItemInfo | undefined): ListUpdate {
-	// Boundary: filled in below, `from`, `to`, `flush` and `type` after the info's own keys.
-	const entry = {} as ListUpdate;
+	const entry: ListUpdate = { from: position, to: position, flush: false, type: "" };
 	if (info) for (const key in info) entry[key] = info[key];
+	// After the info's own keys, which may not replace these.
 	entry.from = position;
 	entry.to = position;
 	entry.flush = false;
