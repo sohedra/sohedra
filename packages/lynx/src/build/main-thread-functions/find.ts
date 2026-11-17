@@ -90,6 +90,8 @@ export interface Found {
 	called: Map<string, Node>;
 	/** The argument of each `runOnBackground(...)` in it, in source order. */
 	handles: Node[];
+	/** Whether its parameters' defaults read a captured name, its own name or a background function. */
+	parametersRead: boolean;
 	/** The scope a function declaration is declared in. */
 	declaredIn: Scope | undefined;
 	/** The scope each captured name is declared in. */
@@ -176,6 +178,8 @@ export function findFunctions(options: {
 	let deferred = 0;
 	/** The main-thread function being read. */
 	let current: Found | undefined;
+	/** Whether its parameters are being read. */
+	let inParameters = false;
 	/** Whether `this` here would be that function's. */
 	let ownThis = false;
 	// A member path being read: `depth` is how many members are still to come after the part being
@@ -262,6 +266,8 @@ export function findFunctions(options: {
 		let inside = true;
 		for (let from = scope; from; from = from.parent) {
 			if (from.names.has(name) || (!inside && from.names.has(declared))) {
+				if (!inside || (from === current.scope && current.self.has(name)))
+					current.parametersRead ||= inParameters;
 				if (!inside) {
 					if (!current.capturedFrom.has(name)) current.capturedFrom.set(name, from);
 					path = [{ name, key: name, access: name }];
@@ -365,6 +371,7 @@ export function findFunctions(options: {
 						captures: new Map(),
 						called: new Map(),
 						handles: [],
+						parametersRead: false,
 						declaredIn: declaration,
 						capturedFrom: new Map(),
 					};
@@ -373,7 +380,9 @@ export function findFunctions(options: {
 				} else if (node.type !== "ArrowFunctionExpression") {
 					ownThis = false;
 				}
+				inParameters ||= outermost;
 				for (const param of node.params) binding(param);
+				if (outermost) inParameters = false;
 				if (block) for (const statement of node.body.body) visit(statement, node.body);
 				else visit(node.body, node);
 			},
@@ -518,6 +527,7 @@ export function findFunctions(options: {
 				) {
 					// The argument is the background's: nothing in it is captured.
 					current.handles.push(node.arguments[0]);
+					current.parametersRead ||= inParameters;
 					return;
 				}
 				callee = unwrap(node.callee);

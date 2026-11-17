@@ -222,20 +222,33 @@ export function emitFunctions(options: EmitOptions): Emitted {
 			});
 			emitted.registrations.push({ copy: [cursor, to] });
 		};
-		say(
-			`${REGISTER_FUNCTION}("main-thread", ${JSON.stringify(id)}, ` +
-				`${node.async ? "async " : ""}function ${fn.callsItself.size > 0 ? SELF : ""}(`,
-		);
-		if (node.params.length > 0) copy(node.params[0].start, node.params.at(-1).end);
-		let unpack = ") {\n";
-		for (const name of fn.callsItself) unpack += `const ${name} = ${SELF}.bind(this);\n`;
+		const name = fn.callsItself.size > 0 ? SELF : "";
+		const async = node.async ? "async " : "";
+		const params = (): void => {
+			if (node.params.length > 0) copy(node.params[0].start, node.params.at(-1).end);
+		};
+		let unpack = "";
+		for (const self of fn.callsItself) unpack += `const ${self} = ${SELF}.bind(this);\n`;
 		if (handles.length > 0)
 			unpack += `let { ${handleNames.join(", ")} } = this[${JSON.stringify(FUNCTION_FIELDS.background)}];\n`;
 		if (captures.size > 0)
 			unpack += `let { ${[...captures.keys()].join(", ")} } = this[${JSON.stringify(FUNCTION_FIELDS.captures)}];\n`;
-		say(unpack);
-		copy(node.body.start + 1, node.body.end - 1);
-		say("});\n");
+		say(`${REGISTER_FUNCTION}("main-thread", ${JSON.stringify(id)}, `);
+		if (fn.parametersRead) {
+			// The defaults run before the body: the function as written runs inside, once the names
+			// it reads are unpacked.
+			say(`function ${name}() {\n${unpack}return (${async}function (`);
+			params();
+			say(") {");
+			copy(node.body.start + 1, node.body.end - 1);
+			say("}).apply(this, arguments);\n});\n");
+		} else {
+			say(`${async}function ${name}(`);
+			params();
+			say(`) {\n${unpack}`);
+			copy(node.body.start + 1, node.body.end - 1);
+			say("});\n");
+		}
 	}
 
 	// Before the other edits: one may start where a declaration is made.
