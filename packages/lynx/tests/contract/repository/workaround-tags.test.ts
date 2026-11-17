@@ -1,4 +1,8 @@
-import { describe, expect, it } from "@rstest/core";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
+import { afterEach, describe, expect, it } from "@rstest/core";
 
 import {
 	readWorkarounds,
@@ -123,8 +127,27 @@ describe("the list", () => {
 	});
 });
 
+const roots: string[] = [];
+
+afterEach(() => {
+	for (const root of roots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
+});
+
 describe("the repository", () => {
 	it("has well-formed tags with distinct names", () => {
 		expect(scanRepository(REPO).problems).toEqual([]);
+	});
+
+	it("does not read build output, which repeats every tag", () => {
+		const root = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-tags-"));
+		roots.push(root);
+		const tag = '/** @workaround a-b kind=tooling delete-when="later" */\n';
+		for (const folder of ["src", "lib"]) {
+			fs.mkdirSync(path.join(root, folder));
+			fs.writeFileSync(path.join(root, folder, "a.ts"), tag);
+		}
+		const { workarounds, problems } = scanRepository(root);
+		expect(problems).toEqual([]);
+		expect(workarounds.map((tag) => tag.file)).toEqual(["src/a.ts"]);
 	});
 });
