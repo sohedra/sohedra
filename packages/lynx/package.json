@@ -5,13 +5,41 @@
 	"description": "Svelte on Lynx",
 	"license": "Apache-2.0",
 	"type": "module",
+	"sideEffects": [
+		"./src/background/background-only.ts",
+		"./src/first-frame/**",
+		"./src/main-thread/**",
+		"./lib/background/background-only.js",
+		"./lib/first-frame/**",
+		"./lib/main-thread/**"
+	],
 	"exports": {
+		"./config/rsbuild": "./src/build/plugin/index.ts",
+		"./config/rstest": "./src/build/presets/rstest.ts",
+		"./config/svelte": "./src/build/svelte-config/index.ts",
+		"./env": "./src/env/index.ts",
 		"./client": {
 			"types": "./types/client.d.ts"
 		}
 	},
 	"publishConfig": {
 		"exports": {
+			"./config/rsbuild": {
+				"types": "./lib/build/plugin/index.d.ts",
+				"default": "./lib/build/plugin/index.js"
+			},
+			"./config/rstest": {
+				"types": "./lib/build/presets/rstest.d.ts",
+				"default": "./lib/build/presets/rstest.js"
+			},
+			"./config/svelte": {
+				"types": "./lib/build/svelte-config/index.d.ts",
+				"default": "./lib/build/svelte-config/index.js"
+			},
+			"./env": {
+				"types": "./lib/env/index.d.ts",
+				"default": "./lib/env/index.js"
+			},
 			"./client": {
 				"types": "./types/client.d.ts"
 			}

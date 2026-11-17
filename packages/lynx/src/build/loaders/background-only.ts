@@ -21,7 +21,10 @@ export default function backgroundOnlyLoader(
 	this.cacheable(true);
 	// Boundary: the bundler types a source map by its own shape.
 	const unchanged = (map ?? undefined) as Rspack.sources.RawSourceMap | undefined;
-	if (!source.includes("background-only") || isSvelteSource(this.resourcePath)) {
+	const { marker } = this.getOptions();
+	// The marker itself reaches the main thread only from a component, whatever is left of its text.
+	const isMarker = this.resourcePath === marker;
+	if (!(isMarker || source.includes("background-only")) || isSvelteSource(this.resourcePath)) {
 		this.callback(null, source, unchanged);
 		return;
 	}
@@ -30,7 +33,7 @@ export default function backgroundOnlyLoader(
 		source,
 		resourcePath: this.resourcePath,
 		rootContext: this.rootContext,
-		marker: this.getOptions().marker,
+		marker,
 	}).then(
 		// Rspack does not chain a loader's map: one that returns none ends the chain, and every
 		// main-thread script lost the map of the loaders before it. The module as it was keeps

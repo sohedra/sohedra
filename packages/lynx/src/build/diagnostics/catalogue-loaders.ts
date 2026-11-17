@@ -9,7 +9,7 @@ export interface LoaderDetails {
 	hot_footer_missing: { file: string };
 	spread_setter_moved: { file: string; anchor: string };
 	primjs_regex_moved: { file: string; name: string };
-	background_only_in_component: Record<string, never>;
+	background_only_in_component: { file?: string };
 	background_only_reexport_all: { file: string; from: string };
 	background_only_used: { used: string; file: string };
 }
@@ -41,8 +41,8 @@ export const LOADER_CATALOGUE: Catalogue<LoaderDetails> = {
 		docs: "primjs_regex_moved",
 	},
 	background_only_in_component: {
-		message: () =>
-			"A Svelte component imports 'background-only', but every component also renders on the main thread for the first frame.",
+		message: ({ file }) =>
+			`${file === undefined ? "A Svelte component" : `The component ${file}`} imports 'background-only', but every component also renders on the main thread for the first frame.`,
 		fix: () =>
 			"Keep the background-only code in a .ts module, or keep the component out of the first frame with a `<svelte:boundary>` that has a `pending` snippet.",
 		docs: "background_only_in_component",

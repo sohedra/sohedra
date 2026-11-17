@@ -5,6 +5,8 @@
 import type { Catalogue } from "../../wire/index.ts";
 import { LOADER_CATALOGUE } from "./catalogue-loaders.ts";
 import type { LoaderDetails } from "./catalogue-loaders.ts";
+import { PLUGIN_CATALOGUE } from "./catalogue-plugin.ts";
+import type { PluginDetails } from "./catalogue-plugin.ts";
 import { SETUP_CATALOGUE } from "./catalogue-setup.ts";
 import type { SetupDetails } from "./catalogue-setup.ts";
 
@@ -17,7 +19,7 @@ interface Refused {
 }
 
 /** The details each of the build's messages is written from. */
-export interface BuildDetails extends SetupDetails, LoaderDetails {
+export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails {
 	preprocess_failed: { reason: string };
 	renderer_option_off: Plain;
 	css_injected: Plain;
@@ -56,6 +58,7 @@ const PAGE_EVENTS = "Listen to the page's events with `on(root, …)`.";
 export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 	...SETUP_CATALOGUE,
 	...LOADER_CATALOGUE,
+	...PLUGIN_CATALOGUE,
 	preprocess_failed: {
 		message: ({ reason }) => `A preprocessor failed on this file.\n${reason}`,
 		fix: () => "Fix the error the preprocessor reports, or check its options in svelte.config.js.",

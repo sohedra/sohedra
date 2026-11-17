@@ -16,13 +16,16 @@ import type { Rspack } from "@rsbuild/core";
 import type { CompileOptions, PreprocessorGroup } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
 import { compileComponent } from "../compile/component.ts";
-import { buildWarning } from "../diagnostics/messages.ts";
+import { buildError, buildWarning } from "../diagnostics/messages.ts";
 import type { SourceMap } from "../source-map/maps.ts";
 import { stringLiteral } from "../string-literal.ts";
 import { storeCss } from "./css-store.ts";
 import { DECLINE, rewriteHotFooter } from "./hot-reload.ts";
 
 const require = createRequire(import.meta.url);
+
+/** An `import` of `background-only` in a component's compiled code. */
+const IMPORTS_BACKGROUND_ONLY = /\bimport\s+(?:[^'"]*?\bfrom\s*)?(['"])background-only\1/;
 
 // Next to this file, with its extension (`.ts` in the repository, `.js` once built).
 const self = fileURLToPath(import.meta.url);
@@ -67,6 +70,13 @@ async function compileSource(
 		clientInternals: options.clientInternals,
 		hot,
 	});
+	// Every component also renders on the main thread, where `background-only` has no stub to be.
+	if (options.thread === "main-thread" && IMPORTS_BACKGROUND_ONLY.test(compiled.code)) {
+		throw buildError({
+			code: "background_only_in_component",
+			details: { file: path.relative(context.rootContext, filename).split(path.sep).join("/") },
+		});
+	}
 	for (const file of compiled.dependencies) context.addDependency(file);
 	for (const warning of compiled.warnings) {
 		const reported = new Error(warning.message);
