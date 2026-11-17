@@ -1,3 +1,4 @@
-// The Rstest and Vitest presets: Node code that reuses the build's rules.
+// The Rstest preset: Node code that reuses the build's rules.
 
-export {};
+export { withSvelteLynx, withSvelteLynxFromConfig } from "./rstest.ts";
+export type { ConfigFileOptions } from "./config-file.ts";

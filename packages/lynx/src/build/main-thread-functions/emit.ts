@@ -18,6 +18,7 @@ import {
 import type { Thread } from "../../wire/index.ts";
 import { describe, placeAt } from "../diagnostics/messages.ts";
 import type { Edit, Piece } from "../source-map/edits.ts";
+import { stringLiteral } from "../string-literal.ts";
 import { writeCaptures } from "./captures.ts";
 import type { Guard } from "./captures.ts";
 import type { Found, ScriptFunctions } from "./find.ts";
@@ -73,17 +74,6 @@ export interface Emitted {
 	ids: string[];
 	/** What the script imports to turn background functions into handles, if any is used. */
 	imports: string;
-}
-
-/**
- * `text` as a JavaScript string literal. `JSON.stringify` leaves `<`, `>` and the line and paragraph
- * separators as they are; escaping them keeps the literal one line for any engine.
- */
-function stringLiteral(text: string): string {
-	return JSON.stringify(text).replace(
-		/[<>\u2028\u2029]/g,
-		(char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`,
-	);
 }
 
 /**

@@ -47,4 +47,10 @@ describe("the effects' imports on the main thread", () => {
 		expect(code).not.toContain("__svelteLynxEffectImports");
 		expect(code).toContain('import("./A.svelte")');
 	});
+
+	it("are written as a literal that no character of the specifier can leave", async () => {
+		const source = `<script>$effect(() => { import("./a<b>\u2028.ts"); });</script><view></view>`;
+		const { code } = await component(source, { thread: "main-thread" });
+		expect(code).toContain('import("./a\\u003cb\\u003e\\u2028.ts")');
+	});
 });

@@ -7,7 +7,13 @@ import path from "node:path";
 import type * as Compiler from "svelte/compiler";
 import type { AST } from "svelte/compiler";
 
-export type { AST, CompileOptions, ModuleCompileOptions, PreprocessorGroup } from "svelte/compiler";
+export type {
+	AST,
+	CompileOptions,
+	ModuleCompileOptions,
+	PreprocessorGroup,
+	Warning,
+} from "svelte/compiler";
 
 /** Svelte's compiler, as the module `svelte/compiler`. */
 export type SvelteCompiler = typeof Compiler;

@@ -54,6 +54,13 @@ describe("the modules the output imports", () => {
 		expect(mainThread.code).toContain('"/build/server-internals.js"');
 		expect(mainThread.code).not.toContain("svelte/internal/server");
 	});
+
+	it("are written as literals that no character of a path can leave", async () => {
+		const { code } = await component("<view></view>", {
+			clientInternals: "/build/a<b>\u2028/client.js",
+		});
+		expect(code).toContain('"/build/a\\u003cb\\u003e\\u2028/client.js"');
+	});
 });
 
 describe("preprocessors", () => {

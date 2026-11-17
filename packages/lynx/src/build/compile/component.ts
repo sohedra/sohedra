@@ -22,6 +22,7 @@ import type { BuildWarning, SourceText } from "../diagnostics/messages.ts";
 import { compileError, compileWarnings, preprocessError } from "../diagnostics/svelte-errors.ts";
 import { appendMap, compose } from "../source-map/maps.ts";
 import type { InputMap, SourceMap } from "../source-map/maps.ts";
+import { escapeRegExp, stringLiteral } from "../string-literal.ts";
 import { lynxCss } from "./lynx-css.ts";
 import { prepare } from "./prepare.ts";
 import type { Prepared } from "./prepare.ts";
@@ -46,6 +47,11 @@ export interface ComponentOptions {
 	serverInternals?: string | undefined;
 	/** On the background thread: the module that stands in for `svelte/internal/client`. */
 	clientInternals?: string | undefined;
+	/**
+	 * Compile the background thread's copy for hot reload (Svelte's `hmr`). A component with
+	 * main-thread functions is never compiled so: its functions live in the main thread's script.
+	 */
+	hot?: boolean | undefined;
 }
 
 /** A compiled component. */
@@ -117,6 +123,7 @@ function componentName(filename: string): string {
 function compileOptions(
 	options: ComponentOptions,
 	sourcemap: SourceMap | undefined,
+	hmr: boolean,
 ): CompileOptions {
 	const user = options.compilerOptions ?? {};
 	const mainThread = options.thread === "main-thread";
@@ -128,6 +135,7 @@ function compileOptions(
 		...(!mainThread && { fragments: "tree" }),
 		runes: true,
 		dev: options.development,
+		hmr,
 		// CSS goes into the template through an import (the caller adds it).
 		css: "external",
 		sourcemap: sourcemap ?? undefined,
@@ -153,8 +161,8 @@ function withContent(map: SourceMap, filename: string, source: string): SourceMa
 
 /** Svelte's output as a module specifier, quoted, in place of the one Svelte writes. */
 function withInternals(code: string, specifier: string, internals: string): string {
-	const quoted = JSON.stringify(internals.replace(/\\/g, "/"));
-	return code.replace(new RegExp(`(['"])${specifier}\\1`, "g"), quoted);
+	const quoted = stringLiteral(internals.replace(/\\/g, "/"));
+	return code.replace(new RegExp(`(['"])${escapeRegExp(specifier)}\\1`, "g"), () => quoted);
 }
 
 /**
@@ -178,7 +186,8 @@ export async function compileComponent(
 	}
 	const prepared: Prepared = prepare({ ...options, source: code, ast });
 	const map = options.sourceMap ? compose(prepared.map, preprocessMap) : undefined;
-	const compiling = compileOptions(options, map);
+	const hmr = options.hot === true && thread === "background" && prepared.functionIds.length === 0;
+	const compiling = compileOptions(options, map, hmr);
 	const context = { source: text, locate: prepared.locate };
 	let result;
 	try {

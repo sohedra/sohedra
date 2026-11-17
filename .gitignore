@@ -25,3 +25,6 @@ vite.config.*.timestamp-*
 
 # Build output of the binding (an exact path: a bare lib/ would also hide SvelteKit's src/lib/)
 packages/lynx/lib/
+
+# SWC plugin cache that coverage instrumentation writes
+packages/lynx/.swc/
