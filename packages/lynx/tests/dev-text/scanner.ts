@@ -6,8 +6,11 @@
 //
 //   - the branch of an `if` or a `? :`, or the right side of `&&` / `||`, that runs only when a
 //     condition that reads `__DEV__`, the `dev` option or value, or `process.env.NODE_ENV` against
-//     "production" says development (`!`, `&&` and `||` of such conditions included);
-//   - the statements after `if (<production>) return;` in the same block;
+//     "production" says development (`!`, `&&` and `||` of such conditions included). A false
+//     condition says development only when it can be false in no production build: the `else` of
+//     `!__DEV__` is development-only, the `else` of `!__DEV__ && x` is not;
+//   - the statements after `if (<condition>) return;` in the same block, when that condition being
+//     false says development;
 //   - the whole of a named function (a `function`, or a `const` holding an arrow or function
 //     expression) every one of whose references is in such code or in another such function.
 //     References are resolved by the type checker, across files and through imports and re-exports.
@@ -64,24 +67,28 @@ function isNodeEnv(node: ts.Node): boolean {
 	);
 }
 
-/** What a condition being true says: this is a development build, a production build, or nothing. */
-function polarity(node: ts.Expression): Polarity {
-	if (ts.isParenthesizedExpression(node)) return polarity(node.expression);
-	if (isIdent(node, "__DEV__") || isIdent(node, "dev")) return "dev";
-	if (ts.isPropertyAccessExpression(node) && node.name.text === "dev") return "dev";
+/**
+ * What a condition being `value` says: this is a development build, a production build, or
+ * nothing. `!__DEV__ && x` being true says production, but being false says nothing.
+ */
+function says(node: ts.Expression, value: boolean): Polarity {
+	if (ts.isParenthesizedExpression(node)) return says(node.expression, value);
+	const build = (dev: boolean): Polarity => (dev === value ? "dev" : "prod");
+	if (isIdent(node, "__DEV__") || isIdent(node, "dev")) return build(true);
+	if (ts.isPropertyAccessExpression(node) && node.name.text === "dev") return build(true);
 	if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken) {
-		const inner = polarity(node.operand);
-		return inner === "dev" ? "prod" : inner === "prod" ? "dev" : undefined;
+		return says(node.operand, !value);
 	}
 	if (ts.isBinaryExpression(node)) {
 		const op = node.operatorToken.kind;
-		const left = polarity(node.left);
-		const right = polarity(node.right);
-		if (op === ts.SyntaxKind.AmpersandAmpersandToken) {
-			// Both sides are true: either one says what the build is.
-			return left ?? right;
+		const and = op === ts.SyntaxKind.AmpersandAmpersandToken;
+		if (and || op === ts.SyntaxKind.BarBarToken) {
+			const left = says(node.left, value);
+			const right = says(node.right, value);
+			// `&&` true and `||` false hold both sides to `value`: either one says what the build is.
+			// Otherwise only one side may hold, so only what both say counts.
+			return and === value ? (left ?? right) : left === right ? left : undefined;
 		}
-		if (op === ts.SyntaxKind.BarBarToken) return left === right ? left : undefined;
 		const equal =
 			op === ts.SyntaxKind.EqualsEqualsEqualsToken || op === ts.SyntaxKind.EqualsEqualsToken;
 		const unequal =
@@ -90,9 +97,7 @@ function polarity(node: ts.Expression): Polarity {
 		if (equal || unequal) {
 			const [env, other] = isNodeEnv(node.left) ? [node.left, node.right] : [node.right, node.left];
 			if (isNodeEnv(env) && ts.isStringLiteralLike(other)) {
-				const production = other.text === "production";
-				if (equal) return production ? "prod" : "dev";
-				return production ? "dev" : "prod";
+				return build(equal !== (other.text === "production"));
 			}
 		}
 	}
@@ -180,15 +185,15 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 				const [condition, yes, no] = ts.isIfStatement(node)
 					? [node.expression, node.thenStatement, node.elseStatement]
 					: [node.condition, node.whenTrue, node.whenFalse];
-				const pole = polarity(condition);
-				if (pole === "dev") mark(yes, source);
-				if (pole === "prod" && no) mark(no, source);
+				if (says(condition, true) === "dev") mark(yes, source);
+				if (says(condition, false) === "dev" && no) mark(no, source);
 			} else if (ts.isBinaryExpression(node)) {
-				const pole = polarity(node.left);
+				// The right side runs when the left is true (`&&`) or false (`||`).
 				const op = node.operatorToken.kind;
-				if (op === ts.SyntaxKind.AmpersandAmpersandToken && pole === "dev")
+				if (op === ts.SyntaxKind.AmpersandAmpersandToken && says(node.left, true) === "dev")
 					mark(node.right, source);
-				if (op === ts.SyntaxKind.BarBarToken && pole === "prod") mark(node.right, source);
+				if (op === ts.SyntaxKind.BarBarToken && says(node.left, false) === "dev")
+					mark(node.right, source);
 			}
 			if (ts.isBlock(node) || ts.isSourceFile(node)) {
 				const statements = node.statements;
@@ -196,7 +201,7 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 					if (
 						ts.isIfStatement(statement) &&
 						!statement.elseStatement &&
-						polarity(statement.expression) === "prod" &&
+						says(statement.expression, false) === "dev" &&
 						exits(statement.thenStatement)
 					) {
 						const rest = statements.slice(index + 1);
