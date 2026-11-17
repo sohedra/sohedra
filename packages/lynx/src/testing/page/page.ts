@@ -13,8 +13,14 @@ import type { BackgroundLynx, MainThreadLynx, TestApp, Thread } from "./lynx.ts"
 
 /** What a test page starts with. */
 export interface TestPageOptions {
-	/** The page's initial data, which the engine renders the page with. */
+	/**
+	 * The data the host opens the page with. The engine renders the page with the template's data
+	 * and this over it, and gives the background this as `_params.updateData`
+	 * (core/runtime/js/bindings/js_app.cc).
+	 */
 	initData?: Record<string, unknown>;
+	/** The template's own data, which the engine gives the background as `_params.initData`. */
+	templateData?: Record<string, unknown>;
 	/** The host's global props. */
 	globalProps?: Record<string, unknown>;
 	/** The main thread's script: it runs first, before the engine renders the page. */
@@ -115,8 +121,11 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		report: (error) => void errors.push(error),
 	});
 	const elementFunctions = Object.keys(engine.functions);
-	const initData = options.initData ?? {};
-	const app: TestApp = { _params: { initData: { ...initData }, updateData: {} } };
+	const templateData = options.templateData ?? {};
+	const hostData = options.initData ?? {};
+	// The data the engine renders the page with (core/renderer/template_assembler.cc).
+	const initData = { ...templateData, ...hostData };
+	const app: TestApp = { _params: { initData: { ...templateData }, updateData: { ...hostData } } };
 	const lynx = createLynx({
 		bridge,
 		lifecycle: engine.lifecycle,

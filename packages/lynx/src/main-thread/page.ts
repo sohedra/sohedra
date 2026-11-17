@@ -39,11 +39,6 @@ export interface MainThreadPage {
 	held: { item: CallItem; stamp: number }[];
 	/** A patch dropped while waiting for the rewrite showed new data: the rewrite's flush says so. */
 	dataHeld: boolean;
-	/**
-	 * The host updated the page's data before hydration: a frame that differs then is no proof of
-	 * the developer's mistake, and is not reported as one.
-	 */
-	updatedBeforeHydration: boolean;
 	/** The styles code set and the elements held for a UI, which hydration carries over. */
 	styles: CodeStyles;
 	flattening: Flattening;
@@ -64,7 +59,6 @@ export function createMainThreadPage(): MainThreadPage {
 		rewriting: false,
 		held: [],
 		dataHeld: false,
-		updatedBeforeHydration: false,
 		styles: createCodeStyles(),
 		flattening: createFlattening(),
 	};

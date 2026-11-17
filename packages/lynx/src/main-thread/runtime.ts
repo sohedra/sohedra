@@ -227,8 +227,7 @@ export function startMainThread(): void {
 			send({
 				t: "rewrite",
 				nodes: [ROOT_ID],
-				...(result.kind === "refused" &&
-					!state.updatedBeforeHydration && { mismatch: sentMismatch(result.mismatch, DEV) }),
+				...(result.kind === "refused" && { mismatch: sentMismatch(result.mismatch, DEV) }),
 			});
 			return undefined;
 		}
@@ -348,7 +347,6 @@ export function startMainThread(): void {
 		try {
 			const [, given] = argsOf(event);
 			const options: Record<string, unknown> = isRecord(given) ? { ...given } : {};
-			if (state.frame) state.updatedBeforeHydration = true;
 			if (options["reloadTemplate"] === true) {
 				// The page starts over: the old page hears no more events, and the background's next
 				// patch, of the new page, makes it again.
