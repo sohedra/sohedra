@@ -177,6 +177,19 @@ describe("<list>", () => {
 		]);
 	});
 
+	it("answers -1 for an index with no item, and lets a cell it does not know be", async () => {
+		const { page, listElement, list } = await nativeList();
+		const element = listElement();
+		const uid = page.engine.state(element).uid;
+		expect(page.asMainThread(() => list().componentAtIndex(element, uid, 7, 1))).toBe(-1);
+		page.asMainThread(() => list().enqueueComponent(element, uid, 99_999));
+		page.asMainThread(() => list().componentAtIndexes!(element, uid, [0, 9], [3, 4], false, true));
+		const flushes = page.engine.flushes.slice(-2) as Record<string, unknown>[];
+		expect(flushes[0]).toEqual({ asyncFlush: true });
+		expect((flushes[1]!["elementIDs"] as number[])[1]).toBe(-1);
+		expect(page.errors).toEqual([]);
+	});
+
 	it("answers for the new order when Lynx asks inside the update, as iOS does", async () => {
 		const { page, change, list, show } = await nativeList();
 		const during: string[] = [];
