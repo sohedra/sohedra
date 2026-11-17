@@ -145,19 +145,19 @@ https://sohedra.com/e/encoder_not_handed_over"
 `;
 
 exports[`the build's catalogue > engine_version_new: the message 1`] = `
-"\`engineVersion\` is '4.4', and the binding's encoder encodes for Lynx 4.3 at most.
+"\`engineVersion\` is '4.4', and the encoder of @sohedra/lynx encodes for Lynx 4.3 at most.
 /app/src/App.svelte:2:3
 
 1: <script>
 2:   let a = 1;
      ^
 
-Use '4.3' or earlier, or update the binding.
+Use '4.3' or earlier, or update @sohedra/lynx.
 https://sohedra.com/e/engine_version_new"
 `;
 
 exports[`the build's catalogue > engine_version_old: the message 1`] = `
-"\`engineVersion\` is '3.9', and the binding builds for Lynx 4.2 and later.
+"\`engineVersion\` is '3.9', and @sohedra/lynx builds for Lynx 4.2 and later.
 /app/src/App.svelte:2:3
 
 1: <script>
@@ -277,7 +277,7 @@ https://sohedra.com/e/lynx_engine_missing"
 `;
 
 exports[`the build's catalogue > main_thread_asset_missing: the message 1`] = `
-"The main thread's script .rspeedy/main/main-thread.js is not in the build's output.
+"The main thread's script .lynx/main/main-thread.js is not in the build's output.
 /app/src/App.svelte:2:3
 
 1: <script>
@@ -394,18 +394,6 @@ exports[`the build's catalogue > plain_function_in_main_thread_function: the mes
 
 Call it through \`runOnBackground(save)\`, or start its body with 'main thread'.
 https://sohedra.com/e/plain_function_in_main_thread_function"
-`;
-
-exports[`the build's catalogue > plugin_option_removed: the message 1`] = `
-"\`compilerOptions\` is not an option of \`pluginSvelteLynx()\` any more.
-/app/src/App.svelte:2:3
-
-1: <script>
-2:   let a = 1;
-     ^
-
-Set it in svelte.config.js: \`export default svelteConfig({ compilerOptions })\`.
-https://sohedra.com/e/plugin_option_removed"
 `;
 
 exports[`the build's catalogue > plugin_option_type: the message 1`] = `
@@ -614,14 +602,14 @@ https://sohedra.com/e/svelte_without_renderers"
 `;
 
 exports[`the build's catalogue > template_plugin_versions: the message 1`] = `
-"The Lynx build engine uses @lynx-js/template-webpack-plugin 0.16.9, and @sohedra/lynx uses 0.16.8.
+"The Lynx build engine uses @lynx-js/template-webpack-plugin 0.15.4, and @sohedra/lynx needs ^0.16.8 (it installs 0.16.8).
 /app/src/App.svelte:2:3
 
 1: <script>
 2:   let a = 1;
      ^
 
-Install one version of both: update @lynx-js/rspeedy and @sohedra/lynx together, and run your package manager's dedupe.
+Update @lynx-js/rspeedy (or @lynx-js/rsbuild-plugin) so that its template plugin is in that range, or update @sohedra/lynx to a version that supports the engine's.
 https://sohedra.com/e/template_plugin_versions"
 `;
 
