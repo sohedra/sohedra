@@ -18,13 +18,17 @@ Imports point down:
   module's `svelte` subpath is the one place it imports Svelte.
 - The UI and framework packages build on the binding, the modules and shared packages.
 - Shared code that runs on both the web and Lynx (such as `primitives-core`) holds logic only: no
-  elements and no DOM types.
+  elements and no DOM types. It never imports `@sohedra/lynx`; it uses Svelte's own APIs and
+  `esm-env`.
 - The binding is the one package that touches Svelte's custom-renderer API or Svelte's internals.
 
 Every package has its own `tsconfig.json`, and the root has none, so the editor and `svelte-check`
 read each file with its own package's settings. A Lynx package sets
 `"svelteOptions": { "namespace": "svelteLynx" }` there, and its `svelte.config.js` uses the
 binding's config (`@sohedra/lynx/config/svelte`).
+
+Before you write code, read `CONTRIBUTING.md` § Code: its rules on code shape, folders and imports,
+error messages, workarounds and tests apply to every package.
 
 ## Keeping the repository current
 
@@ -45,7 +49,7 @@ root before a change lands (`pnpm -F <package> test` for one package).
 
 - A change in behavior comes with a test that fails without it.
 - An API change updates its docs and doc comments in the same pull request.
-- An error message says what failed, the likely cause and the next step.
+- An error message follows `CONTRIBUTING.md` § Errors and warnings.
 
 ## Git and GitHub
 
