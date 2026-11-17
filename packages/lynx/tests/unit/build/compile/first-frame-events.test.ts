@@ -31,6 +31,13 @@ describe("the first frame's event attributes", () => {
 		expect(code).toContain(`$.attr('${lynx}', f)`);
 	});
 
+	it("pass over a spread and an attachment, which have no name", async () => {
+		const code = await mainThread(
+			`<script>let rest = {}; function f() {} function a() {}</script><view {...rest} {@attach a} ontap={f}></view>`,
+		);
+		expect(code).toContain("bindtap");
+	});
+
 	it("write the shorthand, a quoted expression, and svelte:element", async () => {
 		const code = await mainThread(
 			`<script>function ontap() {} function f() {}</script><view {ontap} oncatchtap="{f}"></view><svelte:element this="view" ontap={f} />`,
