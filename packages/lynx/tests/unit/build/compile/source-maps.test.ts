@@ -3,8 +3,9 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { decode } from "../../../../src/build/source-map/maps.ts";
-import type { SourceMap } from "../../../../src/build/source-map/maps.ts";
+import { decode, encode } from "../../../../src/build/source-map/maps.ts";
+import type { Segment, SourceMap } from "../../../../src/build/source-map/maps.ts";
+import type { PreprocessorGroup } from "../../../../src/svelte/build/index.ts";
 import { component, compileScript } from "../compiling.ts";
 
 const source = `<script lang="ts">
@@ -99,6 +100,50 @@ describe("the map of a component", () => {
 	it("is not made when it is not asked for", async () => {
 		expect((await component(source, { sourceMap: false })).map).toBeUndefined();
 	});
+});
+
+describe("the map of a component a preprocessor changed", () => {
+	const header = "// one\n// two\n// three\n// four\n";
+	/** Puts four lines at the start of the script, with a map back to the script as written. */
+	const preprocess: PreprocessorGroup[] = [
+		{
+			script: ({ content, filename }) => ({
+				code: header + content,
+				map: {
+					version: 3,
+					sources: [filename!],
+					names: [],
+					mappings: encode([
+						...header
+							.split("\n")
+							.slice(0, -1)
+							.map((): Segment[] => []),
+						...content.split("\n").map((_, line): Segment[] => [[0, 0, line, 0]]),
+					]),
+				},
+			}),
+		},
+	];
+
+	it("points the main thread's registrations at the function's own lines", async () => {
+		const { code, map } = await component(source, {
+			thread: "main-thread",
+			sourceMap: true,
+			preprocess,
+		});
+		expect(code).toContain("// four");
+		expect(mapped(code, map!, "console.log(count, event.detail.scrollTop);")[0]).toBe(
+			lineWith("console.log(count, event.detail"),
+		);
+	});
+
+	for (const thread of ["background", "main-thread"] as const) {
+		it(`gives every source its text (${thread})`, async () => {
+			const { map } = await component(source, { thread, sourceMap: true, preprocess });
+			expect(map!.sourcesContent).toHaveLength(map!.sources.length);
+			for (const content of map!.sourcesContent!) expect(content).toBe(source);
+		});
+	}
 });
 
 describe("the map of a script", () => {

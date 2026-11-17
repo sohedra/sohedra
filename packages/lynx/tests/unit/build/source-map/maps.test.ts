@@ -127,7 +127,7 @@ describe("appendMap", () => {
 	it("puts the map of the text that follows after the code's lines", () => {
 		const base = map([[[0, 0, 4, 0]], [[0, 0, 5, 0]]]);
 		// Two lines of code, the second without a newline: the extra's first line continues it.
-		const extra = map([[[0, 0, 9, 9]], [[2, 0, 7, 1]]], "./a.ts");
+		const extra = map([[[0, 0, 9, 9]], [[2, 0, 7, 1]]]);
 		const result = appendMap({ code: "x\ny", map: base }, extra);
 		expect(result.sources).toEqual(["a.ts"]);
 		expect(decode(result.mappings)).toEqual([
@@ -152,6 +152,22 @@ describe("appendMap", () => {
 			[[0, 0, 1, 1]],
 			[[0, 0, 2, 2]],
 		]);
+	});
+});
+
+describe("appendMap with other sources", () => {
+	it("keeps base's index for a source both name, and adds the others", () => {
+		const base = map([[[0, 0, 1, 0]]]);
+		const extra: SourceMap = {
+			version: 3,
+			sources: ["b.ts", "a.ts"],
+			sourcesContent: ["b", "a"],
+			mappings: encode([[[0, 0, 3, 0]], [[0, 1, 4, 0]]]),
+		};
+		const result = appendMap({ code: "x\n", map: { ...base, sourcesContent: ["A"] } }, extra);
+		expect(result.sources).toEqual(["a.ts", "b.ts"]);
+		expect(result.sourcesContent).toEqual(["A", "b"]);
+		expect(decode(result.mappings)).toEqual([[[0, 0, 1, 0]], [[0, 1, 3, 0]], [[0, 0, 4, 0]]]);
 	});
 });
 
