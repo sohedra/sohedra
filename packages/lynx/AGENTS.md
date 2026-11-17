@@ -26,5 +26,5 @@ public entry yet; it grows one pull request at a time.
   `src/svelte/manifest.ts` that `tests/contract/svelte/` checks. To upgrade Svelte, bump the pinned
   URL in `package.json` and run the tests: the failing row names what to revisit.
 - Use Svelte's custom-renderer build, as the root `AGENTS.md` says.
-- `pnpm -F @sohedra/lynx test` also measures coverage; it may never drop below
-  `tests/coverage-baseline.json`.
+- `pnpm -F @sohedra/lynx test` also measures coverage. No floor is recorded yet; once
+  `tests/coverage-baseline.json` exists, coverage may never drop below it.
