@@ -1,0 +1,290 @@
+// Rstest Snapshot v1
+
+exports[`the build's catalogue > animate_directive: the message 1`] = `
+"\`animate:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+https://sohedra.com/e/animate_directive"
+`;
+
+exports[`the build's catalogue > bind_directive: the message 1`] = `
+"\`bind:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Read the value in an event handler, and set it with an attribute.
+https://sohedra.com/e/bind_directive"
+`;
+
+exports[`the build's catalogue > boundary_needs_async: the message 1`] = `
+"A \`<svelte:boundary>\` with a \`pending\` or \`failed\` snippet needs async support, which is off.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Set \`compilerOptions: { experimental: { async: true } }\` in svelte.config.js.
+https://sohedra.com/e/boundary_needs_async"
+`;
+
+exports[`the build's catalogue > css_injected: the message 1`] = `
+"\`css: 'injected'\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it: the build writes a component's styles to the page's stylesheet.
+https://sohedra.com/e/css_injected"
+`;
+
+exports[`the build's catalogue > event_attribute_renamed: the message 1`] = `
+"\`bindtap\` is Lynx's spelling of an event attribute, which a component does not write.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write \`ontap\` instead.
+https://sohedra.com/e/event_attribute_renamed"
+`;
+
+exports[`the build's catalogue > global_event_attribute: the message 1`] = `
+"\`global-bindtap\` is not an event attribute.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Listen with \`on(root, "tap", handler)\` in an effect, with \`root\` from \`@sohedra/lynx\`.
+https://sohedra.com/e/global_event_attribute"
+`;
+
+exports[`the build's catalogue > html_tag: the message 1`] = `
+"\`@html\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write the elements in the markup: a Lynx page has no HTML to parse.
+https://sohedra.com/e/html_tag"
+`;
+
+exports[`the build's catalogue > in_directive: the message 1`] = `
+"\`in:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+https://sohedra.com/e/in_directive"
+`;
+
+exports[`the build's catalogue > list_item_without_key: the message 1`] = `
+"A \`<list-item>\` has no key, and Lynx's list needs one to track its cells.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write it directly inside a keyed \`{#each}\`, or give it an \`item-key\`.
+https://sohedra.com/e/list_item_without_key"
+`;
+
+exports[`the build's catalogue > main_thread_function_block_name: the message 1`] = `
+"The main-thread function in \`main-thread:ontap\` uses \`row\`, \`index\`, which only exists inside the markup.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Put the value in a \`data-*\` attribute and read \`event.currentTarget.dataset\`, or move this markup into a child component.
+https://sohedra.com/e/main_thread_function_block_name"
+`;
+
+exports[`the build's catalogue > main_thread_function_generator: the message 1`] = `
+"A generator cannot be a main-thread function.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write a function that returns its values, and loop over them where you call it.
+https://sohedra.com/e/main_thread_function_generator"
+`;
+
+exports[`the build's catalogue > main_thread_function_method: the message 1`] = `
+"A class method cannot be a main-thread function: it would run without its object.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write a function instead, and pass it what it needs.
+https://sohedra.com/e/main_thread_function_method"
+`;
+
+exports[`the build's catalogue > main_thread_function_this: the message 1`] = `
+"\`this\` cannot be used in a main-thread function.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Read what it needs into a variable outside the function.
+https://sohedra.com/e/main_thread_function_this"
+`;
+
+exports[`the build's catalogue > on_directive: the message 1`] = `
+"\`on:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write an event attribute instead, such as \`ontap={…}\`.
+https://sohedra.com/e/on_directive"
+`;
+
+exports[`the build's catalogue > out_directive: the message 1`] = `
+"\`out:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+https://sohedra.com/e/out_directive"
+`;
+
+exports[`the build's catalogue > plain_function_in_main_thread_function: the message 1`] = `
+"\`save\` is a plain function, and a main-thread function calls it. The main thread cannot run it.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Call it through \`runOnBackground(save)\`, or start its body with 'main thread'.
+https://sohedra.com/e/plain_function_in_main_thread_function"
+`;
+
+exports[`the build's catalogue > preprocess_failed: the message 1`] = `
+"A preprocessor failed on this file.
+unexpected }
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Fix the error the preprocessor reports, or check its options in svelte.config.js.
+https://sohedra.com/e/preprocess_failed"
+`;
+
+exports[`the build's catalogue > renderer_option_off: the message 1`] = `
+"\`<svelte:options customRenderer={null}>\` turns the renderer off, and a Lynx page has no DOM to draw without it.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove the \`customRenderer\` option.
+https://sohedra.com/e/renderer_option_off"
+`;
+
+exports[`the build's catalogue > script_syntax_error: the message 1`] = `
+"A script has a syntax error: Unexpected token.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Fix the syntax at this place.
+https://sohedra.com/e/script_syntax_error"
+`;
+
+exports[`the build's catalogue > svelte_body: the message 1`] = `
+"\`<svelte:body>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Listen to the page's events with \`on(root, …)\`.
+https://sohedra.com/e/svelte_body"
+`;
+
+exports[`the build's catalogue > svelte_document: the message 1`] = `
+"\`<svelte:document>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Listen to the page's events with \`on(root, …)\`.
+https://sohedra.com/e/svelte_document"
+`;
+
+exports[`the build's catalogue > svelte_head: the message 1`] = `
+"\`<svelte:head>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it: a Lynx page has no head.
+https://sohedra.com/e/svelte_head"
+`;
+
+exports[`the build's catalogue > svelte_window: the message 1`] = `
+"\`<svelte:window>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Read the page's size from \`svelte/reactivity/window\`. Listen to the page's events with \`on(root, …)\`.
+https://sohedra.com/e/svelte_window"
+`;
+
+exports[`the build's catalogue > transition_directive: the message 1`] = `
+"\`transition:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+https://sohedra.com/e/transition_directive"
+`;
