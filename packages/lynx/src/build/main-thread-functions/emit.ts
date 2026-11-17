@@ -189,11 +189,11 @@ export function emitFunctions(options: EmitOptions): Emitted {
 		};
 		say(
 			`${REGISTER_FUNCTION}("main-thread", ${JSON.stringify(id)}, ` +
-				`${node.async ? "async " : ""}function ${fn.callsItself ? SELF : ""}(`,
+				`${node.async ? "async " : ""}function ${fn.callsItself.size > 0 ? SELF : ""}(`,
 		);
 		if (node.params.length > 0) copy(node.params[0].start, node.params.at(-1).end);
 		let unpack = ") {\n";
-		if (fn.callsItself) unpack += `const ${fn.self} = ${SELF}.bind(this);\n`;
+		for (const name of fn.callsItself) unpack += `const ${name} = ${SELF}.bind(this);\n`;
 		if (handles.length > 0)
 			unpack += `let { ${handleNames.join(", ")} } = this[${JSON.stringify(FUNCTION_FIELDS.background)}];\n`;
 		if (captures.size > 0)

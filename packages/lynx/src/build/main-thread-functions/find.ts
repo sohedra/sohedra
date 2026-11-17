@@ -54,9 +54,13 @@ export interface Found {
 	parent: Node;
 	/** Its parameters and what its body declares. */
 	scope: Scope;
-	/** Its own name, if its body can call it by that name. */
-	self: string | undefined;
-	callsItself: boolean;
+	/**
+	 * The names its body calls it by: its own name, and the name of the variable it is the value of
+	 * (`const tick = () => { … tick … }`), unless the body declares them for itself.
+	 */
+	self: Set<string>;
+	/** Which of those names the body uses. */
+	callsItself: Set<string>;
 	captures: Captures;
 	/** The captured names the body calls, each with the first call's callee. */
 	called: Map<string, Node>;
@@ -197,8 +201,8 @@ export function findFunctions(options: {
 					if ((node === callee || node === calledThrough) && !current.called.has(name))
 						current.called.set(name, node);
 					if (depth === 0) flush();
-				} else if (from === current.scope && name === current.self) {
-					current.callsItself = true;
+				} else if (from === current.scope && current.self.has(name)) {
+					current.callsItself.add(name);
 				}
 				return;
 			}
@@ -246,11 +250,23 @@ export function findFunctions(options: {
 		for (const param of node.params) patternNames(param, names);
 		const block = node.body.type === "BlockStatement";
 		if (block) for (const statement of node.body.body) declare(statement, names, true, true);
-		// Its own name, unless a parameter or the body has taken it.
-		const self = node.id && !names.has(node.id.name) ? node.id.name : undefined;
-		if (self !== undefined) names.add(self);
-
 		const outermost = !current && isMainThreadFunction(node);
+		// Its own names, unless a parameter or the body has taken them. The variable's name counts
+		// only for a main-thread function: capturing it would read the variable before it exists.
+		const self = new Set<string>();
+		if (node.id) self.add(node.id.name);
+		if (
+			outermost &&
+			parent?.type === "VariableDeclarator" &&
+			parent.init === node &&
+			parent.id.type === "Identifier"
+		)
+			self.add(parent.id.name);
+		for (const name of self) {
+			if (names.has(name)) self.delete(name);
+			else names.add(name);
+		}
+
 		const outerThis = ownThis;
 		within(names, () => {
 			if (outermost) {
@@ -268,7 +284,7 @@ export function findFunctions(options: {
 					parent,
 					scope: scope!,
 					self,
-					callsItself: false,
+					callsItself: new Set(),
 					captures: new Map(),
 					called: new Map(),
 					handles: [],
