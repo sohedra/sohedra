@@ -39,7 +39,7 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		message: () =>
 			"A <list-item> has an object as its item-key, and Lynx reads an item-key as text.",
 		fix: () =>
-			"Give item-key a string or a number that names the item, such as its id: item-key={item.id}.",
+			"Key the item with a string or a number that names it, such as its id: {#each items as item (item.id)}, or item-key={item.id}.",
 		docs: "list_item_key_object",
 	},
 	input_value_not_written: {

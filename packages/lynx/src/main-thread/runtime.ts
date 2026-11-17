@@ -70,6 +70,8 @@ export function startMainThread(): void {
 	const early: PatchParams[] = [];
 	/** Whether the background's page is shown: a patch of it was applied. */
 	let shown = false;
+	/** New data came before the background's page was shown: its first patch shows the data. */
+	let dataHeld = false;
 	/** The ops of each list cell the list has not shown yet, as they came. */
 	const cells = new Map<number, string[]>();
 
@@ -193,7 +195,9 @@ export function startMainThread(): void {
 					break;
 			}
 		}
-		mainThread.__FlushElementTree(page, patch.dataUpdated ? { triggerDataUpdated: true } : {});
+		const dataUpdated = patch.dataUpdated === true || dataHeld;
+		dataHeld = false;
+		mainThread.__FlushElementTree(page, dataUpdated ? { triggerDataUpdated: true } : {});
 	}
 
 	function onPatch(params: PatchParams): void {
@@ -228,15 +232,21 @@ export function startMainThread(): void {
 				// patch, of the new page, makes it again.
 				generation++;
 				applier?.silence();
-				previous?.clear();
-				previous = applier;
+				if (shown || !previous) {
+					previous?.clear();
+					previous = applier;
+				} else {
+					// A reload during a reload: the page on screen is still the one before both.
+					applier?.clear();
+				}
 				if (page) applier = createApplier(page, onElementEvent);
 				cells.clear();
 				shown = false;
+				dataHeld = false;
 			} else if (!shown) {
-				// No patch of the background's page yet, which would carry it: the main thread's own
-				// page shows the new data.
-				options["triggerDataUpdated"] = true;
+				// The page shows nothing of the data until the background's first patch: its flush
+				// carries the flag.
+				dataHeld = true;
 			}
 			if (page) mainThread.__FlushElementTree(page, options);
 		} catch (error) {
@@ -267,6 +277,16 @@ export function startMainThread(): void {
 	// The page's end comes from the native side (core/shell/lynx_shell.cc), not from the engine.
 	native.addEventListener("__DestroyLifetime", onDestroyLifetime);
 	setGlobalFunction(PATCH_METHOD, onPatch);
+	// The functions the engine calls by name when nothing listens for its event
+	// (core/renderer/template_assembler.cc): `removeComponents` at a reload, before the page is
+	// updated with `reloadTemplate`; `updateGlobalProps` with new global props, which the
+	// background holds, so the tree is only flushed, as ReactLynx does; `getPageData` for the
+	// host's `getCurrentData()`, whose data lives on the background.
+	setGlobalFunction("removeComponents", () => {});
+	setGlobalFunction("updateGlobalProps", (_data: unknown, options?: unknown) => {
+		if (page) mainThread.__FlushElementTree(page, isRecord(options) ? options : {});
+	});
+	setGlobalFunction("getPageData", () => null);
 	// The engine runs the page's data through this before each render and update
 	// (core/renderer/template_assembler.cc, ProcessTemplateDataForFiber); the page keeps it as is.
 	setGlobalFunction("processData", (data: unknown) => data);

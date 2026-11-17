@@ -21,7 +21,7 @@
 		"./internal/renderer": "./src/background/renderer/entry.ts",
 		"./internal/page": {
 			"worker": "./src/first-frame/page.ts",
-			"default": "./src/background/index.ts"
+			"default": "./src/background/page-entry.ts"
 		},
 		"./client": {
 			"types": "./types/client.d.ts"
@@ -50,9 +50,9 @@
 				"default": "./lib/background/renderer/entry.js"
 			},
 			"./internal/page": {
-				"types": "./lib/background/index.d.ts",
+				"types": "./lib/background/page-entry.d.ts",
 				"worker": "./lib/first-frame/page.js",
-				"default": "./lib/background/index.js"
+				"default": "./lib/background/page-entry.js"
 			},
 			"./client": {
 				"types": "./types/client.d.ts"

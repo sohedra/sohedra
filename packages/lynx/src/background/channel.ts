@@ -37,8 +37,8 @@ export interface ChannelOptions {
 
 /** The page's way to the main thread. */
 export interface Channel {
-	/** Sends what is queued now, as one patch. */
-	flush(): void;
+	/** Sends what is queued now, as one patch; with `always`, a patch even with nothing in it. */
+	flush(always?: boolean): void;
 	/**
 	 * Asks the main thread something about an element (0 for none), in line with the ops made
 	 * before: resolves with the answer. Rejects with the `page_is_gone` error when the page reloads
@@ -122,11 +122,11 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 		for (const item of splitter.split(queue.take())) items.push(item);
 	}
 
-	function flush(): void {
+	function flush(always = false): void {
 		scheduled = false;
 		if (!open) return;
 		takeOps();
-		if (items.length === 0 && !dataUpdated) return;
+		if (items.length === 0 && !dataUpdated && !always) return;
 		const patch = { page: currentPage(), items, dataUpdated };
 		items = [];
 		dataUpdated = false;

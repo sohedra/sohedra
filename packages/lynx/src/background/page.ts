@@ -118,8 +118,13 @@ export function startPage<Props extends Record<string, unknown>>(
 		bumpPage();
 		mergeData(data);
 		runAll([teardown, () => channel.abandon()]);
-		render();
-		channel.flush();
+		try {
+			render();
+		} finally {
+			// A patch of the new page even when it shows nothing yet, or failed to: the main thread
+			// keeps the old page on screen until one comes.
+			channel.flush(true);
+		}
 	}
 
 	function destroy(): void {

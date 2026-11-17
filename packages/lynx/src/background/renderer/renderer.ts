@@ -249,7 +249,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		const text = node.data?.trim();
 		if (parent?.kind === "element" && text) {
 			const where = sourceLocation(parent);
-			warnOnce(`text_outside_text:${where ?? parent.tag!}:${text}`, () =>
+			warnOnce(`text_outside_text:${where ?? `${parent.tag!}:${text}`}`, () =>
 				backgroundError({
 					code: "text_outside_text",
 					details: { text: text.slice(0, 40), parent: parent.tag!, where },
@@ -404,16 +404,26 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			if (element.lynxId !== 0) queue.push([OpCode.SetAttr, element.lynxId, key, null]);
 			return;
 		}
-		if (key === "item-key" && typeof value === "object") {
-			const where = sourceLocation(element);
-			warnOnce(`list_item_key_object:${where ?? ""}`, () =>
-				backgroundError({ code: "list_item_key_object", details: { where } }),
-			);
-		}
+		const stored = key === "item-key" ? itemKey(element, value) : value;
 		element.attrs ??= new Map();
-		element.attrs.set(key, value);
-		if (element.lynxId !== 0 && !isFunction(value))
-			queue.push([OpCode.SetAttr, element.lynxId, key, attrValue(key, value)]);
+		element.attrs.set(key, stored);
+		if (element.lynxId !== 0 && !isFunction(stored))
+			queue.push([OpCode.SetAttr, element.lynxId, key, attrValue(key, stored)]);
+	}
+
+	/**
+	 * An `item-key` as text, which Lynx's list needs. A production build gives a keyed `{#each}`'s
+	 * key as text already; a development build gives it as it is, so that a key that is neither a
+	 * string nor a number is warned about here, naming the list item's place.
+	 */
+	function itemKey(element: TreeNode, value: unknown): string {
+		if (typeof value === "string") return value;
+		if (typeof value === "number") return String(value);
+		const where = sourceLocation(element);
+		warnOnce(`list_item_key_object:${where ?? ""}`, () =>
+			backgroundError({ code: "list_item_key_object", details: { where } }),
+		);
+		return textOf(value);
 	}
 
 	/** Svelte routes `on()` here while an effect runs; a target that is not a node keeps its own API. */
