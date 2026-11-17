@@ -1,0 +1,363 @@
+/** Where the binding's own code touches Svelte: its compiler, its internals or its source files. */
+export type ContractProgram = "build" | "runtime";
+
+/** One place the binding rests on the pinned Svelte build. */
+export interface ContractRow {
+	/** A stable name in kebab-case; the contract test's check for this row carries it. */
+	readonly id: string;
+	/** `build` runs in Node, when an app is built; `runtime` runs on a Lynx thread. */
+	readonly program: ContractProgram;
+	/** The file of the Svelte package the row rests on, relative to the package's folder. */
+	readonly file: string;
+	/** Text the file must contain: the line, export or name the binding looks for. */
+	readonly anchor: string;
+	/** What the binding relies on, as a statement that is true of the pinned build. */
+	readonly reliesOn: string;
+	/** The module that holds the row's check, relative to the binding's folder. */
+	readonly test: string;
+}
+
+const SOURCE = "tests/contract/svelte/checks-source.ts";
+const COMPILER = "tests/contract/svelte/checks-compiler.ts";
+const RUNTIME = "tests/contract/svelte/checks-runtime.ts";
+
+/**
+ * Every place the binding touches Svelte's internals, with the check that tells an upgrade what to
+ * revisit. `tests/contract/svelte/svelte-contract.test.ts` walks it: a row without a check fails.
+ */
+export const SVELTE_CONTRACT: readonly ContractRow[] = [
+	// How components are compiled and what comes out
+	{
+		id: "custom-renderer-compile-options",
+		program: "build",
+		file: "src/compiler/validate-options.js",
+		anchor: "customRenderer: validator(",
+		reliesOn:
+			"`experimental.customRenderer`, `fragments: 'tree'` and `css: 'external'` are compile options, and a component compiles to a template built with `$.from_tree`",
+		test: COMPILER,
+	},
+	{
+		id: "component-export-shape",
+		program: "build",
+		file: "src/compiler/phases/3-transform/client/transform-client.js",
+		anchor: "b.export_default",
+		reliesOn:
+			"the output holds `export default function Name(`, so the first frame's twin of a component can find the name",
+		test: COMPILER,
+	},
+	{
+		id: "internal-import-specifiers",
+		program: "build",
+		file: "src/compiler/phases/3-transform/client/transform-client.js",
+		anchor: "svelte/internal/client",
+		reliesOn:
+			"compiled components import `svelte/internal/client` (background) and `svelte/internal/server` (main thread) as plain strings, which the build points at its own modules",
+		test: COMPILER,
+	},
+	{
+		id: "no-init-operations",
+		program: "build",
+		file: "src/internal/init-operations.js",
+		anchor: "init_operations",
+		reliesOn:
+			"a component compiled for a custom renderer never imports the DOM's operations module",
+		test: COMPILER,
+	},
+	{
+		id: "hot-reload-footer",
+		program: "build",
+		file: "src/compiler/phases/3-transform/client/transform-client.js",
+		anchor: "import.meta.hot.accept",
+		reliesOn:
+			"`hmr: true` ends a component with the exact `import.meta.hot` footer that the build rewrites for a bundler that is not Vite",
+		test: COMPILER,
+	},
+	{
+		id: "template-node-shapes",
+		program: "build",
+		file: "src/compiler/phases/1-parse/read/options.js",
+		anchor: "customRenderer",
+		reliesOn:
+			"the parsed template has `RegularElement`, `Attribute` (a bare one has the value `true`), `ExpressionTag`, `ConstTag` and `SvelteBoundary` nodes, `<svelte:options>` attributes in `options.attributes`, and `ImportExpression` in scripts",
+		test: COMPILER,
+	},
+	{
+		id: "server-drops-handlers-and-effects",
+		program: "build",
+		file: "src/compiler/phases/3-transform/server/visitors/shared/element.js",
+		anchor: "} else if (is_event_attribute(attribute)) {",
+		reliesOn:
+			"the server output leaves out an element's `on…` attributes and the body of every `$effect`, so the build writes them again for the first frame",
+		test: COMPILER,
+	},
+	{
+		id: "attribute-effect-spread",
+		program: "runtime",
+		file: "src/internal/client/dom/elements/attributes.js",
+		anchor: "} else if (typeof value !== 'function') {",
+		reliesOn:
+			"a spread compiles to `$.attribute_effect(element, () => props)`, and a function in a spread reaches the renderer only under an `on…` name",
+		test: COMPILER,
+	},
+	// What the compiler refuses, and what it crashes on
+	{
+		id: "options-unrecognised-error",
+		program: "build",
+		file: "src/compiler/errors.js",
+		anchor: "export function options_unrecognised",
+		reliesOn:
+			"a Svelte without custom renderers fails on `experimental.customRenderer` with the code `options_unrecognised`, which the setup check turns into advice",
+		test: COMPILER,
+	},
+	{
+		id: "incompatible-with-custom-renderer-error",
+		program: "build",
+		file: "src/compiler/errors.js",
+		anchor: "export function incompatible_with_custom_renderer",
+		reliesOn:
+			'each banned feature fails with `incompatible_with_custom_renderer` and a first line of the form "`feature` is not compatible with `customRenderer`", which the binding extends with what exists instead',
+		test: COMPILER,
+	},
+	{
+		id: "supported-features-compile",
+		program: "build",
+		file: "src/compiler/phases/2-analyze/index.js",
+		anchor: "incompatible_with_custom_renderer",
+		reliesOn:
+			"`{@attach}`, `use:`, `class:`, `style:`, spreads, `<svelte:element>`, `{#await}`, `{#key}` and `<svelte:boundary onerror>` compile under a custom renderer",
+		test: COMPILER,
+	},
+	{
+		id: "boundary-needs-async",
+		program: "build",
+		file: "src/compiler/phases/3-transform/client/visitors/SvelteBoundary.js",
+		anchor: "snippet_fn.body.body.unshift(",
+		reliesOn:
+			"a `<svelte:boundary>` with a `failed` or `pending` snippet crashes the compiler (`reading 'body'`) unless `experimental.async` is on; the binding turns the crash into a clear error, and this row tells us when Svelte fixes it",
+		test: COMPILER,
+	},
+	// Text the build rewrites or reads
+	{
+		id: "spread-props-setter-anchors",
+		program: "build",
+		file: "src/internal/client/reactivity/props.js",
+		anchor: "return new Proxy({ props }, spread_props_handler);",
+		reliesOn:
+			"`spread_props` returns that Proxy and `prop()` finds a binding's setter with `get_descriptor(props, key)?.set ??`, each line once; the file imports `get_descriptor` and `is_function`; the Proxy's own `set` walks `target.props` from the last",
+		test: SOURCE,
+	},
+	{
+		id: "valid-tag-name-regex",
+		program: "build",
+		file: "src/utils.js",
+		anchor: "export const REGEX_VALID_TAG_NAME =",
+		reliesOn:
+			"the tag-name regex is a `/u` regex with an astral escape, which Lynx's main-thread engine cannot compile, so the build rewrites it",
+		test: SOURCE,
+	},
+	{
+		id: "invalid-attribute-name-regex",
+		program: "build",
+		file: "src/internal/server/index.js",
+		anchor: "const INVALID_ATTR_NAME_CHAR_REGEX =",
+		reliesOn:
+			"the attribute-name regex of the server runtime (the first frame) is a `/u` regex with astral escapes, which the build rewrites",
+		test: SOURCE,
+	},
+	{
+		id: "async-hooks-import",
+		program: "build",
+		file: "src/internal/server/render-context.js",
+		anchor: "import('node:async_hooks')",
+		reliesOn:
+			"only async server rendering loads `node:async_hooks`, by a dynamic import, so the first frame's build leaves it out",
+		test: SOURCE,
+	},
+	{
+		id: "crypto-import",
+		program: "build",
+		file: "src/internal/server/crypto.js",
+		anchor: "const obfuscated_import = (module_name) => import(/* @vite-ignore */ module_name);",
+		reliesOn:
+			"the server's hash helper imports `crypto` through an expression the first frame never runs, which the build keeps quiet",
+		test: SOURCE,
+	},
+	{
+		id: "svelte-own-dependencies",
+		program: "build",
+		file: "package.json",
+		anchor: '"@sveltejs/acorn-typescript"',
+		reliesOn:
+			"Svelte depends on `acorn`, `@sveltejs/acorn-typescript` and `esm-env`, and the binding reads them from Svelte's own copy, so no app installs them",
+		test: SOURCE,
+	},
+	// Names the first frame and the pages rely on
+	{
+		id: "void-element-names",
+		program: "runtime",
+		file: "src/utils.js",
+		anchor: "const VOID_ELEMENT_NAMES = [",
+		reliesOn:
+			"Svelte's void elements are the sixteen names the first frame's parser ends at their opening tag",
+		test: SOURCE,
+	},
+	{
+		id: "server-runtime-exports",
+		program: "runtime",
+		file: "src/internal/server/index.js",
+		anchor: "export { attr, clsx };",
+		reliesOn:
+			"`svelte/internal/server` exports `attr`, `attributes`, `escape` and `css_props`, which the first frame's replacement of the server runtime overrides or reuses",
+		test: RUNTIME,
+	},
+	// What runs on a thread
+	{
+		id: "push-renderer",
+		program: "runtime",
+		file: "src/internal/client/custom-renderer/state.js",
+		anchor: "export function push_renderer",
+		reliesOn:
+			"`svelte/internal/client` exports `push_renderer`, and a compiled component imports its renderer as a default export and makes it current for the time it builds",
+		test: RUNTIME,
+	},
+	{
+		id: "mount-renderer-option",
+		program: "runtime",
+		file: "src/internal/client/render.js",
+		anchor: "if (options.renderer) {",
+		reliesOn:
+			"`mount` takes the renderer as an option, and without it sets up DOM event delegation, which Lynx has no document for",
+		test: RUNTIME,
+	},
+	{
+		id: "unmount-synchronous",
+		program: "runtime",
+		file: "src/internal/client/render.js",
+		anchor: "export function unmount(",
+		reliesOn:
+			"`unmount` takes the component's nodes out before it returns, without awaiting its promise, which a page reload relies on",
+		test: RUNTIME,
+	},
+	{
+		id: "hydration-off-under-renderer",
+		program: "runtime",
+		file: "src/internal/client/custom-renderer/state.js",
+		anchor: "should_disable_hydration",
+		reliesOn:
+			"making a renderer current turns hydration off, so the entry is `mountPage` and not `hydrate`",
+		test: RUNTIME,
+	},
+	// Svelte's modules that read the window or the DOM when they load
+	{
+		id: "disclose-version-window-guard",
+		program: "runtime",
+		file: "src/internal/disclose-version.js",
+		anchor: "if (typeof window !== 'undefined') {",
+		reliesOn: "every component imports this module, and it touches `window` only where one exists",
+		test: SOURCE,
+	},
+	{
+		id: "dom-url-in-src-url-equal",
+		program: "build",
+		file: "src/internal/client/dom/elements/attributes.js",
+		anchor: "function src_url_equal(element_src, url) {",
+		reliesOn:
+			"the one place the DOM code names `URL` is a function that returns early under a custom renderer, so the build gives it an empty module",
+		test: SOURCE,
+	},
+	{
+		id: "urls-named-in-three-files",
+		program: "build",
+		file: "src/reactivity/url.js",
+		anchor: "SvelteURL",
+		reliesOn:
+			"only three of Svelte's client and shared files name `URL` or `URLSearchParams`, so a page that uses neither carries no URL code",
+		test: SOURCE,
+	},
+	{
+		id: "url-class-extends-global",
+		program: "build",
+		file: "src/reactivity/url.js",
+		anchor: "export class SvelteURL extends URL {",
+		reliesOn:
+			"`SvelteURL` extends the global when its module loads, which counts as a side effect the build marks away",
+		test: SOURCE,
+	},
+	{
+		id: "url-search-params-class-extends-global",
+		program: "build",
+		file: "src/reactivity/url-search-params.js",
+		anchor: "export class SvelteURLSearchParams extends URLSearchParams {",
+		reliesOn: "the same, for `SvelteURLSearchParams`",
+		test: SOURCE,
+	},
+	{
+		id: "package-declares-no-side-effects",
+		program: "build",
+		file: "package.json",
+		anchor: '"exports"',
+		reliesOn:
+			"Svelte's package has no `sideEffects` field, so a bundler keeps modules that only declare a class",
+		test: SOURCE,
+	},
+	{
+		id: "server-reactivity-reads-globals",
+		program: "runtime",
+		file: "src/reactivity/index-server.js",
+		anchor: "export const SvelteURL = globalThis.URL;",
+		reliesOn:
+			"the server's `svelte/reactivity` reads `URL` and `URLSearchParams` from `globalThis`, which the main thread's engine lacks, so the binding gives it its own",
+		test: SOURCE,
+	},
+	{
+		id: "reactivity-client-exports",
+		program: "runtime",
+		file: "src/reactivity/index-client.js",
+		anchor: "export { createSubscriber } from './create-subscriber.js';",
+		reliesOn:
+			"`svelte/reactivity` exports `SvelteDate`, `SvelteSet`, `SvelteMap`, `SvelteURL`, `SvelteURLSearchParams`, `MediaQuery` and `createSubscriber`, which the binding re-exports, replacing `MediaQuery`",
+		test: RUNTIME,
+	},
+	{
+		id: "motion-index-media-query",
+		program: "runtime",
+		file: "src/motion/index.js",
+		anchor: "export const prefersReducedMotion = /*@__PURE__*/ new MediaQuery(",
+		reliesOn:
+			"`svelte/motion` makes a `MediaQuery` when it loads, which calls `matchMedia`, so the binding replaces the module",
+		test: SOURCE,
+	},
+	{
+		id: "spring-source",
+		program: "runtime",
+		file: "src/motion/spring.js",
+		anchor: "export class Spring",
+		reliesOn: "`Spring` and `spring` live in their own file, which reads no window when it loads",
+		test: SOURCE,
+	},
+	{
+		id: "tween-source",
+		program: "runtime",
+		file: "src/motion/tweened.js",
+		anchor: "export class Tween",
+		reliesOn: "`Tween` and `tweened` live in their own file, which reads no window when it loads",
+		test: SOURCE,
+	},
+	{
+		id: "window-values",
+		program: "runtime",
+		file: "src/reactivity/window/index.js",
+		anchor: "on(window, 'scroll', update)",
+		reliesOn:
+			"`svelte/reactivity/window` exports ten values, reads `window` as it loads, and so the binding replaces the module with the page's size",
+		test: SOURCE,
+	},
+	{
+		id: "attribute-functions-only-as-events",
+		program: "runtime",
+		file: "src/internal/client/dom/elements/attributes.js",
+		anchor: "} else if (typeof value !== 'function') {",
+		reliesOn: "`set_attributes` passes a function on only under an `on…` name and drops any other",
+		test: SOURCE,
+	},
+] as const;

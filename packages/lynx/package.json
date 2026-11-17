@@ -1,0 +1,33 @@
+{
+	"name": "@sohedra/lynx",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Svelte on Lynx",
+	"license": "Apache-2.0",
+	"type": "module",
+	"exports": {
+		"./client": {
+			"types": "./types/client.d.ts"
+		}
+	},
+	"publishConfig": {
+		"exports": {
+			"./client": {
+				"types": "./types/client.d.ts"
+			}
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"check": "tsc -p tsconfig.json --noEmit",
+		"test": "rstest"
+	},
+	"devDependencies": {
+		"@rsbuild/core": "^2.3.2",
+		"@rstest/core": "^0.12.6",
+		"@rstest/coverage-istanbul": "^0.12.6",
+		"@types/node": "^26.6.6",
+		"svelte": "https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea",
+		"typescript": "^6.0.3"
+	}
+}

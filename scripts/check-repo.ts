@@ -1,12 +1,16 @@
 // Checks the repository's own setup, so decisions written in AGENTS.md and CONTRIBUTING.md can't
 // drift. Runs as part of `pnpm lint`.
 
+import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
 import { join, relative } from "node:path";
 
 import { parse } from "yaml";
 
+import { lowered, readCoverageBaseline } from "./coverage-baseline.ts";
 import { readLabels } from "./labels.ts";
+import { checkSharedPackages } from "./shared-packages.ts";
+import { listIsCurrent, scanRepository } from "./workarounds.ts";
 
 const problems: string[] = [];
 const IGNORED_DIRS = new Set([".git", "node_modules", ".svelte-kit", "dist", "coverage"]);
@@ -186,6 +190,44 @@ for (const pattern of workspace.packages ?? []) {
 		if (existsSync(join(dir, "package.json")) && !existsSync(join(dir, "tsconfig.json"))) {
 			problems.push(`${dir} has no tsconfig.json. Every package has its own.`);
 		}
+	}
+}
+
+// 7. A package that runs on both the web and Lynx never imports `@sohedra/lynx`.
+problems.push(...checkSharedPackages("."));
+
+// 8. Workaround tags are complete, and the committed list, if there is one, matches them.
+const workaroundTags = scanRepository(".");
+problems.push(...workaroundTags.problems);
+if (workaroundTags.problems.length === 0 && !listIsCurrent(".", workaroundTags.workarounds)) {
+	problems.push("docs/workarounds.md is out of date. Run: node scripts/workarounds.ts --write");
+}
+
+// 9. Recorded coverage is valid, and never lower than on main (when main is known here).
+for (const file of allFiles.filter((name) => name.endsWith("/tests/coverage-baseline.json"))) {
+	const folder = file.slice(0, -"/tests/coverage-baseline.json".length);
+	try {
+		const current = readCoverageBaseline(folder);
+		let before: string | undefined;
+		try {
+			before = execFileSync("git", ["show", `origin/main:${file}`], {
+				encoding: "utf8",
+				stdio: ["ignore", "pipe", "ignore"],
+			});
+		} catch {
+			// No origin/main in this clone, or the file is new: nothing to compare with.
+		}
+		const lower =
+			// Boundary: JSON has no type; it is the same shape as `current`.
+			before === undefined ? [] : lowered(current, JSON.parse(before) as typeof current);
+		if (lower.length > 0) {
+			problems.push(
+				`${file} lowers ${lower.join(", ")}. Recorded coverage only goes up: add tests instead.`,
+			);
+		}
+	} catch (error) {
+		// Boundary: a thrown value is `unknown`; these are `Error`s from the readers.
+		problems.push((error as Error).message);
 	}
 }
 
