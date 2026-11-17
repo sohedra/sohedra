@@ -270,10 +270,12 @@ describe("the app on the background", () => {
 		page.reload();
 		await page.settle();
 		// Only the engine's own reports of the main thread's missing functions: none of the app's.
-		expect(page.errors).toHaveLength(3);
+		expect(page.errors).toHaveLength(4);
 		for (const error of page.errors)
 			expect(error).toMatchObject({
-				message: expect.stringMatching(/^The engine sent __(Render|Update)Page/),
+				message: expect.stringMatching(
+					/^The engine sent __(RenderPage|UpdatePage|RemoveComponents),/,
+				),
 			});
 	});
 });
