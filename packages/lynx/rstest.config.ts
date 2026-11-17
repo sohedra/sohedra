@@ -11,6 +11,12 @@ const floor = JSON.parse(
 	fs.readFileSync(new URL("./tests/coverage-baseline.json", import.meta.url), "utf8"),
 ) as Record<"statements" | "branches" | "functions" | "lines", number>;
 
+// The floor holds the whole suite: `pnpm test` here, or from the root. A run given anything else
+// (a file, a project, a test name, `--coverage.enabled=false`) measures part of it, so it shows
+// coverage without failing on the floor. Rstest reads its arguments from the command line it was
+// started with, as this does.
+const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
+
 // Tests are grouped by kind, with a subfolder per source area (see CONTRIBUTING.md § Tests):
 //   unit/      one module at a time; those of `src/testing` on the engine fake
 //   threads/   both threads of a page on the engine fake
@@ -42,7 +48,7 @@ const config: RstestConfig = defineConfig({
 		provider: "istanbul",
 		include: ["src/**/*.ts"],
 		reporters: ["text-summary", "json-summary"],
-		thresholds: floor,
+		...(wholeRun && { thresholds: floor }),
 	},
 });
 
