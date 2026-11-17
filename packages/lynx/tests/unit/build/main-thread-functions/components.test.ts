@@ -227,6 +227,26 @@ describe("main-thread functions in a script of a module", () => {
 		expect(code).toContain("import('./lazy.ts')");
 	});
 
+	it("parses .tsx and .jsx with their markup", () => {
+		for (const file of ["view.tsx", "view.jsx"]) {
+			const { ids } = compileScript(
+				`export const f = () => { 'main thread'; return 1; };\nexport const View = () => <view className="main-thread" />;\n`,
+				{ file },
+			);
+			expect(ids).toHaveLength(1);
+		}
+	});
+
+	it("leaves a file it cannot parse alone when no function starts with the directive", () => {
+		const text = `export const View = () => <view className="main-thread" />;\n`;
+		expect(compileScript(text, { file: "view.js" })).toMatchObject({ code: text, ids: [] });
+		expect(() =>
+			compileScript(`export const f = () => { 'main thread'; return <view />; };\n`, {
+				file: "view.js",
+			}),
+		).toThrow(/^A script has a syntax error/);
+	});
+
 	it("parses .ts as TypeScript, not TSX: generics and angle-bracket casts", () => {
 		const { ids } = compileScript(
 			`export const id = <T>(x: T) => x;\nexport const n = <number>(<unknown>1);\nexport function f() { 'main thread'; return 1; }\n`,
