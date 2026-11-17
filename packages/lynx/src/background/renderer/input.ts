@@ -46,16 +46,16 @@ export function setInputValue(host: InputHost, element: TreeNode, raw: unknown):
 				state.typing = false;
 			});
 		});
-		// An input that is not on the page yet starts from `default-value`.
-		if (element.lynxId === 0) {
-			host.setAttribute(element, "default-value", value);
-			return;
-		}
 	} else {
 		if (value === input.current) return;
 		if (input.typing && input.composing) return;
 		input.current = value;
 		input.composing = false;
+	}
+	// An input that has no Lynx element yet starts from `default-value`, which it is made with.
+	if (element.lynxId === 0) {
+		host.setAttribute(element, "default-value", value);
+		return;
 	}
 	const tag = element.tag ?? "input";
 	host.invoke(element, "setValue", { value }).catch((error: unknown) => {

@@ -6,6 +6,7 @@
 
 import { OpCode, ROOT_ID } from "../wire/index.ts";
 import type { LynxEventType, Op } from "../wire/index.ts";
+import { mainThreadError } from "./catalogue.ts";
 import { mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
 
@@ -74,7 +75,7 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 
 	function get(id: number): LynxElement {
 		const element = elements.get(id);
-		if (element === undefined) throw new Error(`The main thread has no element ${id}.`);
+		if (element === undefined) throw mainThreadError({ code: "element_missing", details: { id } });
 		return element;
 	}
 

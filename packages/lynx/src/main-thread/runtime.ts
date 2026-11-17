@@ -11,6 +11,7 @@
 import {
 	checkMessage,
 	decodeCall,
+	decodeError,
 	decodePatch,
 	describeOp,
 	encodeError,
@@ -18,7 +19,6 @@ import {
 	keepsMessage,
 	OpCode,
 	PATCH_METHOD,
-	wireError,
 } from "../wire/index.ts";
 import type {
 	CallItem,
@@ -31,6 +31,7 @@ import type {
 } from "../wire/index.ts";
 import { createApplier } from "./apply.ts";
 import type { Applier } from "./apply.ts";
+import { mainThreadError } from "./catalogue.ts";
 import { DEV, mainThread, setGlobalFunction } from "./globals.ts";
 import type { EngineMessage, InvokeResult, LynxElement } from "./globals.ts";
 
@@ -68,6 +69,8 @@ export function startMainThread(): void {
 	let previous: Applier | undefined;
 	/** Patches that came before the engine rendered the page. */
 	const early: PatchParams[] = [];
+	/** The page's life has ended: a patch that comes after is for no page, and is dropped. */
+	let destroyed = false;
 	/** Whether the background's page is shown: a patch of it was applied. */
 	let shown = false;
 	/** New data came before the background's page was shown: its first patch shows the data. */
@@ -131,7 +134,7 @@ export function startMainThread(): void {
 		for (const { op, error } of applier!.apply(ops)) {
 			const reason = error instanceof Error ? error.message : String(error);
 			const change = DEV ? describeOp(op) : undefined;
-			report(wireError({ code: "change_not_applied", details: { reason, change } }), op);
+			report(mainThreadError({ code: "change_not_applied", details: { reason, change } }), op);
 		}
 	}
 
@@ -139,25 +142,28 @@ export function startMainThread(): void {
 	function call([, id, element, text]: CallItem, stamp: number): void {
 		const answer = (result: Result): void => {
 			if (id !== 0) send({ t: "reply", id, result }, stamp);
-			else if (!result.ok) report(result.error.message);
+			else if (!result.ok) report(decodeError(result.error));
 		};
 		try {
 			const request = decodeCall(text);
 			if (request[0] !== "invoke")
-				throw new Error(`The main thread cannot answer a call of ${request[0]} yet.`);
+				throw mainThreadError({ code: "call_not_supported", details: { kind: request[0] } });
 			const [, method, params] = request;
 			const node = applier!.element(element);
-			if (node === undefined) throw new Error(`The main thread has no element ${element}.`);
+			if (node === undefined)
+				throw mainThreadError({ code: "element_missing", details: { id: element } });
 			mainThread.__InvokeUIMethod(node, method, params, (result: InvokeResult) => {
 				answer(
 					result.code === 0
 						? { ok: true, value: result.data ?? null }
 						: {
 								ok: false,
-								error: {
-									name: "Error",
-									message: `Lynx answered ${method} with the code ${result.code}.`,
-								},
+								error: encodeError(
+									mainThreadError({
+										code: "ui_method_failed",
+										details: { method, code: result.code },
+									}),
+								),
 							},
 				);
 			});
@@ -201,6 +207,7 @@ export function startMainThread(): void {
 	}
 
 	function onPatch(params: PatchParams): void {
+		if (destroyed) return;
 		if (!applier) {
 			early.push(params);
 			return;
@@ -257,6 +264,7 @@ export function startMainThread(): void {
 	function onDestroyLifetime(): void {
 		try {
 			generation++;
+			destroyed = true;
 			engine.removeEventListener("__RenderPage", onRenderPage);
 			engine.removeEventListener("__UpdatePage", onUpdatePage);
 			native.removeEventListener("__DestroyLifetime", onDestroyLifetime);
