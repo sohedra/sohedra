@@ -4,6 +4,7 @@ import { expect } from "@rstest/core";
 import { compile, parse } from "svelte/compiler";
 import type { AST } from "svelte/compiler";
 
+import { CSS_PROPS_HOLDERS } from "../../../src/svelte/runtime/index.ts";
 import type { Checks } from "./check.ts";
 import { clientOptions, compileClient, compileServer } from "./compile.ts";
 import { importSvelte } from "./svelte-package.ts";
@@ -55,6 +56,19 @@ const BOUNDARY_PENDING =
 	"<svelte:boundary>{#snippet pending()}<text>wait</text>{/snippet}<view></view></svelte:boundary>";
 
 export const checks: Checks = {
+	"css-props-holder": () => {
+		// A component given `--x` props is wrapped in an element that holds them, and placed at its
+		// `lastChild`, read before the wrapper is on the page.
+		for (const markup of ['<view><el.C --tone="1" /></view>', '<el.C --tone="1" />']) {
+			const code = compileClient(markup);
+			const tag = /\['(g|svelte-css-wrapper)', /.exec(code)?.[1];
+			expect(tag, markup).toBeDefined();
+			expect(CSS_PROPS_HOLDERS.has(tag!), markup).toBe(true);
+			expect(code).toMatch(/\$\.css_props\((\w+), [^]*\$\.component\(\1\.lastChild,/);
+		}
+		expect(new Set(CSS_PROPS_HOLDERS)).toEqual(new Set(["g", "svelte-css-wrapper"]));
+	},
+
 	"custom-renderer-compile-options": () => {
 		// The three options the binding sets on every background component.
 		expect(thrown(() => compileClient("<view></view>"))).toBeUndefined();
