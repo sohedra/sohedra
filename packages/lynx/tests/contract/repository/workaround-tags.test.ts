@@ -128,6 +128,18 @@ describe("the list", () => {
 });
 
 const roots: string[] = [];
+const TAG = '/** @workaround a-b kind=tooling delete-when="later" */\n';
+
+/** A repository in a temporary folder, with the given files (path from its root to text). */
+function repositoryWith(files: Record<string, string>): string {
+	const root = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-tags-"));
+	roots.push(root);
+	for (const [file, text] of Object.entries(files)) {
+		fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+		fs.writeFileSync(path.join(root, file), text);
+	}
+	return root;
+}
 
 afterEach(() => {
 	for (const root of roots.splice(0)) fs.rmSync(root, { recursive: true, force: true });
@@ -138,16 +150,20 @@ describe("the repository", () => {
 		expect(scanRepository(REPO).problems).toEqual([]);
 	});
 
-	it("does not read build output, which repeats every tag", () => {
-		const root = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-tags-"));
-		roots.push(root);
-		const tag = '/** @workaround a-b kind=tooling delete-when="later" */\n';
-		for (const folder of ["src", "lib"]) {
-			fs.mkdirSync(path.join(root, folder));
-			fs.writeFileSync(path.join(root, folder, "a.ts"), tag);
-		}
+	it("does not read a package's build output, which repeats every tag", () => {
+		const root = repositoryWith({
+			"packages/x/package.json": "{}",
+			"packages/x/src/lib/a.ts": TAG,
+			"packages/x/lib/a.ts": TAG,
+			"packages/x/dist/a.ts": TAG,
+		});
 		const { workarounds, problems } = scanRepository(root);
 		expect(problems).toEqual([]);
-		expect(workarounds.map((tag) => tag.file)).toEqual(["src/a.ts"]);
+		expect(workarounds.map((tag) => tag.file)).toEqual(["packages/x/src/lib/a.ts"]);
+	});
+
+	it("reads a lib folder that is not at a package's root", () => {
+		const root = repositoryWith({ "docs/package.json": "{}", "docs/src/lib/a.ts": TAG });
+		expect(scanRepository(root).workarounds.map((tag) => tag.file)).toEqual(["docs/src/lib/a.ts"]);
 	});
 });

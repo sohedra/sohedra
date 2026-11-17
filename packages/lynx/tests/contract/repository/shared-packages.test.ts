@@ -19,6 +19,7 @@ function repository(
 		fs.mkdirSync(path.join(root, folder, "src"), { recursive: true });
 		fs.writeFileSync(path.join(root, folder, "package.json"), JSON.stringify(manifest));
 		for (const [file, source] of Object.entries(files)) {
+			fs.mkdirSync(path.dirname(path.join(root, folder, file)), { recursive: true });
 			fs.writeFileSync(path.join(root, folder, file), source);
 		}
 	}
@@ -73,6 +74,18 @@ describe("a package that runs on the web and on Lynx", () => {
 			expect(rest).toEqual([]);
 			expect(problem).toContain("packages/primitives-core/src/index.ts");
 		}
+	});
+	it("is read in src/lib/, but not in its build output", () => {
+		const source = 'import { mount } from "@sohedra/lynx";\n';
+		const root = repository({
+			"packages/primitives-core": {
+				manifest: shared,
+				files: { "src/lib/index.ts": source, "lib/index.js": source, "dist/index.js": source },
+			},
+		});
+		expect(checkSharedPackages(root)).toEqual([
+			"packages/primitives-core/src/lib/index.ts imports @sohedra/lynx, but packages/primitives-core runs on the web and on Lynx. Use Svelte's own APIs and esm-env.",
+		]);
 	});
 });
 
