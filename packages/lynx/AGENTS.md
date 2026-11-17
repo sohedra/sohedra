@@ -23,8 +23,9 @@ public entry yet; it grows one pull request at a time.
   through the folder's `globals.ts`, typed for that thread. Never name them elsewhere, declare them
   ambiently, or write `globalThis` outside a `globals.ts`; lint enforces this.
 - **Svelte's internals** are touched only in `src/svelte/`, and every touch is a row of
-  `src/svelte/manifest.ts` that `tests/contract/svelte/` checks. To upgrade Svelte, bump the pinned
-  URL in `package.json` and run the tests: the failing row names what to revisit.
+  `src/svelte/manifest.ts` (read through `src/svelte/index.ts`) that `tests/contract/svelte/`
+  checks. To upgrade Svelte, bump the pinned URL in `package.json` and run the tests: the failing
+  row names what to revisit.
 - Use Svelte's custom-renderer build, as the root `AGENTS.md` says.
 - `pnpm -F @sohedra/lynx test` also measures coverage. No floor is recorded yet; once
   `tests/coverage-baseline.json` exists, coverage may never drop below it.
