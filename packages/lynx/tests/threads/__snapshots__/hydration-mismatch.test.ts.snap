@@ -1,0 +1,60 @@
+// Rstest Snapshot v1
+
+exports[`a refused hydration > reports a tag that differs 1`] = `
+[
+  "The first frame did not match the page the background rendered: the background rendered a <view> where the first frame has a <text>. The page was made again.
+tests/fixtures/threads/FrameCounter.svelte:7:0
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch",
+]
+`;
+
+exports[`a refused hydration > reports an attribute that differs, with both values and its place 1`] = `
+[
+  "The first frame did not match the page the background rendered: the <view>'s style is "padding: 24px;" on the background and "padding: 8px;" in the first frame. The page was made again.
+tests/fixtures/threads/FrameCounter.svelte:7:0
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch",
+]
+`;
+
+exports[`a refused hydration > reports an attribute the background does not set 1`] = `
+[
+  "The first frame did not match the page the background rendered: the <view> has hidden "yes" in the first frame, and not on the background. The page was made again.
+tests/fixtures/threads/FrameCounter.svelte:7:0
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch",
+]
+`;
+
+exports[`a refused hydration > reports an element at the page's root the background lacks 1`] = `
+[
+  "The first frame did not match the page the background rendered: the first frame has a <view> at the page's root that the background did not render. The page was made again.
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch",
+]
+`;
+
+exports[`a refused hydration > reports an element the background lacks 1`] = `
+[
+  "The first frame did not match the page the background rendered: the first frame has a <view> in the <view> that the background did not render. The page was made again.
+tests/fixtures/threads/FrameCounter.svelte:7:0
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch",
+]
+`;
+
+exports[`a refused hydration > reports an element the frame lacks 1`] = `
+[
+  "The first frame did not match the page the background rendered: the background rendered a <view> that the first frame does not have. The page was made again.
+tests/fixtures/threads/FrameCounter.svelte:9:1
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch",
+]
+`;

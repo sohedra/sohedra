@@ -1,0 +1,10 @@
+// Rstest Snapshot v1
+
+exports[`a first frame that cannot be drawn > whose markup cannot be read says where 1`] = `
+[
+  "The first frame was not drawn: its markup could not be read at character 11, where the value of class on <view> is not quoted.
+
+The page is shown when the background has made it. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/first_frame_markup_unreadable",
+]
+`;
