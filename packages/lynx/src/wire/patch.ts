@@ -74,12 +74,19 @@ export type PatchItem = OpsItem | CellItem | CallItem | ReplyItem;
 /** A patch as the main thread receives it. */
 export interface Patch extends Stamp {
 	items: PatchItem[];
+	/**
+	 * The patch shows the page's new data: the main thread flushes it with Lynx's
+	 * `triggerDataUpdated`, so a native host's `onDataUpdated` fires.
+	 */
+	dataUpdated?: true;
 }
 
 /** A patch as the background writes it: the page its content belongs to, and its items. */
 export interface PatchOf {
 	page: number;
 	items: PatchItem[];
+	/** Whether the patch shows the page's new data. */
+	dataUpdated?: boolean;
 }
 
 /** The params `callLepusMethod` passes the main thread's patch function: the patch as text. */
@@ -88,8 +95,10 @@ export interface PatchParams {
 }
 
 /** A patch as the params of the main thread's patch function, stamped with the format's version. */
-export function encodePatch({ page, items }: PatchOf): PatchParams {
-	return { data: toText({ v: PROTOCOL_VERSION, page, items }, "main-thread") };
+export function encodePatch({ page, items, dataUpdated }: PatchOf): PatchParams {
+	const patch: Patch = { v: PROTOCOL_VERSION, page, items };
+	if (dataUpdated === true) patch.dataUpdated = true;
+	return { data: toText(patch, "main-thread") };
 }
 
 /** The patch in the params of the main thread's patch function. */

@@ -12,6 +12,8 @@ export interface WireDetails {
 	page_reloaded_on_one_thread: { thread: Thread; received: number; page: number };
 	/** `thread` is the thread the value was sent to. */
 	value_not_copyable: { thread: Thread; reason: string };
+	/** `change` is what the main thread was doing, in development builds (`describeOp`). */
+	change_not_applied: { reason: string; change?: string | undefined };
 }
 
 /** What a code of the wire names. */
@@ -46,6 +48,14 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 		fix: () =>
 			"Send plain data: strings, numbers, booleans, null, arrays and plain objects, without cycles or BigInt values.",
 		docs: "value_not_copyable",
+	},
+	change_not_applied: {
+		message: ({ reason, change }) =>
+			`Lynx refused a change to the page on the main thread: ${reason.split("\n")[0]!.trim()}` +
+			(change === undefined ? "" : `\nWhile trying to ${change}.`),
+		fix: () =>
+			"The rest of the change was applied. This is a bug in @sohedra/lynx or in Lynx: report it with the component and the steps that lead to it.",
+		docs: "change_not_applied",
 	},
 };
 

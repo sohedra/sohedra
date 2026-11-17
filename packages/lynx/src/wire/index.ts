@@ -3,6 +3,8 @@
 
 export { WIRE_CATALOGUE, wireError, wireMessage } from "./catalogue.ts";
 export type { WireCode, WireDetails, WireError, WireReport } from "./catalogue.ts";
+export { describeOp } from "./describe-op.ts";
+export type { TagOf } from "./describe-op.ts";
 export { eventOf, listenerEvent, lynxEventName, removedEventSpelling } from "./events.ts";
 export type { LynxEvent, LynxEventType, LynxListener, RemovedEventSpelling } from "./events.ts";
 export { GestureType, isGesture } from "./gesture.ts";
@@ -37,6 +39,7 @@ export {
 	PACKAGE_NAME,
 	PATCH_METHOD,
 	RENDERER_ENTRY,
+	TEXT_CONTAINERS,
 	TO_BACKGROUND,
 } from "./names.ts";
 export type { LazyBundleParams, Thread } from "./names.ts";
