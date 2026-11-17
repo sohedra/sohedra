@@ -2,12 +2,14 @@
 // the same exports. The loader runs last on every main-thread script, `node_modules` included, so
 // a module without the marker must cost nothing.
 
+import path from "node:path";
 import vm from "node:vm";
 
 import { describe, expect, it } from "@rstest/core";
 
 import { backgroundOnlyStub } from "../../../../src/build/loaders/background-only-stub.ts";
 import backgroundOnlyLoader from "../../../../src/build/loaders/background-only.ts";
+import { APP_ROOT } from "../app.ts";
 import { runLoader } from "./loader-context.ts";
 
 const MARKER = "/binding/background/background-only.ts";
@@ -91,6 +93,14 @@ describe("a module with the marker", () => {
 });
 
 describe("the loader", () => {
+	it("fails for the marker module itself, which only a component brings to the main thread, with no text of its own left", async () => {
+		const result = await runLoader(backgroundOnlyLoader, "export {};\n", {
+			options: { marker: path.join(APP_ROOT, "src", "store.ts") },
+			file: "store.ts",
+		});
+		expect(result.error).toMatchObject({ code: "background_only_in_component" });
+	});
+
 	it("gives the stub, and no map: the stub is not the source", async () => {
 		const result = await load(
 			'import "background-only";\nexport const a = 1;\n',

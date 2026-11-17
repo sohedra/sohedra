@@ -129,6 +129,22 @@ describe("the main thread's copy", () => {
 	});
 });
 
+describe("a component that imports background-only", () => {
+	const source = '<script lang="ts">\n  import "background-only";\n</script>\n<view></view>\n';
+
+	it("fails on the main thread, which renders every component for the first frame, naming the component", async () => {
+		const { error } = await load(source, { thread: "main-thread" }, { file: "Card.svelte" });
+		expect(error).toMatchObject({
+			code: "background_only_in_component",
+			message: expect.stringContaining("The component src/Card.svelte imports 'background-only'"),
+		});
+	});
+
+	it("builds on the background thread, where it belongs", async () => {
+		expect((await load(source)).error).toBeNull();
+	});
+});
+
 describe("hot reload", () => {
 	const hot = { hot: true };
 

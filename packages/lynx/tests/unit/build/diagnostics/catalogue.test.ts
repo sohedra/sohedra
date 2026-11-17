@@ -58,6 +58,22 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	first_frame_not_boolean: { entry: "settings", given: '"yes"' },
 	css_not_stored: { file: "/app/src/Card.svelte" },
 	hot_footer_missing: { file: "/app/src/Card.svelte" },
+	svelte_missing: { root: "/app" },
+	svelte_without_renderers: { version: "5.40.0", where: "/app" },
+	lynx_engine_missing: {},
+	template_plugin_versions: { engine: "0.16.9", own: "0.16.8" },
+	encoder_not_handed_over: {
+		reason: "its LynxEncodePlugin has no encodePool to run the encode step in",
+	},
+	svelte_config_invalid: {
+		file: "/app/svelte.config.js",
+		reason: "it has no default export that is an object",
+	},
+	svelte_config_option_owned: { key: "generate" },
+	svelte_config_option_unsupported: { key: "accessors" },
+	iife_ignored: { value: "true" },
+	main_thread_asset_missing: { file: ".rspeedy/main/main-thread.js" },
+	rsbuild_swc_missing: {},
 	spread_setter_moved: {
 		file: "/app/node_modules/svelte/src/internal/client/reactivity/props.js",
 		anchor: "get_descriptor(props, key)?.set ??",
@@ -66,7 +82,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		file: "/app/node_modules/svelte/src/utils.js",
 		name: "REGEX_VALID_TAG_NAME",
 	},
-	background_only_in_component: {},
+	background_only_in_component: { file: "src/Card.svelte" },
 	background_only_reexport_all: { file: "src/store.ts", from: "./other" },
 	background_only_used: { used: "store.value", file: "src/store.ts" },
 };

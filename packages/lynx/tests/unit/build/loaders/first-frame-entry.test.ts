@@ -21,8 +21,8 @@ describe("the first frame's copy of an entry", () => {
 	});
 
 	it("writes the entry as a literal that survives `<`, `>` and the line separators", async () => {
-		const { code } = await load(`?entry=${encodeURIComponent("./a<b> .ts")}`);
-		expect(code).not.toContain(" ");
+		const { code } = await load(`?entry=${encodeURIComponent("./a<b>\u2028.ts")}`);
+		expect(code).not.toContain("\u2028");
 		expect(code).toContain("\\u003cb\\u003e\\u2028");
 	});
 });
