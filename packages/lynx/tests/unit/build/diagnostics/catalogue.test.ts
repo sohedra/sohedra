@@ -38,6 +38,24 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap", spelling: "bind" },
 	global_event_attribute: { attribute: "global-bindtap", event: "tap" },
 	list_item_without_key: {},
+	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
+	plugin_option_removed: {
+		name: "compilerOptions",
+		instead: "Set it in svelte.config.js: `export default svelteConfig({ compilerOptions })`.",
+	},
+	plugin_option_type: {
+		name: "firstFrame",
+		expected: "a boolean or a function of the entry's name that returns one",
+		given: '"yes"',
+	},
+	engine_version_old: { version: "3.9", minimum: "4.2" },
+	engine_version_new: { version: "4.4", maximum: "4.3" },
+	define_thread_unknown: { name: "worker" },
+	define_key_reserved: { name: "define.mainThread.__DEV__" },
+	define_key_invalid: { name: "define.mainThread.a.b" },
+	page_config_reserved: { key: "enableA11y" },
+	single_copy_name: { given: '["./local"]' },
+	first_frame_not_boolean: { entry: "settings", given: '"yes"' },
 };
 
 const CODES = Object.keys(BUILD_CATALOGUE) as BuildCode[];
