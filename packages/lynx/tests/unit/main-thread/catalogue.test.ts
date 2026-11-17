@@ -16,6 +16,7 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 	ui_method_failed: { method: "setValue", code: 4 },
 	element_has_no_view: { method: "boundingClientRect" },
 	element_left_page: { method: "scrollTo" },
+	first_frame_markup_unreadable: { reason: "the value of class on <view> is not quoted", at: 11 },
 };
 
 // Boundary: the keys of the catalogue are its codes.

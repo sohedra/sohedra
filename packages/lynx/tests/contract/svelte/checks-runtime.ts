@@ -86,11 +86,33 @@ export const checks: Checks = {
 
 	"server-runtime-exports": async () => {
 		const server = await importSvelte("src/internal/server/index.js");
-		for (const name of ["attr", "attributes", "escape", "css_props"]) {
+		for (const name of ["attr", "attributes", "css_props"]) {
 			expect(typeof server[name], name).toBe("function");
 		}
+		const constants = await importSvelte("src/constants.js");
+		expect(constants["ELEMENT_PRESERVE_ATTRIBUTE_CASE"]).toBe(2);
+		// Boundary: Svelte's internal modules have no types.
+		const attributes = server["attributes"] as (
+			attrs: Record<string, unknown>,
+			hash?: string,
+			classes?: unknown,
+			styles?: unknown,
+			flags?: number,
+		) => string;
+		expect(attributes({ spreadName: "x" }, undefined, undefined, undefined, 2)).toBe(
+			' spreadName="x"',
+		);
 		// The first frame's components write elements with these.
 		expect(compileServer("<view id={x} {...el}>{x}</view>")).toMatch(/\$\.attributes\(/);
+	},
+
+	"server-render-await-invalid": async () => {
+		const server = await importSvelte("src/internal/server/index.js");
+		// Boundary: Svelte's internal modules have no types.
+		const render = server["render"] as (component: unknown) => { body: string };
+		const awaits = (renderer: { child(fn: () => Promise<void>): void }) =>
+			renderer.child(async () => {});
+		expect(() => render(awaits).body).toThrow(/^await_invalid\n/);
 	},
 
 	"reactivity-client-exports": async () => {

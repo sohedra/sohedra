@@ -94,6 +94,14 @@ const PATCHES: [name: string, page: number, items: PatchItem[]][] = [
 		],
 	],
 	["the reloaded page's first patch", 1, [["ops", COUNTER]]],
+	[
+		"the page written again",
+		0,
+		[
+			["rewrite", ROOT_ID],
+			["ops", COUNTER],
+		],
+	],
 ];
 
 const MESSAGES: [name: string, message: ToBackground][] = [
@@ -120,6 +128,14 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 	["a call of a background function", { t: "call", id: 1, fn: 2, context: 3, params: ["done"] }],
 	["a release", { t: "release", contexts: [3] }],
 	[
+		"the page asked for again after a refused hydration",
+		{
+			t: "rewrite",
+			nodes: [ROOT_ID],
+			mismatch: { kind: "attribute", node: 2, name: "class", expected: "counter", got: "open" },
+		},
+	],
+	[
 		"an error with its code and where it was thrown",
 		{
 			t: "error",
@@ -134,6 +150,16 @@ describe("golden patches", () => {
 		const { data } = encodePatch({ page, items });
 		expect(data).toMatchSnapshot();
 		expect(decodePatch({ data })).toEqual({ v: PROTOCOL_VERSION, page, items });
+	});
+
+	it("say how many items hold the page as it rendered, at its start", () => {
+		const items: PatchItem[] = [
+			["ops", COUNTER],
+			["ops", [[OpCode.SetText, 4, "Count: 1"]]],
+		];
+		const { data } = encodePatch({ page: 0, items, rendered: 1 });
+		expect(data).toMatchSnapshot();
+		expect(decodePatch({ data })).toEqual({ v: PROTOCOL_VERSION, page: 0, items, rendered: 1 });
 	});
 
 	it("drop the page before a reload", () => {

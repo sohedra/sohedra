@@ -31,6 +31,7 @@ const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 const onTheTestTree = [
 	"tests/unit/testing/**",
 	"tests/unit/background/**",
+	"tests/unit/first-frame/**",
 	"tests/unit/globals/**",
 	"tests/contract/engine/**",
 	"tests/threads/**",
