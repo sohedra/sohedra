@@ -2,6 +2,7 @@
 // styles set from code, computed styles and queries. Each rides in the patch after the ops made
 // before it, so it sees the tree as the component left it.
 
+import { sourceLocation } from "../../svelte/runtime/index.ts";
 import type { CallRequest } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import type { BackgroundError } from "../catalogue.ts";
@@ -34,7 +35,10 @@ const isCode = (error: unknown, code: string): boolean =>
 
 /** The error of a method called on a node that has no Lynx element. */
 export function notOnPage(node: TreeNode, method: string): BackgroundError {
-	return backgroundError({ code: "element_not_on_page", details: { method, tag: node.tag ?? "" } });
+	return backgroundError({
+		code: "element_not_on_page",
+		details: { method, tag: node.tag ?? "", where: sourceLocation(node) },
+	});
 }
 
 /** The error of a method called once the page is gone. */
@@ -56,7 +60,7 @@ export function elementMethods<Node extends TreeNode>(
 			if (node.cell !== 0 && isCode(error, "element_missing"))
 				throw backgroundError({
 					code: "element_not_shown",
-					details: { method, tag: node.tag ?? "" },
+					details: { method, tag: node.tag ?? "", where: sourceLocation(node) },
 				});
 			throw error;
 		});

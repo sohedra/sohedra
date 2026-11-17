@@ -161,7 +161,10 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 			checkName("__AddInlineStyle", 1, key);
 			// The engine looks the name up as it is written, and finds no style for a JavaScript name
 			// (FiberAddInlineStyle; core/renderer/css/css_property.cc, GetPropertyID).
-			if (!key.startsWith("--") && /[A-Z]/.test(key)) {
+			// A custom property has no style id: the engine drops it (css_property.cc, GetPropertyID;
+			// only the whole style, FiberSetInlineStyles, takes custom properties).
+			if (key.startsWith("--")) return;
+			if (/[A-Z]/.test(key)) {
 				throw new Error(
 					`__AddInlineStyle was given ${key}, and Lynx finds no style by that name. ` +
 						`Name it as CSS does: ${dashed(key)}.`,

@@ -40,7 +40,11 @@ type ElementRequest = Exclude<CallRequest, ["unref", ...unknown[]] | ["run", ...
 /** What a failed call rejects with. */
 const failure = (error: unknown): Result => ({ ok: false, error: encodeError(error) });
 
-/** The calls of one page. */
+/**
+ * The calls of one page.
+ *
+ * @workaround ui-methods-after-flush kind=lynx-limit delete-when="the binding sets the engine's enableElementInvokeUIMethodPendingTask, which runs a UI method after its element's flush"
+ */
 export function createCalls(scope: CallsScope): Calls {
 	const waiting: (() => void)[] = [];
 

@@ -223,6 +223,7 @@ export function elementClass(scope: ElementScope): ElementClass {
 			if (host && this.lynxId === 0) throw notOnPage(this, "animate");
 			return startAnimation<ElementNode>({
 				node: this,
+				tag: this.tag ?? "",
 				keyframes,
 				options: typeof options === "number" ? { duration: options } : options,
 				send: host ? (args) => scope.animate(this, args) : undefined,

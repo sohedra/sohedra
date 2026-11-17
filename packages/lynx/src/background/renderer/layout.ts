@@ -26,7 +26,11 @@ function layoutEvent(node: TreeNode, layout: Record<string, unknown>): Record<st
 	return { type: "layoutchange", detail: layout, target: node, currentTarget: node };
 }
 
-/** Makes the function that answers a `layoutchange` listener just added to `node`. */
+/**
+ * Makes the function that answers a `layoutchange` listener just added to `node`.
+ *
+ * @workaround late-layoutchange-listener kind=lynx-gap delete-when="Lynx sends the current layout to a layoutchange listener added after the element was laid out"
+ */
 export function lateLayouts(scope: LayoutScope): (node: TreeNode, handler: Handler) => void {
 	return (node, handler) => {
 		const host = scope.host();

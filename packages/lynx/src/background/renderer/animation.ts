@@ -56,6 +56,8 @@ const FINISH = 4;
 /** What an animation needs of its element. */
 export interface AnimationTarget<Target> {
 	node: Target;
+	/** The element's tag, for the error of a canceled animation. */
+	tag: string;
 	keyframes: Keyframe[];
 	options: AnimationOptions;
 	/** Sends `__ElementAnimate`'s arguments to the element; `undefined` once the page is gone. */
@@ -97,7 +99,10 @@ export function startAnimation<Target>(target: AnimationTarget<Target>): LynxAni
 		settle?.(how);
 	};
 	const canceled = (): Error => {
-		const error = backgroundError({ code: "animation_canceled", details: { name } });
+		const error = backgroundError({
+			code: "animation_canceled",
+			details: { tag: target.tag, name: options.name },
+		});
 		error.name = "AbortError";
 		return error;
 	};

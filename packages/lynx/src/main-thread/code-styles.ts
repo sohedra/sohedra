@@ -4,8 +4,6 @@
 // set are kept here and put back after each write of `style`, except those the write sets itself:
 // the write wins, and the property is then the style's. Code that sets a property to `null` or ""
 // gives it back to `style`.
-//
-// A page whose code styles no element pays one test for each write of `style`.
 
 import { mainThread } from "./globals.ts";
 import type { LynxElement } from "./globals.ts";
@@ -38,37 +36,68 @@ function propertiesOf(css: string): Set<string> {
 	return names;
 }
 
+const isCustom = (name: string): boolean => name.startsWith("--");
+
 /** A property's name as it is compared: custom properties are case sensitive, others are not. */
-const propertyKey = (name: string): string => (name.startsWith("--") ? name : name.toLowerCase());
+const propertyKey = (name: string): string => (isCustom(name) ? name : name.toLowerCase());
 
 /** The code styles of one page. */
 export function createCodeStyles(): CodeStyles {
 	const kept = new WeakMap<LynxElement, Map<string, string | number>>();
-	let any = false;
+	// Each element's `style` text, as last written: custom properties from code are written with it.
+	const written = new WeakMap<LynxElement, string>();
+
+	/**
+	 * Writes the element's style with the custom properties code set, then adds the rest.
+	 *
+	 * @workaround custom-properties-in-style-text kind=lynx-gap delete-when="__AddInlineStyle takes a custom property"
+	 */
+	function rewrite(element: LynxElement, own: Map<string, string | number>): void {
+		let css = written.get(element)?.trim() ?? "";
+		for (const [name, value] of own) {
+			if (!isCustom(name)) continue;
+			if (css !== "" && !css.endsWith(";")) css += ";";
+			css += `${name}:${String(value)};`;
+		}
+		mainThread.__SetInlineStyles(element, css);
+		for (const [name, value] of own)
+			if (!isCustom(name)) mainThread.__AddInlineStyle(element, name, value);
+	}
+
 	return {
 		set(element, styles) {
 			let own = kept.get(element);
+			let custom = false;
 			for (const name of Object.keys(styles)) {
 				const value = styles[name];
-				mainThread.__AddInlineStyle(element, name, value ?? null);
+				// A custom property has no style id of its own: it goes in the whole style.
+				custom ||= isCustom(name);
 				if (value == null || value === "") {
 					own?.delete(name);
+					if (!isCustom(name)) mainThread.__AddInlineStyle(element, name, null);
 					continue;
 				}
 				if (!own) kept.set(element, (own = new Map()));
 				own.set(name, value);
-				any = true;
+				if (!isCustom(name)) mainThread.__AddInlineStyle(element, name, value);
 			}
+			if (custom) rewrite(element, own ?? new Map());
 		},
 		restore(element, css) {
-			if (!any) return;
+			written.set(element, css);
 			const own = kept.get(element);
-			if (!own) return;
-			const written = css === "" ? undefined : propertiesOf(css);
-			for (const [name, value] of own) {
-				if (written?.has(propertyKey(name))) own.delete(name);
-				else mainThread.__AddInlineStyle(element, name, value);
+			if (!own || own.size === 0) return;
+			const ownWritten = css === "" ? undefined : propertiesOf(css);
+			let custom = false;
+			for (const name of own.keys()) {
+				if (ownWritten?.has(propertyKey(name))) own.delete(name);
+				else custom ||= isCustom(name);
 			}
+			if (custom) {
+				rewrite(element, own);
+				return;
+			}
+			for (const [name, value] of own) mainThread.__AddInlineStyle(element, name, value);
 		},
 	};
 }

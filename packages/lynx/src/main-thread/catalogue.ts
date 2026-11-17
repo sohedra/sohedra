@@ -50,14 +50,14 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 	},
 	element_has_no_view: {
 		message: ({ method }) =>
-			`Lynx could not run ${method}: the element has no view of its own. Lynx flattens a plain <view> into its parent, and makes no view for an element that is not on the screen.`,
-		fix: () =>
-			"Give the element flatten={false} so that Lynx keeps its view, and call the method once the element is on the screen.",
+			`Lynx could not run ${method}: the element has no view on the screen. Lynx makes a view only for an element it draws, not for one that is hidden or not shown yet.`,
+		fix: ({ method }) =>
+			`Call ${method} once the element is shown, for example after a layoutchange event of the element.`,
 		docs: "element_has_no_view",
 	},
 	element_left_page: {
 		message: ({ method }) =>
-			`Lynx could not run ${method}: the element was removed from the page before the call was made.`,
+			`Lynx could not run ${method}: the element was removed from the page in the same update, before Lynx ran the call.`,
 		fix: () =>
 			"Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.",
 		docs: "element_left_page",
