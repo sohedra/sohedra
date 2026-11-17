@@ -65,10 +65,11 @@ export type CallItem = ["call", number, number, string];
 export type ReplyItem = ["reply", number, string];
 
 /**
- * The main thread lets go of the elements of this element's subtree, and the items after it make
- * the subtree again, with the same ids, from what the background holds now: the answer to a
- * rewrite message. The page's root (`ROOT_ID`) rewrites the whole page, which stays on the screen
- * until the patch's flush.
+ * The page is written again: the main thread lets go of its elements, which stay on the screen until
+ * the patch's flush, and the items after this make the page again, with the same ids, from what the
+ * background holds now. The answer to a rewrite message. Only the page's root (`ROOT_ID`) is
+ * written again; another id is reported. A later version may write one list cell again, with the
+ * same item and the background's same writing, but its own arrival rule.
  */
 export type RewriteItem = ["rewrite", number];
 

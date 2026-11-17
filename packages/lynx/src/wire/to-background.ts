@@ -60,10 +60,10 @@ export interface ReleaseMessage {
 }
 
 /**
- * The main thread asks the background to write these elements' subtrees again, with the ids they
- * have: it answers with a patch that holds a rewrite item for each. The page's root asks for the
- * whole page, after a hydration the main thread refused or could not finish; `mismatch` then says
- * why, in development builds.
+ * The main thread asks the background to write the page again, with the ids it has: `nodes` is the
+ * page's root (`ROOT_ID`), the one subtree written again yet. It answers with a patch that starts
+ * with a rewrite item. The main thread asks after a hydration it refused or could not finish;
+ * `mismatch` then says why, with the values that differ in development builds only.
  */
 export interface RewriteMessage {
 	t: "rewrite";

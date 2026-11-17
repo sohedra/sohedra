@@ -25,7 +25,15 @@ import {
 	PATCH_METHOD,
 	ROOT_ID,
 } from "../wire/index.ts";
-import type { Op, Patch, PatchItem, PatchParams, SentEvent, ToBackground } from "../wire/index.ts";
+import type {
+	Op,
+	Patch,
+	PatchItem,
+	PatchParams,
+	RewriteItem,
+	SentEvent,
+	ToBackground,
+} from "../wire/index.ts";
 import { createApplier } from "./apply.ts";
 import type { Applier } from "./apply.ts";
 import { createCalls } from "./calls.ts";
@@ -144,13 +152,20 @@ export function startMainThread(): void {
 		clearPrevious(state);
 	}
 
+	/** Whether a rewrite item is the whole page's, the one the main thread writes again; else reported. */
+	function isPageRewrite(item: RewriteItem): boolean {
+		if (item[1] === ROOT_ID) return true;
+		report(mainThreadError({ code: "rewrite_not_page", details: { id: item[1] } }));
+		return false;
+	}
+
 	/** Applies a patch's items, in order. */
 	function applyItems(items: PatchItem[], stamp: number): void {
 		for (const item of items) {
 			if (state.rewriting) {
 				// Until the rewrite, the background's page is written again: only the calls wait for it.
 				if (item[0] === "call") state.held.push({ item, stamp });
-				else if (item[0] === "rewrite") {
+				else if (item[0] === "rewrite" && isPageRewrite(item)) {
 					state.rewriting = false;
 					replacePage();
 				}
@@ -175,7 +190,7 @@ export function startMainThread(): void {
 					calls.run(item, stamp);
 					break;
 				case "rewrite":
-					replacePage();
+					if (isPageRewrite(item)) replacePage();
 					break;
 				case "reply":
 					// The answers to main-thread functions' calls, which their runtime reads.

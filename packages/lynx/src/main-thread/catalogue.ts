@@ -21,6 +21,7 @@ export interface MainThreadDetails {
 	first_frame_markup_unreadable: { reason: string; at: number };
 	/** `reason` is the first line of what the page's components threw. */
 	first_frame_threw: { reason: string };
+	rewrite_not_page: { id: number };
 }
 
 /** What a code of the main thread names. */
@@ -78,6 +79,12 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		fix: () =>
 			"Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/env. The page is shown when the background has made it.",
 		docs: "first_frame_threw",
+	},
+	rewrite_not_page: {
+		message: ({ id }) =>
+			`The background wrote element ${id} again, and the main thread writes only the whole page again.`,
+		fix: () => `The rest of the change was applied. ${REPORT}`,
+		docs: "rewrite_not_page",
 	},
 };
 
