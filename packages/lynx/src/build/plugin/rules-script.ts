@@ -129,6 +129,15 @@ export function splitScriptRule(options: {
 		// Boundary: `Object.fromEntries` types its keys as `string`; the threads are the keys.
 	) as SwcByThread;
 
+	// A test run has one thread and no layers: Rsbuild's rule keeps its uses, because plugins after
+	// this one read and change them there (Rstest's coverage adds its instrumentation to them).
+	const [only] = threads;
+	if (threads.length === 1 && only?.unlayered === true) {
+		jsMain.use(CHAIN_ID.USE.SWC).options(swc[only.thread]);
+		useMainThreadFunctions(jsMain, only);
+		return swc;
+	}
+
 	jsMain.uses.clear();
 	for (const rules of threads) {
 		const rule = threadRule(jsMain, rules);
