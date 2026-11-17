@@ -10,6 +10,8 @@ import { readLabels } from "./labels.ts";
 
 const problems: string[] = [];
 const IGNORED_DIRS = new Set([".git", "node_modules", ".svelte-kit", "dist", "coverage"]);
+// Agent worktrees are other checkouts of this repository, checked in their own run.
+const IGNORED_PATHS = new Set([join(".claude", "worktrees")]);
 
 /** Every file under `dir`, as paths relative to the repository root, skipping build and VCS folders. */
 function walk(dir: string): string[] {
@@ -18,10 +20,10 @@ function walk(dir: string): string[] {
 	}
 	const files: string[] = [];
 	for (const entry of readdirSync(dir, { withFileTypes: true })) {
-		if (IGNORED_DIRS.has(entry.name)) {
+		const path = join(dir, entry.name);
+		if (IGNORED_DIRS.has(entry.name) || IGNORED_PATHS.has(path)) {
 			continue;
 		}
-		const path = join(dir, entry.name);
 		if (entry.isDirectory()) {
 			files.push(...walk(path));
 		} else {
