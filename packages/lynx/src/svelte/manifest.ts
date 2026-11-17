@@ -230,6 +230,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: RUNTIME,
 	},
 	{
+		id: "css-props-holder",
+		program: "runtime",
+		file: "src/compiler/phases/3-transform/client/visitors/shared/component.js",
+		anchor: "b.stmt(fn(b.member(anchor, 'lastChild'))),",
+		reliesOn:
+			"a component given `--x` props is wrapped in an element tagged `svelte-css-wrapper` or `g` (`CSS_PROPS_HOLDERS`), and placed at the wrapper's `lastChild`, which Svelte reads before the wrapper is on the page: the renderer makes the wrapper a `<view>` then",
+		test: COMPILER,
+	},
+	{
 		id: "events-module-exports",
 		program: "runtime",
 		file: "src/events/index.js",

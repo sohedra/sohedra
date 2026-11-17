@@ -2,6 +2,7 @@
 // tree questions of the DOM, their attributes and their listeners, answered from the renderer's
 // tree, and the methods that reach the Lynx element on the main thread.
 
+import { CSS_PROPS_HOLDERS } from "../../svelte/runtime/index.ts";
 import { listenerEvent } from "../../wire/index.ts";
 import type { LynxEventType } from "../../wire/index.ts";
 import { startAnimation } from "./animation.ts";
@@ -46,7 +47,8 @@ export interface ElementNode extends TreeNode {
 	dispatchEvent(event: { type: string }): boolean;
 	/**
 	 * The last child, as in the DOM. Svelte reads it on the element that holds a component's
-	 * `--x` properties, before it is on the page: Lynx has no such element, so it becomes a `view`.
+	 * `--x` properties, before it is on the page: Lynx has no such element, so it becomes a `view`,
+	 * which is a real box in the layout (Lynx has no `display: contents`).
 	 */
 	readonly lastChild: TreeNode | null;
 	/**
@@ -94,9 +96,6 @@ export interface ElementScope {
 	/** The element node with this id, while it is on the page. */
 	nodeById(id: number): ElementNode | undefined;
 }
-
-/** The tags Svelte gives the element that holds a component's `--x` properties. */
-const PROPERTY_HOLDERS = new Set(["g", "svelte-css-wrapper"]);
 
 /** The class of a renderer's element nodes. */
 export type ElementClass = new (tag: string) => ElementNode;
@@ -188,7 +187,7 @@ export function elementClass(scope: ElementScope): ElementClass {
 
 		get lastChild(): TreeNode | null {
 			// Only here, before the node has a Lynx element: no other element pays for it.
-			if (this.lynxId === 0 && PROPERTY_HOLDERS.has(this.tag!)) this.tag = "view";
+			if (this.lynxId === 0 && CSS_PROPS_HOLDERS.has(this.tag!)) this.tag = "view";
 			return this.last;
 		}
 
