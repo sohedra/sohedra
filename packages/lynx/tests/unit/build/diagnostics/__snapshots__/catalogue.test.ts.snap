@@ -156,6 +156,18 @@ Read what it needs into a variable outside the function.
 https://sohedra.com/e/main_thread_function_this"
 `;
 
+exports[`the build's catalogue > main_thread_function_used_early: the message 1`] = `
+"The main-thread function \`onScroll\` is used above its declaration, where it does not exist yet: it captures \`count\`, which is set further down.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Move the declaration of \`onScroll\` above this use, after the values it captures.
+https://sohedra.com/e/main_thread_function_used_early"
+`;
+
 exports[`the build's catalogue > on_directive: the message 1`] = `
 "\`on:\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3

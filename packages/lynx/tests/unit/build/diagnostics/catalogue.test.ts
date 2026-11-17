@@ -32,6 +32,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	main_thread_function_this: { keyword: "this" },
 	main_thread_function_generator: {},
 	main_thread_function_block_name: { where: "main-thread:ontap", names: ["row", "index"] },
+	main_thread_function_used_early: { name: "onScroll", captures: ["count"] },
 	plain_function_in_main_thread_function: { name: "save" },
 	script_syntax_error: { reason: "Unexpected token" },
 	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap", spelling: "bind" },

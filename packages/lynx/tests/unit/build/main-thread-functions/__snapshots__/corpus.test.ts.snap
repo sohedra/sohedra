@@ -5,17 +5,6 @@ exports[`the main-thread function transform, over the corpus > apps/Pan.svelte 1
   "background": {
     "functions": [
       {
-        "backgroundFunctions": 0,
-        "captures": [
-          "box",
-        ],
-        "extraKeys": [],
-        "id": "5543:e5f58:1",
-        "values": [
-          "box = box",
-        ],
-      },
-      {
         "backgroundFunctions": 1,
         "captures": [],
         "extraKeys": [],
@@ -28,6 +17,17 @@ exports[`the main-thread function transform, over the corpus > apps/Pan.svelte 1
         "extraKeys": [],
         "id": "5543:e5f58:3",
         "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "box",
+        ],
+        "extraKeys": [],
+        "id": "5543:e5f58:1",
+        "values": [
+          "box = box",
+        ],
       },
     ],
     "registrations": [],
@@ -35,17 +35,6 @@ exports[`the main-thread function transform, over the corpus > apps/Pan.svelte 1
   "mainThread": {
     "functions": [
       {
-        "backgroundFunctions": 0,
-        "captures": [
-          "box",
-        ],
-        "extraKeys": [],
-        "id": "5543:e5f58:1",
-        "values": [
-          "box = box",
-        ],
-      },
-      {
         "backgroundFunctions": 1,
         "captures": [],
         "extraKeys": [],
@@ -58,6 +47,17 @@ exports[`the main-thread function transform, over the corpus > apps/Pan.svelte 1
         "extraKeys": [],
         "id": "5543:e5f58:3",
         "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "box",
+        ],
+        "extraKeys": [],
+        "id": "5543:e5f58:1",
+        "values": [
+          "box = box",
+        ],
       },
     ],
     "registrations": [

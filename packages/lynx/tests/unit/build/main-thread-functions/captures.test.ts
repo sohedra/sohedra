@@ -424,7 +424,7 @@ export const last = 1;
 
 	it("puts an object where each function was", () => {
 		const { code } = compile(source, "background");
-		expect(code).toMatch(/export let double = \{ _c: \{ scale \}, _wkltId: "[^"]+" \};/);
+		expect(code).toMatch(/export const double = \{ _c: \{ scale \}, _wkltId: "[^"]+" \};/);
 		expect(code).toMatch(/export const handlers = \[\n {2}\{ _wkltId: "[^"]+" \}/);
 		expect(code).toContain("export const last = 1;");
 	});
