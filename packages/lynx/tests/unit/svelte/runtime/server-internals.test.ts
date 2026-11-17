@@ -39,6 +39,21 @@ describe("the first frame's attributes", () => {
 		expect(readBack(written).attrs).toEqual(values);
 	});
 
+	it("write markup and line separators in a value escaped, so a list's cells read back whole", () => {
+		const value = { s: "<list-item></list-item></list>", line: "a\u2028b\u2029c" };
+		const written = attr("data-x", value);
+		expect(written).not.toMatch(/[<>\u2028\u2029]/);
+		let next = 1;
+		const page = parsePage(
+			`<list><list-item item-key="a"${written}><text>a</text></list-item><list-item item-key="b"></list-item></list>`,
+			1,
+			() => ++next,
+		);
+		const list = page.children[0] as DrawnNode;
+		expect(list.cells!.map((cell) => cell.attrs.get("item-key"))).toEqual(["a", "b"]);
+		expect(list.cells![0]!.attrs.get("data-x")).toEqual(value);
+	});
+
 	it("write a function as its name alone: an event's binds, any other's is dropped", () => {
 		const written = attr("bindtap", () => {}) + attr("ontap", () => {}) + attr("compute", () => {});
 		expect(written).toBe(" bindtap ontap compute");
