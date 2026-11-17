@@ -12,6 +12,42 @@ Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
 https://sohedra.com/e/animate_directive"
 `;
 
+exports[`the build's catalogue > background_only_in_component: the message 1`] = `
+"A Svelte component imports 'background-only', but every component also renders on the main thread for the first frame.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Keep the background-only code in a .ts module, or keep the component out of the first frame with a \`<svelte:boundary>\` that has a \`pending\` snippet.
+https://sohedra.com/e/background_only_in_component"
+`;
+
+exports[`the build's catalogue > background_only_reexport_all: the message 1`] = `
+"The module src/store.ts imports 'background-only' and has \`export * from './other'\`: the main thread replaces the module with a stub, and needs its export names.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Name them: \`export { a, b } from './other'\`.
+https://sohedra.com/e/background_only_reexport_all"
+`;
+
+exports[`the build's catalogue > background_only_used: the message 1`] = `
+"The first frame used \`store.value\`, from the background-only module src/store.ts.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+The main thread draws the first frame and has no copy of it: use it in onMount, $effect or an event handler. The background thread draws this page instead.
+https://sohedra.com/e/background_only_used"
+`;
+
 exports[`the build's catalogue > bind_directive: the message 1`] = `
 "\`bind:\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3
@@ -46,6 +82,18 @@ exports[`the build's catalogue > css_injected: the message 1`] = `
 
 Remove it: the build writes a component's styles to the page's stylesheet.
 https://sohedra.com/e/css_injected"
+`;
+
+exports[`the build's catalogue > css_not_stored: the message 1`] = `
+"The styles of /app/src/Card.svelte were not found: its code came from a build cache that has none for it.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Delete node_modules/.cache and build again.
+https://sohedra.com/e/css_not_stored"
 `;
 
 exports[`the build's catalogue > define_key_invalid: the message 1`] = `
@@ -142,6 +190,18 @@ exports[`the build's catalogue > global_event_attribute: the message 1`] = `
 
 Listen with \`on(root, "tap", handler)\` in an effect, with \`root\` from \`@sohedra/lynx\`.
 https://sohedra.com/e/global_event_attribute"
+`;
+
+exports[`the build's catalogue > hot_footer_missing: the message 1`] = `
+"Svelte's hot-reload code is not where the build expected it in /app/src/Card.svelte, so a change to this component reloads the page.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Update @sohedra/lynx, or turn hot reload off with \`dev: { hmr: false }\`.
+https://sohedra.com/e/hot_footer_missing"
 `;
 
 exports[`the build's catalogue > html_tag: the message 1`] = `
@@ -325,6 +385,18 @@ Fix the error the preprocessor reports, or check its options in svelte.config.js
 https://sohedra.com/e/preprocess_failed"
 `;
 
+exports[`the build's catalogue > primjs_regex_moved: the message 1`] = `
+"Svelte's \`REGEX_VALID_TAG_NAME\` is not where the build expected it in /app/node_modules/svelte/src/utils.js, so Lynx's main-thread engine may refuse the file.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use the Svelte version this @sohedra/lynx was built for, or update @sohedra/lynx.
+https://sohedra.com/e/primjs_regex_moved"
+`;
+
 exports[`the build's catalogue > renderer_option_off: the message 1`] = `
 "\`<svelte:options customRenderer={null}>\` turns the renderer off, and a Lynx page has no DOM to draw without it.
 /app/src/App.svelte:2:3
@@ -359,6 +431,18 @@ exports[`the build's catalogue > single_copy_name: the message 1`] = `
 
 Write the package's name, not a path into it or a file.
 https://sohedra.com/e/single_copy_name"
+`;
+
+exports[`the build's catalogue > spread_setter_moved: the message 1`] = `
+"Svelte's props code has changed, so the build cannot make bindings work beside a spread: get_descriptor(props, key)?.set ?? is not in /app/node_modules/svelte/src/internal/client/reactivity/props.js exactly once.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use the Svelte version this @sohedra/lynx was built for, or update @sohedra/lynx.
+https://sohedra.com/e/spread_setter_moved"
 `;
 
 exports[`the build's catalogue > svelte_body: the message 1`] = `
