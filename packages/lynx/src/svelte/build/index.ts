@@ -20,6 +20,7 @@ export type {
 	ModuleCompileOptions,
 	PreprocessorGroup,
 	SvelteCompiler,
+	Warning,
 } from "./compiler.ts";
 export { bannedFeature, isBoundaryCrash, isDiagnostic, splitLink } from "./errors.ts";
 export type { Diagnostic } from "./errors.ts";
