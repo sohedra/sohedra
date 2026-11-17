@@ -72,6 +72,13 @@ describe("classes and id", () => {
 		expect(engine().state(inner).classes).toBe("");
 	});
 
+	it("refuses classes that are not text, as the engine does", () => {
+		const { inner } = smallPage(engine());
+		expect(() => engine().functions.__SetClasses(inner, ["a"] as never)).toThrow(
+			"__SetClasses param 1 should be text",
+		);
+	});
+
 	it("sets the id, and takes it away with null", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
@@ -145,6 +152,23 @@ describe("inline styles", () => {
 		);
 	});
 
+	it("refuses a style named as in JavaScript: the engine looks a style up by its CSS name", () => {
+		const { inner } = smallPage(engine());
+		expect(() => engine().functions.__AddInlineStyle(inner, "backgroundColor", "red")).toThrow(
+			"__AddInlineStyle was given backgroundColor",
+		);
+		expect(() => engine().functions.__AddInlineStyle(inner, 12 as never, "red")).toThrow(
+			"__AddInlineStyle param 1 should be a name that is not empty",
+		);
+	});
+
+	it("reads a computed style by its name, which must be text", () => {
+		const { inner } = smallPage(engine());
+		expect(() => engine().functions.__GetComputedStyleByKey(inner, 1 as never)).toThrow(
+			"__GetComputedStyleByKey param 1 should be text",
+		);
+	});
+
 	it("answers a computed style from the inline styles only, and says so by not knowing the rest", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
@@ -164,7 +188,7 @@ describe("inline styles", () => {
 });
 
 describe("queries", () => {
-	it("finds the first element or all of them under an element, by class, id, tag or a selector", () => {
+	it("finds the first element or all of them, by class, id, tag, and the two combinators", () => {
 		const { page, outer, inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__SetClasses(inner, "row last");
@@ -172,13 +196,47 @@ describe("queries", () => {
 		expect(f.__QuerySelector(page, ".row", {})).toBe(inner);
 		expect(f.__QuerySelectorAll(page, "view", {})).toEqual([outer, inner]);
 		expect(f.__QuerySelectorAll(page, "#outer > .last", {})).toEqual([inner]);
+		expect(f.__QuerySelectorAll(page, "page view.row", {})).toEqual([inner]);
+		expect(f.__QuerySelectorAll(page, "page > .row", {})).toEqual([]);
+		expect(f.__QuerySelectorAll(page, "#inner, #outer", {})).toEqual([outer, inner]);
 	});
 
-	it("looks under the element, not at it", () => {
-		const { outer, inner } = smallPage(engine());
+	it("starts at the element itself, as Lynx's selector does, in the tree's order", () => {
+		const { page, outer, inner } = smallPage(engine());
 		const f = engine().functions;
-		expect(f.__QuerySelector(outer, "#outer", {})).toBeUndefined();
-		expect(f.__QuerySelectorAll(inner, "view", {})).toEqual([]);
+		expect(f.__QuerySelector(outer, "#outer", {})).toBe(outer);
+		expect(f.__QuerySelectorAll(outer, "view", {})).toEqual([outer, inner]);
+		expect(f.__QuerySelectorAll(inner, "#outer view", {})).toEqual([]);
+		expect(f.__QuerySelector(page, "page", {})).toBe(page);
+		// An empty selector is the element itself, which Lynx keeps "for compatibility".
+		expect(f.__QuerySelectorAll(outer, "", {})).toEqual([outer]);
+	});
+
+	it("matches a data attribute against the dataset, by its key as given", () => {
+		const { page, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetDataset(inner, { "drag-handle": true, row: 7 });
+		f.__SetAttribute(inner, "label", "Save");
+		expect(f.__QuerySelector(page, "[data-drag-handle]", {})).toBe(inner);
+		expect(f.__QuerySelector(page, "[data-row=7]", {})).toBe(inner);
+		expect(f.__QuerySelector(page, "view[label=Save]", {})).toBe(inner);
+		expect(f.__QuerySelector(page, "[label^=Sa]", {})).toBe(inner);
+		expect(f.__QuerySelector(page, "[label$=ve]", {})).toBe(inner);
+		expect(f.__QuerySelector(page, "[label*=av]", {})).toBe(inner);
+		expect(f.__QuerySelector(page, "[id=inner]", {})).toBeUndefined();
+	});
+
+	it("throws for a selector Lynx does not take, where Lynx finds nothing", () => {
+		const { page } = smallPage(engine());
+		const f = engine().functions;
+		for (const selector of ["*", ":first-child", "view:first-child", "a + b", "a ~ b", "a >"]) {
+			expect(() => f.__QuerySelectorAll(page, selector, {}), selector).toThrow(
+				"Lynx's selectors do not take",
+			);
+		}
+		expect(() => f.__QuerySelector(page, "[data-row='7']", {})).toThrow(
+			"Lynx compares the quotes as part of the value",
+		);
 	});
 
 	it("answers undefined for no match, as it does for an attribute that is not there", () => {

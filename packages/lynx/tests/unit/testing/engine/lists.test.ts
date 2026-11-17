@@ -37,6 +37,18 @@ describe("a list", () => {
 		expect(typeof engine().list(element).componentAtIndex).toBe("function");
 	});
 
+	it("takes the tag its info names, as the engine does", () => {
+		const f = engine().functions;
+		const custom = f.__CreateList(
+			0,
+			() => 0,
+			() => {},
+			{ tag: "x-list" },
+		);
+		expect((custom as Element).localName).toBe("x-list");
+		expect(typeof engine().list(custom).show).toBe("function");
+	});
+
 	it("shows the cell at an index, numbering each request, and takes it back", () => {
 		const { element, asked, returned, cells } = list();
 		const handle = engine().list(element);

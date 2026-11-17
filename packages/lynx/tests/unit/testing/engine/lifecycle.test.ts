@@ -1,7 +1,9 @@
-// The engine's lifecycle events, as `lynx.getEngine()` hands them to the page.
+// The engine's lifecycle events, as `lynx.getEngine()` and `lynx.getNative()` hand them to the main
+// thread: message events with a type, the data and where they come from.
 
-import { describe, expect, it } from "@rstest/core";
+import { afterEach, describe, expect, it } from "@rstest/core";
 
+import { installGlobals } from "../../../../src/testing/globals.ts";
 import { engineForEach } from "./engine-fixture.ts";
 
 const engine = engineForEach();
@@ -10,13 +12,13 @@ describe("the engine's lifecycle", () => {
 	it("tells each listener of an event type, with the event's data as the engine sends it", () => {
 		const { lifecycle } = engine();
 		const heard: unknown[] = [];
-		lifecycle.proxy.addEventListener("__RenderPage", (event) => heard.push(event));
+		lifecycle.engine.addEventListener("__RenderPage", (event) => heard.push(event));
 		lifecycle.render({ count: 1 });
 		lifecycle.update({ count: 2 }, { reset: true });
-		expect(heard).toEqual([{ data: [{ count: 1 }, {}] }]);
+		expect(heard).toEqual([{ type: "__RenderPage", data: [{ count: 1 }, {}], origin: "Engine" }]);
 	});
 
-	it("names the types the engine sends: render, update, global props, components and destroy", () => {
+	it("names the types the engine sends: render, update, global props and components", () => {
 		const { lifecycle } = engine();
 		const heard: [string, unknown][] = [];
 		for (const type of [
@@ -26,7 +28,7 @@ describe("the engine's lifecycle", () => {
 			"__RemoveComponents",
 			"__DestroyLifetime",
 		]) {
-			lifecycle.proxy.addEventListener(type, (event) => heard.push([type, event.data]));
+			lifecycle.engine.addEventListener(type, (event) => heard.push([type, event.data]));
 		}
 		lifecycle.render({ a: 1 }, { first: true });
 		lifecycle.update({ a: 2 }, { reset: true });
@@ -38,8 +40,15 @@ describe("the engine's lifecycle", () => {
 			["__UpdatePage", [{ a: 2 }, { reset: true }]],
 			["__UpdateGlobalProps", [{ theme: "dark" }]],
 			["__RemoveComponents", []],
-			["__DestroyLifetime", [7]],
 		]);
+	});
+
+	it("ends the page's life through lynx.getNative(), with the page's instance id as the data", () => {
+		const { lifecycle } = engine();
+		const heard: unknown[] = [];
+		lifecycle.native.addEventListener("__DestroyLifetime", (event) => heard.push(event));
+		lifecycle.destroy(7);
+		expect(heard).toEqual([{ type: "__DestroyLifetime", data: 7, origin: "Native" }]);
 	});
 
 	it("counts the listeners of a type, and lets one go, also while it is being told", () => {
@@ -47,10 +56,10 @@ describe("the engine's lifecycle", () => {
 		const heard: string[] = [];
 		const once = () => {
 			heard.push("once");
-			lifecycle.proxy.removeEventListener("__RenderPage", once);
+			lifecycle.engine.removeEventListener("__RenderPage", once);
 		};
-		lifecycle.proxy.addEventListener("__RenderPage", once);
-		lifecycle.proxy.addEventListener("__RenderPage", () => heard.push("always"));
+		lifecycle.engine.addEventListener("__RenderPage", once);
+		lifecycle.engine.addEventListener("__RenderPage", () => heard.push("always"));
 		expect(lifecycle.count("__RenderPage")).toBe(2);
 		lifecycle.render();
 		lifecycle.render();
@@ -61,8 +70,44 @@ describe("the engine's lifecycle", () => {
 	it("sends any other type with emit", () => {
 		const { lifecycle } = engine();
 		const heard: unknown[] = [];
-		lifecycle.proxy.addEventListener("__OnLowMemory", (event) => heard.push(event.data));
+		lifecycle.engine.addEventListener("__OnLowMemory", (event) => heard.push(event.data));
 		lifecycle.emit("__OnLowMemory", [1]);
 		expect(heard).toEqual([[1]]);
+	});
+});
+
+describe("an engine event that no one listens to", () => {
+	let restore: (() => void) | undefined;
+	afterEach(() => {
+		restore?.();
+		restore = undefined;
+	});
+
+	it("calls the main thread's global function of that name instead, with the same arguments", () => {
+		const { lifecycle } = engine();
+		const calls: unknown[][] = [];
+		restore = installGlobals({
+			renderPage: (...args: unknown[]) => calls.push(["renderPage", ...args]),
+			updatePage: (...args: unknown[]) => calls.push(["updatePage", ...args]),
+			removeComponents: (...args: unknown[]) => calls.push(["removeComponents", ...args]),
+		});
+		lifecycle.render({ a: 1 });
+		lifecycle.update({ a: 2 }, { reset: true });
+		lifecycle.removeComponents();
+		lifecycle.updateGlobalProps({ theme: "dark" });
+		expect(calls).toEqual([
+			["renderPage", { a: 1 }, {}],
+			["updatePage", { a: 2 }, { reset: true }],
+			["removeComponents"],
+		]);
+	});
+
+	it("is not sent as a call when someone listens", () => {
+		const { lifecycle } = engine();
+		const calls: string[] = [];
+		restore = installGlobals({ renderPage: () => calls.push("call") });
+		lifecycle.engine.addEventListener("__RenderPage", () => calls.push("event"));
+		lifecycle.render();
+		expect(calls).toEqual(["event"]);
 	});
 });

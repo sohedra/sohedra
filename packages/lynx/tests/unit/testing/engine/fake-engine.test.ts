@@ -1,7 +1,8 @@
-// The engine's own side of events (the dispatch order, the stop bits, main-thread functions and
-// plain listeners): what it calls, with what, and what it reads back, as Lynx does. The tests
-// that run real main-thread functions rest on this; here the global `runWorklet` is a recorder,
-// so no runtime is involved.
+// The engine's own side of events (the dispatch order, the stop bits, main-thread functions, handler
+// names and plain listeners): what it calls, with what, and what it reads back, as Lynx's event
+// dispatcher does with `enableEventHandleRefactor`, which every page the plugin builds turns on.
+// The tests that run real main-thread functions rest on this; here the global `runWorklet` is a
+// recorder, so no runtime is involved.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -82,7 +83,7 @@ describe("an event bound with __AddEvent", () => {
 		expect(worklets.calls).toHaveLength(1);
 	});
 
-	it("logs each binding, and a handler name as a filing, which binds no function", () => {
+	it("logs each binding, and a handler name as a filing, which binds no main-thread function", () => {
 		const { inner, bind } = bindable();
 		bind(inner, "bindEvent", "tap", { n: 1 });
 		engine().functions.__AddEvent(inner, "bindEvent", "touchstart", "onTouch");
@@ -95,7 +96,9 @@ describe("an event bound with __AddEvent", () => {
 			["touchstart", "onTouch"],
 			["touchend", undefined],
 		]);
-		expect(engine().state(inner).filedEvents).toEqual(new Set(["bindEvent:touchstart"]));
+		expect(engine().state(inner).filedEvents).toEqual(
+			new Set(["bindEvent:tap", "bindEvent:touchstart"]),
+		);
 		expect(
 			engine()
 				.state(inner)
@@ -321,5 +324,226 @@ describe("firing on one element", () => {
 		worklets.returns.set(first, { eventReturnResult: 2 });
 		engine().fire(inner, "scroll");
 		expect(heard).toEqual([]);
+	});
+});
+
+describe("the order of an element's bindings", () => {
+	/** Labels for the values of main-thread functions, and a runWorklet that records them in order. */
+	function labelled(order: string[]) {
+		const labels = new Map<unknown, string>();
+		worklets.use((made) => void order.push(labels.get(made) ?? "?"));
+		return (label: string) => {
+			const made = { label };
+			labels.set(made, label);
+			return made;
+		};
+	}
+
+	it("runs functions and listeners in the order they were bound, not functions first", () => {
+		const { inner, bind } = bindable();
+		const order: string[] = [];
+		const value = labelled(order);
+		engine().functions.__AddEventListener(inner, "tap", () => order.push("listener"), {});
+		bind(inner, "bindEvent", "tap", value("function"));
+		engine().dispatch(inner, "tap");
+		expect(order).toEqual(["listener", "function"]);
+	});
+
+	it("moves a function bound again to the end of its element's bindings", () => {
+		const { inner, bind } = bindable();
+		const order: string[] = [];
+		const value = labelled(order);
+		bind(inner, "bindEvent", "tap", value("first"));
+		engine().functions.__AddEventListener(inner, "tap", () => order.push("listener"), {});
+		bind(inner, "bindEvent", "tap", value("again"));
+		engine().dispatch(inner, "tap");
+		expect(order).toEqual(["listener", "again"]);
+	});
+
+	it("runs the target's capture bindings first, then the rest of its bindings in their order", () => {
+		const { outer, inner, bind } = bindable();
+		const order: string[] = [];
+		const value = labelled(order);
+		const f = engine().functions;
+		bind(inner, "bindEvent", "tap", value("inner"));
+		f.__AddEventListener(inner, "tap", () => order.push("inner listener"), {});
+		bind(inner, "capture-bind", "tap", value("inner capture"));
+		bind(outer, "capture-bind", "tap", value("outer capture"));
+		bind(outer, "bindEvent", "tap", value("outer"));
+		engine().dispatch(inner, "tap");
+		expect(order).toEqual(["outer capture", "inner capture", "inner", "inner listener", "outer"]);
+	});
+
+	it("runs the rest of the target's bindings after a capture-catch or a stop there, then ends", () => {
+		const { outer, inner, bind } = bindable();
+		const order: string[] = [];
+		const value = labelled(order);
+		const stopper = value("inner capture");
+		worklets.use((made) => {
+			order.push((made as { label: string }).label);
+			return made === stopper ? { eventReturnResult: 1 } : undefined;
+		});
+		bind(inner, "capture-bind", "tap", stopper);
+		bind(inner, "bindEvent", "tap", value("inner"));
+		bind(outer, "bindEvent", "tap", value("outer"));
+		engine().dispatch(inner, "tap");
+		expect(order).toEqual(["inner capture", "inner"]);
+
+		order.length = 0;
+		bind(inner, "capture-bind", "tap", undefined);
+		bind(inner, "capture-catch", "tap", value("inner catch"));
+		engine().dispatch(inner, "tap");
+		expect(order).toEqual(["inner catch", "inner"]);
+	});
+});
+
+describe("a handler name", () => {
+	it("is a binding of its own that sends the event to the background, and catches as its type says", () => {
+		const { page, outer, inner, bind } = bindable();
+		const f = engine().functions;
+		const heard: string[] = [];
+		f.__AddEventListener(page, "tap", () => heard.push("page"), {});
+		bind(inner, "bindEvent", "tap", { n: 1 });
+		f.__AddEvent(outer, "catchEvent", "tap", "onOuterTap");
+		engine().dispatch(inner, "tap");
+		expect(heard).toEqual([]);
+		expect(
+			engine().backgroundEvents.map((sent) => [sent.element, sent.eventType, sent.handler]),
+		).toEqual([[outer, "catchEvent", "onOuterTap"]]);
+	});
+
+	it("leaves a main-thread function of the same name and type bound, and is removed with none", () => {
+		const { inner, bind } = bindable();
+		const f = engine().functions;
+		bind(inner, "bindEvent", "tap", { n: 1 });
+		f.__AddEvent(inner, "bindEvent", "tap", "onTap");
+		engine().dispatch(inner, "tap");
+		expect(worklets.calls).toHaveLength(1);
+		expect(engine().backgroundEvents).toHaveLength(1);
+		f.__AddEvent(inner, "bindEvent", "tap", undefined);
+		engine().dispatch(inner, "tap");
+		expect(worklets.calls).toHaveLength(1);
+		expect(engine().backgroundEvents).toHaveLength(1);
+	});
+
+	it("files the type and sends nothing when it is empty", () => {
+		const { inner } = bindable();
+		engine().functions.__AddEvent(inner, "bindEvent", "tap", "");
+		engine().dispatch(inner, "tap");
+		expect(engine().backgroundEvents).toEqual([]);
+		expect(engine().state(inner).filedEvents).toEqual(new Set(["bindEvent:tap"]));
+	});
+});
+
+describe("the global phase", () => {
+	it("goes to the elements with the type filed in the order they were made, not the tree's", () => {
+		const { page, inner, bind } = bindable();
+		const f = engine().functions;
+		const made = f.__CreateView(0);
+		const later = f.__CreateView(0);
+		f.__AppendElement(page, later);
+		f.__AppendElement(page, made);
+		const first = { label: "made first" };
+		const second = { label: "made second" };
+		const labels = new Map<unknown, string>([
+			[first, "made first"],
+			[second, "made second"],
+		]);
+		bind(later, "global-bindEvent", "tap", second);
+		bind(made, "global-bindEvent", "tap", first);
+		engine().dispatch(inner, "tap");
+		expect(ran(labels)).toEqual(["made first", "made second"]);
+	});
+
+	it("takes a plain listener with bind_type 5 as global, as the engine does whatever closure_type says", () => {
+		const { page, inner } = bindable();
+		const f = engine().functions;
+		const watcher = f.__CreateView(0);
+		f.__AppendElement(page, watcher);
+		const heard: string[] = [];
+		f.__AddEventListener(inner, "tap", () => heard.push("plain global"), { bind_type: 5 });
+		f.__AddEventListener(watcher, "tap", () => heard.push("watcher"), { bind_type: 5 });
+		engine().dispatch(inner, "tap");
+		expect(heard).toEqual([]);
+		f.__AddEvent(watcher, "global-bindEvent", "tap", "onTap");
+		engine().dispatch(inner, "tap");
+		expect(heard).toEqual(["watcher"]);
+	});
+
+	it("is filed by a global-bind main-thread function too, for a listener of the same element", () => {
+		const { page, inner, bind } = bindable();
+		const f = engine().functions;
+		const watcher = f.__CreateView(0);
+		f.__AppendElement(page, watcher);
+		const heard: string[] = [];
+		f.__AddEventListener(watcher, "tap", () => heard.push("listener"), {
+			closure_type: 2,
+			bind_type: 5,
+		});
+		bind(watcher, "global-bindEvent", "tap", { n: 1 });
+		engine().dispatch(inner, "tap");
+		expect(heard).toEqual(["listener"]);
+		expect(worklets.calls).toHaveLength(1);
+	});
+
+	it("throws for a stop returned there: what Lynx does with it is not verified", () => {
+		const { page, inner, bind } = bindable();
+		const f = engine().functions;
+		const watcher = f.__CreateView(0);
+		f.__AppendElement(page, watcher);
+		const everywhere = { n: 1 };
+		bind(watcher, "global-bindEvent", "tap", everywhere);
+		worklets.returns.set(everywhere, { eventReturnResult: 1 });
+		expect(() => engine().dispatch(inner, "tap")).toThrow(
+			"A global-bind function stopped the tap event",
+		);
+	});
+});
+
+describe("a custom event", () => {
+	it("has no capture phase, so the target's capture bindings do not hear it", () => {
+		const { inner, bind } = bindable();
+		const heard: string[] = [];
+		const f = engine().functions;
+		bind(inner, "capture-bind", "scroll", { n: 1 });
+		f.__AddEventListener(inner, "scroll", () => heard.push("capture"), { capture: true });
+		f.__AddEventListener(inner, "scroll", () => heard.push("plain"), {});
+		engine().fire(inner, "scroll");
+		expect(heard).toEqual(["plain"]);
+		expect(worklets.calls).toEqual([]);
+	});
+
+	it("goes through the global phase first", () => {
+		const { page, inner, bind } = bindable();
+		const f = engine().functions;
+		const watcher = f.__CreateView(0);
+		f.__AppendElement(page, watcher);
+		const heard: string[] = [];
+		bind(watcher, "global-bindEvent", "scroll", { n: 1 });
+		worklets.use(() => void heard.push("global"));
+		f.__AddEventListener(inner, "scroll", () => heard.push("inner"), {});
+		engine().fire(inner, "scroll");
+		expect(heard).toEqual(["global", "inner"]);
+	});
+});
+
+describe("the engine's side, given what is not one of its elements", () => {
+	it("says which call was given it", () => {
+		const foreign = document.createElement("div");
+		expect(() => engine().fire(foreign, "tap")).toThrow("fire param 0 should be an element");
+		expect(() => engine().dispatch(foreign, "tap")).toThrow(
+			"dispatch param 0 should be an element",
+		);
+	});
+});
+
+describe("removing a listener", () => {
+	it("matches the options by what they say to the engine, not by every field", () => {
+		const { inner } = bindable();
+		const f = engine().functions;
+		const listener = () => {};
+		f.__AddEventListener(inner, "tap", listener, { capture: true });
+		f.__RemoveEventListener(inner, "tap", listener, { capture: true, bind_type: 1 });
+		expect(engine().listenerCount()).toBe(0);
 	});
 });
