@@ -47,3 +47,29 @@ describe("a patch that comes before the first frame", () => {
 		expect(page.engine.madeCount("raw-text")).toBe(1);
 	});
 });
+
+describe("a rewrite item", () => {
+	it("for anything but the page's root is reported, and leaves the page as it is", () => {
+		const page = startTestPage({
+			mainThread: () => {
+				startMainThread();
+				const patch = readGlobal(PATCH_METHOD) as (params: PatchParams) => void;
+				patch(encodePatch({ page: 0, items: [["ops", FIRST]] }));
+				patch(
+					encodePatch({
+						page: 0,
+						items: [
+							["rewrite", 2],
+							["ops", [[OpCode.SetText, 4, "x"]]],
+						],
+					}),
+				);
+			},
+		});
+		expect(page.errors.map((error) => (error as { code?: string }).code)).toEqual([
+			"rewrite_not_page",
+		]);
+		expect(page.engine.texts()).toEqual(["x"]);
+		expect(page.engine.madeCount("view")).toBe(1);
+	});
+});
