@@ -39,10 +39,6 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	global_event_attribute: { attribute: "global-bindtap", event: "tap" },
 	list_item_without_key: {},
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
-	plugin_option_removed: {
-		name: "compilerOptions",
-		instead: "Set it in svelte.config.js: `export default svelteConfig({ compilerOptions })`.",
-	},
 	plugin_option_type: {
 		name: "firstFrame",
 		expected: "a boolean or a function of the entry's name that returns one",
@@ -61,7 +57,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	svelte_missing: { root: "/app" },
 	svelte_without_renderers: { version: "5.40.0", where: "/app" },
 	lynx_engine_missing: {},
-	template_plugin_versions: { engine: "0.16.9", own: "0.16.8" },
+	template_plugin_versions: { engine: "0.15.4", own: "0.16.8", range: "^0.16.8" },
 	encoder_not_handed_over: {
 		reason: "its LynxEncodePlugin has no encodePool to run the encode step in",
 	},
@@ -72,7 +68,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	svelte_config_option_owned: { key: "generate" },
 	svelte_config_option_unsupported: { key: "accessors" },
 	iife_ignored: { value: "true" },
-	main_thread_asset_missing: { file: ".rspeedy/main/main-thread.js" },
+	main_thread_asset_missing: { file: ".lynx/main/main-thread.js" },
 	rsbuild_swc_missing: {},
 	spread_setter_moved: {
 		file: "/app/node_modules/svelte/src/internal/client/reactivity/props.js",

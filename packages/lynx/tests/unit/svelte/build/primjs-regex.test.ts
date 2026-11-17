@@ -8,7 +8,11 @@ import path from "node:path";
 import { describe, expect, it } from "@rstest/core";
 import * as acorn from "acorn";
 
-import { PRIMJS_REGEX_REWRITES, rewritePrimjsRegex } from "../../../../src/svelte/build/index.ts";
+import {
+	isPrimjsRegexFile,
+	PRIMJS_REGEX_REWRITES,
+	rewritePrimjsRegex,
+} from "../../../../src/svelte/build/index.ts";
 
 const require = createRequire(import.meta.url);
 const svelteRoot = path.dirname(require.resolve("svelte/package.json"));
@@ -60,5 +64,26 @@ describe("the regexes PrimJS rejects", () => {
 		expect(result).toMatch(
 			/REGEX_VALID_TAG_NAME =\s*\/\^\[a-zA-Z\]\[a-zA-Z0-9\]\*\(-\[a-zA-Z0-9\._-\]\*\)\?\$\/;/,
 		);
+	});
+});
+
+describe("isPrimjsRegexFile", () => {
+	const [first] = PRIMJS_REGEX_REWRITES;
+
+	it("takes the file of Svelte's `src` folder the rewrite is for, with either separator", () => {
+		expect(isPrimjsRegexFile("/app/node_modules/svelte/src/utils.js", "utils.js")).toBe(true);
+		expect(isPrimjsRegexFile("C:\\app\\node_modules\\svelte\\src\\utils.js", "utils.js")).toBe(
+			true,
+		);
+		expect(first?.file).toBe("utils.js");
+	});
+
+	it("takes no other file: a longer folder name, another file, a file of another folder", () => {
+		expect(isPrimjsRegexFile("/app/node_modules/my-svelte/src/utils.js", "utils.js")).toBe(false);
+		expect(isPrimjsRegexFile("/app/node_modules/svelte/src/other.js", "utils.js")).toBe(false);
+		expect(isPrimjsRegexFile("/app/node_modules/svelte/src/internal/utils.js", "utils.js")).toBe(
+			false,
+		);
+		expect(isPrimjsRegexFile("/app/node_modules/svelte/src/utilsXjs", "utils.js")).toBe(false);
 	});
 });

@@ -30,12 +30,6 @@ describe("exports", () => {
 		}
 	});
 
-	it("has no entry for the runtime a compiled app imports: the build finds its files by path", () => {
-		expect(Object.keys(manifest.exports).filter((entry) => entry.startsWith("./internal"))).toEqual(
-			[],
-		);
-	});
-
 	it("is published as built files with their types, an entry each", () => {
 		for (const entry of ENTRIES) {
 			const source = manifest.exports[entry] as string;

@@ -100,41 +100,32 @@ describe("an unknown option", () => {
 	});
 });
 
-describe("an option that moved or went", () => {
-	it("says where Svelte's options are set now", () => {
+describe("an option of Svelte's, which svelte.config.js sets", () => {
+	it("is unknown here, with a pointer to where it goes", () => {
 		for (const name of ["compilerOptions", "preprocess"]) {
 			const error = rejection({ [name]: {} });
-			expect(error?.code).toBe("plugin_option_removed");
+			expect(error?.code).toBe("unknown_plugin_option");
 			expect(error?.message.split("\n")[0]).toBe(
-				`\`${name}\` is not an option of \`pluginSvelteLynx()\` any more.`,
+				`\`${name}\` is not an option of \`pluginSvelteLynx()\`.`,
 			);
-			expect(error?.message).toContain("svelte.config.js");
+			expect(error?.message).toContain("Set it in svelte.config.js");
 		}
 	});
 
-	it("says the seven page options are `pageConfig` keys now", () => {
-		for (const name of [
-			"customCSSInheritanceList",
-			"debugInfoOutside",
-			"defaultDisplayLinear",
-			"enableAccessibilityElement",
-			"enableCSSInheritance",
-			"enableCSSInvalidation",
-			"removeDescendantSelectorScope",
-		])
-			expect(rejection({ [name]: true })?.message, name).toContain(`pageConfig: { ${name}`);
+	it("is the same under `svelte`, named with its path", () => {
+		const error = rejection({ svelte: { compilerOptions: {} } });
+		expect(error?.message.split("\n")[0]).toBe(
+			"`svelte.compilerOptions` is not an option of `pluginSvelteLynx()`.",
+		);
+		expect(error?.message).toContain("Set it in svelte.config.js");
 	});
 
-	it("says the renderer and the engine's newer paths are not settings", () => {
-		for (const name of [
-			"renderer",
-			"enableRemoveCSSScope",
-			"enableCSSSelector",
-			"enableNewGesture",
-		]) {
+	it("keeps no history of options this package never had: any other name is just unknown", () => {
+		for (const name of ["renderer", "enableCSSInheritance", "enableNewGesture"]) {
 			const error = rejection({ [name]: true });
-			expect(error?.code, name).toBe("plugin_option_removed");
-			expect(error?.message, name).toContain("Remove it");
+			expect(error?.code, name).toBe("unknown_plugin_option");
+			expect(error?.message, name).not.toContain("any more");
+			expect(error?.message, name).not.toContain("Remove it");
 		}
 	});
 });

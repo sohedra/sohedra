@@ -35,6 +35,8 @@ export interface BuildAppOptions {
 	 * has no dependency of its own on `@sohedra/lynx`, which no folder above it brings either.
 	 */
 	outside?: boolean;
+	/** Packages of `tests/fixtures/build/packages` put into the app's `node_modules`. Implies `outside`. */
+	packages?: string[];
 	/** Who runs the build: `rstest` makes it a test run, without the Lynx engine. */
 	callerName?: string;
 	/** Files written into the app's copy, by path: for the ones no formatter may read (a component that does not compile). Implies `outside`. */
@@ -64,22 +66,50 @@ const ALIASES: Record<string, string> = {
 
 const LOCK = path.join(os.tmpdir(), "sohedra-lynx-build.lock");
 
-/** Wait for the machine's one build slot; a lock of a dead process is taken over. */
+/** Whether process `pid` is running. */
+function isRunning(pid: number): boolean {
+	try {
+		process.kill(pid, 0);
+		return true;
+	} catch (error) {
+		// Another user's process is running; only "no such process" says it is gone.
+		return (error as NodeJS.ErrnoException).code === "EPERM";
+	}
+}
+
+/**
+ * Wait for the machine's one build slot. The lock is a file made in one step (`wx`: it fails when
+ * it exists), so two processes never both take it. A lock whose holder is gone is renamed away
+ * first, and only one process wins that rename. A lock with no pid yet is its holder between
+ * creating it and writing it: held.
+ */
 async function lock(): Promise<() => void> {
 	for (;;) {
 		try {
-			fs.mkdirSync(LOCK);
-			fs.writeFileSync(path.join(LOCK, "pid"), String(process.pid));
-			return () => fs.rmSync(LOCK, { recursive: true, force: true });
-		} catch {
-			try {
-				const pid = Number(fs.readFileSync(path.join(LOCK, "pid"), "utf8"));
-				process.kill(pid, 0);
-			} catch {
-				fs.rmSync(LOCK, { recursive: true, force: true });
-			}
-			await new Promise((resolve) => setTimeout(resolve, 250));
+			fs.writeFileSync(LOCK, String(process.pid), { flag: "wx" });
+			return () => fs.rmSync(LOCK, { force: true });
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
 		}
+		const pid = Number.parseInt(readPid(), 10);
+		if (Number.isInteger(pid) && !isRunning(pid)) {
+			const away = `${LOCK}.${process.pid}.${Date.now()}`;
+			try {
+				fs.renameSync(LOCK, away);
+				fs.rmSync(away, { force: true });
+			} catch {
+				// Another process took it over first.
+			}
+		}
+		await new Promise((resolve) => setTimeout(resolve, 250));
+	}
+}
+
+function readPid(): string {
+	try {
+		return fs.readFileSync(LOCK, "utf8");
+	} catch {
+		return "";
 	}
 }
 
@@ -87,13 +117,22 @@ async function lock(): Promise<() => void> {
 export const appFolder = (app: string): string => path.join(FIXTURES, "apps", app);
 
 /** A copy of the fixture app in `under`, with Svelte's package linked into its `node_modules`. */
-function copyOutside(app: string, under: string, files: Record<string, string> = {}): string {
+function copyOutside(app: string, under: string, options: BuildAppOptions): string {
 	const folder = path.join(under, "app");
 	fs.cpSync(appFolder(app), folder, { recursive: true });
-	fs.mkdirSync(path.join(folder, "node_modules"));
+	const modules = path.join(folder, "node_modules");
+	fs.mkdirSync(modules);
 	const svelte = path.dirname(createRequire(import.meta.url).resolve("svelte/package.json"));
-	fs.symlinkSync(svelte, path.join(folder, "node_modules", "svelte"), "dir");
-	for (const [name, text] of Object.entries(files)) fs.writeFileSync(path.join(folder, name), text);
+	fs.symlinkSync(svelte, path.join(modules, "svelte"), "dir");
+	for (const name of options.packages ?? []) {
+		const target = path.join(modules, name);
+		fs.cpSync(path.join(FIXTURES, "packages", name), target, { recursive: true });
+		// A `node_modules` folder is not kept in git: a package's own is written `_node_modules`.
+		const nested = path.join(target, "_node_modules");
+		if (fs.existsSync(nested)) fs.renameSync(nested, path.join(target, "node_modules"));
+	}
+	for (const [name, text] of Object.entries(options.files ?? {}))
+		fs.writeFileSync(path.join(folder, name), text);
 	return folder;
 }
 
@@ -102,7 +141,9 @@ export async function buildApp(app: string, options: BuildAppOptions = {}): Prom
 	const release = await lock();
 	const dist = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-lynx-dist-"));
 	const cwd =
-		options.outside || options.files ? copyOutside(app, dist, options.files) : appFolder(app);
+		options.outside || options.files || options.packages
+			? copyOutside(app, dist, options)
+			: appFolder(app);
 	// `DEBUG=lynx` keeps each thread's script in `.lynx/<entry>/`, where the tests read them; and
 	// `process.env.DEBUG` in the fixtures is replaced by it.
 	const previous = process.env["DEBUG"];
@@ -113,10 +154,13 @@ export async function buildApp(app: string, options: BuildAppOptions = {}): Prom
 			...(options.callerName !== undefined && { callerName: options.callerName }),
 			config: {
 				mode: options.development ? "development" : "production",
-				source: { entry: { main: options.entry ?? "./index.ts" } },
-				resolve: { alias: ALIASES },
 				plugins: [pluginSvelteLynx(options.plugin)],
 				...options.rsbuild,
+				source: {
+					entry: { main: options.entry ?? "./index.ts" },
+					...options.rsbuild?.source,
+				},
+				resolve: { alias: ALIASES, ...options.rsbuild?.resolve },
 				output: {
 					distPath: { root: path.join(dist, "out") },
 					cleanDistPath: false,
