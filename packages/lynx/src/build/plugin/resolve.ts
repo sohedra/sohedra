@@ -5,16 +5,16 @@ import path from "node:path";
 
 import type { ModifyBundlerChainUtils, Rspack, RspackChain } from "@rsbuild/core";
 
+import { SERVER_ASYNC_HOOKS_IMPORT, SERVER_CRYPTO_FILE } from "../../svelte/build/index.ts";
 import { PACKAGE_NAME } from "../../wire/index.ts";
+import { escapeRegExp } from "../string-literal.ts";
 import { LAYERS, PACKAGE_ROOT, RUNTIME_FILES } from "./layers.ts";
 
 const NAME = `${PACKAGE_NAME}:resolve`;
 
 /** A request for `names` or for a path in one of them. */
 export const requestsOf = (names: readonly string[]): RegExp =>
-	new RegExp(
-		`^(?:${names.map((name) => name.replace(/[.*+?^${}()|[\]\\/-]/g, "\\$&")).join("|")})(?:/|$)`,
-	);
+	new RegExp(`^(?:${names.map(escapeRegExp).join("|")})(?:/|$)`);
 
 /**
  * Resolves `svelte` and the `singleCopy` packages from the app's folder, and this package's own
@@ -48,9 +48,9 @@ class SingleCopyPlugin {
 /** Where the app's own Svelte and its `esm-env` are, and the binding's one copy of each. */
 export function configureSingleCopies(
 	chain: RspackChain,
-	rootPath: string,
-	singleCopy: readonly string[],
+	options: { rootPath: string; singleCopy: readonly string[] },
 ): void {
+	const { rootPath, singleCopy } = options;
 	const svelteRoot = path.dirname(
 		createRequire(path.join(rootPath, "package.json")).resolve("svelte/package.json"),
 	);
@@ -119,11 +119,11 @@ export function ignoreUnusedSvelteServerCode(
 	// synchronously.
 	chain
 		.plugin(`${PACKAGE_NAME}:ignore-async-hooks`)
-		.use(bundler.IgnorePlugin, [{ resourceRegExp: /^node:async_hooks$/ }]);
+		.use(bundler.IgnorePlugin, [{ resourceRegExp: SERVER_ASYNC_HOOKS_IMPORT }]);
 	// Svelte's CSP-hash helper imports `crypto` through an expression; the first frame never calls
 	// it. Without this, every build warns.
 	chain.module
 		.rule(`${PACKAGE_NAME}:svelte-server-crypto`)
-		.test(/[\\/]svelte[\\/]src[\\/]internal[\\/]server[\\/]crypto\.js$/)
+		.test(SERVER_CRYPTO_FILE)
 		.parser({ exprContextCritical: false });
 }

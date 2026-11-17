@@ -11,6 +11,7 @@
 import type { RsbuildPlugin } from "@rsbuild/core";
 import type { ExtendConfig, ExtendConfigFn } from "@rstest/core";
 
+import { PACKAGE_NAME } from "../../wire/index.ts";
 import { pluginSvelteLynx } from "../plugin/index.ts";
 import type { PluginSvelteLynxOptions } from "../plugin/index.ts";
 import { checkPluginOptions } from "../plugin/option-checks.ts";
@@ -45,8 +46,9 @@ function byKindOfImport(resolve: ResolveOptions | undefined): void {
 
 /** Gives the test resolve its conditions by kind of import. */
 const conditionsByImport: RsbuildPlugin = {
-	name: "svelte-lynx:test-conditions",
+	name: `${PACKAGE_NAME}:test-conditions`,
 	setup(api) {
+		// Boundary: Rspack's `resolve` type has no `byDependency` of this shape.
 		api.modifyRspackConfig((config) => byKindOfImport(config.resolve as ResolveOptions));
 	},
 };
@@ -101,7 +103,7 @@ export function withSvelteLynxFromConfig(options: ConfigFileOptions = {}): Exten
 				...(config.plugins ?? []),
 				conditionsByImport,
 				{
-					name: "svelte-lynx:test-run",
+					name: `${PACKAGE_NAME}:test-run`,
 					remove: ENGINE_PLUGINS_NOT_FOR_TESTS,
 					setup() {},
 				} satisfies RsbuildPlugin,

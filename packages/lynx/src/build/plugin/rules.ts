@@ -13,6 +13,8 @@ import { pluginDefines } from "./thread-defines.ts";
 
 /** What a build says about itself to its rules. */
 export interface BuildRuleOptions extends SvelteRuleOptions {
+	chain: RspackChain;
+	CHAIN_ID: ChainIdentifier;
 	/** The app's `define` constants for each thread, as code. */
 	define: Record<Thread, Record<string, string>>;
 	development: boolean;
@@ -23,21 +25,17 @@ export interface BuildRuleOptions extends SvelteRuleOptions {
 }
 
 /** Set up the rules of a build. */
-export function configureBuildRules(
-	chain: RspackChain,
-	CHAIN_ID: ChainIdentifier,
-	options: BuildRuleOptions,
-): void {
-	const { define, development, hot, firstFrame } = options;
-	const threads = threadsOf(
+export function configureBuildRules(options: BuildRuleOptions): void {
+	const { chain, CHAIN_ID, define, development, hot, firstFrame } = options;
+	const threads = threadsOf({
 		define,
-		(thread) => pluginDefines(thread, { development, firstFrame }),
+		plugin: (thread) => pluginDefines(thread, { development, firstFrame }),
 		hot,
-	);
-	const swc = splitScriptRule(chain, CHAIN_ID, threads);
+	});
+	const swc = splitScriptRule({ chain, CHAIN_ID, threads });
 	configureCssRules(chain, CHAIN_ID);
 	keepSelectorListsApart(chain, CHAIN_ID);
-	splitSvelteRules(chain, swc, threads, options);
+	splitSvelteRules({ ...options, swc, threads });
 	patchSvelteSource(chain);
 }
 

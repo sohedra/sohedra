@@ -26,7 +26,12 @@ function storeOf(context: CssStoreContext): Map<string, string> {
 
 const keyOf = (file: string, hash: string): string => `${file}\0${hash}`;
 
-/** Keep `css` for the component's CSS loader; returns the key the import carries: a short hash of the CSS. */
+/**
+ * Keep `css` for the component's CSS loader; returns the key the import carries: a short hash of
+ * the CSS.
+ *
+ * @workaround short-css-import kind=lynx-limit delete-when="the engine accepts an identifier as long as a component's CSS"
+ */
 export function storeCss(context: CssStoreContext, css: string): string {
 	const hash = createHash("sha256").update(css).digest("hex").slice(0, 12);
 	storeOf(context).set(keyOf(context.resourcePath, hash), css);

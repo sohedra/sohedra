@@ -35,6 +35,7 @@ export default function svelteModuleLoader(
 			inputMap: map,
 		});
 	} catch (error) {
+		// Boundary: the bundler's callback takes an `Error`; a thrown value is any.
 		this.callback(error as Error);
 		return;
 	}

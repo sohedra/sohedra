@@ -16,30 +16,6 @@ function given(value: unknown): string {
 const isObject = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null && !Array.isArray(value);
 
-const SVELTE_CONFIG =
-	"Set it in svelte.config.js: `export default svelteConfig({ compilerOptions })`.";
-const PAGE_CONFIG = (name: string): string =>
-	`Set it in \`pageConfig\`: \`pageConfig: { ${name}: … }\`.`;
-
-/** The options that went, with where their setting is now. */
-const REMOVED_OPTIONS: Record<string, string> = {
-	compilerOptions: SVELTE_CONFIG,
-	preprocess: "Set it in svelte.config.js: `export default svelteConfig({ preprocess })`.",
-	renderer: "Remove it: the plugin always uses the binding's renderer.",
-	customCSSInheritanceList: PAGE_CONFIG("customCSSInheritanceList"),
-	debugInfoOutside: PAGE_CONFIG("debugInfoOutside"),
-	defaultDisplayLinear: PAGE_CONFIG("defaultDisplayLinear"),
-	enableAccessibilityElement: PAGE_CONFIG("enableAccessibilityElement"),
-	enableCSSInheritance: PAGE_CONFIG("enableCSSInheritance"),
-	enableCSSInvalidation: PAGE_CONFIG("enableCSSInvalidation"),
-	removeDescendantSelectorScope: PAGE_CONFIG("removeDescendantSelectorScope"),
-	enableRemoveCSSScope:
-		"Remove it: Svelte scopes a component's styles itself, so the page is always built without Lynx's scoping.",
-	enableCSSSelector: "Remove it: the engine's newer selector matching is always on.",
-	enableNewGesture:
-		"Remove it: the engine's native gesture detectors are always on, and `main-thread:gesture` needs them.",
-};
-
 /** The known name within edit distance 2 of `name`, or differing only in case. */
 function closest(name: string): string | undefined {
 	let best: string | undefined;
@@ -69,11 +45,8 @@ function editDistance(a: string, b: string): number {
 	return row[b.length]!;
 }
 
-/** The report for an unknown or removed option, called by its `name`. */
+/** The report for an unknown option, called by its `name`. */
 function unknownOption(name: string, label: string = name): AnyReport {
-	const instead = REMOVED_OPTIONS[name];
-	if (instead !== undefined)
-		return { code: "plugin_option_removed", details: { name: label, instead } };
 	return { code: "unknown_plugin_option", details: { name: label, suggestion: closest(name) } };
 }
 
@@ -172,10 +145,11 @@ function svelteProblems(svelte: unknown): AnyReport[] {
 }
 
 /**
- * Throw one error listing every mistake in `options`: unknown and removed options first, then
+ * Throw one error listing every mistake in `options`: unknown options first, then
  * each option's own, in the order the docs list them.
  */
 export function checkPluginOptions(options: object): void {
+	// Boundary: the options of a user are read by name, whatever their type.
 	const given = options as Record<string, unknown>;
 	const found: AnyReport[] = Object.keys(options)
 		.filter((name) => !PLUGIN_OPTION_NAMES.includes(name))

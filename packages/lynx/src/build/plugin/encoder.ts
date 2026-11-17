@@ -8,7 +8,7 @@
 import { buildError } from "../diagnostics/messages.ts";
 
 /** What the engine's encoder says when it is too old for the engine version asked for. */
-const TOO_OLD = /current compiler only support lynx version/;
+export const TOO_OLD: RegExp = /current compiler only support lynx version/;
 
 /** The class members this file relies on. */
 interface EncodePoolOwner {
@@ -36,12 +36,14 @@ const cannotHandOver = (reason: string): Error =>
  * @workaround encoder-handover kind=tooling delete-when="the template plugin depends on a @lynx-js/tasm that encodes for the oldest Lynx the binding builds for"
  */
 export function handEncoderOver(plugin: EncodePoolOwner, tasmPkg: string): void {
+	// Boundary: the template plugin's pool is not typed; only these members are read.
 	const pool = plugin.encodePool as { run?: Run; [HANDED_OVER]?: true } | undefined;
 	if (typeof pool?.run !== "function") {
 		throw cannotHandOver("its LynxEncodePlugin has no encodePool to run the encode step in");
 	}
 	// Set up again (another environment, a restart of the dev server): once is enough.
 	if (pool[HANDED_OVER]) return;
+	// Boundary: `bind` loses the pool's method type.
 	const run = pool.run.bind(pool) as Run;
 	pool.run = async (task, options) => {
 		try {

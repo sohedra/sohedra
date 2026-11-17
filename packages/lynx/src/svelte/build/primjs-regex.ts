@@ -39,7 +39,7 @@ export const PRIMJS_REGEX_REWRITES: readonly PrimjsRegexRewrite[] = [
 ];
 
 /** Whether `resourcePath` is `file` of Svelte's `src` folder. */
-const isSvelteFile = (resourcePath: string, file: string): boolean =>
+export const isPrimjsRegexFile = (resourcePath: string, file: string): boolean =>
 	resourcePath.replace(/\\/g, "/").endsWith(`/svelte/src/${file}`);
 
 /**
@@ -50,7 +50,9 @@ export function rewritePrimjsRegex(
 	source: string,
 	resourcePath: string,
 ): string | { missing: string } | undefined {
-	const rewrite = PRIMJS_REGEX_REWRITES.find((entry) => isSvelteFile(resourcePath, entry.file));
+	const rewrite = PRIMJS_REGEX_REWRITES.find((entry) =>
+		isPrimjsRegexFile(resourcePath, entry.file),
+	);
 	if (rewrite === undefined) return undefined;
 	if (!rewrite.declaration.test(source)) return { missing: rewrite.name };
 	return source.replace(

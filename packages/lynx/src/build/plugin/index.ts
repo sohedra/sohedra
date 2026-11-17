@@ -25,14 +25,12 @@
 // The main thread's SWC env matches ReactLynx's: Chrome 120 plus the ES2020+ transforms (PrimJS is
 // ES2019). The background layer keeps the default env.
 
-import { createRequire } from "node:module";
-import path from "node:path";
-
 import type { LynxTemplatePlugin as TemplatePlugin } from "@lynx-js/template-webpack-plugin";
 import type { RsbuildPlugin, RsbuildPluginAPI } from "@rsbuild/core";
 
 import { PACKAGE_NAME } from "../../wire/index.ts";
 import { buildError } from "../diagnostics/messages.ts";
+import { environment } from "../globals.ts";
 import { carryEncoder } from "./encoder.ts";
 import { addBundlePlugins, addPageEntries } from "./entry.ts";
 import type { LynxEngineConfig } from "./entry.ts";
@@ -58,8 +56,10 @@ import { checkSvelte } from "./svelte-check.ts";
 import { readSvelteOptions } from "./svelte-options.ts";
 import {
 	checkTemplatePlugin,
-	engineTemplateVersion,
+	engineFolder,
+	ownTemplateRange,
 	ownTemplateVersion,
+	templateVersionOf,
 } from "./template-plugin.ts";
 
 export type {
@@ -98,7 +98,6 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 		async setup(api) {
 			const root = api.context.rootPath;
 			checkSvelte(root);
-			checkEngineTemplatePlugin();
 			const svelte = await readSvelteOptions(root, configFile);
 			for (const warning of svelte.warnings) api.logger.warn(warning.message);
 			// Settings are made once for each Lynx environment: a message is said once.
@@ -118,17 +117,19 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 				// A test run has no bundle: no engine, no template, no layers. After Rstest's settings.
 				// Development unless NODE_ENV says production (Rstest sets `test` and does not build in
 				// development mode).
-				const development = process.env["NODE_ENV"] !== "production";
+				const development = environment["NODE_ENV"] !== "production";
 				api.modifyBundlerChain({
 					order: "post",
 					handler: (chain, { CHAIN_ID, bundler }) => {
-						configureTestRules(chain, CHAIN_ID, {
+						configureTestRules({
+							chain,
+							CHAIN_ID,
 							define: define.background,
 							development,
 							compilerOptions: svelte.compilerOptions,
 							preprocess: svelte.preprocess,
 						});
-						configureSingleCopies(chain, root, singleCopy);
+						configureSingleCopies(chain, { rootPath: root, singleCopy });
 						configureTestResolve(chain, development);
 						ignoreUnusedSvelteServerCode(chain, bundler);
 					},
@@ -136,15 +137,16 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 				return;
 			}
 
-			await registerLynxEngine(api);
+			const registered = await registerLynxEngine(api);
 			await carryEncoder();
+			const { LynxTemplatePlugin: OwnTemplatePlugin } =
+				await import("@lynx-js/template-webpack-plugin");
+			let checked = false;
 			api.modifyRsbuildConfig((config, { mergeRsbuildConfig }) => {
-				const original = api.getRsbuildConfig("original");
 				const merged = mergeRsbuildConfig(config, {
-					// Compile node_modules too (Svelte ships ES2022), as ReactLynx does.
-					...(original.source?.include === undefined && {
-						source: { include: [/\.(?:js|mjs|cjs|ts|mts|cts)$/] },
-					}),
+					// Compile node_modules too (Svelte ships ES2022), as ReactLynx does. The app's own
+					// `source.include` only adds files, so it joins this one.
+					source: { include: [/\.(?:js|mjs|cjs|ts|mts|cts)$/] },
 					// After the app's own: the main thread's script stays whole.
 					tools: { rspack: mainThreadScriptWhole(sayOnce) },
 				});
@@ -174,6 +176,11 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 					if (!lynx || !LynxTemplatePlugin) {
 						throw buildError({ code: "lynx_engine_missing", details: {} });
 					}
+					// One copy of the template plugin needs no check; two must be versions that work together.
+					if (!checked && LynxTemplatePlugin !== OwnTemplatePlugin) {
+						checkEngineTemplatePlugin({ registered, root });
+					}
+					checked = true;
 
 					// Hot reload follows Rsbuild's `dev.hmr` (on by default).
 					const hot = isDev && environment.config.dev?.hmr !== false;
@@ -191,7 +198,9 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 					}
 					const anyFirstFrame =
 						typeof firstFrame === "function" ? [...drawn.values()].some(Boolean) : firstFrame;
-					configureBuildRules(chain, CHAIN_ID, {
+					configureBuildRules({
+						chain,
+						CHAIN_ID,
 						define: { "main-thread": define.mainThread, background: define.background },
 						development: isDev,
 						hot,
@@ -201,7 +210,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 					});
 					defineDebugEnvironment(chain, bundler);
 					chain.plugin(`${PACKAGE_NAME}:source-map-ignore-list`).use(SourceMapIgnoreListPlugin);
-					configureSingleCopies(chain, root, singleCopy);
+					configureSingleCopies(chain, { rootPath: root, singleCopy });
 					configureBackgroundOnly(chain, loaderPath("background-only"));
 					configureResolve(chain, isDev);
 					ignoreUnusedSvelteServerCode(chain, bundler);
@@ -237,30 +246,30 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 }
 
 /**
- * The template plugin the engine builds with and the one this package depends on must be one
- * version; two copies of one version share their hooks, so only a difference fails.
+ * The template plugin of the engine that builds the app must be in the range this package
+ * declares. Which engine builds depends on who registered it: this package, or the app (rspeedy).
  */
-function checkEngineTemplatePlugin(): void {
-	const engineFolder = path.dirname(
-		createRequire(import.meta.url).resolve("@lynx-js/rsbuild-plugin/package.json"),
-	);
-	const engine = engineTemplateVersion(engineFolder);
-	if (engine !== undefined) checkTemplatePlugin({ engine, own: ownTemplateVersion() });
+function checkEngineTemplatePlugin(options: { registered: boolean; root: string }): void {
+	const folder = engineFolder(options);
+	const engine = folder === undefined ? undefined : templateVersionOf(folder);
+	if (engine === undefined) return;
+	checkTemplatePlugin({ engine, own: ownTemplateVersion(), range: ownTemplateRange() });
 }
 
 /**
  * Register the Lynx build engine unless the app (rsbuild.config.ts) or rspeedy already did, as
- * pluginReactLynx does.
+ * pluginReactLynx does. Whether it was registered here.
  */
-async function registerLynxEngine(api: RsbuildPluginAPI): Promise<void> {
+async function registerLynxEngine(api: RsbuildPluginAPI): Promise<boolean> {
 	// Imported here, as rspeedy does: reading the plugin's options should not load the whole engine.
 	const { isPluginLynxRegistered, pluginLynx } = await import("@lynx-js/rsbuild-plugin");
 	const { environments } = api.getRsbuildConfig("original");
-	if (isPluginLynxRegistered(api, Object.keys(environments ?? {}))) return;
+	if (isPluginLynxRegistered(api, Object.keys(environments ?? {}))) return false;
 	const original = api.getRsbuildConfig("original");
 	const { action } = api.context;
 	for (const plugin of pluginLynx()) {
 		if (typeof plugin.apply !== "function" || plugin.apply(original, { action }))
 			await plugin.setup(api);
 	}
+	return true;
 }

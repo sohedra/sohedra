@@ -6,16 +6,18 @@ import path from "node:path";
 
 import type { RsbuildConfig } from "@rsbuild/core";
 
+import { workingDirectory } from "../globals.ts";
+
 /** Where an app's root and its build config file are. */
 export interface ConfigFileOptions {
 	/**
 	 * The app's root.
-	 * @default process.cwd()
+	 * @defaultValue the working directory
 	 */
 	rootPath?: string;
 	/**
 	 * The app's build config file.
-	 * @default lynx.config.* (rspeedy), else rsbuild.config.*
+	 * @defaultValue `lynx.config.*` (rspeedy), else `rsbuild.config.*`
 	 */
 	configPath?: string;
 }
@@ -45,7 +47,7 @@ export function findConfigFile(root: string): string | undefined {
 
 /** The app's build config: `lynx.config.*` when it builds with rspeedy, `rsbuild.config.*` otherwise. */
 export async function loadLynxConfig(options: ConfigFileOptions = {}): Promise<RsbuildConfig> {
-	const { rootPath = process.cwd(), configPath } = options;
+	const { rootPath = workingDirectory(), configPath } = options;
 	const file = configPath ?? findConfigFile(rootPath);
 	if (file !== undefined && configLoader(file) === "rspeedy") {
 		const { loadConfig } = await import("@lynx-js/rspeedy");

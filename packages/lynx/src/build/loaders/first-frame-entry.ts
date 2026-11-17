@@ -4,7 +4,7 @@
 // entry module itself has no issuer, so layer rules would not apply to it).
 //
 // An entry that does not draw its first frame (`firstFrame` as a function of the entry's name)
-// says `firstFrame=off` in the query: the page's `createPage` has recorded how to draw it by the
+// says `firstFrame=off` in the query: the page's `mountPage` has recorded how to draw it by the
 // time the entry's imports have loaded, and this takes that record away. Nothing is drawn, as with
 // `firstFrame: false`; the page's imports still load, as there.
 

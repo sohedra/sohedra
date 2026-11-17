@@ -11,6 +11,7 @@
 
 import { field, identifierName, nodes, scriptProgram } from "../../svelte/build/index.ts";
 import type { AnyNode } from "../../svelte/build/index.ts";
+import { stringLiteral } from "../string-literal.ts";
 import type { Pass } from "./pass.ts";
 
 const EFFECTS = new Set(["$effect", "$effect.pre", "$effect.root"]);
@@ -46,7 +47,7 @@ export const effectImports: Pass = ({ ast, thread }) => {
 		for (const inner of nodes(field(node, "arguments"))) {
 			const target = inner.type === "ImportExpression" ? field(inner, "source") : undefined;
 			if (target?.type === "Literal" && typeof target.value === "string")
-				specifiers.add(JSON.stringify(target.value));
+				specifiers.add(stringLiteral(target.value));
 		}
 	}
 	if (specifiers.size === 0) return [];

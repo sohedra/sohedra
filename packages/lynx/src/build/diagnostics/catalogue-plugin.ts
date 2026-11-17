@@ -8,7 +8,7 @@ export interface PluginDetails {
 	svelte_missing: { root: string };
 	svelte_without_renderers: { version: string; where: string };
 	lynx_engine_missing: Record<string, never>;
-	template_plugin_versions: { engine: string; own: string };
+	template_plugin_versions: { engine: string; own: string; range: string };
 	encoder_not_handed_over: { reason: string };
 	svelte_config_invalid: { file: string; reason: string };
 	svelte_config_option_owned: { key: string };
@@ -40,10 +40,10 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 		docs: "lynx_engine_missing",
 	},
 	template_plugin_versions: {
-		message: ({ engine, own }) =>
-			`The Lynx build engine uses @lynx-js/template-webpack-plugin ${engine}, and @sohedra/lynx uses ${own}.`,
+		message: ({ engine, own, range }) =>
+			`The Lynx build engine uses @lynx-js/template-webpack-plugin ${engine}, and @sohedra/lynx needs ${range} (it installs ${own}).`,
 		fix: () =>
-			"Install one version of both: update @lynx-js/rspeedy and @sohedra/lynx together, and run your package manager's dedupe.",
+			"Update @lynx-js/rspeedy (or @lynx-js/rsbuild-plugin) so that its template plugin is in that range, or update @sohedra/lynx to a version that supports the engine's.",
 		docs: "template_plugin_versions",
 	},
 	encoder_not_handed_over: {

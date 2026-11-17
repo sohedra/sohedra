@@ -22,6 +22,7 @@ import type { BuildWarning, SourceText } from "../diagnostics/messages.ts";
 import { compileError, compileWarnings, preprocessError } from "../diagnostics/svelte-errors.ts";
 import { appendMap, compose } from "../source-map/maps.ts";
 import type { InputMap, SourceMap } from "../source-map/maps.ts";
+import { escapeRegExp, stringLiteral } from "../string-literal.ts";
 import { lynxCss } from "./lynx-css.ts";
 import { prepare } from "./prepare.ts";
 import type { Prepared } from "./prepare.ts";
@@ -160,8 +161,8 @@ function withContent(map: SourceMap, filename: string, source: string): SourceMa
 
 /** Svelte's output as a module specifier, quoted, in place of the one Svelte writes. */
 function withInternals(code: string, specifier: string, internals: string): string {
-	const quoted = JSON.stringify(internals.replace(/\\/g, "/"));
-	return code.replace(new RegExp(`(['"])${specifier}\\1`, "g"), quoted);
+	const quoted = stringLiteral(internals.replace(/\\/g, "/"));
+	return code.replace(new RegExp(`(['"])${escapeRegExp(specifier)}\\1`, "g"), () => quoted);
 }
 
 /**

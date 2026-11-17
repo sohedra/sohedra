@@ -1,11 +1,12 @@
-// The Lynx engine versions the binding builds for.
+// The Lynx engine versions @sohedra/lynx builds for.
 
 /** The oldest engine the bundle runs on, and the default: no code path serves an older one. */
 export const MIN_ENGINE_VERSION = "4.2";
 
 /**
- * The newest engine the encoder encodes for. `@lynx-js/tasm` 0.0.53 is the version pinned in
- * `package.json`; raise this with it.
+ * The newest engine the encoder encodes for, as a whole version: `@lynx-js/tasm` 0.0.53, the
+ * version pinned in `package.json`, encodes for 4.3 and 4.3.0 and refuses 4.3.1. Raise this with
+ * the pin; a contract test asks the encoder.
  */
 export const MAX_ENGINE_VERSION = "4.3";
 
@@ -24,10 +25,8 @@ function compare(a: string, b: string): number {
 	return 0;
 }
 
-/** How `version` sits against the versions the binding builds for. */
+/** How `version` sits against the versions @sohedra/lynx builds for. */
 export function engineVersionRange(version: string): "old" | "new" | "supported" {
 	if (compare(version, MIN_ENGINE_VERSION) < 0) return "old";
-	// A patch of the newest supported minor is supported: compare the major and minor only.
-	const [major = 0, minor = 0] = parts(version);
-	return compare(`${major}.${minor}`, MAX_ENGINE_VERSION) > 0 ? "new" : "supported";
+	return compare(version, MAX_ENGINE_VERSION) > 0 ? "new" : "supported";
 }

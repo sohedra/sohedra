@@ -2,7 +2,11 @@
 
 import type { RspackChain } from "@rsbuild/core";
 
-import { PRIMJS_REGEX_REWRITES, SPREAD_SETTER_FILE } from "../../svelte/build/index.ts";
+import {
+	isPrimjsRegexFile,
+	PRIMJS_REGEX_REWRITES,
+	SPREAD_SETTER_FILE,
+} from "../../svelte/build/index.ts";
 import type { CompileOptions, PreprocessorGroup } from "../../svelte/build/index.ts";
 import { PACKAGE_NAME, RENDERER_ENTRY } from "../../wire/index.ts";
 import type { Thread } from "../../wire/index.ts";
@@ -97,7 +101,7 @@ function useSvelteLoaders(
 				transform: { useDefineForClassFields: true },
 			},
 		});
-	useMainThreadFunctions(runeModule, thread, hot);
+	useMainThreadFunctions(runeModule, { thread, hot });
 }
 
 /**
@@ -105,11 +109,13 @@ function useSvelteLoaders(
  * thread for Svelte's server renderer (the first frame).
  */
 export function splitSvelteRules(
-	chain: RspackChain,
-	swc: SwcByThread,
-	threads: ThreadRules[],
-	options: SvelteRuleOptions,
+	options: SvelteRuleOptions & {
+		chain: RspackChain;
+		swc: SwcByThread;
+		threads: ThreadRules[];
+	},
 ): void {
+	const { chain, swc, threads } = options;
 	const component = chain.module.rule(`${PACKAGE_NAME}:component`).test(SVELTE_COMPONENT);
 	const runeModule = chain.module.rule(`${PACKAGE_NAME}:module`).test(SVELTE_MODULE);
 	for (const rules of threads) {
@@ -128,11 +134,7 @@ export function patchSvelteSource(chain: RspackChain): void {
 	for (const rewrite of PRIMJS_REGEX_REWRITES) {
 		chain.module
 			.rule(`${PACKAGE_NAME}:primjs-regex:${rewrite.name}`)
-			.test(
-				new RegExp(
-					`[\\\\/]svelte[\\\\/]src[\\\\/]${rewrite.file.replace(/\//g, "[\\\\/]").replace(/\./g, "\\.")}$`,
-				),
-			)
+			.test((resource: string) => isPrimjsRegexFile(resource, rewrite.file))
 			.enforce("pre")
 			.use("primjs-regex")
 			.loader(loaderPath("primjs-regex"));

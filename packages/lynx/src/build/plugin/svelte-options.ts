@@ -13,7 +13,7 @@ import type {
 import { RENDERER_ENTRY } from "../../wire/index.ts";
 import { buildError, buildWarning } from "../diagnostics/messages.ts";
 import type { BuildWarning } from "../diagnostics/messages.ts";
-import { lynxWarningFilter } from "../svelte-config/index.ts";
+import { lynxWarningFilter } from "../svelte-config/warning-filter.ts";
 
 /** The files a Svelte config is looked for in, in order. */
 const CONFIG_FILES = [

@@ -12,6 +12,8 @@ import { threadDefines } from "./thread-defines.ts";
 
 /** What a test run says to its rules. */
 export interface TestRuleOptions extends SvelteRuleOptions {
+	chain: RspackChain;
+	CHAIN_ID: ChainIdentifier;
 	/** The app's `define` constants for the background thread, as code. */
 	define: Record<string, string>;
 	development: boolean;
@@ -21,12 +23,8 @@ export interface TestRuleOptions extends SvelteRuleOptions {
 const BACKGROUND: Thread = "background";
 
 /** Set up the rules of a test run. */
-export function configureTestRules(
-	chain: RspackChain,
-	CHAIN_ID: ChainIdentifier,
-	options: TestRuleOptions,
-): void {
-	const { define, development } = options;
+export function configureTestRules(options: TestRuleOptions): void {
+	const { chain, CHAIN_ID, define, development } = options;
 	// Only the thread's constants are defined: the runtime's own flags stay unset, so a test can set
 	// them.
 	const threads = [
@@ -37,10 +35,10 @@ export function configureTestRules(
 			unlayered: true,
 		},
 	];
-	const swc = splitScriptRule(chain, CHAIN_ID, threads);
+	const swc = splitScriptRule({ chain, CHAIN_ID, threads });
 	// CSS stays with Rstest's own rules: there are no layers to split them by, and a test has no
 	// template to put styles in.
-	splitSvelteRules(chain, swc, threads, options);
+	splitSvelteRules({ ...options, swc, threads });
 	patchSvelteSource(chain);
 	// The marker stays an empty module: a test imports what the app guards with it.
 	chain.resolve.alias.set("background-only$", RUNTIME_FILES.backgroundOnly);

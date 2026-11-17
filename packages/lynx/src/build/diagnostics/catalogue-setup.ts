@@ -7,7 +7,6 @@ import { PLUGIN_OPTION_NAMES } from "../plugin/option-names.ts";
 /** The details each setup message is written from. */
 export interface SetupDetails {
 	unknown_plugin_option: { name: string; suggestion?: string | undefined };
-	plugin_option_removed: { name: string; instead: string };
 	plugin_option_type: { name: string; expected: string; given: string };
 	single_copy_name: { given: string };
 	engine_version_old: { version: string; minimum: string };
@@ -20,22 +19,23 @@ export interface SetupDetails {
 }
 
 const OPTIONS = "`pluginSvelteLynx()`";
+/** The options of Svelte's own that `svelte.config.js` sets: `compilerOptions`, `preprocess`, also under `svelte`. */
+const SVELTE_OPTIONS = /^(?:svelte\.)?(?:compilerOptions|preprocess)$/;
 const LIST = PLUGIN_OPTION_NAMES.map((name) => `\`${name}\``);
 
 /** The messages of setup. */
 export const SETUP_CATALOGUE: Catalogue<SetupDetails> = {
 	unknown_plugin_option: {
 		message: ({ name }) => `\`${name}\` is not an option of ${OPTIONS}.`,
-		fix: ({ suggestion }) =>
-			suggestion === undefined
+		fix: ({ name, suggestion }) => {
+			// People write these from habit with other Svelte plugins.
+			if (SVELTE_OPTIONS.test(name))
+				return "Set it in svelte.config.js: `export default svelteConfig({ compilerOptions, preprocess })`.";
+			return suggestion === undefined
 				? `The options are ${LIST.slice(0, -1).join(", ")} and ${LIST.at(-1)}.`
-				: `Did you mean \`${suggestion}\`?`,
+				: `Did you mean \`${suggestion}\`?`;
+		},
 		docs: "unknown_plugin_option",
-	},
-	plugin_option_removed: {
-		message: ({ name }) => `\`${name}\` is not an option of ${OPTIONS} any more.`,
-		fix: ({ instead }) => instead,
-		docs: "plugin_option_removed",
 	},
 	plugin_option_type: {
 		message: ({ name, expected, given }) => `\`${name}\` must be ${expected}; got ${given}.`,
@@ -50,14 +50,14 @@ export const SETUP_CATALOGUE: Catalogue<SetupDetails> = {
 	},
 	engine_version_old: {
 		message: ({ version, minimum }) =>
-			`\`engineVersion\` is '${version}', and the binding builds for Lynx ${minimum} and later.`,
+			`\`engineVersion\` is '${version}', and @sohedra/lynx builds for Lynx ${minimum} and later.`,
 		fix: ({ minimum }) => `Use '${minimum}' or later, or leave the option out for '${minimum}'.`,
 		docs: "engine_version_old",
 	},
 	engine_version_new: {
 		message: ({ version, maximum }) =>
-			`\`engineVersion\` is '${version}', and the binding's encoder encodes for Lynx ${maximum} at most.`,
-		fix: ({ maximum }) => `Use '${maximum}' or earlier, or update the binding.`,
+			`\`engineVersion\` is '${version}', and the encoder of @sohedra/lynx encodes for Lynx ${maximum} at most.`,
+		fix: ({ maximum }) => `Use '${maximum}' or earlier, or update @sohedra/lynx.`,
 		docs: "engine_version_new",
 	},
 	define_thread_unknown: {

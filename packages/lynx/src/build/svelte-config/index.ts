@@ -2,8 +2,9 @@
 // the file, and so do the editor and `svelte-check`, so they compile a component as the build
 // does. This file is loaded by editors, so it imports no build code.
 
-import type { CompileOptions, PreprocessorGroup, Warning } from "../../svelte/build/index.ts";
+import type { CompileOptions, PreprocessorGroup } from "../../svelte/build/index.ts";
 import { RENDERER_ENTRY } from "../../wire/index.ts";
+import { lynxWarningFilter } from "./warning-filter.ts";
 
 /**
  * The Svelte compiler options an app sets. The rest are set by the binding (`generate`,
@@ -34,20 +35,6 @@ export interface SvelteConfigOptions {
 export interface SvelteConfig {
 	compilerOptions: CompileOptions;
 	preprocess: PreprocessorGroup[];
-}
-
-/**
- * Svelte warnings that do not apply on Lynx. `attribute_illegal_colon`: a main-thread attribute is
- * written `main-thread:ontap`, and Lynx has no other attribute with a colon.
- */
-const IGNORED_WARNINGS: ReadonlySet<string> = new Set(["attribute_illegal_colon"]);
-
-/** The app's `warningFilter`, behind the warnings that do not apply on Lynx. */
-export function lynxWarningFilter(
-	appFilter?: (warning: Warning) => boolean,
-): (warning: Warning) => boolean {
-	return (warning) =>
-		!IGNORED_WARNINGS.has(warning.code) && (appFilter === undefined || appFilter(warning));
 }
 
 /**

@@ -63,6 +63,7 @@ export function addPageEntries(chain: RspackChain, options: PageEntryOptions): s
 	const entries = chain.entryPoints.entries() ?? {};
 	chain.entryPoints.clear();
 	for (const [name, entryPoint] of Object.entries(entries)) {
+		// Boundary: the chain types an entry's values as `unknown`; Rsbuild writes these shapes.
 		const imports = entryImports(entryPoint.values() as EntryValue[]);
 		const mainThreadEntry = `${name}${MAIN_THREAD_ENTRY_SUFFIX}`;
 		const mainThreadFile = path.posix.join(intermediateRoot, name, "main-thread.js");
@@ -124,6 +125,7 @@ export function addPageEntries(chain: RspackChain, options: PageEntryOptions): s
 				...(lazyBundleFilename !== undefined && { lazyBundleFilename }),
 				// Boundary: the template plugin's options are checked by the engine, and `template` holds
 				// the page options the app and `pluginLynxConfig` set.
+				// Boundary: the template plugin's option type has no field for the lazy-bundle settings it reads.
 			} as unknown as ConstructorParameters<typeof TemplatePlugin>[0],
 		]);
 	}
@@ -209,7 +211,13 @@ class EnginePathsPlugin {
 	}
 }
 
-/** The plugins that wrap the background scripts, mark the main-thread ones and encode the bundle. */
+/**
+ * The plugins that wrap the background scripts, mark the main-thread ones and encode the bundle.
+ * This package carries its own copies of the encode and runtime-wrapper plugins, because the
+ * engine exposes only its template plugin to others.
+ *
+ * @workaround carried-engine-plugins kind=tooling delete-when="the Lynx build engine exposes its encode and runtime-wrapper plugins to DSL plugins"
+ */
 export function addBundlePlugins(
 	chain: RspackChain,
 	options: {

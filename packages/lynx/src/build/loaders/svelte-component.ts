@@ -115,6 +115,7 @@ export default function svelteComponentLoader(this: Context, source: string): vo
 	compileSource(this, source).then(
 		// Boundary: the bundler types a source map by its own shape.
 		(result) => callback(null, result.code, result.map as Rspack.sources.RawSourceMap | undefined),
+		// Boundary: the bundler's callback takes an `Error`; a rejection is any value.
 		(error: unknown) => callback(error as Error),
 	);
 }

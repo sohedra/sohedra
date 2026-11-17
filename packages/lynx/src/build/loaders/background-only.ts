@@ -39,6 +39,7 @@ export default function backgroundOnlyLoader(
 		// main-thread script lost the map of the loaders before it. The module as it was keeps
 		// their map; a stub is not the source.
 		(code) => callback(null, code, code === source ? unchanged : undefined),
+		// Boundary: the bundler's callback takes an `Error`; a rejection is any value.
 		(error: unknown) => callback(error as Error),
 	);
 }

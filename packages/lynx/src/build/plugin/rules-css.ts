@@ -39,7 +39,9 @@ export function configureCssRules(chain: RspackChain, CHAIN_ID: ChainIdentifier)
 	const cssLoader = uses[CHAIN_ID.USE.CSS];
 	// Not an Rsbuild CSS rule (Sass and Less are not set up).
 	if (!cssLoader) return;
+	// Boundary: the chain gives a rule's settings as `unknown`.
 	const entries = main.entries() as Record<string, unknown>;
+	// Boundary: the chain gives a rule's settings as `unknown`.
 	const { test, dependency } = cssRule.entries() as { test: RegExp; dependency?: string };
 
 	const mainThread = chain.module
@@ -59,7 +61,9 @@ export function configureCssRules(chain: RspackChain, CHAIN_ID: ChainIdentifier)
 		.end()
 		.use(CHAIN_ID.USE.CSS)
 		.after(IGNORE_CSS)
+		// Boundary: the chain gives a loader's settings as `unknown`.
 		.merge(cssLoader.entries() as object)
+		// Boundary: the chain gives a loader's options as `unknown`.
 		.options(exportOnlyLocals(cssLoader.get("options") as CSSLoaderOptions));
 
 	main.issuerLayer(LAYERS.background);

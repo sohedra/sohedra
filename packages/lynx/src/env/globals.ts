@@ -6,6 +6,9 @@ declare const __MAIN_THREAD__: boolean;
 declare const __BACKGROUND__: boolean;
 declare const __DEV__: boolean;
 
+/** `true` in the main thread's bundle, where the first frame is drawn. */
 export const MAIN_THREAD: boolean = __MAIN_THREAD__;
+/** `true` in the background thread's bundle, where Svelte and the app run. */
 export const BACKGROUND: boolean = __BACKGROUND__;
+/** `true` in a development build. */
 export const DEV: boolean = __DEV__;

@@ -60,6 +60,7 @@ export function threadRule(rule: Rule, { thread, unlayered }: ThreadRules): Rule
 function rsbuildSwc(jsMain: Rule, CHAIN_ID: ChainIdentifier): SwcOptions {
 	const swcUse = jsMain.uses.get(CHAIN_ID.USE.SWC);
 	if (!swcUse) throw buildError({ code: "rsbuild_swc_missing", details: {} });
+	// Boundary: Rsbuild's loader options are untyped.
 	return (swcUse.get("options") ?? {}) as SwcOptions;
 }
 
@@ -89,7 +90,11 @@ function withGlobals(options: SwcOptions, vars: Record<string, string>): SwcOpti
 }
 
 /** Main-thread functions of a plain script run first, on the source as written. */
-export function useMainThreadFunctions(rule: Rule, thread: Thread, hot: boolean): void {
+export function useMainThreadFunctions(
+	rule: Rule,
+	options: { thread: Thread; hot: boolean },
+): void {
+	const { thread, hot } = options;
 	rule
 		.use(`${PACKAGE_NAME}:main-thread-functions`)
 		.loader(loaderPath("main-thread-functions"))
@@ -100,11 +105,12 @@ export function useMainThreadFunctions(rule: Rule, thread: Thread, hot: boolean)
  * Split Rsbuild's JS rule by layer, and return each thread's SWC options for the Svelte rules to
  * reuse.
  */
-export function splitScriptRule(
-	chain: RspackChain,
-	CHAIN_ID: ChainIdentifier,
-	threads: ThreadRules[],
-): SwcByThread {
+export function splitScriptRule(options: {
+	chain: RspackChain;
+	CHAIN_ID: ChainIdentifier;
+	threads: ThreadRules[];
+}): SwcByThread {
+	const { chain, CHAIN_ID, threads } = options;
 	const jsRule = chain.module.rule(CHAIN_ID.RULE.JS);
 	// `.svelte.ts` modules have their own rule: Svelte must compile them.
 	jsRule.exclude.add(SVELTE_MODULE);
@@ -114,12 +120,14 @@ export function splitScriptRule(
 	const uses = jsMain.uses.entries() ?? {};
 	const base = rsbuildSwc(jsMain, CHAIN_ID);
 
-	const swc = {} as SwcByThread;
-	for (const { thread, defines } of threads) {
-		const own =
-			thread === "main-thread" ? { ...base, env: { ...base.env, ...MAIN_THREAD_ENV } } : base;
-		swc[thread] = withGlobals(own, defines);
-	}
+	const swc = Object.fromEntries(
+		threads.map(({ thread, defines }) => {
+			const own =
+				thread === "main-thread" ? { ...base, env: { ...base.env, ...MAIN_THREAD_ENV } } : base;
+			return [thread, withGlobals(own, defines)];
+		}),
+		// Boundary: `Object.fromEntries` types its keys as `string`; the threads are the keys.
+	) as SwcByThread;
 
 	jsMain.uses.clear();
 	for (const rules of threads) {
@@ -133,17 +141,18 @@ export function splitScriptRule(
 				.loader(use.get("loader"))
 				.options(name === CHAIN_ID.USE.SWC ? swc[rules.thread] : use.get("options"));
 		}
-		useMainThreadFunctions(rule, rules.thread, rules.hot);
+		useMainThreadFunctions(rule, rules);
 	}
 	return swc;
 }
 
 /** The threads' rules for a build. */
-export function threadsOf(
-	define: Record<Thread, Record<string, string>>,
-	plugin: (thread: Thread) => Record<string, string>,
-	hot: boolean,
-): ThreadRules[] {
+export function threadsOf(options: {
+	define: Record<Thread, Record<string, string>>;
+	plugin: (thread: Thread) => Record<string, string>;
+	hot: boolean;
+}): ThreadRules[] {
+	const { define, plugin, hot } = options;
 	return THREADS.map((thread) => ({
 		thread,
 		// The plugin's own constants win over the app's.
