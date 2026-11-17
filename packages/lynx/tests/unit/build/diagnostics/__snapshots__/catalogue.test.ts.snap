@@ -48,6 +48,66 @@ Remove it: the build writes a component's styles to the page's stylesheet.
 https://sohedra.com/e/css_injected"
 `;
 
+exports[`the build's catalogue > define_key_invalid: the message 1`] = `
+"\`define.mainThread.a.b\` is not a plain identifier.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use a name such as \`__API__\`: \`define\` replaces a global name, not an expression like \`process.env.API\`.
+https://sohedra.com/e/define_key_invalid"
+`;
+
+exports[`the build's catalogue > define_key_reserved: the message 1`] = `
+"\`define.mainThread.__DEV__\` is set by the plugin.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it from \`define\`.
+https://sohedra.com/e/define_key_reserved"
+`;
+
+exports[`the build's catalogue > define_thread_unknown: the message 1`] = `
+"\`worker\` is not a thread.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use \`define.mainThread\` or \`define.background\`.
+https://sohedra.com/e/define_thread_unknown"
+`;
+
+exports[`the build's catalogue > engine_version_new: the message 1`] = `
+"\`engineVersion\` is '4.4', and the binding's encoder encodes for Lynx 4.3 at most.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use '4.3' or earlier, or update the binding.
+https://sohedra.com/e/engine_version_new"
+`;
+
+exports[`the build's catalogue > engine_version_old: the message 1`] = `
+"\`engineVersion\` is '3.9', and the binding builds for Lynx 4.2 and later.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use '4.2' or later, or leave the option out for '4.2'.
+https://sohedra.com/e/engine_version_old"
+`;
+
 exports[`the build's catalogue > event_attribute_renamed: the message 1`] = `
 "\`bindtap\` reads as the old \`bind\` spelling of an event attribute, which a component does not write.
 /app/src/App.svelte:2:3
@@ -58,6 +118,18 @@ exports[`the build's catalogue > event_attribute_renamed: the message 1`] = `
 
 Write \`ontap\` instead.
 https://sohedra.com/e/event_attribute_renamed"
+`;
+
+exports[`the build's catalogue > first_frame_not_boolean: the message 1`] = `
+"\`firstFrame\` returned "yes" for the entry \`settings\`, and it must return a boolean.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Return \`true\` or \`false\` from the function.
+https://sohedra.com/e/first_frame_not_boolean"
 `;
 
 exports[`the build's catalogue > global_event_attribute: the message 1`] = `
@@ -192,6 +264,18 @@ Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
 https://sohedra.com/e/out_directive"
 `;
 
+exports[`the build's catalogue > page_config_reserved: the message 1`] = `
+"\`pageConfig.enableA11y\` is set by the plugin.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it from \`pageConfig\`.
+https://sohedra.com/e/page_config_reserved"
+`;
+
 exports[`the build's catalogue > plain_function_in_main_thread_function: the message 1`] = `
 "\`save\` is a plain function, and a main-thread function calls it. The main thread cannot run it.
 /app/src/App.svelte:2:3
@@ -202,6 +286,30 @@ exports[`the build's catalogue > plain_function_in_main_thread_function: the mes
 
 Call it through \`runOnBackground(save)\`, or start its body with 'main thread'.
 https://sohedra.com/e/plain_function_in_main_thread_function"
+`;
+
+exports[`the build's catalogue > plugin_option_removed: the message 1`] = `
+"\`compilerOptions\` is not an option of \`pluginSvelteLynx()\` any more.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Set it in svelte.config.js: \`export default svelteConfig({ compilerOptions })\`.
+https://sohedra.com/e/plugin_option_removed"
+`;
+
+exports[`the build's catalogue > plugin_option_type: the message 1`] = `
+"\`firstFrame\` must be a boolean or a function of the entry's name that returns one; got "yes".
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Set \`firstFrame\` to a boolean or a function of the entry's name that returns one, or leave it out.
+https://sohedra.com/e/plugin_option_type"
 `;
 
 exports[`the build's catalogue > preprocess_failed: the message 1`] = `
@@ -239,6 +347,18 @@ exports[`the build's catalogue > script_syntax_error: the message 1`] = `
 
 Fix the syntax at this place.
 https://sohedra.com/e/script_syntax_error"
+`;
+
+exports[`the build's catalogue > single_copy_name: the message 1`] = `
+"\`singleCopy\` must be a list of package names such as 'zustand' or '@acme/state'; got ["./local"].
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write the package's name, not a path into it or a file.
+https://sohedra.com/e/single_copy_name"
 `;
 
 exports[`the build's catalogue > svelte_body: the message 1`] = `
@@ -299,4 +419,16 @@ exports[`the build's catalogue > transition_directive: the message 1`] = `
 
 Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
 https://sohedra.com/e/transition_directive"
+`;
+
+exports[`the build's catalogue > unknown_plugin_option: the message 1`] = `
+"\`firstframe\` is not an option of \`pluginSvelteLynx()\`.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Did you mean \`firstFrame\`?
+https://sohedra.com/e/unknown_plugin_option"
 `;
