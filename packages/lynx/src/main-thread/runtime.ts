@@ -245,7 +245,6 @@ export function startMainThread(): void {
 		const patch = decodePatch(params);
 		if (DEV) checkMessage(patch, { thread: "main-thread", page: state.generation });
 		if (!keepsMessage(patch, state.generation)) return;
-		state.shown = true;
 		// The new page replaces the old one in the same flush, with no empty frame between.
 		if (!state.rewriting) clearPrevious(state);
 		let replay: (() => void) | undefined;
@@ -258,6 +257,8 @@ export function startMainThread(): void {
 			return;
 		}
 		state.dataHeld = false;
+		// The background's page is shown: a patch of it was applied.
+		state.shown = true;
 		state.applier!.flushLists();
 		mainThread.__FlushElementTree(state.element, dataUpdated ? { triggerDataUpdated: true } : {});
 		calls.flushed();
