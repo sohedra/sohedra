@@ -35,12 +35,19 @@ exports[`golden messages to the background > a tap 1`] = `
 }
 `;
 
+exports[`golden messages to the background > an error with its code and where it was thrown 1`] = `
+{
+  "data": "{"v":1,"page":0,"t":"error","error":{"name":"Error","message":"The first frame differs.","code":"hydration_mismatch"},"place":{"component":"src/Card.svelte","mainThreadFunction":"a1b2:onScroll"}}",
+  "type": "@sohedra/lynx:replies",
+}
+`;
+
 exports[`golden patches > a counter's first patch 1`] = `"{"v":1,"page":0,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;
 
 exports[`golden patches > a counter's update 1`] = `"{"v":1,"page":0,"items":[["ops",[[3,4,"Count: 1"]]]]}"`;
 
 exports[`golden patches > a list's insert 1`] = `"{"v":1,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]"],["ops",[[9,5,{"insertAction":[{"position":1,"type":"list-item","item-key":"c"}],"removeAction":[],"updateAction":[]},[10,30,20],[30],[]]]]]}"`;
 
-exports[`golden patches > calls after the ops they depend on 1`] = `"{"v":1,"page":0,"items":[["ops",[[4,2,"class","counter open"]]],["call",1,2,["invoke","boundingClientRect",{}]],["call",2,0,["run",{"_wkltId":"a1b2:open","_c":{"to":1},"_execId":3},[240]]],["reply",1,{"ok":true,"value":"saved"}]]}"`;
+exports[`golden patches > calls after the ops they depend on 1`] = `"{"v":1,"page":0,"items":[["ops",[[4,2,"class","counter open"]]],["call",1,2,"[\\"invoke\\",\\"boundingClientRect\\",{}]"],["call",2,0,"[\\"run\\",{\\"_wkltId\\":\\"a1b2:open\\",\\"_c\\":{\\"to\\":1},\\"_execId\\":3},[240]]"],["reply",1,"{\\"ok\\":true,\\"value\\":\\"saved\\"}"]]}"`;
 
 exports[`golden patches > the reloaded page's first patch 1`] = `"{"v":1,"page":1,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;

@@ -1,9 +1,24 @@
 // Rstest Snapshot v1
 
+exports[`the wire's catalogue > page_reloaded_on_one_thread: the message 1`] = `
+"This page reloaded on one of its threads only.
+Seen on the main thread: it shows page 1 and got a message of page 2.
+
+Reload the page through Lynx, with \`lynx.reload()\` or the host's reload, so both threads start the new page together.
+https://sohedra.com/e/page_reloaded_on_one_thread"
+`;
+
 exports[`the wire's catalogue > threads_from_different_builds: the message 1`] = `
 "This page's main thread and background thread come from different builds of the app.
 Seen on the main thread: it reads version 1 of what the threads send each other, and got version 2.
 
 Build the app again and reopen the page, so both threads load from one build. If the host caches bundles, clear its cache.
 https://sohedra.com/e/threads_from_different_builds"
+`;
+
+exports[`the wire's catalogue > value_not_copyable: the message 1`] = `
+"A value sent to the main thread cannot be copied (Do not know how to serialize a BigInt).
+
+Send plain data: strings, numbers, booleans, null, arrays and plain objects, without cycles or BigInt values.
+https://sohedra.com/e/value_not_copyable"
 `;
