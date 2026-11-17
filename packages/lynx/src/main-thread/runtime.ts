@@ -282,12 +282,21 @@ export function startMainThread(): void {
 	function drawFirstFrame(page: LynxElement, data: unknown): void {
 		const markup = readGlobal(FIRST_FRAME_GLOBAL);
 		if (typeof markup !== "function") return;
+		// The background's first patch makes the page when the frame cannot be drawn.
+		let html: string | null;
 		try {
 			// Boundary: the page's script records a function of the page's data (src/first-frame/).
-			const html = (markup as (data: Record<string, unknown>) => string | null)(
+			html = (markup as (data: Record<string, unknown>) => string | null)(
 				isRecord(data) ? data : {},
 			);
-			if (html === null) return;
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error);
+			const thrown = mainThreadError({ code: "first_frame_threw", details: { reason } });
+			report(Object.assign(thrown, { cause: error }));
+			return;
+		}
+		if (html === null) return;
+		try {
 			state.frame = drawFrame({
 				page,
 				html,
@@ -297,7 +306,6 @@ export function startMainThread(): void {
 			});
 			state.applier = state.frame.applier;
 		} catch (error) {
-			// The background's first patch makes the page instead.
 			report(
 				error instanceof UnreadableMarkup
 					? mainThreadError({
