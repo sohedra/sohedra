@@ -251,14 +251,18 @@ describe("what a main-thread function captures", () => {
 			}
 		};
 
-		/** The function as written, and as the build makes it: made on the background, run on the main thread. */
+		/**
+		 * The function as written, and as the build makes it: made on the background, sent across
+		 * (which keeps only what JSON keeps), and run on the main thread.
+		 */
 		function both(setup: string, expression: string) {
 			const source = `${setup}\nexport function f() {\n  "main thread";\n  return ${expression};\n}\n`;
 			const written = outcome(() => evaluate(`${setup}\nreturn (${expression});`));
 			const background = compile(source, "background");
 			const mainThread = compile(source, "main-thread");
 			const run = outcome(() => {
-				const object = evaluate(`${background.code.replace("export ", "")}\nreturn f;`);
+				const made = evaluate(`${background.code.replace("export ", "")}\nreturn f;`);
+				const object: unknown = JSON.parse(JSON.stringify(made));
 				let body: ((this: unknown) => unknown) | undefined;
 				evaluate(registrationBodies(mainThread.code), {
 					registerWorkletInternal: (_: string, __: string, fn: typeof body) => (body = fn),
@@ -275,8 +279,9 @@ describe("what a main-thread function captures", () => {
 			["a?.[key]", ["null", "undefined", "{ k: 1 }"]],
 			["a?.[key].c", ["null", "{ k: { c: 1 } }"]],
 			['a?.["b"]', ["null", "undefined", "{ b: 1 }"]],
-			["a?.b()", ["null", "undefined", "{ b() { return 7; } }"]],
-			["a.b?.()", ["{ b: null }", "{ b() { return 7; } }"]],
+			// A method does not survive the trip: only the forms that do not call it are claimed here.
+			["a?.b()", ["null", "undefined"]],
+			["a.b?.()", ["{ b: null }", "{ b: undefined }"]],
 			["settings.size?.width", ["{ size: null }", "{ size: { width: 3 } }"]],
 		];
 

@@ -16,6 +16,8 @@ export interface FunctionObject {
 	id: string;
 	/** The captured names; a narrowed member is its path (`settings.size.width`). */
 	captures: string[];
+	/** Each captured path with the code that gives its value (`settings.size.width = settings.size.width`). */
+	values: string[];
 	/** How many background functions it may call (`runOnBackground`). */
 	backgroundFunctions: number;
 	/** The keys of the object besides the ones the build writes. */
@@ -61,9 +63,21 @@ function captured(object: Node, prefix = ""): string[] {
 	});
 }
 
+/** The paths of a captured-values object, each with the code of its value, read from `code`. */
+function valuesOf(object: Node, code: string, prefix = ""): string[] {
+	return object.properties.flatMap((entry: Node) => {
+		if (entry.type !== "Property") return [`${prefix}...`];
+		const name = prefix + keyOf(entry);
+		return entry.value.type === "ObjectExpression"
+			? valuesOf(entry.value, code, `${name}.`)
+			: [`${name} = ${code.slice(entry.value.start, entry.value.end)}`];
+	});
+}
+
 /** Every main-thread function object and registration in `code`, in source order. */
 export function readOutput(code: string): Output {
 	const output: Output = { functions: [], registrations: [] };
+	const javascript = withoutTypes(code);
 	const visit = (node: Node): void => {
 		if (!node || typeof node.type !== "string") return;
 		if (node.type === "ObjectExpression") {
@@ -74,6 +88,7 @@ export function readOutput(code: string): Output {
 				output.functions.push({
 					id: id.value.value,
 					captures: values ? captured(values.value) : [],
+					values: values ? valuesOf(values.value, javascript) : [],
 					backgroundFunctions: background ? background.value.properties.length : 0,
 					extraKeys: node.properties
 						.filter((entry: Node) => entry.type === "Property")
@@ -98,7 +113,7 @@ export function readOutput(code: string): Output {
 			else if (child && typeof child === "object") visit(child);
 		}
 	};
-	visit(scriptParser(APP_ROOT)(withoutTypes(code), false));
+	visit(scriptParser(APP_ROOT)(javascript, false));
 	return output;
 }
 

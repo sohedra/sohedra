@@ -3,8 +3,8 @@
 // what is registered shows here.
 //
 // For each input and each thread, the snapshot has every main-thread function in the output (its
-// id, the names it captured, how many background functions it holds) and the ids registered for
-// the main thread's runtime. An input the build refuses has the first line of its error instead.
+// id, the names it captured and the code of each captured value, how many background functions it
+// holds) and the ids registered for the main thread's runtime. An input the build refuses has the first line of its error instead.
 //
 // tests/fixtures/build/main-thread-functions/
 //   apps/        files of apps, scripts and components

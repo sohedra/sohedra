@@ -11,18 +11,23 @@ exports[`the main-thread function transform, over the corpus > apps/Pan.svelte 1
         ],
         "extraKeys": [],
         "id": "5543:e5f58:1",
+        "values": [
+          "box = box",
+        ],
       },
       {
         "backgroundFunctions": 1,
         "captures": [],
         "extraKeys": [],
         "id": "5543:e5f58:2",
+        "values": [],
       },
       {
         "backgroundFunctions": 0,
         "captures": [],
         "extraKeys": [],
         "id": "5543:e5f58:3",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -36,18 +41,23 @@ exports[`the main-thread function transform, over the corpus > apps/Pan.svelte 1
         ],
         "extraKeys": [],
         "id": "5543:e5f58:1",
+        "values": [
+          "box = box",
+        ],
       },
       {
         "backgroundFunctions": 1,
         "captures": [],
         "extraKeys": [],
         "id": "5543:e5f58:2",
+        "values": [],
       },
       {
         "backgroundFunctions": 0,
         "captures": [],
         "extraKeys": [],
         "id": "5543:e5f58:3",
+        "values": [],
       },
     ],
     "registrations": [
@@ -70,6 +80,9 @@ exports[`the main-thread function transform, over the corpus > apps/Scroll.svelt
         ],
         "extraKeys": [],
         "id": "3499:3de88:1",
+        "values": [
+          "header = header",
+        ],
       },
     ],
     "registrations": [],
@@ -83,6 +96,9 @@ exports[`the main-thread function transform, over the corpus > apps/Scroll.svelt
         ],
         "extraKeys": [],
         "id": "3499:3de88:1",
+        "values": [
+          "header = header",
+        ],
       },
     ],
     "registrations": [
@@ -101,6 +117,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-first-fr
         "captures": [],
         "extraKeys": [],
         "id": "998b:07606:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -112,6 +129,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-first-fr
         "captures": [],
         "extraKeys": [],
         "id": "998b:07606:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -130,6 +148,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-first-fr
         "captures": [],
         "extraKeys": [],
         "id": "b4ef:4286b:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -141,6 +160,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-first-fr
         "captures": [],
         "extraKeys": [],
         "id": "b4ef:4286b:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -159,6 +179,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-first-fr
         "captures": [],
         "extraKeys": [],
         "id": "a517:48fe2:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -170,6 +191,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-first-fr
         "captures": [],
         "extraKeys": [],
         "id": "a517:48fe2:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -188,6 +210,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-lazy-Hea
         "captures": [],
         "extraKeys": [],
         "id": "c4e7:e8322:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -199,6 +222,7 @@ exports[`the main-thread function transform, over the corpus > apps/app-lazy-Hea
         "captures": [],
         "extraKeys": [],
         "id": "c4e7:e8322:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -220,6 +244,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/arrow-f
         ],
         "extraKeys": [],
         "id": "b1e4:a090b:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
     ],
     "registrations": [],
@@ -234,6 +262,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/arrow-f
         ],
         "extraKeys": [],
         "id": "b1e4:a090b:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
     ],
     "registrations": [
@@ -252,6 +284,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/backgro
         "captures": [],
         "extraKeys": [],
         "id": "726e:327ab:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -263,6 +296,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/backgro
         "captures": [],
         "extraKeys": [],
         "id": "726e:327ab:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -290,6 +324,16 @@ exports[`the main-thread function transform, over the corpus > reactlynx/capture
         ],
         "extraKeys": [],
         "id": "d7e2:dae96:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y8 = y8",
+          "y5 = y5",
+          "y6.m = y6.m",
+          "y7 = y7",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -303,6 +347,14 @@ exports[`the main-thread function transform, over the corpus > reactlynx/capture
         ],
         "extraKeys": [],
         "id": "d7e2:dae96:2",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y5.r = y5.r",
+          "props.value = props.value",
+        ],
       },
     ],
     "registrations": [],
@@ -323,6 +375,16 @@ exports[`the main-thread function transform, over the corpus > reactlynx/capture
         ],
         "extraKeys": [],
         "id": "d7e2:dae96:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y8 = y8",
+          "y5 = y5",
+          "y6.m = y6.m",
+          "y7 = y7",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -336,6 +398,14 @@ exports[`the main-thread function transform, over the corpus > reactlynx/capture
         ],
         "extraKeys": [],
         "id": "d7e2:dae96:2",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y5.r = y5.r",
+          "props.value = props.value",
+        ],
       },
     ],
     "registrations": [
@@ -355,12 +425,14 @@ exports[`the main-thread function transform, over the corpus > reactlynx/directi
         "captures": [],
         "extraKeys": [],
         "id": "e6b8:02c23:1",
+        "values": [],
       },
       {
         "backgroundFunctions": 0,
         "captures": [],
         "extraKeys": [],
         "id": "e6b8:02c23:2",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -372,12 +444,14 @@ exports[`the main-thread function transform, over the corpus > reactlynx/directi
         "captures": [],
         "extraKeys": [],
         "id": "e6b8:02c23:1",
+        "values": [],
       },
       {
         "backgroundFunctions": 0,
         "captures": [],
         "extraKeys": [],
         "id": "e6b8:02c23:2",
+        "values": [],
       },
     ],
     "registrations": [
@@ -399,6 +473,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/functio
         ],
         "extraKeys": [],
         "id": "00c6:70d31:1",
+        "values": [
+          "x = x",
+        ],
       },
     ],
     "registrations": [],
@@ -412,6 +489,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/functio
         ],
         "extraKeys": [],
         "id": "00c6:70d31:1",
+        "values": [
+          "x = x",
+        ],
       },
     ],
     "registrations": [
@@ -433,6 +513,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/functio
         ],
         "extraKeys": [],
         "id": "a8d9:3db52:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
     ],
     "registrations": [],
@@ -447,6 +531,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/functio
         ],
         "extraKeys": [],
         "id": "a8d9:3db52:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
     ],
     "registrations": [
@@ -468,6 +556,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/inside-
         ],
         "extraKeys": [],
         "id": "6f4c:b0c81:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -477,6 +569,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/inside-
         ],
         "extraKeys": [],
         "id": "6f4c:b0c81:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
       },
     ],
     "registrations": [],
@@ -491,6 +587,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/inside-
         ],
         "extraKeys": [],
         "id": "6f4c:b0c81:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -500,6 +600,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/inside-
         ],
         "extraKeys": [],
         "id": "6f4c:b0c81:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
       },
     ],
     "registrations": [
@@ -531,6 +635,19 @@ exports[`the main-thread function transform, over the corpus > reactlynx/member-
         ],
         "extraKeys": [],
         "id": "e5cc:719ac:1",
+        "values": [
+          "aaaa.bbbb = aaaa.bbbb",
+          "cccc.dddd = cccc.dddd",
+          "hhhh.iiii = hhhh.iiii",
+          "llll = llll",
+          "oooo.pppp = oooo.pppp",
+          "oooo.qqqq = oooo.qqqq",
+          "rrrr = rrrr",
+          "uuuu.__??__ = uuuu["__??__"]",
+          "enabled = enabled",
+          "handlers = handlers",
+          "vvvv = vvvv",
+        ],
       },
     ],
     "registrations": [],
@@ -554,6 +671,19 @@ exports[`the main-thread function transform, over the corpus > reactlynx/member-
         ],
         "extraKeys": [],
         "id": "e5cc:719ac:1",
+        "values": [
+          "aaaa.bbbb = aaaa.bbbb",
+          "cccc.dddd = cccc.dddd",
+          "hhhh.iiii = hhhh.iiii",
+          "llll = llll",
+          "oooo.pppp = oooo.pppp",
+          "oooo.qqqq = oooo.qqqq",
+          "rrrr = rrrr",
+          "uuuu.__??__ = uuuu["__??__"]",
+          "enabled = enabled",
+          "handlers = handlers",
+          "vvvv = vvvv",
+        ],
       },
     ],
     "registrations": [
@@ -577,6 +707,12 @@ exports[`the main-thread function transform, over the corpus > reactlynx/nested-
         ],
         "extraKeys": [],
         "id": "0e3e:371d6:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "z1 = z1",
+          "z2 = z2",
+        ],
       },
     ],
     "registrations": [],
@@ -593,6 +729,12 @@ exports[`the main-thread function transform, over the corpus > reactlynx/nested-
         ],
         "extraKeys": [],
         "id": "0e3e:371d6:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "z1 = z1",
+          "z2 = z2",
+        ],
       },
     ],
     "registrations": [
@@ -614,6 +756,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/several
         ],
         "extraKeys": [],
         "id": "39ae:32594:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -623,6 +769,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/several
         ],
         "extraKeys": [],
         "id": "39ae:32594:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
       },
     ],
     "registrations": [],
@@ -637,6 +787,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/several
         ],
         "extraKeys": [],
         "id": "39ae:32594:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -646,6 +800,10 @@ exports[`the main-thread function transform, over the corpus > reactlynx/several
         ],
         "extraKeys": [],
         "id": "39ae:32594:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
       },
     ],
     "registrations": [
@@ -667,6 +825,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/shared-
         ],
         "extraKeys": [],
         "id": "8f61:26bce:1",
+        "values": [
+          "local = local",
+        ],
       },
     ],
     "registrations": [],
@@ -680,6 +841,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/shared-
         ],
         "extraKeys": [],
         "id": "8f61:26bce:1",
+        "values": [
+          "local = local",
+        ],
       },
     ],
     "registrations": [
@@ -700,6 +864,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-ca
         ],
         "extraKeys": [],
         "id": "646a:fccb4:1",
+        "values": [
+          "g = g",
+        ],
       },
     ],
     "registrations": [],
@@ -713,6 +880,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-ca
         ],
         "extraKeys": [],
         "id": "646a:fccb4:1",
+        "values": [
+          "g = g",
+        ],
       },
     ],
     "registrations": [
@@ -731,6 +901,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-gl
         "captures": [],
         "extraKeys": [],
         "id": "73f9:b923e:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -742,6 +913,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-gl
         "captures": [],
         "extraKeys": [],
         "id": "73f9:b923e:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -765,6 +937,12 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-in
         ],
         "extraKeys": [],
         "id": "fbc6:aa8e5:1",
+        "values": [
+          "c = c",
+          "a = a",
+          "m = m",
+          "b = b",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -773,6 +951,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-in
         ],
         "extraKeys": [],
         "id": "fbc6:aa8e5:2",
+        "values": [
+          "c = c",
+        ],
       },
     ],
     "registrations": [],
@@ -789,6 +970,12 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-in
         ],
         "extraKeys": [],
         "id": "fbc6:aa8e5:1",
+        "values": [
+          "c = c",
+          "a = a",
+          "m = m",
+          "b = b",
+        ],
       },
       {
         "backgroundFunctions": 0,
@@ -797,6 +984,9 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-in
         ],
         "extraKeys": [],
         "id": "fbc6:aa8e5:2",
+        "values": [
+          "c = c",
+        ],
       },
     ],
     "registrations": [
@@ -816,6 +1006,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-ty
         "captures": [],
         "extraKeys": [],
         "id": "7e3c:ab00c:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -827,6 +1018,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/skip-ty
         "captures": [],
         "extraKeys": [],
         "id": "7e3c:ab00c:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -845,6 +1037,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/undecla
         "captures": [],
         "extraKeys": [],
         "id": "b50b:3a5b3:1",
+        "values": [],
       },
     ],
     "registrations": [],
@@ -856,6 +1049,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/undecla
         "captures": [],
         "extraKeys": [],
         "id": "b50b:3a5b3:1",
+        "values": [],
       },
     ],
     "registrations": [
@@ -956,6 +1150,10 @@ exports[`the main-thread function transform, over the corpus > runtime/gesture-w
         ],
         "extraKeys": [],
         "id": "dd19:eb28c:1",
+        "values": [
+          "callback = callback",
+          "id = id",
+        ],
       },
     ],
     "registrations": [],
@@ -970,6 +1168,10 @@ exports[`the main-thread function transform, over the corpus > runtime/gesture-w
         ],
         "extraKeys": [],
         "id": "dd19:eb28c:1",
+        "values": [
+          "callback = callback",
+          "id = id",
+        ],
       },
     ],
     "registrations": [
