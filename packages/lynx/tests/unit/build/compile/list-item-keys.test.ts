@@ -1,5 +1,6 @@
 // A `<list-item>` written directly inside a keyed `{#each}` gets its `item-key` from the block's
-// key. An explicit `item-key` wins. One that has no key at all gets a development warning.
+// key, as a string: Lynx's list drops an item whose key is not a non-empty string. An explicit
+// `item-key` wins. One that has no key at all gets a development warning.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -10,17 +11,27 @@ const each = (item: string, key = "(row.id)"): string =>
 	`<script>let rows = $state([{ id: 1 }]);</script>\n<list>{#each rows as row ${key}}${item}{/each}</list>`;
 
 describe("item-key from a keyed {#each}", () => {
-	it("is the block's key, on both threads", async () => {
+	it("is the block's key as a string, on both threads", async () => {
 		const source = each("<list-item>{row.id}</list-item>");
 		const background = await component(source, { thread: "background" });
 		const mainThread = await component(source, { thread: "main-thread" });
-		expect(background.code).toContain("$.set_attribute(list_item, 'item-key', $.get(row).id)");
-		expect(mainThread.code).toContain("$.attr('item-key', row.id)");
+		// Svelte computes a call once per update, and passes its value in.
+		expect(background.code).toContain("$.set_attribute(list_item, 'item-key', $0)");
+		expect(background.code).toContain("[() => String($.get(row).id)]");
+		expect(mainThread.code).toContain("$.attr('item-key', String(row.id))");
+	});
+
+	it("is a string for a number key, such as an index", async () => {
+		const source = `<list>{#each [10, 20] as value, index (index)}<list-item>{value}</list-item>{/each}</list>`;
+		const background = await component(source, { thread: "background" });
+		const mainThread = await component(source, { thread: "main-thread" });
+		expect(background.code).toContain("[() => String(index)]");
+		expect(mainThread.code).toContain("$.attr('item-key', String(index))");
 	});
 
 	it("is any expression the key is", async () => {
 		const { code } = await component(each("<list-item></list-item>", "(row.id + '-x')"));
-		expect(code).toContain("'item-key', $.get(row).id + '-x'");
+		expect(code).toContain("String($.get(row).id + '-x')");
 	});
 
 	it("is not written when the list item has its own item-key", async () => {
@@ -40,7 +51,8 @@ describe("item-key from a keyed {#each}", () => {
 
 	it("is written for each of several list items in the block", async () => {
 		const { code } = await component(each("<list-item></list-item><list-item></list-item>"));
-		expect(code.match(/'item-key', \$\.get\(row\)\.id/g)).toHaveLength(2);
+		expect(code.match(/'item-key'/g)).toHaveLength(2);
+		expect(code.match(/String\(\$\.get\(row\)\.id\)/g)).toHaveLength(2);
 	});
 
 	it("is not written for an {#each} without a key", async () => {
