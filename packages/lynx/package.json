@@ -18,6 +18,11 @@
 		"./config/rstest": "./src/build/presets/rstest.ts",
 		"./config/svelte": "./src/build/svelte-config/index.ts",
 		"./env": "./src/env/index.ts",
+		"./internal/renderer": "./src/background/renderer/entry.ts",
+		"./internal/page": {
+			"worker": "./src/first-frame/page.ts",
+			"default": "./src/background/index.ts"
+		},
 		"./client": {
 			"types": "./types/client.d.ts"
 		}
@@ -39,6 +44,15 @@
 			"./env": {
 				"types": "./lib/env/index.d.ts",
 				"default": "./lib/env/index.js"
+			},
+			"./internal/renderer": {
+				"types": "./lib/background/renderer/entry.d.ts",
+				"default": "./lib/background/renderer/entry.js"
+			},
+			"./internal/page": {
+				"types": "./lib/background/index.d.ts",
+				"worker": "./lib/first-frame/page.js",
+				"default": "./lib/background/index.js"
 			},
 			"./client": {
 				"types": "./types/client.d.ts"

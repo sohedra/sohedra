@@ -47,7 +47,7 @@ export const RUNTIME_FILES: Readonly<{
 	/** What stands in for `svelte/internal/client` in the background's compiled components. */
 	clientInternals: string;
 }> = {
-	mainThread: programFile("main-thread/index"),
+	mainThread: programFile("main-thread/entry"),
 	firstFrame: programFile("first-frame/index"),
 	backgroundOnly: programFile("background/background-only"),
 	serverInternals: programFile("svelte/runtime/server-internals"),

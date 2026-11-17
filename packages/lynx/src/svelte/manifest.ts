@@ -239,6 +239,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: RUNTIME,
 	},
 	{
+		id: "dev-element-locations",
+		program: "runtime",
+		file: "src/internal/client/dev/elements.js",
+		anchor: "element.__svelte_meta = {",
+		reliesOn:
+			"a development build gives each element a template makes `__svelte_meta.loc`, its component's file, line and column, which the renderer's warnings name",
+		test: RUNTIME,
+	},
+	{
 		id: "hydration-off-under-renderer",
 		program: "runtime",
 		file: "src/internal/client/custom-renderer/state.js",
