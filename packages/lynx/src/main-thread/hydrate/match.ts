@@ -13,7 +13,7 @@
 // What refuses hydration (a mismatch): outside a block, a tag that differs, an element that one
 // side has and the other lacks, or an attribute that differs; and a list whose keys differ.
 
-import { MAIN_THREAD_PREFIX } from "../../wire/index.ts";
+import { MAIN_THREAD_PREFIX, PROPS_ID } from "../../wire/index.ts";
 import type { AttrValue, HydrationMismatch } from "../../wire/index.ts";
 import { elementsOf, isBlock } from "../frame/html.ts";
 import type { DrawnChild, DrawnNode } from "../frame/html.ts";
@@ -103,6 +103,16 @@ function same(name: string, a: AttrValue | undefined, b: AttrValue | undefined):
 	return String(a) === String(b);
 }
 
+/**
+ * Whether two values differ only in the ids of `$props.id()`. A component only the background
+ * renders takes ids the first frame never gave, so the ids after it differ: the background's are
+ * written over the frame's, which is not the developer's mistake.
+ */
+const sameButIds = (a: AttrValue | undefined, b: AttrValue | undefined): boolean =>
+	typeof a === "string" &&
+	typeof b === "string" &&
+	a.replace(PROPS_ID, "") === b.replace(PROPS_ID, "");
+
 /** An item key as text: Lynx reads it as text. */
 const keyText = (key: unknown): string =>
 	typeof key === "string" ? key : (JSON.stringify(key) ?? "");
@@ -163,7 +173,7 @@ export function matchFrame(options: {
 		}
 		for (const [name, value] of built.attrs) {
 			if (!compared(name) || same(name, value, drawn.attrs.get(name))) continue;
-			if (!inBlock)
+			if (!inBlock && !sameButIds(value, drawn.attrs.get(name)))
 				throw new Mismatch({
 					kind: "attribute",
 					node: id,
