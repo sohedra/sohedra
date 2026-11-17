@@ -15,30 +15,33 @@ interface Acorn {
 	Parser: AcornParser;
 }
 interface AcornTypeScript {
-	tsPlugin(): unknown;
+	tsPlugin(options?: { jsx: boolean }): unknown;
 }
 
 const parsers = new Map<string, ScriptParser>();
 
 /**
  * The parser Svelte reads a component's scripts with: acorn and its TypeScript plugin, both
- * Svelte's own dependencies, taken from the Svelte of the app in `root`.
+ * Svelte's own dependencies, taken from the Svelte of the app in `root`. With `jsx`, it also reads
+ * JSX, in JavaScript too (through the TypeScript plugin, which has the only JSX reader of the two).
  *
  * @workaround script-parser-from-svelte kind=svelte-internal delete-when="Svelte exports its script parser, or the binding depends on acorn and its TypeScript plugin itself"
  */
-export function scriptParser(root: string): ScriptParser {
+export function scriptParser(root: string, options: { jsx?: boolean } = {}): ScriptParser {
+	const jsx = options.jsx ?? false;
 	const svelte = createRequire(path.join(root, "package.json")).resolve("svelte/compiler");
-	let parser = parsers.get(svelte);
+	const key = `${svelte}\0${jsx}`;
+	let parser = parsers.get(key);
 	if (!parser) {
 		const fromSvelte = createRequire(svelte);
 		// Boundary: Svelte's own dependencies are loaded by name and have no types here.
 		const acorn = fromSvelte("acorn") as Acorn;
 		// Boundary: as above, the TypeScript plugin has no type here.
 		const plugin = fromSvelte("@sveltejs/acorn-typescript") as AcornTypeScript;
-		const typed = acorn.Parser.extend(plugin.tsPlugin());
+		const typed = acorn.Parser.extend(plugin.tsPlugin({ jsx }));
 		parser = (source, typescript) => {
 			const read = (sourceType: "module" | "script"): unknown =>
-				(typescript ? typed : acorn.Parser).parse(source, {
+				(typescript || jsx ? typed : acorn.Parser).parse(source, {
 					sourceType,
 					ecmaVersion: "latest",
 					locations: true,
@@ -55,7 +58,7 @@ export function scriptParser(root: string): ScriptParser {
 				}
 			}
 		};
-		parsers.set(svelte, parser);
+		parsers.set(key, parser);
 	}
 	return parser;
 }

@@ -9,6 +9,10 @@ const isDirective = (value: unknown): boolean => value === "main thread" || valu
 /** A quick check that skips most files: whether `source` has the directive's text at all. */
 export const hasMainThreadFunction = (source: string): boolean => DIRECTIVE.test(source);
 
+/** Whether the directive's text follows a `{`, where it would start a function's body. */
+export const hasDirectiveStatement = (source: string): boolean =>
+	/\{\s*(['"])main[ -]thread\1/.test(source);
+
 /** The nodes that are functions. */
 export const FUNCTIONS: Set<string> = new Set([
 	"FunctionDeclaration",

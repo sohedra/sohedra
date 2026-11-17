@@ -11,7 +11,7 @@ import type { SourceText } from "../diagnostics/messages.ts";
 import { applyEdits } from "../source-map/edits.ts";
 import type { Edit, Piece } from "../source-map/edits.ts";
 import type { SourceMap } from "../source-map/maps.ts";
-import { hasMainThreadFunction } from "./directive.ts";
+import { hasDirectiveStatement, hasMainThreadFunction } from "./directive.ts";
 import { emitFunctions, FOOTER_END, FOOTER_START } from "./emit.ts";
 import type { Hoisted } from "./emit.ts";
 import { findFunctions } from "./find.ts";
@@ -172,15 +172,22 @@ export interface ModuleFunctions {
 
 /** Whether a module is written in TypeScript, by its file name. */
 const isTypeScript = (filename: string): boolean => /\.[mc]?tsx?$/.test(filename);
+/** Whether a module may hold JSX, by its file name. */
+const isJsx = (filename: string): boolean => /\.[jt]sx$/.test(filename);
 
-/** Parse a plain module; a syntax error is the build's, at its place. */
+/**
+ * Parse a plain module; a syntax error is the build's, at its place. A module that does not parse
+ * and has no directive where a function's body starts only mentions it: `undefined`, to leave it
+ * as it is.
+ */
 function parseModule(source: SourceText, root: string): Node {
 	try {
-		return scriptParser(root)(source.text, isTypeScript(source.file));
+		return scriptParser(root, { jsx: isJsx(source.file) })(source.text, isTypeScript(source.file));
 	} catch (error) {
 		// Boundary: a thrown value is unknown; the parser's errors carry a position and a message.
 		const { pos, message } = error as { pos?: number; message: string };
 		if (pos === undefined) throw error;
+		if (!hasDirectiveStatement(source.text)) return undefined;
 		// acorn ends its messages with the place: " (3:14)".
 		throw buildError({
 			code: "script_syntax_error",
@@ -203,6 +210,7 @@ export function moduleFunctions(
 	const { filename, root } = options;
 	const text: SourceText = { file: filename, text: source };
 	const program = parseModule(text, root);
+	if (program === undefined) return unchanged;
 	const fail = failIn(text);
 	const functions = findFunctions({ program, instance: false, fail });
 	if (functions.found.length === 0) return unchanged;
