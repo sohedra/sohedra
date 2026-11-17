@@ -22,12 +22,41 @@
 		"check": "tsc -p tsconfig.json --noEmit",
 		"test": "rstest"
 	},
+	"dependencies": {
+		"@lynx-js/rsbuild-plugin": "^0.1.9",
+		"@lynx-js/runtime-wrapper-webpack-plugin": "^0.2.6",
+		"@lynx-js/tasm": "0.0.53",
+		"@lynx-js/template-webpack-plugin": "^0.16.8",
+		"@lynx-js/webpack-dev-transport": "^0.4.1",
+		"es-module-lexer": "^3.0.5"
+	},
 	"devDependencies": {
+		"@lynx-js/rspeedy": "^0.18.6",
 		"@rsbuild/core": "^2.3.2",
+		"@rstest/adapter-rsbuild": "^0.12.6",
 		"@rstest/core": "^0.12.6",
 		"@rstest/coverage-istanbul": "^0.12.6",
 		"@types/node": "^26.6.6",
+		"acorn": "^8.19.0",
 		"svelte": "https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea",
 		"typescript": "^6.0.3"
+	},
+	"peerDependencies": {
+		"@lynx-js/rspeedy": "^0.18.0",
+		"@rsbuild/core": "^2.0.0",
+		"@rstest/adapter-rsbuild": "^0.12.0",
+		"@rstest/core": "^0.12.0",
+		"svelte": "*"
+	},
+	"peerDependenciesMeta": {
+		"@lynx-js/rspeedy": {
+			"optional": true
+		},
+		"@rstest/adapter-rsbuild": {
+			"optional": true
+		},
+		"@rstest/core": {
+			"optional": true
+		}
 	}
 }
