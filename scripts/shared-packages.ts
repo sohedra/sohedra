@@ -44,10 +44,13 @@ export function checkSharedPackages(root: string): string[] {
 					);
 				}
 			}
-			for (const source of sourceFiles(root, { under: join(root, folder), names: SOURCE })) {
-				if (IMPORT.test(readFileSync(join(root, source), "utf8"))) {
+			for (const { file, path } of sourceFiles(root, {
+				under: join(root, folder),
+				names: SOURCE,
+			})) {
+				if (IMPORT.test(readFileSync(path, "utf8"))) {
 					problems.push(
-						`${source} imports ${BINDING}, but ${folder} runs on the web and on Lynx. Use Svelte's own APIs and esm-env.`,
+						`${file} imports ${BINDING}, but ${folder} runs on the web and on Lynx. Use Svelte's own APIs and esm-env.`,
 					);
 				}
 			}

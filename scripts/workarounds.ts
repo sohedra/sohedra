@@ -121,8 +121,8 @@ export function readWorkarounds(
 export function scanRepository(root: string): { workarounds: Workaround[]; problems: string[] } {
 	const workarounds: Workaround[] = [];
 	const problems: string[] = [];
-	for (const file of sourceFiles(root, { names: SOURCE })) {
-		const found = readWorkarounds(file, readFileSync(join(root, file), "utf8"));
+	for (const { file, path } of sourceFiles(root, { names: SOURCE })) {
+		const found = readWorkarounds(file, readFileSync(path, "utf8"));
 		workarounds.push(...found.workarounds);
 		problems.push(...found.problems);
 	}
