@@ -115,7 +115,7 @@ export interface Engine {
 	list(element: LynxElement): ListHandle;
 	/** The animation `name` of the element ended: the engine says so to a listener, if any. */
 	endAnimation(element: LynxElement, name: string): boolean;
-	/** The engine cancelled the animation (a new one took its name, say), as it says. */
+	/** The engine canceled the animation (a new one took its name, say), as it says. */
 	cancelAnimation(element: LynxElement, name: string): boolean;
 	/** Decides what the page's UI methods get back. The default answers success with no data. */
 	respondWith(responder: Responder): void;

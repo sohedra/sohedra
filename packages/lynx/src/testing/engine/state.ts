@@ -56,7 +56,7 @@ export interface Detector {
 	consume?: unknown;
 }
 
-/** An animation started with `__ElementAnimate`, until it is cancelled. */
+/** An animation started with `__ElementAnimate`, until it is canceled. */
 export interface RunningAnimation {
 	keyframes: unknown;
 	options: unknown;

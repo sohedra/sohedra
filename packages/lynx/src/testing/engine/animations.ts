@@ -1,4 +1,4 @@
-// `__ElementAnimate`: an animation's life on an element. A cancelled animation says so to the
+// `__ElementAnimate`: an animation's life on an element. A canceled animation says so to the
 // element's listeners (core/animation/animation.cc, Animation::Destroy).
 
 import type { Dispatcher } from "./dispatch.ts";
@@ -29,7 +29,7 @@ export function animationFunctions(
 			else if (operation === 2 && animation) animation.state = "paused";
 			else if (operation === 3) {
 				state.running.delete(name);
-				// A running or paused animation that is cancelled reports it.
+				// A running or paused animation that is canceled reports it.
 				if (animation) dispatcher.animationEvent(state, "animationcancel", name);
 			}
 		},

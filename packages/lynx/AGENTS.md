@@ -37,4 +37,4 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private; no runtim
   `buildApp`, one at a time; `tests/fixtures/` is not type-checked. Runtime not written yet is
   stubbed in `fixtures/build/stubs/`. `apps/package.json` ends `sideEffects` for fixtures.
 - Coverage never drops below `tests/coverage-baseline.json`. The engine fake cites Lynx's source for
-  each behaviour and throws where it is unverified.
+  each behavior and throws where it is unverified.

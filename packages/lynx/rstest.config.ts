@@ -15,7 +15,7 @@ const floor = JSON.parse(
 //   unit/      one module at a time; those of `src/testing` on the engine fake
 //   threads/   both threads of a page on the engine fake
 //   contract/  rules about the source, the repository, the pinned Svelte build, and the engine
-//              behaviour spec run on the fake
+//              behavior spec run on the fake
 //   types/     checked by `pnpm check`, not run
 //   fixtures/  inputs the tests read
 //
