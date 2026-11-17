@@ -5,8 +5,10 @@
 //   node scripts/workarounds.ts           print the list
 //   node scripts/workarounds.ts --write   write it to docs/workarounds.md
 
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+
+import { sourceFiles } from "./source-files.ts";
 
 export const KINDS = ["lynx-limit", "lynx-bug", "lynx-gap", "svelte-internal", "tooling"] as const;
 export const LIST_FILE = "docs/workarounds.md";
@@ -24,7 +26,6 @@ const KEYS = ["kind", "upstream", "delete-when"];
 const NAME = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const START = /^\s*(?:\/\*\*?|\*|\/\/)\s*@workaround\b(.*)$/;
 const SOURCE = /\.(?:[cm]?[jt]s|svelte|css)$/;
-const SKIPPED = new Set([".git", "node_modules", ".svelte-kit", "dist", "coverage", "lib"]);
 
 /** The tag text after `@workaround` as one string: its line, and the comment lines that continue it. */
 function tagText(lines: string[], at: number, first: string): string {
@@ -116,22 +117,11 @@ export function readWorkarounds(
 	return { workarounds, problems };
 }
 
-/** The files under `dir`, as paths from `root`. */
-function walk(root: string, dir: string): string[] {
-	return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-		const path = join(dir, entry.name);
-		const from = relative(root, path);
-		if (SKIPPED.has(entry.name) || from === ".claude/worktrees") return [];
-		if (entry.isDirectory()) return walk(root, path);
-		return SOURCE.test(entry.name) ? [from] : [];
-	});
-}
-
 /** Every workaround of the repository at `root`, and what is wrong with the tags. */
 export function scanRepository(root: string): { workarounds: Workaround[]; problems: string[] } {
 	const workarounds: Workaround[] = [];
 	const problems: string[] = [];
-	for (const file of walk(root, root)) {
+	for (const file of sourceFiles(root, { names: SOURCE })) {
 		const found = readWorkarounds(file, readFileSync(join(root, file), "utf8"));
 		workarounds.push(...found.workarounds);
 		problems.push(...found.problems);

@@ -3,7 +3,9 @@
 // package.json, as `"sohedra": { "runsOn": ["web", "lynx"] }`.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join } from "node:path";
+
+import { sourceFiles } from "./source-files.ts";
 
 const BINDING = "@sohedra/lynx";
 const DEPENDENCY_KINDS = [
@@ -12,23 +14,12 @@ const DEPENDENCY_KINDS = [
 	"peerDependencies",
 	"optionalDependencies",
 ] as const;
-const SKIPPED = new Set(["node_modules", "lib", "dist", "coverage", ".svelte-kit"]);
 const SOURCE = /\.(?:[cm]?[jt]s|svelte)$/;
 const IMPORT = /["'`]@sohedra\/lynx(?:\/[^"'`]*)?["'`]/;
 
 interface Manifest {
 	name?: string;
 	sohedra?: { runsOn?: string[] };
-}
-
-/** The files under `dir`, as paths from `root`, without build output and installed packages. */
-function sources(root: string, dir: string): string[] {
-	return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-		if (SKIPPED.has(entry.name)) return [];
-		const path = join(dir, entry.name);
-		if (entry.isDirectory()) return sources(root, path);
-		return SOURCE.test(entry.name) ? [relative(root, path)] : [];
-	});
 }
 
 /** What is wrong with the packages of `root` that run on both the web and Lynx. */
@@ -53,7 +44,7 @@ export function checkSharedPackages(root: string): string[] {
 					);
 				}
 			}
-			for (const source of sources(root, join(root, folder))) {
+			for (const source of sourceFiles(root, { under: join(root, folder), names: SOURCE })) {
 				if (IMPORT.test(readFileSync(join(root, source), "utf8"))) {
 					problems.push(
 						`${source} imports ${BINDING}, but ${folder} runs on the web and on Lynx. Use Svelte's own APIs and esm-env.`,
