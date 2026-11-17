@@ -48,6 +48,7 @@ import {
 	configureBackgroundOnly,
 	configureResolve,
 	configureSingleCopies,
+	configureSvelteEvents,
 	ignoreUnusedSvelteServerCode,
 } from "./resolve.ts";
 import { configureTestResolve, configureTestRules } from "./rules-test.ts";
@@ -131,6 +132,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 							preprocess: svelte.preprocess,
 						});
 						configureSingleCopies(chain, { rootPath: root, singleCopy });
+						configureSvelteEvents(chain);
 						configureTestResolve(chain, development);
 						ignoreUnusedSvelteServerCode(chain, bundler);
 					},
@@ -212,6 +214,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 					defineDebugEnvironment(chain, bundler);
 					chain.plugin(`${PACKAGE_NAME}:source-map-ignore-list`).use(SourceMapIgnoreListPlugin);
 					configureSingleCopies(chain, { rootPath: root, singleCopy });
+					configureSvelteEvents(chain);
 					configureBackgroundOnly(chain, loaderPath("background-only"));
 					configureResolve(chain, isDev);
 					ignoreUnusedSvelteServerCode(chain, bundler);

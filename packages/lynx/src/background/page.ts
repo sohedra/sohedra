@@ -12,7 +12,7 @@
 import { flushSync, mount, unmount } from "svelte";
 import type { Component } from "svelte";
 
-import { keepRenderer, pushRenderer } from "../svelte/runtime/index.ts";
+import { listenThrough, pushRenderer } from "../svelte/runtime/index.ts";
 import type { SentEvent, SentTarget } from "../wire/index.ts";
 import { openChannel } from "./channel.ts";
 import { background } from "./globals.ts";
@@ -70,9 +70,8 @@ export function startPage<Props extends Record<string, unknown>>(
 	const { lynx } = background;
 	const app = lynx.getApp();
 	startGeneration();
-	// The page's renderer stays current outside Svelte's effects too: `on()` in a timer or after an
-	// `await` listens through it, as in an effect.
-	const releaseRenderer = keepRenderer(pageRenderer);
+	// `on()` listens through the page's renderer wherever it is called.
+	listenThrough(pageRenderer);
 	let instance: Record<string, unknown> | undefined;
 	let root: ElementNode | undefined;
 	let anchor: ReturnType<typeof pageRenderer.createComment> | undefined;
@@ -147,7 +146,7 @@ export function startPage<Props extends Record<string, unknown>>(
 			teardown,
 			() => channel.close(),
 			() => pageRenderer.retire(),
-			releaseRenderer,
+			() => listenThrough(null),
 			clearPageState,
 		]);
 	}

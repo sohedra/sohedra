@@ -226,8 +226,26 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/client/dom/elements/events.js",
 		anchor: "var is_custom_renderer = current_renderer != null;",
 		reliesOn:
-			"`on()` reads the current renderer when it is called, to add the listener through it and to run the handler without the DOM's propagation, and an effect puts back the renderer it found when it ends; so a renderer kept current between effects serves `on()` in a handler, a timer or code after an `await`",
+			"`on()` reads the current renderer when it is called, to add the listener through it and to run the handler without the DOM's propagation; so the background's `on()`, which makes the page's renderer current around Svelte's, listens through it wherever it is called",
 		test: RUNTIME,
+	},
+	{
+		id: "events-module-exports",
+		program: "runtime",
+		file: "src/events/index.js",
+		anchor: "export { on } from",
+		reliesOn:
+			"`svelte/events` exports only `on`, so the background's `svelte/events` (`src/svelte/runtime/events.ts`, which the build resolves it to) has all of it",
+		test: RUNTIME,
+	},
+	{
+		id: "renderer-cleared-by-async-context",
+		program: "runtime",
+		file: "src/internal/client/reactivity/async.js",
+		anchor: "set_renderer(null);",
+		reliesOn:
+			"only `unset_context` clears the current renderer, and only an `{#await}` block, async deriveds and an async component's `await` call it: a renderer made current outside effects does not last, so `on()` makes its own current",
+		test: SOURCE,
 	},
 	{
 		id: "mount-renderer-option",
