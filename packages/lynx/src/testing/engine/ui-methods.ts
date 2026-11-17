@@ -33,8 +33,11 @@ export interface UiFunctions {
 export function uiFunctions(engine: EngineState): UiFunctions {
 	return {
 		// The UI thread runs the method, and the answer comes back on a later task
-		// (core/renderer/template_assembler.cc, LepusInvokeUIMethod). The fake decides it from the
-		// element as it is at the call.
+		// (core/renderer/template_assembler.cc, LepusInvokeUIMethod). It runs at once, on the view as
+		// the last flush left it, since changes reach the view only at the flush
+		// (core/renderer/ui_wrapper/painting/ios/painting_context_darwin.mm, Invoke; the Android
+		// painting context's Invoke). The fake decides it from the element at the call, and gives the
+		// responder the element as the last flush left it.
 		__InvokeUIMethod(element, method, params, callback) {
 			const state = stateOf(engine, { value: element, fn: "__InvokeUIMethod", index: 0 });
 			if (typeof method !== "string")
@@ -47,7 +50,7 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 			// No UI before the flush that finds the element in the page, or for a layout-only view.
 			const result: InvokeResult = !engine.withUi.has(state)
 				? { code: NO_UI }
-				: engine.respond(method, params, state.node);
+				: engine.respond(method, params, state.node, engine.shown.get(state));
 			engine.log.invocations.push({
 				element: state.node,
 				method,
@@ -61,9 +64,10 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 				callback(answer);
 			});
 		},
-		// The flush makes the UIs of the elements in the page, except layout-only views; one that
-		// is not in the page gets none. It also resolves their events: a `global-bindEvent` filed by then puts the element
-		// in the global-bind table (core/renderer/dom/element_manager.cc).
+		// The flush makes the UIs of the elements in the page, except layout-only views, with their
+		// changes; one that is not in the page gets none. It also resolves their events: a
+		// `global-bindEvent` filed by then puts the element in the global-bind table
+		// (core/renderer/dom/element_manager.cc).
 		__FlushElementTree(_page, options) {
 			engine.log.flushes.push(options);
 			const inPage = engine.page ? descendantsOf(engine.page) : [];
@@ -71,6 +75,11 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 				const state = engine.states.get(node);
 				if (!state) continue;
 				if (!isLayoutOnly(state)) engine.withUi.add(state);
+				engine.shown.set(state, {
+					classes: state.classes,
+					attrs: { ...state.attrs },
+					inlineStyles: new Map(state.inlineStyles),
+				});
 				for (const key of state.filedEvents) {
 					if (!key.startsWith(GLOBAL_BIND)) continue;
 					const names = engine.globalPhase.get(state) ?? new Set<string>();

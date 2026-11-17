@@ -169,6 +169,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		states: new WeakMap(),
 		made: new Map(),
 		withUi: new Set(),
+		shown: new WeakMap(),
 		globalPhase: new Map(),
 		respond: () => ({ code: 0 }),
 		schedule: options.schedule ?? nextMacrotask,

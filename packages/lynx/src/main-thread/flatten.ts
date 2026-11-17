@@ -11,12 +11,8 @@ import type { LynxElement } from "./globals.ts";
 export interface Flattening {
 	/** The app sets `flatten`: it applies now, unless the element is held. */
 	set(element: LynxElement, value: unknown): void;
-	/**
-	 * Keeps the element from being flattened. Returns whether this turned flattening off: Lynx may
-	 * have flattened the element, and makes its view at the next flush. False when it was held
-	 * already, or when the app set `flatten` false itself.
-	 */
-	hold(element: LynxElement): boolean;
+	/** Keeps the element from being flattened: Lynx makes its view at the next flush. */
+	hold(element: LynxElement): void;
 }
 
 /** The flattening of one page's elements. */
@@ -29,11 +25,9 @@ export function createFlattening(): Flattening {
 			if (!held.has(element)) mainThread.__SetAttribute(element, "flatten", value);
 		},
 		hold(element) {
-			if (held.has(element)) return false;
+			if (held.has(element)) return;
 			held.add(element);
 			mainThread.__SetAttribute(element, "flatten", false);
-			const value = own.get(element);
-			return value !== false && value !== "false";
 		},
 	};
 }

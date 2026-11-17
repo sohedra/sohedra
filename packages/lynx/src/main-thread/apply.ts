@@ -54,10 +54,6 @@ export interface Applier {
 	apply(ops: Op[]): FailedOp[];
 	/** Tells the lists inside cells whose items changed; ends a patch. */
 	flushLists(): void;
-	/** The tree was flushed: the elements made so far have their views. */
-	flushed(): void;
-	/** Whether the element with this id was made since the tree was last flushed. */
-	isNew(id: number): boolean;
 	/** The element with this id. */
 	element(id: number): LynxElement | undefined;
 	/** The background's id of a Lynx element, by its unique id. */
@@ -102,8 +98,6 @@ export function createApplier({ page, dispatch, openCell, report }: ApplierOptio
 	const flattening = createFlattening();
 	const styles = createCodeStyles();
 	const lists = createLists({ pageUid, openCell, elementOf: (id) => elements.get(id), report });
-	// The elements made since the tree was last flushed: they have no view yet.
-	const made = new Set<number>();
 	const idByUid = new Map<number, number>([[pageUid, ROOT_ID]]);
 	const uidById = new Map<number, number>([[ROOT_ID, pageUid]]);
 	// Each element's `data-*` attributes, which Lynx takes as one dataset.
@@ -155,7 +149,6 @@ export function createApplier({ page, dispatch, openCell, report }: ApplierOptio
 		if (slots) for (const slot of [...slots.keys()]) removeListener(id, slot);
 		datasets.delete(id);
 		lists.release(id);
-		made.delete(id);
 		const uid = uidById.get(id);
 		if (uid !== undefined) idByUid.delete(uid);
 		uidById.delete(id);
@@ -228,7 +221,6 @@ export function createApplier({ page, dispatch, openCell, report }: ApplierOptio
 				elements.set(op[1], element);
 				idByUid.set(uid, op[1]);
 				uidById.set(op[1], uid);
-				made.add(op[1]);
 				return;
 			}
 			case OpCode.CreateText: {
@@ -283,8 +275,6 @@ export function createApplier({ page, dispatch, openCell, report }: ApplierOptio
 			return failed;
 		},
 		flushLists: () => lists.flush(),
-		flushed: () => made.clear(),
-		isNew: (id) => made.has(id),
 		element: (id) => elements.get(id),
 		idForUid: (uid) => idByUid.get(uid),
 		idOf: (element) => idByUid.get(mainThread.__GetElementUniqueID(element)),

@@ -173,12 +173,15 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 		},
 		// Inline styles only: the engine answers from the cascade and the layout, which the fake
 		// does not have (core/runtime/lepus/bindings/renderer_functions.cc,
-		// FiberGetComputedStyleByKey).
+		// FiberGetComputedStyleByKey). It reads the computed style at once, and styles are resolved
+		// at the flush (core/renderer/dom/element.cc, Element::GetComputedStyleByKey;
+		// core/renderer/dom/fiber/fiber_element.cc, ResolveCSSStylesNewPipelineCore): so the fake
+		// answers from the inline styles the last flush left.
 		__GetComputedStyleByKey(element, key) {
 			const state = stateOf(engine, { value: element, fn: "__GetComputedStyleByKey", index: 0 });
 			if (typeof key !== "string")
 				throw argumentError({ fn: "__GetComputedStyleByKey", index: 1, expected: "text" });
-			return state.inlineStyles.get(key) ?? "";
+			return engine.shown.get(state)?.inlineStyles.get(key) ?? "";
 		},
 		// No match answers null, as Lynx 4.2 answers on iOS and Android.
 		__QuerySelector: (element, selector, settings) =>

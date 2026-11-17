@@ -190,7 +190,26 @@ export interface EngineLogs {
 }
 
 /** Answers a UI method: what the page's `invoke` gets back. */
-export type Responder = (method: string, params: unknown, element: LynxElement) => InvokeResult;
+/**
+ * What the screen shows of an element: its classes, attributes and inline styles as the last flush
+ * of the tree left them. Lynx applies an element's changes to its view at the flush.
+ */
+export interface ShownElement {
+	readonly classes: string;
+	readonly attrs: Readonly<Record<string, unknown>>;
+	readonly inlineStyles: ReadonlyMap<string, string>;
+}
+
+/**
+ * Decides what a UI method answers, from the method, its params, the element, and the element as
+ * the screen shows it (`undefined` before a flush has found it in the page).
+ */
+export type Responder = (
+	method: string,
+	params: unknown,
+	element: LynxElement,
+	shown: ShownElement | undefined,
+) => InvokeResult;
 
 /** Everything one engine holds, passed to the modules that make its functions. */
 export interface EngineState {
@@ -209,6 +228,8 @@ export interface EngineState {
 	 * layout-only then (layout-only.ts). An element keeps its UI.
 	 */
 	readonly withUi: Set<ElementState>;
+	/** Each element as the last flush that found it in the page left it. */
+	readonly shown: WeakMap<ElementState, ShownElement>;
 	/**
 	 * The elements in the global phase, with the event names they hear there: an element enters at
 	 * the flush that finds its `global-bindEvent` filed, and leaves when it is destroyed.

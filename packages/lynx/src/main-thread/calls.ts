@@ -2,11 +2,13 @@
 // code, a computed style, a query, an animation). They run in the order they came, after the ops
 // before them.
 //
-// Lynx makes an element's view when the tree is flushed, and a UI method on an element with no
-// view answers "no UI for this node" (code 6). So a UI method on an element made in the patch, or
-// on one that may be flattened until now, runs once the patch is flushed, and so do the calls after
-// it, to keep their order. An element a UI method or an animation is called on is kept from being
-// flattened from then on (./flatten.ts).
+// The patch's changes reach the screen at its flush: Lynx makes an element's view then, and a UI
+// method runs at once on the view as it is (core/renderer/ui_wrapper/painting, the painting
+// contexts' Invoke). A UI method before the flush would answer "no UI for this node" (code 6) for a
+// new element, or see the screen from before the update. So reads (a UI method, a computed style)
+// run once the patch is flushed, in the order they came; writes and queries run in place. An element
+// a UI method or an animation is called on is kept from being flattened from then on
+// (./flatten.ts).
 
 import { decodeCall, encodeError } from "../wire/index.ts";
 import type { CallItem, CallRequest, Result } from "../wire/index.ts";
@@ -132,13 +134,9 @@ export function createCalls(scope: CallsScope): Calls {
 				const element = applier.element(elementId);
 				if (element === undefined)
 					throw mainThreadError({ code: "element_missing", details: { id: elementId } });
-				const needsView = request[0] === "invoke" || request[0] === "animate";
-				// Held now, so that the patch's flush makes the view a later call needs.
-				const unflattened = needsView && applier.flattening.hold(element);
-				const later =
-					waiting.length > 0 ||
-					(request[0] === "invoke" && (unflattened || applier.isNew(elementId)));
-				if (!later) {
+				// Held now, so that the patch's flush makes the view the call needs.
+				if (request[0] === "invoke" || request[0] === "animate") applier.flattening.hold(element);
+				if (request[0] !== "invoke" && request[0] !== "computed") {
 					execute(request, element, done);
 					return;
 				}

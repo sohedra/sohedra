@@ -195,7 +195,6 @@ export function startMainThread(): void {
 		const dataUpdated = patch.dataUpdated === true || dataHeld;
 		dataHeld = false;
 		mainThread.__FlushElementTree(page, dataUpdated ? { triggerDataUpdated: true } : {});
-		applier!.flushed();
 		calls.flushed();
 	}
 
