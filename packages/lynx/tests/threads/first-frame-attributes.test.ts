@@ -78,7 +78,7 @@ describe("$props.id() in the first frame", () => {
 		const page = startSveltePage(FrameIds, { firstFrame: { draw: drawFrameIds } });
 		const elements = page.engine.all();
 		const drawnId = page.engine.state(page.byClass("labelled")).id;
-		expect(drawnId).toMatch(/^s\d+$/);
+		expect(drawnId).toMatch(/^lynx-s\d+$/);
 		await page.settle();
 		expect(page.engine.all()).toEqual(elements);
 		expect(page.engine.state(page.byClass("labelled")).id).toBe(drawnId);
