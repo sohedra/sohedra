@@ -102,35 +102,55 @@
 		},
 
 		// Which folder of the binding may import which (the table in packages/lynx/AGENTS.md).
-		// Each folder's own `index.ts` is its only face to the others, and Svelte's internals are
-		// touched only in src/svelte/.
+		// Each folder's own `index.ts` is its only face to the others, named as that file: not as the
+		// folder, and not by a path with a detour (`./../x`). Svelte's internals are touched only in
+		// src/svelte/. A `!` pattern lets its paths past every pattern of the rule, so each allowed
+		// face is written once per depth (up to three folders deep), never with `**`.
 		// May import: Nothing of the binding
 		{
 			"files": ["packages/lynx/src/wire/**"],
 			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
 				"no-restricted-imports": [
 					"error",
 					{
 						"patterns": [
 							{
 								"group": [
+									"../**/wire",
 									"../**/wire/**",
+									"../build",
 									"../build/**",
+									"../../build",
 									"../../build/**",
+									"../../../build",
 									"../../../build/**",
+									"../**/background",
 									"../**/background/**",
+									"../**/main-thread",
 									"../**/main-thread/**",
+									"../**/first-frame",
 									"../**/first-frame/**",
+									"../**/svelte/build",
 									"../**/svelte/build/**",
+									"../**/svelte/runtime",
 									"../**/svelte/runtime/**",
+									"../**/testing",
 									"../**/testing/**",
+									"../**/gesture",
 									"../**/gesture/**",
+									"../**/host",
 									"../**/host/**",
+									"../**/env",
 									"../**/env/**",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
 							},
-							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
 							{
 								"group": [
 									"svelte/internal",
@@ -149,29 +169,47 @@
 		{
 			"files": ["packages/lynx/src/svelte/runtime/**"],
 			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
 				"no-restricted-imports": [
 					"error",
 					{
 						"patterns": [
 							{
 								"group": [
+									"../**/wire",
 									"../**/wire/**",
+									"../build",
 									"../build/**",
+									"../../build",
 									"../../build/**",
+									"../../../build",
 									"../../../build/**",
+									"../**/background",
 									"../**/background/**",
+									"../**/main-thread",
 									"../**/main-thread/**",
+									"../**/first-frame",
 									"../**/first-frame/**",
+									"../**/svelte/build",
 									"../**/svelte/build/**",
+									"../**/svelte/runtime",
 									"../**/svelte/runtime/**",
+									"../**/testing",
 									"../**/testing/**",
+									"../**/gesture",
 									"../**/gesture/**",
+									"../**/host",
 									"../**/host/**",
+									"../**/env",
 									"../**/env/**",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
 							},
-							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
 						],
 					},
 				],
@@ -187,23 +225,42 @@
 						"patterns": [
 							{
 								"group": [
+									"../**/wire",
 									"../**/wire/**",
+									"../build",
 									"../build/**",
+									"../../build",
 									"../../build/**",
+									"../../../build",
 									"../../../build/**",
+									"../**/background",
 									"../**/background/**",
+									"../**/main-thread",
 									"../**/main-thread/**",
+									"../**/first-frame",
 									"../**/first-frame/**",
+									"../**/svelte/build",
 									"../**/svelte/build/**",
+									"../**/svelte/runtime",
 									"../**/svelte/runtime/**",
+									"../**/testing",
 									"../**/testing/**",
+									"../**/gesture",
 									"../**/gesture/**",
+									"../**/host",
 									"../**/host/**",
+									"../**/env",
 									"../**/env/**",
+									"../runtime",
 									"../runtime/**",
+									"../../runtime",
 									"../../runtime/**",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
 							},
 						],
 					},
@@ -220,30 +277,50 @@
 				"packages/lynx/src/env/**",
 			],
 			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
 				"no-restricted-imports": [
 					"error",
 					{
 						"patterns": [
 							{
 								"group": [
+									"../**/wire",
 									"../**/wire/**",
+									"../build",
 									"../build/**",
+									"../../build",
 									"../../build/**",
+									"../../../build",
 									"../../../build/**",
+									"../**/background",
 									"../**/background/**",
+									"../**/main-thread",
 									"../**/main-thread/**",
+									"../**/first-frame",
 									"../**/first-frame/**",
+									"../**/svelte/build",
 									"../**/svelte/build/**",
+									"../**/svelte/runtime",
 									"../**/svelte/runtime/**",
+									"../**/testing",
 									"../**/testing/**",
+									"../**/gesture",
 									"../**/gesture/**",
+									"../**/host",
 									"../**/host/**",
+									"../**/env",
 									"../**/env/**",
-									"!../**/wire/index.ts",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
 							},
-							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
 							{
 								"group": [
 									"svelte/internal",
@@ -268,23 +345,44 @@
 						"patterns": [
 							{
 								"group": [
+									"../**/wire",
 									"../**/wire/**",
+									"../build",
 									"../build/**",
+									"../../build",
 									"../../build/**",
+									"../../../build",
 									"../../../build/**",
+									"../**/background",
 									"../**/background/**",
+									"../**/main-thread",
 									"../**/main-thread/**",
+									"../**/first-frame",
 									"../**/first-frame/**",
+									"../**/svelte/build",
 									"../**/svelte/build/**",
+									"../**/svelte/runtime",
 									"../**/svelte/runtime/**",
+									"../**/testing",
 									"../**/testing/**",
+									"../**/gesture",
 									"../**/gesture/**",
+									"../**/host",
 									"../**/host/**",
+									"../**/env",
 									"../**/env/**",
-									"!../**/wire/index.ts",
-									"!../**/svelte/build/index.ts",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+									"!../svelte/build/index.ts",
+									"!../../svelte/build/index.ts",
+									"!../../../svelte/build/index.ts",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
 							},
 							{
 								"group": [
@@ -304,31 +402,53 @@
 		{
 			"files": ["packages/lynx/src/background/**"],
 			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
 				"no-restricted-imports": [
 					"error",
 					{
 						"patterns": [
 							{
 								"group": [
+									"../**/wire",
 									"../**/wire/**",
+									"../build",
 									"../build/**",
+									"../../build",
 									"../../build/**",
+									"../../../build",
 									"../../../build/**",
+									"../**/background",
 									"../**/background/**",
+									"../**/main-thread",
 									"../**/main-thread/**",
+									"../**/first-frame",
 									"../**/first-frame/**",
+									"../**/svelte/build",
 									"../**/svelte/build/**",
+									"../**/svelte/runtime",
 									"../**/svelte/runtime/**",
+									"../**/testing",
 									"../**/testing/**",
+									"../**/gesture",
 									"../**/gesture/**",
+									"../**/host",
 									"../**/host/**",
+									"../**/env",
 									"../**/env/**",
-									"!../**/wire/index.ts",
-									"!../**/svelte/runtime/index.ts",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+									"!../svelte/runtime/index.ts",
+									"!../../svelte/runtime/index.ts",
+									"!../../../svelte/runtime/index.ts",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
 							},
-							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
 							{
 								"group": [
 									"svelte/internal",
@@ -353,26 +473,53 @@
 						"patterns": [
 							{
 								"group": [
+									"../**/wire",
 									"../**/wire/**",
+									"../build",
 									"../build/**",
+									"../../build",
 									"../../build/**",
+									"../../../build",
 									"../../../build/**",
+									"../**/background",
 									"../**/background/**",
+									"../**/main-thread",
 									"../**/main-thread/**",
+									"../**/first-frame",
 									"../**/first-frame/**",
+									"../**/svelte/build",
 									"../**/svelte/build/**",
+									"../**/svelte/runtime",
 									"../**/svelte/runtime/**",
+									"../**/testing",
 									"../**/testing/**",
+									"../**/gesture",
 									"../**/gesture/**",
+									"../**/host",
 									"../**/host/**",
+									"../**/env",
 									"../**/env/**",
-									"!../**/wire/index.ts",
-									"!../**/background/index.ts",
-									"!../**/main-thread/index.ts",
-									"!../**/first-frame/index.ts",
-									"!../**/svelte/runtime/index.ts",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+									"!../background/index.ts",
+									"!../../background/index.ts",
+									"!../../../background/index.ts",
+									"!../main-thread/index.ts",
+									"!../../main-thread/index.ts",
+									"!../../../main-thread/index.ts",
+									"!../first-frame/index.ts",
+									"!../../first-frame/index.ts",
+									"!../../../first-frame/index.ts",
+									"!../svelte/runtime/index.ts",
+									"!../../svelte/runtime/index.ts",
+									"!../../../svelte/runtime/index.ts",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
 							},
 							{
 								"group": [
