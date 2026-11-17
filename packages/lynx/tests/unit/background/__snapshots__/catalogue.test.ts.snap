@@ -1,7 +1,7 @@
 // Rstest Snapshot v1
 
 exports[`the background's catalogue > animation_canceled: the message 1`] = `
-"The animation fade was canceled before it finished.
+"The animation fade of the <view> was canceled before it finished.
 
 Nothing to fix when the animation was canceled on purpose. Catch the rejection of finished where a canceled animation matters.
 https://sohedra.com/e/animation_canceled"
@@ -19,6 +19,13 @@ exports[`the background's catalogue > element_not_on_page: the message 1`] = `
 
 Call boundingClientRect once the element is on the page: in an attachment, an effect or an event handler, not while the component is being built or after the element was removed.
 https://sohedra.com/e/element_not_on_page"
+`;
+
+exports[`the background's catalogue > element_not_shown: the message 1`] = `
+"The <view> is in a list row Lynx has not shown yet, so its boundingClientRect cannot run: Lynx makes a row's elements only when it shows the row.
+
+Call boundingClientRect once Lynx shows the row, for example from the row's layoutchange event.
+https://sohedra.com/e/element_not_shown"
 `;
 
 exports[`the background's catalogue > input_value_not_written: the message 1`] = `

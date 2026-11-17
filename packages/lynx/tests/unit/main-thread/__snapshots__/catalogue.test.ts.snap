@@ -16,14 +16,14 @@ https://sohedra.com/e/change_not_applied"
 `;
 
 exports[`the main thread's catalogue > element_has_no_view: the message 1`] = `
-"Lynx could not run boundingClientRect: the element has no view of its own. Lynx flattens a plain <view> into its parent, and makes no view for an element that is not on the screen.
+"Lynx could not run boundingClientRect: the element has no view on the screen. Lynx makes a view only for an element it draws, not for one that is hidden or not shown yet.
 
-Give the element flatten={false} so that Lynx keeps its view, and call the method once the element is on the screen.
+Call boundingClientRect once the element is shown, for example after a layoutchange event of the element.
 https://sohedra.com/e/element_has_no_view"
 `;
 
 exports[`the main thread's catalogue > element_left_page: the message 1`] = `
-"Lynx could not run scrollTo: the element was removed from the page before the call was made.
+"Lynx could not run scrollTo: the element was removed from the page in the same update, before Lynx ran the call.
 
 Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.
 https://sohedra.com/e/element_left_page"
