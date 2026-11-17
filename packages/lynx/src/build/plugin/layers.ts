@@ -53,3 +53,6 @@ export const RUNTIME_FILES: Readonly<{
 	serverInternals: programFile("svelte/runtime/server-internals"),
 	clientInternals: programFile("svelte/runtime/client-internals"),
 };
+
+/** Rstest's setup file for the test preset: it ends the page each test started. */
+export const TEST_SETUP_FILE: string = programFile("testing/setup-rstest");
