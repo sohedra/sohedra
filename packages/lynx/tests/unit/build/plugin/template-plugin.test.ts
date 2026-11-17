@@ -2,10 +2,11 @@
 // versions the range in its package.json allows.
 
 import fs from "node:fs";
+import { Module } from "node:module";
 import os from "node:os";
 import path from "node:path";
 
-import { afterAll, describe, expect, it } from "@rstest/core";
+import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
 import {
 	checkTemplatePlugin,
@@ -17,7 +18,20 @@ import {
 } from "../../../../src/build/plugin/template-plugin.ts";
 
 const made: string[] = [];
+
+// A package manager sets NODE_PATH for its scripts, and Node always looks there last, so a tree
+// here would find the repository's own packages where it has none. These tests need the tree
+// alone.
+// Boundary: Node's private `_initPaths` reads NODE_PATH again; no public call does.
+const nodeModule = Module as unknown as { _initPaths(): void };
+const nodePath = process.env["NODE_PATH"];
+beforeAll(() => {
+	delete process.env["NODE_PATH"];
+	nodeModule._initPaths();
+});
 afterAll(() => {
+	if (nodePath !== undefined) process.env["NODE_PATH"] = nodePath;
+	nodeModule._initPaths();
 	for (const folder of made) fs.rmSync(folder, { recursive: true, force: true });
 });
 

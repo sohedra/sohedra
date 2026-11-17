@@ -20,7 +20,7 @@ const names = (config: { plugins: { name?: string }[] }) =>
 describe("withSvelteLynx", () => {
 	it("has the plugin, with the options it is given, and a plugin for the resolve conditions", async () => {
 		const config = await configOf(withSvelteLynx({ singleCopy: ["a-lib"] }));
-		expect(names(config)).toEqual([PACKAGE_NAME, "svelte-lynx:test-conditions"]);
+		expect(names(config)).toEqual([PACKAGE_NAME, `${PACKAGE_NAME}:test-conditions`]);
 	});
 
 	it("checks the options when it is made, as the plugin does", () => {
@@ -51,7 +51,7 @@ describe("withSvelteLynxFromConfig", { timeout: 20_000 }, () => {
 		);
 		expect(names(config)).toContain("from-lynx-config");
 		expect(names(config)).not.toContain("from-rsbuild-config");
-		expect(names(config)).toContain("svelte-lynx:test-conditions");
+		expect(names(config)).toContain(`${PACKAGE_NAME}:test-conditions`);
 	});
 
 	it("reads the file it is told to", async () => {
