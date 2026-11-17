@@ -20,8 +20,13 @@ interface Token {
 	next: "descendant" | "child" | undefined;
 }
 
-/** A name in Lynx's selectors: what the fake takes as a tag, an id, a class or an attribute. */
-const NAME = /^[A-Za-z_][\w-]*$/;
+/**
+ * A tag in Lynx's selectors starts with a letter (select_element_token.cc checks the first
+ * character with `isalpha`); an id or a class may start with any character a name has. The fake
+ * refuses the characters of CSS that Lynx's grammar does not read, such as `:` and `*`.
+ */
+const TAG = /^[A-Za-z][\w-]*$/;
+const NAME = /^[\w-]+$/;
 const ATTRIBUTE = /^\[([\w-]+)(?:([*^$]?)=([^\]]*))?\]$/;
 
 /** The error for a selector the fake does not take, saying what Lynx does with it. */
@@ -41,7 +46,7 @@ function partsOf(compound: string, selector: string): Part[] {
 		if (piece.startsWith("[")) {
 			const match = ATTRIBUTE.exec(piece);
 			if (!match) throw refused(selector, `${piece} is not an attribute test it knows`);
-			const [, name, op, expected] = match as unknown as [string, string, string, string?];
+			const [, name = "", op, expected] = match;
 			if (expected !== undefined && /^["']/.test(expected)) {
 				throw new Error(
 					`Lynx compares the quotes as part of the value in ${piece}, so it matches nothing. ` +
@@ -64,7 +69,9 @@ function partsOf(compound: string, selector: string): Part[] {
 		const kind = piece.startsWith("#") ? "id" : piece.startsWith(".") ? "class" : "tag";
 		const name = kind === "tag" ? piece : piece.slice(1);
 		if (kind === "tag" && index > 0) throw refused(selector, `${piece} is not where a tag goes`);
-		if (!NAME.test(name)) throw refused(selector, `${piece} is not a name it knows`);
+		if (!(kind === "tag" ? TAG : NAME).test(name)) {
+			throw refused(selector, `${piece} is not a name it knows`);
+		}
 		parts.push({ kind, name });
 	}
 	return parts;

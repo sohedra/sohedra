@@ -1,7 +1,6 @@
 // The engine's tree: elements made, joined and taken apart. Each element is a DOM node, so the
 // DOM is the tree.
 
-import { TEXT_NODE } from "./dom.ts";
 import { argumentError, elementName, stateOf } from "./state.ts";
 import type { ElementState, EngineState } from "./state.ts";
 import type { LynxElement } from "./types.ts";
@@ -56,12 +55,13 @@ export function makeElement(engine: EngineState, tag: string): ElementState {
 
 /** Every create function is given the number of the component it is made for. */
 function checkParentNumber(name: string, value: unknown): void {
-	if (typeof value !== "number") throw argumentError(name, 0, "a number");
+	if (typeof value !== "number") throw argumentError({ fn: name, index: 0, expected: "a number" });
 }
 
 /** Every element of the tree under `root`, `root` first, as its DOM nodes are ordered. */
 export function descendantsOf(root: LynxElement): LynxElement[] {
 	const found: LynxElement[] = [root];
+	// Boundary: the engine puts only its elements and text nodes in its tree.
 	for (const child of root.childNodes) found.push(...descendantsOf(child as LynxElement));
 	return found;
 }
@@ -80,6 +80,8 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 		child: ElementState,
 		reference: ElementState | undefined,
 	): void {
+		// Lynx logs "re-insert node" and moves it (core/renderer/dom/fiber/fiber_element.cc,
+		// Element::InsertNodeBeforeInternal); the fake throws, as the page lost track of it.
 		if (child.node.parentNode) {
 			const holder = engine.states.get(child.node.parentNode);
 			throw new Error(
@@ -92,8 +94,10 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 
 	return {
 		__CreatePage(componentId, cssId) {
-			if (typeof componentId !== "string") throw argumentError("__CreatePage", 0, "a string");
-			if (typeof cssId !== "number") throw argumentError("__CreatePage", 1, "a number");
+			if (typeof componentId !== "string")
+				throw argumentError({ fn: "__CreatePage", index: 0, expected: "a string" });
+			if (typeof cssId !== "number")
+				throw argumentError({ fn: "__CreatePage", index: 1, expected: "a number" });
 			engine.page?.parentNode?.removeChild(engine.page);
 			const page = makeElement(engine, "page").node;
 			engine.container.appendChild(page);
@@ -101,31 +105,36 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 			return page;
 		},
 		__GetPageElement: () => engine.page,
-		__GetElementUniqueID: (element) => stateOf(engine, element, "__GetElementUniqueID", 0).uid,
+		__GetElementUniqueID: (element) =>
+			stateOf(engine, { value: element, fn: "__GetElementUniqueID", index: 0 }).uid,
 		__CreateView: (parent) => created("__CreateView", parent, "view"),
 		__CreateText: (parent) => created("__CreateText", parent, "text"),
 		__CreateImage: (parent) => created("__CreateImage", parent, "image"),
 		__CreateScrollView: (parent) => created("__CreateScrollView", parent, "scroll-view"),
 		__CreateElement(tag, parent) {
 			if (typeof tag !== "string" || tag === "") {
-				throw argumentError("__CreateElement", 0, "a tag name");
+				throw argumentError({ fn: "__CreateElement", index: 0, expected: "a tag name" });
 			}
 			return created("__CreateElement", parent, tag);
 		},
 		__AppendElement(parent, child) {
 			join(
 				"__AppendElement",
-				stateOf(engine, parent, "__AppendElement", 0),
-				stateOf(engine, child, "__AppendElement", 1),
+				stateOf(engine, { value: parent, fn: "__AppendElement", index: 0 }),
+				stateOf(engine, { value: child, fn: "__AppendElement", index: 1 }),
 				undefined,
 			);
 		},
 		__InsertElementBefore(parent, child, reference) {
-			const holder = stateOf(engine, parent, "__InsertElementBefore", 0);
-			const inserted = stateOf(engine, child, "__InsertElementBefore", 1);
-			// The engine appends when the reference is none.
+			const holder = stateOf(engine, { value: parent, fn: "__InsertElementBefore", index: 0 });
+			const inserted = stateOf(engine, { value: child, fn: "__InsertElementBefore", index: 1 });
+			// The engine appends when the reference is not an element (renderer_functions.cc,
+			// FiberInsertElementBefore), and logs and drops the insert when it is not a child
+			// (fiber_element.cc, Element::InsertNodeBeforeInternal).
 			const before =
-				reference == null ? undefined : stateOf(engine, reference, "__InsertElementBefore", 2);
+				reference == null
+					? undefined
+					: stateOf(engine, { value: reference, fn: "__InsertElementBefore", index: 2 });
 			if (before && before.node.parentNode !== holder.node) {
 				throw new Error(
 					"__InsertElementBefore was given a reference that is not in the parent. " +
@@ -135,8 +144,9 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 			join("__InsertElementBefore", holder, inserted, before);
 		},
 		__RemoveElement(parent, child) {
-			const holder = stateOf(engine, parent, "__RemoveElement", 0);
-			const removed = stateOf(engine, child, "__RemoveElement", 1);
+			const holder = stateOf(engine, { value: parent, fn: "__RemoveElement", index: 0 });
+			const removed = stateOf(engine, { value: child, fn: "__RemoveElement", index: 1 });
+			// Lynx logs and drops it (fiber_element.cc, Element::RemoveNodeInternal).
 			if (removed.node.parentNode !== holder.node) {
 				throw new Error(
 					`__RemoveElement was given a child that is not in the parent (${elementName(removed)}). ` +
@@ -146,9 +156,4 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 			holder.node.removeChild(removed.node);
 		},
 	};
-}
-
-/** Whether `node` is a raw text, which has no children of its own. */
-export function isText(node: LynxElement): node is Text {
-	return node.nodeType === TEXT_NODE;
 }

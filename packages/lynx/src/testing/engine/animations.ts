@@ -11,26 +11,44 @@ export interface AnimationFunctions {
 	__ElementAnimate(element: LynxElement, args: unknown[]): void;
 }
 
+/** The operations of `__ElementAnimate`, by number (core/renderer/dom/element.cc, Element::AnimateV2). */
+const START = 0;
+const PLAY = 1;
+const PAUSE = 2;
+const CANCEL = 3;
+
 /** The animation function, over the engine's records. */
 export function animationFunctions(
 	engine: EngineState,
 	dispatcher: Dispatcher,
 ): AnimationFunctions {
 	return {
+		// [operation, name, keyframes, options] (Element::AnimateV2).
 		__ElementAnimate(element, args) {
-			const state = stateOf(engine, element, "__ElementAnimate", 0);
-			if (!Array.isArray(args)) throw argumentError("__ElementAnimate", 1, "an array");
+			const state = stateOf(engine, { value: element, fn: "__ElementAnimate", index: 0 });
+			if (!Array.isArray(args)) {
+				throw argumentError({ fn: "__ElementAnimate", index: 1, expected: "an array" });
+			}
+			const [operation, name, keyframes, options] = args;
+			if (typeof operation !== "number" || ![START, PLAY, PAUSE, CANCEL].includes(operation)) {
+				throw new Error(
+					`__ElementAnimate was given the operation ${String(operation)}, which Lynx ignores. ` +
+						"Use 0 to start, 1 to play, 2 to pause or 3 to cancel.",
+				);
+			}
+			const key = String(name);
 			engine.log.animations.push({ element: state.node, args });
-			// [operation, name, keyframes, options]: 0 start, 1 play, 2 pause, 3 cancel.
-			const [operation, name, keyframes, options] = args as [number, string, unknown, unknown];
-			const animation = state.running.get(name);
-			if (operation === 0) state.running.set(name, { keyframes, options, state: "running" });
-			else if (operation === 1 && animation) animation.state = "running";
-			else if (operation === 2 && animation) animation.state = "paused";
-			else if (operation === 3) {
-				state.running.delete(name);
-				// A running or paused animation that is canceled reports it.
-				if (animation) dispatcher.animationEvent(state, "animationcancel", name);
+			const animation = state.running.get(key);
+			if (operation === START) state.running.set(key, { keyframes, options, state: "running" });
+			else if (operation === PLAY && animation) animation.state = "running";
+			else if (operation === PAUSE && animation) animation.state = "paused";
+			else if (operation === CANCEL) {
+				state.running.delete(key);
+				// A running or paused animation that is canceled reports it. The fake keeps no clock,
+				// so the time it ran is 0.
+				if (animation) {
+					dispatcher.animationEvent(state, { type: "animationcancel", name: key, elapsedTime: 0 });
+				}
 			}
 		},
 	};

@@ -73,6 +73,8 @@ export interface ListState {
 	onUpdate?: (update: ListUpdate) => void;
 	/** The number of the last cell request: Lynx numbers them. */
 	operations: number;
+	/** How many items the updates have given the list so far. */
+	items: number;
 }
 
 /** What the engine keeps of an element, besides the DOM node that shows it. */
@@ -201,34 +203,52 @@ export interface EngineState {
 	 */
 	readonly unflushed: Set<ElementState>;
 	/**
-	 * The elements whose `flatten` went off since the last flush while they were flattened: the
-	 * engine has not made their view yet.
+	 * The elements that were flattened at the last flush: until the next one, the engine has made
+	 * no view for them, whatever has changed since.
 	 */
-	readonly stale: Set<ElementState>;
-	/** Whether a plain `<view>` is flattened: off unless a test turns it on. */
+	readonly flattenedAtFlush: Set<ElementState>;
+	/**
+	 * The elements in the global phase, with the event names they hear there: an element enters at
+	 * the flush that finds its `global-bindEvent` filed, and leaves when it is destroyed.
+	 */
+	readonly globalPhase: Map<ElementState, Set<string>>;
+	/** Whether a plain `<view>` is flattened: on, as on a device, unless a test turns it off. */
 	flattening: boolean;
 	respond: Responder;
 	/** Runs `deliver` when the engine's answer comes back from another thread. */
 	readonly schedule: (deliver: () => void) => void;
+	/** Runs before the engine calls the page's main-thread code. */
+	readonly enter: () => void;
+	/** Where the engine reports what Lynx reports and carries on from. */
+	readonly report: (error: Error) => void;
 	readonly log: EngineLogs;
 }
 
-/** An `argument` error in the engine's own words: `__Name param 1 should be ...`. */
-export function argumentError(name: string, index: number, expected: string): TypeError {
-	return new TypeError(`${name} param ${index} should be ${expected}.`);
+/** Which argument of which function: `{ fn: "__AppendElement", index: 1 }`. */
+export interface ArgumentPlace {
+	fn: string;
+	index: number;
 }
 
-/** The record of `value`, which must be an element this engine made. */
+/**
+ * An argument error close to the engine's own words (`FiberAppendElement param 1 should be
+ * RefCounted`, core/runtime/lepus/bindings/renderer_functions.cc,
+ * CONVERT_ARG_AND_CHECK_FOR_ELEMENT_API): `__Name param 1 should be ...`.
+ */
+export function argumentError(where: ArgumentPlace & { expected: string }): TypeError {
+	return new TypeError(`${where.fn} param ${where.index} should be ${where.expected}.`);
+}
+
+/** The record of `where.value`, which must be an element this engine made. */
 export function stateOf(
 	engine: EngineState,
-	value: unknown,
-	name: string,
-	index: number,
+	where: ArgumentPlace & { value: unknown },
 ): ElementState {
-	// Boundary: the page's code may hand over anything; the registry only holds this engine's nodes.
+	const { value } = where;
 	const state =
+		// Boundary: the page's code may hand over anything; the registry holds only this engine's nodes.
 		typeof value === "object" && value !== null ? engine.states.get(value as Node) : undefined;
-	if (!state) throw argumentError(name, index, "an element");
+	if (!state) throw argumentError({ ...where, expected: "an element" });
 	return state;
 }
 

@@ -1,11 +1,14 @@
-// The `lynx` a test page's code reads. On a device each thread has its own; in one process both
-// threads read one global, so this one has each thread's part: the main thread's (its way to the
-// background, the engine's events) and the background's (its way to the main thread, the native
-// app). Everything that goes from one thread to the other crosses the page's bridge.
+// The `lynx` of each thread of a test page. On a device each thread has its own, with only that
+// thread's part: the main thread's way to the background and the engine's events, the
+// background's way to the main thread and the native app. Everything one thread sends the other
+// crosses the page's bridge as a copy, made when it is sent, as a device converts it.
 
 import type { Lifecycle, LifecycleProxy } from "../engine/lifecycle.ts";
 import { readGlobal } from "../globals.ts";
 import type { Bridge } from "./bridge.ts";
+
+/** A thread of the page. */
+export type Thread = "main-thread" | "background";
 
 /** What a listener of the other thread's messages gets: a message event. */
 export interface ThreadMessage {
@@ -21,91 +24,160 @@ type MessageListener = (event: ThreadMessage) => void;
 export interface ThreadContext {
 	addEventListener(type: string, listener: MessageListener): void;
 	removeEventListener(type: string, listener: MessageListener): void;
-	/** Sends a message to the other thread; its listeners of `type` get it on a later task. */
+	/** Sends a copy of a message to the other thread; its listeners of `type` get it on a later task. */
 	dispatchEvent(event: { type: string; data: unknown }): void;
 }
 
 /** What `lynx.getNativeApp()` answers on the background. */
 export interface NativeApp {
 	/**
-	 * Calls the main thread's global function `name` with `params` on a later task, then `callback`
-	 * on the background on a task after that.
+	 * Calls the main thread's global function `name` with a copy of `params` on a later task, then
+	 * `callback` on the background on a task after that.
 	 */
 	callLepusMethod(name: string, params: unknown, callback?: () => void): void;
 }
 
-/** The `lynx` of a test page. */
-export interface TestLynx {
+/** What both threads' `lynx` have. */
+interface SharedLynx {
 	/** The page's initial data. */
 	readonly __initData: Record<string, unknown>;
 	/** The host's global props. */
 	readonly __globalProps: Record<string, unknown>;
-	/** The main thread's way to the background. */
-	getJSContext(): ThreadContext;
-	/** The background's way to the main thread. */
-	getCoreContext(): ThreadContext;
-	/** The engine's events, on the main thread. */
-	getEngine(): LifecycleProxy;
-	/** The native side's events, on the main thread: the page's end. */
-	getNative(): LifecycleProxy;
-	/** The native app, on the background. */
-	getNativeApp(): NativeApp;
 	/** Reports an error into Lynx; the test page keeps it. */
 	reportError(error: unknown): void;
 }
 
-/** One side's listeners, and the context that sends to the other side's. */
+/** The main thread's `lynx`. */
+export interface MainThreadLynx extends SharedLynx {
+	/** The main thread's way to the background. */
+	getJSContext(): ThreadContext;
+	/** The engine's events: render, update, remove components. */
+	getEngine(): LifecycleProxy;
+	/** The native side's events: the page's end. */
+	getNative(): LifecycleProxy;
+}
+
+/** The background's `lynx`. */
+export interface BackgroundLynx extends SharedLynx {
+	/** The background's way to the main thread. */
+	getCoreContext(): ThreadContext;
+	/** The native app. */
+	getNativeApp(): NativeApp;
+}
+
+/** What may cross between the threads, to be checked: anything else is named in the error. */
+function describe(value: unknown): string | undefined {
+	if (typeof value === "function") return "a function";
+	if (typeof value === "symbol") return "a symbol";
+	if (typeof value === "bigint") return "a bigint";
+	if (typeof value === "number" && !Number.isFinite(value)) return `the number ${value}`;
+	if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+	const prototype: unknown = Object.getPrototypeOf(value);
+	if (prototype === Object.prototype || prototype === null) return undefined;
+	return `an instance of ${value.constructor.name}`;
+}
+
+/**
+ * A copy of what a thread sends: null, booleans, finite numbers, text, arrays and plain objects.
+ * Throws for anything else, naming the message: what Lynx does with a function, an element or a
+ * class instance is not verified, and the receiver would not have it as it was.
+ */
+function copyMessage(type: string, value: unknown, seen: Set<object> = new Set()): unknown {
+	const odd = describe(value);
+	const refuse = (what: string): Error =>
+		new Error(
+			`The ${type} message between the threads holds ${what}, which a device does not carry ` +
+				"across. Send plain data: null, booleans, finite numbers, text, arrays and plain objects.",
+		);
+	if (odd) throw refuse(odd);
+	if (typeof value !== "object" || value === null) return value;
+	if (seen.has(value)) throw refuse("a cycle");
+	seen.add(value);
+	const copy = Array.isArray(value)
+		? value.map((item) => copyMessage(type, item, seen))
+		: Object.fromEntries(
+				Object.entries(value).map(([key, item]) => [key, copyMessage(type, item, seen)]),
+			);
+	seen.delete(value);
+	return copy;
+}
+
+/** One thread's listeners, which the other thread's context tells. */
 function createSide(): {
 	listeners: Map<string, Set<MessageListener>>;
-	tell(type: string, event: ThreadMessage): void;
+	tell(event: ThreadMessage): void;
 } {
 	const listeners = new Map<string, Set<MessageListener>>();
 	return {
 		listeners,
-		tell(type, event) {
+		tell(event) {
 			// oxlint-disable-next-line unicorn/no-useless-spread -- copied: a listener may remove itself while it is told
-			for (const listener of [...(listeners.get(type) ?? [])]) listener(event);
+			for (const listener of [...(listeners.get(event.type) ?? [])]) listener(event);
 		},
 	};
 }
 
-/** Makes the `lynx` of a test page, over its bridge and its engine's lifecycle. */
+/** Makes the `lynx` of each thread of a test page, over its bridge and its engine's lifecycle. */
 export function createLynx(options: {
 	bridge: Bridge;
 	lifecycle: Lifecycle;
 	initData: Record<string, unknown>;
 	globalProps: Record<string, unknown>;
 	errors: unknown[];
-}): TestLynx {
-	const { bridge, lifecycle, errors } = options;
+	/** Puts a thread's `lynx` in place: it runs before that thread's code does. */
+	enter: (thread: Thread) => void;
+}): { mainThread: MainThreadLynx; background: BackgroundLynx } {
+	const { bridge, lifecycle, errors, enter } = options;
 	const mainThread = createSide();
 	const background = createSide();
 
-	/** The context through which `from` sends to `to`; `origin` names `from` to the receiver. */
-	function context(
-		from: ReturnType<typeof createSide>,
-		to: ReturnType<typeof createSide>,
-		origin: string,
-	): ThreadContext {
+	/** The context through which one thread sends to `to`; `origin` names the sender. */
+	function context(own: {
+		from: ReturnType<typeof createSide>;
+		to: ReturnType<typeof createSide>;
+		toThread: Thread;
+		origin: string;
+	}): ThreadContext {
 		return {
 			addEventListener(type, listener) {
-				if (!from.listeners.has(type)) from.listeners.set(type, new Set());
-				from.listeners.get(type)!.add(listener);
+				if (!own.from.listeners.has(type)) own.from.listeners.set(type, new Set());
+				own.from.listeners.get(type)!.add(listener);
 			},
 			removeEventListener(type, listener) {
-				from.listeners.get(type)?.delete(listener);
+				own.from.listeners.get(type)?.delete(listener);
 			},
 			dispatchEvent({ type, data }) {
-				bridge.send(() => to.tell(type, { type, data, origin }));
+				const copy = copyMessage(type, data);
+				bridge.send(() => {
+					enter(own.toThread);
+					own.to.tell({ type, data: copy, origin: own.origin });
+				});
 			},
 		};
 	}
 
-	const jsContext = context(mainThread, background, "CoreContext");
-	const coreContext = context(background, mainThread, "JSContext");
+	const shared = (): SharedLynx => ({
+		__initData: options.initData,
+		__globalProps: options.globalProps,
+		reportError: (error) => void errors.push(error),
+	});
+	const jsContext = context({
+		from: mainThread,
+		to: background,
+		toThread: "background",
+		origin: "CoreContext",
+	});
+	const coreContext = context({
+		from: background,
+		to: mainThread,
+		toThread: "main-thread",
+		origin: "JSContext",
+	});
 	const nativeApp: NativeApp = {
 		callLepusMethod(name, params, callback) {
+			const copy = copyMessage(name, params);
 			bridge.send(() => {
+				enter("main-thread");
 				const method = readGlobal(name);
 				if (typeof method !== "function") {
 					errors.push(
@@ -116,20 +188,28 @@ export function createLynx(options: {
 					);
 					return;
 				}
-				method(params);
-				if (callback) bridge.send(callback);
+				method(copy);
+				if (callback) {
+					bridge.send(() => {
+						enter("background");
+						callback();
+					});
+				}
 			});
 		},
 	};
 
 	return {
-		__initData: options.initData,
-		__globalProps: options.globalProps,
-		getJSContext: () => jsContext,
-		getCoreContext: () => coreContext,
-		getEngine: () => lifecycle.engine,
-		getNative: () => lifecycle.native,
-		getNativeApp: () => nativeApp,
-		reportError: (error) => void errors.push(error),
+		mainThread: {
+			...shared(),
+			getJSContext: () => jsContext,
+			getEngine: () => lifecycle.engine,
+			getNative: () => lifecycle.native,
+		},
+		background: {
+			...shared(),
+			getCoreContext: () => coreContext,
+			getNativeApp: () => nativeApp,
+		},
 	};
 }

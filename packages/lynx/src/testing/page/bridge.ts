@@ -11,7 +11,10 @@ const ROUNDS = 100;
 
 /** What crosses between the threads of one page. */
 export interface Bridge {
-	/** Runs `deliver` on a later macrotask, as from the other thread; dropped once closed. */
+	/**
+	 * Runs `deliver` on a later macrotask, as on the other thread; dropped once closed. What it
+	 * throws goes to that thread's error path, not up through the macrotask.
+	 */
 	send(deliver: () => void): void;
 	/** Waits until nothing is on its way, and what arrived has done its work. */
 	settle(): Promise<void>;
@@ -19,8 +22,8 @@ export interface Bridge {
 	close(): void;
 }
 
-/** Makes the bridge of one page. */
-export function createBridge(): Bridge {
+/** Makes the bridge of one page; `onError` gets what a delivery throws. */
+export function createBridge(onError: (error: unknown) => void): Bridge {
 	let inFlight = 0;
 	let open = true;
 	const nextTask = (): Promise<void> => new Promise((resolve) => nextMacrotask(resolve));
@@ -30,7 +33,12 @@ export function createBridge(): Bridge {
 			inFlight++;
 			nextMacrotask(() => {
 				inFlight--;
-				if (open) deliver();
+				if (!open) return;
+				try {
+					deliver();
+				} catch (error) {
+					onError(error);
+				}
 			});
 		},
 		async settle() {

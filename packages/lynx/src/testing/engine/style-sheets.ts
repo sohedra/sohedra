@@ -28,8 +28,10 @@ export function createStyleSheets(): {
 	return {
 		functions: {
 			__LoadStyleSheet(section, bundleName) {
-				if (typeof section !== "string") throw argumentError("__LoadStyleSheet", 0, "text");
-				if (typeof bundleName !== "string") throw argumentError("__LoadStyleSheet", 1, "text");
+				if (typeof section !== "string")
+					throw argumentError({ fn: "__LoadStyleSheet", index: 0, expected: "text" });
+				if (typeof bundleName !== "string")
+					throw argumentError({ fn: "__LoadStyleSheet", index: 1, expected: "text" });
 				// The engine answers nothing for a bundle it does not have.
 				return provided.get(bundleName);
 			},

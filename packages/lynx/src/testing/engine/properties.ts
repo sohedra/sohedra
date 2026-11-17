@@ -15,8 +15,7 @@ import { select } from "./selectors.ts";
 import { argumentError, stateOf } from "./state.ts";
 import type { ElementState, EngineState } from "./state.ts";
 import { descendantsOf } from "./tree.ts";
-import type { ListUpdate, LynxElement } from "./types.ts";
-import { isFlattened } from "./ui-methods.ts";
+import type { LynxElement } from "./types.ts";
 
 /** The functions that set and read what an element carries. */
 export interface PropertyFunctions {
@@ -51,7 +50,7 @@ export interface PropertyFunctions {
 /** An attribute's name must be text, and the engine refuses an empty one. */
 function checkName(function_: string, index: number, name: unknown): void {
 	if (typeof name !== "string" || name === "") {
-		throw argumentError(function_, index, "a name that is not empty");
+		throw argumentError({ fn: function_, index: index, expected: "a name that is not empty" });
 	}
 }
 
@@ -65,10 +64,10 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 		first: boolean;
 	}): LynxElement[] {
 		const { name, element, selector, settings, first } = options;
-		const root = stateOf(engine, element, name, 0);
-		if (typeof selector !== "string") throw argumentError(name, 1, "text");
+		const root = stateOf(engine, { value: element, fn: name, index: 0 });
+		if (typeof selector !== "string") throw argumentError({ fn: name, index: 1, expected: "text" });
 		if (typeof settings !== "object" || settings === null) {
-			throw argumentError(name, 2, "an object");
+			throw argumentError({ fn: name, index: 2, expected: "an object" });
 		}
 		const order = new Map(descendantsOf(root.node).map((node, index) => [node, index]));
 		const stateOfNode = (node: Node): ElementState | undefined => engine.states.get(node);
@@ -86,48 +85,57 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 
 	return {
 		__SetAttribute(element, key, value) {
-			const state = stateOf(engine, element, "__SetAttribute", 0);
+			const state = stateOf(engine, { value: element, fn: "__SetAttribute", index: 0 });
 			checkName("__SetAttribute", 1, key);
 			// A list takes its updates as this attribute; they are not an attribute of its own.
-			if (key === "update-list-info" && receiveListUpdate(state, value as ListUpdate)) return;
-			const wasFlattened = key === "flatten" && isFlattened(engine, state);
+			if (key === "update-list-info" && receiveListUpdate(state, value)) return;
+			// None takes the attribute away (core/renderer/dom/element.cc, Element::SetAttribute).
 			if (value == null) delete state.attrs[key];
 			else state.attrs[key] = value;
-			reflectAttribute(state, key, value);
-			// The engine has not made the view yet: it answers as the element it still is.
-			if (wasFlattened && !isFlattened(engine, state)) engine.stale.add(state);
+			reflectAttribute(state, { name: key, value });
 		},
 		__GetAttributeByName(element, name) {
-			const state = stateOf(engine, element, "__GetAttributeByName", 0);
+			const state = stateOf(engine, { value: element, fn: "__GetAttributeByName", index: 0 });
 			checkName("__GetAttributeByName", 1, name);
 			return state.attrs[name];
 		},
 		__GetAttributeNames: (element) =>
-			Object.keys(stateOf(engine, element, "__GetAttributeNames", 0).attrs),
+			Object.keys(stateOf(engine, { value: element, fn: "__GetAttributeNames", index: 0 }).attrs),
+		// The classes are one text, split at spaces (renderer_functions.cc, FiberSetClasses).
 		__SetClasses(element, classes) {
-			const state = stateOf(engine, element, "__SetClasses", 0);
-			if (typeof classes !== "string") throw argumentError("__SetClasses", 1, "text");
+			const state = stateOf(engine, { value: element, fn: "__SetClasses", index: 0 });
+			if (typeof classes !== "string")
+				throw argumentError({ fn: "__SetClasses", index: 1, expected: "text" });
 			state.classes = classes;
-			reflectAttribute(state, "class", classes === "" ? null : classes);
+			reflectAttribute(state, { name: "class", value: classes === "" ? null : classes });
 		},
+		// Text sets the id; anything else, an empty one (renderer_functions.cc, FiberSetID). The fake
+		// takes none for that, and throws for the rest: a number there is a mistake in the page.
 		__SetID(element, id) {
-			const state = stateOf(engine, element, "__SetID", 0);
-			state.id = id;
-			reflectAttribute(state, "id", id);
+			const state = stateOf(engine, { value: element, fn: "__SetID", index: 0 });
+			if (id != null && typeof id !== "string") {
+				throw argumentError({ fn: "__SetID", index: 1, expected: "text or none" });
+			}
+			state.id = id ?? null;
+			reflectAttribute(state, { name: "id", value: id });
 		},
 		__SetDataset(element, dataset) {
-			const state = stateOf(engine, element, "__SetDataset", 0);
-			// Replaces, not merges: the engine sets the dataset it is given.
+			const state = stateOf(engine, { value: element, fn: "__SetDataset", index: 0 });
+			if (typeof dataset !== "object" || dataset === null || Array.isArray(dataset)) {
+				throw argumentError({ fn: "__SetDataset", index: 1, expected: "an object" });
+			}
+			// Replaces, not merges: the engine sets the dataset it is given (renderer_functions.cc,
+			// FiberSetDataset; core/renderer/dom/element.cc, Element::SetDataset).
 			for (const key of Object.keys(state.dataset)) {
-				reflectAttribute(state, datasetAttribute(key), null);
+				reflectAttribute(state, { name: datasetAttribute(key), value: null });
 			}
 			state.dataset = { ...dataset };
 			for (const [key, value] of Object.entries(dataset)) {
-				reflectAttribute(state, datasetAttribute(key), attributeText(value));
+				reflectAttribute(state, { name: datasetAttribute(key), value: attributeText(value) });
 			}
 		},
 		__SetInlineStyles(element, styles) {
-			const state = stateOf(engine, element, "__SetInlineStyles", 0);
+			const state = stateOf(engine, { value: element, fn: "__SetInlineStyles", index: 0 });
 			// Replaces every inline style, those added one by one (`__AddInlineStyle`) too
 			// (core/runtime/lepus/bindings/renderer_functions.cc, FiberSetInlineStyles:
 			// `RemoveAllInlineStyles` first, which empties the map `SetStyle` writes to).
@@ -139,12 +147,12 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 					state.inlineStyles.set(dashed(name), attributeText(value));
 				}
 			} else if (styles !== undefined) {
-				throw argumentError("__SetInlineStyles", 1, "text or an object");
+				throw argumentError({ fn: "__SetInlineStyles", index: 1, expected: "text or an object" });
 			}
 			reflectStyles(state);
 		},
 		__AddInlineStyle(element, key, value) {
-			const state = stateOf(engine, element, "__AddInlineStyle", 0);
+			const state = stateOf(engine, { value: element, fn: "__AddInlineStyle", index: 0 });
 			// The engine also takes a style's number, which the fake has no table for.
 			checkName("__AddInlineStyle", 1, key);
 			// The engine looks the name up as it is written, and finds no style for a JavaScript name
@@ -163,8 +171,9 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 		// does not have (core/runtime/lepus/bindings/renderer_functions.cc,
 		// FiberGetComputedStyleByKey).
 		__GetComputedStyleByKey(element, key) {
-			const state = stateOf(engine, element, "__GetComputedStyleByKey", 0);
-			if (typeof key !== "string") throw argumentError("__GetComputedStyleByKey", 1, "text");
+			const state = stateOf(engine, { value: element, fn: "__GetComputedStyleByKey", index: 0 });
+			if (typeof key !== "string")
+				throw argumentError({ fn: "__GetComputedStyleByKey", index: 1, expected: "text" });
 			return state.inlineStyles.get(key) ?? "";
 		},
 		__QuerySelector: (element, selector, settings) =>

@@ -1,9 +1,15 @@
 // The DOM side of an element: what the engine's records show as DOM attributes and text.
 
 import type { ElementState } from "./state.ts";
+import type { LynxElement } from "./types.ts";
 
 /** The DOM's `nodeType` of a text node. */
-export const TEXT_NODE = 3;
+const TEXT_NODE = 3;
+
+/** Whether `node` is a raw text, which has no children of its own. */
+export function isText(node: LynxElement): node is Text {
+	return node.nodeType === TEXT_NODE;
+}
 
 /** The text a value shows as in a DOM attribute: text as is, objects as JSON. */
 export function attributeText(value: unknown): string {
@@ -13,14 +19,17 @@ export function attributeText(value: unknown): string {
 }
 
 /** Sets or removes a DOM attribute; a name the DOM refuses is kept by the engine and not shown. */
-export function reflectAttribute(state: ElementState, name: string, value: unknown): void {
-	const node = state.node;
-	if (node.nodeType === TEXT_NODE) {
+export function reflectAttribute(
+	state: ElementState,
+	attribute: { name: string; value: unknown },
+): void {
+	const { name, value } = attribute;
+	const element = state.node;
+	if (isText(element)) {
 		// A raw text's `text` is the text node's own text.
-		if (name === "text") node.textContent = value == null ? "" : attributeText(value);
+		if (name === "text") element.textContent = value == null ? "" : attributeText(value);
 		return;
 	}
-	const element = node as Element;
 	try {
 		if (value == null) element.removeAttribute(name);
 		else element.setAttribute(name, attributeText(value));
@@ -40,8 +49,8 @@ export function datasetAttribute(key: string): string {
 
 /** Shows the inline styles as the `style` attribute, as text: a DOM style parser would drop values. */
 export function reflectStyles(state: ElementState): void {
-	if (state.node.nodeType === TEXT_NODE) return;
-	const element = state.node as Element;
+	const element = state.node;
+	if (isText(element)) return;
 	if (state.inlineStyles.size === 0) {
 		element.removeAttribute("style");
 		return;

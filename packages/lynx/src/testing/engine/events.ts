@@ -33,6 +33,15 @@ export interface BindingFlags {
 	global: boolean;
 }
 
+/** The types of `__AddEvent` that Lynx knows (core/renderer/events/events.h). */
+const EVENT_TYPES = [
+	"bindEvent",
+	"catchEvent",
+	"capture-bind",
+	"capture-catch",
+	"global-bindEvent",
+];
+
 /** The flags of an `__AddEvent` type (core/renderer/events/events.h, GetEventListenerOptions). */
 export function flagsOfType(eventType: string): BindingFlags {
 	return {
@@ -84,9 +93,19 @@ function sameOptions(a: ListenerOptions | undefined, b: ListenerOptions | undefi
 export function eventFunctions(engine: EngineState): EventFunctions {
 	return {
 		__AddEvent(element, eventType, eventName, value) {
-			const state = stateOf(engine, element, "__AddEvent", 0);
-			if (typeof eventType !== "string") throw argumentError("__AddEvent", 1, "text");
-			if (typeof eventName !== "string") throw argumentError("__AddEvent", 2, "text");
+			const state = stateOf(engine, { value: element, fn: "__AddEvent", index: 0 });
+			if (typeof eventType !== "string")
+				throw argumentError({ fn: "__AddEvent", index: 1, expected: "text" });
+			if (typeof eventName !== "string")
+				throw argumentError({ fn: "__AddEvent", index: 2, expected: "text" });
+			// Lynx takes any other type as a bubble binding (GetEventListenerOptions); a typo there
+			// is a mistake in the page.
+			if (!EVENT_TYPES.includes(eventType)) {
+				throw new Error(
+					`__AddEvent was given the type ${eventType}, which Lynx does not know and takes as ` +
+						`bindEvent. Use one of ${EVENT_TYPES.join(", ")}.`,
+				);
+			}
 			const key = `${eventType}:${eventName}`;
 			const same = (bound: { eventType: string; eventName: string }): boolean =>
 				bound.eventName === eventName && bound.eventType === eventType;
@@ -118,7 +137,11 @@ export function eventFunctions(engine: EngineState): EventFunctions {
 				return;
 			}
 			if (typeof value !== "object" || Array.isArray(value)) {
-				throw argumentError("__AddEvent", 3, "a main-thread function, a handler name or none");
+				throw argumentError({
+					fn: "__AddEvent",
+					index: 3,
+					expected: "a main-thread function, a handler name or none",
+				});
 			}
 			engine.log.workletEvents.push({
 				element: state.node,
@@ -126,8 +149,7 @@ export function eventFunctions(engine: EngineState): EventFunctions {
 				eventName,
 				value: recorded(value),
 			});
-			const handler = value as { type?: unknown; value?: unknown };
-			if (handler.type !== "worklet") {
+			if (Reflect.get(value, "type") !== "worklet") {
 				throw new Error(
 					`__AddEvent was given a handler for ${eventType} ${eventName} that is not ` +
 						'{ type: "worklet", value }. Lynx logs a warning and binds nothing.',
@@ -136,24 +158,26 @@ export function eventFunctions(engine: EngineState): EventFunctions {
 			// One function per event name and type: bound again, it goes to the end.
 			state.filedEvents.add(key);
 			unbindFunction();
-			if (handler.value == null) return;
+			const worklet: unknown = Reflect.get(value, "value");
+			if (worklet == null) return;
 			state.mainThreadEvents.push({
 				eventType,
 				eventName,
-				value: handler.value,
+				value: worklet,
 				seq: engine.nextBinding++,
 			});
 		},
 		__AddEventListener(element, name, listener, options) {
-			const state = stateOf(engine, element, "__AddEventListener", 0);
-			if (typeof name !== "string") throw argumentError("__AddEventListener", 1, "text");
+			const state = stateOf(engine, { value: element, fn: "__AddEventListener", index: 0 });
+			if (typeof name !== "string")
+				throw argumentError({ fn: "__AddEventListener", index: 1, expected: "text" });
 			if (typeof options !== "object" || options === null) {
-				throw argumentError("__AddEventListener", 3, "an object");
+				throw argumentError({ fn: "__AddEventListener", index: 3, expected: "an object" });
 			}
 			state.listeners.push({ name, listener, options, seq: engine.nextBinding++ });
 		},
 		__RemoveEventListener(element, name, listener, options) {
-			const state = stateOf(engine, element, "__RemoveEventListener", 0);
+			const state = stateOf(engine, { value: element, fn: "__RemoveEventListener", index: 0 });
 			const index = state.listeners.findIndex(
 				(entry) =>
 					entry.name === name && entry.listener === listener && sameOptions(entry.options, options),

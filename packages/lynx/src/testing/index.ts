@@ -3,6 +3,8 @@
 export { cleanup } from "./cleanup.ts";
 export { createEngine } from "./engine/create-engine.ts";
 export type { ElementFunctions, Engine, EngineOptions } from "./engine/create-engine.ts";
+export type { AnimationEvent, EngineEvent } from "./engine/dispatch.ts";
+export type { GestureCall } from "./engine/gestures.ts";
 export type { Lifecycle, LifecycleEvent, LifecycleProxy } from "./engine/lifecycle.ts";
 export type { ListHandle } from "./engine/lists.ts";
 export type {
@@ -32,4 +34,10 @@ export type {
 } from "./engine/types.ts";
 export { startTestPage } from "./page/page.ts";
 export type { TestPage, TestPageOptions } from "./page/page.ts";
-export type { NativeApp, TestLynx, ThreadContext, ThreadMessage } from "./page/lynx.ts";
+export type {
+	BackgroundLynx,
+	MainThreadLynx,
+	NativeApp,
+	ThreadContext,
+	ThreadMessage,
+} from "./page/lynx.ts";

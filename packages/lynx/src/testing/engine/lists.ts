@@ -49,15 +49,16 @@ export interface ListHandle {
 export function listFunctions(engine: EngineState): ListFunctions {
 	return {
 		__CreateList(parent, componentAtIndex, enqueueComponent, info, componentAtIndexes) {
-			if (typeof parent !== "number") throw argumentError("__CreateList", 0, "a number");
+			if (typeof parent !== "number")
+				throw argumentError({ fn: "__CreateList", index: 0, expected: "a number" });
 			if (typeof componentAtIndex !== "function") {
-				throw argumentError("__CreateList", 1, "a function");
+				throw argumentError({ fn: "__CreateList", index: 1, expected: "a function" });
 			}
 			if (typeof enqueueComponent !== "function") {
-				throw argumentError("__CreateList", 2, "a function");
+				throw argumentError({ fn: "__CreateList", index: 2, expected: "a function" });
 			}
 			// The info may name another tag for the list.
-			const tag = (info as { tag?: unknown } | undefined)?.tag;
+			const tag = typeof info === "object" && info !== null ? Reflect.get(info, "tag") : undefined;
 			const state = makeElement(engine, typeof tag === "string" ? tag : "list");
 			state.list = {
 				componentAtIndex,
@@ -65,12 +66,14 @@ export function listFunctions(engine: EngineState): ListFunctions {
 				enqueueComponent,
 				updates: [],
 				operations: 0,
+				items: 0,
 			};
 			return state.node;
 		},
 		__UpdateListCallbacks(element, componentAtIndex, enqueueComponent, componentAtIndexes) {
-			const state = stateOf(engine, element, "__UpdateListCallbacks", 0);
-			if (!state.list) throw argumentError("__UpdateListCallbacks", 0, "a list");
+			const state = stateOf(engine, { value: element, fn: "__UpdateListCallbacks", index: 0 });
+			if (!state.list)
+				throw argumentError({ fn: "__UpdateListCallbacks", index: 0, expected: "a list" });
 			state.list.componentAtIndex = componentAtIndex;
 			state.list.enqueueComponent = enqueueComponent;
 			state.list.componentAtIndexes = componentAtIndexes;
@@ -78,17 +81,35 @@ export function listFunctions(engine: EngineState): ListFunctions {
 	};
 }
 
-/** A list receives an update the page set as `update-list-info`; it is not an attribute. */
-export function receiveListUpdate(state: ElementState, update: ListUpdate): boolean {
+/** Whether `value` has the three lists of a list update that Lynx reads. */
+function isListUpdate(value: unknown): value is ListUpdate {
+	if (typeof value !== "object" || value === null) return false;
+	return ["insertAction", "removeAction", "updateAction"].every((key) =>
+		Array.isArray(Reflect.get(value, key)),
+	);
+}
+
+/**
+ * A list receives an update the page set as `update-list-info`; it is not an attribute. Lynx reads
+ * the three lists of items inserted, removed and updated (core/renderer/ui_component/list/list_adapter.cc).
+ */
+export function receiveListUpdate(state: ElementState, value: unknown): boolean {
 	if (!state.list) return false;
-	state.list.updates.push(update);
-	state.list.onUpdate?.(update);
+	if (!isListUpdate(value)) {
+		throw new Error(
+			`update-list-info should be { insertAction, removeAction, updateAction } on ${elementName(state)}: ` +
+				"three lists, which Lynx reads to know the list's items.",
+		);
+	}
+	state.list.items += value.insertAction.length - value.removeAction.length;
+	state.list.updates.push(value);
+	state.list.onUpdate?.(value);
 	return true;
 }
 
 /** What a test sees of a list. */
 export function listHandle(engine: EngineState, element: LynxElement): ListHandle {
-	const state = stateOf(engine, element, "list", 0);
+	const state = stateOf(engine, { value: element, fn: "list", index: 0 });
 	const list: ListState | undefined = state.list;
 	if (!list) throw new Error(`${elementName(state)} is not a list.`);
 	return {
@@ -109,6 +130,12 @@ export function listHandle(engine: EngineState, element: LynxElement): ListHandl
 			list.onUpdate = listener;
 		},
 		show(index) {
+			if (index < 0 || index >= list.items) {
+				throw new Error(
+					`The list has ${list.items} items, so Lynx asks for no cell at index ${index}.`,
+				);
+			}
+			engine.enter();
 			const uid = list.componentAtIndex(state.node, state.uid, index, ++list.operations);
 			const cell = engine.made.get(uid)?.node;
 			if (!cell) {
@@ -117,7 +144,12 @@ export function listHandle(engine: EngineState, element: LynxElement): ListHandl
 			return cell;
 		},
 		hide(cell) {
-			list.enqueueComponent(state.node, state.uid, stateOf(engine, cell, "hide", 0).uid);
+			engine.enter();
+			list.enqueueComponent(
+				state.node,
+				state.uid,
+				stateOf(engine, { value: cell, fn: "hide", index: 0 }).uid,
+			);
 		},
 	};
 }

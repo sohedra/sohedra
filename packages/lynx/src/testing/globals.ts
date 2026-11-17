@@ -33,6 +33,7 @@ export function testDocument(): Document {
 
 /** The value of a global, if the process has one. */
 export function readGlobal(name: string): unknown {
+	// Boundary: any name may be a global.
 	return (globalThis as unknown as Record<string, unknown>)[name];
 }
 
@@ -75,10 +76,12 @@ const ACTIVE = Symbol.for("@sohedra/lynx/testing:active-session");
 
 /** The page that is running now, if any. */
 export function activeSession(): ActiveSession | undefined {
+	// Boundary: the slot is this module's own symbol on the process's global object.
 	return (globalThis as unknown as Record<symbol, ActiveSession | undefined>)[ACTIVE];
 }
 
 /** Records the page that is running now, or none. */
 export function setActiveSession(session: ActiveSession | undefined): void {
+	// Boundary: the slot is this module's own symbol on the process's global object.
 	(globalThis as unknown as Record<symbol, ActiveSession | undefined>)[ACTIVE] = session;
 }

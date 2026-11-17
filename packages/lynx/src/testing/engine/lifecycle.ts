@@ -72,18 +72,36 @@ function createProxy(origin: string): {
 }
 
 /** Makes the engine's lifecycle. */
-export function createLifecycle(): Lifecycle {
+export function createLifecycle(page: {
+	/** Runs before the engine calls the page's main-thread code. */
+	enter: () => void;
+	/** Where the engine reports what Lynx reports and carries on from. */
+	report: (error: Error) => void;
+}): Lifecycle {
 	const engine = createProxy("Engine");
 	const native = createProxy("Native");
 
-	/** An event through `lynx.getEngine()`, or a call of the global `fallback` when none listens. */
+	/**
+	 * An event through `lynx.getEngine()`, or a call of the global `fallback` when none listens. The
+	 * engine calls it, not tries it (`try_call` is false), so a missing one is reported.
+	 */
 	function toPage(type: string, fallback: string, args: unknown[]): void {
+		page.enter();
 		if (engine.count(type) > 0) {
 			engine.send(type, args);
 			return;
 		}
 		const call = readGlobal(fallback);
-		if (typeof call === "function") call(...args);
+		if (typeof call === "function") {
+			call(...args);
+			return;
+		}
+		page.report(
+			new Error(
+				`The engine sent ${type}, and the main thread has no ${fallback} function and nothing ` +
+					`listening for ${type} on lynx.getEngine(). Lynx reports the missing function.`,
+			),
+		);
 	}
 
 	return {
@@ -94,7 +112,13 @@ export function createLifecycle(): Lifecycle {
 		update: (data, options = {}) => toPage("__UpdatePage", "updatePage", [data, options]),
 		updateGlobalProps: (data) => toPage("__UpdateGlobalProps", "updateGlobalProps", [data]),
 		removeComponents: () => toPage("__RemoveComponents", "removeComponents", []),
-		destroy: (instanceId = 0) => native.send("__DestroyLifetime", instanceId),
-		emit: (type, data = []) => engine.send(type, data),
+		destroy(instanceId = 0) {
+			page.enter();
+			native.send("__DestroyLifetime", instanceId);
+		},
+		emit(type, data = []) {
+			page.enter();
+			engine.send(type, data);
+		},
 	};
 }
