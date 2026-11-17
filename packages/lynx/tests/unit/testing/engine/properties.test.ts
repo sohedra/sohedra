@@ -152,11 +152,22 @@ describe("inline styles", () => {
 		expect((inner as Element).getAttribute("style")).toBe("width: 20");
 	});
 
+	it("are computed at the flush: until then the computed style is the last flush's", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__AddInlineStyle(inner, "opacity", "0.5");
+		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("");
+		f.__FlushElementTree();
+		f.__AddInlineStyle(inner, "opacity", "0.7");
+		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("0.5");
+	});
+
 	it("sets all at once from text, wiping the ones added one by one", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__AddInlineStyle(inner, "opacity", "0.5");
 		f.__SetInlineStyles(inner, "color: red; background: url(data:image/png;base64,AAA) no-repeat");
+		f.__FlushElementTree();
 		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("");
 		expect(f.__GetComputedStyleByKey(inner, "color")).toBe("red");
 		expect(f.__GetComputedStyleByKey(inner, "background")).toBe(
@@ -168,6 +179,7 @@ describe("inline styles", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__SetInlineStyles(inner, { flexDirection: "column", "--gap": "4px", opacity: 1 });
+		f.__FlushElementTree();
 		expect(f.__GetComputedStyleByKey(inner, "flex-direction")).toBe("column");
 		expect(f.__GetComputedStyleByKey(inner, "--gap")).toBe("4px");
 		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("1");

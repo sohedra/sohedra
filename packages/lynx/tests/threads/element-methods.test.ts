@@ -114,6 +114,15 @@ describe("styles and queries", () => {
 		expect(page.errors).toEqual([]);
 	});
 
+	it("reads a computed style after the update it follows is flushed", async () => {
+		const { node, background } = await methods();
+		const [opacity] = await background(() => {
+			node("box").setStyleProperty("opacity", "0.7");
+			return node("box").getComputedStyleProperty("opacity");
+		});
+		await expect(opacity).resolves.toBe("0.7");
+	});
+
 	it("throws for styles on an element that is not on the page", async () => {
 		const { page, node, tap } = await methods();
 		const doomed = node("doomed");

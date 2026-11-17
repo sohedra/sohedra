@@ -2,8 +2,8 @@
 // flushed, and flattens a plain <view> into its parent, so a UI method on a new element or on a
 // flattened one answers "no UI for this node" (code 6), and on one just given a view answers as
 // the flattened element did, with the wrong place (the engine fake answers both ways). So the
-// element is kept from being flattened, and the call waits for the patch's flush when it needs to:
-// Lynx is asked once, after it has made the view.
+// element is kept from being flattened, and every UI method waits for the patch's flush: Lynx is
+// asked once, after it has made the view and taken the update. Writes after it do not wait.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -47,20 +47,21 @@ describe("the first UI method on an element", () => {
 		expect(page.engine.flushes.length - flushes).toBe(1);
 	});
 
-	it("is made at once, before the patch's flush, on an element that has its view", async () => {
+	it("is one engine call, after the flush, on an element that has its view", async () => {
 		const { page, measure } = await firstCall();
 		await measure("a");
 		const flushes = page.engine.flushes.length;
 		await expect(measure("a")).resolves.toEqual(RIGHT);
-		expect(page.engine.invocations.at(-1)!.flushesBefore).toBe(flushes);
+		expect(page.engine.invocations.at(-1)!.flushesBefore).toBe(flushes + 1);
+		expect(page.engine.flushes.length - flushes).toBe(1);
 	});
 
-	it("is made at once on a view the app unflattened itself", async () => {
+	it("is one engine call, after the flush, on a view the app unflattened itself", async () => {
 		const { page, measure } = await firstCall();
 		const flushes = page.engine.flushes.length;
 		await expect(measure("own")).resolves.toEqual(RIGHT);
 		expect(page.engine.invocations.map((call) => [call.code, call.flushesBefore])).toEqual([
-			[0, flushes],
+			[0, flushes + 1],
 		]);
 	});
 
@@ -90,6 +91,39 @@ describe("the first UI method on an element", () => {
 			[page.byClass("fresh"), 0],
 		]);
 		expect(handles["result-fresh"]).toEqual(RIGHT);
+	});
+
+	it("waits for the flush on an element that has its view, so it sees the update", async () => {
+		const { page, measure, tap } = await firstCall();
+		await measure("a");
+		const seen: unknown[] = [];
+		page.engine.respondWith((_method, _params, _element, shown) => {
+			seen.push(shown?.classes);
+			return { code: 0, data: RIGHT };
+		});
+		const flushes = page.engine.flushes.length;
+		await tap("widen");
+		expect(seen).toEqual(["a wide"]);
+		expect(page.engine.invocations.at(-1)!.flushesBefore).toBe(flushes + 1);
+	});
+
+	it("lets a write after a waiting call land before the patch's flush", async () => {
+		const { page, tap } = await firstCall();
+		const order: string[] = [];
+		const functions = page.engine.functions;
+		const { __AddInlineStyle: add, __FlushElementTree: flush } = functions;
+		functions.__AddInlineStyle = (element, name, value) => {
+			order.push(`style ${name}`);
+			add(element, name, value);
+		};
+		functions.__FlushElementTree = (element, options) => {
+			order.push("flush");
+			flush(element, options);
+		};
+		await tap("add");
+		Object.assign(functions, { __AddInlineStyle: add, __FlushElementTree: flush });
+		expect(order).toEqual(["style color", "flush"]);
+		expect(page.engine.state(page.byClass("fresh")).inlineStyles.get("color")).toBe("red");
 	});
 
 	it("fails with a message that names flattening when Lynx still finds no view", async () => {

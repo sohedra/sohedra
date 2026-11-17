@@ -1,7 +1,11 @@
 <script lang="ts">
-	type Node = { invoke(method: string, params?: Record<string, unknown>): Promise<unknown> };
+	type Node = {
+		invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
+		setStyleProperty(name: string, value: string): void;
+	};
 	let { handles }: { handles: Record<string, unknown> } = $props();
 	let fresh = $state(false);
+	let wide = $state(false);
 	const keep = (name: string) => (node: unknown) => {
 		handles[name] = node;
 	};
@@ -10,7 +14,7 @@
 </script>
 
 <view class="holder">
-	<view class="a" {@attach keep("a")}></view>
+	<view class={wide ? "a wide" : "a"} {@attach keep("a")}></view>
 	<view class="b" {@attach keep("b")}></view>
 	<view class="own" flatten={false} {@attach keep("own")}></view>
 	<view class="told" flatten={true} {@attach keep("told")}></view>
@@ -25,10 +29,22 @@
 >
 	<text>pair</text>
 </view>
+<view
+	class="widen"
+	ontap={() => {
+		wide = true;
+		void record("wide", (handles["a"] as Node).invoke("boundingClientRect"));
+	}}
+>
+	<text>widen</text>
+</view>
 <view class="add" ontap={() => (fresh = true)}><text>add</text></view>
 {#if fresh}
 	<view
 		class="fresh"
-		{@attach (node) => void record("fresh", (node as Node).invoke("boundingClientRect"))}
+		{@attach (node) => {
+			void record("fresh", (node as Node).invoke("boundingClientRect"));
+			(node as Node).setStyleProperty("color", "red");
+		}}
 	></view>
 {/if}
