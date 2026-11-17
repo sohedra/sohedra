@@ -35,7 +35,8 @@
 
 		// Imports
 		"import/no-cycle": "error",
-		"import/no-duplicates": "error",
+		// A query makes another module: `./Card.svelte?first-frame` is the card's first-frame copy.
+		"import/no-duplicates": ["error", { "considerQueryString": true }],
 		"import/no-mutable-exports": "error",
 		"import/no-self-import": "error",
 		"typescript/consistent-type-imports": "error",

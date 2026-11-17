@@ -1,10 +1,18 @@
 // New data for the page reaches the host's `onDataUpdated`: Lynx calls it for a flush with
-// `triggerDataUpdated`. The background's page flags the patch that shows the data; before the
-// background's page is shown, the main thread flags its own flush of the update.
+// `triggerDataUpdated`. The background's page flags the patch that shows the data, and only that
+// one: the host hears one event for each change, also while the first patch is on its way, and for
+// data that came before the page started.
 
 import { describe, expect, it } from "@rstest/core";
 
+import { startPage } from "../../src/background/index.ts";
+import { startMainThread } from "../../src/main-thread/index.ts";
+import { readGlobal } from "../../src/testing/globals.ts";
+import { startTestPage } from "../../src/testing/index.ts";
+import type { BackgroundLynx } from "../../src/testing/index.ts";
 import Counter from "../fixtures/threads/Counter.svelte";
+import FrameCounter from "../fixtures/threads/FrameCounter.svelte";
+import drawFrameCounter from "../fixtures/threads/FrameCounter.svelte?first-frame";
 import { startSveltePage } from "./svelte-page.ts";
 
 const flagged = (options: unknown): boolean =>
@@ -23,17 +31,39 @@ describe("new data for the page", () => {
 		expect(page.patches.at(-1)).toMatchObject({ items: [], dataUpdated: true });
 	});
 
-	it("on the main thread's path: an update before the background's page is shown flags the first patch's flush", async () => {
+	it("fires once for an update while the background's first patch is on its way", async () => {
 		const page = startSveltePage(Counter);
 		// The background's first patch is on its way: the page shows nothing of the data yet.
 		const flushes = page.engine.flushes.length;
 		page.updateData({ theme: "dark" });
-		expect(page.engine.flushes.slice(flushes).map(flagged)).toEqual([false]);
 		await page.settle();
-		// The first patch's flush, then the background's patch for the data.
-		expect(page.engine.flushes.slice(flushes + 1).map(flagged)).toEqual([true, true]);
+		// The main thread's flush of the update, the first patch's, then the patch for the data.
+		expect(page.engine.flushes.slice(flushes).map(flagged)).toEqual([false, false, true]);
 		page.engine.lifecycle.update({ theme: "light" });
 		expect(flagged(page.engine.flushes.at(-1))).toBe(false);
+	});
+
+	it("fires once for an update while the first frame waits for hydration", async () => {
+		const page = startSveltePage(FrameCounter, { firstFrame: { draw: drawFrameCounter } });
+		const flushes = page.engine.flushes.length;
+		page.updateData({ theme: "dark" });
+		await page.settle();
+		expect(page.engine.flushes.slice(flushes).filter(flagged)).toHaveLength(1);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("flags the first patch for data the host updated before the page started", async () => {
+		const page = startTestPage({
+			mainThread: () => startMainThread(),
+			background: () => {
+				const lynx = readGlobal("lynx") as BackgroundLynx;
+				lynx.getApp()._params = { initData: {}, updateData: { theme: "dark" } };
+				startPage(Counter);
+			},
+		});
+		await page.settle();
+		expect(page.engine.flushes.filter(flagged)).toHaveLength(1);
+		expect(page.lynx.background.__initData).toEqual({ theme: "dark" });
 	});
 
 	it("is not flagged for a patch that shows no new data", async () => {
