@@ -225,7 +225,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/server/renderer.js",
 		anchor: "this.uid = () =>",
 		reliesOn:
-			"the server's `$props.id()` gives `s1`, `s2`… in the order the components render, from 1 for each render, and a client component calls `$.props_id()`, which the background's client runtime replaces with the same ids",
+			"the server's `$props.id()` gives `<idPrefix>-s1`, `-s2`… in the order the components render, from 1 for each render, and a client component calls `$.props_id()`, which the background's client runtime replaces with the same ids, counted on Svelte's own `globalThis.__svelte.uid`",
 		test: SOURCE,
 	},
 	{
