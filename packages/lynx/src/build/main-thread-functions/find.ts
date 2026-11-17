@@ -42,10 +42,34 @@ const NEVER_CAPTURED = new Set(["runOnBackground", "runOnMainThread"]);
 /** The methods of a function that call it: `save.call(…)` calls `save`. */
 const CALL_METHODS = new Set(["call", "apply", "bind"]);
 
-/** The names a block or a function declares. */
-interface Scope {
+/** What a block or a function declares. */
+interface Declared {
 	names: Set<string>;
+	/** The names set before the scope's first statement runs: parameters, imports, function declarations. */
+	early: Set<string>;
+	/** The main-thread function declarations, by name. */
+	declarations: Map<string, Node>;
+}
+
+/** The names a block or a function declares. */
+export interface Scope extends Declared {
+	/** Where code runs before the scope's statements, if a declaration can go there. */
+	top: number | undefined;
+	/** How many plain functions are around it, outside main-thread functions. */
+	depth: number;
 	parent: Scope | undefined;
+}
+
+const declared = (): Declared => ({ names: new Set(), early: new Set(), declarations: new Map() });
+
+/** Where code goes to run before `statements`: after their leading imports and directives. */
+function topOf(statements: Node[], start: number): number {
+	let top = start;
+	for (const statement of statements) {
+		if (statement.type !== "ImportDeclaration" && typeof statement.directive !== "string") break;
+		top = statement.end;
+	}
+	return top;
 }
 
 /** A main-thread function of a script. */
@@ -66,13 +90,18 @@ export interface Found {
 	called: Map<string, Node>;
 	/** The argument of each `runOnBackground(...)` in it, in source order. */
 	handles: Node[];
+	/** The scope a function declaration is declared in. */
+	declaredIn: Scope | undefined;
+	/** The scope each captured name is declared in. */
+	capturedFrom: Map<string, Scope>;
 }
 
 /** The errors a script's walk can fail with. */
 export type FailCode =
 	| "main_thread_function_method"
 	| "main_thread_function_this"
-	| "main_thread_function_generator";
+	| "main_thread_function_generator"
+	| "main_thread_function_used_early";
 
 /** A message of a function that cannot be a main-thread function. */
 export type Failure = { [Code in FailCode]: { code: Code; details: BuildDetails[Code] } }[FailCode];
@@ -87,6 +116,8 @@ export interface ScriptFunctions {
 	deepState: Set<string>;
 	/** The functions declared at the top of a component's script. */
 	topLevel: Set<Node>;
+	/** The first use of a main-thread function declaration above it, in its own scope. */
+	earlyUses: Map<Node, Node>;
 }
 
 /** Add the names of the program's imports marked `with { runtime: "shared" }` to `shared`. */
@@ -120,6 +151,7 @@ export function findFunctions(options: {
 	const shared = new Set<string>();
 	const deepState = new Set<string>();
 	const topLevel = new Set<Node>();
+	const earlyUses = new Map<Node, Node>();
 	sharedImports(program, shared);
 	if (outer) sharedImports(outer, shared);
 	for (const statement of program.body) {
@@ -140,6 +172,8 @@ export function findFunctions(options: {
 	}
 
 	let scope: Scope | undefined;
+	/** How many plain functions are around, outside main-thread functions: code in them runs later. */
+	let deferred = 0;
 	/** The main-thread function being read. */
 	let current: Found | undefined;
 	/** Whether `this` here would be that function's. */
@@ -153,32 +187,43 @@ export function findFunctions(options: {
 	// The captured name `fn.call(…)`, `fn.apply(…)` or `fn.bind(…)` calls: it is called, too.
 	let calledThrough: Node;
 
-	const within = (names: Set<string>, body: () => void): void => {
+	const within = (names: Set<string> | Declared, body: () => void, top?: number): void => {
 		const outer = scope;
-		scope = { names, parent: outer };
+		const own = names instanceof Set ? { ...declared(), names } : names;
+		scope = { ...own, top, depth: deferred, parent: outer };
 		body();
 		scope = outer;
 	};
 
 	/**
-	 * Add the names `node` declares to `names`: a statement of the scope's own
+	 * Add the names `node` declares to `into`: a statement of the scope's own
 	 * list (`own`) declares all of them there; with `deep`, the `var`s further
 	 * inside it belong there too (the scope is a function's).
 	 */
-	const declare = (node: Node, names: Set<string>, own: boolean, deep: boolean): void => {
+	const declare = (node: Node, into: Declared, own: boolean, deep: boolean): void => {
+		const { names } = into;
 		// `declare` says a name exists elsewhere: it declares nothing here.
 		if (!node || typeof node.type !== "string" || node.declare) return;
 		if (node.type === "ImportDeclaration") {
 			if (node.importKind !== "type")
 				for (const specifier of node.specifiers)
-					if (specifier.importKind !== "type") names.add(specifier.local.name);
+					if (specifier.importKind !== "type") {
+						names.add(specifier.local.name);
+						into.early.add(specifier.local.name);
+					}
 		} else if (node.type === "ExportNamedDeclaration" || node.type === "ExportDefaultDeclaration") {
-			declare(node.declaration, names, own, deep);
+			declare(node.declaration, into, own, deep);
 		} else if (node.type === "VariableDeclaration") {
 			if (own || node.kind === "var")
 				for (const declarator of node.declarations) patternNames(declarator.id, names);
 		} else if (NAMED_DECLARATIONS.has(node.type)) {
-			if (own && node.id?.type === "Identifier") names.add(node.id.name);
+			if (own && node.id?.type === "Identifier") {
+				names.add(node.id.name);
+				if (node.type === "FunctionDeclaration") {
+					into.early.add(node.id.name);
+					if (isMainThreadFunction(node)) into.declarations.set(node.id.name, node);
+				}
+			}
 		} else if (
 			deep &&
 			!node.type.startsWith("TS") &&
@@ -189,14 +234,25 @@ export function findFunctions(options: {
 			for (const key in node) {
 				if (SKIPPED_KEYS.has(key)) continue;
 				const child = node[key];
-				if (Array.isArray(child)) for (const item of child) declare(item, names, false, true);
-				else if (child && typeof child === "object") declare(child, names, false, true);
+				if (Array.isArray(child)) for (const item of child) declare(item, into, false, true);
+				else if (child && typeof child === "object") declare(child, into, false, true);
 			}
 		}
 	};
 
+	/** A use of a main-thread function declaration above it, which runs before it would be made. */
+	const earlyUse = (name: string, node: Node): void => {
+		let from = scope;
+		while (from && !from.names.has(name)) from = from.parent;
+		const declaration = from?.declarations.get(name);
+		if (declaration === undefined || from!.depth !== deferred) return;
+		if (node.start < declaration.start && !earlyUses.has(declaration))
+			earlyUses.set(declaration, node);
+	};
+
 	/** A name read in a main-thread function: captured if the file declares it outside the function. */
 	const reference = (name: string, node: Node): void => {
+		earlyUse(name, node);
 		if (!current || shared.has(name) || NEVER_CAPTURED.has(name)) return;
 		// In a component, `$count` reads the store `count`.
 		const declared =
@@ -207,6 +263,7 @@ export function findFunctions(options: {
 		for (let from = scope; from; from = from.parent) {
 			if (from.names.has(name) || (!inside && from.names.has(declared))) {
 				if (!inside) {
+					if (!current.capturedFrom.has(name)) current.capturedFrom.set(name, from);
 					path = [{ name, key: name, access: name }];
 					if ((node === callee || node === calledThrough) && !current.called.has(name))
 						current.called.set(name, node);
@@ -256,11 +313,17 @@ export function findFunctions(options: {
 	const visitFunction = (node: Node, parent: Node): void => {
 		// A signature without a body (an overload).
 		if (!node.body) return;
-		const names = new Set<string>();
+		const own = declared();
+		const { names } = own;
 		for (const param of node.params) patternNames(param, names);
+		for (const name of names) own.early.add(name);
 		const block = node.body.type === "BlockStatement";
-		if (block) for (const statement of node.body.body) declare(statement, names, true, true);
+		if (block) for (const statement of node.body.body) declare(statement, own, true, true);
 		const outermost = !current && isMainThreadFunction(node);
+		// Code in a plain function runs when it is called; a main-thread function's captures are
+		// read when it is made.
+		const plain = !current && !outermost;
+		if (plain) deferred++;
 		// Its own names, unless a parameter or the body has taken them. The variable's name counts
 		// only for a main-thread function: capturing it would read the variable before it exists.
 		const self = new Set<string>();
@@ -278,37 +341,46 @@ export function findFunctions(options: {
 		}
 
 		const outerThis = ownThis;
-		within(names, () => {
-			if (outermost) {
-				const method =
-					parent?.type === "MethodDefinition" ||
-					(parent?.type === "Property" && (parent.method || parent.kind !== "init"));
-				if (method)
-					fail(parent, {
-						code: "main_thread_function_method",
-						details: { kind: parent.type === "Property" ? "object" : "class" },
-					});
-				if (node.generator) fail(node, { code: "main_thread_function_generator", details: {} });
-				current = {
-					node,
-					parent,
-					scope: scope!,
-					self,
-					callsItself: new Set(),
-					captures: new Map(),
-					called: new Map(),
-					handles: [],
-				};
-				found.push(current);
-				ownThis = true;
-			} else if (node.type !== "ArrowFunctionExpression") {
-				ownThis = false;
-			}
-			for (const param of node.params) binding(param);
-			if (block) for (const statement of node.body.body) visit(statement, node.body);
-			else visit(node.body, node);
-		});
+		const declaration = node.type === "FunctionDeclaration" ? scope : undefined;
+		const top = block ? topOf(node.body.body, node.body.start + 1) : undefined;
+		within(
+			own,
+			() => {
+				if (outermost) {
+					const method =
+						parent?.type === "MethodDefinition" ||
+						(parent?.type === "Property" && (parent.method || parent.kind !== "init"));
+					if (method)
+						fail(parent, {
+							code: "main_thread_function_method",
+							details: { kind: parent.type === "Property" ? "object" : "class" },
+						});
+					if (node.generator) fail(node, { code: "main_thread_function_generator", details: {} });
+					current = {
+						node,
+						parent,
+						scope: scope!,
+						self,
+						callsItself: new Set(),
+						captures: new Map(),
+						called: new Map(),
+						handles: [],
+						declaredIn: declaration,
+						capturedFrom: new Map(),
+					};
+					found.push(current);
+					ownThis = true;
+				} else if (node.type !== "ArrowFunctionExpression") {
+					ownThis = false;
+				}
+				for (const param of node.params) binding(param);
+				if (block) for (const statement of node.body.body) visit(statement, node.body);
+				else visit(node.body, node);
+			},
+			top,
+		);
 		ownThis = outerThis;
+		if (plain) deferred--;
 		if (outermost) current = undefined;
 	};
 
@@ -347,28 +419,38 @@ export function findFunctions(options: {
 			case "BlockStatement":
 			case "StaticBlock":
 			case "TSModuleBlock": {
-				const names = new Set<string>();
+				const own = declared();
 				const deep = node.type !== "BlockStatement";
-				for (const statement of node.body) declare(statement, names, true, deep);
-				within(names, () => {
-					for (const statement of node.body) visit(statement, node);
-				});
+				for (const statement of node.body) declare(statement, own, true, deep);
+				const top =
+					node.type === "Program"
+						? topOf(node.body, node.start)
+						: node.type === "BlockStatement"
+							? node.start + 1
+							: undefined;
+				within(
+					own,
+					() => {
+						for (const statement of node.body) visit(statement, node);
+					},
+					top,
+				);
 				return;
 			}
 			case "ForStatement":
 			case "ForInStatement":
 			case "ForOfStatement": {
-				const names = new Set<string>();
-				declare(node.init ?? node.left, names, true, false);
-				within(names, () => visitChildren(node));
+				const own = declared();
+				declare(node.init ?? node.left, own, true, false);
+				within(own, () => visitChildren(node));
 				return;
 			}
 			case "SwitchStatement": {
 				visit(node.discriminant, node);
-				const names = new Set<string>();
+				const own = declared();
 				for (const switchCase of node.cases)
-					for (const statement of switchCase.consequent) declare(statement, names, true, false);
-				within(names, () => {
+					for (const statement of switchCase.consequent) declare(statement, own, true, false);
+				within(own, () => {
 					for (const switchCase of node.cases) {
 						visit(switchCase.test, switchCase);
 						for (const statement of switchCase.consequent) visit(statement, switchCase);
@@ -487,11 +569,12 @@ export function findFunctions(options: {
 	};
 
 	if (outer) {
-		// The module script's names are outside every function of the instance script.
-		const names = new Set<string>();
-		for (const statement of outer.body) declare(statement, names, true, true);
-		scope = { names, parent: undefined };
+		// The module script's names are outside every function of the instance script, and set
+		// before it runs.
+		const own = declared();
+		for (const statement of outer.body) declare(statement, own, true, true);
+		scope = { ...own, early: own.names, top: undefined, depth: 0, parent: undefined };
 	}
 	visit(program);
-	return { found, deepState, topLevel };
+	return { found, deepState, topLevel, earlyUses };
 }

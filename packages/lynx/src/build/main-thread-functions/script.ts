@@ -16,6 +16,7 @@ import { emitFunctions, FOOTER_END, FOOTER_START } from "./emit.ts";
 import type { Hoisted } from "./emit.ts";
 import { findFunctions } from "./find.ts";
 import type { Fail } from "./find.ts";
+import { hoistDeclarations } from "./hoisting.ts";
 import { inlineFunctions } from "./inline.ts";
 import { COMPILED_NAMES } from "./names.ts";
 import type { Node } from "./node.ts";
@@ -130,6 +131,7 @@ export function componentFunctions(
 			instance,
 			functions,
 			hoisted,
+			hoisting: hoistDeclarations({ ...functions, fail }),
 		});
 		edits.push(...emitted.edits);
 		registrations.push(...emitted.registrations);
@@ -201,7 +203,8 @@ export function moduleFunctions(
 	const { filename, root } = options;
 	const text: SourceText = { file: filename, text: source };
 	const program = parseModule(text, root);
-	const functions = findFunctions({ program, instance: false, fail: failIn(text) });
+	const fail = failIn(text);
+	const functions = findFunctions({ program, instance: false, fail });
 	if (functions.found.length === 0) return unchanged;
 	const emitted = emitFunctions({
 		...options,
@@ -210,6 +213,7 @@ export function moduleFunctions(
 		instance: false,
 		functions,
 		hoisted: new Map(),
+		hoisting: hoistDeclarations({ ...functions, fail }),
 	});
 	const at = source.length;
 	const tail: Piece[] = [{ text: emitted.imports, at }, ...withFooter(emitted.registrations)];

@@ -33,6 +33,7 @@ export interface BuildDetails {
 	main_thread_function_this: { keyword: "this" | "super" };
 	main_thread_function_generator: Plain;
 	main_thread_function_block_name: { where: string; names: string[] };
+	main_thread_function_used_early: { name: string; captures: string[] };
 	plain_function_in_main_thread_function: { name: string };
 	script_syntax_error: { reason: string };
 	event_attribute_renamed: { attribute: string; replacement: string; spelling: string };
@@ -152,6 +153,16 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		fix: () =>
 			"Put the value in a `data-*` attribute and read `event.currentTarget.dataset`, or move this markup into a child component.",
 		docs: "main_thread_function_block_name",
+	},
+	main_thread_function_used_early: {
+		message: ({ name, captures }) =>
+			`The main-thread function \`${name}\` is used above its declaration, where it does not exist yet` +
+			(captures.length > 0
+				? `: it captures ${captures.map((capture) => `\`${capture}\``).join(", ")}, which is set further down.`
+				: "."),
+		fix: ({ name }) =>
+			`Move the declaration of \`${name}\` above this use, after the values it captures.`,
+		docs: "main_thread_function_used_early",
 	},
 	plain_function_in_main_thread_function: {
 		message: ({ name }) =>

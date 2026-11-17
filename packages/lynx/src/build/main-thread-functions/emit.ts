@@ -20,7 +20,8 @@ import { describe, placeAt } from "../diagnostics/messages.ts";
 import type { Edit, Piece } from "../source-map/edits.ts";
 import { writeCaptures } from "./captures.ts";
 import type { Guard } from "./captures.ts";
-import type { ScriptFunctions } from "./find.ts";
+import type { Found, ScriptFunctions } from "./find.ts";
+import type { Hoisting } from "./hoisting.ts";
 import { hash, idPrefix, pathInApp } from "./ids.ts";
 import type { Node } from "./node.ts";
 
@@ -56,6 +57,8 @@ export interface EmitOptions {
 	functions: ScriptFunctions;
 	/** The functions written in the markup, by their nodes. */
 	hoisted: Map<Node, Hoisted>;
+	/** The function declarations made at the top of their scope. */
+	hoisting: Hoisting;
 }
 
 /** What a script's main-thread functions are written as. */
@@ -111,6 +114,37 @@ function guardFor(options: EmitOptions, called: Map<string, Node>): Guard | unde
 	};
 }
 
+/**
+ * Write the object of a named function declaration: `let name = {…}`, or `export const` for an
+ * exported one (Svelte refuses `export let` in a component), or `const name = {…}` before
+ * `export default name` for a default export. At the top of its scope, when it is hoisted.
+ */
+function declaration(
+	{ node, parent }: Found,
+	object: string,
+	hoisting: Hoisting,
+	write: { tops: Map<Node, Edit>; edits: Edit[] },
+): void {
+	const { tops, edits } = write;
+	const { name } = node.id;
+	const exported = parent?.type === "ExportNamedDeclaration";
+	const isDefault = parent?.type === "ExportDefaultDeclaration";
+	const written = `${exported ? "export const" : isDefault ? "const" : "let"} ${name} = ${object};`;
+	const range = exported || isDefault ? parent : node;
+	const rest = isDefault ? `export default ${name};` : "";
+	const top = hoisting.at.get(node);
+	if (top === undefined) {
+		edits.push({
+			start: range.start,
+			end: range.end,
+			text: rest ? `${written}\n${rest}` : written,
+		});
+		return;
+	}
+	tops.set(node, { start: top, end: top, pieces: [{ text: `\n${written}`, at: node.start }] });
+	edits.push({ start: range.start, end: range.end, text: rest });
+}
+
 /** Write the script's main-thread functions for `options.thread`. */
 export function emitFunctions(options: EmitOptions): Emitted {
 	const { source, thread, instance, functions, hoisted } = options;
@@ -118,6 +152,8 @@ export function emitFunctions(options: EmitOptions): Emitted {
 	const toHandle = `__transformToWorklet_${hash(options.script, 5)}`;
 	const background = thread === "background";
 	const emitted: Emitted = { edits: [], declarations: [], registrations: [], ids: [], imports: "" };
+	/** What a declaration made at the top of its scope writes there, by its node. */
+	const tops = new Map<Node, Edit>();
 	let anyHandle = false;
 
 	for (const fn of functions.found) {
@@ -156,11 +192,10 @@ export function emitFunctions(options: EmitOptions): Emitted {
 			// Where the function was written, its name; in the script, its declaration.
 			emitted.edits.push({ start: node.start, end: node.end, text: markup.name });
 			emitted.declarations.push({ text: `\nconst ${markup.name} = ${object};`, at: node.start });
+		} else if (node.type === "FunctionDeclaration" && node.id) {
+			declaration(fn, object, options.hoisting, { tops, edits: emitted.edits });
 		} else {
-			const isDefault = parent?.type === "ExportDefaultDeclaration";
-			if (node.type === "FunctionDeclaration" && !isDefault) {
-				object = `let ${node.id.name} = ${object};`;
-			} else if (isDefault) {
+			if (parent?.type === "ExportDefaultDeclaration") {
 				object += ";";
 			} else if (
 				parent?.type === "ExpressionStatement" ||
@@ -203,6 +238,8 @@ export function emitFunctions(options: EmitOptions): Emitted {
 		say("});\n");
 	}
 
+	// Before the other edits: one may start where a declaration is made.
+	emitted.edits.unshift(...options.hoisting.order.map((node) => tops.get(node)!));
 	if (background && anyHandle)
 		emitted.imports = `\nimport { ${FUNCTION_RUNTIME.handle} as ${toHandle} } from ${JSON.stringify(MAIN_THREAD_FUNCTIONS_ENTRY)};\n`;
 	return emitted;
