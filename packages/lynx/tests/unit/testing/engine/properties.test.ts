@@ -100,6 +100,23 @@ describe("dataset", () => {
 		expect((inner as Element).hasAttribute("data-kind")).toBe(false);
 	});
 
+	it("round-trips a hyphenated key: an event's target and Lynx's selectors see it as given", () => {
+		const { page, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetDataset(inner, { "drag-handle": "yes" });
+		const targets: unknown[] = [];
+		f.__AddEventListener(
+			inner,
+			"tap",
+			(event) => targets.push((event as { target: unknown }).target),
+			{},
+		);
+		engine().dispatch(inner, "tap");
+		expect(targets).toEqual([{ id: "inner", uid: 3, dataset: { "drag-handle": "yes" } }]);
+		expect(f.__QuerySelector(page, "[data-drag-handle=yes]", {})).toBe(inner);
+		expect((inner as HTMLElement).dataset["dragHandle"]).toBe("yes");
+	});
+
 	it("takes a hyphenated key, and shows it as the data attribute of that name", () => {
 		const { inner } = smallPage(engine());
 		engine().functions.__SetDataset(inner, { "drag-handle": true, nested: { a: [1] } });
