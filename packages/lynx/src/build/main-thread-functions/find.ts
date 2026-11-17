@@ -88,6 +88,8 @@ export interface Found {
 	captures: Captures;
 	/** The captured names the body calls, each with the first call's callee. */
 	called: Map<string, Node>;
+	/** The captured names whose members the body calls (`math.clamp(1)`), each member with its first call's object. */
+	calledMembers: Map<string, Map<string, Node>>;
 	/** The argument of each `runOnBackground(...)` in it, in source order. */
 	handles: Node[];
 	/** Whether its parameters' defaults read a captured name, its own name or a background function. */
@@ -190,6 +192,20 @@ export function findFunctions(options: {
 	let callee: Node;
 	// The captured name `fn.call(…)`, `fn.apply(…)` or `fn.bind(…)` calls: it is called, too.
 	let calledThrough: Node;
+	// The object and the member of a method call on a name: `math.clamp(1)`.
+	let calledMember: { object: Node; name: string } | undefined;
+
+	/** Note what a call, a `new` or a tagged template calls. */
+	const calling = (target: Node): void => {
+		callee = unwrap(target);
+		calledThrough = undefined;
+		calledMember = undefined;
+		if (callee.type !== "MemberExpression" || unwrap(callee.object).type !== "Identifier") return;
+		const segment = memberSegment(callee);
+		if (segment === undefined) return;
+		if (!callee.computed && CALL_METHODS.has(segment.name)) calledThrough = unwrap(callee.object);
+		else calledMember = { object: unwrap(callee.object), name: segment.name };
+	};
 
 	const within = (names: Set<string> | Declared, body: () => void, top?: number): void => {
 		const outer = scope;
@@ -273,6 +289,13 @@ export function findFunctions(options: {
 					path = [{ name, key: name, access: name }];
 					if ((node === callee || node === calledThrough) && !current.called.has(name))
 						current.called.set(name, node);
+					const method = calledMember;
+					const member = method !== undefined && method.object === node ? method.name : undefined;
+					if (member !== undefined) {
+						let members = current.calledMembers.get(name);
+						if (!members) current.calledMembers.set(name, (members = new Map()));
+						if (!members.has(member)) members.set(member, node);
+					}
 					if (depth === 0) flush();
 				} else if (from === current.scope && current.self.has(name)) {
 					current.callsItself.add(name);
@@ -370,6 +393,7 @@ export function findFunctions(options: {
 						callsItself: new Set(),
 						captures: new Map(),
 						called: new Map(),
+						calledMembers: new Map(),
 						handles: [],
 						parametersRead: false,
 						declaredIn: declaration,
@@ -530,16 +554,13 @@ export function findFunctions(options: {
 					current.parametersRead ||= inParameters;
 					return;
 				}
-				callee = unwrap(node.callee);
-				calledThrough = undefined;
-				if (
-					callee.type === "MemberExpression" &&
-					!callee.computed &&
-					callee.property.type === "Identifier" &&
-					CALL_METHODS.has(callee.property.name) &&
-					unwrap(callee.object).type === "Identifier"
-				)
-					calledThrough = unwrap(callee.object);
+				calling(node.callee);
+				break;
+			case "NewExpression":
+				calling(node.callee);
+				break;
+			case "TaggedTemplateExpression":
+				calling(node.tag);
 				break;
 			case "Property":
 			case "MethodDefinition":

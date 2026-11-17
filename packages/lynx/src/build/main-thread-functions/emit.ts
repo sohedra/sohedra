@@ -86,30 +86,50 @@ function stringLiteral(text: string): string {
 	);
 }
 
-/** The expression that throws when a captured value that the body calls is a plain function. */
-function guardFor(options: EmitOptions, called: Map<string, Node>): Guard | undefined {
+/**
+ * The expression that throws when a captured value that the body calls is a plain function, or is
+ * a plain object or a namespace whose member that the body calls is one.
+ */
+function guardFor(options: EmitOptions, fn: Found): Guard | undefined {
+	const { called, calledMembers } = fn;
 	// A main-thread function of this script is an object by the time it is called, not a plain function.
 	const own = new Set<string>();
 	for (const { node, parent } of options.functions.found) {
 		const name = node.type === "FunctionDeclaration" ? node.id?.name : parent?.id?.name;
 		if (name !== undefined) own.add(name);
 	}
-	const names = new Set([...called.keys()].filter((name) => !own.has(name)));
+	const direct = new Set([...called.keys()].filter((name) => !own.has(name)));
+	const names = new Set([...direct, ...calledMembers.keys()]);
 	if (names.size === 0) return undefined;
+	/** The error for the plain function `name`, called at `at`. */
+	const error = (name: string, at: Node): string => {
+		const message = describe({
+			code: "plain_function_in_main_thread_function",
+			details: { name },
+			// The path under the app, so two checkouts of one app give one development bundle.
+			place: placeAt(
+				{ file: pathInApp(options.filename, options.root), text: options.source },
+				at.start,
+			),
+		});
+		return `new Error(${stringLiteral(message)})`;
+	};
 	return {
 		names,
 		wrap: (name, value) => {
-			const callee = called.get(name)!;
-			const message = describe({
-				code: "plain_function_in_main_thread_function",
-				details: { name },
-				// The path under the app, so two checkouts of one app give one development bundle.
-				place: placeAt(
-					{ file: pathInApp(options.filename, options.root), text: options.source },
-					callee.start,
-				),
-			});
-			return `typeof ${value} === "function" ? (() => { throw new Error(${stringLiteral(message)}); })() : ${value}`;
+			const members = calledMembers.get(name);
+			if (members === undefined)
+				return `typeof ${value} === "function" ? (() => { throw ${error(name, called.get(name)!)}; })() : ${value}`;
+			const checks: string[] = [];
+			if (direct.has(name))
+				checks.push(`if (typeof __value === "function") throw ${error(name, called.get(name)!)};`);
+			const plain = `__value !== null && typeof __value === "object" && [null, Object.prototype].includes(Object.getPrototypeOf(__value))`;
+			const methods = [...members].map(
+				([member, at]) =>
+					`if (typeof __value[${stringLiteral(member)}] === "function") throw ${error(`${name}.${member}`, at)};`,
+			);
+			checks.push(`if (${plain}) { ${methods.join(" ")} }`);
+			return `((__value) => { ${checks.join(" ")} return __value; })(${value})`;
 		},
 	};
 }
@@ -157,7 +177,7 @@ export function emitFunctions(options: EmitOptions): Emitted {
 	let anyHandle = false;
 
 	for (const fn of functions.found) {
-		const { node, parent, captures, handles, called } = fn;
+		const { node, parent, captures, handles } = fn;
 		const id = prefix + (emitted.ids.length + 1);
 		emitted.ids.push(id);
 		const handleNames = handles.map((_, index) => `_jsFn${index + 1}`);
@@ -167,10 +187,7 @@ export function emitFunctions(options: EmitOptions): Emitted {
 		const follows = instance && background && captures.size > 0 && functions.topLevel.has(node);
 		const parts: string[] = [];
 		if (captures.size > 0) {
-			const guard =
-				options.development && background && called.size > 0
-					? guardFor(options, called)
-					: undefined;
+			const guard = options.development && background ? guardFor(options, fn) : undefined;
 			const deepState = follows ? functions.deepState : undefined;
 			parts.push(`${FUNCTION_FIELDS.captures}: ${writeCaptures(captures, { deepState, guard })}`);
 		}
