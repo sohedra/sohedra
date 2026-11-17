@@ -224,6 +224,7 @@ describe("inline styles", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__SetInlineStyles(inner, "display: linear; linear-orientation: horizontal");
+		f.__FlushElementTree();
 		expect(f.__GetComputedStyleByKey(inner, "display")).toBe("linear");
 		expect((inner as Element).getAttribute("style")).toBe(
 			"display: linear; linear-orientation: horizontal",
