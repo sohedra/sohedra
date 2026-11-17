@@ -1,7 +1,7 @@
 // What both threads and the build agree on: names, message shapes and the patch format.
 
-export { lynxEventName, removedEventSpelling } from "./events.ts";
-export type { RemovedEventSpelling } from "./events.ts";
+export { eventOf, listenerEvent, lynxEventName, removedEventSpelling } from "./events.ts";
+export type { LynxEvent, LynxEventType, LynxListener, RemovedEventSpelling } from "./events.ts";
 export {
 	FIRST_FRAME_HANDLE,
 	FUNCTION_FIELDS,
