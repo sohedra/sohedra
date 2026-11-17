@@ -2,6 +2,10 @@
 
 import type { AttrValue } from "../../wire/index.ts";
 
+/** Whether an attribute's value is a function: a handler, never sent to the main thread. */
+export const isFunction = (value: unknown): value is (event: unknown) => unknown =>
+	typeof value === "function";
+
 /**
  * `value` as text, as an attribute's text is read: a string as it is, a number, a boolean or a
  * BigInt written out, anything else as its JSON.

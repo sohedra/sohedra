@@ -13,54 +13,17 @@ import { listenerEvent, OpCode, ROOT_ID, TEXT_CONTAINERS } from "../../wire/inde
 import type { CallRequest, LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import { warnOnce } from "../report.ts";
+import { elementClass } from "./element.ts";
+import type { ElementNode, ListenerChange } from "./element.ts";
 import type { Handler, HandlerRegistry } from "./handlers.ts";
 import { setInputValue } from "./input.ts";
 import type { InputHost } from "./input.ts";
 import { TreeNode } from "./node.ts";
 import type { OpQueue } from "./queue.ts";
-import {
-	compareNodes,
-	link,
-	nextRealAnchor,
-	realContainer,
-	topOf,
-	topReals,
-	unlink,
-} from "./tree.ts";
-import { attrValue, textOf } from "./values.ts";
+import { link, nextRealAnchor, realContainer, topReals, unlink } from "./tree.ts";
+import { attrValue, isFunction, textOf } from "./values.ts";
 
-/**
- * What an element node offers a component, through an attachment, `use:` or an event's target:
- * DOM-like tree questions, its attributes and listeners.
- */
-export interface ElementNode extends TreeNode {
-	/** The `id` attribute, as Lynx reports it in an event's target: "" when there is none. */
-	readonly id: string;
-	/** Lynx's unique id of the element, as of the last event that had it as a target. */
-	readonly uid: number | undefined;
-	/** The `data-*` attributes, as Lynx reports them in an event's target. Built when read. */
-	readonly dataset: Record<string, unknown>;
-	/** Whether the node is on the page: its topmost ancestor is the page's root. */
-	readonly isConnected: boolean;
-	/** The element that holds this one; null for the root, a removed node, or a holder that is no element. */
-	readonly parentElement: ElementNode | null;
-	/** Whether `other` is this node or inside it. */
-	contains(other: unknown): boolean;
-	/**
-	 * Tree order: below 0 when this node comes first, above 0 when `other` does. Of two nodes in
-	 * separate trees, the one on the page comes first; 0 when neither is.
-	 */
-	compareOrder(other: unknown): number;
-	/** The attribute's value as it was set; `null` for an absent one and for a function. */
-	getAttribute(name: string): unknown;
-	/** The names of the attributes that have a value. */
-	getAttributeNames(): string[];
-	setAttribute(name: string, value: unknown): void;
-	addEventListener(type: string, handler: Handler, options?: { capture?: boolean }): void;
-	removeEventListener(type: string, handler: Handler, options?: { capture?: boolean }): void;
-	/** Runs this element's own listeners of `event.type`, with no propagation. */
-	dispatchEvent(event: { type: string }): boolean;
-}
+export type { ElementNode } from "./element.ts";
 
 /** Where the renderer reaches the main thread for what an element is asked: the page's channel. */
 export interface RendererHost {
@@ -99,8 +62,6 @@ export interface RendererState {
 	handlers: HandlerRegistry;
 }
 
-const isFunction = (value: unknown): value is Handler => typeof value === "function";
-
 /** Makes the renderer, writing its ops into `queue` and its handlers into `handlers`. */
 export function createLynxRenderer({ queue, handlers }: RendererState): LynxRenderer {
 	let nextId = ROOT_ID + 1;
@@ -108,88 +69,13 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 	let root: ElementNode | undefined;
 	const elementsById = new Map<number, ElementNode>();
 	const uids = new WeakMap<TreeNode, number>();
-
-	// One class per renderer: its methods reach this renderer's tree and handlers.
-	class Element extends TreeNode implements ElementNode {
-		constructor(tag: string) {
-			super("element");
-			this.tag = tag;
-		}
-
-		get id(): string {
-			const value = this.attrs?.get("id");
-			return value == null ? "" : textOf(value);
-		}
-
-		get uid(): number | undefined {
-			return uids.get(this);
-		}
-
-		get dataset(): Record<string, unknown> {
-			// The main thread's rule (`__SetDataset`): the `data-*` attributes, without the prefix, as
-			// they are sent.
-			const dataset: Record<string, unknown> = {};
-			if (this.attrs !== null) {
-				for (const [key, value] of this.attrs) {
-					if (!key.startsWith("data-")) continue;
-					const sent = attrValue(key, value);
-					if (sent !== null) dataset[key.slice(5)] = sent;
-				}
-			}
-			return dataset;
-		}
-
-		get isConnected(): boolean {
-			return root !== undefined && topOf(this) === root;
-		}
-
-		get parentElement(): ElementNode | null {
-			return this.parent instanceof Element ? this.parent : null;
-		}
-
-		contains(other: unknown): boolean {
-			if (!(other instanceof TreeNode)) return false;
-			for (let node: TreeNode | null = other; node; node = node.parent)
-				if (node === this) return true;
-			return false;
-		}
-
-		compareOrder(other: unknown): number {
-			return this === other || !(other instanceof Element) ? 0 : compareNodes(this, other, root);
-		}
-
-		getAttribute(name: string): unknown {
-			const value = this.attrs?.get(name);
-			return value === undefined || isFunction(value) ? null : value;
-		}
-
-		getAttributeNames(): string[] {
-			const attrs = this.attrs;
-			return attrs ? [...attrs.keys()].filter((key) => !isFunction(attrs.get(key))) : [];
-		}
-
-		setAttribute(name: string, value: unknown): void {
-			setAttribute(this, name, value);
-		}
-
-		addEventListener(type: string, handler: Handler, options?: { capture?: boolean }): void {
-			const { type: lynxType, name } = listenerEvent(type, options?.capture === true);
-			setEvent(this, { type: lynxType, name, handler, add: true });
-		}
-
-		removeEventListener(type: string, handler: Handler, options?: { capture?: boolean }): void {
-			const { type: lynxType, name } = listenerEvent(type, options?.capture === true);
-			setEvent(this, { type: lynxType, name, handler, add: false });
-		}
-
-		dispatchEvent(event: { type: string }): boolean {
-			const id = this.events?.get(`bindEvent:${event.type}`);
-			if (id !== undefined) handlers.dispatch(id, { target: this, ...event, currentTarget: this });
-			return true;
-		}
-	}
-
-	// --- ops -------------------------------------------------------------------------------------
+	const Element = elementClass({
+		handlers,
+		uids,
+		root: () => root,
+		setAttribute: (element, key, value) => setAttribute(element, key, value),
+		setEvent: (element, change) => setEvent(element, change),
+	});
 
 	/** The cell of a node whose Lynx parent is `container`: a child of a page's list is a cell. */
 	function cellUnder(container: TreeNode, node: TreeNode): number {
@@ -214,8 +100,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (node.lynxId !== 0) return;
 		node.lynxId = nextId++;
 		node.cell = cellUnder(container, node);
-		// Boundary: every element node is made by `createElement`, an `Element`.
-		elementsById.set(node.lynxId, node as Element);
+		// Boundary: every element node is made by `createElement`, from the element class.
+		elementsById.set(node.lynxId, node as ElementNode);
 		queue.push([OpCode.Create, node.lynxId, node.tag!]);
 		if (node.attrs) {
 			for (const [key, value] of node.attrs) {
@@ -359,10 +245,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (node.kind === "text" && node.lynxId !== 0) queue.push([OpCode.SetText, node.lynxId, text]);
 	}
 
-	function setEvent(
-		element: TreeNode,
-		event: { type: LynxEventType; name: string; handler: Handler; add: boolean },
-	): void {
+	function setEvent(element: TreeNode, event: ListenerChange): void {
 		const { type, name, handler, add } = event;
 		// Kept on the node until it is made; `realize` binds it then.
 		const key = `${type}:${name}`;
