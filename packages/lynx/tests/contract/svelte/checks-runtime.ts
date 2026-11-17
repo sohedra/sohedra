@@ -78,6 +78,12 @@ export const checks: Checks = {
 		expect(heard).toEqual([event]);
 	},
 
+	"events-module-exports": async () => {
+		// The background's `svelte/events` re-exports all of it, with `on` wrapped.
+		const events = await importSvelte("src/events/index.js");
+		expect(Object.keys(events)).toEqual(["on"]);
+	},
+
 	"server-runtime-exports": async () => {
 		const server = await importSvelte("src/internal/server/index.js");
 		for (const name of ["attr", "attributes", "escape", "css_props"]) {

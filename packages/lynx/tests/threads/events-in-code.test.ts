@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import AwaitListen from "../fixtures/threads/AwaitListen.svelte";
 import Listen from "../fixtures/threads/Listen.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
@@ -36,6 +37,20 @@ describe("on() outside an effect", () => {
 		await send("listen-later", "tap");
 		expect(listeners("tap")).toHaveLength(1);
 		await send("inner", "tap");
+		expect(log).toEqual([["tap", true]]);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("listens on the node after an await once an {#await} block has settled", async () => {
+		// The block clears Svelte's current renderer when its promise settles.
+		const log: unknown[] = [];
+		const page = startSveltePage(AwaitListen, { props: () => ({ log }) });
+		await page.settle();
+		expect(page.engine.texts()).toContain("ready");
+		page.engine.dispatch(page.byClass("listen-later"), { type: "tap" });
+		await page.settle();
+		page.engine.dispatch(page.byClass("inner"), { type: "tap" });
+		await page.settle();
 		expect(log).toEqual([["tap", true]]);
 		expect(page.errors).toEqual([]);
 	});
