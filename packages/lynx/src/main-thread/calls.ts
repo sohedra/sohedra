@@ -1,14 +1,12 @@
-// The calls a patch carries: what the background asks of an element (a UI method, styles set from
-// code, a computed style, a query, an animation). They run in the order they came, after the ops
-// before them.
+// The calls a patch carries: what the background asks of an element (a UI method, a computed
+// style, a query), after the ops before them. Styles set from code and animations are ops.
 //
 // The patch's changes reach the screen at its flush: Lynx makes an element's view then, and a UI
 // method runs at once on the view as it is (core/renderer/ui_wrapper/painting, the painting
 // contexts' Invoke). A UI method before the flush would answer "no UI for this node" (code 6) for a
 // new element, or see the screen from before the update. So reads (a UI method, a computed style)
-// run once the patch is flushed, in the order they came; writes and queries run in place. An element
-// a UI method or an animation is called on is kept from being flattened from then on
-// (./flatten.ts).
+// run once the patch is flushed, in the order they came; queries run in place. An element a UI
+// method is called on is kept from being flattened from then on (./flatten.ts).
 
 import { decodeCall, encodeError } from "../wire/index.ts";
 import type { CallItem, CallRequest, Result } from "../wire/index.ts";
@@ -51,16 +49,12 @@ export function createCalls(scope: CallsScope): Calls {
 		switch (request[0]) {
 			case "invoke":
 				return request[1];
-			case "style":
-				return "setStyleProperty";
 			case "computed":
 				return "getComputedStyleProperty";
 			case "query":
 				return "querySelector";
 			case "queryAll":
 				return "querySelectorAll";
-			case "animate":
-				return "animate";
 		}
 	}
 
@@ -94,10 +88,6 @@ export function createCalls(scope: CallsScope): Calls {
 			case "invoke":
 				invoke(element, { method: request[1], params: request[2] }, done);
 				return;
-			case "style":
-				applier.styles.set(element, request[1]);
-				done({ ok: true, value: null });
-				return;
 			case "computed":
 				done({ ok: true, value: mainThread.__GetComputedStyleByKey(element, request[1]) });
 				return;
@@ -115,9 +105,6 @@ export function createCalls(scope: CallsScope): Calls {
 				done({ ok: true, value: ids });
 				return;
 			}
-			case "animate":
-				mainThread.__ElementAnimate(element, request[1]);
-				done({ ok: true, value: null });
 		}
 	}
 
@@ -135,7 +122,7 @@ export function createCalls(scope: CallsScope): Calls {
 				if (element === undefined)
 					throw mainThreadError({ code: "element_missing", details: { id: elementId } });
 				// Held now, so that the patch's flush makes the view the call needs.
-				if (request[0] === "invoke" || request[0] === "animate") applier.flattening.hold(element);
+				if (request[0] === "invoke") applier.flattening.hold(element);
 				if (request[0] !== "invoke" && request[0] !== "computed") {
 					execute(request, element, done);
 					return;

@@ -20,12 +20,6 @@ export interface MethodScope<Node extends TreeNode> {
 export interface ElementMethods<Node extends TreeNode> {
 	/** `invoke(method, params)`: Lynx's UI method of the element, with its answer. */
 	invoke(node: Node, call: { method: string; params: Record<string, unknown> }): Promise<unknown>;
-	/**
-	 * `setStyleProperty` and `setStyleProperties`: inline styles set from code, which a later write
-	 * of the element's `style` keeps unless it sets them itself. A value of `null` or `""` gives the
-	 * property back to `style`. Nothing happens once the page is gone.
-	 */
-	setStyles(node: Node, styles: Record<string, string | number | null>): void;
 	/** `getComputedStyleProperty(name)`: the value Lynx computed for one of the element's styles. */
 	computedStyle(node: Node, name: string): Promise<string>;
 	/** `querySelector(selector)`: the first element node under this one that `selector` matches. */
@@ -33,6 +27,10 @@ export interface ElementMethods<Node extends TreeNode> {
 	/** `querySelectorAll(selector)`: every element node under this one that `selector` matches. */
 	querySelectorAll(node: Node, selector: string): Promise<Node[]>;
 }
+
+/** Whether `error` carries the catalogue code `code`. */
+const isCode = (error: unknown, code: string): boolean =>
+	typeof error === "object" && error !== null && "code" in error && error.code === code;
 
 /** The error of a method called on a node that has no Lynx element. */
 export function notOnPage(node: TreeNode, method: string): BackgroundError {
@@ -53,17 +51,19 @@ export function elementMethods<Node extends TreeNode>(
 		const host = scope.host();
 		if (!host) return Promise.reject(pageGone(method));
 		if (node.lynxId === 0) return Promise.reject(notOnPage(node, method));
-		return host.call(node.lynxId, request);
+		return host.call(node.lynxId, request).catch((error: unknown) => {
+			// An element in a list cell is made only when Lynx shows the cell.
+			if (node.cell !== 0 && isCode(error, "element_missing"))
+				throw backgroundError({
+					code: "element_not_shown",
+					details: { method, tag: node.tag ?? "" },
+				});
+			throw error;
+		});
 	}
 
 	return {
 		invoke: (node, { method, params }) => ask(node, method, ["invoke", method, params]),
-		setStyles(node, styles) {
-			const host = scope.host();
-			if (!host) return;
-			if (node.lynxId === 0) throw notOnPage(node, "setStyleProperty");
-			host.post(node.lynxId, ["style", styles]);
-		},
 		computedStyle: (node, name) =>
 			ask(node, "getComputedStyleProperty", ["computed", name]).then((value) =>
 				typeof value === "string" ? value : "",

@@ -85,6 +85,10 @@ export interface ElementScope {
 	root(): TreeNode | undefined;
 	setAttribute(element: TreeNode, key: string, value: unknown): void;
 	setEvent(element: TreeNode, change: ListenerChange): void;
+	/** Sets inline styles from code: sent now, or kept until the node's Lynx element is made. */
+	setStyles(element: TreeNode, styles: Record<string, string | number | null>): void;
+	/** Sends `__ElementAnimate`'s arguments to the node's Lynx element, if it has one. */
+	animate(element: TreeNode, args: unknown[]): void;
 	/** The page's host; null when no page runs. */
 	host(): RendererHost | null;
 	/** The element node with this id, while it is on the page. */
@@ -193,11 +197,11 @@ export function elementClass(scope: ElementScope): ElementClass {
 		}
 
 		setStyleProperty(name: string, value: string | number | null): void {
-			methods.setStyles(this, { [name]: value });
+			scope.setStyles(this, { [name]: value });
 		}
 
 		setStyleProperties(styles: Record<string, string | number | null>): void {
-			methods.setStyles(this, styles);
+			scope.setStyles(this, styles);
 		}
 
 		getComputedStyleProperty(name: string): Promise<string> {
@@ -222,11 +226,7 @@ export function elementClass(scope: ElementScope): ElementClass {
 				node: this,
 				keyframes,
 				options: typeof options === "number" ? { duration: options } : options,
-				send: host
-					? (args) => {
-							if (this.lynxId !== 0) scope.host()?.post(this.lynxId, ["animate", args]);
-						}
-					: undefined,
+				send: host ? (args) => scope.animate(this, args) : undefined,
 				gone: () => pageGone("animate"),
 				listen: (type, handler) => this.addEventListener(type, handler),
 				unlisten: (type, handler) => this.removeEventListener(type, handler),

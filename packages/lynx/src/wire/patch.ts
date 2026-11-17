@@ -32,16 +32,12 @@ export type Result = { ok: true; value: unknown } | { ok: false; error: ThrownEr
 export type CallRequest =
 	/** A UI method of the element, with its params: `boundingClientRect`, `scrollTo`… */
 	| ["invoke", string, Record<string, unknown>]
-	/** Styles set from code; a value of `null` removes one. */
-	| ["style", Record<string, string | number | null>]
 	/** The value of one of the element's computed styles. */
 	| ["computed", string]
 	/** The first element under this one that a selector matches. */
 	| ["query", string]
 	/** Every element under this one that a selector matches. */
 	| ["queryAll", string]
-	/** An animation of the element: Lynx's operation and its arguments. */
-	| ["animate", unknown[]]
 	/** No element: the main-thread refs, by id, that the background let go of. */
 	| ["unref", number[]]
 	/** No element: `runOnMainThread(fn)(...params)`. */

@@ -178,7 +178,6 @@ export function startPage<Props extends Record<string, unknown>>(
 		lynx.__initData = { ...params.initData, ...params.updateData };
 		pageRenderer.setHost({
 			call: channel.call,
-			post: channel.post,
 			run: (handler: Handler, event: unknown) => handle(() => handler(event)),
 		});
 		root = pageRenderer.createRoot();

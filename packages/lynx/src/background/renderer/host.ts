@@ -8,8 +8,6 @@ import type { Handler } from "./handlers.ts";
 export interface RendererHost {
 	/** Asks the main thread something about an element, after the ops made before; resolves with the answer. */
 	call(element: number, request: CallRequest): Promise<unknown>;
-	/** Tells the main thread to do something to an element, after the ops made before, with no answer. */
-	post(element: number, request: CallRequest): void;
 	/** Runs `handler` with `event` as the page runs an event's handlers, Svelte's updates sent after. */
 	run(handler: Handler, event: unknown): void;
 }

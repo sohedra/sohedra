@@ -31,6 +31,13 @@ export const OpCode = {
 	 * tracks. `items` are the cells' ids in order, `added` and `removed` those that joined or left.
 	 */
 	ListUpdate: 9,
+	/**
+	 * `[SetStyles, id, styles]`: inline styles set from code (`setStyleProperty`), which a write of
+	 * `style` keeps; a value of `null` or `""` gives the property back to `style`.
+	 */
+	SetStyles: 10,
+	/** `[Animate, id, args]`: Lynx's `__ElementAnimate` arguments, `[operation, name, …]`. */
+	Animate: 11,
 } as const;
 
 /**
@@ -49,4 +56,6 @@ export type Op =
 	| [typeof OpCode.Remove, number, number]
 	| [typeof OpCode.SetEvent, number, LynxEventType, string, number]
 	| [typeof OpCode.Release, number]
-	| [typeof OpCode.ListUpdate, number, ListUpdateInfo, number[], number[], number[]];
+	| [typeof OpCode.ListUpdate, number, ListUpdateInfo, number[], number[], number[]]
+	| [typeof OpCode.SetStyles, number, Record<string, string | number | null>]
+	| [typeof OpCode.Animate, number, unknown[]];

@@ -45,11 +45,6 @@ export interface Channel {
 	 * or is destroyed before the answer, or was already.
 	 */
 	call(element: number, request: CallRequest): Promise<unknown>;
-	/**
-	 * Tells the main thread to do something to an element, in line with the ops made before, with
-	 * no answer. Throws when the request cannot be sent; does nothing once the page is destroyed.
-	 */
-	post(element: number, request: CallRequest): void;
 	/** The next patch shows the page's new data; one is sent even with nothing else in it. */
 	markDataUpdated(): void;
 	/**
@@ -218,13 +213,6 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 				items.push(["call", id, element, text]);
 				schedule();
 			});
-		},
-		post(element, request) {
-			if (!open) return;
-			const text = encodeCall(request);
-			takeOps();
-			items.push(["call", 0, element, text]);
-			schedule();
 		},
 		markDataUpdated() {
 			if (!open) return;

@@ -80,6 +80,17 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		root: () => root,
 		setAttribute: (element, key, value) => setAttribute(element, key, value),
 		setEvent: (element, change) => setEvent(element, change),
+		setStyles(element, styles) {
+			for (const name of Object.keys(styles)) {
+				const value = styles[name];
+				if (value == null || value === "") element.codeStyles?.delete(name);
+				else (element.codeStyles ??= new Map()).set(name, value);
+			}
+			if (element.lynxId !== 0) queue.push([OpCode.SetStyles, element.lynxId, styles]);
+		},
+		animate(element, args) {
+			if (element.lynxId !== 0) queue.push([OpCode.Animate, element.lynxId, args]);
+		},
 		host: () => host,
 		nodeById: (id) => elementsById.get(id),
 	});
@@ -126,6 +137,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 					queue.push([OpCode.SetAttr, node.lynxId, key, attrValue(key, value)]);
 			}
 		}
+		if (node.codeStyles?.size)
+			queue.push([OpCode.SetStyles, node.lynxId, Object.fromEntries(node.codeStyles)]);
 		if (node.events) {
 			for (const [slot, id] of node.events) {
 				const colon = slot.indexOf(":");

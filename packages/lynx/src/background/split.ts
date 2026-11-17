@@ -189,7 +189,9 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 				return;
 			case OpCode.SetText:
 			case OpCode.SetAttr:
-			case OpCode.SetEvent: {
+			case OpCode.SetEvent:
+			case OpCode.SetStyles:
+			case OpCode.Animate: {
 				const entry = pending.get(op[1]);
 				if (entry) {
 					entry.ops.push(op);

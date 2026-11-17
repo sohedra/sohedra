@@ -17,6 +17,7 @@ export interface BackgroundDetails {
 	attribute_not_copyable: { name: string; tag: string; reason: string };
 	/** `method` is the element method the developer called. */
 	element_not_on_page: { method: string; tag: string };
+	element_not_shown: { method: string; tag: string };
 	animation_canceled: { name: string };
 }
 
@@ -65,6 +66,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: ({ method }) =>
 			`Call ${method} once the element is on the page: in an attachment, an effect or an event handler, not while the component is being built or after the element was removed.`,
 		docs: "element_not_on_page",
+	},
+	element_not_shown: {
+		message: ({ method, tag }) =>
+			`The <${tag}> is in a list row Lynx has not shown yet, so its ${method} cannot run: Lynx makes a row's elements only when it shows the row.`,
+		fix: ({ method }) =>
+			`Call ${method} once Lynx shows the row, for example from the row's layoutchange event.`,
+		docs: "element_not_shown",
 	},
 	animation_canceled: {
 		message: ({ name }) => `The animation ${name} was canceled before it finished.`,

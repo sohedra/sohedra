@@ -255,6 +255,15 @@ export function createApplier({ page, dispatch, openCell, report }: ApplierOptio
 			case OpCode.ListUpdate:
 				lists.update(op[1], { info: op[2], items: op[3], added: op[4], removed: op[5] });
 				return;
+			case OpCode.SetStyles:
+				styles.set(get(op[1]), op[2]);
+				return;
+			case OpCode.Animate: {
+				const element = get(op[1]);
+				flattening.hold(element);
+				mainThread.__ElementAnimate(element, op[2]);
+				return;
+			}
 		}
 	}
 

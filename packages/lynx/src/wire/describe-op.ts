@@ -36,5 +36,9 @@ export function describeOp(op: Op, tagOf?: TagOf): string {
 			return `release ${at(op[1])}`;
 		case OpCode.ListUpdate:
 			return `update the list ${at(op[1])}`;
+		case OpCode.SetStyles:
+			return `set styles from code on ${at(op[1])}`;
+		case OpCode.Animate:
+			return `animate ${at(op[1])}`;
 	}
 }
