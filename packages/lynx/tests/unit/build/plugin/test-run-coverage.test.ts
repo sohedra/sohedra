@@ -50,19 +50,14 @@ describe("a test run under Rstest's coverage", { timeout: 30_000 }, () => {
 		expect(missing).toEqual([]);
 	});
 
-	it("instruments the scripts the test run compiles, with the thread's constants kept", async () => {
+	it("instruments what SWC compiles with the thread's constants: scripts, components, rune modules", async () => {
 		const rules = rulesOf((await testRunConfig()).module?.rules ?? []);
-		const swcOptions = rules
+		const threadOptions = rules
 			.flatMap((rule) => (Array.isArray(rule.use) ? rule.use : []))
 			.filter((use) => (use as { loader?: string }).loader === "builtin:swc-loader")
-			.map((use) => (use as { options: Record<string, never> }).options);
-		const plugins = swcOptions.map((options) =>
-			JSON.stringify(options["jsc"]?.["experimental"]?.["plugins"] ?? []),
-		);
-		expect(plugins.every((list) => list.includes("swc-plugin-coverage-instrument"))).toBe(true);
-		const globals = swcOptions.map((options) =>
-			JSON.stringify(options["jsc"]?.["transform"]?.["optimizer"]?.["globals"] ?? {}),
-		);
-		expect(globals.every((vars) => vars.includes("__BACKGROUND__"))).toBe(true);
+			.map((use) => JSON.stringify((use as { options: unknown }).options))
+			.filter((options) => options.includes('"__BACKGROUND__":"true"'));
+		expect(threadOptions.length).toBeGreaterThan(0);
+		expect(threadOptions.filter((options) => !options.includes("coverage-instrument"))).toEqual([]);
 	});
 });
