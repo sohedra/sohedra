@@ -18,7 +18,7 @@ exports[`the background's catalogue > list_item_key_object: the message 1`] = `
 "A <list-item> has an object as its item-key, and Lynx reads an item-key as text.
 src/Feed.svelte:12:2
 
-Give item-key a string or a number that names the item, such as its id: item-key={item.id}.
+Key the item with a string or a number that names it, such as its id: {#each items as item (item.id)}, or item-key={item.id}.
 https://sohedra.com/e/list_item_key_object"
 `;
 
