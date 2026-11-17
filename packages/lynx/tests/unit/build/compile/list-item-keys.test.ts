@@ -29,6 +29,15 @@ describe("item-key from a keyed {#each}", () => {
 		expect(mainThread.code).toContain("$.attr('item-key', String(index))");
 	});
 
+	it("in a development build, reaches the background's renderer as it is, which writes it as text and warns about an object", async () => {
+		const source = each("<list-item>{row.id}</list-item>");
+		const background = await component(source, { thread: "background", development: true });
+		const mainThread = await component(source, { thread: "main-thread", development: true });
+		expect(background.code).toContain("$.set_attribute(list_item, 'item-key', $.get(row).id)");
+		expect(background.code).not.toContain("String(");
+		expect(mainThread.code).toContain("$.attr('item-key', String(row.id))");
+	});
+
 	it("is any expression the key is", async () => {
 		const { code } = await component(each("<list-item></list-item>", "(row.id + '-x')"));
 		expect(code).toContain("String($.get(row).id + '-x')");

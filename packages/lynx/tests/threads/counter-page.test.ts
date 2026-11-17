@@ -6,6 +6,7 @@ import { describe, expect, it } from "@rstest/core";
 import { readGlobal } from "../../src/testing/globals.ts";
 import { PATCH_METHOD } from "../../src/wire/index.ts";
 import Counter from "../fixtures/threads/Counter.svelte";
+import Optional from "../fixtures/threads/Optional.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 async function counter() {
@@ -81,6 +82,19 @@ describe("a counter page", () => {
 		page.updateData({ theme: "light" }, { type: 1 });
 		await page.settle();
 		expect(page.lynx.background.__initData).toEqual({ theme: "light" });
+	});
+
+	it("is torn down before the engine's destroy call returns, and sends nothing after", async () => {
+		let cleaned = false;
+		const page = startSveltePage(Optional, {
+			props: () => ({ show: true, onclean: () => (cleaned = true) }),
+		});
+		await page.settle();
+		const sent = page.patches.length;
+		page.asBackground(() => (page.app["callDestroyLifetimeFun"] as () => void)());
+		expect(cleaned).toBe(true);
+		await page.settle();
+		expect(page.patches.length).toBe(sent);
 	});
 
 	it("unmounts the app at the end of its life, and the main thread drops its listeners", async () => {

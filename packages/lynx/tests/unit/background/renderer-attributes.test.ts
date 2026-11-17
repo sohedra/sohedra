@@ -113,3 +113,12 @@ describe("text", () => {
 		expect(ops()).toEqual([]);
 	});
 });
+
+describe("an item-key", () => {
+	it("goes to the main thread as text, a number written out", () => {
+		const { renderer, element, ops } = setup();
+		renderer.setAttribute(element, "item-key", 3);
+		renderer.setAttribute(element, "item-key", "a");
+		expect(ops().map((op) => op[3])).toEqual(["3", "a"]);
+	});
+});

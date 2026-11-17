@@ -52,9 +52,10 @@ export interface TestPage {
 	 */
 	updateData(data: Record<string, unknown>, options?: { type?: number }): void;
 	/**
-	 * The host reloads the page, with data to add: the engine posts it to the app's `onAppReload`
-	 * (js_app.cc, OnAppReload), then updates the main thread's page with `reloadTemplate`, in one
-	 * task: the background hears of it after the main thread.
+	 * The host reloads the page, with data to add: the engine removes the main thread's components,
+	 * posts the data to the app's `onAppReload` (js_app.cc, OnAppReload), then updates the main
+	 * thread's page with `reloadTemplate`, in one task (core/renderer/template_assembler.cc,
+	 * ReloadTemplate): the background hears of it after the main thread.
 	 */
 	reload(data?: Record<string, unknown>): void;
 	/**
@@ -153,6 +154,7 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 			toBackground("updateCardData", data, { type: updateOptions.type ?? 0 });
 		},
 		reload(data = {}) {
+			engine.lifecycle.removeComponents();
 			toBackground("onAppReload", data);
 			engine.lifecycle.update(data, { reloadTemplate: true });
 		},

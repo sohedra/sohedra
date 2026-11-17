@@ -23,12 +23,15 @@ describe("new data for the page", () => {
 		expect(page.patches.at(-1)).toMatchObject({ items: [], dataUpdated: true });
 	});
 
-	it("on the main thread's path: an update before the background's page is shown", async () => {
+	it("on the main thread's path: an update before the background's page is shown flags the first patch's flush", async () => {
 		const page = startSveltePage(Counter);
-		// The background's first patch is on its way; the main thread updates its own page.
+		// The background's first patch is on its way: the page shows nothing of the data yet.
+		const flushes = page.engine.flushes.length;
 		page.updateData({ theme: "dark" });
-		expect(flagged(page.engine.flushes.at(-1))).toBe(true);
+		expect(page.engine.flushes.slice(flushes).map(flagged)).toEqual([false]);
 		await page.settle();
+		// The first patch's flush, then the background's patch for the data.
+		expect(page.engine.flushes.slice(flushes + 1).map(flagged)).toEqual([true, true]);
 		page.engine.lifecycle.update({ theme: "light" });
 		expect(flagged(page.engine.flushes.at(-1))).toBe(false);
 	});

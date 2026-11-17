@@ -7,6 +7,7 @@ import { describe, expect, it } from "@rstest/core";
 import { readGlobal } from "../../src/testing/globals.ts";
 import { encodeToBackground, OpCode, PATCH_METHOD, TO_BACKGROUND } from "../../src/wire/index.ts";
 import Counter from "../fixtures/threads/Counter.svelte";
+import Optional from "../fixtures/threads/Optional.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 async function counter() {
@@ -83,5 +84,33 @@ describe("a message of another page", () => {
 		await page.settle();
 		expect(page.engine.texts()[0]).toBe("Taps: 1 (odd)");
 		expect(stale.type).toBe(TO_BACKGROUND.events);
+	});
+});
+
+describe("a reload into an app that shows nothing", () => {
+	it("still sends a patch of the new page, which takes the old page off the screen", async () => {
+		const page = startSveltePage(Optional, { props: (data) => ({ show: data["empty"] !== true }) });
+		await page.settle();
+		expect(page.engine.texts()).toEqual(["shown"]);
+		const before = page.patches.length;
+		page.reload({ empty: true });
+		await page.settle();
+		expect(page.patches.slice(before)).toEqual([expect.objectContaining({ page: 1, items: [] })]);
+		expect(page.engine.texts()).toEqual([]);
+		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("a reload during a reload", () => {
+	it("keeps the old page on screen until the newest page's patch", async () => {
+		const page = await counter();
+		page.reload();
+		page.reload();
+		expect(page.engine.texts()[0]).toBe("Taps: 1 (odd)");
+		await page.settle();
+		expect(page.engine.texts()).toEqual(["Taps: 0 (even)", "Tap me"]);
+		expect(page.patches.at(-1)!.page).toBe(2);
+		expect(page.engine.listenerCount()).toBe(1);
+		expect(page.errors).toEqual([]);
 	});
 });

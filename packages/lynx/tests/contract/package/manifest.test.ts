@@ -26,8 +26,8 @@ const ENTRIES = [
 
 /**
  * The internal entries: what compiled code and the build import by name, and the page's start,
- * which the page's entry imports until the public entry has it. The page's start resolves by
- * thread, to the main thread's copy under `worker`.
+ * which the page's entry imports until the public page entry replaces it and it is deleted. The
+ * page's start resolves by thread, to the main thread's copy under `worker`.
  */
 const INTERNAL = [
 	"./internal/renderer",
@@ -69,12 +69,12 @@ describe("exports", () => {
 	it("starts the page through an entry that resolves by thread, built and as source", () => {
 		expect(manifest.exports["./internal/page"]).toEqual({
 			worker: "./src/first-frame/page.ts",
-			default: "./src/background/index.ts",
+			default: "./src/background/page-entry.ts",
 		});
 		expect(manifest.publishConfig.exports["./internal/page"]).toEqual({
-			types: "./lib/background/index.d.ts",
+			types: "./lib/background/page-entry.d.ts",
 			worker: "./lib/first-frame/page.js",
-			default: "./lib/background/index.js",
+			default: "./lib/background/page-entry.js",
 		});
 	});
 

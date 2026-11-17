@@ -3,8 +3,10 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import EachKey from "../fixtures/threads/EachKey.svelte";
 import ItemKey from "../fixtures/threads/ItemKey.svelte";
 import Loose from "../fixtures/threads/Loose.svelte";
+import LooseRows from "../fixtures/threads/LooseRows.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 describe("a development warning", () => {
@@ -17,6 +19,28 @@ describe("a development warning", () => {
 				message: expect.stringMatching(
 					/^A <list-item> has an object as its item-key.*\n.*ItemKey\.svelte:7:\d+/,
 				),
+			}),
+		]);
+	});
+
+	it("for an {#each} key that is an object, naming where the list item is", async () => {
+		const page = startSveltePage(EachKey);
+		await page.settle();
+		expect(page.warnings).toEqual([
+			expect.objectContaining({
+				code: "list_item_key_object",
+				message: expect.stringMatching(/\n.*EachKey\.svelte:7:\d+/),
+			}),
+		]);
+	});
+
+	it("for text outside a text element, once for its place however many times it is made", async () => {
+		const page = startSveltePage(LooseRows);
+		await page.settle();
+		expect(page.warnings).toEqual([
+			expect.objectContaining({
+				code: "text_outside_text",
+				message: expect.stringContaining('"a"'),
 			}),
 		]);
 	});
