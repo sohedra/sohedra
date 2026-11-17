@@ -134,6 +134,13 @@ export const checks: Checks = {
 			/export function props_id\(renderer\) \{\n\tconst uid = renderer\.global\.uid\(\);/,
 		);
 		expect(readSvelte("src/internal/client/index.js")).toContain("props_id,");
+		// The server's prefix is `render`'s `idPrefix` and a dash; the client's count is on the global.
+		expect(readSvelte("src/internal/server/renderer.js")).toContain(
+			"options.idPrefix ? options.idPrefix + '-' : ''",
+		);
+		expect(readSvelte("src/internal/client/dom/template.js")).toContain(
+			"(globalThis.__svelte ??= {}).uid ??= 1;",
+		);
 	},
 
 	"spring-source": () => {
