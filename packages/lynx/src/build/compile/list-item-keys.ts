@@ -1,6 +1,7 @@
 // A list item needs a key, because Lynx's list tracks its cells by `item-key`. A `<list-item>`
 // written directly inside a keyed `{#each}` takes the block's key expression as its `item-key`,
-// so a list has the one key Svelte already asks for. An `item-key` written on the element wins.
+// so a list has the one key Svelte already asks for. Lynx's list drops an item whose key is not a
+// non-empty string, so the key goes through `String`. An `item-key` written on the element wins.
 // A `<list-item>` with no key at all (not directly in a keyed block, no `item-key`, no spread
 // that could carry one) is a warning in a development build.
 
@@ -42,7 +43,7 @@ export const listItemKeys: Pass = ({ source, filename, ast, thread, development,
 			edits.push({
 				start: at,
 				end: at,
-				text: ` ${KEY}={${source.slice(key.start, key.end)}}`,
+				text: ` ${KEY}={String(${source.slice(key.start, key.end)})}`,
 			});
 			continue;
 		}
