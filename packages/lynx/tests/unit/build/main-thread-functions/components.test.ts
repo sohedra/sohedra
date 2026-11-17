@@ -113,7 +113,7 @@ describe("captured values of a component", () => {
 	it("read captured $state objects through a snapshot, so changes inside them count", async () => {
 		const { code } = await component(source, { thread: "background" });
 		expect(code).toContain("items: $.snapshot(items)");
-		expect(code).toContain("a: $.snapshot(cfg.a)");
+		expect(code).toContain("a: $.snapshot(cfg?.a)");
 		expect(code).not.toContain("$.snapshot(threshold");
 	});
 

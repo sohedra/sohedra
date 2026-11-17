@@ -16,7 +16,7 @@ describe("a method call through a captured object", () => {
 	it("captures the object the method is called on, not the method", () => {
 		expect(captures(body("hold.spring.set(2);"))).toEqual([["hold.spring"]]);
 		expect(compileScript(body("hold.spring.set(2);")).code).toContain(
-			"_c: { hold: { spring: hold.spring } }",
+			"_c: { hold: { spring: hold?.spring } }",
 		);
 		expect(compileScript(body("hold.spring.set(2);")).code).not.toContain("hold.spring.set");
 	});

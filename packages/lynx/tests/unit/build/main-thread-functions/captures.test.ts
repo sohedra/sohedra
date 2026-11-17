@@ -332,6 +332,22 @@ describe("what a main-thread function captures", () => {
 		});
 	});
 
+	it("a member the body reads only under a condition, without throwing when the function is made", () => {
+		const source = `let panel = null;\nlet isOpen = false;\nexport function f() {\n  "main thread";\n  return isOpen ? panel.size.height : 0;\n}\n`;
+		const background = compile(source, "background").code;
+		expect(readOutput(background).functions[0]!.captures).toEqual(["isOpen", "panel.size.height"]);
+		expect(evaluate(`${background.replace("export ", "")}\nreturn f;`)).toMatchObject({
+			_c: { isOpen: false, panel: { size: {} } },
+		});
+		// Where the object is there, the member's value is captured.
+		const set = source.replace("let panel = null;", "let panel = { size: { height: 4 } };");
+		expect(
+			evaluate(`${compile(set, "background").code.replace("export ", "")}\nreturn f;`),
+		).toMatchObject({
+			_c: { panel: { size: { height: 4 } } },
+		});
+	});
+
 	it("not itself: it calls itself by its own name", () => {
 		const output = compile(`
         const limit = 3;
@@ -385,12 +401,12 @@ describe("what a main-thread function captures", () => {
       <view main-thread:onscroll={onScroll} main-thread:ontap={plain}></view>`;
 		const background = (await component(source, { thread: "background" })).code;
 		expect(background).toMatch(
-			/_c: \{\s*\$count: \$count\(\),\s*items: \$\.snapshot\(items\),\s*cfg: \{ a: \$\.snapshot\(cfg\.a\) \},\s*threshold: threshold\(\)\s*\}/,
+			/_c: \{\s*\$count: \$count\(\),\s*items: \$\.snapshot\(items\),\s*cfg: \{ a: \$\.snapshot\(cfg\?\.a\) \},\s*threshold: threshold\(\)\s*\}/,
 		);
 		// The first frame is drawn once: nothing to follow.
 		const mainThread = (await component(source, { thread: "main-thread" })).code;
 		expect(mainThread).toMatch(
-			/let onScroll = \{\s*_c: \{\s*\$count: [\s\S]*?,\s*items,\s*cfg: \{ a: cfg\.a \},\s*threshold\s*\}/,
+			/let onScroll = \{\s*_c: \{\s*\$count: [\s\S]*?,\s*items,\s*cfg: \{ a: cfg\?\.a \},\s*threshold\s*\}/,
 		);
 		expect(registrationsOf(mainThread)).toContain(
 			'function (event: { detail: { scrollTop: number } }) {\nlet { $count, items, cfg, threshold } = this["_c"];',
