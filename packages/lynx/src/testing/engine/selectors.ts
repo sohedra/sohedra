@@ -8,7 +8,9 @@ import type { ElementState } from "./state.ts";
 
 /** One part of a compound selector: a tag, `#id`, `.class` or an attribute test. */
 type Part =
-	| { kind: "tag" | "id" | "class"; name: string }
+	| { kind: "tag"; name: string }
+	| { kind: "id"; name: string }
+	| { kind: "class"; name: string }
 	| { kind: "attribute"; name: string; test: (value: string) => boolean };
 
 /** A compound selector, and how the next one relates to it: a descendant or a child. */
@@ -63,7 +65,7 @@ function partsOf(compound: string, selector: string): Part[] {
 		const name = kind === "tag" ? piece : piece.slice(1);
 		if (kind === "tag" && index > 0) throw refused(selector, `${piece} is not where a tag goes`);
 		if (!NAME.test(name)) throw refused(selector, `${piece} is not a name it knows`);
-		parts.push({ kind, name } as Part);
+		parts.push({ kind, name });
 	}
 	return parts;
 }
