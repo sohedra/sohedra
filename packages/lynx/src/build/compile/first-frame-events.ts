@@ -8,7 +8,7 @@
 // listener for (an image's `load`, a scroll-view's `scroll`), and the first frame's listeners
 // keep such events until the background's handlers take them.
 
-import { nodes } from "../../svelte/build/index.ts";
+import { attributeName, attributesOf, attributeValue, nodes } from "../../svelte/build/index.ts";
 import type { AnyNode } from "../../svelte/build/index.ts";
 import { lynxEventName, MAIN_THREAD_PREFIX } from "../../wire/index.ts";
 import type { Edit } from "../source-map/edits.ts";
@@ -18,15 +18,10 @@ import type { Pass } from "./pass.ts";
  * Svelte's rule: an `on…` attribute with a single expression is an event, whatever follows `on`.
  * `name` is the attribute's name without its `main-thread:` prefix.
  */
-export function isEventAttribute(
-	attribute: AnyNode,
-	name: string = attribute.name as string,
-): boolean {
-	if (attribute.type !== "Attribute" || typeof name !== "string" || !name.startsWith("on"))
-		return false;
-	const value = attribute.value as AnyNode | AnyNode[] | true;
-	if (value === true) return false;
-	return !Array.isArray(value) || (value.length === 1 && value[0]!.type === "ExpressionTag");
+export function isEventAttribute(attribute: AnyNode, name: string): boolean {
+	if (attribute.type !== "Attribute" || !name.startsWith("on")) return false;
+	const value = attributeValue(attribute);
+	return value !== true && value.length === 1 && value[0]!.type === "ExpressionTag";
 }
 
 /**
@@ -39,8 +34,8 @@ export const firstFrameEvents: Pass = ({ source, ast, thread }) => {
 	const edits: Edit[] = [];
 	for (const record of nodes(ast.fragment)) {
 		if (record.type !== "RegularElement" && record.type !== "SvelteElement") continue;
-		for (const attribute of record.attributes as AnyNode[]) {
-			const written = attribute.name as string;
+		for (const attribute of attributesOf(record)) {
+			const written = attributeName(attribute);
 			// `main-thread:ontap` is the event of a main-thread function: the prefix stays.
 			const prefix = written.startsWith(MAIN_THREAD_PREFIX) ? MAIN_THREAD_PREFIX : "";
 			const name = written.slice(prefix.length);

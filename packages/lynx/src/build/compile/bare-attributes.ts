@@ -6,8 +6,7 @@
 // Only elements (`RegularElement`): a component's bare prop is already `true` in Svelte, and
 // `<svelte:element>` and the like are left alone.
 
-import { nodes } from "../../svelte/build/index.ts";
-import type { AnyNode } from "../../svelte/build/index.ts";
+import { attributesOf, nodes } from "../../svelte/build/index.ts";
 import type { Pass } from "./pass.ts";
 
 /**
@@ -19,7 +18,7 @@ export const bareAttributes: Pass = ({ ast }) => {
 	const edits = [];
 	for (const record of nodes(ast.fragment)) {
 		if (record.type !== "RegularElement") continue;
-		for (const attribute of record.attributes as AnyNode[]) {
+		for (const attribute of attributesOf(record)) {
 			if (attribute.type === "Attribute" && attribute.value === true) {
 				const end = attribute.end!;
 				edits.push({ start: end, end, text: "={true}" });

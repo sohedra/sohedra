@@ -176,6 +176,7 @@ function parseModule(source: SourceText, root: string): Node {
 	try {
 		return scriptParser(root)(source.text, isTypeScript(source.file));
 	} catch (error) {
+		// Boundary: a thrown value is unknown; the parser's errors carry a position and a message.
 		const { pos, message } = error as { pos?: number; message: string };
 		if (pos === undefined) throw error;
 		// acorn ends its messages with the place: " (3:14)".

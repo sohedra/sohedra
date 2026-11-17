@@ -9,7 +9,7 @@
 //
 // Only an `import()` of a string: the build cannot follow another kind.
 
-import { nodes, scriptProgram } from "../../svelte/build/index.ts";
+import { field, identifierName, nodes, scriptProgram } from "../../svelte/build/index.ts";
 import type { AnyNode } from "../../svelte/build/index.ts";
 import type { Pass } from "./pass.ts";
 
@@ -19,16 +19,14 @@ const KEEPER = "__svelteLynxEffectImports";
 /** `$effect`, `$effect.pre` or `$effect.root`, as the callee of a call. */
 function isEffectCall(node: AnyNode): boolean {
 	if (node.type !== "CallExpression") return false;
-	const callee = node.callee as AnyNode;
-	if (callee.type === "Identifier") return EFFECTS.has(callee.name as string);
+	const callee = field(node, "callee");
+	if (callee === undefined) return false;
+	const name = identifierName(callee);
+	if (name !== undefined) return EFFECTS.has(name);
 	if (callee.type !== "MemberExpression" || callee.computed) return false;
-	const object = callee.object as AnyNode;
-	const property = callee.property as AnyNode;
-	return (
-		object.type === "Identifier" &&
-		property.type === "Identifier" &&
-		EFFECTS.has(`${object.name as string}.${property.name as string}`)
-	);
+	const object = identifierName(field(callee, "object"));
+	const property = identifierName(field(callee, "property"));
+	return object !== undefined && property !== undefined && EFFECTS.has(`${object}.${property}`);
 }
 
 /**
@@ -45,8 +43,8 @@ export const effectImports: Pass = ({ ast, thread }) => {
 	for (const node of nodes(program)) {
 		if (!isEffectCall(node)) continue;
 		first ??= node.start;
-		for (const inner of nodes(node.arguments)) {
-			const target = inner.type === "ImportExpression" ? (inner.source as AnyNode) : undefined;
+		for (const inner of nodes(field(node, "arguments"))) {
+			const target = inner.type === "ImportExpression" ? field(inner, "source") : undefined;
 			if (target?.type === "Literal" && typeof target.value === "string")
 				specifiers.add(JSON.stringify(target.value));
 		}

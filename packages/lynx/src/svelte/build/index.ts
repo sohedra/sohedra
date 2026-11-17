@@ -1,6 +1,16 @@
 // Every touch of Svelte's compiler and source files, in Node.
 
-export { nodes, optionAttributes, scriptProgram } from "./ast.ts";
+export {
+	attributeName,
+	attributesOf,
+	attributeValue,
+	bodyNodes,
+	field,
+	identifierName,
+	nodes,
+	optionAttributes,
+	scriptProgram,
+} from "./ast.ts";
 export type { AnyNode, ScriptProgram } from "./ast.ts";
 export { svelteCompiler } from "./compiler.ts";
 export type {

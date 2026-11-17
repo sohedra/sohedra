@@ -49,8 +49,8 @@ export function compileRuneModule(source: string, options: ModuleOptions): Compi
 	} catch (error) {
 		throw compileError(error, text);
 	}
-	// `compileModule` takes no input map: compose it with the TypeScript pass's. Boundary:
-	// Svelte's map is a source map.
+	// `compileModule` takes no input map: compose it with the TypeScript pass's.
+	// Boundary: Svelte's map is a source map, typed loosely.
 	const map = result.js.map as SourceMap;
 	return {
 		code: result.js.code,

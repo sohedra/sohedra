@@ -77,10 +77,7 @@ function guardFor(options: EmitOptions, called: Map<string, Node>): Guard | unde
 	// A main-thread function of this script is an object by the time it is called, not a plain function.
 	const own = new Set<string>();
 	for (const { node, parent } of options.functions.found) {
-		const name =
-			node.type === "FunctionDeclaration"
-				? node.id?.name
-				: (parent?.id?.name as string | undefined);
+		const name = node.type === "FunctionDeclaration" ? node.id?.name : parent?.id?.name;
 		if (name !== undefined) own.add(name);
 	}
 	const names = new Set([...called.keys()].filter((name) => !own.has(name)));

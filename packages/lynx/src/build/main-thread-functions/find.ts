@@ -242,7 +242,7 @@ export function findFunctions(options: {
 		const block = node.body.type === "BlockStatement";
 		if (block) for (const statement of node.body.body) declare(statement, names, true, true);
 		// Its own name, unless a parameter or the body has taken it.
-		const self = node.id && !names.has(node.id.name) ? (node.id.name as string) : undefined;
+		const self = node.id && !names.has(node.id.name) ? node.id.name : undefined;
 		if (self !== undefined) names.add(self);
 
 		const outermost = !current && isMainThreadFunction(node);

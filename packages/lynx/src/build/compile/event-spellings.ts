@@ -3,8 +3,7 @@
 // writes `ontap`, `oncatchtap`, `ontapcapture` and `oncatchtapcapture`, with one grammar
 // everywhere, and a listener on the page's root is `on(root, …)`.
 
-import { nodes } from "../../svelte/build/index.ts";
-import type { AnyNode } from "../../svelte/build/index.ts";
+import { attributeName, attributesOf, attributeValue, nodes } from "../../svelte/build/index.ts";
 import { MAIN_THREAD_PREFIX, removedEventSpelling } from "../../wire/index.ts";
 import { buildError, placeAt } from "../diagnostics/messages.ts";
 import type { Pass } from "./pass.ts";
@@ -13,13 +12,12 @@ import type { Pass } from "./pass.ts";
 export const eventSpellings: Pass = ({ source, filename, ast }) => {
 	for (const record of nodes(ast.fragment)) {
 		if (record.type !== "RegularElement" && record.type !== "SvelteElement") continue;
-		for (const attribute of record.attributes as AnyNode[]) {
-			if (attribute.type !== "Attribute" || attribute.value === true) continue;
-			const value = attribute.value as AnyNode | AnyNode[];
+		for (const attribute of attributesOf(record)) {
+			if (attribute.type !== "Attribute") continue;
+			const value = attributeValue(attribute);
 			// A handler is one expression; a string is not an event.
-			const handler = Array.isArray(value) ? value : [value];
-			if (handler.length !== 1 || handler[0]!.type !== "ExpressionTag") continue;
-			const name = attribute.name as string;
+			if (value === true || value.length !== 1 || value[0]!.type !== "ExpressionTag") continue;
+			const name = attributeName(attribute);
 			const prefix = name.startsWith(MAIN_THREAD_PREFIX) ? MAIN_THREAD_PREFIX : "";
 			const removed = removedEventSpelling(name.slice(prefix.length));
 			if (removed === undefined) continue;

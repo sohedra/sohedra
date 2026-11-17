@@ -33,9 +33,9 @@ export function scriptParser(root: string): ScriptParser {
 		const fromSvelte = createRequire(svelte);
 		// Boundary: Svelte's own dependencies are loaded by name and have no types here.
 		const acorn = fromSvelte("acorn") as Acorn;
-		const typed = acorn.Parser.extend(
-			(fromSvelte("@sveltejs/acorn-typescript") as AcornTypeScript).tsPlugin(),
-		);
+		// Boundary: as above, the TypeScript plugin has no type here.
+		const plugin = fromSvelte("@sveltejs/acorn-typescript") as AcornTypeScript;
+		const typed = acorn.Parser.extend(plugin.tsPlugin());
 		parser = (source, typescript) => {
 			const read = (sourceType: "module" | "script"): unknown =>
 				(typescript ? typed : acorn.Parser).parse(source, {

@@ -18,18 +18,58 @@ export function scriptProgram(script: ComponentAst["instance"]): ScriptProgram |
 	return script ? (script.content as unknown as ScriptProgram) : undefined;
 }
 
-/** The attributes of `<svelte:options>`. */
-export function optionAttributes(ast: ComponentAst): AnyNode[] {
-	// Boundary: the AST's node types are read by shape.
-	return (ast.options?.attributes ?? []) as unknown as AnyNode[];
-}
-
 /** A node of Svelte's AST, read generically. */
 export interface AnyNode {
 	type?: unknown;
 	start?: number;
 	end?: number;
 	[key: string]: unknown;
+}
+
+/** The attributes of `<svelte:options>`. */
+export function optionAttributes(ast: ComponentAst): AnyNode[] {
+	// Boundary: Svelte's node types are narrower than the shapes the build reads them by.
+	return (ast.options?.attributes ?? []) as unknown as AnyNode[];
+}
+
+/** The attributes of an element node (`RegularElement`, `SvelteElement`). */
+export function attributesOf(element: AnyNode): AnyNode[] {
+	// Boundary: the node is read by shape; every element has this list.
+	return element.attributes as AnyNode[];
+}
+
+/** An attribute's name, with any `main-thread:` prefix. */
+export function attributeName(attribute: AnyNode): string {
+	// Boundary: the node is read by shape; every attribute has a string name.
+	return attribute.name as string;
+}
+
+/**
+ * An attribute's value: `true` for a bare attribute, otherwise the list of its parts (one
+ * `ExpressionTag` for `{x}`, `Text` and tags for a quoted value).
+ */
+export function attributeValue(attribute: AnyNode): AnyNode[] | true {
+	// Boundary: Svelte gives one node or a list, by how the value is written.
+	const value = attribute.value as AnyNode | AnyNode[] | true;
+	return value === true || Array.isArray(value) ? value : [value];
+}
+
+/** The child node under `key`, such as a call's `callee` or an `{#each}` block's `key`. */
+export function field(node: AnyNode, key: string): AnyNode | undefined {
+	// Boundary: the node is read by shape; the caller names a field that holds a node.
+	return node[key] as AnyNode | undefined;
+}
+
+/** The nodes of a block's body, such as an `{#each}` block's. */
+export function bodyNodes(block: AnyNode): AnyNode[] {
+	// Boundary: the node is read by shape; a block's body is a fragment of nodes.
+	return (field(block, "body")?.nodes ?? []) as AnyNode[];
+}
+
+/** The name of an `Identifier` node, or `undefined` for any other node. */
+export function identifierName(node: AnyNode | undefined): string | undefined {
+	// Boundary: the node is read by shape; an identifier's name is a string.
+	return node?.type === "Identifier" ? (node.name as string) : undefined;
 }
 
 /**
@@ -43,7 +83,7 @@ export function* nodes(node: unknown): Generator<AnyNode> {
 		for (const child of node) yield* nodes(child);
 		return;
 	}
-	// Boundary: the AST's node types are read by shape.
+	// Boundary: the AST's nodes are read by shape; this is the walk's one view of them.
 	const record = node as AnyNode;
 	yield record;
 	for (const key of Object.keys(record)) {

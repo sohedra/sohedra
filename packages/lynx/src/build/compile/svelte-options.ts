@@ -5,19 +5,19 @@
 //   another renderer module: that is Svelte's to read.
 // - `css="injected"` writes the styles into the page with DOM code.
 
-import { optionAttributes } from "../../svelte/build/index.ts";
+import { attributeValue, field, optionAttributes } from "../../svelte/build/index.ts";
 import type { AnyNode } from "../../svelte/build/index.ts";
 import { buildError, placeAt } from "../diagnostics/messages.ts";
 import type { Pass } from "./pass.ts";
 
 /** The value an attribute of `<svelte:options>` is written with, when it is a literal. */
 function literalValue(attribute: AnyNode): unknown {
-	const value = attribute.value as AnyNode | AnyNode[];
-	const only = Array.isArray(value) ? value[0] : value;
+	const value = attributeValue(attribute);
+	const only = value === true ? undefined : value[0];
 	if (only?.type === "Text") return only.data;
 	if (only?.type === "ExpressionTag") {
-		const expression = only.expression as AnyNode;
-		if (expression.type === "Literal") return expression.value;
+		const expression = field(only, "expression");
+		if (expression?.type === "Literal") return expression.value;
 	}
 	return undefined;
 }

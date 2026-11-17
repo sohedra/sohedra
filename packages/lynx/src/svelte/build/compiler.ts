@@ -18,5 +18,6 @@ export type ComponentAst = AST.Root;
 /** The Svelte compiler of the app in `root`. */
 export function svelteCompiler(root: string): SvelteCompiler {
 	// Boundary: a module loaded by name has no type here.
+	// Boundary: a module loaded by name has no type; this one is Svelte's compiler.
 	return createRequire(path.join(root, "package.json"))("svelte/compiler") as SvelteCompiler;
 }

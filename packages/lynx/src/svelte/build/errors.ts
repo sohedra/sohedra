@@ -12,12 +12,10 @@ export interface Diagnostic {
 
 /** Whether `value` is an error or a warning of Svelte's compiler. */
 export function isDiagnostic(value: unknown): value is Diagnostic {
-	return (
-		value !== null &&
-		typeof value === "object" &&
-		typeof (value as Diagnostic).code === "string" &&
-		typeof (value as Diagnostic).message === "string"
-	);
+	if (value === null || typeof value !== "object") return false;
+	// Boundary: a thrown value is unknown; its two fields are checked before it is used.
+	const { code, message } = value as { code?: unknown; message?: unknown };
+	return typeof code === "string" && typeof message === "string";
 }
 
 /** Svelte appends the link of its docs page, on a line of its own, to the message. */
