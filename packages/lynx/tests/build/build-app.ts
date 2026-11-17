@@ -2,8 +2,8 @@
 // build leaves. One build at a time in a checkout: a lock keeps two test files from building at
 // once, and every build test goes through here.
 //
-// The runtime behind the compiled code's imports is not in this package yet, so a build aliases
-// them to the stubs in tests/fixtures/build/stubs: they let the build resolve; nothing runs.
+// The parts of the runtime not in this package yet (main-thread functions, the window's size) are
+// aliased to the stubs in tests/fixtures/build/stubs: they let the build resolve; nothing runs.
 
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -15,7 +15,6 @@ import type { Rspack, RsbuildConfig } from "@rsbuild/core";
 
 import { pluginSvelteLynx } from "../../src/build/plugin/index.ts";
 import type { PluginSvelteLynxOptions } from "../../src/build/plugin/index.ts";
-import { RUNTIME_FILES } from "../../src/build/plugin/layers.ts";
 import { PACKAGE_NAME } from "../../src/wire/index.ts";
 
 const FIXTURES = path.resolve(import.meta.dirname, "../fixtures/build");
@@ -57,11 +56,8 @@ export interface AppBuild {
 
 const STUBS = path.join(FIXTURES, "stubs");
 const ALIASES: Record<string, string> = {
-	[`${PACKAGE_NAME}/internal/renderer`]: path.join(STUBS, "renderer.ts"),
 	[`${PACKAGE_NAME}/internal/main-thread-functions`]: path.join(STUBS, "main-thread-functions.ts"),
 	[`${PACKAGE_NAME}/internal/window-size`]: path.join(STUBS, "window-size.ts"),
-	[RUNTIME_FILES.serverInternals]: path.join(STUBS, "server-internals.ts"),
-	[RUNTIME_FILES.clientInternals]: path.join(STUBS, "client-internals.ts"),
 };
 
 // The lock lives in this package's own cache folder: one checkout's test files take turns, and
@@ -82,12 +78,12 @@ function isRunning(pid: number): boolean {
 }
 
 /**
- * Wait for this checkout's one build slot. The lock is a file made in one step (`wx`: it fails when
- * it exists), so two processes never both take it. A lock whose holder is gone is renamed away
- * first, and only one process wins that rename. A lock with no pid yet is its holder between
- * creating it and writing it: held.
+ * Waits for this checkout's one build slot, and returns how to give it back. The lock is a file
+ * made in one step (`wx`: it fails when it exists), so two processes never both take it. A lock
+ * whose holder is gone is renamed away first, and only one process wins that rename. A lock with
+ * no pid yet is its holder between creating it and writing it: held.
  */
-async function lock(): Promise<() => void> {
+export async function lock(): Promise<() => void> {
 	for (;;) {
 		try {
 			fs.writeFileSync(LOCK, String(process.pid), { flag: "wx" });
