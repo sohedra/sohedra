@@ -236,3 +236,41 @@ export function elementClass(scope: ElementScope): ElementClass {
 
 	return Element;
 }
+
+/** What `svelteListener` adds or removes listeners with. */
+export interface ListenerOptions {
+	Element: ElementClass;
+	setEvent(element: TreeNode, change: ListenerChange): void;
+	add: boolean;
+}
+
+/**
+ * The renderer's `addEventListener` (or, with `add` false, `removeEventListener`), where Svelte's
+ * `on()` goes: a node listens through its event slots; any other target, such as a media query
+ * list, keeps its own listeners.
+ */
+export function svelteListener({
+	Element,
+	setEvent,
+	add,
+}: ListenerOptions): (
+	target: TreeNode,
+	type: string,
+	handler: Handler,
+	options?: { capture?: boolean },
+) => void {
+	return (target, type, handler, options) => {
+		if (!(target instanceof Element)) {
+			// Boundary: a target Svelte passes that is not a node, such as a media query list.
+			const own = target as unknown as {
+				addEventListener(type: string, handler: Handler, options?: unknown): void;
+				removeEventListener(type: string, handler: Handler, options?: unknown): void;
+			};
+			if (add) own.addEventListener(type, handler, options);
+			else own.removeEventListener(type, handler, options);
+			return;
+		}
+		const { type: lynxType, name } = listenerEvent(type, options?.capture === true);
+		setEvent(target, { type: lynxType, name, handler, add });
+	};
+}

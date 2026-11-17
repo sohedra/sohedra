@@ -9,14 +9,14 @@
 import type { createRenderer } from "svelte/renderer";
 
 import { sourceLocation } from "../../svelte/runtime/index.ts";
-import { listenerEvent, OpCode, ROOT_ID, TEXT_CONTAINERS } from "../../wire/index.ts";
+import { OpCode, ROOT_ID, TEXT_CONTAINERS } from "../../wire/index.ts";
 import type { LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import { background } from "../globals.ts";
 import { warnOnce } from "../report.ts";
-import { elementClass } from "./element.ts";
+import { elementClass, svelteListener } from "./element.ts";
 import type { ElementNode, ListenerChange } from "./element.ts";
-import type { Handler, HandlerRegistry } from "./handlers.ts";
+import type { HandlerRegistry } from "./handlers.ts";
 import type { RendererHost } from "./host.ts";
 import { setInputValue } from "./input.ts";
 import type { InputHost } from "./input.ts";
@@ -329,29 +329,6 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			queue.push([OpCode.SetAttr, element.lynxId, key, attrValue(key, stored)]);
 	}
 
-	/** Svelte routes `on()` here while an effect runs; a target that is not a node keeps its own API. */
-	function listener(add: boolean) {
-		return (
-			target: TreeNode,
-			type: string,
-			handler: Handler,
-			options?: { capture?: boolean },
-		): void => {
-			if (!(target instanceof Element)) {
-				// Boundary: a target Svelte passes that is not a node, such as a media query list.
-				const own = target as unknown as {
-					addEventListener(type: string, handler: Handler, options?: unknown): void;
-					removeEventListener(type: string, handler: Handler, options?: unknown): void;
-				};
-				if (add) own.addEventListener(type, handler, options);
-				else own.removeEventListener(type, handler, options);
-				return;
-			}
-			const { type: lynxType, name } = listenerEvent(type, options?.capture === true);
-			setEvent(target, { type: lynxType, name, handler, add });
-		};
-	}
-
 	return {
 		createRoot() {
 			const made = new Element("page");
@@ -410,7 +387,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		getParent: (node) => node.parent,
 		insert,
 		remove,
-		addEventListener: listener(true),
-		removeEventListener: listener(false),
+		addEventListener: svelteListener({ Element, setEvent, add: true }),
+		removeEventListener: svelteListener({ Element, setEvent, add: false }),
 	};
 }
