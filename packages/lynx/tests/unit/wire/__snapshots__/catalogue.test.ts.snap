@@ -1,0 +1,9 @@
+// Rstest Snapshot v1
+
+exports[`the wire's catalogue > threads_from_different_builds: the message 1`] = `
+"This page's main thread and background thread come from different builds of the app.
+Seen on the main thread: it reads version 1 of what the threads send each other, and got version 2.
+
+Build the app again and reopen the page, so both threads load from one build. If the host caches bundles, clear its cache.
+https://sohedra.com/e/threads_from_different_builds"
+`;
