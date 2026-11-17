@@ -1,5 +1,5 @@
 // Builds a fixture app in this process, through Rsbuild and `pluginSvelteLynx`, and reads what the
-// build leaves. One build at a time on the machine: a lock keeps two test files from building at
+// build leaves. One build at a time in a checkout: a lock keeps two test files from building at
 // once, and every build test goes through here.
 //
 // The runtime behind the compiled code's imports is not in this package yet, so a build aliases
@@ -64,7 +64,11 @@ const ALIASES: Record<string, string> = {
 	[RUNTIME_FILES.clientInternals]: path.join(STUBS, "client-internals.ts"),
 };
 
-const LOCK = path.join(os.tmpdir(), "sohedra-lynx-build.lock");
+// The lock lives in this package's own cache folder: one checkout's test files take turns, and
+// nothing goes in the shared temporary folder, where another user could make or link the path first.
+const LOCK_FOLDER = path.resolve(import.meta.dirname, "../../node_modules/.cache");
+fs.mkdirSync(LOCK_FOLDER, { recursive: true });
+const LOCK = path.join(LOCK_FOLDER, "build-tests.lock");
 
 /** Whether process `pid` is running. */
 function isRunning(pid: number): boolean {
@@ -78,7 +82,7 @@ function isRunning(pid: number): boolean {
 }
 
 /**
- * Wait for the machine's one build slot. The lock is a file made in one step (`wx`: it fails when
+ * Wait for this checkout's one build slot. The lock is a file made in one step (`wx`: it fails when
  * it exists), so two processes never both take it. A lock whose holder is gone is renamed away
  * first, and only one process wins that rename. A lock with no pid yet is its holder between
  * creating it and writing it: held.
