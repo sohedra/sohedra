@@ -40,7 +40,9 @@ describe("the PrimJS regex loader", () => {
 	it("rewrites the tag-name regex in Svelte's utils", async () => {
 		const file = path.join(svelteRoot, "src/utils.js");
 		const { code } = await runLoader(primjsRegexLoader, read("src/utils.js"), { file });
-		expect(code).toContain("REGEX_VALID_TAG_NAME = /^[a-zA-Z][a-zA-Z0-9]*(-[a-zA-Z0-9._-]*)?$/;");
+		expect(code).toMatch(
+			/REGEX_VALID_TAG_NAME =\s*\/\^\[a-zA-Z\]\[a-zA-Z0-9\]\*\(-\[a-zA-Z0-9\._-\]\*\)\?\$\/;/,
+		);
 	});
 
 	it("leaves another file alone", async () => {

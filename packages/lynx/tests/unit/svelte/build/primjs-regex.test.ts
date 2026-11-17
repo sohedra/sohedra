@@ -57,6 +57,8 @@ describe("the regexes PrimJS rejects", () => {
 	it("rewrites the tag-name regex to ASCII letters, digits and the dash set", () => {
 		const file = path.join(svelteRoot, "src/utils.js");
 		const result = rewritePrimjsRegex(fs.readFileSync(file, "utf8"), file);
-		expect(result).toContain("REGEX_VALID_TAG_NAME = /^[a-zA-Z][a-zA-Z0-9]*(-[a-zA-Z0-9._-]*)?$/;");
+		expect(result).toMatch(
+			/REGEX_VALID_TAG_NAME =\s*\/\^\[a-zA-Z\]\[a-zA-Z0-9\]\*\(-\[a-zA-Z0-9\._-\]\*\)\?\$\/;/,
+		);
 	});
 });
