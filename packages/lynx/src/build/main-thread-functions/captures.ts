@@ -23,10 +23,14 @@ export type Captures = Map<string, Capture>;
 
 /**
  * Add a path to the captures. A value captured whole stays whole, and a later, shorter path
- * takes the place of the members under it.
+ * takes the place of the members under it. A member is read through `?.`: the body may read it
+ * only once it has checked something else, so reading it when the function is made must not
+ * throw where the body would not.
  */
 export function capture(captures: Captures, path: Segment[]): void {
-	const value = path.map((segment) => segment.access).join("");
+	const value = path
+		.map(({ access }, index) => (index === 0 ? access : `?.${access.replace(/^\./, "")}`))
+		.join("");
 	let members = captures;
 	for (const [index, { name, key }] of path.entries()) {
 		if (index === path.length - 1) {
