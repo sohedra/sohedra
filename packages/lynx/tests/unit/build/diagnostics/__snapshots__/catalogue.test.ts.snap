@@ -13,7 +13,7 @@ https://sohedra.com/e/animate_directive"
 `;
 
 exports[`the build's catalogue > background_only_in_component: the message 1`] = `
-"A Svelte component imports 'background-only', but every component also renders on the main thread for the first frame.
+"The component src/Card.svelte imports 'background-only', but every component also renders on the main thread for the first frame.
 /app/src/App.svelte:2:3
 
 1: <script>
@@ -132,6 +132,18 @@ Use \`define.mainThread\` or \`define.background\`.
 https://sohedra.com/e/define_thread_unknown"
 `;
 
+exports[`the build's catalogue > encoder_not_handed_over: the message 1`] = `
+"The Lynx encoder that @sohedra/lynx carries could not be given to the template plugin: its LynxEncodePlugin has no encodePool to run the encode step in.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Add an override of @lynx-js/tasm to the exact version in @sohedra/lynx's package.json, install again, and report the error if it stays.
+https://sohedra.com/e/encoder_not_handed_over"
+`;
+
 exports[`the build's catalogue > engine_version_new: the message 1`] = `
 "\`engineVersion\` is '4.4', and the binding's encoder encodes for Lynx 4.3 at most.
 /app/src/App.svelte:2:3
@@ -216,6 +228,18 @@ Write the elements in the markup: a Lynx page has no HTML to parse.
 https://sohedra.com/e/html_tag"
 `;
 
+exports[`the build's catalogue > iife_ignored: the message 1`] = `
+"\`output.iife\` is false for both threads, so your value (true) is ignored.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`output.iife\`: the main thread's script must not be wrapped in a function that runs at once, and the bundler has one setting for both threads.
+https://sohedra.com/e/iife_ignored"
+`;
+
 exports[`the build's catalogue > in_directive: the message 1`] = `
 "\`in:\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3
@@ -238,6 +262,30 @@ exports[`the build's catalogue > list_item_without_key: the message 1`] = `
 
 Write it directly inside a keyed \`{#each}\`, or give it an \`item-key\`.
 https://sohedra.com/e/list_item_without_key"
+`;
+
+exports[`the build's catalogue > lynx_engine_missing: the message 1`] = `
+"The Lynx build engine is not set up, so there is no template to build.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Build with rspeedy, or add \`pluginLynx()\` from @lynx-js/rsbuild-plugin to the Rsbuild config.
+https://sohedra.com/e/lynx_engine_missing"
+`;
+
+exports[`the build's catalogue > main_thread_asset_missing: the message 1`] = `
+"The main thread's script .rspeedy/main/main-thread.js is not in the build's output.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`output.filename\` and \`output.distPath\` overrides that rename the page's scripts, or report the setting.
+https://sohedra.com/e/main_thread_asset_missing"
 `;
 
 exports[`the build's catalogue > main_thread_function_block_name: the message 1`] = `
@@ -409,6 +457,18 @@ Remove the \`customRenderer\` option.
 https://sohedra.com/e/renderer_option_off"
 `;
 
+exports[`the build's catalogue > rsbuild_swc_missing: the message 1`] = `
+"Rsbuild's JavaScript rule has no SWC loader to build the page's scripts with.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Do not remove the SWC loader from Rsbuild's \`tools.bundlerChain\`, and do not turn it off with \`tools.swc: false\`.
+https://sohedra.com/e/rsbuild_swc_missing"
+`;
+
 exports[`the build's catalogue > script_syntax_error: the message 1`] = `
 "A script has a syntax error: Unexpected token.
 /app/src/App.svelte:2:3
@@ -457,6 +517,42 @@ Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_body"
 `;
 
+exports[`the build's catalogue > svelte_config_invalid: the message 1`] = `
+"The Svelte config /app/svelte.config.js could not be read: it has no default export that is an object.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Export the config as the default export: \`export default svelteConfig({ … })\` from @sohedra/lynx/config/svelte.
+https://sohedra.com/e/svelte_config_invalid"
+`;
+
+exports[`the build's catalogue > svelte_config_option_owned: the message 1`] = `
+"\`compilerOptions.generate\` in svelte.config.js is set by @sohedra/lynx, so your value is ignored.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`generate\` from the compiler options.
+https://sohedra.com/e/svelte_config_option_owned"
+`;
+
+exports[`the build's catalogue > svelte_config_option_unsupported: the message 1`] = `
+"\`compilerOptions.accessors\` in svelte.config.js is not supported on Lynx, so it is ignored.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`accessors\` from the compiler options.
+https://sohedra.com/e/svelte_config_option_unsupported"
+`;
+
 exports[`the build's catalogue > svelte_document: the message 1`] = `
 "\`<svelte:document>\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3
@@ -481,6 +577,18 @@ Remove it: a Lynx page has no head.
 https://sohedra.com/e/svelte_head"
 `;
 
+exports[`the build's catalogue > svelte_missing: the message 1`] = `
+"Svelte is not installed in /app.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Add the Svelte build with custom renderers (sveltejs/svelte#18042) to the app's package.json dependencies.
+https://sohedra.com/e/svelte_missing"
+`;
+
 exports[`the build's catalogue > svelte_window: the message 1`] = `
 "\`<svelte:window>\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3
@@ -491,6 +599,30 @@ exports[`the build's catalogue > svelte_window: the message 1`] = `
 
 Read the page's size from \`svelte/reactivity/window\`. Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_window"
+`;
+
+exports[`the build's catalogue > svelte_without_renderers: the message 1`] = `
+"The installed Svelte (5.40.0, /app) has no custom renderers.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Install the Svelte build with custom renderers (sveltejs/svelte#18042), which @sohedra/lynx is built for.
+https://sohedra.com/e/svelte_without_renderers"
+`;
+
+exports[`the build's catalogue > template_plugin_versions: the message 1`] = `
+"The Lynx build engine uses @lynx-js/template-webpack-plugin 0.16.9, and @sohedra/lynx uses 0.16.8.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Install one version of both: update @lynx-js/rspeedy and @sohedra/lynx together, and run your package manager's dedupe.
+https://sohedra.com/e/template_plugin_versions"
 `;
 
 exports[`the build's catalogue > transition_directive: the message 1`] = `
