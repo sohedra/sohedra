@@ -64,8 +64,16 @@ export type CallItem = ["call", number, number, string];
  */
 export type ReplyItem = ["reply", number, string];
 
+/**
+ * The main thread lets go of the elements of this element's subtree, and the items after it make
+ * the subtree again, with the same ids, from what the background holds now: the answer to a
+ * rewrite message. The page's root (`ROOT_ID`) rewrites the whole page, which stays on the screen
+ * until the patch's flush.
+ */
+export type RewriteItem = ["rewrite", number];
+
 /** One item of a patch. */
-export type PatchItem = OpsItem | CellItem | CallItem | ReplyItem;
+export type PatchItem = OpsItem | CellItem | CallItem | ReplyItem | RewriteItem;
 
 /** A patch as the main thread receives it. */
 export interface Patch extends Stamp {
@@ -75,6 +83,12 @@ export interface Patch extends Stamp {
 	 * `triggerDataUpdated`, so a native host's `onDataUpdated` fires.
 	 */
 	dataUpdated?: true;
+	/**
+	 * How many of the first items hold the page as its components rendered it, before any of their
+	 * effects ran: set on the first patch of a page that starts. The main thread hydrates its first
+	 * frame from these items.
+	 */
+	rendered?: number;
 }
 
 /** A patch as the background writes it: the page its content belongs to, and its items. */
@@ -83,6 +97,8 @@ export interface PatchOf {
 	items: PatchItem[];
 	/** Whether the patch shows the page's new data. */
 	dataUpdated?: boolean;
+	/** How many of the first items hold the page as it rendered (see `Patch`). */
+	rendered?: number | undefined;
 }
 
 /** The params `callLepusMethod` passes the main thread's patch function: the patch as text. */
@@ -91,9 +107,10 @@ export interface PatchParams {
 }
 
 /** A patch as the params of the main thread's patch function, stamped with the format's version. */
-export function encodePatch({ page, items, dataUpdated }: PatchOf): PatchParams {
+export function encodePatch({ page, items, dataUpdated, rendered }: PatchOf): PatchParams {
 	const patch: Patch = { v: PROTOCOL_VERSION, page, items };
 	if (dataUpdated === true) patch.dataUpdated = true;
+	if (rendered !== undefined) patch.rendered = rendered;
 	return { data: toText(patch, "main-thread") };
 }
 

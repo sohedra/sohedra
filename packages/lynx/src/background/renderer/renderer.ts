@@ -56,6 +56,11 @@ export interface LynxRenderer extends SvelteRenderer {
 	retire(): void;
 	/** An element's tag by its id, for the text of an error. */
 	tagOf(id: number): string | undefined;
+	/**
+	 * Writes the ops of the whole page again, from the tree as it is now, each element with the id
+	 * it has: the main thread makes the page again from them.
+	 */
+	writePage(): void;
 }
 
 /** What the renderer writes into and keeps. */
@@ -109,25 +114,36 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		return container.tag === "list" && container.cell === 0 ? node.lynxId : container.cell;
 	}
 
+	/** Binds the events a node collected, on its Lynx element. */
+	function pushEvents(node: TreeNode): void {
+		for (const [slot, id] of node.events ?? []) {
+			const colon = slot.indexOf(":");
+			// Boundary: a slot's key is written by `setEvent` from a Lynx event type.
+			const type = slot.slice(0, colon) as LynxEventType;
+			queue.push([OpCode.SetEvent, node.lynxId, type, slot.slice(colon + 1), id]);
+		}
+	}
+
 	/**
 	 * Gives `node`'s subtree Lynx elements, now that it is attached under `container`: the create,
 	 * the attributes and handlers it collected, and its children joined in. The caller inserts
-	 * `node` itself.
+	 * `node` itself. `again` writes the subtree again, each element with the id it has.
 	 */
-	function realize(node: TreeNode, container: TreeNode): void {
+	function realize(node: TreeNode, container: TreeNode, again = false): void {
 		if (node.kind === "text") {
-			realizeText(node, container);
+			realizeText(node, container, again);
 			return;
 		}
 		if (node.kind === "comment") return;
 		if (node.kind === "fragment") {
-			for (let child = node.first; child; child = child.next) realize(child, container);
+			for (let child = node.first; child; child = child.next) realize(child, container, again);
 			return;
 		}
-		if (node.lynxId !== 0) return;
-		node.lynxId = nextId++;
+		if (node.lynxId !== 0 && !again) return;
+		if (node.lynxId === 0) node.lynxId = nextId++;
 		node.madeAt = queue.sent;
 		node.cell = cellUnder(container, node);
+		node.layout = null;
 		// Boundary: every element node is made by `createElement`, from the element class.
 		elementsById.set(node.lynxId, node as ElementNode);
 		queue.push([OpCode.Create, node.lynxId, node.tag!]);
@@ -137,27 +153,23 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 					queue.push([OpCode.SetAttr, node.lynxId, key, attrValue(key, value)]);
 			}
 		}
+		// Written again, an input starts from what it holds now.
+		if (again && node.input)
+			queue.push([OpCode.SetAttr, node.lynxId, "default-value", node.input.current]);
 		if (node.codeStyles?.size)
 			queue.push([OpCode.SetStyles, node.lynxId, Object.fromEntries(node.codeStyles)]);
-		if (node.events) {
-			for (const [slot, id] of node.events) {
-				const colon = slot.indexOf(":");
-				// Boundary: a slot's key is written by `setEvent` from a Lynx event type.
-				const type = slot.slice(0, colon) as LynxEventType;
-				queue.push([OpCode.SetEvent, node.lynxId, type, slot.slice(colon + 1), id]);
-			}
-		}
+		pushEvents(node);
 		for (let child = node.first; child; child = child.next) {
-			realize(child, node);
+			realize(child, node, again);
 			for (const real of topReals(child)) queue.push([OpCode.Insert, node.lynxId, real.lynxId, 0]);
 		}
 	}
 
-	function realizeText(node: TreeNode, container: TreeNode): void {
-		if (node.lynxId !== 0) return;
+	function realizeText(node: TreeNode, container: TreeNode, again: boolean): void {
+		if (node.lynxId !== 0 && !again) return;
 		const parent = node.parent;
 		if (parent?.kind === "element" && TEXT_CONTAINERS.has(parent.tag!)) {
-			node.lynxId = nextId++;
+			if (node.lynxId === 0) node.lynxId = nextId++;
 			node.cell = container.cell;
 			queue.push([OpCode.CreateText, node.lynxId, node.data ?? ""]);
 			return;
@@ -358,6 +370,14 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			root = undefined;
 		},
 		tagOf: (id) => elementsById.get(id)?.tag ?? undefined,
+		writePage() {
+			if (!root) return;
+			pushEvents(root);
+			for (let child = root.first; child; child = child.next) {
+				realize(child, root, true);
+				for (const real of topReals(child)) queue.push([OpCode.Insert, ROOT_ID, real.lynxId, 0]);
+			}
+		},
 
 		createFragment: () => new TreeNode("fragment"),
 		createElement: (name) => new Element(name),

@@ -17,6 +17,8 @@ export interface MainThreadDetails {
 	ui_method_failed: { method: string; code: number };
 	element_has_no_view: { method: string };
 	element_left_page: { method: string };
+	/** `at` is the index in the markup where it could not be read. */
+	first_frame_markup_unreadable: { reason: string; at: number };
 }
 
 /** What a code of the main thread names. */
@@ -61,6 +63,12 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		fix: () =>
 			"Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.",
 		docs: "element_left_page",
+	},
+	first_frame_markup_unreadable: {
+		message: ({ reason, at }) =>
+			`The first frame was not drawn: its markup could not be read at character ${at}, where ${reason}.`,
+		fix: () => `The page is shown when the background has made it. ${REPORT}`,
+		docs: "first_frame_markup_unreadable",
 	},
 };
 

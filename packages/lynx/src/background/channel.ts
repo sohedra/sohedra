@@ -13,9 +13,17 @@ import {
 	keepsMessage,
 	OpCode,
 	PATCH_METHOD,
+	ROOT_ID,
 	TO_BACKGROUND,
 } from "../wire/index.ts";
-import type { CallRequest, Op, PatchItem, PatchParams, SentEvent } from "../wire/index.ts";
+import type {
+	CallRequest,
+	Op,
+	PatchItem,
+	PatchParams,
+	RewriteMessage,
+	SentEvent,
+} from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { BackgroundError } from "./catalogue.ts";
 import { background, DEV } from "./globals.ts";
@@ -31,6 +39,8 @@ export interface ChannelOptions {
 	queue: OpQueue;
 	/** Runs the handlers of an event the main thread sent. */
 	onEvent(handler: number, event: SentEvent): void;
+	/** The main thread asks for elements' subtrees again (`rewrite`). */
+	onRewrite(message: RewriteMessage): void;
 	/** An element's tag, for the error of a value that cannot be sent. */
 	tagOf(id: number): string | undefined;
 }
@@ -47,6 +57,17 @@ export interface Channel {
 	call(element: number, request: CallRequest): Promise<unknown>;
 	/** The next patch shows the page's new data; one is sent even with nothing else in it. */
 	markDataUpdated(): void;
+	/**
+	 * The page's components have rendered, and their effects have not run: the next patch says how
+	 * many of its items hold the page as rendered, which the main thread hydrates its first frame
+	 * from.
+	 */
+	markRendered(): void;
+	/**
+	 * Writes the whole page again, after what is queued: a patch with a rewrite item for the page's
+	 * root, then what `write` makes, from nothing.
+	 */
+	rewritePage(write: () => void): void;
 	/**
 	 * The page was bumped: the ops made so far and the calls waiting belong to a page the main
 	 * thread no longer shows. The ops are dropped, and the calls reject.
@@ -78,12 +99,13 @@ interface Waiting {
 }
 
 /** Opens the page's channel. */
-export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel {
+export function openChannel({ queue, onEvent, onRewrite, tagOf }: ChannelOptions): Channel {
 	const nativeApp = background.lynx.getNativeApp();
 	const core = background.lynx.getCoreContext();
 	const waiting = new Map<number, Waiting>();
 	let items: PatchItem[] = [];
 	let dataUpdated = false;
+	let rendered: number | undefined;
 	let scheduled = false;
 	let nextCall = 1;
 	let open = true;
@@ -108,13 +130,14 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 		});
 	}
 
-	const splitter = createSplitter((ops) => {
+	const encode = (ops: Op[]): string => {
 		try {
 			return encodeCell(ops);
 		} catch {
 			return encodeCell(sendable(ops));
 		}
-	});
+	};
+	let splitter = createSplitter(encode);
 
 	/** Moves the renderer's queued ops into the patch being written, in order. */
 	function takeOps(): void {
@@ -127,9 +150,10 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 		if (!open) return;
 		takeOps();
 		if (items.length === 0 && !dataUpdated && !always) return;
-		const patch = { page: currentPage(), items, dataUpdated };
+		const patch = { page: currentPage(), items, dataUpdated, rendered };
 		items = [];
 		dataUpdated = false;
+		rendered = undefined;
 		let params: PatchParams;
 		try {
 			params = encodePatch(patch);
@@ -171,6 +195,10 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 			onEvent(received.handler, received.event);
 			return;
 		}
+		if (received.t === "rewrite") {
+			onRewrite(received);
+			return;
+		}
 		if (received.t === "reply") {
 			const entry = waiting.get(received.id);
 			if (!entry) return;
@@ -190,6 +218,7 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 		splitter.split(queue.take());
 		items = [];
 		dataUpdated = false;
+		rendered = undefined;
 		scheduled = false;
 		const ended = [...waiting.values()];
 		waiting.clear();
@@ -218,6 +247,19 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 			if (!open) return;
 			dataUpdated = true;
 			schedule();
+		},
+		markRendered() {
+			takeOps();
+			rendered = items.length;
+		},
+		rewritePage(write) {
+			if (!open) return;
+			flush();
+			// The page is written from nothing: its lists are told every item again.
+			splitter = createSplitter(encode);
+			items.push(["rewrite", ROOT_ID]);
+			write();
+			flush(true);
 		},
 		abandon,
 		close() {

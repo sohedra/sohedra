@@ -40,7 +40,8 @@ interface Cell {
 	removed: boolean;
 }
 
-interface ListState {
+/** A list's own state: its element, its items and its cells. */
+export interface ListState {
 	element: LynxElement;
 	/** The items in their order now. */
 	items: Order;
@@ -50,6 +51,16 @@ interface ListState {
 	cellsByUid: Map<number, Cell>;
 	/** The items whose info changed since the last update. */
 	changed: Set<number>;
+}
+
+/** A cell that has its element, with whether Lynx holds it now. */
+export interface HeldCell {
+	id: number;
+	element: LynxElement;
+	uid: number;
+	attached: boolean;
+	/** Lynx asked for it and has not handed it back. */
+	bound: boolean;
 }
 
 /** A list update the background wrote. */
@@ -89,6 +100,18 @@ export interface Lists {
 	destroy(): void;
 	/** Tells every list inside a cell whose items changed. */
 	flush(): void;
+	/** The cells of a list that have elements. */
+	heldCells(id: number): HeldCell[];
+	/** Lets go of a list without touching it, for other lists to take (`adopt`). */
+	forget(id: number): ListState | undefined;
+	/**
+	 * Takes a list that other lists let go of, under this id: its items are `items` now, and each
+	 * keeps the element of its cell in `cells`. Lynx calls this module's callbacks from now on.
+	 */
+	adopt(
+		id: number,
+		adopted: { state: ListState; items: number[]; cells: (HeldCell | undefined)[] },
+	): void;
 }
 
 const answerNone: ComponentAtIndex = () => -1;
@@ -310,5 +333,56 @@ export function createLists(scope: ListsScope): Lists {
 			listOf.clear();
 		},
 		flush,
+		heldCells(id) {
+			const held: HeldCell[] = [];
+			for (const cell of lists.get(id)?.cells.values() ?? []) {
+				if (!cell.element) continue;
+				const { element, uid, attached, bound } = cell;
+				held.push({ id: cell.id, element, uid, attached, bound });
+			}
+			return held;
+		},
+		forget(id) {
+			const list = lists.get(id);
+			if (!list) return undefined;
+			lists.delete(id);
+			dirty.delete(list);
+			return list;
+		},
+		adopt(id, { state, items, cells }) {
+			const list: ListState = {
+				element: state.element,
+				items: new Order(),
+				committed: items,
+				cells: new Map(),
+				cellsByUid: new Map(),
+				changed: new Set(),
+			};
+			for (let index = 0; index < items.length; index++) {
+				const itemId = items[index]!;
+				list.items.insert(itemId, 0);
+				const held = cells[index];
+				const cell: Cell = held
+					? { ...held, id: itemId, removed: false }
+					: {
+							id: itemId,
+							element: undefined,
+							uid: -1,
+							attached: false,
+							bound: false,
+							removed: false,
+						};
+				list.cells.set(itemId, cell);
+				if (held) list.cellsByUid.set(held.uid, cell);
+			}
+			lists.set(id, list);
+			const { componentAtIndex, componentAtIndexes, enqueueComponent } = callbacks(id);
+			mainThread.__UpdateListCallbacks(
+				state.element,
+				componentAtIndex,
+				enqueueComponent,
+				componentAtIndexes,
+			);
+		},
 	};
 }

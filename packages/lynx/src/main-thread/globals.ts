@@ -163,3 +163,8 @@ declare const __DEV__: boolean;
 
 /** `true` in a development build: the build replaces it, and drops what it guards otherwise. */
 export const DEV: boolean = __DEV__;
+
+/** The value of a global the page's own script set, by name. */
+export function readGlobal(name: string): unknown {
+	return globalScope[name];
+}

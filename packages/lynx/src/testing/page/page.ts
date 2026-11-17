@@ -3,7 +3,7 @@
 // before the engine renders, the background's after. They are the runtime's and the app's; a test
 // passes them, and nothing runs in their place.
 
-import { PATCH_METHOD } from "../../wire/index.ts";
+import { FIRST_FRAME_GLOBAL, PATCH_METHOD } from "../../wire/index.ts";
 import { createEngine } from "../engine/create-engine.ts";
 import type { Engine } from "../engine/create-engine.ts";
 import { activeSession, installGlobals, removeGlobals, setActiveSession } from "../globals.ts";
@@ -82,6 +82,7 @@ const PAGE_GLOBALS = [
 	"removeComponents",
 	"processData",
 	PATCH_METHOD,
+	FIRST_FRAME_GLOBAL,
 ];
 
 /** Starts a test page, and ends the one that was running, if any. */

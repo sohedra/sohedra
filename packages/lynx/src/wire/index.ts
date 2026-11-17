@@ -70,6 +70,7 @@ export type {
 	PatchParams,
 	ReplyItem,
 	Result,
+	RewriteItem,
 	ThrownError,
 } from "./patch.ts";
 export { decodeToBackground, encodeToBackground } from "./to-background.ts";
@@ -78,9 +79,11 @@ export type {
 	ErrorMessage,
 	ErrorPlace,
 	EventMessage,
+	HydrationMismatch,
 	ReceivedByBackground,
 	ReleaseMessage,
 	ReplyMessage,
+	RewriteMessage,
 	SentEvent,
 	SentTarget,
 	ThreadEvent,

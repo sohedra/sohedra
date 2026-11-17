@@ -21,6 +21,11 @@ export interface BackgroundDetails {
 	element_not_shown: { method: string; tag: string; where?: string | undefined };
 	/** `name` is the animation's, when the app named it. */
 	animation_canceled: { tag: string; name?: string | undefined };
+	/**
+	 * `difference` says what differs, in development builds only; `where` is the element's
+	 * `file:line:col` there.
+	 */
+	hydration_mismatch: { difference?: string | undefined; where?: string | undefined };
 }
 
 /** What a code of the background names. */
@@ -82,6 +87,15 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Nothing to fix when the animation was canceled on purpose. Catch the rejection of finished where a canceled animation matters.",
 		docs: "animation_canceled",
+	},
+	hydration_mismatch: {
+		message: ({ difference }) =>
+			difference === undefined
+				? "The first frame did not match the page the background rendered, so the page was made again."
+				: `The first frame did not match the page the background rendered: ${difference}. The page was made again.`,
+		fix: () =>
+			"Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.",
+		docs: "hydration_mismatch",
 	},
 };
 
