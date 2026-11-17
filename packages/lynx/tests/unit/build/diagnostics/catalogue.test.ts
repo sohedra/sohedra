@@ -56,6 +56,18 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	page_config_reserved: { key: "enableA11y" },
 	single_copy_name: { given: '["./local"]' },
 	first_frame_not_boolean: { entry: "settings", given: '"yes"' },
+	css_not_stored: { file: "/app/src/Card.svelte" },
+	spread_setter_moved: {
+		file: "/app/node_modules/svelte/src/internal/client/reactivity/props.js",
+		anchor: "get_descriptor(props, key)?.set ??",
+	},
+	primjs_regex_moved: {
+		file: "/app/node_modules/svelte/src/utils.js",
+		name: "REGEX_VALID_TAG_NAME",
+	},
+	background_only_in_component: {},
+	background_only_reexport_all: { file: "src/store.ts", from: "./other" },
+	background_only_used: { used: "store.value", file: "src/store.ts" },
 };
 
 const CODES = Object.keys(BUILD_CATALOGUE) as BuildCode[];
