@@ -129,7 +129,6 @@ describe("the value of an input that has no element yet", () => {
 		const calls: unknown[] = [];
 		renderer.setHost({
 			call: (...args) => (calls.push(args), Promise.resolve(null)),
-			post: () => {},
 			run: () => {},
 		});
 		const input = renderer.createElement("input");

@@ -5,8 +5,10 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import type { ElementNode } from "../../src/background/renderer/element.ts";
 import type { LynxElement } from "../../src/testing/index.ts";
 import NativeList from "../fixtures/threads/NativeList.svelte";
+import StyledRows from "../fixtures/threads/StyledRows.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 interface Feed {
@@ -195,6 +197,40 @@ describe("<list>", () => {
 		expect(page.engine.all()).not.toContain(element);
 		const uid = page.engine.state(element).uid;
 		expect(page.asMainThread(() => callbacks.componentAtIndex(element, uid, 0, 1))).toBe(-1);
+		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("a row Lynx has not shown", () => {
+	async function styledRows() {
+		const handles: Record<string, unknown> = {};
+		const page = startSveltePage(StyledRows, { props: () => ({ handles }) });
+		await page.settle();
+		return { page, handles, list: page.engine.list(page.byClass("list")) };
+	}
+
+	it("takes its styles and animations from code once Lynx shows it, and nothing is reported", async () => {
+		const { page, list } = await styledRows();
+		expect(page.errors).toEqual([]);
+		expect(page.engine.animations).toEqual([]);
+		const cell = list.show(0);
+		const row = cell.firstChild as LynxElement;
+		expect(page.engine.state(row).inlineStyles.get("color")).toBe("red");
+		expect(page.engine.animations.map((call) => call.element)).toEqual([row]);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("rejects a read with a message that says the row is not shown", async () => {
+		const { page, handles } = await styledRows();
+		const answer = page.asBackground(() =>
+			(handles["b"] as ElementNode).invoke("boundingClientRect"),
+		);
+		answer.catch(() => {});
+		await page.settle();
+		await expect(answer).rejects.toMatchObject({
+			code: "element_not_shown",
+			message: expect.stringContaining("list row Lynx has not shown"),
+		});
 		expect(page.errors).toEqual([]);
 	});
 });

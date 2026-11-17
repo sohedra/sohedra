@@ -80,6 +80,19 @@ const PATCHES: [name: string, page: number, items: PatchItem[]][] = [
 			["reply", 1, encodeResult({ ok: true, value: "saved" })],
 		],
 	],
+	[
+		"styles set from code and an animation, with their element",
+		0,
+		[
+			[
+				"ops",
+				[
+					[OpCode.SetStyles, 2, { transform: "translateX(4px)", opacity: null }],
+					[OpCode.Animate, 2, [0, "fade", [{ opacity: 0 }, { opacity: 1 }], { duration: 300 }]],
+				],
+			],
+		],
+	],
 	["the reloaded page's first patch", 1, [["ops", COUNTER]]],
 ];
 

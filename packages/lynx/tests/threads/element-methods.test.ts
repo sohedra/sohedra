@@ -123,13 +123,13 @@ describe("styles and queries", () => {
 		await expect(opacity).resolves.toBe("0.7");
 	});
 
-	it("throws for styles on an element that is not on the page", async () => {
+	it("keeps styles set on an element that is not on the page, and does not throw", async () => {
 		const { page, node, tap } = await methods();
 		const doomed = node("doomed");
 		await tap("doom");
-		expect(() => page.asBackground(() => doomed.setStyleProperty("opacity", 1))).toThrow(
-			/not on the page/,
-		);
+		expect(() => page.asBackground(() => doomed.setStyleProperty("opacity", 1))).not.toThrow();
+		await page.settle();
+		expect(page.errors).toEqual([]);
 	});
 
 	it("finds the element nodes under an element that a selector matches", async () => {
