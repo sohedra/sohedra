@@ -93,6 +93,27 @@ describe("imports between the binding's folders", () => {
 	});
 });
 
+describe("the manifest of the Svelte contract", () => {
+	// src/svelte/index.ts is the folder's face: the manifest file is not imported directly.
+	const OUTSIDE = FOLDERS.filter((folder) => !folder.startsWith("svelte/"));
+	const files: Record<string, string> = {};
+	for (const folder of OUTSIDE) {
+		files[`${SRC}/${folder}/probe-manifest.ts`] = importOf(folder, "svelte", "manifest.ts");
+	}
+	files[`${SRC}/build/presets/probe-manifest.ts`] = importOf(
+		"build/presets",
+		"svelte",
+		"manifest.ts",
+	);
+	const refused = reported(lint(files), RULE);
+
+	for (const folder of [...OUTSIDE, "build/presets"]) {
+		it(`stops ${folder} import svelte/manifest.ts`, () => {
+			expect(refused.has(`${SRC}/${folder}/probe-manifest.ts`)).toBe(true);
+		});
+	}
+});
+
 describe("imports of Svelte and Node", () => {
 	const NODE_FOLDERS = ["build", "svelte/build", "testing"];
 	// Node's modules, with and without the `node:` prefix.
