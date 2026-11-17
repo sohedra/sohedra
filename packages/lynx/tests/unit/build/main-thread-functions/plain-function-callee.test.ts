@@ -104,6 +104,20 @@ describe("the plain-function callee check", () => {
 		expect(code).not.toContain("typeof");
 	});
 
+	it("writes the message as code that any engine reads back unchanged", () => {
+		// The message quotes the developer's source; this one holds markup and a line separator.
+		const quoted = `function save(n) {}\nexport function f() {\n  "main thread";\n  // </script>\u2028\n  save(1);\n}\n`;
+		const { code } = compileScript(quoted, { development: true });
+		const literal = (/new Error\(("(?:[^"\\]|\\.)*")\)/.exec(code) ?? [])[1]!;
+		expect(literal).toBeDefined();
+		expect(literal).not.toMatch(new RegExp("[<>\\u2028\\u2029]"));
+		const run = (): unknown =>
+			evaluate(`${code.replace(/export /g, "").replace("function save(n) {}\n", "")}\nreturn f;`, {
+				save: () => {},
+			});
+		expect(run).toThrow("// </script>\u2028");
+	});
+
 	it("names the file by its path under the app, so two checkouts give one bundle", () => {
 		const roots = ["checkout-one", "checkout-two"].map((name) =>
 			path.join(APP_ROOT, "tests/fixtures/build", name),
