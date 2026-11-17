@@ -39,6 +39,8 @@ const SKIPPED_KEYS = new Set(["loc", "leadingComments", "trailingComments"]);
  * used where the body runs, never captured.
  */
 const NEVER_CAPTURED = new Set(["runOnBackground", "runOnMainThread"]);
+/** The methods of a function that call it: `save.call(…)` calls `save`. */
+const CALL_METHODS = new Set(["call", "apply", "bind"]);
 
 /** The names a block or a function declares. */
 interface Scope {
@@ -134,6 +136,8 @@ export function findFunctions(options: {
 	let path: Segment[] = [];
 	// The callee of the call being read: a method on an object is not captured on its own.
 	let callee: Node;
+	// The captured name `fn.call(…)`, `fn.apply(…)` or `fn.bind(…)` calls: it is called, too.
+	let calledThrough: Node;
 
 	const within = (names: Set<string>, body: () => void): void => {
 		const outer = scope;
@@ -190,7 +194,8 @@ export function findFunctions(options: {
 			if (from.names.has(name) || (!inside && from.names.has(declared))) {
 				if (!inside) {
 					path = [{ name, key: name, access: name }];
-					if (node === callee && !current.called.has(name)) current.called.set(name, node);
+					if ((node === callee || node === calledThrough) && !current.called.has(name))
+						current.called.set(name, node);
 					if (depth === 0) flush();
 				} else if (from === current.scope && name === current.self) {
 					current.callsItself = true;
@@ -408,6 +413,15 @@ export function findFunctions(options: {
 					return;
 				}
 				callee = unwrap(node.callee);
+				calledThrough = undefined;
+				if (
+					callee.type === "MemberExpression" &&
+					!callee.computed &&
+					callee.property.type === "Identifier" &&
+					CALL_METHODS.has(callee.property.name) &&
+					unwrap(callee.object).type === "Identifier"
+				)
+					calledThrough = unwrap(callee.object);
 				break;
 			case "Property":
 			case "MethodDefinition":

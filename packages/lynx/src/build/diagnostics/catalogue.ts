@@ -35,7 +35,7 @@ export interface BuildDetails {
 	main_thread_function_block_name: { attribute: string; names: string[] };
 	plain_function_in_main_thread_function: { name: string };
 	script_syntax_error: { reason: string };
-	event_attribute_renamed: { attribute: string; replacement: string };
+	event_attribute_renamed: { attribute: string; replacement: string; spelling: string };
 	global_event_attribute: { attribute: string; event: string };
 	list_item_without_key: Plain;
 }
@@ -166,8 +166,8 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		docs: "script_syntax_error",
 	},
 	event_attribute_renamed: {
-		message: ({ attribute }) =>
-			`\`${attribute}\` is Lynx's spelling of an event attribute, which a component does not write.`,
+		message: ({ attribute, spelling }) =>
+			`\`${attribute}\` reads as the old \`${spelling}\` spelling of an event attribute, which a component does not write.`,
 		fix: ({ replacement }) => `Write \`${replacement}\` instead.`,
 		docs: "event_attribute_renamed",
 	},

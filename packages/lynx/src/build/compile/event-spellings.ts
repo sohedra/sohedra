@@ -19,7 +19,8 @@ export const eventSpellings: Pass = ({ source, filename, ast }) => {
 			if (value === true || value.length !== 1 || value[0]!.type !== "ExpressionTag") continue;
 			const name = attributeName(attribute);
 			const prefix = name.startsWith(MAIN_THREAD_PREFIX) ? MAIN_THREAD_PREFIX : "";
-			const removed = removedEventSpelling(name.slice(prefix.length));
+			const unprefixed = name.slice(prefix.length);
+			const removed = removedEventSpelling(unprefixed);
 			if (removed === undefined) continue;
 			const place = placeAt({ file: filename, text: source }, attribute.start!);
 			if (removed.replacement === undefined)
@@ -30,7 +31,12 @@ export const eventSpellings: Pass = ({ source, filename, ast }) => {
 				});
 			throw buildError({
 				code: "event_attribute_renamed",
-				details: { attribute: name, replacement: prefix + removed.replacement },
+				details: {
+					attribute: name,
+					replacement: prefix + removed.replacement,
+					// What comes before the event's name: `bind`, `catch`, `capture-bind`…
+					spelling: unprefixed.slice(0, unprefixed.length - removed.event.length),
+				},
 				place,
 			});
 		}

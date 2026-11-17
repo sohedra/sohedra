@@ -21,7 +21,7 @@ import type { Edit, Piece } from "../source-map/edits.ts";
 import { writeCaptures } from "./captures.ts";
 import type { Guard } from "./captures.ts";
 import type { ScriptFunctions } from "./find.ts";
-import { hash, idPrefix } from "./ids.ts";
+import { hash, idPrefix, pathInApp } from "./ids.ts";
 import type { Node } from "./node.ts";
 
 /** The name a registered body gives itself, when it calls itself by its own name. */
@@ -89,7 +89,11 @@ function guardFor(options: EmitOptions, called: Map<string, Node>): Guard | unde
 			const message = describe({
 				code: "plain_function_in_main_thread_function",
 				details: { name },
-				place: placeAt({ file: options.filename, text: options.source }, callee.start),
+				// The path under the app, so two checkouts of one app give one development bundle.
+				place: placeAt(
+					{ file: pathInApp(options.filename, options.root), text: options.source },
+					callee.start,
+				),
 			});
 			return `typeof ${value} === "function" ? (() => { throw new Error(${JSON.stringify(message)}); })() : ${value}`;
 		},
