@@ -42,6 +42,16 @@ export interface Repair {
 	before: number;
 }
 
+/** The texts of a parent made again in place: the frame drew others, or not as many. */
+export interface TextRepair {
+	drawnParent: number;
+	/** The drawn texts to take off. */
+	drop: number[];
+	/** The background's texts to make, each with the element it goes before (0 at the end). */
+	make: { id: number; before: number }[];
+	parent: number;
+}
+
 /** What hydration does. */
 export interface Plan {
 	/** Each drawn node the page keeps, with the background's id: [background, drawn]. */
@@ -50,6 +60,7 @@ export interface Plan {
 	writes: { id: number; name: string | null; value: AttrValue }[];
 	lists: ListPlan[];
 	repairs: Repair[];
+	textRepairs: TextRepair[];
 	/** The cells adopted, whose rendered text the page does not need. */
 	adoptedCells: Set<number>;
 }
@@ -104,9 +115,17 @@ export function matchFrame(options: {
 		writes: [],
 		lists: [],
 		repairs: [],
+		textRepairs: [],
 		adoptedCells: new Set(),
 	};
 	const node = (id: number): RenderedNode => rendered.nodes.get(id)!;
+	const isText = (id: number): boolean => node(id).tag === "#text";
+	/** The rendered children that are elements: texts are matched on their own. */
+	const elementChildren = (id: number): number[] =>
+		node(id).children.filter((child) => !isText(child));
+	/** The drawn elements of `children`, blocks opened, texts left out. */
+	const drawnElements = (children: DrawnChild[]): DrawnNode[] =>
+		elementsOf(children).filter((child) => child.tag !== "#text");
 
 	/** Whether the two have the same tags in the same places, all the way down. */
 	function sameShape(id: number, drawn: DrawnNode): boolean {
@@ -114,10 +133,11 @@ export function matchFrame(options: {
 		if (built.tag !== drawn.tag) return false;
 		if (drawn.cells)
 			return keysOf(drawn).join("\n") === (built.list?.keys ?? []).map(keyText).join("\n");
-		const children = elementsOf(drawn.children);
+		const children = drawnElements(drawn.children);
+		const builtChildren = elementChildren(id);
 		return (
-			children.length === built.children.length &&
-			children.every((child, index) => sameShape(built.children[index]!, child))
+			children.length === builtChildren.length &&
+			children.every((child, index) => sameShape(builtChildren[index]!, child))
 		);
 	}
 
@@ -185,15 +205,60 @@ export function matchFrame(options: {
 		plan.lists.push({ id, drawn: drawn.id, items, cells });
 	}
 
-	/** Matches a parent's children: drawn elements outside blocks one to one, blocks and texts by run. */
+	/**
+	 * Matches a parent's texts, which never refuse. Texts go by the element they follow: where both
+	 * sides have as many there, one to one; else the drawn ones are taken off and the background's
+	 * made in place.
+	 */
+	function texts(id: number, drawn: DrawnNode): void {
+		const children = node(id).children;
+		const drawnChildren = elementsOf(drawn.children);
+		/** The texts of a list of children, by how many elements come before them. */
+		const bySlot = <T>(list: T[], text: (child: T) => boolean): T[][] => {
+			const slots: T[][] = [[]];
+			for (const child of list) {
+				if (text(child)) slots[slots.length - 1]!.push(child);
+				else slots.push([]);
+			}
+			return slots;
+		};
+		let built = bySlot(children, isText);
+		let drawnTexts = bySlot(drawnChildren, (child) => child.tag === "#text");
+		if (built.length !== drawnTexts.length) {
+			// The elements differ too: the texts are matched as one group.
+			built = [built.flat()];
+			drawnTexts = [drawnTexts.flat()];
+		}
+		for (let slot = 0; slot < built.length; slot++) {
+			const ours = built[slot]!;
+			const theirs = drawnTexts[slot]!;
+			if (ours.length === theirs.length) {
+				for (let index = 0; index < ours.length; index++) pair(ours[index]!, theirs[index]!, true);
+				continue;
+			}
+			const make = ours.map((text) => {
+				const after = children.slice(children.indexOf(text) + 1).find((child) => !isText(child));
+				return { id: text, before: after ?? 0 };
+			});
+			plan.textRepairs.push({
+				parent: id,
+				drawnParent: drawn.id,
+				drop: theirs.map((text) => text.id),
+				make,
+			});
+		}
+	}
+
+	/** Matches a parent's children: drawn elements outside blocks one to one, blocks by run. */
 	function align(id: number, drawn: DrawnNode, inBlock: boolean): void {
-		const built = node(id).children;
-		// The drawn children as fixed nodes and runs that may differ (blocks and texts).
+		texts(id, drawn);
+		const built = elementChildren(id);
+		// The drawn elements as fixed nodes, and runs that may differ: Svelte's `{#if}` branches.
 		const parts: (DrawnNode | DrawnChild[])[] = [];
 		for (const child of drawn.children) {
-			const free = isBlock(child) || child.tag === "#text";
+			if (!isBlock(child) && child.tag === "#text") continue;
 			const last = parts[parts.length - 1];
-			if (!free) parts.push(child);
+			if (!isBlock(child)) parts.push(child);
 			else if (Array.isArray(last)) last.push(child);
 			else parts.push([child]);
 		}
@@ -238,7 +303,7 @@ export function matchFrame(options: {
 			}
 			const make = built.slice(index, index + free);
 			index += free;
-			run(id, drawn.id, { make, drawn: elementsOf(part), before: built[index] ?? 0 });
+			run(id, drawn.id, { make, drawn: drawnElements(part), before: built[index] ?? 0 });
 		}
 	}
 

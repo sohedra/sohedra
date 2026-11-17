@@ -63,8 +63,8 @@ export function adoptFrame(options: {
 		});
 	}
 
-	// What differs more than its attributes leaves the frame.
-	for (const repair of plan.repairs) {
+	// What differs more than its attributes leaves the frame, and so do texts it has otherwise.
+	for (const repair of [...plan.repairs, ...plan.textRepairs]) {
 		const ops: Op[] = [];
 		for (const id of repair.drop) {
 			ops.push([OpCode.Remove, repair.drawnParent, id]);
@@ -93,6 +93,12 @@ export function adoptFrame(options: {
 		for (const id of repair.make) {
 			opsOf(rendered, id, ops);
 			ops.push([OpCode.Insert, repair.parent, id, repair.before]);
+		}
+	}
+	for (const repair of plan.textRepairs) {
+		for (const { id, before } of repair.make) {
+			opsOf(rendered, id, ops);
+			ops.push([OpCode.Insert, repair.parent, id, before]);
 		}
 	}
 	applyAll(applier, ops);
