@@ -26,3 +26,9 @@ export { bannedFeature, isBoundaryCrash, isDiagnostic, splitLink } from "./error
 export type { Diagnostic } from "./errors.ts";
 export { scriptParser } from "./script-parser.ts";
 export type { ScriptParser } from "./script-parser.ts";
+export { hotFooter } from "./hot-footer.ts";
+export type { HotFooter } from "./hot-footer.ts";
+export { PRIMJS_REGEX_REWRITES, rewritePrimjsRegex } from "./primjs-regex.ts";
+export type { PrimjsRegexRewrite } from "./primjs-regex.ts";
+export { SPREAD_SETTER_ANCHORS, SPREAD_SETTER_FILE, patchSpreadSetter } from "./spread-setter.ts";
+export type { SpreadSetterAnchor } from "./spread-setter.ts";
