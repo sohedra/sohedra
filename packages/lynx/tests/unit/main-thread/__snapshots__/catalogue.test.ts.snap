@@ -1,7 +1,7 @@
 // Rstest Snapshot v1
 
 exports[`the main thread's catalogue > call_not_supported: the message 1`] = `
-"The main thread cannot answer a call of style yet.
+"The main thread cannot answer a call of run yet.
 
 The background asked for something this main thread does not know. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
 https://sohedra.com/e/call_not_supported"
@@ -13,6 +13,20 @@ While trying to insert <view> 42 into <scroll-view> 7.
 
 The rest of the change was applied. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
 https://sohedra.com/e/change_not_applied"
+`;
+
+exports[`the main thread's catalogue > element_has_no_view: the message 1`] = `
+"Lynx could not run boundingClientRect: the element has no view of its own. Lynx flattens a plain <view> into its parent, and makes no view for an element that is not on the screen.
+
+Give the element flatten={false} so that Lynx keeps its view, and call the method once the element is on the screen.
+https://sohedra.com/e/element_has_no_view"
+`;
+
+exports[`the main thread's catalogue > element_left_page: the message 1`] = `
+"Lynx could not run scrollTo: the element was removed from the page before the call was made.
+
+Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.
+https://sohedra.com/e/element_left_page"
 `;
 
 exports[`the main thread's catalogue > element_missing: the message 1`] = `
