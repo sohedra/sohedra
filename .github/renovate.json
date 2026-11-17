@@ -1,0 +1,12 @@
+{
+	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
+	"extends": ["github>sohedra/.github:renovate-preset"],
+	"packageRules": [
+		{
+			"description": "Lynx moves one version at a time, with the engine-upgrade checklist, in one pull request.",
+			"matchPackageNames": ["@lynx-js/**"],
+			"groupName": "Lynx",
+			"dependencyDashboardApproval": true
+		}
+	]
+}
