@@ -8,11 +8,13 @@ import { startMainThread } from "../../src/main-thread/index.ts";
 import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import {
+	decodeToBackground,
 	encodePatch,
 	FIRST_FRAME_GLOBAL,
 	OpCode,
 	PATCH_METHOD,
 	ROOT_ID,
+	TO_BACKGROUND,
 } from "../../src/wire/index.ts";
 import type { Op, PatchParams } from "../../src/wire/index.ts";
 
@@ -71,5 +73,45 @@ describe("a rewrite item", () => {
 		]);
 		expect(page.engine.texts()).toEqual(["x"]);
 		expect(page.engine.madeCount("view")).toBe(1);
+	});
+});
+
+describe("a rewrite item for another element while the page waits to be written again", () => {
+	it("asks for the page again, and the page that comes is shown", async () => {
+		const asked: unknown[] = [];
+		let patch: (params: PatchParams) => void = () => {};
+		const page = startTestPage({
+			mainThread: () => {
+				startMainThread();
+				// A frame the first patch refuses: a <text> where the patch makes a <view>.
+				installGlobals({ [FIRST_FRAME_GLOBAL]: () => `<text class="box">drawn</text>` });
+				patch = readGlobal(PATCH_METHOD) as (params: PatchParams) => void;
+			},
+		});
+		page.asBackground(() =>
+			page.lynx.background.getCoreContext().addEventListener(TO_BACKGROUND.replies, (event) => {
+				const message = decodeToBackground(event);
+				if (message.t === "rewrite") asked.push(message.nodes);
+			}),
+		);
+		page.asMainThread(() => {
+			patch(encodePatch({ page: 0, items: [["ops", FIRST]], rendered: 1 }));
+			patch(encodePatch({ page: 0, items: [["rewrite", 2]] }));
+		});
+		await page.settle();
+		expect(asked).toEqual([[ROOT_ID], [ROOT_ID]]);
+		page.asMainThread(() =>
+			patch(
+				encodePatch({
+					page: 0,
+					items: [
+						["rewrite", ROOT_ID],
+						["ops", FIRST],
+					],
+				}),
+			),
+		);
+		expect(page.engine.texts()).toEqual(["drawn"]);
+		expect(page.engine.state(page.engine.all()[1]!).tag).toBe("view");
 	});
 });
