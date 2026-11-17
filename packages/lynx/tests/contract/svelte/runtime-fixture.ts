@@ -54,13 +54,17 @@ export async function svelteClient(): Promise<Client> {
 	return (await importSvelte("src/index-client.js")) as unknown as Client;
 }
 
-/** Compiles `markup` for the renderer module, mounts it on a new root, and clears the log. */
-export async function mountComponent(markup: string): Promise<Mounted> {
+/**
+ * Compiles `markup` for the renderer module, mounts it on a new root, and clears the log. `dev`
+ * compiles it as a development build does.
+ */
+export async function mountComponent(markup: string, dev = false): Promise<Mounted> {
 	const renderer = await treeRenderer();
 	const client = await svelteClient();
 	const { js } = compile(markup, {
 		...clientOptions({}, pathToFileURL(path.join(import.meta.dirname, "tree-renderer.ts")).href),
 		filename: `Fixture${count}.svelte`,
+		dev,
 	});
 	folder ??= fs.mkdtempSync(path.join(PACKAGE_ROOT, "node_modules", ".contract-fixtures-"));
 	const file = path.join(folder, `fixture-${count++}.mjs`);

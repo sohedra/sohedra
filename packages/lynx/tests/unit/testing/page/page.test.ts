@@ -5,7 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { readGlobal } from "../../../../src/testing/globals.ts";
 import { startTestPage } from "../../../../src/testing/index.ts";
-import type { MainThreadLynx } from "../../../../src/testing/index.ts";
+import type { BackgroundLynx, MainThreadLynx } from "../../../../src/testing/index.ts";
 
 /** Calls an element function as the main thread's script does: through its global. */
 const mainThreadCall = (name: string, ...args: unknown[]): unknown =>
@@ -56,9 +56,11 @@ const CALLED_BY_THE_MAIN_THREAD = [
 describe("a test page", () => {
 	it("puts every element function the main thread calls on the main thread's globals", () => {
 		const page = startTestPage();
-		const missing = CALLED_BY_THE_MAIN_THREAD.filter(
-			(name) =>
-				readGlobal(name) !== (page.engine.functions as unknown as Record<string, unknown>)[name],
+		const missing = page.asMainThread(() =>
+			CALLED_BY_THE_MAIN_THREAD.filter(
+				(name) =>
+					readGlobal(name) !== (page.engine.functions as unknown as Record<string, unknown>)[name],
+			),
 		);
 		expect(missing).toEqual([]);
 	});
@@ -151,7 +153,9 @@ describe("a test page", () => {
 		);
 		const second = startTestPage();
 		expect(ended).toHaveLength(1);
-		expect(readGlobal("__CreateView")).toBe(second.engine.functions.__CreateView);
+		expect(second.asMainThread(() => readGlobal("__CreateView"))).toBe(
+			second.engine.functions.__CreateView,
+		);
 	});
 });
 
@@ -167,5 +171,109 @@ describe("a test run through the preset", () => {
 		expect(readGlobal("lynx")).toBeUndefined();
 		expect(readGlobal("__CreateView")).toBeUndefined();
 		expect(document.body.childNodes).toHaveLength(0);
+	});
+});
+
+describe("a test page's threads", () => {
+	it("keep Lynx's element functions off the background, as a device has none there", async () => {
+		const seen: Record<string, unknown> = {};
+		const page = startTestPage({
+			mainThread: () => (seen["main thread"] = readGlobal("__CreateView")),
+			background: () => (seen["background"] = readGlobal("__CreateView")),
+		});
+		expect(seen["main thread"]).toBe(page.engine.functions.__CreateView);
+		expect(seen["background"]).toBeUndefined();
+		expect(page.asMainThread(() => readGlobal("__CreateView"))).toBe(
+			page.engine.functions.__CreateView,
+		);
+		expect(page.asBackground(() => readGlobal("__CreateView"))).toBeUndefined();
+	});
+
+	it("run a background microtask as the background, with its lynx", async () => {
+		const page = startTestPage();
+		const seen: unknown[] = [];
+		page.lynx.background.queueMicrotask(() => seen.push(readGlobal("lynx")));
+		page.asMainThread(() => undefined);
+		await Promise.resolve();
+		expect(seen).toEqual([page.lynx.background]);
+	});
+
+	it("keep a report at the warning level apart from the errors", () => {
+		const page = startTestPage();
+		const warning = new Error("warning");
+		page.lynx.background.reportError(warning, { level: "warning" });
+		expect(page.warnings).toEqual([warning]);
+		expect(page.errors).not.toContain(warning);
+	});
+});
+
+describe("the app on the background", () => {
+	/** Records each hook the engine calls, with the thread it ran as. */
+	function recording() {
+		const calls: string[] = [];
+		const page = startTestPage({
+			initData: { a: 1 },
+			mainThread: () =>
+				(lynx() as MainThreadLynx)
+					.getEngine()
+					.addEventListener("__UpdatePage", (event) =>
+						calls.push(`main thread __UpdatePage ${JSON.stringify(event.data)}`),
+					),
+			background: () => {
+				const app = (lynx() as BackgroundLynx).getApp();
+				for (const hook of ["updateCardData", "onAppReload", "callDestroyLifetimeFun"])
+					app[hook] = (...args: unknown[]) =>
+						calls.push(
+							`${lynx() === page.lynx.background ? "background" : "?"} ${hook} ${JSON.stringify(args)}`,
+						);
+			},
+		});
+		return { page, calls };
+	}
+
+	it("keeps the data the page was opened with", () => {
+		const page = startTestPage({ initData: { a: 1 } });
+		expect(page.app._params).toEqual({ initData: { a: 1 }, updateData: {} });
+		expect(page.lynx.background.getApp()).toBe(page.app);
+	});
+
+	it("hears new data after the main thread, with its type", async () => {
+		const { page, calls } = recording();
+		page.updateData({ b: 2 }, { type: 1 });
+		expect(calls).toEqual(['main thread __UpdatePage [{"b":2},{}]']);
+		await page.settle();
+		expect(calls.at(-1)).toBe('background updateCardData [{"b":2},{"type":1}]');
+	});
+
+	it("hears a reload after the main thread has updated with reloadTemplate", async () => {
+		const { page, calls } = recording();
+		page.reload({ c: 3 });
+		expect(calls).toEqual(['main thread __UpdatePage [{"c":3},{"reloadTemplate":true}]']);
+		await page.settle();
+		expect(calls.at(-1)).toBe('background onAppReload [{"c":3}]');
+	});
+
+	it("hears the end of the page's life after the main thread, once, also when the page is disposed", async () => {
+		const { page, calls } = recording();
+		page.destroy();
+		await page.settle();
+		page.dispose();
+		expect(calls).toEqual(["background callDestroyLifetimeFun []"]);
+		const second = recording();
+		second.page.dispose();
+		expect(second.calls).toEqual(["background callDestroyLifetimeFun []"]);
+	});
+
+	it("skips a hook the page did not put there, as the engine does", async () => {
+		const page = startTestPage();
+		page.updateData({ b: 2 });
+		page.reload();
+		await page.settle();
+		// Only the engine's own reports of the main thread's missing functions: none of the app's.
+		expect(page.errors).toHaveLength(3);
+		for (const error of page.errors)
+			expect(error).toMatchObject({
+				message: expect.stringMatching(/^The engine sent __(Render|Update)Page/),
+			});
 	});
 });

@@ -140,8 +140,10 @@ describe("each thread's lynx", () => {
 		expect(own(page.lynx.background)).toEqual([
 			"__globalProps",
 			"__initData",
+			"getApp",
 			"getCoreContext",
 			"getNativeApp",
+			"queueMicrotask",
 			"reportError",
 		]);
 	});

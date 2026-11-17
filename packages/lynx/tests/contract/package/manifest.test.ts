@@ -16,7 +16,25 @@ interface Manifest {
 }
 
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")) as Manifest;
-const ENTRIES = ["./config/rsbuild", "./config/rstest", "./config/svelte", "./env"];
+const ENTRIES = [
+	"./config/rsbuild",
+	"./config/rstest",
+	"./config/svelte",
+	"./env",
+	"./internal/renderer",
+];
+
+/**
+ * The internal entries: what compiled code and the build import by name, and the page's start,
+ * which the page's entry imports until the public entry has it. The page's start resolves by
+ * thread, to the main thread's copy under `worker`.
+ */
+const INTERNAL = [
+	"./internal/renderer",
+	"./internal/page",
+	"./internal/main-thread-functions",
+	"./internal/window-size",
+];
 
 describe("exports", () => {
 	it("has the public entries of the build and of the thread constants, pointing at source files", () => {
@@ -39,6 +57,25 @@ describe("exports", () => {
 				default: `${built}.js`,
 			});
 		}
+	});
+
+	it("has no internal entry but the ones compiled code and the build import", () => {
+		const internal = Object.keys(manifest.exports).filter((entry) =>
+			entry.startsWith("./internal/"),
+		);
+		expect(internal.filter((entry) => !INTERNAL.includes(entry))).toEqual([]);
+	});
+
+	it("starts the page through an entry that resolves by thread, built and as source", () => {
+		expect(manifest.exports["./internal/page"]).toEqual({
+			worker: "./src/first-frame/page.ts",
+			default: "./src/background/index.ts",
+		});
+		expect(manifest.publishConfig.exports["./internal/page"]).toEqual({
+			types: "./lib/background/index.d.ts",
+			worker: "./lib/first-frame/page.js",
+			default: "./lib/background/index.js",
+		});
 	});
 
 	it("publishes the same entries as it exports", () => {
