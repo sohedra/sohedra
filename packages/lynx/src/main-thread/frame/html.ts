@@ -2,8 +2,8 @@
 // nodes. It reads what `src/svelte/runtime/server-internals.ts` writes: a string in double quotes,
 // a typed value as JSON in single quotes, and a function as a bare name, an event when the name is
 // one. The branches Svelte's block markers bound (`<!--[0-->`, `<!--[-1-->`, `<!--[!-->` to
-// `<!--]-->`) are kept as blocks: where the first frame and the background may render differently. The cells of a list on the page keep their
-// markup unparsed until Lynx asks for them.
+// `<!--]-->`) are kept as blocks: where the first frame and the background may render differently.
+// The cells of a list on the page keep their markup unparsed until Lynx asks for them.
 //
 // Plain string search and sticky regexes: the main thread's engine runs loops in JavaScript far
 // slower than its regex matcher.

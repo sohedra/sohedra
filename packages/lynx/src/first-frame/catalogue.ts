@@ -18,7 +18,7 @@ export type FirstFrameCode = keyof FirstFrameDetails;
 export const FIRST_FRAME_CATALOGUE: Catalogue<FirstFrameDetails> = {
 	first_frame_skipped_await: {
 		message: ({ component }) =>
-			`The page ${component} has no first frame: a component in it awaits outside a <svelte:boundary> with a pending snippet, and the first frame is drawn without waiting.`,
+			`The page ${component} has no first frame: a component in it (Svelte does not say which) awaits outside a <svelte:boundary> with a pending snippet, and the first frame is drawn without waiting.`,
 		fix: () =>
 			"Put the part that awaits in a <svelte:boundary> with a pending snippet: the first frame then shows the pending snippet, and the page shows the rest when it is ready.",
 		docs: "first_frame_skipped_await",

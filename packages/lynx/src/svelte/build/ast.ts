@@ -38,9 +38,9 @@ export function attributesOf(element: AnyNode): AnyNode[] {
 	return element.attributes as AnyNode[];
 }
 
-/** An attribute's name, with any `main-thread:` prefix. */
+/** An attribute's name, with any `main-thread:` prefix. A spread or an attachment has none: check the type first. */
 export function attributeName(attribute: AnyNode): string {
-	// Boundary: the node is read by shape; every attribute has a string name.
+	// Boundary: the node is read by shape; an `Attribute` and a directive have a string name.
 	return attribute.name as string;
 }
 
