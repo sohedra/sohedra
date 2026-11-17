@@ -1,18 +1,18 @@
-// A test page: the engine fake as the main thread's globals, the fake `lynx` both threads read,
-// and the two places where the page's own scripts start. No runtime runs in their place.
+// A test page: the engine fake as the main thread's globals, a `lynx` for each thread, and the two
+// places where the page's own scripts start. No runtime runs in their place.
 
 import { describe, expect, it } from "@rstest/core";
 
 import { readGlobal } from "../../../../src/testing/globals.ts";
 import { startTestPage } from "../../../../src/testing/index.ts";
-import type { TestLynx } from "../../../../src/testing/index.ts";
+import type { MainThreadLynx } from "../../../../src/testing/index.ts";
 
 /** Calls an element function as the main thread's script does: through its global. */
 const mainThreadCall = (name: string, ...args: unknown[]): unknown =>
 	(readGlobal(name) as (...args: unknown[]) => unknown)(...args);
 
-/** The page's `lynx`, as each thread's code reads it: a global. */
-const lynx = () => readGlobal("lynx") as TestLynx;
+/** The `lynx` a script reads while its thread runs: a global. */
+const lynx = () => readGlobal("lynx");
 
 // Every element function the main-thread runtime calls: the names its element-function table
 // required and took when present, and the ones its element methods and lazy bundles call.
@@ -63,41 +63,61 @@ describe("a test page", () => {
 		expect(missing).toEqual([]);
 	});
 
-	it("gives both threads one lynx, with the page's data, its contexts and the engine's", () => {
+	it("gives each thread a lynx with the page's data, and the main thread's the engine's events", () => {
 		const page = startTestPage({ initData: { count: 1 }, globalProps: { theme: "dark" } });
-		const shared = lynx();
-		expect(shared.__initData).toEqual({ count: 1 });
-		expect(shared.__globalProps).toEqual({ theme: "dark" });
-		expect(shared.getEngine()).toBe(page.engine.lifecycle.engine);
-		expect(shared.getNative()).toBe(page.engine.lifecycle.native);
-		for (const name of ["getJSContext", "getCoreContext", "getNativeApp", "reportError"] as const) {
-			expect(typeof shared[name]).toBe("function");
+		for (const own of [page.lynx.mainThread, page.lynx.background]) {
+			expect(own.__initData).toEqual({ count: 1 });
+			expect(own.__globalProps).toEqual({ theme: "dark" });
 		}
+		expect(page.lynx.mainThread.getEngine()).toBe(page.engine.lifecycle.engine);
+		expect(page.lynx.mainThread.getNative()).toBe(page.engine.lifecycle.native);
 	});
 
-	it("keeps what the page reports with lynx.reportError", () => {
+	it("keeps what either thread reports with lynx.reportError", () => {
 		const page = startTestPage();
-		const error = new Error("boom");
-		lynx().reportError(error);
-		expect(page.errors).toEqual([error]);
+		const errors = [new Error("main"), new Error("background")];
+		page.lynx.mainThread.reportError(errors[0]);
+		page.lynx.background.reportError(errors[1]);
+		expect(page.errors).toEqual(expect.arrayContaining(errors));
 	});
 
-	it("runs the main thread's script, renders, then runs the background's script", () => {
+	it("reports a render that nothing hears, as Lynx calls a renderPage the main thread lacks", () => {
+		const page = startTestPage();
+		expect(page.errors).toContainEqual(
+			expect.objectContaining({ message: expect.stringContaining("renderPage") }),
+		);
+	});
+
+	it("reports nothing for a render that the main thread's script listens for", () => {
+		const page = startTestPage({
+			mainThread: () =>
+				(lynx() as MainThreadLynx).getEngine().addEventListener("__RenderPage", () => undefined),
+		});
+		expect(page.errors).toEqual([]);
+	});
+
+	it("runs the main thread's script, renders, then runs the background's script, each with its lynx", () => {
 		const order: string[] = [];
+		const seen: unknown[] = [];
 		const page = startTestPage({
 			initData: { count: 1 },
 			mainThread: () => {
 				order.push("main thread");
-				lynx()
+				seen.push(lynx());
+				(lynx() as MainThreadLynx)
 					.getEngine()
 					.addEventListener("__RenderPage", (event) =>
 						order.push(`render ${JSON.stringify(event.data)}`),
 					);
 			},
-			background: () => order.push("background"),
+			background: () => {
+				order.push("background");
+				seen.push(lynx());
+			},
 		});
 		expect(order).toEqual(["main thread", 'render [{"count":1},{}]', "background"]);
 		expect(page.engine.flushes).toHaveLength(1);
+		expect(seen).toEqual([page.lynx.mainThread, page.lynx.background]);
 	});
 
 	it("runs no script of its own when none is given: nothing stands in for the runtime", () => {

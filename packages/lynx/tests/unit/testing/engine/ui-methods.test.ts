@@ -1,7 +1,7 @@
 // UI methods and the flush: no UI before the tree is flushed, flattened views have none, and an
 // element that stopped being flattened answers as it was until the next flush.
 
-import { describe, expect, it } from "@rstest/core";
+import { beforeEach, describe, expect, it } from "@rstest/core";
 
 import type { LynxElement } from "../../../../src/testing/index.ts";
 import { engineForEach, smallPage } from "./engine-fixture.ts";
@@ -22,6 +22,9 @@ async function invoke(element: LynxElement) {
 }
 
 describe("a UI method", () => {
+	// These tests are about the flush, not flattening: their plain views keep a view of their own.
+	beforeEach(() => engine().flattenViews(false));
+
 	it("has no UI for an element before the tree is flushed, then answers what the test says", async () => {
 		const { page, inner } = smallPage(engine());
 		engine().respondWith((method) => ({ code: 0, data: `${method} done` }));
@@ -100,6 +103,30 @@ describe("a UI method", () => {
 	});
 });
 
+describe("flattening", () => {
+	it("is on unless a test turns it off, as on a device", async () => {
+		const { page, inner } = smallPage(engine());
+		engine().functions.__FlushElementTree(page);
+		expect(await invoke(inner)).toEqual([{ code: 6 }]);
+		engine().flattenViews(false);
+		expect(await invoke(inner)).toEqual([{ code: 0 }]);
+	});
+});
+
+describe("an element that is not in the page at the flush", () => {
+	it("gets no view, and has no UI until a flush finds it in the page", async () => {
+		const { page } = smallPage(engine());
+		const f = engine().functions;
+		engine().flattenViews(false);
+		const loose = f.__CreateView(0);
+		f.__FlushElementTree(page);
+		expect(await invoke(loose)).toEqual([{ code: 6 }]);
+		f.__AppendElement(page, loose);
+		f.__FlushElementTree(page);
+		expect(await invoke(loose)).toEqual([{ code: 0 }]);
+	});
+});
+
 describe("a plain view", () => {
 	it("has no UI once flattening is on, until it is told it has one of its own", async () => {
 		const { page, inner } = smallPage(engine());
@@ -157,4 +184,40 @@ describe("an element that stopped being flattened", () => {
 		]);
 		expect(engine().invocations.map((call) => call.code)).toEqual([6, 0, 0]);
 	});
+
+	it.each([
+		[
+			"a listener",
+			(element: LynxElement) => engine().functions.__AddEventListener(element, "tap", () => {}, {}),
+		],
+		[
+			"a gesture detector",
+			(element: LynxElement) =>
+				engine().functions.__SetGestureDetector(
+					element,
+					1,
+					0,
+					{ callbacks: [] },
+					{ waitFor: [], simultaneous: [], continueWith: [] },
+				),
+		],
+	])(
+		"answers as the flattened element after %s gave it a view, until the next flush",
+		async (_name, give) => {
+			const { page, inner } = smallPage(engine());
+			engine().functions.__FlushElementTree(page);
+			engine().respondWith(() => ({
+				code: 0,
+				data: { left: 12, top: 200, width: 30, height: 40 },
+			}));
+			give(inner);
+			const answers = [...(await invoke(inner))];
+			engine().functions.__FlushElementTree(page);
+			answers.push(...(await invoke(inner)));
+			expect(answers).toEqual([
+				{ code: 0, data: { left: 0, top: 0, width: 30, height: 40 } },
+				{ code: 0, data: { left: 12, top: 200, width: 30, height: 40 } },
+			]);
+		},
+	);
 });

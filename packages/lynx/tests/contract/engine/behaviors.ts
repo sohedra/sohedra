@@ -166,14 +166,20 @@ export const BEHAVIORS: Behavior[] = [
 		async run(target) {
 			const f = target.functions;
 			const element = view(target, "styled");
+			f.__FlushElementTree();
+			// Compared with the element's own value before, which a device spells its own way.
+			const before = f.__GetComputedStyleByKey(element, "opacity");
 			f.__AddInlineStyle(element, "opacity", "0.5");
 			f.__FlushElementTree();
 			const added = f.__GetComputedStyleByKey(element, "opacity");
 			f.__SetInlineStyles(element, "width: 100px; height: 100px");
 			f.__FlushElementTree();
-			return { added, keptAfterSet: f.__GetComputedStyleByKey(element, "opacity") === "0.5" };
+			return {
+				changedByAdd: added !== before,
+				backAfterSet: f.__GetComputedStyleByKey(element, "opacity") === before,
+			};
 		},
-		expected: { added: "0.5", keptAfterSet: false },
+		expected: { changedByAdd: true, backAfterSet: true },
 	},
 	{
 		name: "__AddEvent keeps one function per event name and type; none removes it",
@@ -364,7 +370,9 @@ export const BEHAVIORS: Behavior[] = [
 		},
 	},
 	{
-		name: "the gesture manager takes a detector's state and consumption from its callback",
+		// A device shows no more than this: what the state and consumption do is the gesture's own
+		// recognition, which no observation of the page reaches.
+		name: "a gesture callback can call the gesture manager's two functions on its element",
 		source: "core/runtime/lepusng/bindings/renderer_ng.cc (Utils::CreateGestureManager)",
 		async run(target) {
 			const f = target.functions;

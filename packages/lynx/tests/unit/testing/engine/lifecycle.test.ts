@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, it } from "@rstest/core";
 
 import { installGlobals } from "../../../../src/testing/globals.ts";
+import { createEngine } from "../../../../src/testing/index.ts";
 import { engineForEach } from "./engine-fixture.ts";
 
 const engine = engineForEach();
@@ -94,12 +95,28 @@ describe("an engine event that no one listens to", () => {
 		lifecycle.render({ a: 1 });
 		lifecycle.update({ a: 2 }, { reset: true });
 		lifecycle.removeComponents();
-		lifecycle.updateGlobalProps({ theme: "dark" });
 		expect(calls).toEqual([
 			["renderPage", { a: 1 }, {}],
 			["updatePage", { a: 2 }, { reset: true }],
 			["removeComponents"],
 		]);
+	});
+
+	it("is reported when the main thread has no such global either: Lynx calls it, not tries it", () => {
+		const { lifecycle } = engine();
+		expect(() => lifecycle.updateGlobalProps({ theme: "dark" })).toThrow(
+			"The engine sent __UpdateGlobalProps, and the main thread has no updateGlobalProps function",
+		);
+	});
+
+	it("is reported through the engine's report option when it has one", () => {
+		const reported: unknown[] = [];
+		const own = createEngine({ report: (error) => reported.push(error) });
+		own.lifecycle.render();
+		expect(reported).toEqual([
+			expect.objectContaining({ message: expect.stringContaining("renderPage") }),
+		]);
+		own.dispose();
 	});
 
 	it("is not sent as a call when someone listens", () => {

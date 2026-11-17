@@ -38,7 +38,7 @@ describe("an event bound with __AddEvent", () => {
 		const { inner, bind } = bindable();
 		const value = { any: "thing" };
 		bind(inner, "bindEvent", "tap", value);
-		engine().fire(inner, "tap", { detail: { x: 1 } });
+		engine().fire(inner, { type: "tap", detail: { x: 1 } });
 		expect(worklets.calls).toHaveLength(1);
 		expect(worklets.calls[0]!.value).toBe(value);
 		expect(worklets.calls[0]!.options).toEqual({ source: 1 });
@@ -52,7 +52,7 @@ describe("an event bound with __AddEvent", () => {
 		const { outer, inner, bind } = bindable();
 		bind(inner, "bindEvent", "tap", { at: "inner" });
 		bind(outer, "bindEvent", "tap", { at: "outer" });
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		const events = worklets.calls.map(
 			(call) => call.params[0] as Record<string, { elementRefptr: unknown }>,
 		);
@@ -65,7 +65,7 @@ describe("an event bound with __AddEvent", () => {
 		const { inner } = bindable();
 		const seen: unknown[] = [];
 		engine().functions.__AddEventListener(inner, "tap", (event) => seen.push(event), {});
-		engine().fire(inner, "tap");
+		engine().fire(inner, { type: "tap" });
 		const target = { id: "inner", uid: 3, dataset: { row: 3 } };
 		expect(seen).toEqual([{ type: "tap", target, currentTarget: target }]);
 	});
@@ -76,10 +76,10 @@ describe("an event bound with __AddEvent", () => {
 		const second = { n: 2 };
 		bind(inner, "bindEvent", "tap", first);
 		bind(inner, "bindEvent", "tap", second);
-		engine().fire(inner, "tap");
+		engine().fire(inner, { type: "tap" });
 		expect(worklets.calls.map((call) => call.value)).toEqual([second]);
 		bind(inner, "bindEvent", "tap", undefined);
-		expect(() => engine().fire(inner, "tap")).toThrow("no tap listener");
+		expect(() => engine().fire(inner, { type: "tap" })).toThrow("no tap listener");
 		expect(worklets.calls).toHaveLength(1);
 	});
 
@@ -106,7 +106,7 @@ describe("an event bound with __AddEvent", () => {
 		).toEqual(["tap"]);
 	});
 
-	it("runs a function before a listener, and capture from the page down, then bubble up", () => {
+	it("runs capture from the page down, then the target, then bubble up", () => {
 		const { outer, inner, bind } = bindable();
 		const labels = new Map<unknown, string>();
 		const value = (label: string) => {
@@ -121,7 +121,7 @@ describe("an event bound with __AddEvent", () => {
 		bind(inner, "bindEvent", "tap", value("inner"));
 		bind(outer, "bindEvent", "tap", value("outer"));
 		engine().functions.__AddEventListener(inner, "tap", () => order.push("inner listener"), {});
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["outer capture", "inner capture", "inner", "inner listener", "outer"]);
 	});
 
@@ -135,7 +135,7 @@ describe("an event bound with __AddEvent", () => {
 		]);
 		bind(inner, "catchEvent", "tap", caught);
 		bind(outer, "bindEvent", "tap", above);
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(ran(labels)).toEqual(["inner"]);
 	});
 
@@ -149,7 +149,7 @@ describe("an event bound with __AddEvent", () => {
 		]);
 		bind(outer, "capture-catch", "tap", top);
 		bind(inner, "bindEvent", "tap", target);
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(ran(labels)).toEqual(["outer capture"]);
 	});
 
@@ -157,7 +157,7 @@ describe("an event bound with __AddEvent", () => {
 		const { inner, bind } = bindable();
 		worklets.remove();
 		bind(inner, "bindEvent", "tap", {});
-		expect(() => engine().fire(inner, "tap")).not.toThrow();
+		expect(() => engine().fire(inner, { type: "tap" })).not.toThrow();
 		expect(engine().mainThreadRuns).toEqual([]);
 	});
 
@@ -185,8 +185,9 @@ describe("a global-bind event", () => {
 			[own, "inner"],
 		]);
 		bind(elsewhere, "global-bindEvent", "tap", everywhere);
+		f.__FlushElementTree();
 		bind(inner, "bindEvent", "tap", own);
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(ran(labels)).toEqual(["global", "inner"]);
 		const event = worklets.calls[0]!.params[0] as Record<string, { elementRefptr: unknown }>;
 		expect(event["currentTarget"]!.elementRefptr).toBe(elsewhere);
@@ -202,10 +203,11 @@ describe("a global-bind event", () => {
 		f.__AppendElement(page, watcher);
 		const heard: string[] = [];
 		f.__AddEventListener(watcher, "tap", () => heard.push("global"), GLOBAL);
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(heard).toEqual([]);
 		f.__AddEvent(watcher, "global-bindEvent", "tap", "onTap");
-		engine().dispatch(inner, "tap");
+		f.__FlushElementTree();
+		engine().dispatch(inner, { type: "tap" });
 		expect(heard).toEqual(["global"]);
 	});
 });
@@ -218,7 +220,7 @@ describe("a listener's options", () => {
 		f.__AddEventListener(outer, "tap", () => order.push("outer"), {});
 		f.__AddEventListener(outer, "tap", () => order.push("outer capture"), { capture: true });
 		f.__AddEventListener(inner, "tap", () => order.push("inner"), { bind_type: 3 });
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["outer capture", "inner", "outer"]);
 	});
 
@@ -234,7 +236,7 @@ describe("a listener's options", () => {
 			closure_type: 2,
 			bind_type: 4,
 		});
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["inner"]);
 	});
 
@@ -275,7 +277,7 @@ describe("eventReturnResult", () => {
 	it("bit 1 stops the event after the listeners of the same element and phase", () => {
 		const { inner, labels, first, listeners } = chain();
 		worklets.returns.set(first, { eventReturnResult: 1 });
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(ran(labels)).toEqual(["inner"]);
 		expect(listeners).toEqual(["inner listener"]);
 		expect(engine().mainThreadRuns.map((run) => run.eventReturnResult)).toEqual([1]);
@@ -284,7 +286,7 @@ describe("eventReturnResult", () => {
 	it("bit 2 stops it at once", () => {
 		const { inner, labels, first, listeners } = chain();
 		worklets.returns.set(first, { eventReturnResult: 2 });
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(ran(labels)).toEqual(["inner"]);
 		expect(listeners).toEqual([]);
 	});
@@ -297,7 +299,7 @@ describe("eventReturnResult", () => {
 	])("is read from an object only: %s stops nothing", (_name, returned) => {
 		const { inner, labels, first, listeners } = chain();
 		worklets.returns.set(first, returned);
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(ran(labels)).toEqual(["inner", "outer"]);
 		expect(listeners).toEqual(["inner listener", "outer listener"]);
 	});
@@ -310,7 +312,7 @@ describe("firing on one element", () => {
 		bind(inner, "bindEvent", "scroll", { n: 1 });
 		engine().functions.__AddEventListener(inner, "scroll", () => heard.push("inner"), {});
 		engine().functions.__AddEventListener(outer, "scroll", () => heard.push("outer"), {});
-		engine().fire(inner, "scroll", { detail: { scrollTop: 10 } });
+		engine().fire(inner, { type: "scroll", detail: { scrollTop: 10 } });
 		expect(worklets.calls).toHaveLength(1);
 		expect(heard).toEqual(["inner"]);
 	});
@@ -322,7 +324,7 @@ describe("firing on one element", () => {
 		bind(inner, "bindEvent", "scroll", first);
 		engine().functions.__AddEventListener(inner, "scroll", () => heard.push("inner"), {});
 		worklets.returns.set(first, { eventReturnResult: 2 });
-		engine().fire(inner, "scroll");
+		engine().fire(inner, { type: "scroll" });
 		expect(heard).toEqual([]);
 	});
 });
@@ -345,7 +347,7 @@ describe("the order of an element's bindings", () => {
 		const value = labeled(order);
 		engine().functions.__AddEventListener(inner, "tap", () => order.push("listener"), {});
 		bind(inner, "bindEvent", "tap", value("function"));
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["listener", "function"]);
 	});
 
@@ -356,7 +358,7 @@ describe("the order of an element's bindings", () => {
 		bind(inner, "bindEvent", "tap", value("first"));
 		engine().functions.__AddEventListener(inner, "tap", () => order.push("listener"), {});
 		bind(inner, "bindEvent", "tap", value("again"));
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["listener", "again"]);
 	});
 
@@ -370,7 +372,7 @@ describe("the order of an element's bindings", () => {
 		bind(inner, "capture-bind", "tap", value("inner capture"));
 		bind(outer, "capture-bind", "tap", value("outer capture"));
 		bind(outer, "bindEvent", "tap", value("outer"));
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["outer capture", "inner capture", "inner", "inner listener", "outer"]);
 	});
 
@@ -386,13 +388,13 @@ describe("the order of an element's bindings", () => {
 		bind(inner, "capture-bind", "tap", stopper);
 		bind(inner, "bindEvent", "tap", value("inner"));
 		bind(outer, "bindEvent", "tap", value("outer"));
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["inner capture", "inner"]);
 
 		order.length = 0;
 		bind(inner, "capture-bind", "tap", undefined);
 		bind(inner, "capture-catch", "tap", value("inner catch"));
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(order).toEqual(["inner catch", "inner"]);
 	});
 });
@@ -405,7 +407,7 @@ describe("a handler name", () => {
 		f.__AddEventListener(page, "tap", () => heard.push("page"), {});
 		bind(inner, "bindEvent", "tap", { n: 1 });
 		f.__AddEvent(outer, "catchEvent", "tap", "onOuterTap");
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(heard).toEqual([]);
 		expect(
 			engine().backgroundEvents.map((sent) => [sent.element, sent.eventType, sent.handler]),
@@ -417,11 +419,11 @@ describe("a handler name", () => {
 		const f = engine().functions;
 		bind(inner, "bindEvent", "tap", { n: 1 });
 		f.__AddEvent(inner, "bindEvent", "tap", "onTap");
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(worklets.calls).toHaveLength(1);
 		expect(engine().backgroundEvents).toHaveLength(1);
 		f.__AddEvent(inner, "bindEvent", "tap", undefined);
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(worklets.calls).toHaveLength(1);
 		expect(engine().backgroundEvents).toHaveLength(1);
 	});
@@ -429,7 +431,7 @@ describe("a handler name", () => {
 	it("files the type and sends nothing when it is empty", () => {
 		const { inner } = bindable();
 		engine().functions.__AddEvent(inner, "bindEvent", "tap", "");
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(engine().backgroundEvents).toEqual([]);
 		expect(engine().state(inner).filedEvents).toEqual(new Set(["bindEvent:tap"]));
 	});
@@ -450,8 +452,10 @@ describe("the global phase", () => {
 			[second, "made second"],
 		]);
 		bind(later, "global-bindEvent", "tap", second);
+		f.__FlushElementTree();
 		bind(made, "global-bindEvent", "tap", first);
-		engine().dispatch(inner, "tap");
+		f.__FlushElementTree();
+		engine().dispatch(inner, { type: "tap" });
 		expect(ran(labels)).toEqual(["made first", "made second"]);
 	});
 
@@ -463,10 +467,11 @@ describe("the global phase", () => {
 		const heard: string[] = [];
 		f.__AddEventListener(inner, "tap", () => heard.push("plain global"), { bind_type: 5 });
 		f.__AddEventListener(watcher, "tap", () => heard.push("watcher"), { bind_type: 5 });
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(heard).toEqual([]);
 		f.__AddEvent(watcher, "global-bindEvent", "tap", "onTap");
-		engine().dispatch(inner, "tap");
+		f.__FlushElementTree();
+		engine().dispatch(inner, { type: "tap" });
 		expect(heard).toEqual(["watcher"]);
 	});
 
@@ -481,7 +486,8 @@ describe("the global phase", () => {
 			bind_type: 5,
 		});
 		bind(watcher, "global-bindEvent", "tap", { n: 1 });
-		engine().dispatch(inner, "tap");
+		f.__FlushElementTree();
+		engine().dispatch(inner, { type: "tap" });
 		expect(heard).toEqual(["listener"]);
 		expect(worklets.calls).toHaveLength(1);
 	});
@@ -493,8 +499,9 @@ describe("the global phase", () => {
 		f.__AppendElement(page, watcher);
 		const everywhere = { n: 1 };
 		bind(watcher, "global-bindEvent", "tap", everywhere);
+		f.__FlushElementTree();
 		worklets.returns.set(everywhere, { eventReturnResult: 1 });
-		expect(() => engine().dispatch(inner, "tap")).toThrow(
+		expect(() => engine().dispatch(inner, { type: "tap" })).toThrow(
 			"A global-bind function stopped the tap event",
 		);
 	});
@@ -508,7 +515,7 @@ describe("a custom event", () => {
 		bind(inner, "capture-bind", "scroll", { n: 1 });
 		f.__AddEventListener(inner, "scroll", () => heard.push("capture"), { capture: true });
 		f.__AddEventListener(inner, "scroll", () => heard.push("plain"), {});
-		engine().fire(inner, "scroll");
+		engine().fire(inner, { type: "scroll" });
 		expect(heard).toEqual(["plain"]);
 		expect(worklets.calls).toEqual([]);
 	});
@@ -520,9 +527,10 @@ describe("a custom event", () => {
 		f.__AppendElement(page, watcher);
 		const heard: string[] = [];
 		bind(watcher, "global-bindEvent", "scroll", { n: 1 });
+		f.__FlushElementTree();
 		worklets.use(() => void heard.push("global"));
 		f.__AddEventListener(inner, "scroll", () => heard.push("inner"), {});
-		engine().fire(inner, "scroll");
+		engine().fire(inner, { type: "scroll" });
 		expect(heard).toEqual(["global", "inner"]);
 	});
 });
@@ -530,8 +538,10 @@ describe("a custom event", () => {
 describe("the engine's side, given what is not one of its elements", () => {
 	it("says which call was given it", () => {
 		const foreign = document.createElement("div");
-		expect(() => engine().fire(foreign, "tap")).toThrow("fire param 0 should be an element");
-		expect(() => engine().dispatch(foreign, "tap")).toThrow(
+		expect(() => engine().fire(foreign, { type: "tap" })).toThrow(
+			"fire param 0 should be an element",
+		);
+		expect(() => engine().dispatch(foreign, { type: "tap" })).toThrow(
 			"dispatch param 0 should be an element",
 		);
 	});
@@ -545,5 +555,92 @@ describe("removing a listener", () => {
 		f.__AddEventListener(inner, "tap", listener, { capture: true });
 		f.__RemoveEventListener(inner, "tap", listener, { capture: true, bind_type: 1 });
 		expect(engine().listenerCount()).toBe(0);
+	});
+});
+
+describe("a binding removed while the event is on its way", () => {
+	it("does not run, even on the element whose bindings are running", () => {
+		const { inner } = bindable();
+		const f = engine().functions;
+		const heard: string[] = [];
+		const second = () => heard.push("second");
+		f.__AddEventListener(
+			inner,
+			"tap",
+			() => {
+				heard.push("first");
+				f.__RemoveEventListener(inner, "tap", second, {});
+			},
+			{},
+		);
+		f.__AddEventListener(inner, "tap", second, {});
+		engine().dispatch(inner, { type: "tap" });
+		expect(heard).toEqual(["first"]);
+	});
+
+	it("does not run when an earlier binding unbinds a main-thread function", () => {
+		const { inner, bind } = bindable();
+		const f = engine().functions;
+		f.__AddEventListener(inner, "tap", () => bind(inner, "bindEvent", "tap", undefined), {});
+		bind(inner, "bindEvent", "tap", { n: 1 });
+		engine().dispatch(inner, { type: "tap" });
+		expect(worklets.calls).toEqual([]);
+	});
+});
+
+describe("a global-bind filing", () => {
+	it("takes effect at the next flush, when the engine resolves the element's events", () => {
+		const { page, inner } = bindable();
+		const f = engine().functions;
+		const watcher = f.__CreateView(0);
+		f.__AppendElement(page, watcher);
+		const heard: string[] = [];
+		f.__AddEventListener(watcher, "tap", () => heard.push("watcher"), { bind_type: 5 });
+		f.__AddEvent(watcher, "global-bindEvent", "tap", "");
+		engine().dispatch(inner, { type: "tap" });
+		expect(heard).toEqual([]);
+		f.__FlushElementTree();
+		engine().dispatch(inner, { type: "tap" });
+		expect(heard).toEqual(["watcher"]);
+	});
+
+	it("stays when it is removed: the element hears the global phase until it is gone", () => {
+		const { page, inner } = bindable();
+		const f = engine().functions;
+		const watcher = f.__CreateView(0);
+		f.__AppendElement(page, watcher);
+		const heard: string[] = [];
+		f.__AddEventListener(watcher, "tap", () => heard.push("watcher"), { bind_type: 5 });
+		f.__AddEvent(watcher, "global-bindEvent", "tap", "");
+		f.__FlushElementTree();
+		f.__AddEvent(watcher, "global-bindEvent", "tap", undefined);
+		f.__FlushElementTree();
+		engine().dispatch(inner, { type: "tap" });
+		expect(heard).toEqual(["watcher"]);
+		f.__RemoveElement(page, watcher);
+		engine().forget(f.__GetElementUniqueID(watcher));
+		engine().dispatch(inner, { type: "tap" });
+		expect(heard).toEqual(["watcher"]);
+	});
+
+	it("is not resolved for an element that is not in the page at the flush", () => {
+		const { inner } = bindable();
+		const f = engine().functions;
+		const loose = f.__CreateView(0);
+		const heard: string[] = [];
+		f.__AddEventListener(loose, "tap", () => heard.push("loose"), { bind_type: 5 });
+		f.__AddEvent(loose, "global-bindEvent", "tap", "");
+		f.__FlushElementTree();
+		engine().dispatch(inner, { type: "tap" });
+		expect(heard).toEqual([]);
+	});
+});
+
+describe("an __AddEvent type", () => {
+	it("is one of the five Lynx knows; any other throws, where Lynx would take it as bubble", () => {
+		const { inner } = bindable();
+		expect(() =>
+			engine().functions.__AddEvent(inner, "bindtap", "tap", { type: "worklet", value: {} }),
+		).toThrow("__AddEvent was given the type bindtap");
 	});
 });

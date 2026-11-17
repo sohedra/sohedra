@@ -79,6 +79,13 @@ describe("classes and id", () => {
 		);
 	});
 
+	it("refuses an id that is not text or none, where Lynx would set an empty one", () => {
+		const { inner } = smallPage(engine());
+		expect(() => engine().functions.__SetID(inner, 7 as never)).toThrow(
+			"__SetID param 1 should be text or none",
+		);
+	});
+
 	it("sets the id, and takes it away with null", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
@@ -111,10 +118,17 @@ describe("dataset", () => {
 			(event) => targets.push((event as { target: unknown }).target),
 			{},
 		);
-		engine().dispatch(inner, "tap");
+		engine().dispatch(inner, { type: "tap" });
 		expect(targets).toEqual([{ id: "inner", uid: 3, dataset: { "drag-handle": "yes" } }]);
 		expect(f.__QuerySelector(page, "[data-drag-handle=yes]", {})).toBe(inner);
 		expect((inner as HTMLElement).dataset["dragHandle"]).toBe("yes");
+	});
+
+	it("refuses a dataset that is not an object", () => {
+		const { inner } = smallPage(engine());
+		expect(() => engine().functions.__SetDataset(inner, "row" as never)).toThrow(
+			"__SetDataset param 1 should be an object",
+		);
 	});
 
 	it("takes a hyphenated key, and shows it as the data attribute of that name", () => {
@@ -254,6 +268,14 @@ describe("queries", () => {
 		expect(() => f.__QuerySelector(page, "[data-row='7']", {})).toThrow(
 			"Lynx compares the quotes as part of the value",
 		);
+	});
+
+	it("takes a name as Lynx does: a tag starts with a letter, a class or id may start with a digit", () => {
+		const { page, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetClasses(inner, "1col");
+		expect(f.__QuerySelector(page, ".1col", {})).toBe(inner);
+		expect(() => f.__QuerySelector(page, "_view", {})).toThrow("Lynx's selectors do not take");
 	});
 
 	it("answers undefined for no match, as it does for an attribute that is not there", () => {

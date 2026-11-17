@@ -28,7 +28,9 @@ describe("a detector set with __SetGestureDetector", () => {
 	it("runs runWorklet(callback, [event, gestureManager], { source: 2 })", () => {
 		const { inner, onBegin } = detector();
 		worklets.returns.set(onBegin, "returned");
-		expect(engine().fireGesture(inner, 7, "onBegin", { pageX: 12 })).toBe("returned");
+		expect(engine().fireGesture(inner, { id: 7, callback: "onBegin", params: { pageX: 12 } })).toBe(
+			"returned",
+		);
 		expect(worklets.calls).toHaveLength(1);
 		expect(worklets.calls[0]!.value).toBe(onBegin);
 		expect(worklets.calls[0]!.options).toEqual({ source: 2 });
@@ -65,7 +67,7 @@ describe("a detector set with __SetGestureDetector", () => {
 			gestures.__SetGestureState(inner, 8, 2);
 			gestures.__SetGestureState(outer, 7, 3);
 		});
-		engine().fireGesture(inner, 7, "onBegin");
+		engine().fireGesture(inner, { id: 7, callback: "onBegin" });
 		expect(engine().detectors(inner)).toEqual([
 			expect.objectContaining({ id: 7, state: 1, consume: { consume: true, inner: true } }),
 		]);
@@ -79,9 +81,11 @@ describe("a detector set with __SetGestureDetector", () => {
 
 	it("is gone after __RemoveGestureDetector, and has only the callbacks it was given", () => {
 		const { inner } = detector();
-		expect(() => engine().fireGesture(inner, 7, "onEnd")).toThrow("has no onEnd");
+		expect(() => engine().fireGesture(inner, { id: 7, callback: "onEnd" })).toThrow("has no onEnd");
 		engine().functions.__RemoveGestureDetector(inner, 7);
-		expect(() => engine().fireGesture(inner, 7, "onBegin")).toThrow("no gesture detector 7");
+		expect(() => engine().fireGesture(inner, { id: 7, callback: "onBegin" })).toThrow(
+			"no gesture detector 7",
+		);
 		expect(worklets.calls).toEqual([]);
 	});
 
@@ -102,6 +106,17 @@ describe("a detector set with __SetGestureDetector", () => {
 			},
 			{ op: "remove", element: inner, id: 7 },
 		]);
+	});
+
+	it("refuses an id or a type that is not a number, as the engine does", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		expect(() =>
+			f.__SetGestureDetector(inner, "7" as never, 0, { callbacks: [] }, RELATIONS),
+		).toThrow("__SetGestureDetector param 1 should be a number");
+		expect(() =>
+			f.__SetGestureDetector(inner, 7, "pan" as never, { callbacks: [] }, RELATIONS),
+		).toThrow("__SetGestureDetector param 2 should be a number");
 	});
 
 	it("sets nothing when the callbacks are not an array, as the engine does", () => {

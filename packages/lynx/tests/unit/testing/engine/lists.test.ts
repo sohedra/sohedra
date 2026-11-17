@@ -27,7 +27,17 @@ function list() {
 		(_list, listId, sign) => returned.push([listId, sign]),
 	);
 	f.__AppendElement(outer, element);
+	f.__SetAttribute(element, "update-list-info", items(6));
 	return { page, element, asked, returned, cells };
+}
+
+/** An update that inserts `count` items at the start. */
+function items(count: number) {
+	return {
+		insertAction: Array.from({ length: count }, (_, position) => ({ position, type: "item" })),
+		removeAction: [],
+		updateAction: [],
+	};
 }
 
 describe("a list", () => {
@@ -65,6 +75,26 @@ describe("a list", () => {
 		expect(returned).toEqual([[listId, engine().functions.__GetElementUniqueID(first)]]);
 	});
 
+	it("throws when asked for a cell past the items the page gave it", () => {
+		const { element } = list();
+		const f = engine().functions;
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [],
+			removeAction: [0, 1],
+			updateAction: [],
+		});
+		expect(() => engine().list(element).show(4)).toThrow(
+			"The list has 4 items, so Lynx asks for no cell at index 4.",
+		);
+	});
+
+	it("refuses an update-list-info that is not the three lists Lynx reads", () => {
+		const { element } = list();
+		expect(() =>
+			engine().functions.__SetAttribute(element, "update-list-info", { insertAction: [] }),
+		).toThrow("update-list-info should be { insertAction, removeAction, updateAction }");
+	});
+
 	it("throws when the cell asked for is not an element the engine made", () => {
 		const { element } = list();
 		const f = engine().functions;
@@ -85,7 +115,7 @@ describe("a list", () => {
 		handle.onUpdate = (update) => seen.push(update);
 		const update = { insertAction: [{ position: 0 }], removeAction: [], updateAction: [] };
 		engine().functions.__SetAttribute(element, "update-list-info", update);
-		expect(handle.updates).toEqual([update]);
+		expect(handle.updates).toEqual([items(6), update]);
 		expect(seen).toEqual([update]);
 		expect(engine().functions.__GetAttributeByName(element, "update-list-info")).toBeUndefined();
 	});

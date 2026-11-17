@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { engineForEach, smallPage } from "./engine-fixture.ts";
+import { engineForEach, runWorkletRecorder, smallPage } from "./engine-fixture.ts";
 
 const engine = engineForEach();
 
@@ -60,6 +60,45 @@ describe("the engine's animation events", () => {
 		f.__AddEventListener(inner, "animationend", () => {}, {});
 		expect(engine().endAnimation(inner, "fade")).toBe(true);
 		expect(engine().cancelAnimation(inner, "fade")).toBe(false);
+	});
+});
+
+describe("an animation event to an __AddEvent binding", () => {
+	const worklets = runWorkletRecorder();
+
+	it("goes to a handler name, for the background", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__AddEvent(inner, "bindEvent", "animationcancel", "onCancel");
+		f.__ElementAnimate(inner, FADE);
+		f.__ElementAnimate(inner, [3, "fade"]);
+		expect(engine().backgroundEvents.map((sent) => [sent.eventName, sent.handler])).toEqual([
+			["animationcancel", "onCancel"],
+		]);
+	});
+
+	it("runs a main-thread function, with the animation's name and the time it ran", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__AddEvent(inner, "bindEvent", "animationend", { type: "worklet", value: { n: 1 } });
+		f.__ElementAnimate(inner, FADE);
+		expect(engine().endAnimation(inner, "fade")).toBe(true);
+		expect(worklets.calls).toHaveLength(1);
+		expect((worklets.calls[0]!.params[0] as { params: unknown }).params).toEqual({
+			animation_name: "fade",
+			animation_type: "keyframe-animation",
+			new_animator: true,
+			elapsedTime: 0.3,
+		});
+	});
+});
+
+describe("an operation", () => {
+	it("is one of the four Lynx knows; any other throws, where Lynx would ignore it", () => {
+		const { inner } = smallPage(engine());
+		expect(() => engine().functions.__ElementAnimate(inner, [7, "fade"])).toThrow(
+			"__ElementAnimate was given the operation 7",
+		);
 	});
 });
 
