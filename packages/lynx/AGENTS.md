@@ -1,7 +1,7 @@
 # @sohedra/lynx
 
 Svelte on Lynx: runs Svelte's custom renderer on Lynx's background thread and draws with Lynx's
-elements on the main thread. Apache-2.0, credits in `NOTICE`. Private; no runtime yet.
+elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
 
 - Read `CONTRIBUTING.md` § Code first: code shape, folders and imports, errors, workarounds, tests.
 - Each folder of `src/` is a program, and imports another only through its `index.ts`.
