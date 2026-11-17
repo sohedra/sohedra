@@ -56,9 +56,8 @@ function withFooter(registrations: Piece[]): Piece[] {
 }
 
 /**
- * The main-thread functions in a component's scripts, and in its markup (a function written in a
- * `main-thread:` attribute moves into the instance script). Both threads read the same text, so
- * they agree on the ids.
+ * The main-thread functions in a component's scripts, and in its markup (a function written in the
+ * markup moves into the instance script). Both threads read the same text, so they agree on the ids.
  */
 export function componentFunctions(
 	options: FunctionOptions & { source: string; ast: ComponentAst },
@@ -75,7 +74,7 @@ export function componentFunctions(
 		if (item.blockNames.length > 0)
 			throw buildError({
 				code: "main_thread_function_block_name",
-				details: { attribute: item.attribute.name, names: item.blockNames },
+				details: { where: item.where, names: item.blockNames },
 				place: placeAt(text, item.expression.start),
 			});
 		const name = `${COMPILED_NAMES.hoisted}${index}`;

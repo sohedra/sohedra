@@ -32,7 +32,7 @@ export interface BuildDetails {
 	main_thread_function_method: { kind: "class" | "object" };
 	main_thread_function_this: { keyword: "this" | "super" };
 	main_thread_function_generator: Plain;
-	main_thread_function_block_name: { attribute: string; names: string[] };
+	main_thread_function_block_name: { where: string; names: string[] };
 	plain_function_in_main_thread_function: { name: string };
 	script_syntax_error: { reason: string };
 	event_attribute_renamed: { attribute: string; replacement: string; spelling: string };
@@ -147,8 +147,8 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		docs: "main_thread_function_generator",
 	},
 	main_thread_function_block_name: {
-		message: ({ attribute, names }) =>
-			`The main-thread function in \`${attribute}\` uses ${names.map((name) => `\`${name}\``).join(", ")}, which only exists inside the markup.`,
+		message: ({ where, names }) =>
+			`The main-thread function in \`${where}\` uses ${names.map((name) => `\`${name}\``).join(", ")}, which only exists inside the markup.`,
 		fix: () =>
 			"Put the value in a `data-*` attribute and read `event.currentTarget.dataset`, or move this markup into a child component.",
 		docs: "main_thread_function_block_name",
