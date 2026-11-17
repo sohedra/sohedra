@@ -17,7 +17,7 @@ import type { Flattening } from "./flatten.ts";
 import { mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
 import { createLists, LIST_ONLY_INFO } from "./lists.ts";
-import type { HeldCell, ListState } from "./lists.ts";
+import type { AdoptedItems, HeldCell, ListState } from "./lists.ts";
 
 /** The engine's `closure_type` with which it reads `bind_type`. */
 const CLOSURE_CORE = 2;
@@ -58,13 +58,8 @@ export interface TakenElement {
 	list: ListState | undefined;
 }
 
-/** How a list's cells go to their new ids: the cells Lynx holds keep their elements. */
-export interface AdoptedList {
-	/** The items, by their new ids, in order. */
-	items: number[];
-	/** For each item, its cell: the element of a cell Lynx holds, or none. */
-	cells: (HeldCell | undefined)[];
-}
+/** How a list's items go to their new ids: the cells Lynx holds keep their elements. */
+export type AdoptedList = AdoptedItems;
 
 /** The page's elements, as the background's ops made them. */
 export interface Applier {
@@ -86,6 +81,8 @@ export interface Applier {
 	handlerOf(id: number, slot: string): number | undefined;
 	/** The cells of a list that have elements, with whether Lynx holds them. */
 	heldCells(id: number): HeldCell[];
+	/** A list's items now, and as Lynx last heard of them. */
+	listOrder(id: number): { items: number[]; committed: number[] };
 	/**
 	 * Lets go of an element without touching it: it stays where it is, and another applier takes it
 	 * (`adopt`). Its listeners must be gone (`silence`).
@@ -321,6 +318,7 @@ export function createApplier(options: ApplierOptions): Applier {
 		styles,
 		handlerOf: (id, slot) => registrations.get(id)?.get(slot)?.handler,
 		heldCells: (id) => lists.heldCells(id),
+		listOrder: (id) => lists.orderOf(id),
 		forget(id) {
 			const element = get(id);
 			const taken: TakenElement = { element, dataset: datasets.get(id), list: lists.forget(id) };

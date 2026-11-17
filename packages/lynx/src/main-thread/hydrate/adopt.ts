@@ -4,8 +4,8 @@
 // go of, and is made from the background's text when Lynx asks for it again. Then the events the
 // first frame heard are replayed through the background's handlers.
 
-import { OpCode, ROOT_ID } from "../../wire/index.ts";
-import type { CallItem, Op } from "../../wire/index.ts";
+import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../../wire/index.ts";
+import type { CallItem, ListItemInfo, Op } from "../../wire/index.ts";
 import type { AdoptedList, Applier } from "../apply.ts";
 import type { Frame } from "../frame/draw.ts";
 import { mainThread } from "../globals.ts";
@@ -71,6 +71,32 @@ export function adoptFrame(options: {
 			frame.releaseOps(id, ops);
 		}
 		applyAll(drawnApplier, ops);
+	}
+
+	// A list inside a cell: its items are its children, which the match adopted, and Lynx heard of
+	// them under the first frame's ids.
+	const byDrawn = new Map(plan.adopt.map(([id, drawn]) => [drawn, id]));
+	for (const list of plan.nestedLists) {
+		const held = new Map<number, HeldCell>(
+			drawnApplier.heldCells(list.drawn).map((cell) => [cell.id, cell]),
+		);
+		const order = drawnApplier.listOrder(list.drawn);
+		const kept = order.items.filter((item) => byDrawn.has(item));
+		const items = kept.map((item) => byDrawn.get(item)!);
+		const infos = new Map<number, ListItemInfo>();
+		for (const item of items) {
+			const info: ListItemInfo = {};
+			for (const [name, value] of rendered.nodes.get(item)!.attrs)
+				if (LIST_ITEM_INFO.has(name)) info[name] = value;
+			infos.set(item, info);
+		}
+		lists.set(list.drawn, {
+			items,
+			cells: kept.map((item) => held.get(item)),
+			// An item made again in place is a new one to Lynx: the old one is told gone.
+			committed: order.committed.map((item) => byDrawn.get(item) ?? -item),
+			infos,
+		});
 	}
 
 	for (const [id, drawn] of plan.adopt) {

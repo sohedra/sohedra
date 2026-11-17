@@ -29,6 +29,12 @@ export interface ListPlan {
 	cells: (number | undefined)[];
 }
 
+/** A list inside a cell, whose items are its children: it keeps its state under the new ids. */
+export interface NestedListPlan {
+	id: number;
+	drawn: number;
+}
+
 /** A run of drawn children made again in place from the background's. */
 export interface Repair {
 	/** The parent, by the background's id and the first frame's. */
@@ -59,6 +65,7 @@ export interface Plan {
 	/** Attributes and texts of adopted nodes that differ, written over them. */
 	writes: { id: number; name: string | null; value: AttrValue }[];
 	lists: ListPlan[];
+	nestedLists: NestedListPlan[];
 	repairs: Repair[];
 	textRepairs: TextRepair[];
 	/** The cells adopted, whose rendered text the page does not need. */
@@ -114,6 +121,7 @@ export function matchFrame(options: {
 		adopt: [],
 		writes: [],
 		lists: [],
+		nestedLists: [],
 		repairs: [],
 		textRepairs: [],
 		adoptedCells: new Set(),
@@ -175,6 +183,7 @@ export function matchFrame(options: {
 			list(id, drawn);
 			return;
 		}
+		if (drawn.tag === "list") plan.nestedLists.push({ id, drawn: drawn.id });
 		align(id, drawn, inBlock);
 	}
 
