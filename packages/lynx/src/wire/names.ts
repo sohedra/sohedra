@@ -1,3 +1,5 @@
+// The names the build and both threads agree on, each spelled once.
+
 /** The two threads a Lynx page runs on. */
 export type Thread = "background" | "main-thread";
 
@@ -11,4 +13,21 @@ export const PACKAGE_NAME = "@sohedra/lynx";
 export const RENDERER_ENTRY: string = `${PACKAGE_NAME}/internal/renderer`;
 
 /** The global where a page's main-thread copy records how to draw its first frame. */
-export const FIRST_FRAME_GLOBAL = "__svelteLynxFirstFrame";
+export const FIRST_FRAME_GLOBAL = "__sohedraLynxFirstFrame";
+
+/**
+ * Background to main thread: the main thread's global function that
+ * `lynx.getNativeApp().callLepusMethod` calls with each patch.
+ */
+export const PATCH_METHOD = "sohedraLynxPatch";
+
+/**
+ * Main thread to background: the types of the events `lynx.getJSContext().dispatchEvent` sends.
+ * Lynx's DevTool counts these events per type and warns about a type sent too often, so what the
+ * background is asked to run at the rate of input (events and calls) and what answers or reports
+ * back (replies, releases and errors) each have their own.
+ */
+export const TO_BACKGROUND = {
+	events: "@sohedra/lynx:events",
+	replies: "@sohedra/lynx:replies",
+} as const;
