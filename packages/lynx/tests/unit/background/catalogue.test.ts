@@ -17,6 +17,7 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		reason: "Do not know how to serialize a BigInt",
 	},
 	element_not_on_page: { method: "boundingClientRect", tag: "view" },
+	element_not_shown: { method: "boundingClientRect", tag: "view" },
 	animation_canceled: { name: "fade" },
 };
 
