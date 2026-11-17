@@ -2,6 +2,30 @@
 
 export { cleanup } from "./cleanup.ts";
 export { createEngine } from "./engine/create-engine.ts";
-export type { Engine, EngineOptions, ElementFunctions } from "./engine/create-engine.ts";
-export type { LynxElement } from "./engine/types.ts";
-export type { ElementState } from "./engine/state.ts";
+export type { ElementFunctions, Engine, EngineOptions } from "./engine/create-engine.ts";
+export type { Lifecycle, LifecycleEvent, LifecycleProxy } from "./engine/lifecycle.ts";
+export type { ListHandle } from "./engine/lists.ts";
+export type {
+	AnimationLog,
+	BindingLog,
+	Detector,
+	ElementState,
+	GestureCallLog,
+	InvocationLog,
+	ManagerCallLog,
+	Responder,
+	RunLog,
+} from "./engine/state.ts";
+export type {
+	ComponentAtIndex,
+	ComponentAtIndexes,
+	EnqueueComponent,
+	GestureCallback,
+	GestureConfig,
+	GestureRelations,
+	InvokeResult,
+	ListenerFunction,
+	ListenerOptions,
+	ListUpdate,
+	LynxElement,
+} from "./engine/types.ts";

@@ -1,16 +1,49 @@
 // The engine fake: what Lynx's main thread does with the page's elements, on a DOM.
 
 import { testDocument } from "../globals.ts";
+import { animationFunctions } from "./animations.ts";
+import type { AnimationFunctions } from "./animations.ts";
+import { createDispatcher } from "./dispatch.ts";
+import { eventFunctions } from "./events.ts";
+import type { EventFunctions } from "./events.ts";
+import { createGestureDriver, gestureFunctions } from "./gestures.ts";
+import type { GestureFunctions } from "./gestures.ts";
+import { createLifecycle } from "./lifecycle.ts";
+import type { Lifecycle } from "./lifecycle.ts";
+import { listFunctions, listHandle } from "./lists.ts";
+import type { ListFunctions, ListHandle } from "./lists.ts";
 import { propertyFunctions } from "./properties.ts";
 import type { PropertyFunctions } from "./properties.ts";
 import { stateOf } from "./state.ts";
-import type { ElementState, EngineState } from "./state.ts";
+import type {
+	AnimationLog,
+	BindingLog,
+	Detector,
+	ElementState,
+	EngineState,
+	GestureCallLog,
+	InvocationLog,
+	ManagerCallLog,
+	Responder,
+	RunLog,
+} from "./state.ts";
+import { createStyleSheets } from "./style-sheets.ts";
+import type { StyleSheetFunctions } from "./style-sheets.ts";
 import { descendantsOf, isText, treeFunctions } from "./tree.ts";
 import type { TreeFunctions } from "./tree.ts";
 import type { LynxElement } from "./types.ts";
+import { uiFunctions } from "./ui-methods.ts";
+import type { UiFunctions } from "./ui-methods.ts";
 
 /** Lynx's main-thread functions that act on elements. */
-export type ElementFunctions = TreeFunctions & PropertyFunctions;
+export type ElementFunctions = TreeFunctions &
+	PropertyFunctions &
+	EventFunctions &
+	GestureFunctions &
+	ListFunctions &
+	AnimationFunctions &
+	UiFunctions &
+	StyleSheetFunctions;
 
 /** Where an engine puts its page. */
 export interface EngineOptions {
@@ -46,6 +79,65 @@ export interface Engine {
 	forget(uid: number): void;
 	/** Takes the page out of the document and lets go of every element. */
 	dispose(): void;
+
+	/**
+	 * Fires an event the way Lynx does a custom event (`scroll`, `load`), on this element only: the
+	 * main-thread functions bound to it, then its listeners. Throws when it has none.
+	 */
+	fire(element: LynxElement, name: string, event?: Record<string, unknown>): void;
+	/**
+	 * Delivers an event the way Lynx does a touch event (`tap`) along the tree: the global phase,
+	 * capture from the page down, bubble from the target up, catch and the stop bits a main-thread
+	 * function returns.
+	 */
+	dispatch(element: LynxElement, name: string, event?: Record<string, unknown>): void;
+	/** Every listener still registered anywhere in the page. */
+	listenerCount(): number;
+	/**
+	 * Runs the callback `name` of the element's gesture detector `id`, as Lynx does, with the
+	 * gesture's event and the gesture manager. Returns what the function returned.
+	 */
+	fireGesture(
+		element: LynxElement,
+		id: number,
+		name: string,
+		params?: Record<string, unknown>,
+	): unknown;
+	/** An element's detectors, in the order they were set. */
+	detectors(element: LynxElement): Detector[];
+	/** What a `<list>` was given, what it was sent, and a way to show and hide its cells. */
+	list(element: LynxElement): ListHandle;
+	/** The animation `name` of the element ended: the engine says so to a listener, if any. */
+	endAnimation(element: LynxElement, name: string): boolean;
+	/** The engine cancelled the animation (a new one took its name, say), as it says. */
+	cancelAnimation(element: LynxElement, name: string): boolean;
+	/** Decides what the page's UI methods get back. The default answers success with no data. */
+	respondWith(responder: Responder): void;
+	/** Flattens plain views as Lynx does (see `flatten` in the engine's functions); `false` ends it. */
+	flattenViews(on?: boolean): void;
+	/** The style sheet `__LoadStyleSheet` finds for a bundle. */
+	provideStyleSheet(bundleName: string, sheet: unknown): void;
+	/** The style sheets the page adopted, in order. */
+	readonly adoptedStyleSheets: unknown[];
+	/** The engine's lifecycle events: what the page listens to, and what a test makes it say. */
+	readonly lifecycle: Lifecycle;
+
+	/** The options of each `__FlushElementTree`. */
+	readonly flushes: unknown[];
+	/** Every `__InvokeUIMethod` call, with what it answered. */
+	readonly invocations: InvocationLog[];
+	/** Every `__ElementAnimate` call. */
+	readonly animations: AnimationLog[];
+	/** Every `__AddEvent` call with a main-thread function, or none (which removes it). */
+	readonly workletEvents: BindingLog[];
+	/** Every `__AddEvent` call with a handler name, or none: the type filed for an element's event. */
+	readonly filings: BindingLog[];
+	/** Every `__SetGestureDetector` and `__RemoveGestureDetector` call. */
+	readonly gestureCalls: GestureCallLog[];
+	/** Every main-thread function the engine ran, and the `eventReturnResult` it read. */
+	readonly mainThreadRuns: RunLog[];
+	/** Every call a gesture callback made on the gesture manager. */
+	readonly gestureManagerCalls: ManagerCallLog[];
 }
 
 /** Makes an engine. It needs a DOM: the test environment's, or the one given. */
@@ -73,7 +165,20 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			gestureManagerCalls: [],
 		},
 	};
-	const functions: ElementFunctions = { ...treeFunctions(engine), ...propertyFunctions(engine) };
+	const dispatcher = createDispatcher(engine);
+	const gestures = createGestureDriver(engine);
+	const styleSheets = createStyleSheets();
+	const lifecycle = createLifecycle();
+	const functions: ElementFunctions = {
+		...treeFunctions(engine),
+		...propertyFunctions(engine),
+		...eventFunctions(engine),
+		...gestureFunctions(engine),
+		...listFunctions(engine),
+		...animationFunctions(engine, dispatcher),
+		...uiFunctions(engine),
+		...styleSheets.functions,
+	};
 
 	function text(element: LynxElement): string {
 		return isText(element)
@@ -99,9 +204,24 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		forget(uid) {
 			const root = engine.made.get(uid);
 			if (!root) return;
-			for (const element of descendantsOf(root.node)) {
+			const gone = new Set<LynxElement>(descendantsOf(root.node));
+			for (const element of gone) {
 				const state = engine.states.get(element);
 				if (state) engine.made.delete(state.uid);
+			}
+			// The logs would keep what the page let go of, and so would a test.
+			for (const log of [
+				engine.log.animations,
+				engine.log.workletEvents,
+				engine.log.filings,
+				engine.log.gestureCalls,
+				engine.log.mainThreadRuns,
+				engine.log.gestureManagerCalls,
+				engine.log.invocations,
+			] as { element: LynxElement }[][]) {
+				const kept = log.filter((entry) => !gone.has(entry.element));
+				log.length = 0;
+				log.push(...kept);
 			}
 		},
 		dispose() {
@@ -111,5 +231,42 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			engine.unflushed.clear();
 			engine.stale.clear();
 		},
+		fire: dispatcher.fire,
+		dispatch: dispatcher.dispatch,
+		listenerCount: () =>
+			engine.page
+				? descendantsOf(engine.page).reduce(
+						(count, element) => count + (engine.states.get(element)?.listeners.length ?? 0),
+						0,
+					)
+				: 0,
+		fireGesture: gestures.fireGesture,
+		detectors: gestures.detectors,
+		list: (element) => listHandle(engine, element),
+		endAnimation: (element, name) =>
+			dispatcher.animationEvent(stateOf(engine, element, "endAnimation", 0), "animationend", name),
+		cancelAnimation: (element, name) =>
+			dispatcher.animationEvent(
+				stateOf(engine, element, "cancelAnimation", 0),
+				"animationcancel",
+				name,
+			),
+		respondWith(responder) {
+			engine.respond = responder;
+		},
+		flattenViews(on = true) {
+			engine.flattening = on;
+		},
+		provideStyleSheet: styleSheets.sheets.provide,
+		adoptedStyleSheets: styleSheets.sheets.adopted,
+		lifecycle,
+		flushes: engine.log.flushes,
+		invocations: engine.log.invocations,
+		animations: engine.log.animations,
+		workletEvents: engine.log.workletEvents,
+		filings: engine.log.filings,
+		gestureCalls: engine.log.gestureCalls,
+		mainThreadRuns: engine.log.mainThreadRuns,
+		gestureManagerCalls: engine.log.gestureManagerCalls,
 	};
 }

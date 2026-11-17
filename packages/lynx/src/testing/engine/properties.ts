@@ -11,9 +11,11 @@ import {
 	reflectAttribute,
 	reflectStyles,
 } from "./dom.ts";
+import { receiveListUpdate } from "./lists.ts";
 import { argumentError, stateOf } from "./state.ts";
 import type { EngineState } from "./state.ts";
-import type { LynxElement } from "./types.ts";
+import type { ListUpdate, LynxElement } from "./types.ts";
+import { isFlattened } from "./ui-methods.ts";
 
 /** The functions that set and read what an element carries. */
 export interface PropertyFunctions {
@@ -74,9 +76,14 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 		__SetAttribute(element, key, value) {
 			const state = stateOf(engine, element, "__SetAttribute", 0);
 			checkName("__SetAttribute", 1, key);
+			// A list takes its updates as this attribute; they are not an attribute of its own.
+			if (key === "update-list-info" && receiveListUpdate(state, value as ListUpdate)) return;
+			const wasFlattened = key === "flatten" && isFlattened(engine, state);
 			if (value == null) delete state.attrs[key];
 			else state.attrs[key] = value;
 			reflectAttribute(state, key, value);
+			// The engine has not made the view yet: it answers as the element it still is.
+			if (wasFlattened && !isFlattened(engine, state)) engine.stale.add(state);
 		},
 		__GetAttributeByName(element, name) {
 			const state = stateOf(engine, element, "__GetAttributeByName", 0);
