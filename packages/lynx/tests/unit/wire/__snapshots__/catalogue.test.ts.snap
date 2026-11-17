@@ -1,5 +1,13 @@
 // Rstest Snapshot v1
 
+exports[`the wire's catalogue > change_not_applied: the message 1`] = `
+"Lynx refused a change to the page on the main thread: The main thread has no element 7.
+While trying to insert <view> 42 into <scroll-view> 7.
+
+The rest of the change was applied. This is a bug in @sohedra/lynx or in Lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/change_not_applied"
+`;
+
 exports[`the wire's catalogue > page_reloaded_on_one_thread: the message 1`] = `
 "This page reloaded on one of its threads only.
 Seen on the main thread: it shows page 1 and got a message of page 2.

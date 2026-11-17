@@ -1,0 +1,38 @@
+// Rstest Snapshot v1
+
+exports[`the background's catalogue > attribute_not_copyable: the message 1`] = `
+"The value of accessibility-actions on <view> cannot be sent to the main thread (Do not know how to serialize a BigInt), so the element does not get it.
+
+Give the attribute plain data: strings, numbers, booleans, null, arrays and plain objects, without cycles or BigInt values.
+https://sohedra.com/e/attribute_not_copyable"
+`;
+
+exports[`the background's catalogue > input_value_not_written: the message 1`] = `
+"The value of the <input> element could not be written: Lynx answered setValue with the code 4.
+
+Check that the element is still on the page when its value changes, and that it is an <input> or a <textarea>.
+https://sohedra.com/e/input_value_not_written"
+`;
+
+exports[`the background's catalogue > list_item_key_object: the message 1`] = `
+"A <list-item> has an object as its item-key, and Lynx reads an item-key as text.
+src/Feed.svelte:12:2
+
+Give item-key a string or a number that names the item, such as its id: item-key={item.id}.
+https://sohedra.com/e/list_item_key_object"
+`;
+
+exports[`the background's catalogue > page_is_gone: the message 1`] = `
+"A call of scrollTo has no answer: the page it was made on has been closed or reloaded.
+
+Nothing to fix when the page closed on purpose. Otherwise, make the call again on the page that is open now.
+https://sohedra.com/e/page_is_gone"
+`;
+
+exports[`the background's catalogue > text_outside_text: the message 1`] = `
+"The text "Hello" is inside <view>, and Lynx shows text only inside <text>.
+src/App.svelte:3:1
+
+Wrap it in <text>: <text>Hello</text>.
+https://sohedra.com/e/text_outside_text"
+`;
