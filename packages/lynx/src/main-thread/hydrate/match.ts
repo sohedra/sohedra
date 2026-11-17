@@ -44,8 +44,6 @@ export interface Repair {
 	make: number[];
 	/** The drawn nodes to take off. */
 	drop: number[];
-	/** The background's node the made ones go before; 0 at the end. */
-	before: number;
 }
 
 /** The texts of a parent made again in place: the frame drew others, or not as many. */
@@ -53,8 +51,8 @@ export interface TextRepair {
 	drawnParent: number;
 	/** The drawn texts to take off. */
 	drop: number[];
-	/** The background's texts to make, each with the element it goes before (0 at the end). */
-	make: { id: number; before: number }[];
+	/** The background's texts to make. */
+	make: number[];
 	parent: number;
 }
 
@@ -255,15 +253,11 @@ export function matchFrame(options: {
 				for (let index = 0; index < ours.length; index++) pair(ours[index]!, theirs[index]!, true);
 				continue;
 			}
-			const make = ours.map((text) => {
-				const after = children.slice(children.indexOf(text) + 1).find((child) => !isText(child));
-				return { id: text, before: after ?? 0 };
-			});
 			plan.textRepairs.push({
 				parent: id,
 				drawnParent: drawn.id,
 				drop: theirs.map((text) => text.id),
-				make,
+				make: ours,
 			});
 		}
 	}
@@ -322,7 +316,7 @@ export function matchFrame(options: {
 			}
 			const make = built.slice(index, index + free);
 			index += free;
-			run(id, drawn.id, { make, drawn: drawnElements(part), before: built[index] ?? 0 });
+			run(id, drawn.id, { make, drawn: drawnElements(part) });
 		}
 	}
 
@@ -333,7 +327,7 @@ export function matchFrame(options: {
 	function run(
 		id: number,
 		drawnParent: number,
-		{ make, drawn, before }: { make: number[]; drawn: DrawnNode[]; before: number },
+		{ make, drawn }: { make: number[]; drawn: DrawnNode[] },
 	): void {
 		const most = Math.min(make.length, drawn.length);
 		// From the end first: a part only the background renders, `{#if background}`, comes first
@@ -354,7 +348,6 @@ export function matchFrame(options: {
 			drawnParent,
 			make: left,
 			drop: dropped.map((child) => child.id),
-			before: end > 0 ? make[make.length - end]! : before,
 		});
 	}
 

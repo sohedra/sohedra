@@ -115,16 +115,21 @@ export function adoptFrame(options: {
 		if (name === null) ops.push([OpCode.SetText, id, typeof value === "string" ? value : ""]);
 		else ops.push([OpCode.SetAttr, id, name, value]);
 	}
-	for (const repair of plan.repairs) {
-		for (const id of repair.make) {
-			opsOf(rendered, id, ops);
-			ops.push([OpCode.Insert, repair.parent, id, repair.before]);
-		}
+	// What is made again goes before the node that follows it, text or element: from each parent's
+	// last child back, so that node is on the page already, adopted or made.
+	const made = new Map<number, Set<number>>();
+	for (const repair of [...plan.repairs, ...plan.textRepairs]) {
+		let ids = made.get(repair.parent);
+		if (!ids) made.set(repair.parent, (ids = new Set()));
+		for (const id of repair.make) ids.add(id);
 	}
-	for (const repair of plan.textRepairs) {
-		for (const { id, before } of repair.make) {
+	for (const [parent, ids] of made) {
+		const children = rendered.nodes.get(parent)!.children;
+		for (let index = children.length - 1; index >= 0; index--) {
+			const id = children[index]!;
+			if (!ids.has(id)) continue;
 			opsOf(rendered, id, ops);
-			ops.push([OpCode.Insert, repair.parent, id, before]);
+			ops.push([OpCode.Insert, parent, id, children[index + 1] ?? 0]);
 		}
 	}
 	applyAll(applier, ops);
