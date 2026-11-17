@@ -15,6 +15,9 @@ export interface BackgroundDetails {
 	input_value_not_written: { tag: string; reason: string };
 	/** `name` is the attribute's. */
 	attribute_not_copyable: { name: string; tag: string; reason: string };
+	/** `method` is the element method the developer called. */
+	element_not_on_page: { method: string; tag: string };
+	animation_canceled: { name: string };
 }
 
 /** What a code of the background names. */
@@ -55,6 +58,19 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Give the attribute plain data: strings, numbers, booleans, null, arrays and plain objects, without cycles or BigInt values.",
 		docs: "attribute_not_copyable",
+	},
+	element_not_on_page: {
+		message: ({ method, tag }) =>
+			`The <${tag}> is not on the page, so its ${method} cannot run: Lynx has no element for it.`,
+		fix: ({ method }) =>
+			`Call ${method} once the element is on the page: in an attachment, an effect or an event handler, not while the component is being built or after the element was removed.`,
+		docs: "element_not_on_page",
+	},
+	animation_canceled: {
+		message: ({ name }) => `The animation ${name} was canceled before it finished.`,
+		fix: () =>
+			"Nothing to fix when the animation was canceled on purpose. Catch the rejection of finished where a canceled animation matters.",
+		docs: "animation_canceled",
 	},
 };
 

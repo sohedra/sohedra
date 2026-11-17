@@ -10,25 +10,25 @@ import type { createRenderer } from "svelte/renderer";
 
 import { sourceLocation } from "../../svelte/runtime/index.ts";
 import { listenerEvent, OpCode, ROOT_ID, TEXT_CONTAINERS } from "../../wire/index.ts";
-import type { CallRequest, LynxEventType } from "../../wire/index.ts";
+import type { LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
+import { background } from "../globals.ts";
 import { warnOnce } from "../report.ts";
 import { elementClass } from "./element.ts";
 import type { ElementNode, ListenerChange } from "./element.ts";
 import type { Handler, HandlerRegistry } from "./handlers.ts";
+import type { RendererHost } from "./host.ts";
 import { setInputValue } from "./input.ts";
 import type { InputHost } from "./input.ts";
+import { itemKey } from "./item-key.ts";
+import { lateLayouts } from "./layout.ts";
 import { TreeNode } from "./node.ts";
 import type { OpQueue } from "./queue.ts";
 import { link, nextRealAnchor, realContainer, topReals, unlink } from "./tree.ts";
-import { attrValue, isFunction, textOf } from "./values.ts";
+import { attrValue, isFunction, isRecord, textOf } from "./values.ts";
 
 export type { ElementNode } from "./element.ts";
-
-/** Where the renderer reaches the main thread for what an element is asked: the page's channel. */
-export interface RendererHost {
-	call(element: number, request: CallRequest): Promise<unknown>;
-}
+export type { RendererHost } from "./host.ts";
 
 interface Nodes {
 	fragment: TreeNode;
@@ -50,6 +50,8 @@ export interface LynxRenderer extends SvelteRenderer {
 	eventTarget(node: ElementNode, target: { uid?: unknown }): ElementNode;
 	/** Where element methods reach the main thread; null when no page runs. */
 	setHost(host: RendererHost | null): void;
+	/** The page heard a `layoutchange` on `target`, with `detail`: a late listener gets it. */
+	sawLayout(target: unknown, detail: unknown): void;
 	/** The page is gone: its root is no longer Lynx's page element. */
 	retire(): void;
 	/** An element's tag by its id, for the text of an error. */
@@ -61,6 +63,9 @@ export interface RendererState {
 	queue: OpQueue;
 	handlers: HandlerRegistry;
 }
+
+/** The event slot of a `layoutchange` listener. */
+const LAYOUT_SLOT = "bindEvent:layoutchange";
 
 /** Makes the renderer, writing its ops into `queue` and its handlers into `handlers`. */
 export function createLynxRenderer({ queue, handlers }: RendererState): LynxRenderer {
@@ -75,6 +80,17 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		root: () => root,
 		setAttribute: (element, key, value) => setAttribute(element, key, value),
 		setEvent: (element, change) => setEvent(element, change),
+		host: () => host,
+		nodeById: (id) => elementsById.get(id),
+	});
+	const answerLateLayout = lateLayouts({
+		host: () => host,
+		sent: () => queue.sent,
+		listening: (node, handler) => {
+			const id = node.events?.get(LAYOUT_SLOT);
+			return id !== undefined && handlers.has(id, handler);
+		},
+		later: (callback) => background.lynx.queueMicrotask(callback),
 	});
 
 	/** The cell of a node whose Lynx parent is `container`: a child of a page's list is a cell. */
@@ -99,6 +115,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		}
 		if (node.lynxId !== 0) return;
 		node.lynxId = nextId++;
+		node.madeAt = queue.sent;
 		node.cell = cellUnder(container, node);
 		// Boundary: every element node is made by `createElement`, from the element class.
 		elementsById.set(node.lynxId, node as ElementNode);
@@ -155,6 +172,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		elementsById.delete(node.lynxId);
 		node.lynxId = 0;
 		node.cell = 0;
+		node.layout = null;
 	}
 
 	function reflectInsert(node: TreeNode, container: TreeNode): void {
@@ -182,6 +200,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			queue.push([OpCode.Release, node.lynxId]);
 			elementsById.delete(node.lynxId);
 			node.lynxId = 0;
+			node.layout = null;
 		}
 	}
 
@@ -258,6 +277,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 				if (element.lynxId !== 0) queue.push([OpCode.SetEvent, element.lynxId, type, name, id]);
 			}
 			handlers.add(id, handler);
+			if (key === LAYOUT_SLOT) answerLateLayout(element, handler);
 			return;
 		}
 		if (id === undefined || !handlers.remove(id, handler)) return;
@@ -292,21 +312,6 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		element.attrs.set(key, stored);
 		if (element.lynxId !== 0 && !isFunction(stored))
 			queue.push([OpCode.SetAttr, element.lynxId, key, attrValue(key, stored)]);
-	}
-
-	/**
-	 * An `item-key` as text, which Lynx's list needs. A production build gives a keyed `{#each}`'s
-	 * key as text already; a development build gives it as it is, so that a key that is neither a
-	 * string nor a number is warned about here, naming the list item's place.
-	 */
-	function itemKey(element: TreeNode, value: unknown): string {
-		if (typeof value === "string") return value;
-		if (typeof value === "number") return String(value);
-		const where = sourceLocation(element);
-		warnOnce(`list_item_key_object:${where ?? ""}`, () =>
-			backgroundError({ code: "list_item_key_object", details: { where } }),
-		);
-		return textOf(value);
 	}
 
 	/** Svelte routes `on()` here while an effect runs; a target that is not a node keeps its own API. */
@@ -347,6 +352,9 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		},
 		setHost(next) {
 			host = next;
+		},
+		sawLayout(target, detail) {
+			if (target instanceof Element && isRecord(detail)) target.layout = detail;
 		},
 		retire() {
 			host = null;

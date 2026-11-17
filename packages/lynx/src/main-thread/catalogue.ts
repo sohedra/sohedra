@@ -15,6 +15,8 @@ export interface MainThreadDetails {
 	element_missing: { id: number };
 	call_not_supported: { kind: string };
 	ui_method_failed: { method: string; code: number };
+	element_has_no_view: { method: string };
+	element_left_page: { method: string };
 }
 
 /** What a code of the main thread names. */
@@ -45,6 +47,20 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		fix: ({ method }) =>
 			`Check that the element is on the page, and that Lynx's docs list ${method} as a UI method of its tag.`,
 		docs: "ui_method_failed",
+	},
+	element_has_no_view: {
+		message: ({ method }) =>
+			`Lynx could not run ${method}: the element has no view of its own. Lynx flattens a plain <view> into its parent, and makes no view for an element that is not on the screen.`,
+		fix: () =>
+			"Give the element flatten={false} so that Lynx keeps its view, and call the method once the element is on the screen.",
+		docs: "element_has_no_view",
+	},
+	element_left_page: {
+		message: ({ method }) =>
+			`Lynx could not run ${method}: the element was removed from the page before the call was made.`,
+		fix: () =>
+			"Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.",
+		docs: "element_left_page",
 	},
 };
 

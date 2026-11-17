@@ -7,6 +7,8 @@ import type { Op } from "../../wire/index.ts";
 export class OpQueue {
 	ops: Op[] = [];
 	onPending: () => void = () => {};
+	/** How many patches the channel has sent: a node made before the last one is on the main thread. */
+	sent: number = 0;
 
 	push(op: Op): void {
 		if (this.ops.length === 0) this.onPending();

@@ -12,11 +12,12 @@
 import { flushSync, mount, unmount } from "svelte";
 import type { Component } from "svelte";
 
-import { pushRenderer } from "../svelte/runtime/index.ts";
+import { keepRenderer, pushRenderer } from "../svelte/runtime/index.ts";
 import type { SentEvent, SentTarget } from "../wire/index.ts";
 import { openChannel } from "./channel.ts";
 import { background } from "./globals.ts";
 import { bumpPage, clearPageState, runAll, startGeneration } from "./page-state.ts";
+import type { Handler } from "./renderer/handlers.ts";
 import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
 import type { ElementNode } from "./renderer/renderer.ts";
 import { reportError } from "./report.ts";
@@ -69,17 +70,21 @@ export function startPage<Props extends Record<string, unknown>>(
 	const { lynx } = background;
 	const app = lynx.getApp();
 	startGeneration();
+	// The page's renderer stays current outside Svelte's effects too: `on()` in a timer or after an
+	// `await` listens through it, as in an effect.
+	const releaseRenderer = keepRenderer(pageRenderer);
 	let instance: Record<string, unknown> | undefined;
 	let root: ElementNode | undefined;
 	let anchor: ReturnType<typeof pageRenderer.createComment> | undefined;
 
-	function dispatch(handler: number, event: SentEvent): void {
+	/** Runs handlers as Svelte runs effects, then sends their updates at once. */
+	function handle(run: () => void): void {
 		try {
-			// Handlers run with the renderer current, as Svelte runs effects: `on()` called in one
-			// listens through the renderer.
+			// With the renderer current, as Svelte runs effects: `on()` called in a handler listens
+			// through the renderer.
 			const pop = pushRenderer(pageRenderer);
 			try {
-				pageHandlers.dispatch(handler, withNodes(event));
+				run();
 			} finally {
 				pop();
 			}
@@ -88,6 +93,15 @@ export function startPage<Props extends Record<string, unknown>>(
 			reportError(error);
 		}
 		channel.flush();
+	}
+
+	function dispatch(handler: number, event: SentEvent): void {
+		handle(() => {
+			const received = withNodes(event);
+			if (received["type"] === "layoutchange")
+				pageRenderer.sawLayout(received["currentTarget"], received["detail"]);
+			pageHandlers.dispatch(handler, received);
+		});
 	}
 
 	const channel = openChannel({
@@ -129,7 +143,13 @@ export function startPage<Props extends Record<string, unknown>>(
 
 	function destroy(): void {
 		bumpPage();
-		runAll([teardown, () => channel.close(), () => pageRenderer.retire(), clearPageState]);
+		runAll([
+			teardown,
+			() => channel.close(),
+			() => pageRenderer.retire(),
+			releaseRenderer,
+			clearPageState,
+		]);
 	}
 
 	function updateData(data: unknown, update?: { type?: unknown }): void {
@@ -157,7 +177,11 @@ export function startPage<Props extends Record<string, unknown>>(
 		// Boundary: lynx-core's app keeps the data the page was opened with here.
 		const params = (app["_params"] ?? {}) as AppParams;
 		lynx.__initData = { ...params.initData, ...params.updateData };
-		pageRenderer.setHost(channel);
+		pageRenderer.setHost({
+			call: channel.call,
+			post: channel.post,
+			run: (handler: Handler, event: unknown) => handle(() => handler(event)),
+		});
 		root = pageRenderer.createRoot();
 		anchor = pageRenderer.createComment("");
 		pageRenderer.insert(root, anchor, null);

@@ -221,6 +221,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: RUNTIME,
 	},
 	{
+		id: "events-read-current-renderer",
+		program: "runtime",
+		file: "src/internal/client/dom/elements/events.js",
+		anchor: "var is_custom_renderer = current_renderer != null;",
+		reliesOn:
+			"`on()` reads the current renderer when it is called, to add the listener through it and to run the handler without the DOM's propagation, and an effect puts back the renderer it found when it ends; so a renderer kept current between effects serves `on()` in a handler, a timer or code after an `await`",
+		test: RUNTIME,
+	},
+	{
 		id: "mount-renderer-option",
 		program: "runtime",
 		file: "src/internal/client/render.js",

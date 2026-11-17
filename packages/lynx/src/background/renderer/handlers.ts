@@ -20,6 +20,11 @@ export class HandlerRegistry {
 		this.slots.get(id)?.push(handler);
 	}
 
+	/** Whether `handler` is in the slot. */
+	has(id: number, handler: Handler): boolean {
+		return this.slots.get(id)?.includes(handler) ?? false;
+	}
+
 	/** Takes one handler out; whether the slot is empty now. */
 	remove(id: number, handler: Handler): boolean {
 		const list = this.slots.get(id);
