@@ -136,3 +136,20 @@ export function evaluate(body: string, scope: Record<string, unknown> = {}): unk
 	// oxlint-disable-next-line eslint/no-new-func, typescript/no-implied-eval -- runs the build's own output
 	return new Function(...Object.keys(scope), body)(...Object.values(scope));
 }
+
+/**
+ * Makes the main-thread function `name` from a module's background code, sends it across (keeping
+ * only what JSON keeps), and runs its body, registered by the main thread's code, with `args`.
+ */
+export function runAcross(
+	code: { background: string; mainThread: string },
+	name: string,
+	...args: unknown[]
+): unknown {
+	const made = evaluate(`${code.background.replace(/\bexport /g, "")}\nreturn ${name};`);
+	let body: ((this: unknown, ...args: unknown[]) => unknown) | undefined;
+	evaluate(registrationBodies(code.mainThread), {
+		registerWorkletInternal: (_: string, __: string, fn: typeof body) => (body = fn),
+	});
+	return body!.call(JSON.parse(JSON.stringify(made)), ...args);
+}

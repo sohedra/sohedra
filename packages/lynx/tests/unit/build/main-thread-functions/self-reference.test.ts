@@ -6,17 +6,13 @@
 import { describe, expect, it } from "@rstest/core";
 
 import { compileScript, component } from "../compiling.ts";
-import { evaluate, readOutput, registrationBodies } from "./output.ts";
+import { evaluate, readOutput, runAcross } from "./output.ts";
 
 /** Makes the module's function on the background, and runs its registered body with `args`. */
 function run(source: string, name: string, ...args: unknown[]): unknown {
 	const background = compileScript(source, { thread: "background" }).code;
-	const object = evaluate(`${background.replace(/export /g, "")}\nreturn ${name};`);
-	let body: ((this: unknown, ...args: unknown[]) => unknown) | undefined;
-	evaluate(registrationBodies(compileScript(source, { thread: "main-thread" }).code), {
-		registerWorkletInternal: (_: string, __: string, fn: typeof body) => (body = fn),
-	});
-	return body!.call(JSON.parse(JSON.stringify(object)), ...args);
+	const mainThread = compileScript(source, { thread: "main-thread" }).code;
+	return runAcross({ background, mainThread }, name, ...args);
 }
 
 describe("a main-thread function that refers to itself", () => {
