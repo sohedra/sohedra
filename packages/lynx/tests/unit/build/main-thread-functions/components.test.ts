@@ -126,6 +126,53 @@ describe("captured values of a component", () => {
 	});
 });
 
+describe("names of the module script", () => {
+	const source = `<script module lang="ts">
+  import { clamp } from './worklets.ts';
+  import { theme } from './theme.ts' with { runtime: 'shared' };
+  const limit = 3;
+  function helper(v: number) { 'main thread'; return v * 2; }
+  function plain() {}
+</script>
+<script lang="ts">
+  let x = $state(1);
+  const onTap = () => { 'main thread'; console.log(helper(clamp(x)), limit, theme); };
+  const onMove = () => { 'main thread'; plain(); };
+</script>
+<view main-thread:ontap={onTap} main-thread:ontouchmove={onMove}></view>
+<view main-thread:ontap={() => { 'main thread'; console.log(limit); }}></view>`;
+
+	it("are captured by the instance script's functions and the markup's, except shared imports", async () => {
+		for (const thread of ["background", "main-thread"] as const) {
+			const { code } = await component(source, { thread });
+			expect(readOutput(code).functions.map((fn) => fn.captures)).toEqual([
+				[],
+				["helper", "clamp", "x", "limit"],
+				["plain"],
+				["limit"],
+			]);
+		}
+	});
+
+	it("are unpacked on the main thread", async () => {
+		const { code } = await component(source, { thread: "main-thread" });
+		expect(registrationsOf(code)).toContain('let { helper, clamp, x, limit } = this["_c"];');
+	});
+
+	it("are checked in development when the body calls a plain function", async () => {
+		const { code } = await component(source, { development: true });
+		expect(code).toContain("`plain` is a plain function");
+	});
+
+	it("give way to an instance script's own name", async () => {
+		const shadowed = `<script module>const limit = 3;</script>
+<script>const limit = 4; const onTap = () => { 'main thread'; console.log(limit); };</script>
+<view main-thread:ontap={onTap}></view>`;
+		const { code } = await component(shadowed);
+		expect(readOutput(code).functions.map((fn) => fn.values)).toEqual([["limit = limit"]]);
+	});
+});
+
 describe("inline main-thread functions in markup", () => {
 	const source = `<script lang="ts">
   let opacity = $state('0.5');
