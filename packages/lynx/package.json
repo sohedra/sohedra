@@ -5,6 +5,18 @@
 	"description": "Svelte on Lynx",
 	"license": "Apache-2.0",
 	"type": "module",
+	"exports": {
+		"./client": {
+			"types": "./types/client.d.ts"
+		}
+	},
+	"publishConfig": {
+		"exports": {
+			"./client": {
+				"types": "./types/client.d.ts"
+			}
+		}
+	},
 	"scripts": {
 		"build": "tsc -p tsconfig.build.json",
 		"check": "tsc -p tsconfig.json --noEmit",
