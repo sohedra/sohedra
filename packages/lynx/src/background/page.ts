@@ -203,7 +203,8 @@ export function startPage<Props extends Record<string, unknown>>(
 		anchor = pageRenderer.createComment("");
 		pageRenderer.insert(root, anchor, null);
 		render(true);
-		channel.flush();
+		// Even when the page shows nothing: the main thread keeps a first frame until this patch.
+		channel.flush(true);
 	} catch (error) {
 		reportError(error);
 	}
