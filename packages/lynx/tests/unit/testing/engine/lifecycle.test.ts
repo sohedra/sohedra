@@ -14,6 +14,7 @@ describe("the engine's lifecycle", () => {
 		const { lifecycle } = engine();
 		const heard: unknown[] = [];
 		lifecycle.engine.addEventListener("__RenderPage", (event) => heard.push(event));
+		lifecycle.engine.addEventListener("__UpdatePage", () => undefined);
 		lifecycle.render({ count: 1 });
 		lifecycle.update({ count: 2 }, { reset: true });
 		expect(heard).toEqual([{ type: "__RenderPage", data: [{ count: 1 }, {}], origin: "Engine" }]);
