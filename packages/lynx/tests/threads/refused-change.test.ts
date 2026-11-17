@@ -31,7 +31,7 @@ describe("a change Lynx refuses", () => {
 			expect.objectContaining({
 				code: "change_not_applied",
 				message: expect.stringMatching(
-					/^Lynx refused a change to the page on the main thread: .*7000.*\nWhile trying to insert element 7001 into element 7000\./,
+					/^A change to the page could not be applied on the main thread: .*7000.*\nWhile trying to insert element 7001 into element 7000\./,
 				),
 			}),
 		]);

@@ -9,10 +9,6 @@ const SAMPLES: { [Code in WireCode]: WireDetails[Code] } = {
 	threads_from_different_builds: { thread: "main-thread", received: 2, expected: 1 },
 	page_reloaded_on_one_thread: { thread: "main-thread", received: 2, page: 1 },
 	value_not_copyable: { thread: "main-thread", reason: "Do not know how to serialize a BigInt" },
-	change_not_applied: {
-		reason: "The main thread has no element 7.",
-		change: "insert <view> 42 into <scroll-view> 7",
-	},
 };
 
 const CODES = Object.keys(WIRE_CATALOGUE) as WireCode[];

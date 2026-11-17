@@ -76,7 +76,9 @@ describe("value on an input", () => {
 				expect.objectContaining({
 					code: "input_value_not_written",
 					message: expect.stringMatching(
-						new RegExp(`^The value of the <${tag}> element could not`),
+						new RegExp(
+							`^The value of the <${tag}> element could not be written: Lynx could not run setValue`,
+						),
 					),
 				}),
 			),

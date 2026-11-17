@@ -47,9 +47,10 @@ describe("a call of the main thread", () => {
 
 	it("rejects with what the main thread answered when it cannot be made", async () => {
 		const { page, channel: opened } = channel();
-		const call = expect(opened.call(42, ["invoke", "scrollTo", {}])).rejects.toThrow(
-			"The main thread has no element 42.",
-		);
+		const call = expect(opened.call(42, ["invoke", "scrollTo", {}])).rejects.toMatchObject({
+			code: "element_missing",
+			message: expect.stringMatching(/^The main thread has no element 42\.\n/),
+		});
 		await page.settle();
 		await call;
 	});

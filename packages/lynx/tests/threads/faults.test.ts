@@ -86,7 +86,10 @@ describe("the main thread", () => {
 			),
 		);
 		expect(page.errors).toEqual([
-			expect.objectContaining({ message: "The main thread cannot answer a call of style yet." }),
+			expect.objectContaining({
+				code: "call_not_supported",
+				message: expect.stringMatching(/^The main thread cannot answer a call of style yet\.\n/),
+			}),
 		]);
 	});
 
@@ -112,6 +115,8 @@ describe("the main thread", () => {
 		} finally {
 			restore();
 		}
-		expect(reports).toEqual([["The main thread has no element 9.", { errorCode: 1101 }]]);
+		expect(reports).toEqual([
+			[expect.stringMatching(/^The main thread has no element 9\.\n/), { errorCode: 1101 }],
+		]);
 	});
 });

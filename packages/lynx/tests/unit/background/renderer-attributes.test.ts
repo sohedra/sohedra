@@ -122,3 +122,19 @@ describe("an item-key", () => {
 		expect(ops().map((op) => op[3])).toEqual(["3", "a"]);
 	});
 });
+
+describe("the value of an input that has no element yet", () => {
+	it("is written as its default-value each time, and the main thread is not asked", () => {
+		const { renderer, root, ops } = rendererFixture();
+		const calls: unknown[] = [];
+		renderer.setHost({ call: (...args) => (calls.push(args), Promise.resolve(null)) });
+		const input = renderer.createElement("input");
+		renderer.setAttribute(input, "value", "a");
+		renderer.setAttribute(input, "value", "b");
+		expect(calls).toEqual([]);
+		renderer.insert(root, input, null);
+		expect(ops()).toContainEqual([OpCode.SetAttr, expect.any(Number), "default-value", "b"]);
+		renderer.setAttribute(input, "value", "c");
+		expect(calls).toEqual([[expect.any(Number), ["invoke", "setValue", { value: "c" }]]]);
+	});
+});
