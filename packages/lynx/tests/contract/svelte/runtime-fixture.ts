@@ -1,5 +1,6 @@
 // Components compiled for the custom renderer and mounted by Svelte's own client runtime, loaded by
-// Node from a folder inside the package, so that the imports of the compiled code resolve.
+// Node from a folder inside the package, so that the imports of the compiled code resolve. Each run
+// of the tests writes to a folder of its own.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -31,10 +32,12 @@ export interface Mounted {
 	target: TreeNode;
 	app: object;
 	log: string[];
+	/** The compiled component's file. */
+	file: string;
 	unmount(): Promise<void>;
 }
 
-const folder = path.join(PACKAGE_ROOT, "node_modules", ".contract-fixtures");
+let folder: string | undefined;
 let count = 0;
 
 /** The renderer module, as Node loads it: the instance compiled components import. */
@@ -59,17 +62,18 @@ export async function mountComponent(markup: string): Promise<Mounted> {
 		...clientOptions({}, pathToFileURL(path.join(import.meta.dirname, "tree-renderer.ts")).href),
 		filename: `Fixture${count}.svelte`,
 	});
-	fs.mkdirSync(folder, { recursive: true });
+	folder ??= fs.mkdtempSync(path.join(PACKAGE_ROOT, "node_modules", ".contract-fixtures-"));
 	const file = path.join(folder, `fixture-${count++}.mjs`);
 	fs.writeFileSync(file, js.code);
 	const component = (await importNative(file))["default"];
 	const target = renderer.createRoot();
 	const app = client.mount(component, { target, renderer: renderer.default });
 	renderer.log.length = 0;
-	return { target, app, log: renderer.log, unmount: () => client.unmount(app) };
+	return { target, app, log: renderer.log, file, unmount: () => client.unmount(app) };
 }
 
-/** Removes the compiled components the tests wrote. */
+/** Removes the compiled components this run wrote. */
 export function removeFixtures(): void {
-	fs.rmSync(folder, { recursive: true, force: true });
+	if (folder !== undefined) fs.rmSync(folder, { recursive: true, force: true });
+	folder = undefined;
 }
