@@ -77,6 +77,319 @@
 			},
 		},
 		{
+			// A thread's globals are reached through the typed `globals.ts` of its folder: any other
+			// global is undefined here (Node's only in the Node programs), and so is `globalThis`.
+			"files": ["packages/lynx/src/**"],
+			"rules": {
+				"no-undef": "error",
+				"no-restricted-globals": [
+					"error",
+					{ "name": "globalThis", "message": "Reach globals through this folder's globals.ts." },
+				],
+			},
+		},
+		{
+			"files": [
+				"packages/lynx/src/build/**",
+				"packages/lynx/src/svelte/build/**",
+				"packages/lynx/src/testing/**",
+			],
+			"env": { "node": true },
+		},
+		{
+			"files": ["packages/lynx/src/**/globals.ts"],
+			"rules": { "no-restricted-globals": "off" },
+		},
+
+		// Which folder of the binding may import which (the table in packages/lynx/AGENTS.md).
+		// Each folder's own `index.ts` is its only face to the others, and Svelte's internals are
+		// touched only in src/svelte/.
+		// May import: Nothing of the binding
+		{
+			"files": ["packages/lynx/src/wire/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire/**",
+									"../build/**",
+									"../../build/**",
+									"../../../build/**",
+									"../**/background/**",
+									"../**/main-thread/**",
+									"../**/first-frame/**",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime/**",
+									"../**/testing/**",
+									"../**/gesture/**",
+									"../**/host/**",
+									"../**/env/**",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: Nothing of the binding
+		{
+			"files": ["packages/lynx/src/svelte/runtime/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire/**",
+									"../build/**",
+									"../../build/**",
+									"../../../build/**",
+									"../**/background/**",
+									"../**/main-thread/**",
+									"../**/first-frame/**",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime/**",
+									"../**/testing/**",
+									"../**/gesture/**",
+									"../**/host/**",
+									"../**/env/**",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+						],
+					},
+				],
+			},
+		},
+		// May import: Nothing of the binding
+		{
+			"files": ["packages/lynx/src/svelte/build/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire/**",
+									"../build/**",
+									"../../build/**",
+									"../../../build/**",
+									"../**/background/**",
+									"../**/main-thread/**",
+									"../**/first-frame/**",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime/**",
+									"../**/testing/**",
+									"../**/gesture/**",
+									"../**/host/**",
+									"../**/env/**",
+									"../runtime/**",
+									"../../runtime/**",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: wire/
+		{
+			"files": [
+				"packages/lynx/src/main-thread/**",
+				"packages/lynx/src/first-frame/**",
+				"packages/lynx/src/gesture/**",
+				"packages/lynx/src/host/**",
+				"packages/lynx/src/env/**",
+			],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire/**",
+									"../build/**",
+									"../../build/**",
+									"../../../build/**",
+									"../**/background/**",
+									"../**/main-thread/**",
+									"../**/first-frame/**",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime/**",
+									"../**/testing/**",
+									"../**/gesture/**",
+									"../**/host/**",
+									"../**/env/**",
+									"!../**/wire/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: wire/ and svelte/build/
+		{
+			"files": ["packages/lynx/src/build/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire/**",
+									"../build/**",
+									"../../build/**",
+									"../../../build/**",
+									"../**/background/**",
+									"../**/main-thread/**",
+									"../**/first-frame/**",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime/**",
+									"../**/testing/**",
+									"../**/gesture/**",
+									"../**/host/**",
+									"../**/env/**",
+									"!../**/wire/index.ts",
+									"!../**/svelte/build/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: wire/ and svelte/runtime/
+		{
+			"files": ["packages/lynx/src/background/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire/**",
+									"../build/**",
+									"../../build/**",
+									"../../../build/**",
+									"../**/background/**",
+									"../**/main-thread/**",
+									"../**/first-frame/**",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime/**",
+									"../**/testing/**",
+									"../**/gesture/**",
+									"../**/host/**",
+									"../**/env/**",
+									"!../**/wire/index.ts",
+									"!../**/svelte/runtime/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{ "group": ["node:*"], "message": "Node's modules are not on a Lynx thread." },
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: every program but build/
+		{
+			"files": ["packages/lynx/src/testing/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire/**",
+									"../build/**",
+									"../../build/**",
+									"../../../build/**",
+									"../**/background/**",
+									"../**/main-thread/**",
+									"../**/first-frame/**",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime/**",
+									"../**/testing/**",
+									"../**/gesture/**",
+									"../**/host/**",
+									"../**/env/**",
+									"!../**/wire/index.ts",
+									"!../**/background/index.ts",
+									"!../**/main-thread/index.ts",
+									"!../**/first-frame/index.ts",
+									"!../**/svelte/runtime/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+
+		{
 			// Type tests check types at compile time and have nothing to assert at runtime
 			"files": ["packages/*/tests/types/**"],
 			"rules": {
