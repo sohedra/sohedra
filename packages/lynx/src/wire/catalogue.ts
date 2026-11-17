@@ -9,6 +9,9 @@ import type { Thread } from "./names.ts";
 /** The details each of the wire's messages is written from. */
 export interface WireDetails {
 	threads_from_different_builds: { thread: Thread; received: number; expected: number };
+	page_reloaded_on_one_thread: { thread: Thread; received: number; page: number };
+	/** `thread` is the thread the value was sent to. */
+	value_not_copyable: { thread: Thread; reason: string };
 }
 
 /** What a code of the wire names. */
@@ -28,6 +31,21 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 		fix: () =>
 			"Build the app again and reopen the page, so both threads load from one build. If the host caches bundles, clear its cache.",
 		docs: "threads_from_different_builds",
+	},
+	page_reloaded_on_one_thread: {
+		message: ({ thread, received, page }) =>
+			"This page reloaded on one of its threads only.\n" +
+			`Seen on ${THREAD_NAMES[thread]}: it shows page ${page} and got a message of page ${received}.`,
+		fix: () =>
+			"Reload the page through Lynx, with `lynx.reload()` or the host's reload, so both threads start the new page together.",
+		docs: "page_reloaded_on_one_thread",
+	},
+	value_not_copyable: {
+		message: ({ thread, reason }) =>
+			`A value sent to ${THREAD_NAMES[thread]} cannot be copied (${reason.split("\n")[0]!.trim()}).`,
+		fix: () =>
+			"Send plain data: strings, numbers, booleans, null, arrays and plain objects, without cycles or BigInt values.",
+		docs: "value_not_copyable",
 	},
 };
 

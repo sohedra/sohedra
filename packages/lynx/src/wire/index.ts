@@ -32,24 +32,29 @@ export { DOCS_BASE, docsLink, formatMessage } from "./messages.ts";
 export type { Catalogue, Entry, MessageParts } from "./messages.ts";
 export {
 	FIRST_FRAME_GLOBAL,
+	LAZY_BUNDLE_METHOD,
 	MAIN_THREAD_PREFIX,
 	PACKAGE_NAME,
 	PATCH_METHOD,
 	RENDERER_ENTRY,
 	TO_BACKGROUND,
 } from "./names.ts";
-export type { Thread } from "./names.ts";
+export type { LazyBundleParams, Thread } from "./names.ts";
 export { OpCode, ROOT_ID } from "./ops.ts";
 export type { AttrValue, Op } from "./ops.ts";
-export { checkVersion, isCurrentPage, PROTOCOL_VERSION } from "./page.ts";
-export type { Stamp } from "./page.ts";
+export { checkMessage, keepsMessage, PROTOCOL_VERSION } from "./page.ts";
+export type { Receiver, Stamp, Stamped } from "./page.ts";
 export {
+	decodeCall,
 	decodeCell,
 	decodeError,
 	decodePatch,
+	decodeResult,
+	encodeCall,
 	encodeCell,
 	encodeError,
 	encodePatch,
+	encodeResult,
 } from "./patch.ts";
 export type {
 	CallItem,
@@ -68,6 +73,7 @@ export { decodeToBackground, encodeToBackground } from "./to-background.ts";
 export type {
 	CallMessage,
 	ErrorMessage,
+	ErrorPlace,
 	EventMessage,
 	ReceivedByBackground,
 	ReleaseMessage,

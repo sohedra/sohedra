@@ -1,6 +1,7 @@
 // Main thread to background: one message at a time, through `lynx.getJSContext().dispatchEvent`,
 // as text stamped with the format's version and the page.
 
+import { toText } from "./copy.ts";
 import { TO_BACKGROUND } from "./names.ts";
 import type { Op } from "./ops.ts";
 import type { Stamp } from "./page.ts";
@@ -58,13 +59,23 @@ export interface ReleaseMessage {
 	contexts: number[];
 }
 
+/** Where on the main thread an error was thrown, as far as the main thread knows. */
+export interface ErrorPlace {
+	/** The component, as its file. */
+	component?: string;
+	/** The id of the main-thread function that threw, which names its file and its function. */
+	mainThreadFunction?: string;
+}
+
 /**
- * An error the main thread reported into Lynx, for the background's error handler. A development
- * build adds the op it could not apply.
+ * An error the main thread reported into Lynx, for the background's error handler, with where it
+ * was thrown. A development build adds the op it could not apply. The throw of a called function
+ * travels in its reply instead: this carries what no reply carries.
  */
 export interface ErrorMessage {
 	t: "error";
 	error: ThrownError;
+	place?: ErrorPlace;
 	op?: Op;
 }
 
@@ -85,12 +96,15 @@ export interface ThreadEvent {
 	data: string;
 }
 
-/** A message to the background as the event to dispatch, stamped with the version and the page. */
+/**
+ * A message to the background as the event to dispatch, stamped with the version and the page its
+ * content belongs to.
+ */
 export function encodeToBackground(message: ToBackground, page: number): ThreadEvent {
 	const type =
 		message.t === "event" || message.t === "call" ? TO_BACKGROUND.events : TO_BACKGROUND.replies;
 	const stamped: Stamp = { v: PROTOCOL_VERSION, page };
-	return { type, data: JSON.stringify(Object.assign(stamped, message)) };
+	return { type, data: toText(Object.assign(stamped, message), "background") };
 }
 
 /** The message in an event the background received. */
