@@ -9,6 +9,14 @@ export {
 	MAIN_THREAD_FUNCTIONS_ENTRY,
 	REGISTER_FUNCTION,
 } from "./main-thread-functions.ts";
+export { LIST_ITEM_INFO, listUpdateInfo, Order, unmoved } from "./list-diff.ts";
+export type {
+	ListChange,
+	ListInsertion,
+	ListItemInfo,
+	ListUpdate,
+	ListUpdateInfo,
+} from "./list-diff.ts";
 export { DOCS_BASE, docsLink, formatMessage } from "./messages.ts";
 export type { Catalogue, Entry, MessageParts } from "./messages.ts";
 export { FIRST_FRAME_GLOBAL, MAIN_THREAD_PREFIX, PACKAGE_NAME, RENDERER_ENTRY } from "./names.ts";
