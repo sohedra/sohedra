@@ -4,7 +4,7 @@
 // operations here are small enough not to need a dependency:
 // - `compose(outer, inner)`: a map of a map (a rune module's compile takes no input map);
 // - `MapBuilder`: a map assembled piece by piece (a component after its edits);
-// - `appendMap(base, code, extra)`: a map of code followed by more text with a map of its own
+// - `appendMap(base, extra)`: a map of code followed by more text with a map of its own
 //   (the registrations after a main-thread component).
 //
 // Tracing keeps the column offset inside a segment, so a coarse map (one segment per line) still
@@ -144,24 +144,34 @@ export function compose(outerMap: InputMap, innerMap: InputMap): SourceMap | und
 
 /**
  * `base`, the code and its map, extended to the text that follows `code`: `extra` is the map of that
- * text alone, its first line continuing `code`'s last. Both maps are of the one component.
+ * text alone, its first line continuing `code`'s last. A source of `extra` that `base` also names
+ * keeps `base`'s index.
  */
 export function appendMap(base: { code: string; map: SourceMap }, extra: SourceMap): SourceMap {
 	const { code } = base;
 	const lines = decode(base.map.mappings);
+	const sources = [...base.map.sources];
+	const sourcesContent = [...(base.map.sourcesContent ?? sources.map(() => null))];
+	const indices = extra.sources.map((name, index) => {
+		const known = sources.indexOf(name);
+		if (known !== -1) return known;
+		sources.push(name);
+		sourcesContent.push(extra.sourcesContent?.[index] ?? null);
+		return sources.length - 1;
+	});
 	const start = code.split("\n").length - 1;
 	const column = code.length - (code.lastIndexOf("\n") + 1);
 	decode(extra.mappings).forEach((segments, index) => {
 		while (lines.length <= start + index) lines.push([]);
-		for (const [generated, , line, sourceColumn] of segments)
+		for (const [generated, source, line, sourceColumn] of segments)
 			lines[start + index]!.push([
 				index === 0 ? generated + column : generated,
-				0,
+				indices[source]!,
 				line,
 				sourceColumn,
 			]);
 	});
-	return { ...base.map, names: [], mappings: encode(lines) };
+	return { ...base.map, sources, sourcesContent, names: [], mappings: encode(lines) };
 }
 
 /** Builds a map for code assembled from pieces of one source file. */

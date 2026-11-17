@@ -137,6 +137,20 @@ function compileOptions(
 	};
 }
 
+/**
+ * `map` with the text of each of its sources: the file as written for a name of the file (Svelte
+ * and a preprocessor may name it differently), nothing for another file a preprocessor read.
+ */
+function withContent(map: SourceMap, filename: string, source: string): SourceMap {
+	const directory = path.dirname(filename);
+	return {
+		...map,
+		sourcesContent: map.sources.map((name) =>
+			path.resolve(directory, name) === path.resolve(filename) ? source : null,
+		),
+	};
+}
+
 /** Svelte's output as a module specifier, quoted, in place of the one Svelte writes. */
 function withInternals(code: string, specifier: string, internals: string): string {
 	const quoted = JSON.stringify(internals.replace(/\\/g, "/"));
@@ -176,17 +190,22 @@ export async function compileComponent(
 	// Boundary: Svelte's map is a source map. Its text is the prepared component; the file as
 	// written is what the positions point into.
 	const resultMap = options.sourceMap
-		? { ...(result.js.map as SourceMap), sourcesContent: [source] }
+		? withContent(result.js.map as SourceMap, filename, source)
 		: undefined;
 	if (thread === "main-thread") {
 		// The background build carries the CSS and the warnings; the first frame only needs markup.
 		const body = withInternals(result.js.code, "svelte/internal/server", options.serverInternals!);
+		// The registrations follow Svelte's code with a map of their own, to the text a preprocessor
+		// made: composed, like Svelte's, with the preprocessor's map.
+		const registrationsMap = compose(prepared.registrations.map, preprocessMap);
 		return {
 			code: body + prepared.registrations.code,
-			// The registrations follow Svelte's code with a map of their own.
 			map:
-				prepared.registrations.map && resultMap
-					? appendMap({ code: body, map: resultMap }, prepared.registrations.map)
+				registrationsMap && resultMap
+					? appendMap(
+							{ code: body, map: resultMap },
+							withContent(registrationsMap, filename, source),
+						)
 					: resultMap,
 			warnings: [],
 			dependencies,
