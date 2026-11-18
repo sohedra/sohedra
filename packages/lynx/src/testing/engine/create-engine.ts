@@ -168,7 +168,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		page: undefined,
 		states: new WeakMap(),
 		made: new Map(),
-		unflushed: new Set(),
+		withUi: new Set(),
 		globalPhase: new Map(),
 		respond: () => ({ code: 0 }),
 		schedule: options.schedule ?? nextMacrotask,
@@ -260,7 +260,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			engine.page?.parentNode?.removeChild(engine.page);
 			engine.page = undefined;
 			engine.made.clear();
-			engine.unflushed.clear();
+			engine.withUi.clear();
 			engine.globalPhase.clear();
 		},
 		fire: dispatcher.fire,

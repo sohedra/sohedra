@@ -49,7 +49,6 @@ export function makeElement(engine: EngineState, tag: string): ElementState {
 	};
 	engine.states.set(node, state);
 	engine.made.set(state.uid, state);
-	engine.unflushed.add(state);
 	return state;
 }
 

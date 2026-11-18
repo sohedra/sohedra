@@ -1,9 +1,12 @@
 // UI methods and the flush. The engine makes an element's UI when it flushes the tree, so a UI
-// method on an element before that finds none. A plain view that Lynx flattens still has a UI
-// (Android keeps a LynxFlattenUI for it), and answers as any other: on Lynx 4.2, on iOS and
-// Android, `boundingClientRect` gives code 0 and its box, also right after `flatten` turns false.
-// Whether every other method answers so on a flattened view was not checked on a device.
+// method on an element before that finds none, and it makes none for a layout-only view
+// (layout-only.ts). A view that Lynx flattens still has a UI (Android keeps a LynxFlattenUI for it,
+// and iOS does not flatten), and answers as any other: on Lynx 4.2, on iOS and Android, a flattened
+// view with an id gives `boundingClientRect` code 0 and its box, also right after `flatten` turns
+// false. Android's LynxFlattenUI has no `takeScreenshot`, which answers 3 there; the fake leaves
+// that to the test's responder, as it models no platform.
 
+import { isLayoutOnly } from "./layout-only.ts";
 import { argumentError, stateOf } from "./state.ts";
 import type { EngineState } from "./state.ts";
 import { descendantsOf } from "./tree.ts";
@@ -41,8 +44,8 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 			}
 			if (typeof callback !== "function")
 				throw argumentError({ fn: "__InvokeUIMethod", index: 3, expected: "a function" });
-			// No UI before the flush that finds the element in the page.
-			const result: InvokeResult = engine.unflushed.has(state)
+			// No UI before the flush that finds the element in the page, or for a layout-only view.
+			const result: InvokeResult = !engine.withUi.has(state)
 				? { code: NO_UI }
 				: engine.respond(method, params, state.node);
 			engine.log.invocations.push({
@@ -58,8 +61,8 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 				callback(answer);
 			});
 		},
-		// The flush makes the views of the elements in the page; one that is not in the page gets
-		// none. It also resolves their events: a `global-bindEvent` filed by then puts the element
+		// The flush makes the UIs of the elements in the page, except layout-only views; one that
+		// is not in the page gets none. It also resolves their events: a `global-bindEvent` filed by then puts the element
 		// in the global-bind table (core/renderer/dom/element_manager.cc).
 		__FlushElementTree(_page, options) {
 			engine.log.flushes.push(options);
@@ -67,7 +70,7 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 			for (const node of inPage) {
 				const state = engine.states.get(node);
 				if (!state) continue;
-				engine.unflushed.delete(state);
+				if (!isLayoutOnly(state)) engine.withUi.add(state);
 				for (const key of state.filedEvents) {
 					if (!key.startsWith(GLOBAL_BIND)) continue;
 					const names = engine.globalPhase.get(state) ?? new Set<string>();

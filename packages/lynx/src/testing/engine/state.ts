@@ -198,10 +198,10 @@ export interface EngineState {
 	/** Every element made, attached or not, by unique id. */
 	readonly made: Map<number, ElementState>;
 	/**
-	 * The elements made since the last `__FlushElementTree`: Lynx makes an element's UI when the
-	 * tree is flushed.
+	 * The elements Lynx has made a UI for: at the flush that finds one in the page, unless it is
+	 * layout-only then (layout-only.ts). An element keeps its UI.
 	 */
-	readonly unflushed: Set<ElementState>;
+	readonly withUi: Set<ElementState>;
 	/**
 	 * The elements in the global phase, with the event names they hear there: an element enters at
 	 * the flush that finds its `global-bindEvent` filed, and leaves when it is destroyed.
