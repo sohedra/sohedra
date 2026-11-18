@@ -15,9 +15,10 @@ start:
   what a function captures follow @lynx-js/react's worklet transform
   (packages/react/transform/crates/swc_plugin_worklet)
 - src/main-thread/functions/, written anew: the element as a main-thread
-  function sees it, its animations, `lynx.querySelector`, and the hand-over
-  from the first frame's functions to the background's follow the design of
-  @lynx-js/react's worklet runtime (packages/react/runtime/src/worklet-runtime)
+  function sees it, its animations, the release of what the main thread no
+  longer holds, and the hydration of the first frame's functions into the
+  background's follow the design of @lynx-js/react's worklet runtime
+  (packages/react/runtime/src/worklet-runtime)
 - tests/unit/build/main-thread-functions/corpus/reactlynx and corpus/rejected,
   test inputs adapted from @lynx-js/react's worklet transform tests
   (packages/react/transform/crates/swc_plugin_worklet/lib.rs); the inputs only,
