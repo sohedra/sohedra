@@ -131,3 +131,13 @@ describe("on a background that has them", () => {
 		expect(strings.replaceAll).toBe(own);
 	});
 });
+
+describe("the background's start", () => {
+	it("fills the thread's own global object, and leaves what this one has", async () => {
+		const own = [globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll];
+		await import("../../../src/background/start-up.ts");
+		expect([globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll]).toEqual(
+			own,
+		);
+	});
+});
