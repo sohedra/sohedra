@@ -1,0 +1,36 @@
+// Rstest Snapshot v1
+
+exports[`the gestures' catalogue > gesture_callback_not_main_thread: the message 1`] = `
+"The onUpdate given to a PanGesture is not a main-thread function, so the gesture could not run it.
+
+Start the function's body with the 'main thread' directive: a gesture's callbacks run on the main thread.
+https://sohedra.com/e/gesture_callback_not_main_thread"
+`;
+
+exports[`the gestures' catalogue > gesture_member_not_gesture: the message 1`] = `
+"A RaceGesture was given a value that is not a gesture, so it cannot hold it.
+
+Give it the gestures themselves, as made with new: new RaceGesture(pan, tap).
+https://sohedra.com/e/gesture_member_not_gesture"
+`;
+
+exports[`the gestures' catalogue > gesture_relation_not_a_list: the message 1`] = `
+"The simultaneousWith of a PanGesture is not a list of gestures.
+
+Give simultaneousWith a list, also for one gesture: simultaneousWith: [pan].
+https://sohedra.com/e/gesture_relation_not_a_list"
+`;
+
+exports[`the gestures' catalogue > gesture_relation_not_gesture: the message 1`] = `
+"The simultaneousWith of a PanGesture holds a value that is not a gesture, so it cannot name it.
+
+Give simultaneousWith the gestures themselves, as made with new: simultaneousWith: [pan], where pan is a PanGesture or another gesture.
+https://sohedra.com/e/gesture_relation_not_gesture"
+`;
+
+exports[`the gestures' catalogue > relation_call_not_gestures: the message 1`] = `
+"The list given to waitFor holds a value that is not a gesture, so it cannot name it.
+
+Give it a gesture, then a list of gestures: waitFor(pan, [tap]).
+https://sohedra.com/e/relation_call_not_gestures"
+`;

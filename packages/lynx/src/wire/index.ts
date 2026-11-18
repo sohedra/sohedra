@@ -8,7 +8,7 @@ export { escapeJsonText } from "./escape.ts";
 export type { TagOf } from "./describe-op.ts";
 export { eventOf, listenerEvent, lynxEventName, removedEventSpelling } from "./events.ts";
 export type { LynxEvent, LynxEventType, LynxListener, RemovedEventSpelling } from "./events.ts";
-export { GestureType, isGesture } from "./gesture.ts";
+export { GestureState, GestureType, isGesture, plainGestures } from "./gesture.ts";
 export type {
 	GestureRef,
 	SerializedComposedGesture,

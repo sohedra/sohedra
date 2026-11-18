@@ -4,6 +4,8 @@
 	// the background.
 	// The page itself uses nothing a device's engine lacks: the binding fills no gap for an app.
 	import { mainThreadRef, runOnBackground } from "@sohedra/lynx";
+	import { PanGesture } from "@sohedra/lynx/gesture";
+	import type { PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
 
 	import { clock } from "./clock.svelte.ts";
 
@@ -29,6 +31,16 @@
 		void runOnBackground(onPressed)(pressed.current);
 	}
 
+	function drag(event: PanGestureChangeEvent, state: StateManager) {
+		"main thread";
+		state.active();
+		pressed.current += 1;
+		event.currentTarget.setStyleProperty("height", `${event.params.y}px`);
+		void runOnBackground(onPressed)(pressed.current);
+	}
+
+	const pan = $derived(new PanGesture({ minDistance: 4, onUpdate: drag }));
+
 	function tap() {
 		count++;
 		clock.ticks++;
@@ -43,6 +55,7 @@
 	<view class="press" main-thread:ontap={press}>
 		<text>Pressed {presses}</text>
 	</view>
+	<view class="drag" main-thread:gesture={pan}></view>
 	{#each fruits as fruit (fruit.id)}
 		<text>{fruit.name}</text>
 	{/each}

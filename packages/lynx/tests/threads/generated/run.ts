@@ -3,6 +3,8 @@
 // list, the host's data and a reload.
 
 import * as env from "@sohedra/lynx/env";
+import * as experimental from "@sohedra/lynx/experimental";
+import * as gesture from "@sohedra/lynx/gesture";
 import fc from "fast-check";
 import type { Component } from "svelte";
 
@@ -180,6 +182,8 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		[RENDERER]: { default: renderer, deferredRow },
 		"@sohedra/lynx": root,
 		"@sohedra/lynx/env": backgroundEnv,
+		"@sohedra/lynx/gesture": gesture,
+		"@sohedra/lynx/experimental": experimental,
 		"@sohedra/lynx/internal/main-thread-functions": functions,
 		"svelte/internal/disclose-version": {},
 		[IDS]: recorder(ids.background),
@@ -229,6 +233,25 @@ function recyclableCells(page: SveltePage, list: LynxElement): LynxElement[] {
  */
 const KEPT = 10;
 
+/**
+ * The cells Lynx handed back and has not shown again: off the screen, so no finger taps inside
+ * them, though the engine fake keeps them in the list.
+ */
+const handedBack = new WeakSet<LynxElement>();
+
+/** Lynx hands `cell` back. */
+function handBack(page: SveltePage, list: LynxElement, cell: LynxElement): void {
+	page.engine.list(list).hide(cell);
+	handedBack.add(cell);
+}
+
+/** Lynx asks for the cell at `index`: one it shows is no longer handed back. */
+function ask(page: SveltePage, list: LynxElement, index: number): LynxElement | undefined {
+	const cell = page.engine.list(list).ask(index);
+	if (cell) handedBack.delete(cell);
+	return cell;
+}
+
 /** The list a scroll picks: one long enough to let rows go, when the page has one. */
 function scrolled(page: SveltePage, pick: number): LynxElement | undefined {
 	const found = lists(page);
@@ -242,16 +265,16 @@ function scrolled(page: SveltePage, pick: number): LynxElement | undefined {
  * back the cells outside it, as on a device.
  */
 function scrollTo(page: SveltePage, list: LynxElement, first: number): void {
-	const handle = page.engine.list(list);
 	const count = page.engine.state(list).list!.items;
 	for (let top = 0; top <= first; top++) {
 		const shown = new Set<LynxElement>();
 		for (let index = top; index < Math.min(count, top + SCREEN); index++) {
 			// A deferred row comes later; Lynx holds it once it comes.
-			const cell = handle.ask(index);
+			const cell = ask(page, list, index);
 			if (cell) shown.add(cell);
 		}
-		for (const cell of recyclableCells(page, list)) if (!shown.has(cell)) handle.hide(cell);
+		for (const cell of recyclableCells(page, list))
+			if (!shown.has(cell)) handBack(page, list, cell);
 	}
 }
 
@@ -272,9 +295,20 @@ function lists(page: SveltePage, under = page.engine.page()): LynxElement[] {
 	return found;
 }
 
-/** Elements with a tap handler bound, on the background or the main thread, in document order. */
+/** Whether `element` is in a cell Lynx handed back. */
+function inHandedBack(element: LynxElement): boolean {
+	for (let at: Node | null = element; at; at = at.parentNode)
+		if (handedBack.has(at as LynxElement)) return true;
+	return false;
+}
+
+/**
+ * Elements with a tap handler bound, on the background or the main thread, in document order, but
+ * those in cells Lynx handed back.
+ */
 function tappable(page: SveltePage): LynxElement[] {
 	return page.engine.all().filter((element) => {
+		if (inHandedBack(element)) return false;
 		const state = page.engine.state(element);
 		return (
 			state.handlers.some((handler) => handler.eventName === "tap") ||
@@ -301,9 +335,9 @@ export function apply(running: GeneratedPage, done: Step): void {
 		case "show-then-set": {
 			const found = lists(page);
 			if (found.length === 0) return;
-			const list = page.engine.list(found[done.list % found.length]!);
-			const count = page.engine.state(found[done.list % found.length]!).list!.items;
-			if (count > 0) list.ask(done.index % count);
+			const element = found[done.list % found.length]!;
+			const count = page.engine.state(element).list!.items;
+			if (count > 0) ask(page, element, done.index % count);
 			if (done.kind === "show-then-set")
 				apply(running, { kind: "set", key: done.key, value: done.value });
 			return;
@@ -313,7 +347,7 @@ export function apply(running: GeneratedPage, done: Step): void {
 			if (found.length === 0) return;
 			const element = found[done.list % found.length]!;
 			const cells = recyclableCells(page, element);
-			if (cells.length > 0) page.engine.list(element).hide(cells[done.cell % cells.length]!);
+			if (cells.length > 0) handBack(page, element, cells[done.cell % cells.length]!);
 			return;
 		}
 		case "scroll":
@@ -352,7 +386,7 @@ export async function askEveryRow(page: SveltePage): Promise<void> {
 		let waiting = 0;
 		for (const list of lists(page)) {
 			const count = page.engine.state(list).list!.items;
-			for (let index = 0; index < count; index++) if (!page.engine.list(list).ask(index)) waiting++;
+			for (let index = 0; index < count; index++) if (!ask(page, list, index)) waiting++;
 		}
 		await page.settle();
 		if (waiting === 0) return;

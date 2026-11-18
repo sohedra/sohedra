@@ -7,6 +7,7 @@
 //     renderer_ng.cc, Utils::CreateGestureManager).
 
 import { SOURCE_GESTURE, mainThreadTarget, runMainThreadFunction } from "./dispatch.ts";
+import { engineObject } from "./engine-objects.ts";
 import { recorded } from "./events.ts";
 import { argumentError, elementName, stateOf } from "./state.ts";
 import type { Detector, ElementState, EngineState } from "./state.ts";
@@ -85,8 +86,11 @@ export function gestureFunctions(engine: EngineState): GestureFunctions {
 
 /** The engine's side of gestures, over the engine's records. */
 export function createGestureDriver(engine: EngineState): GestureDriver {
-	/** What Lynx hands a gesture callback second: it moves a detector of an element along. */
-	const gestureManager = {
+	/**
+	 * What Lynx hands a gesture callback second: it moves a detector of an element along. One for the
+	 * page, made once (TouchEventHandler::EnsureGestureManager), and the engine's own object.
+	 */
+	const gestureManager = engineObject({
 		// An id the element has no detector for changes nothing (Android:
 		// GestureHandlerTrigger.handleGestureDetectorState finds no handler).
 		__SetGestureState(element: unknown, id: number, state: number): void {
@@ -113,7 +117,7 @@ export function createGestureDriver(engine: EngineState): GestureDriver {
 			});
 			if (detector) detector.consume = params;
 		},
-	};
+	});
 
 	return {
 		fireGesture(element, gesture) {

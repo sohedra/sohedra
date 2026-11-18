@@ -1,6 +1,6 @@
 // What an element's `main-thread:` attributes bind, by kind: a ref (`main-thread:ref`, a ref or a
 // function that gets the element), an event (`main-thread:ontap` and its siblings, in either
-// spelling) and a gesture (`main-thread:gesture`, which binds nothing yet). Each kind binds,
+// spelling) and a gesture (`main-thread:gesture`, Lynx's detectors: ./gestures.ts). Each kind binds,
 // changes, carries a value over at hydration and releases; the store, hydration and the release
 // of an element never name a kind.
 //
@@ -24,6 +24,9 @@ import type { Ref, Refs } from "./refs.ts";
 import { prepare } from "./run.ts";
 import type { Ready, RunScope } from "./run.ts";
 
+/** What an entry let go of runs: nothing, as no registered body has this id. */
+const LET_GO: MainThreadFunction = Object.freeze({ _wkltId: "" });
+
 /**
  * What the engine holds for a main-thread event or a gesture's callback: it hands it back to
  * `runWorklet` on each call.
@@ -44,9 +47,9 @@ export class Entry {
 		this.scope = scope;
 	}
 
-	/** The function, ready to call; `undefined` once the page is silenced. */
+	/** The function, ready to call; `undefined` once the page is silenced or the entry let go. */
 	ready(): Ready | undefined {
-		if (this.scope.silenced()) return undefined;
+		if (this.scope.silenced() || this.fn === LET_GO) return undefined;
 		return (this.made ??= prepare(this.fn, this.scope));
 	}
 
@@ -54,6 +57,16 @@ export class Entry {
 	swap(fn: MainThreadFunction): void {
 		this.fn = fn;
 		this.made = undefined;
+	}
+
+	/**
+	 * The engine no longer has the entry for anything: it runs nothing from now on, and holds
+	 * neither its function nor what made the second argument, in case the engine keeps it a while.
+	 */
+	letGo(): void {
+		this.fn = LET_GO;
+		this.made = undefined;
+		this.manager = undefined;
 	}
 }
 
@@ -71,7 +84,7 @@ export interface Binding {
 	ref?: Ref;
 	/** A function ref's: what it returned, when that is a function, to run when it goes. */
 	cleanup?: () => void;
-	/** Released: a function ref that waits to run does not. */
+	/** Released: a function ref that waits to run does not, nor a gesture that waits to be set. */
 	released?: boolean;
 }
 
@@ -88,6 +101,21 @@ export interface BindingScope extends RunScope {
 	guarded(run: () => void): void;
 	/** A main-thread function runs, by its id: a development build watches for update loops. */
 	ran(id: string): void;
+	/** The page's gesture detectors. */
+	gestures: GestureDetectors;
+}
+
+/** What the page does for `main-thread:gesture` (./gestures.ts). */
+export interface GestureDetectors {
+	/**
+	 * At the settle step: the binding's detectors follow its value once every binding due now is
+	 * known, so a relation may name a gesture set after it.
+	 */
+	due(binding: Binding): void;
+	/** The binding goes: its detectors go, and its element keeps their ids. */
+	release(binding: Binding): void;
+	/** The element goes: the ids it kept are free. */
+	forget(element: LynxElement): void;
 }
 
 /** What one kind of binding does. */
@@ -199,16 +227,25 @@ const eventKind: BindingKind = {
 	},
 };
 
-/** A gesture's value: nothing is bound for it yet. */
+/** A gesture's value: Lynx's detectors, set at the settle step. */
 const gestureKind: BindingKind = {
-	bind() {},
-	change(binding, value) {
-		binding.value = value;
+	bind(binding, scope) {
+		scope.queue(binding);
 	},
-	carry(binding, value) {
+	change(binding, value, scope) {
 		binding.value = value;
+		scope.queue(binding);
 	},
-	release() {},
+	carry(binding, value, scope) {
+		this.change(binding, value, scope);
+	},
+	settle(binding, scope) {
+		scope.gestures.due(binding);
+	},
+	release(binding, scope) {
+		binding.released = true;
+		scope.gestures.release(binding);
+	},
 };
 
 /** Where an attribute binds: its kind, and the key of its slot on the element. */

@@ -171,6 +171,9 @@ function attribute(scope: Scope, tag: string): fc.Arbitrary<string> {
 				"main-thread:ref={mtAttach}",
 				"main-thread:ref={st.b0 ? mtAttach : undefined}",
 				'{...{ "main-thread:ref": st.b1 ? mtRef : mtAttach }}',
+				"main-thread:gesture={mtPan}",
+				'{...{ "main-thread:gesture": st.b0 ? mtPan : mtWait }}',
+				"main-thread:gesture={st.b1 ? mtWait : undefined}",
 			),
 		);
 	}

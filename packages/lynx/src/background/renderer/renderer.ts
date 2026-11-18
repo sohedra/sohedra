@@ -12,6 +12,7 @@ import { sourceLocation } from "../../svelte/runtime/index.ts";
 import {
 	DEFER,
 	DEFERRED_ROW,
+	isGesture,
 	MAIN_THREAD_PREFIX,
 	OpCode,
 	removedEventSpelling,
@@ -86,6 +87,17 @@ export interface RendererState {
 
 /** The event slot of a `layoutchange` listener. */
 const LAYOUT_SLOT = "bindEvent:layoutchange";
+
+/** The attribute that takes a gesture. */
+const GESTURE_ATTRIBUTE = `${MAIN_THREAD_PREFIX}gesture`;
+
+/** What a value is, as a message says it. */
+function kindOf(value: unknown): string {
+	if (isFunction(value)) return "a function";
+	if (Array.isArray(value)) return "a list";
+	if (typeof value === "object") return "an object";
+	return `the ${typeof value} ${textOf(value)}`;
+}
 
 /** Makes the renderer, writing its ops into `queue` and its handlers into `handlers`. */
 export function createLynxRenderer({ queue, handlers }: RendererState): LynxRenderer {
@@ -349,12 +361,24 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 	};
 
 	/**
-	 * In a development build, the mistakes a `main-thread:` attribute can hold: a plain function,
-	 * which binds nothing, and Lynx's own spelling of an event, which a spread lets through.
+	 * In a development build, the mistakes a `main-thread:` attribute can hold: a value that is no
+	 * gesture under `main-thread:gesture`, a plain function elsewhere, which binds nothing, and
+	 * Lynx's own spelling of an event, which a spread lets through.
 	 */
 	function checkMainThreadAttribute(element: TreeNode, key: string, value: unknown): void {
 		const where = sourceLocation(element);
 		const tag = element.tag ?? "element";
+		if (key === GESTURE_ATTRIBUTE) {
+			// `false` turns a gesture off, as `undefined` does: `main-thread:gesture={on && pan}`.
+			if (value !== false && !isGesture(value))
+				reportOnce(`main_thread_gesture_not_a_gesture:${where ?? tag}`, () =>
+					backgroundError({
+						code: "main_thread_gesture_not_a_gesture",
+						details: { value: kindOf(value), tag, where },
+					}),
+				);
+			return;
+		}
 		if (isFunction(value))
 			reportOnce(`plain_function_under_main_thread:${where ?? tag}:${key}`, () =>
 				backgroundError({

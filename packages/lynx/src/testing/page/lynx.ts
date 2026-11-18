@@ -159,8 +159,11 @@ export function createLynx(options: {
 	warnings: unknown[];
 	/** The app of the background. */
 	app: TestApp;
-	/** Puts a thread's `lynx` in place: it runs before that thread's code does. */
-	enter: (thread: Thread) => void;
+	/**
+	 * Puts a thread's `lynx` in place: it runs before that thread's code does. Returns the thread
+	 * whose globals were in place before, if any.
+	 */
+	enter: (thread: Thread) => Thread | undefined;
 }): { mainThread: MainThreadLynx; background: BackgroundLynx } {
 	const { bridge, lifecycle, errors, warnings, app, enter } = options;
 	const mainThread = createSide();
@@ -270,7 +273,15 @@ export function createLynx(options: {
 			getCoreContext: () => coreContext,
 			getNativeApp: () => nativeApp,
 			getApp: () => app,
-			queueMicrotask: (callback) => queueMicrotaskAs(() => enter("background"), callback),
+			// A main-thread promise's reaction queued before this one ran finds the main thread's
+			// globals after it, as it would on its own thread.
+			queueMicrotask: (callback) =>
+				queueMicrotaskAs(() => {
+					const before = enter("background");
+					return () => {
+						if (before) enter(before);
+					};
+				}, callback),
 		},
 	};
 }

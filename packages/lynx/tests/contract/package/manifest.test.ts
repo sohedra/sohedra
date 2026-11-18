@@ -21,6 +21,8 @@ const ENTRIES = [
 	"./config/rstest",
 	"./config/svelte",
 	"./env",
+	"./experimental",
+	"./gesture",
 	"./internal/renderer",
 ];
 
@@ -37,7 +39,7 @@ const INTERNAL = [
 ];
 
 describe("exports", () => {
-	it("has the public entries of the build and of the thread constants, pointing at source files", () => {
+	it("has the public entries, pointing at source files", () => {
 		for (const entry of ENTRIES) {
 			const target = manifest.exports[entry];
 			expect(typeof target, entry).toBe("string");

@@ -110,6 +110,24 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
+	it("runs a pan's callback on the main thread with its state manager, and its call of the background", async () => {
+		const { page } = startDevicePage(scripts);
+		try {
+			await page.settle();
+			const drag = byClass(page, "drag");
+			const [detector] = page.engine.detectors(drag);
+			expect(detector).toMatchObject({ type: 0, config: { minDistance: 4 } });
+			page.engine.fireGesture(drag, { id: detector!.id, callback: "onUpdate", params: { y: 7 } });
+			expect(page.engine.state(drag).inlineStyles.get("height")).toBe("7px");
+			expect(page.engine.detectors(drag)[0]!.state).toBe(1);
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(drawn(page).texts).toContain("Pressed 1");
+		} finally {
+			page.dispose();
+		}
+	});
+
 	it("fills in the background's global queueMicrotask from lynx, and no timers", () => {
 		const { page, background } = startDevicePage(scripts);
 		try {

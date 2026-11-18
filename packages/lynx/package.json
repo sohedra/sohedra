@@ -24,6 +24,8 @@
 		"./config/rstest": "./src/build/presets/rstest.ts",
 		"./config/svelte": "./src/build/svelte-config/index.ts",
 		"./env": "./src/env/index.ts",
+		"./experimental": "./src/gesture/experimental.ts",
+		"./gesture": "./src/gesture/index.ts",
 		"./internal/renderer": "./src/background/renderer/entry.ts",
 		"./internal/page": {
 			"worker": "./src/first-frame/page.ts",
@@ -59,6 +61,14 @@
 			"./env": {
 				"types": "./lib/env/index.d.ts",
 				"default": "./lib/env/index.js"
+			},
+			"./experimental": {
+				"types": "./lib/gesture/experimental.d.ts",
+				"default": "./lib/gesture/experimental.js"
+			},
+			"./gesture": {
+				"types": "./lib/gesture/index.d.ts",
+				"default": "./lib/gesture/index.js"
 			},
 			"./internal/renderer": {
 				"types": "./lib/background/renderer/entry.d.ts",
