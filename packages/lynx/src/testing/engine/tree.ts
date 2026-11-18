@@ -46,6 +46,8 @@ export function makeElement(engine: EngineState, tag: string): ElementState {
 		filedEvents: new Set(),
 		detectors: new Map(),
 		running: new Map(),
+		canBeLayoutOnly: true,
+		scrollView: false,
 	};
 	engine.states.set(node, state);
 	engine.made.set(state.uid, state);
@@ -89,6 +91,7 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 			);
 		}
 		parent.node.insertBefore(child.node, reference?.node ?? null);
+		if (parent.scrollView) child.canBeLayoutOnly = false;
 	}
 
 	return {
@@ -109,7 +112,11 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 		__CreateView: (parent) => created("__CreateView", parent, "view"),
 		__CreateText: (parent) => created("__CreateText", parent, "text"),
 		__CreateImage: (parent) => created("__CreateImage", parent, "image"),
-		__CreateScrollView: (parent) => created("__CreateScrollView", parent, "scroll-view"),
+		__CreateScrollView(parent) {
+			const element = created("__CreateScrollView", parent, "scroll-view");
+			stateOf(engine, { value: element, fn: "__CreateScrollView", index: 0 }).scrollView = true;
+			return element;
+		},
 		__CreateElement(tag, parent) {
 			if (typeof tag !== "string" || tag === "") {
 				throw argumentError({ fn: "__CreateElement", index: 0, expected: "a tag name" });

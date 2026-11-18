@@ -103,6 +103,13 @@ export interface ElementState {
 	detectors: Map<number, Detector>;
 	/** Its animations (`__ElementAnimate`), by name. */
 	running: Map<string, RunningAnimation>;
+	/**
+	 * Whether Lynx may lay it out with no UI: not once it was put straight in a scroll view, even if
+	 * it was taken out again (layout-only.ts).
+	 */
+	canBeLayoutOnly: boolean;
+	/** Whether `__CreateScrollView` made it: Lynx gives its children a UI (layout-only.ts). */
+	scrollView: boolean;
 	list?: ListState;
 }
 

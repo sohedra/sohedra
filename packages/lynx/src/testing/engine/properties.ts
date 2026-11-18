@@ -110,14 +110,17 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 			state.classes = classes;
 			reflectAttribute(state, { name: "class", value: classes === "" ? null : classes });
 		},
-		// Text sets the id; anything else, an empty one (renderer_functions.cc, FiberSetID). The fake
-		// takes none for that, and throws for the rest: a number there is a mistake in the page.
+		// Text sets the id; anything else, an empty one (renderer_functions.cc, FiberSetID). Either
+		// way the id is written as an attribute (core/renderer/dom/element.cc,
+		// Element::SetIdSelector), so even an id of none gives a view a UI, as on Lynx 4.2 on iOS and
+		// Android. The fake takes none for the empty id, and throws for the rest: a number there is a
+		// mistake in the page.
 		__SetID(element, id) {
 			const state = stateOf(engine, { value: element, fn: "__SetID", index: 0 });
 			if (id != null && typeof id !== "string") {
 				throw argumentError({ fn: "__SetID", index: 1, expected: "text or none" });
 			}
-			state.id = id ?? null;
+			state.id = id ?? "";
 			reflectAttribute(state, { name: "id", value: id });
 		},
 		__SetDataset(element, dataset) {
