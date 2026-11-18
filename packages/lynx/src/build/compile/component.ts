@@ -134,7 +134,10 @@ function compileOptions(
 		generate: mainThread ? "server" : "client",
 		...(!mainThread && { fragments: "tree" }),
 		runes: true,
-		dev: options.development,
+		// The main thread's copy draws the first frame and is never updated: Svelte's development
+		// checks there are the HTML nesting rules, which Lynx's elements don't follow, and the checks
+		// the background's development copy runs on the same component and data.
+		dev: options.development && !mainThread,
 		hmr,
 		// CSS goes into the template through an import (the caller adds it).
 		css: "external",
