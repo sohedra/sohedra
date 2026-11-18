@@ -70,9 +70,13 @@ export const firstFrameProperty: fc.IAsyncPropertyWithHooks<[PageModel, boolean]
 		});
 	});
 
+/** The ids of `$props.id()` that are the page's own, as `Name id`: `lynx-s1`… */
+const pageIds = (ids: readonly string[]): string[] => ids.filter((id) => / lynx-s\d+$/.test(id));
+
 /**
- * The background's first patch hydrates the first frame with no mismatch reported, no page written
- * again and no id of `$props.id()` written over, and Lynx then shows what the background rendered.
+ * The background gives each component the `$props.id()` the first frame gave it, but in a branch
+ * only one thread renders. Its first patch hydrates the first frame with no mismatch reported, no
+ * page written again and no id written over, and Lynx then shows what the background rendered.
  * Before that patch, Lynx may ask for cells and hand them back, the user may tap, and the host may
  * update the data or reload.
  */
@@ -82,6 +86,10 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 	async (model, early) => {
 		await about(pageSources(model), { ...described(model), early }, async () => {
 			const { running } = await start(model, { firstFrame: true });
+			// The page's own ids, those of no branch only one thread renders, are the first frame's.
+			expect(pageIds(running.ids.background), "The background's ids of $props.id()").toEqual(
+				pageIds(running.ids.frame),
+			);
 			for (const done of early) apply(running, done);
 			await running.page.settle();
 			expectNoErrors(running.page.errors, "At hydration");

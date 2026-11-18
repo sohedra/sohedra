@@ -8,13 +8,18 @@
 	import type { Component } from "svelte";
 
 	import * as internals from "../../../src/svelte/runtime/server-internals.ts";
-	import { evaluatePage, INTERNALS } from "../../threads/generated/evaluate.ts";
-	import type { CompiledPage } from "../../threads/generated/evaluate.ts";
+	import { evaluatePage, IDS, INTERNALS } from "../../threads/generated/evaluate.ts";
+	import type { CompiledPage, ModuleExports } from "../../threads/generated/evaluate.ts";
 
-	let { page, props }: { page: CompiledPage; props: Record<string, unknown> } = $props();
+	let {
+		page,
+		props,
+		ids,
+	}: { page: CompiledPage; props: Record<string, unknown>; ids: ModuleExports } = $props();
 	// Boundary: the generated root component takes `data` and `handles`.
 	const App = evaluatePage(page, {
 		[INTERNALS]: internals,
+		[IDS]: ids,
 		"@sohedra/lynx/env": env,
 	}) as Component<Record<string, unknown>>;
 </script>

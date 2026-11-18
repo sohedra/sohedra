@@ -3,6 +3,7 @@
 // `<text>` makes texts of its own).
 
 import type { PageSources } from "./compile.ts";
+import { IDS } from "./evaluate.ts";
 import type { ComponentModel, PageModel } from "./grammar.ts";
 import type { ListChild, MarkupNode } from "./markup.ts";
 
@@ -89,6 +90,7 @@ export function componentSource(
 ): string {
 	const markup = writer(options.indented ? "\n\t" : "");
 	const imports = ['import { background, mainThread } from "@sohedra/lynx/env";'];
+	if (component.uid) imports.push(`import { recordId } from "${IDS}";`);
 	for (const name of new Set(usedComponents(component)))
 		imports.push(`import ${name} from "./${name}.svelte";`);
 	const script = [
@@ -97,7 +99,8 @@ export function componentSource(
 			? "let { data, handles } = $props();\nconst st = $state(data);\nif (handles) handles.st = st;"
 			: "let { st, label } = $props();",
 	];
-	if (component.uid) script.push("const uid = $props.id();");
+	if (component.uid)
+		script.push(`const uid = $props.id();\nrecordId(${JSON.stringify(component.name)}, uid);`);
 	// The flags are used only where a page has `{#if background}` or its kin: kept either way.
 	script.push("void background, mainThread;");
 	const snippets = component.snippets

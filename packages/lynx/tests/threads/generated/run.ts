@@ -14,7 +14,7 @@ import { recyclable, SCREEN } from "../scroll.ts";
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
 import type { CompiledBoth } from "./compile.ts";
-import { evaluatePage, INTERNALS, RENDERER } from "./evaluate.ts";
+import { evaluatePage, IDS, INTERNALS, RENDERER } from "./evaluate.ts";
 import { pageState, STATE_KEYS, stateValue } from "./state.ts";
 import type { PageState } from "./state.ts";
 import { listKeys } from "./trees.ts";
@@ -81,7 +81,14 @@ export interface GeneratedPage {
 	readonly page: SveltePage;
 	/** The root component's state, on the background. */
 	readonly handles: { st?: Record<string, unknown> };
+	/** The `$props.id()` of each component, `Name id`, in the order each thread made them. */
+	readonly ids: { readonly frame: string[]; readonly background: string[] };
 }
+
+/** A module that records each id of `$props.id()` in `into`. */
+const recorder = (into: string[]): { recordId: (component: string, id: string) => void } => ({
+	recordId: (component, id) => void into.push(`${component} ${id}`),
+});
 
 /** How a generated page starts. */
 export interface StartOptions {
@@ -126,6 +133,7 @@ const rootData = (initData: Record<string, unknown>): Record<string, unknown> =>
 export function startGenerated(options: StartOptions): GeneratedPage {
 	const { compiled, data, firstFrame } = options;
 	const handles: { st?: Record<string, unknown> } = {};
+	const ids = { frame: [] as string[], background: [] as string[] };
 	const backgroundEnv =
 		options.background === false ? { ...env, background: false, mainThread: true } : env;
 	// Boundary: the generated root component takes `data` and `handles`.
@@ -134,6 +142,7 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		[RENDERER]: { default: renderer },
 		"@sohedra/lynx/env": backgroundEnv,
 		"svelte/internal/disclose-version": {},
+		[IDS]: recorder(ids.background),
 	}) as Component<Record<string, unknown>>;
 	const page = startSveltePage(App, {
 		...splitData(data, options.fromTemplate ?? []),
@@ -141,11 +150,15 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		...(firstFrame && {
 			firstFrame: {
 				draw: drawGeneratedFrame,
-				props: { page: compiled.mainThread, props: { data: copy(data) } },
+				props: {
+					page: compiled.mainThread,
+					props: { data: copy(data) },
+					ids: recorder(ids.frame),
+				},
 			},
 		}),
 	});
-	return { page, handles };
+	return { page, handles, ids };
 }
 
 /** The key of a cell's item. */
