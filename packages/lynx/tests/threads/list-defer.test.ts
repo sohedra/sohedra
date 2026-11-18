@@ -10,7 +10,7 @@ import DeferredNested from "../fixtures/threads/DeferredNested.svelte";
 import drawDeferredNested from "../fixtures/threads/DeferredNested.svelte?first-frame";
 import DeferredRows from "../fixtures/threads/DeferredRows.svelte";
 import drawDeferredRows from "../fixtures/threads/DeferredRows.svelte?first-frame";
-import { expectInSyncOnceAsked, range } from "./released-rows.ts";
+import { expectInSyncOnceAsked, holdRequests, range } from "./released-rows.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
 import type { SveltePage } from "./svelte-page.ts";
@@ -114,16 +114,41 @@ describe("a deferred row", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("asked for twice before it comes, answers both requests with its one cell", async () => {
-		const { page, list, rendered } = await deferredRows();
+	it("asked for twice before it comes, answers only the newer request", async () => {
+		const { page, list, rendered, tap, row } = await deferredRows();
 		list().ask(3);
 		const first = list().operation;
 		list().ask(3);
 		const second = list().operation;
+		const before = page.engine.flushes.length;
 		await page.settle();
-		expect(list().given(first)).toBeDefined();
-		expect(list().given(second)).toBe(list().given(first));
+		// Lynx binds only the newest request of an index; it would hand back a cell flushed for the
+		// older one, while it shows it.
+		const named = page.engine.flushes
+			.slice(before)
+			.map((options) => (options as { operationID?: number }).operationID)
+			.filter((operation) => operation !== undefined);
+		expect(named).toEqual([second]);
+		expect(list().given(first)).toBeUndefined();
+		expect(list().given(second)).toBeDefined();
 		expect(rendered().filter((id) => id === 4)).toEqual([4]);
+		await tap(4);
+		expect(page.engine.text(row(4))).toBe("Row 4: 1");
+		expect(page.errors).toEqual([]);
+	});
+
+	it("waiting, answers Lynx's request later, and returns nothing now, as ReactLynx does", async () => {
+		const { page, list } = await deferredRows();
+		const element = page.byClass("list");
+		const uid = page.engine.state(element).uid;
+		const answer = page.asMainThread(() => list().componentAtIndex(element, uid, 5, 900));
+		expect(answer).toBeUndefined();
+		const written = page.asMainThread(() => list().componentAtIndex(element, uid, 6, 901));
+		expect(written).toBeUndefined();
+		await page.settle();
+		expect(typeof page.asMainThread(() => list().componentAtIndex(element, uid, 6, 902))).toBe(
+			"number",
+		);
 		expect(page.errors).toEqual([]);
 	});
 
@@ -324,24 +349,33 @@ describe("deferred rows in a first frame that is not hydrated", () => {
 });
 
 describe("deferred rows asked for several at once", () => {
-	it("are flushed now for those written, and again with all of them once the rest come", async () => {
-		const { page, list } = await deferredRows();
-		const element = page.byClass("list");
-		const uid = page.engine.state(element).uid;
+	it("are flushed now for those written, and then for the rest only, once they come", async () => {
+		const { page, list, tap, row } = await deferredRows();
 		// Row 1 and the ten after it are written; row 30 is not.
 		list().ask(0);
 		await page.settle();
 		const before = page.engine.flushes.length;
-		page.asMainThread(() =>
-			list().componentAtIndexes!(element, uid, [1, 30], [501, 502], false, false),
-		);
-		const now = page.engine.flushes.slice(before);
-		expect(now).toContainEqual(
-			expect.objectContaining({ operationIDs: [501, 502], elementIDs: [expect.any(Number), -1] }),
-		);
+		const [first, second] = list().askMany([1, 30]);
 		await page.settle();
-		expect(list().given(501)).toBeDefined();
-		expect(page.engine.text(list().given(502)!)).toBe("Row 31: 0");
+		const batches = page.engine.flushes
+			.slice(before)
+			.filter((options) => (options as { operationIDs?: number[] }).operationIDs);
+		// The same requests both times, as the engine needs; a row given once is -1 the second time,
+		// or the batch adapter would hand it back.
+		expect(batches).toEqual([
+			expect.objectContaining({
+				operationIDs: [first, second],
+				elementIDs: [expect.any(Number), -1],
+			}),
+			expect.objectContaining({
+				operationIDs: [first, second],
+				elementIDs: [-1, expect.any(Number)],
+			}),
+		]);
+		expect(list().given(first!)).toBeDefined();
+		expect(page.engine.text(list().given(second!)!)).toBe("Row 31: 0");
+		await tap(2);
+		expect(page.engine.text(row(2))).toBe("Row 2: 1");
 		expect(page.errors).toEqual([]);
 	});
 });
@@ -359,6 +393,29 @@ describe("a row deferred in the first frame and not on the background", () => {
 		await page.settle();
 		expect(page.engine.text(list.given(operation)!)).toBe("Row 3: 0");
 		expect(page.messages.filter((message) => message.t === "show")).toEqual([]);
+		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("a row's change on its way while the main thread lets go of it", () => {
+	it("is dropped: the row is written whole when Lynx asks for it again", async () => {
+		const { page, change, tap } = await deferredRows({ defer: { unmountRecycled: true } });
+		const scroll = scroller(page.engine, page.byClass("list"));
+		scroll.to(0);
+		await page.settle();
+		scroll.to(0);
+		await tap(1);
+		// The main thread lets go of row 1 and its text; its hide waits on the way.
+		const hides = holdRequests(page, "hide");
+		await scrollThrough({ scroll, from: 0, to: 31, settle: page.settle });
+		expect(hides.held.length).toBeGreaterThan(0);
+		// The background still has the row's contents, and sends its change.
+		await change((feed) => (feed.rows[0]!.label = "Changed"));
+		hides.deliver();
+		await page.settle();
+		await scrollThrough({ scroll, from: 31, to: 0, settle: page.settle });
+		expect(page.engine.text(page.byClass("row-1"))).toBe("Changed: 0");
+		await expectInSyncOnceAsked("after scrolling back", page);
 		expect(page.errors).toEqual([]);
 	});
 });

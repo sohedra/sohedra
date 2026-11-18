@@ -188,6 +188,7 @@ describe("Lynx's async list", () => {
 		const { outer } = smallPage(engine());
 		const f = engine().functions;
 		const later: (() => void)[] = [];
+		const handedBack: number[] = [];
 		const element = f.__CreateList(
 			0,
 			(_list, listId, _index, operationId) => {
@@ -200,15 +201,45 @@ describe("Lynx's async list", () => {
 						listID: listId,
 					});
 				});
-				return Promise.resolve(f.__GetElementUniqueID(cell));
+				return undefined;
 			},
-			() => {},
+			(_list, _listId, sign) => void handedBack.push(sign),
 		);
 		if (container) f.__SetAttribute(element, "custom-list-name", "list-container");
 		f.__AppendElement(outer, element);
 		f.__SetAttribute(element, "update-list-info", items(3));
-		return { element, later };
+		return { element, later, handedBack };
 	}
+
+	it("binds only the newest request of an index, and hands back a cell flushed for an older one", () => {
+		const { element, later, handedBack } = asyncList(true);
+		const handle = engine().list(element);
+		handle.ask(1);
+		const older = handle.operation;
+		handle.ask(1);
+		const newer = handle.operation;
+		later[0]!();
+		expect(handle.given(older)).toBeUndefined();
+		const stale = element.childNodes[0] as LynxElement;
+		expect(handedBack).toEqual([engine().state(stale).uid]);
+		later[1]!();
+		expect(handle.given(newer)).toBe(element.childNodes[1]);
+		expect(handedBack).toHaveLength(1);
+	});
+
+	it("hands back a cell flushed again for a request it already bound", () => {
+		const { element, later, handedBack } = asyncList(true);
+		const handle = engine().list(element);
+		handle.ask(0);
+		later[0]!();
+		const cell = handle.given(handle.operation)!;
+		engine().functions.__FlushElementTree(cell, {
+			operationID: handle.operation,
+			elementID: engine().state(cell).uid,
+			listID: engine().state(element).uid,
+		});
+		expect(handedBack).toEqual([engine().state(cell).uid]);
+	});
 
 	it("takes a cell flushed later with the request's operation id", () => {
 		const { element, later } = asyncList(true);
@@ -223,8 +254,6 @@ describe("Lynx's async list", () => {
 
 	it("is only the list named list-container: another reads an answer that is not a number as none", () => {
 		const { element } = asyncList(false);
-		expect(() => engine().list(element).ask(0)).toThrow(
-			/no cell for the unique id \[object Promise\]/,
-		);
+		expect(() => engine().list(element).ask(0)).toThrow(/no cell for the unique id undefined/);
 	});
 });

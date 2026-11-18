@@ -31,13 +31,13 @@ export interface HeldRequests {
 	deliver(): void;
 }
 
-/** Holds the main thread's requests to write rows again, until `deliver`. */
-export function holdRequests(page: SveltePage): HeldRequests {
+/** Holds the main thread's messages of a kind, its requests to write rows again by default, until `deliver`. */
+export function holdRequests(page: SveltePage, kind = "rewrite"): HeldRequests {
 	const context = page.lynx.mainThread.getJSContext();
 	const send = context.dispatchEvent.bind(context);
 	const held: ThreadEvent[] = [];
 	context.dispatchEvent = (event) => {
-		if (decodeToBackground(event).t === "rewrite") held.push(event as ThreadEvent);
+		if (decodeToBackground(event).t === kind) held.push(event as ThreadEvent);
 		else send(event);
 	};
 	return {

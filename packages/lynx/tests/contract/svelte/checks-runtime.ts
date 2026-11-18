@@ -25,6 +25,7 @@ interface Signals {
 	state(value: unknown): object;
 	get(signal: object): unknown;
 	set(signal: object, value: unknown): void;
+	derived(run: () => unknown): object;
 	untrack(run: () => void): void;
 	effect_root(run: () => void): () => void;
 	render_effect(run: () => void): void;
@@ -52,6 +53,15 @@ export const checks: Checks = {
 		flushSync();
 		stop();
 		expect(seen).toEqual([false, true]);
+		// While Svelte builds a block or computes a derived, a write throws unless it is untracked:
+		// the renderer shows a row while a block effect inserts it.
+		const { derived } = internal;
+		const opened = state(false);
+		const tracked = derived(() => set(opened, true));
+		expect(() => get(tracked)).toThrow(/state_unsafe_mutation/);
+		const untracked = derived(() => untrack(() => set(opened, true)));
+		expect(() => get(untracked)).not.toThrow();
+		expect(get(opened)).toBe(true);
 	},
 
 	"push-renderer": async () => {

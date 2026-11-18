@@ -79,6 +79,29 @@ describe("a deferred row", () => {
 		expect(code).toContain("__sohedraLynxRow1");
 	});
 
+	it("warns, in a development build, about a defer it cannot see to: in a spread, or on <svelte:element>", async () => {
+		const spread = await component(
+			each('<list-item {...{ defer: true, "item-key": "a" }}><text>a</text></list-item>'),
+			{ development: true },
+		);
+		expect(spread.warnings.map((warning) => warning.code)).toEqual(["list_item_defer_ignored"]);
+		const element = await component(
+			each('<svelte:element this={"list-item"} defer item-key="a"><text>a</text></svelte:element>'),
+			{ development: true },
+		);
+		expect(element.warnings.map((warning) => warning.code)).toEqual(["list_item_defer_ignored"]);
+		expect(element.warnings[0]!.message).toContain("<list-item defer>");
+		const production = await component(
+			each('<list-item {...{ defer: true, "item-key": "a" }}><text>a</text></list-item>'),
+		);
+		expect(production.warnings).toEqual([]);
+		const mainThread = await component(
+			each('<list-item {...{ defer: true, "item-key": "a" }}><text>a</text></list-item>'),
+			{ development: true, thread: "main-thread" },
+		);
+		expect(mainThread.warnings).toEqual([]);
+	});
+
 	it("leaves a list item with no defer alone", async () => {
 		const { code } = await component(each("<list-item><text>{row.id}</text></list-item>"));
 		expect(code).not.toContain("__sohedraLynx");
