@@ -8,6 +8,7 @@
 import type { TreeNode } from "../../../src/background/renderer/node.ts";
 import { pageRenderer } from "../../../src/background/renderer/page-renderer.ts";
 import { attrValue, textOf } from "../../../src/background/renderer/values.ts";
+import { LIST_ONLY_INFO } from "../../../src/main-thread/lists.ts";
 import { parseStyleText } from "../../../src/testing/engine/dom.ts";
 import type { Engine, LynxElement } from "../../../src/testing/index.ts";
 import { ROOT_ID, TEXT_CONTAINERS } from "../../../src/wire/index.ts";
@@ -165,8 +166,11 @@ export function engineTree(engine: Engine, reading: Reading = WHOLE): string[] {
 
 // ---- The background ------------------------------------------------------------------------
 
-/** What the renderer keeps that the main thread never gets as an attribute. */
-const RENDERER_ONLY = new Set(["flatten"]);
+/**
+ * What the renderer keeps that the main thread never sets as an attribute: `flatten`, and what
+ * only the list reads of its items.
+ */
+const RENDERER_ONLY = new Set(["flatten", ...LIST_ONLY_INFO]);
 
 /** The element and text children of `node`, through fragments, in order. */
 function* childrenOf(node: TreeNode): Generator<TreeNode> {

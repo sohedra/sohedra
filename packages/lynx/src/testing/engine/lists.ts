@@ -41,7 +41,11 @@ export interface ListHandle {
 	onUpdate: ((update: ListUpdate) => void) | undefined;
 	/** Lynx shows the cell at `index` (componentAtIndex); returns its element. */
 	show(index: number): LynxElement;
-	/** Lynx hands the cell back (enqueueComponent), to reuse it for another item. */
+	/**
+	 * Lynx hands the cell back (enqueueComponent), to reuse it for another item. Throws for the cell
+	 * of an item it was told is not recyclable, which Lynx never hands back
+	 * (core/renderer/ui_component/list/list_layout_manager.cc).
+	 */
 	hide(cell: LynxElement): void;
 }
 
@@ -107,6 +111,16 @@ export function receiveListUpdate(state: ElementState, value: unknown): boolean 
 	return true;
 }
 
+/** Whether the list was told last that the item with this key is not recyclable. */
+function heldForGood(list: ListState, key: unknown): boolean {
+	for (let index = list.updates.length - 1; index >= 0; index--) {
+		const { insertAction, updateAction } = list.updates[index]!;
+		const told = [...updateAction, ...insertAction].find((info) => info["item-key"] === key);
+		if (told) return told["recyclable"] === false;
+	}
+	return false;
+}
+
 /** What a test sees of a list. */
 export function listHandle(engine: EngineState, element: LynxElement): ListHandle {
 	const state = stateOf(engine, { value: element, fn: "list", index: 0 });
@@ -144,12 +158,15 @@ export function listHandle(engine: EngineState, element: LynxElement): ListHandl
 			return cell;
 		},
 		hide(cell) {
+			const cellState = stateOf(engine, { value: cell, fn: "hide", index: 0 });
+			const key = cellState.attrs["item-key"];
+			if (key !== undefined && heldForGood(list, key)) {
+				throw new Error(
+					`Lynx never hands back the cell of an item that is not recyclable: ${JSON.stringify(key)}.`,
+				);
+			}
 			engine.enter();
-			list.enqueueComponent(
-				state.node,
-				state.uid,
-				stateOf(engine, { value: cell, fn: "hide", index: 0 }).uid,
-			);
+			list.enqueueComponent(state.node, state.uid, cellState.uid);
 		},
 	};
 }

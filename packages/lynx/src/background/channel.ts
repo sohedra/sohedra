@@ -69,6 +69,12 @@ export interface Channel {
 	 */
 	rewritePage(write: () => void): void;
 	/**
+	 * Writes list cells again, after what is queued: for each id, what `write` makes, as a cell item
+	 * marked as written again. `write` returns false for an id that is no longer a cell, which gets
+	 * no item.
+	 */
+	rewriteCells(ids: readonly number[], write: (id: number) => boolean): void;
+	/**
 	 * The page was bumped: the ops made so far and the calls waiting belong to a page the main
 	 * thread no longer shows. The ops are dropped, and the calls reject.
 	 */
@@ -260,6 +266,17 @@ export function openChannel({ queue, onEvent, onRewrite, tagOf }: ChannelOptions
 			items.push(["rewrite", ROOT_ID]);
 			write();
 			flush(true);
+		},
+		rewriteCells(ids, write) {
+			if (!open) return;
+			takeOps();
+			// A cell's ops are its item as they are: the splitter already knows what is in the cell.
+			for (const id of ids) {
+				const written = write(id);
+				const ops = queue.take();
+				if (written && ops.length > 0) items.push(["cell", id, encode(ops), true]);
+			}
+			flush();
 		},
 		abandon,
 		close() {

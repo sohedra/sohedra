@@ -1,6 +1,6 @@
 // Runs a generated page on both threads of a test page, and what happens to it: the state changed
-// on the background, taps, Lynx asking for list cells and handing them back, the host's data and a
-// reload.
+// on the background, taps, Lynx asking for list cells and handing them back, a scroll through a
+// list, the host's data and a reload.
 
 import * as env from "@sohedra/lynx/env";
 import fc from "fast-check";
@@ -10,6 +10,7 @@ import renderer from "../../../src/background/renderer/entry.ts";
 import * as internals from "../../../src/svelte/runtime/client-internals.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
+import { recyclable, SCREEN } from "../scroll.ts";
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
 import type { CompiledBoth } from "./compile.ts";
@@ -24,18 +25,28 @@ export type Step =
 	| { kind: "tap"; pick: number }
 	| { kind: "show"; list: number; index: number }
 	| { kind: "hide"; list: number; cell: number }
+	/** Lynx scrolls a list to show a screen of items from `to` on, handing back what leaves it. */
+	| { kind: "scroll"; list: number; to: number }
+	/** A scroll, then a change of the state once the threads settle, with no list read between. */
+	| { kind: "scroll-then-set"; list: number; to: number; key: keyof PageState; value: unknown }
 	| { kind: "update"; data: PageState }
 	| { kind: "reload"; data: PageState };
 
 const pick = fc.nat({ max: 50 });
 
 /** A change of the state, from the background. */
-const setStep: fc.Arbitrary<Step> = fc
+const setStep: fc.Arbitrary<Extract<Step, { kind: "set" }>> = fc
 	.constantFrom(...STATE_KEYS)
-	.chain((key) => stateValue(key).map((value): Step => ({ kind: "set", key, value })));
+	.chain((key) => stateValue(key).map((value) => ({ kind: "set" as const, key, value })));
 
 /** Something that happens to a page on screen. */
 export const step: fc.Arbitrary<Step> = fc.oneof(
+	{
+		weight: 2,
+		arbitrary: fc
+			.record({ list: pick, to: pick, set: setStep })
+			.map(({ list, to, set }): Step => ({ ...set, kind: "scroll-then-set", list, to })),
+	},
 	{ weight: 4, arbitrary: setStep },
 	{ weight: 3, arbitrary: pick.map((n): Step => ({ kind: "tap", pick: n })) },
 	{
@@ -50,12 +61,20 @@ export const step: fc.Arbitrary<Step> = fc.oneof(
 			.record({ list: pick, cell: pick })
 			.map(({ list, cell }): Step => ({ kind: "hide", list, cell })),
 	},
+	{
+		weight: 2,
+		arbitrary: fc
+			.record({ list: pick, to: pick })
+			.map(({ list, to }): Step => ({ kind: "scroll", list, to })),
+	},
 	{ weight: 1, arbitrary: pageState.map((data): Step => ({ kind: "update", data })) },
 	{ weight: 1, arbitrary: pageState.map((data): Step => ({ kind: "reload", data })) },
 );
 
 /** What happens before the background's first patch reaches the main thread: no state yet. */
-export const earlyStep: fc.Arbitrary<Step> = step.filter((early) => early.kind !== "set");
+export const earlyStep: fc.Arbitrary<Step> = step.filter(
+	(early) => early.kind !== "set" && early.kind !== "scroll-then-set",
+);
 
 /** A running generated page, and the state its root component shares with the test. */
 export interface GeneratedPage {
@@ -128,6 +147,10 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 	return { page, handles };
 }
 
+/** The key of a cell's item. */
+const keyOf = (page: SveltePage, cell: LynxElement): string =>
+	String(page.engine.state(cell).attrs["item-key"]);
+
 /**
  * The cells of a list that show one of its items now. The engine fake keeps the cell of an item
  * that was taken out, which Lynx would hand back and never ask about again.
@@ -135,9 +158,41 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 function liveCells(page: SveltePage, list: LynxElement): LynxElement[] {
 	const keys = new Set(listKeys(page.engine, list));
 	// Boundary: a list's children in the engine are the cells Lynx holds.
-	return ([...list.childNodes] as LynxElement[]).filter((cell) =>
-		keys.has(String(page.engine.state(cell).attrs["item-key"])),
-	);
+	return ([...list.childNodes] as LynxElement[]).filter((cell) => keys.has(keyOf(page, cell)));
+}
+
+/** The live cells Lynx may hand back: those of recyclable items. */
+function recyclableCells(page: SveltePage, list: LynxElement): LynxElement[] {
+	return liveCells(page, list).filter((cell) => recyclable(page.engine, list, keyOf(page, cell)));
+}
+
+/**
+ * The rows the main thread keeps past those Lynx holds: a list that has more than both lets go of
+ * some when it scrolls.
+ */
+const KEPT = 10;
+
+/** The list a scroll picks: one long enough to let rows go, when the page has one. */
+function scrolled(page: SveltePage, pick: number): LynxElement | undefined {
+	const found = lists(page);
+	const long = found.filter((list) => page.engine.state(list).list!.items > SCREEN + KEPT);
+	const among = long.length > 0 ? long : found;
+	return among[pick % among.length];
+}
+
+/**
+ * Lynx scrolls the list from its top to `first`: at each step it shows a screen of items and hands
+ * back the cells outside it, as on a device.
+ */
+function scrollTo(page: SveltePage, list: LynxElement, first: number): void {
+	const handle = page.engine.list(list);
+	const count = page.engine.state(list).list!.items;
+	for (let top = 0; top <= first; top++) {
+		const shown = new Set<LynxElement>();
+		for (let index = top; index < Math.min(count, top + SCREEN); index++)
+			shown.add(handle.show(index));
+		for (const cell of recyclableCells(page, list)) if (!shown.has(cell)) handle.hide(cell);
+	}
 }
 
 /** The page's lists, in document order, those in the cells Lynx holds included. */
@@ -192,8 +247,15 @@ export function apply(running: GeneratedPage, done: Step): void {
 			const found = lists(page);
 			if (found.length === 0) return;
 			const element = found[done.list % found.length]!;
-			const cells = liveCells(page, element);
+			const cells = recyclableCells(page, element);
 			if (cells.length > 0) page.engine.list(element).hide(cells[done.cell % cells.length]!);
+			return;
+		}
+		case "scroll":
+		case "scroll-then-set": {
+			const element = scrolled(page, done.list);
+			const count = element ? page.engine.state(element).list!.items : 0;
+			if (count > 0) scrollTo(page, element!, done.to % count);
 			return;
 		}
 		case "update":
@@ -203,6 +265,17 @@ export function apply(running: GeneratedPage, done: Step): void {
 			page.reload({ host: copy(done.data) });
 			return;
 	}
+}
+
+/**
+ * Does `step` to the page, and for a scroll then a change, the change once the threads settled: the
+ * rows the scroll let go of are released by then, and change while they have no elements.
+ */
+export async function run(running: GeneratedPage, done: Step): Promise<void> {
+	apply(running, done);
+	if (done.kind !== "scroll-then-set") return;
+	await running.page.settle();
+	apply(running, { kind: "set", key: done.key, value: done.value });
 }
 
 /** Whether a patch asked the main thread to make the page again. */

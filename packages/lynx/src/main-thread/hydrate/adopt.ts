@@ -6,10 +6,10 @@
 
 import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../../wire/index.ts";
 import type { CallItem, ListItemInfo, Op } from "../../wire/index.ts";
-import type { AdoptedList, Applier } from "../apply.ts";
+import type { Applier } from "../apply.ts";
 import type { Frame } from "../frame/draw.ts";
 import { mainThread } from "../globals.ts";
-import type { HeldCell } from "../lists.ts";
+import type { AdoptedItems, HeldCell } from "../lists.ts";
 import type { Plan } from "./match.ts";
 import { opsOf } from "./rendered.ts";
 import type { Rendered } from "./rendered.ts";
@@ -45,7 +45,7 @@ export function adoptFrame(options: {
 	const ids = new Map<number, number>();
 
 	// The cells of each adopted list: those Lynx holds keep their elements, the others are let go of.
-	const lists = new Map<number, AdoptedList>();
+	const lists = new Map<number, AdoptedItems>();
 	for (const list of plan.lists) {
 		const held = new Map<number, HeldCell>(
 			drawnApplier.heldCells(list.drawn).map((cell) => [cell.id, cell]),

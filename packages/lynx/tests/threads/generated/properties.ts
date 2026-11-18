@@ -7,7 +7,7 @@ import { compilePage } from "./compile.ts";
 import type { CompiledBoth } from "./compile.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
-import { apply, earlyStep, rewrote, startGenerated, step } from "./run.ts";
+import { apply, earlyStep, rewrote, run, startGenerated, step } from "./run.ts";
 import type { GeneratedPage, StartOptions, Step } from "./run.ts";
 import { about } from "./settings.ts";
 import { pageSources } from "./source.ts";
@@ -116,7 +116,7 @@ export function updatesProperty(
 				// What the background rendered after each step, by the state it rendered.
 				const renders = new Map<string, { after: number; tree: string[] }[]>();
 				for (const [index, done] of steps.entries()) {
-					apply(running, done);
+					await run(running, done);
 					await running.page.settle();
 					const after = `After ${index + 1} of the steps`;
 					expectNoErrors(running.page.errors, after);

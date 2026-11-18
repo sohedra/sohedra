@@ -21,7 +21,10 @@ import { attrValue, isFunction, textOf } from "./values.ts";
 export interface ElementNode extends TreeNode {
 	/** The `id` attribute, as Lynx reports it in an event's target: "" when there is none. */
 	readonly id: string;
-	/** Lynx's unique id of the element, as of the last event that had it as a target. */
+	/**
+	 * Lynx's unique id of the element, as of the last event that had it as a target. A list row made
+	 * again has new elements: until one of its events comes, this names the element that went.
+	 */
 	readonly uid: number | undefined;
 	/** The `data-*` attributes, as Lynx reports them in an event's target. Built when read. */
 	readonly dataset: Record<string, unknown>;

@@ -7,7 +7,7 @@
 //   - the branches of Svelte's `{#if}` blocks: the first frame and the background may take another
 //     branch there, as `{#if background}` does. Of a run of them, the elements that have the same
 //     tags in the same places from its end and from its start are adopted, with what differs
-//     written; the rest is made again in place;
+//     written, in the cells of a list among them too; the rest is made again in place;
 //   - events, styles set from code, and what the first mount's effects changed: none of them is in
 //     the first frame.
 // What refuses hydration (a mismatch): outside a block, a tag that differs, an element that one
@@ -188,14 +188,15 @@ export function matchFrame(options: {
 			plan.writes.push({ id, name, value: null });
 		}
 		if (drawn.cells) {
-			list(id, drawn);
+			list(id, drawn, inBlock);
 			return;
 		}
 		if (drawn.tag === "list") plan.nestedLists.push({ id, drawn: drawn.id });
 		align(id, drawn, inBlock);
 	}
 
-	function list(id: number, drawn: DrawnNode): void {
+	/** A list's cells by key; in a block, as the list is, so their attributes may differ too. */
+	function list(id: number, drawn: DrawnNode, inBlock: boolean): void {
 		const built = node(id);
 		const keys = (built.list?.keys ?? []).map(keyText);
 		const got = keysOf(drawn);
@@ -217,7 +218,7 @@ export function matchFrame(options: {
 				throw new Mismatch({ kind: "extra", node: id, got: "list-item" });
 			cells.push(cell.id);
 			plan.adoptedCells.add(item);
-			pair(item, cell.node, false);
+			pair(item, cell.node, inBlock);
 		}
 		plan.lists.push({ id, drawn: drawn.id, items, cells });
 	}

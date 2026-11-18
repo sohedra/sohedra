@@ -4,11 +4,12 @@
 // config the plugin sets turns on): each element's event slot (`type:name`) gets one listener,
 // which sends its handler id to the background.
 //
-// A `<list>`'s cells do not go into the tree here: the list takes each one when Lynx asks for it
-// (./lists.ts).
+// A `<list>`'s cells do not go into the tree here: the list takes each one when Lynx asks for it,
+// and lets go of one Lynx handed back once the background wrote it again (./lists.ts).
 
-import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../wire/index.ts";
+import { decodeCell, LIST_ITEM_INFO, OpCode, ROOT_ID } from "../wire/index.ts";
 import type { LynxEventType, Op } from "../wire/index.ts";
+import { createAnimations } from "./animations.ts";
 import { mainThreadError } from "./catalogue.ts";
 import { createCodeStyles } from "./code-styles.ts";
 import type { CodeStyles } from "./code-styles.ts";
@@ -58,15 +59,22 @@ export interface TakenElement {
 	list: ListState | undefined;
 }
 
-/** How a list's items go to their new ids: the cells Lynx holds keep their elements. */
-export type AdoptedList = AdoptedItems;
-
 /** The page's elements, as the background's ops made them. */
 export interface Applier {
 	/** Applies `ops` in order. An op that throws is skipped, and the others are applied. */
 	apply(ops: Op[]): FailedOp[];
 	/** Tells the lists inside cells whose items changed; ends a patch. */
 	flushLists(): void;
+	/** The list cells to ask the background to write again now, `max` at most, marked asked. */
+	takeRewrites(max: number): number[];
+	/** A list cell Lynx never showed is to be written again: its kept text piled up. */
+	askCell(id: number): void;
+	/**
+	 * The background wrote a list cell again, as `text`: a cell Lynx handed back leaves its list
+	 * and its elements are let go of. Whether the text replaces what is kept for the cell; not when
+	 * the cell was not asked for, or Lynx asked for it since and it keeps its elements.
+	 */
+	replaceCell(id: number, text: string): boolean;
 	/** The element with this id. */
 	element(id: number): LynxElement | undefined;
 	/** The background's id of a Lynx element, by its unique id. */
@@ -89,7 +97,7 @@ export interface Applier {
 	 */
 	forget(id: number): TakenElement;
 	/** Takes an element another applier let go of, under this id; a list takes its cells too. */
-	adopt(id: number, taken: TakenElement, options: { onPage: boolean; list?: AdoptedList }): void;
+	adopt(id: number, taken: TakenElement, options: { onPage: boolean; list?: AdoptedItems }): void;
 	/** Removes every listener it added, the page's own too: no event reaches the background after. */
 	silence(): void;
 	/** Takes the page's elements off it and lets go of every one. */
@@ -106,6 +114,11 @@ export interface ApplierOptions {
 	dispatch: Dispatch;
 	/** Makes the list cell with this id from what the main thread kept for it. */
 	openCell(id: number): void;
+	/**
+	 * Asks for `takeRewrites` on a later task, outside Lynx's callbacks. Without it, the lists keep
+	 * every cell they made.
+	 */
+	scheduleRewrites?: () => void;
 	/** Reports an error the engine's call into the page threw. */
 	report(error: unknown): void;
 	/** The styles code set, shared with the applier whose elements this one adopts. */
@@ -123,12 +136,18 @@ interface Registration {
 
 /** Makes the applier of a page. */
 export function createApplier(options: ApplierOptions): Applier {
-	const { page, dispatch, openCell, report } = options;
+	const { page, dispatch, openCell, report, scheduleRewrites } = options;
 	const elements = new Map<number, LynxElement>([[ROOT_ID, page]]);
 	const pageUid = mainThread.__GetElementUniqueID(page);
 	const flattening = options.flattening ?? createFlattening();
 	const styles = options.styles ?? createCodeStyles();
-	const lists = createLists({ pageUid, openCell, elementOf: (id) => elements.get(id), report });
+	const lists = createLists({
+		pageUid,
+		openCell,
+		elementOf: (id) => elements.get(id),
+		report,
+		...(scheduleRewrites && { schedule: scheduleRewrites }),
+	});
 	const idByUid = new Map<number, number>([[pageUid, ROOT_ID]]);
 	const uidById = new Map<number, number>([[ROOT_ID, pageUid]]);
 	// Each element's `data-*` attributes, which Lynx takes as one dataset.
@@ -136,6 +155,7 @@ export function createApplier(options: ApplierOptions): Applier {
 	const registrations = new Map<number, Map<string, Registration>>();
 	// The elements in the page element, which a reset takes off it.
 	const onPage = new Set<number>();
+	const animations = createAnimations();
 
 	function get(id: number): LynxElement {
 		const element = elements.get(id);
@@ -185,6 +205,7 @@ export function createApplier(options: ApplierOptions): Applier {
 		uidById.delete(id);
 		elements.delete(id);
 		onPage.delete(id);
+		animations.forget(id);
 	}
 
 	function create(id: number, tag: string): LynxElement {
@@ -234,6 +255,10 @@ export function createApplier(options: ApplierOptions): Applier {
 				return;
 			case "id":
 				mainThread.__SetID(element, value == null ? null : textOf(value));
+				return;
+			case "preload-buffer-count":
+				lists.setPreload(id, value);
+				mainThread.__SetAttribute(element, key, value);
 				return;
 			default:
 				mainThread.__SetAttribute(element, key, value);
@@ -289,6 +314,7 @@ export function createApplier(options: ApplierOptions): Applier {
 				const element = get(op[1]);
 				flattening.hold(element);
 				mainThread.__ElementAnimate(element, op[2]);
+				animations.animated(op[1], op[2]);
 				return;
 			}
 		}
@@ -311,6 +337,20 @@ export function createApplier(options: ApplierOptions): Applier {
 			return failed;
 		},
 		flushLists: () => lists.flush(),
+		takeRewrites: (max) => lists.takeRewrites(max),
+		askCell: (id) => lists.ask(id),
+		replaceCell(id, text) {
+			const outcome = lists.rewritten(id);
+			if (outcome !== "release") return outcome === "keep";
+			// The cell's elements, as the text makes them again: the engine cancels their animations.
+			for (const op of decodeCell(text)) {
+				if (op[0] !== OpCode.Create && op[0] !== OpCode.CreateText) continue;
+				const slots = registrations.get(op[1]);
+				animations.cancel(op[1], slots?.get("bindEvent:animationcancel")?.listener);
+				release(op[1]);
+			}
+			return true;
+		},
 		element: (id) => elements.get(id),
 		idForUid: (uid) => idByUid.get(uid),
 		idOf: (element) => idByUid.get(mainThread.__GetElementUniqueID(element)),

@@ -40,8 +40,9 @@ export interface LynxAnimation<Target> {
 	finish(): void;
 	/**
 	 * Resolves when the animation ends by itself or through `finish()`, and rejects with an
-	 * `AbortError` when it is canceled. Read it right after `animate()`: an end before it is read is
-	 * not heard. A rejection that nothing reads raises no error, as on the web.
+	 * `AbortError` when it is canceled, also by the engine when the list row it runs in is released.
+	 * Read it right after `animate()`: an end before it is read is not heard. A rejection that
+	 * nothing reads raises no error, as on the web.
 	 */
 	readonly finished: Promise<void>;
 }

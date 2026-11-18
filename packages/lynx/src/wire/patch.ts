@@ -48,9 +48,11 @@ export type OpsItem = ["ops", Op[]];
 
 /**
  * A list cell's ops, as text from `encodeCell`, with the cell's id. The main thread keeps the text
- * until the list shows the cell.
+ * until the list shows the cell. Marked `true`, it is the whole cell written again, the answer to a
+ * rewrite message: it replaces the kept text, and a cell Lynx handed back lets go of its elements;
+ * a cell Lynx showed since it was asked for ignores it.
  */
-export type CellItem = ["cell", number, string];
+export type CellItem = ["cell", number, string] | ["cell", number, string, true];
 
 /**
  * A call: its id (0 when no reply is wanted), the element's id (0 for none) and the request as
@@ -67,10 +69,9 @@ export type ReplyItem = ["reply", number, string];
 /**
  * The page is written again: the main thread lets go of its elements, which stay on the screen until
  * the patch's flush, and the items after this make the page again, with the same ids, from what the
- * background holds now. The answer to a rewrite message. Only the page's root (`ROOT_ID`) is
- * written again; another id is reported, and while the page waits to be written again, the page is
- * asked for again. A later version may write one list cell again, with the same item and the
- * background's same writing, but its own arrival rule.
+ * background holds now. The answer to a rewrite message for the page's root (`ROOT_ID`), the one
+ * id this item names; another id is reported, and while the page waits to be written again, the
+ * page is asked for again. A list cell is written again as a cell item instead.
  */
 export type RewriteItem = ["rewrite", number];
 

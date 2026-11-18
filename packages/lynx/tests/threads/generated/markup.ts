@@ -33,7 +33,11 @@ export type MarkupNode =
 	| { kind: "component"; name: string; label: string; cssVariable: boolean }
 	| { kind: "render"; snippet: string; argument: string };
 
-/** A child of a `<list>`: one `<list-item>`, or an `{#each}` of them. */
+/**
+ * A child of a `<list>`: one `<list-item>`, an `{#each}` of them, or an `{#each}` of enough rows
+ * for a scroll to hand back more than the main thread keeps (`rows`), the second of which may be
+ * held for good (`fixed`).
+ */
 export type ListChild =
 	| { kind: "item"; key: string; attributes: string[]; body: MarkupNode[] }
 	| {
@@ -44,7 +48,23 @@ export type ListChild =
 			prefix: string;
 			attributes: string[];
 			body: MarkupNode[];
-	  };
+	  }
+	| { kind: "rows"; item: string; fixed: boolean; attributes: string[]; body: MarkupNode[] };
+
+/** The most lists around one another: a list holds at most one more, in an item. */
+export const MOST_LISTS = 2;
+
+/**
+ * A component or snippet, with its context and the lists its markup counts around it. It renders
+ * only where that many lists or fewer are, so what its markup holds keeps the rules on lists
+ * wherever it renders: a long list only at the page level, none in a long list's row.
+ */
+export interface Renderable {
+	readonly name: string;
+	readonly context: Context;
+	/** At most `MOST_LISTS`: one that counts as many holds no list. */
+	readonly lists: number;
+}
 
 /** What an expression may name where it is written. */
 export interface Scope {
@@ -52,12 +72,12 @@ export interface Scope {
 	readonly texts: readonly string[];
 	/** How many `{#each}` are around: the next item's name. */
 	readonly depth: number;
-	/** How many lists are around: a list holds at most one more. */
+	/** How many lists are around, or count as around: at most `MOST_LISTS`. */
 	readonly lists: number;
-	/** The components this one may use, with their context. */
-	readonly components: readonly { name: string; context: Context }[];
-	/** The snippets this component has, with their context; none inside a snippet. */
-	readonly snippets: readonly { name: string; context: Context }[];
+	/** The components this one may use. */
+	readonly components: readonly Renderable[];
+	/** The snippets this component has; none inside a snippet. */
+	readonly snippets: readonly Renderable[];
 	/** Whether `uid` (`$props.id()`) is defined. */
 	readonly uid: boolean;
 }
@@ -142,12 +162,17 @@ export function nodes(context: Context, scope: Scope, size: number): fc.Arbitrar
 	return fc.array(node(context, scope, size), { maxLength: 3 });
 }
 
-/** At least one node in `context`, at most `size` deep. */
+/**
+ * Nodes in `context`, at most `size` deep, that render a node whatever the state: a text or a
+ * `<view>` first. A block or a component may render nothing.
+ */
 function filled(context: Context, scope: Scope, size: number): fc.Arbitrary<MarkupNode[]> {
-	if (size > 0) return fc.array(node(context, scope, size), { minLength: 1, maxLength: 2 });
-	return context === "inline"
-		? leafText(scope).map((text) => [text])
-		: fc.constant<MarkupNode[]>([{ kind: "element", tag: "view", attributes: [], children: [] }]);
+	const first: fc.Arbitrary<MarkupNode> =
+		context === "inline"
+			? leafText(scope)
+			: fc.constant({ kind: "element", tag: "view", attributes: [], children: [] });
+	const rest = size > 0 ? fc.array(node(context, scope, size), { maxLength: 1 }) : fc.constant([]);
+	return fc.tuple(first, rest).map(([head, tail]) => [head, ...tail]);
 }
 
 function leafText(scope: Scope): fc.Arbitrary<MarkupNode> {
@@ -177,6 +202,32 @@ function element(
 		}));
 }
 
+/**
+ * Long rows, only in a list of the page, whose rows are released; small, with no list in them: a
+ * scroll shows them many times over.
+ */
+function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild> {
+	return fc
+		.record({
+			fixed: fc.boolean(),
+			attributes: attributes(scope, "view"),
+			body: nodes("block", nested(scope, { lists: MOST_LISTS }), Math.min(1, size - 1)),
+		})
+		.map((each): ListChild => ({ kind: "rows", item, ...each }));
+}
+
+/** A list of the page with long rows only, which a scroll lets go of. */
+export function longList(scope: Scope): fc.Arbitrary<MarkupNode> {
+	const { item, scope: eachScope } = withItem(nested(scope, { lists: 1 }));
+	return fc
+		.record({ attributes: attributes(scope, "view"), child: rows(item, eachScope, 2) })
+		.map(({ attributes: written, child }): MarkupNode => ({
+			kind: "list",
+			attributes: written,
+			items: [child],
+		}));
+}
+
 function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 	const inner = nested(scope, { lists: scope.lists + 1 });
 	const listItem = fc
@@ -201,14 +252,19 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			body: nodes("block", eachScope, size - 1),
 		})
 		.map((each): ListChild => ({ kind: "items", item, ...each }));
+	const kinds =
+		scope.lists === 0
+			? fc.oneof(listItem, eachItems, { weight: 2, arbitrary: rows(item, eachScope, size) })
+			: fc.oneof(listItem, eachItems);
 	return fc
 		.record({
 			attributes: attributes(scope, "view"),
-			items: fc.uniqueArray(fc.oneof(listItem, eachItems), {
+			items: fc.uniqueArray(kinds, {
 				minLength: 1,
 				maxLength: 2,
 				// Keys stay unique in the list: one static item per key, one `{#each}` per prefix.
-				selector: (child) => (child.kind === "item" ? child.key : child.prefix),
+				selector: (child) =>
+					child.kind === "item" ? child.key : child.kind === "items" ? child.prefix : "r",
 			}),
 		})
 		.map(({ attributes: written, items: children }): MarkupNode => ({
@@ -217,6 +273,13 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			items: children,
 		}));
 }
+
+/** Those of `renderables` that may render here: in `context`, with no more lists around. */
+const renderableHere = (
+	renderables: readonly Renderable[],
+	context: Context,
+	scope: Scope,
+): Renderable[] => renderables.filter((one) => one.context === context && one.lists >= scope.lists);
 
 function node(context: Context, scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 	const { item, scope: eachScope } = withItem(scope);
@@ -244,10 +307,12 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 					keyed: fc.boolean(),
 					body: nodes(context, eachScope, size - 1),
 					/**
-					 * Never empty: Svelte throws when an `{#each}` whose `{:else}` holds nothing fills.
-					 * The canary in ./svelte-each-else.test.ts fails when that is fixed.
+					 * Never without a node: Svelte throws when an `{#each}` whose `{:else}` renders no node
+					 * fills, an empty one or one whose component renders nothing, on the DOM too. The
+					 * canaries in ./svelte-each-else.test.ts and ./svelte-each-else-component.test.ts
+					 * fail when each is fixed.
 					 *
-					 * @workaround svelte-empty-each-else kind=svelte-internal delete-when="Svelte fills an {#each} with an empty {:else} without throwing"
+					 * @workaround svelte-empty-each-else kind=svelte-internal delete-when="Svelte fills an {#each} with an empty {:else}, or one whose component renders nothing, without throwing"
 					 */
 					otherwise: fc.option(filled(context, scope, size - 1), { nil: undefined }),
 				})
@@ -270,7 +335,7 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 				.map(({ expression, body }): MarkupNode => ({ kind: "key", expression, body })),
 		},
 	];
-	const components = scope.components.filter((component) => component.context === context);
+	const components = renderableHere(scope.components, context, scope);
 	if (components.length > 0) {
 		options.push({
 			weight: 2,
@@ -289,7 +354,7 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 				})),
 		});
 	}
-	const snippets = scope.snippets.filter((snippet) => snippet.context === context);
+	const snippets = renderableHere(scope.snippets, context, scope);
 	if (snippets.length > 0) {
 		options.push({
 			weight: 1,
@@ -326,7 +391,7 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 					})),
 			},
 		);
-		if (scope.lists < 2) options.push({ weight: 2, arbitrary: list(scope, size) });
+		if (scope.lists < MOST_LISTS) options.push({ weight: 2, arbitrary: list(scope, size) });
 	}
 	return fc.oneof({ depthSize: "small" }, ...options);
 }

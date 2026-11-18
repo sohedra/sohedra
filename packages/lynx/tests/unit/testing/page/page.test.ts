@@ -198,6 +198,17 @@ describe("a test page's threads", () => {
 		expect(seen).toEqual([page.lynx.background]);
 	});
 
+	it("run a main-thread timer as the main thread, on a later task that settle waits for", async () => {
+		const page = startTestPage();
+		const seen: unknown[] = [];
+		page.lynx.mainThread.setTimeout(() => seen.push(readGlobal("lynx")), 0);
+		page.asBackground(() => undefined);
+		await Promise.resolve();
+		expect(seen).toEqual([]);
+		await page.settle();
+		expect(seen).toEqual([page.lynx.mainThread]);
+	});
+
 	it("keep a report at the warning level apart from the errors", () => {
 		const page = startTestPage();
 		const warning = new Error("warning");

@@ -6,14 +6,18 @@
 //
 // For a list of the page, the background tracks the items and sends the update ready
 // (`ListUpdate`). A cell's element and what is in it are made only when Lynx first asks for the
-// cell: the ops the main thread kept for it are applied then. The cell is then in the list and
-// stays there, so asking again gives the same element. A cell that is no longer an item leaves the
-// list once Lynx no longer shows it.
+// cell: the ops the main thread kept for it are applied then. The cell is then in the list, so
+// asking again gives the same element. A cell that is no longer an item leaves the list once Lynx
+// no longer shows it.
+//
+// A list of the page keeps about a screen of the cells Lynx handed back with their elements, and
+// lets go of the others' (./lists/release.ts). The first frame's lists hand theirs to the page's at
+// hydration (./lists/adopt.ts).
 //
 // A list inside a cell is rare: its items come as inserts and removals, and its update is written
-// here.
+// here. It keeps its cells, and goes with the cell it is in.
 
-import { listUpdateInfo, Order } from "../wire/index.ts";
+import { listUpdateInfo } from "../wire/index.ts";
 import type { ListItemInfo, ListUpdateInfo } from "../wire/index.ts";
 import { mainThread } from "./globals.ts";
 import type {
@@ -22,61 +26,18 @@ import type {
 	EnqueueComponent,
 	LynxElement,
 } from "./globals.ts";
+import { adoptedList, heldCells } from "./lists/adopt.ts";
+import type { AdoptedItems, HeldCell } from "./lists/adopt.ts";
+import { createRelease } from "./lists/release.ts";
+import type { Rewritten } from "./lists/release.ts";
+import { newCell, newList } from "./lists/state.ts";
+import type { Cell, ListState } from "./lists/state.ts";
+
+export type { AdoptedItems, HeldCell } from "./lists/adopt.ts";
+export type { ListState } from "./lists/state.ts";
 
 /** The item attributes only the list reads, which are not set on the item's element. */
 export const LIST_ONLY_INFO: ReadonlySet<string> = new Set(["reuse-identifier", "recyclable"]);
-
-interface Cell {
-	id: number;
-	/** `undefined` until the list first asks for the cell. */
-	element: LynxElement | undefined;
-	/** -1 while there is no element. */
-	uid: number;
-	/** In the list element. */
-	attached: boolean;
-	/** Lynx shows it: it asked for it and has not handed it back. */
-	bound: boolean;
-	/** No longer one of the list's items. */
-	removed: boolean;
-}
-
-/** A list's own state: its element, its items and its cells. */
-export interface ListState {
-	element: LynxElement;
-	/** The items in their order now. */
-	items: Order;
-	/** The items as Lynx last heard of them: its indexes are into this. */
-	committed: number[];
-	cells: Map<number, Cell>;
-	cellsByUid: Map<number, Cell>;
-	/** The items whose info changed since the last update. */
-	changed: Set<number>;
-}
-
-/** A cell that has its element, with whether Lynx holds it now. */
-export interface HeldCell {
-	id: number;
-	element: LynxElement;
-	uid: number;
-	attached: boolean;
-	/** Lynx asked for it and has not handed it back. */
-	bound: boolean;
-}
-
-/** A list's items under their new ids, with the cells whose elements they keep. */
-export interface AdoptedItems {
-	/** The items, in order. */
-	items: number[];
-	/** For each item, the cell whose element it keeps, or none. */
-	cells: (HeldCell | undefined)[];
-	/** The items as Lynx last heard of them, when that is not `items`. */
-	committed?: number[];
-	/**
-	 * The items' info, for a list inside a cell, whose updates this module writes: its items are
-	 * then this list's.
-	 */
-	infos?: Map<number, ListItemInfo>;
-}
 
 /** A list update the background wrote. */
 export interface SentListUpdate {
@@ -92,6 +53,11 @@ export interface ListsScope {
 	pageUid: number;
 	/** Makes the cell with this id from what the main thread kept for it: Lynx waits for it. */
 	openCell(id: number): void;
+	/**
+	 * Asks for `takeRewrites` on a later task, outside Lynx's callbacks: a list keeps more cells
+	 * Lynx handed back than it should, or a cell was asked for. Without it, every cell is kept.
+	 */
+	schedule?: () => void;
 	/** The Lynx element of an id, once made. */
 	elementOf(id: number): LynxElement | undefined;
 	report(error: unknown): void;
@@ -115,6 +81,21 @@ export interface Lists {
 	destroy(): void;
 	/** Tells every list inside a cell whose items changed. */
 	flush(): void;
+	/** A list's `preload-buffer-count` is set. */
+	setPreload(id: number, value: unknown): void;
+	/**
+	 * The cells to ask the background to write again: the oldest Lynx handed back past what each
+	 * list keeps, and those `ask` named. They are marked asked.
+	 */
+	takeRewrites(max: number): number[];
+	/** A cell Lynx never showed is to be written again, at the next `takeRewrites`. */
+	ask(id: number): void;
+	/**
+	 * The background wrote a cell again. `ignore`: not asked for, or Lynx asked for it since, and it
+	 * keeps what it has. `keep`: its new text replaces what was kept. `release`: as `keep`, and the
+	 * cell, which Lynx handed back, has left its list; its elements are the caller's to let go of.
+	 */
+	rewritten(id: number): Rewritten;
 	/** The cells of a list that have elements. */
 	heldCells(id: number): HeldCell[];
 	/** A list's items now, and as Lynx last heard of them. */
@@ -140,6 +121,8 @@ export function createLists(scope: ListsScope): Lists {
 	const listOf = new Map<number, number>();
 	// The lists inside a cell whose items changed since the last flush.
 	const dirty = new Set<ListState>();
+	// Without a way to ask on a later task, every cell is kept.
+	const release = scope.schedule && createRelease(lists, scope.schedule);
 
 	function attach(list: ListState, cell: Cell): number {
 		if (!cell.element) {
@@ -156,7 +139,12 @@ export function createLists(scope: ListsScope): Lists {
 			mainThread.__AppendElement(list.element, cell.element);
 			cell.attached = true;
 		}
-		cell.bound = true;
+		if (!cell.bound) {
+			cell.bound = true;
+			list.bound++;
+		}
+		list.unbound.delete(cell);
+		cell.asked = false;
 		return cell.uid;
 	}
 
@@ -164,6 +152,7 @@ export function createLists(scope: ListsScope): Lists {
 		if (cell.attached && cell.element) mainThread.__RemoveElement(list.element, cell.element);
 		list.cells.delete(cell.id);
 		list.cellsByUid.delete(cell.uid);
+		list.unbound.delete(cell);
 	}
 
 	function cellAt(list: ListState, index: number): Cell | undefined {
@@ -229,9 +218,14 @@ export function createLists(scope: ListsScope): Lists {
 			enqueueComponent(_element, _listId, sign) {
 				const list = lists.get(id);
 				const cell = list?.cellsByUid.get(sign);
-				if (!list || !cell) return;
+				if (!list || !cell?.bound) return;
 				cell.bound = false;
-				if (cell.removed) drop(list, cell);
+				list.bound--;
+				if (cell.removed) {
+					drop(list, cell);
+					return;
+				}
+				if (list.releases) release!.handedBack(list, cell);
 			},
 		};
 	}
@@ -263,14 +257,7 @@ export function createLists(scope: ListsScope): Lists {
 				{},
 				componentAtIndexes,
 			);
-			lists.set(id, {
-				element,
-				items: new Order(),
-				committed: [],
-				cells: new Map(),
-				cellsByUid: new Map(),
-				changed: new Set(),
-			});
+			lists.set(id, newList({ element }));
 			return element;
 		},
 		isList: (id) => lists.has(id),
@@ -281,7 +268,7 @@ export function createLists(scope: ListsScope): Lists {
 				cell.removed = false;
 				list.items.delete(id);
 			} else {
-				cell = { id, element: undefined, uid: -1, attached: false, bound: false, removed: false };
+				cell = newCell(id);
 				list.cells.set(id, cell);
 			}
 			list.items.insert(id, anchor);
@@ -298,19 +285,11 @@ export function createLists(scope: ListsScope): Lists {
 		},
 		update(listId, { info, items, added, removed }) {
 			const list = lists.get(listId)!;
+			list.releases = release !== undefined;
 			for (const id of added) {
 				const cell = list.cells.get(id);
 				if (cell) cell.removed = false;
-				else {
-					list.cells.set(id, {
-						id,
-						element: undefined,
-						uid: -1,
-						attached: false,
-						bound: false,
-						removed: false,
-					});
-				}
+				else list.cells.set(id, newCell(id));
 			}
 			for (const id of removed) {
 				const cell = list.cells.get(id);
@@ -345,17 +324,18 @@ export function createLists(scope: ListsScope): Lists {
 			dirty.clear();
 			infos.clear();
 			listOf.clear();
+			release?.clear();
 		},
 		flush,
-		heldCells(id) {
-			const held: HeldCell[] = [];
-			for (const cell of lists.get(id)?.cells.values() ?? []) {
-				if (!cell.element) continue;
-				const { element, uid, attached, bound } = cell;
-				held.push({ id: cell.id, element, uid, attached, bound });
-			}
-			return held;
+		setPreload(id, value) {
+			const list = lists.get(id);
+			const count = Number(value);
+			if (list) list.preload = Number.isFinite(count) && count > 0 ? count : 0;
 		},
+		takeRewrites: (max) => release?.takeRewrites(max) ?? [],
+		ask: (id) => release?.ask(id),
+		rewritten: (id) => release?.rewritten(id) ?? "ignore",
+		heldCells: (id) => heldCells(lists.get(id)),
 		orderOf(id) {
 			const list = lists.get(id);
 			return { items: list?.items.toArray() ?? [], committed: list?.committed ?? [] };
@@ -367,34 +347,15 @@ export function createLists(scope: ListsScope): Lists {
 			dirty.delete(list);
 			return list;
 		},
-		adopt(id, { state, items, cells, committed = items, infos: itemInfos }) {
-			const list: ListState = {
-				element: state.element,
-				items: new Order(),
-				committed,
-				cells: new Map(),
-				cellsByUid: new Map(),
-				changed: new Set(),
-			};
-			for (let index = 0; index < items.length; index++) {
-				const itemId = items[index]!;
-				list.items.insert(itemId, 0);
-				const held = cells[index];
-				const cell: Cell = held
-					? { ...held, id: itemId, removed: false }
-					: {
-							id: itemId,
-							element: undefined,
-							uid: -1,
-							attached: false,
-							bound: false,
-							removed: false,
-						};
-				list.cells.set(itemId, cell);
-				if (held) list.cellsByUid.set(held.uid, cell);
-				const info = itemInfos?.get(itemId);
-				if (itemInfos) listOf.set(itemId, id);
-				if (info) infos.set(itemId, info);
+		adopt(id, adopted) {
+			const { state, items, committed = items, infos: itemInfos } = adopted;
+			const list = adoptedList(adopted, itemInfos === undefined && release !== undefined);
+			if (itemInfos) {
+				for (const itemId of items) {
+					listOf.set(itemId, id);
+					const info = itemInfos.get(itemId);
+					if (info) infos.set(itemId, info);
+				}
 			}
 			// Lynx heard of items that are not this list's any more: it is told at the next flush.
 			if (committed.join() !== items.join()) dirty.add(list);
