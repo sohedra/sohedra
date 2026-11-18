@@ -8,7 +8,10 @@
 // native ids stay with their element, which keeps the ids it had for as long as it lives, also
 // while it has no gesture: a gesture set on it again, or a new one there, takes them. A gesture
 // keeps its native id while a detector of another element has it; one that only relations know
-// yet takes its element's place, and what names it is set again.
+// yet takes its element's place, and what names it is set again. No two gestures share an id: one
+// whose id the batch gave another gets a new id, and what names it is set again. One gesture on
+// several elements that had different ids takes one id: the others are set again under it, and on
+// Android a relation to it does not find them, since they joined the arena under their own.
 //
 // The ids are given out at the settle step, for every element whose gesture changed since, before
 // any detector is set: a relation may name a gesture set later in the same patch, or rebuilt in
@@ -213,7 +216,7 @@ export function createGestures(scope: () => BindingScope): Gestures {
 		const busy = (native: number, own: number): boolean => {
 			if (taken.has(native) || setElsewhere(native)) return true;
 			for (const other of owners.get(native) ?? [])
-				if (other !== own && heldElsewhere(other)) return true;
+				if (other !== own && heldElsewhere(other) && !placed.has(other)) return true;
 			return false;
 		};
 		const moved = new Set<number>();
@@ -244,9 +247,30 @@ export function createGestures(scope: () => BindingScope): Gestures {
 
 		const inBatch = new Set(plans.map((plan) => plan.binding));
 		for (const plan of plans) leave(plan);
-		for (const plan of plans) place(plan);
-		// What names a gesture that moved to its element's place is set again, with the new id.
-		if (moved.size > 0)
+		// A gesture placed elsewhere frees the id it had: try again until none is placed.
+		for (let before = -1; before !== placed.size;) {
+			before = placed.size;
+			for (const plan of plans) place(plan);
+		}
+		// The rest: a gesture keeps the id it has unless the batch gave it to another; else a new one.
+		const rest = (plan: Plan): void =>
+			plan.gestures.forEach((gesture, index) => {
+				if (plan.natives[index] !== undefined) return;
+				const current = natives.get(gesture.id);
+				let native = placed.get(gesture.id);
+				if (native === undefined) {
+					native = current !== undefined && !taken.has(current) ? current : nextNative++;
+					if (current !== undefined && current !== native) moved.add(gesture.id);
+				}
+				plan.natives[index] = native;
+				placed.set(gesture.id, native);
+				taken.add(native);
+			});
+		for (const plan of plans) rest(plan);
+		// What names a gesture that moved is set again, with the new id; its own gesture keeps its id
+		// unless the batch gave that to another, and then what names it is set again in turn.
+		for (let named = 0; named !== moved.size;) {
+			named = moved.size;
 			for (const [binding, list] of detectors) {
 				if (inBatch.has(binding)) continue;
 				if (!list.some((detector) => detector.related.some((id) => moved.has(id)))) continue;
@@ -256,15 +280,9 @@ export function createGestures(scope: () => BindingScope): Gestures {
 				inBatch.add(binding);
 				leave(plan);
 				place(plan);
+				rest(plan);
 			}
-		// The rest: a gesture a relation gave an id keeps it; a new one gets a new id.
-		for (const plan of plans)
-			plan.gestures.forEach((gesture, index) => {
-				if (plan.natives[index] !== undefined) return;
-				const native = placed.get(gesture.id) ?? natives.get(gesture.id) ?? nextNative++;
-				plan.natives[index] = native;
-				placed.set(gesture.id, native);
-			});
+		}
 		for (const [own, native] of placed) name(own, native);
 	}
 

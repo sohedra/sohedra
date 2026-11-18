@@ -96,9 +96,13 @@ export function continueWith<Kind extends GestureKind>(
 	next: readonly GestureKind[],
 ): Kind {
 	const own = crossing(gesture);
-	const following = Array.isArray(next) ? next.map(crossing) : [undefined];
-	if (!own || following.some((value) => value === undefined))
-		throw gestureError({ code: "continue_with_not_gestures", details: {} });
+	if (!own)
+		throw gestureError({ code: "continue_with_not_gestures", details: { given: "gesture" } });
+	if (!Array.isArray(next))
+		throw gestureError({ code: "continue_with_not_gestures", details: { given: "list" } });
+	const following = next.map(crossing);
+	if (following.some((value) => value === undefined))
+		throw gestureError({ code: "continue_with_not_gestures", details: { given: "member" } });
 	const added = withRelations(own, {
 		...NONE,
 		continueWith: refsOf(following.filter((value) => value !== undefined)),

@@ -1,7 +1,7 @@
-// `@sohedra/lynx/experimental`: what has no device probe yet: the gestures of
+// `@sohedra/lynx/experimental`: what waits for a device probe to show it working: the gestures of
 // `@sohedra/lynx/gesture` besides the stable ones, their compositions, `continueWith`, and the
-// state manager's `consumeGesture` and `interceptGesture`. Each has a test on both threads of the
-// engine fake, and moves to its stable entry once a device probe shows it.
+// state manager's `consumeGesture` and `interceptGesture`. Each moves to its stable entry once a
+// probe passes on iOS and Android.
 
 export {
 	continueWith,

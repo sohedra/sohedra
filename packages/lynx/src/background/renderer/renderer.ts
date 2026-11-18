@@ -369,7 +369,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		const where = sourceLocation(element);
 		const tag = element.tag ?? "element";
 		if (key === GESTURE_ATTRIBUTE) {
-			if (!isGesture(value))
+			// `false` turns a gesture off, as `undefined` does: `main-thread:gesture={on && pan}`.
+			if (value !== false && !isGesture(value))
 				reportOnce(`main_thread_gesture_not_a_gesture:${where ?? tag}`, () =>
 					backgroundError({
 						code: "main_thread_gesture_not_a_gesture",

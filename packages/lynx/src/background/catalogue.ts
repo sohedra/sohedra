@@ -210,7 +210,7 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		message: ({ value, tag }) =>
 			`The <${tag}>'s main-thread:gesture is ${value}, not a gesture, so the main thread sets no gesture on it.`,
 		fix: () =>
-			"Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture; several gestures on one element go in one composition.",
+			"Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture. Several gestures on one element go in one composition, such as RaceGesture from @sohedra/lynx/experimental.",
 		docs: "main_thread_gesture_not_a_gesture",
 	},
 	main_thread_event_spelling_removed: {

@@ -15,7 +15,8 @@ export interface GestureDetails {
 	gesture_relation_not_a_list: { gesture: string; name: string };
 	/** `composition` is the class (`RaceGesture`). */
 	gesture_member_not_gesture: { composition: string };
-	continue_with_not_gestures: Record<string, never>;
+	/** `given` is what was wrong: the gesture, the list, or a value in the list. */
+	continue_with_not_gestures: { given: "gesture" | "list" | "member" };
 }
 
 /** What a code of the gestures names. */
@@ -50,8 +51,12 @@ export const GESTURE_CATALOGUE: Catalogue<GestureDetails> = {
 		docs: "gesture_member_not_gesture",
 	},
 	continue_with_not_gestures: {
-		message: () =>
-			"continueWith was given a value that is not a gesture, so the gesture cannot hand the touch on to it.",
+		message: ({ given }) =>
+			given === "gesture"
+				? "The gesture given to continueWith is not a gesture, so nothing can hand the touch on."
+				: given === "list"
+					? "The gestures given to continueWith are not in a list."
+					: "The list given to continueWith holds a value that is not a gesture, so the touch cannot go to it.",
 		fix: () =>
 			"Give it a gesture, then a list of the gestures that take over: continueWith(pan, [fling]).",
 		docs: "continue_with_not_gestures",

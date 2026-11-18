@@ -230,7 +230,8 @@ abstract class PlainGesture extends Gesture {
  * Built again with the same options but other callbacks, or callbacks that captured other values,
  * a gesture keeps its detector, and a drag goes on with the new callbacks. A change of the
  * gesture's type, its options, what it waits for or runs with, or which callbacks it has sets the
- * detector again, which ends a drag; so does taking the gesture away.
+ * detector again, which ends a drag; so does taking the gesture away, with `undefined` or `false`
+ * (`main-thread:gesture={on && pan}`).
  */
 export class PanGesture extends PlainGesture {
 	constructor(options: PanGestureOptions = {}) {
