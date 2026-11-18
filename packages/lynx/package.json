@@ -7,9 +7,11 @@
 	"type": "module",
 	"sideEffects": [
 		"./src/background/background-only.ts",
+		"./src/background/start-up.ts",
 		"./src/first-frame/**",
 		"./src/main-thread/**",
 		"./lib/background/background-only.js",
+		"./lib/background/start-up.js",
 		"./lib/first-frame/**",
 		"./lib/main-thread/**"
 	],

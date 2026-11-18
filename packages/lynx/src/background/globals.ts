@@ -33,6 +33,9 @@ export interface BackgroundGlobals {
 		reportError(error: unknown, options?: { level?: "error" | "warning" }): void;
 		queueMicrotask(callback: () => void): void;
 		setTimeout(callback: () => void, delay?: number): number;
+		clearTimeout(id: number): void;
+		setInterval(callback: () => void, delay?: number): number;
+		clearInterval(id: number): void;
 		getNativeApp(): NativeApp;
 		getCoreContext(): CoreContext;
 		getApp(): App;
@@ -50,6 +53,13 @@ export const background: BackgroundGlobals = {
 		return lynx;
 	},
 };
+
+/** A global object, its values by name. */
+type Scope = Record<string, unknown>;
+
+// Boundary: what the engine lacks is filled in there by name.
+/** The background's global object, where start-up fills in what the engine lacks. */
+export const globalScope: Scope = globalThis as unknown as Scope;
 
 declare const __DEV__: boolean;
 

@@ -42,6 +42,8 @@ export interface MainThreadGlobals {
 		getEngine(): EventSource;
 		/** The native side's events: the end of the page's life. */
 		getNative(): EventSource;
+		/** The platform, the screen and the engine's version, which the background has as a global. */
+		SystemInfo?: unknown;
 	};
 	__CreatePage(componentId: string, cssId: number): LynxElement;
 	__GetElementUniqueID(element: LynxElement): number;
@@ -89,10 +91,16 @@ export interface MainThreadGlobals {
 // Boundary: the engine's globals have no types; this is the one place `globalThis` is typed.
 export const mainThread: MainThreadGlobals = globalThis as unknown as MainThreadGlobals;
 
+/** A global object, its values by name. */
+type Scope = Record<string, unknown>;
+
+// Boundary: the engine finds what is put there by name.
+/** The main thread's global object, where start-up fills in what the engine lacks. */
+export const globalScope: Scope = globalThis as unknown as Scope;
+
 /** Puts a function the engine or the background calls by name on the main thread's globals. */
 export function setGlobalFunction(name: string, fn: (...args: never[]) => unknown): void {
-	// Boundary: the engine finds these by name on the global object.
-	(globalThis as unknown as Record<string, unknown>)[name] = fn;
+	globalScope[name] = fn;
 }
 
 declare const __DEV__: boolean;
