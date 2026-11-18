@@ -51,7 +51,7 @@ export function lateLayouts(scope: LayoutScope): (node: TreeNode, handler: Handl
 				node.layout = rect;
 				answer(rect);
 			},
-			// No layout to give: the element is in a list cell Lynx has not shown, or the page is gone.
+			// No layout to give: the element is in a list row Lynx is not showing, or the page is gone.
 			() => {},
 		);
 	};

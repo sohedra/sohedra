@@ -26,7 +26,10 @@ export interface MainThreadPage {
 	destroyed: boolean;
 	/** Whether the background's page is shown: a patch of it was applied. */
 	shown: boolean;
-	/** The ops of each list cell the list has not shown yet, as they came. */
+	/**
+	 * The ops of each list cell that has no elements, as they came: one Lynx never showed, or one
+	 * released, whose text the background wrote again.
+	 */
 	cells: Map<number, string[]>;
 	/** The first frame, until the background's first patch hydrates it. */
 	frame: Frame | undefined;
