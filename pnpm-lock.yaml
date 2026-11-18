@@ -261,6 +261,9 @@ importers:
         specifier: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
         version: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
     devDependencies:
+      '@lynx-js/qrcode-rsbuild-plugin':
+        specifier: ^0.7.3
+        version: 0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)
       '@lynx-js/rspeedy':
         specifier: ^0.18.6
         version: 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
@@ -373,6 +376,18 @@ packages:
     resolution: {integrity: sha512-3N+Wgc/kIc4/aG5KpdPWKsC9MsNngygeyg9JS6IOayS8AQJ37xjVEzlz1U3aYzT9al0RJKL7w4poa0tGaXBv1g==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@lynx-js/qrcode-rsbuild-plugin@0.7.3':
+    resolution: {integrity: sha512-XOt0eyAGjaoKbdT302Gqn1HcIiMr50Y9BeQXeipkcRbJav17jSMc9bn854tkGSS+nWmrfeHaQRPdiDollw3kYA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      '@lynx-js/rspeedy': ^0.17.0 || ^0.18.0
+      '@rsbuild/core': ^2.0.0
+    peerDependenciesMeta:
+      '@lynx-js/rspeedy':
+        optional: true
+      '@rsbuild/core':
+        optional: true
 
   '@lynx-js/rsbuild-plugin@0.1.9':
     resolution: {integrity: sha512-bx0U0gHM+ZM6iAdlGSTi3o64UgeS4hYCCZr5kWArUo+21gGjkphKtXNvXcrD6b0HweHTwA3BHcpQko3jAkuWbg==}
@@ -2542,6 +2557,11 @@ snapshots:
       '@rsbuild/core': 2.3.2
 
   '@lynx-js/debug-metadata@0.1.0': {}
+
+  '@lynx-js/qrcode-rsbuild-plugin@0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)':
+    optionalDependencies:
+      '@lynx-js/rspeedy': 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
+      '@rsbuild/core': 2.3.2
 
   '@lynx-js/rsbuild-plugin@0.1.9(@rsbuild/core@2.2.9)(csso@5.0.5)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
