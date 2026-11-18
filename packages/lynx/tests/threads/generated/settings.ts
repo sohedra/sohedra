@@ -36,14 +36,15 @@ const BUDGET = 30_000 + RUNS * PAGE_BUDGET;
 /** The timeout of a generated test: its property's budget, and time to report. */
 export const TIMEOUT: number = BUDGET + 15_000;
 
-/** Checks `property` from `SEED + offset`, `RUNS` times, within `BUDGET`. */
+/** Checks `property` from `SEED + offset`, `runs` times, within `BUDGET`. */
 export async function check<T>(
 	property: fc.IAsyncPropertyWithHooks<T>,
 	offset: number,
+	runs: number = RUNS,
 ): Promise<void> {
 	await fc.assert(property, {
 		seed: SEED + offset,
-		numRuns: RUNS,
+		numRuns: runs,
 		...(PATH !== undefined && { path: PATH }),
 		interruptAfterTimeLimit: BUDGET,
 		markInterruptAsFailure: true,
