@@ -38,12 +38,22 @@ describe("the copy of a capture, against $state.snapshot", () => {
 		expect(Object.keys(cases)).toHaveLength(34);
 	});
 
-	it.each(Object.keys(cases))(
+	it.each(Object.keys(cases).filter((name) => name !== "cycle"))(
 		"%s: sends the same, at once and later, and is made again for the same changes",
 		(name) => {
 			expect(compared(run(name, copyCapture))).toEqual(compared(run(name, snapshot)));
 		},
 	);
+
+	it("cycle: where the snapshot throws, the copy gives what cannot be sent, made again for a change", () => {
+		expect(run("cycle", snapshot).error).toBeInstanceOf(RangeError);
+		expect(run("cycle", copyCapture)).toEqual({
+			first: "throws Error",
+			firstSentLater: "throws Error",
+			changes: { n: "throws Error" },
+			error: undefined,
+		});
+	});
 });
 
 describe("a value the snapshot hands structuredClone", () => {
@@ -56,6 +66,14 @@ describe("a value the snapshot hands structuredClone", () => {
 		["a class instance holding a Date", new Holder(new Date(5))],
 		["a class instance holding a RegExp", new Holder(/x/g)],
 		["a class instance holding an Error", new Holder(new TypeError("t"))],
+		[
+			"a class instance holding an Error named toString",
+			new Holder(Object.assign(new Error("m"), { name: "toString" })),
+		],
+		[
+			"a class instance holding an Error named constructor",
+			new Holder(Object.assign(new Error("m"), { name: "constructor" })),
+		],
 		["a class instance holding a boxed number", new Holder(Object(3))],
 		[
 			"a class instance holding itself",
@@ -103,18 +121,30 @@ describe("a value the snapshot hands structuredClone", () => {
 	});
 });
 
+/** What writing `value` as text, as the channel does, throws. */
+function thrownBySending(value: unknown): unknown {
+	try {
+		JSON.stringify(value);
+	} catch (error) {
+		return error;
+	}
+	throw new Error("The value was written as text.");
+}
+
 describe("a capture that cannot be copied", () => {
-	it("throws its own error when it is state that holds itself", () => {
+	it("is sent as a value whose text throws its own error, when it is state that holds itself", () => {
 		const tree = cases["cycle"]!().read();
-		expect(() => copyCapture(tree, { name: "tree", where: "src/Tree.svelte:4:2" })).toThrow(
+		expect(
+			thrownBySending(copyCapture(tree, { name: "tree", where: "src/Tree.svelte:4:2" })),
+		).toEqual(
 			expect.objectContaining({
 				code: "capture_too_deep",
 				message: expect.stringMatching(
-					/^A main-thread function captures tree, which holds itself or is nested more than 1000 levels deep, so it cannot be copied to the main thread\.\nsrc\/Tree\.svelte:4:2\n/,
+					/^A main-thread function captures tree, which holds itself or is nested more than 500 levels deep, so it cannot be sent to the main thread\.\nsrc\/Tree\.svelte:4:2\n/,
 				),
 			}),
 		);
-		expect(() => copyCapture(tree)).toThrow(
+		expect(thrownBySending(copyCapture(tree))).toEqual(
 			expect.objectContaining({
 				message: expect.stringMatching(
 					/^A main-thread function captures a value, which holds itself/,
@@ -123,23 +153,25 @@ describe("a capture that cannot be copied", () => {
 		);
 	});
 
-	it("copies a value nested 1000 levels deep, and not one level more", () => {
+	it("copies a value nested 500 levels deep, and not one level more", () => {
 		const nested = (levels: number) => {
 			let value: unknown = 1;
 			for (let level = 0; level < levels; level++) value = { value };
 			return value;
 		};
-		expect(copyCapture(nested(1000))).toEqual(nested(1000));
-		expect(() => copyCapture(nested(1001))).toThrow(
+		expect(copyCapture(nested(500))).toEqual(nested(500));
+		expect(thrownBySending(copyCapture(nested(501)))).toEqual(
 			expect.objectContaining({ code: "capture_too_deep" }),
 		);
 	});
 
-	it("throws its own error when it holds an element, anywhere", () => {
+	it("is sent as a value whose text throws its own error, when it holds an element, anywhere", () => {
 		const element = new TreeNode("element");
 		element.tag = "view";
 		for (const value of [element, { box: element }, [element], new Holder(element)])
-			expect(() => copyCapture(value, { name: "box", where: "src/Box.svelte:3:2" })).toThrow(
+			expect(
+				thrownBySending(copyCapture(value, { name: "box", where: "src/Box.svelte:3:2" })),
+			).toEqual(
 				expect.objectContaining({
 					code: "element_in_main_thread_function",
 					message: expect.stringMatching(
@@ -148,12 +180,24 @@ describe("a capture that cannot be copied", () => {
 				}),
 			);
 	});
+
+	it("never throws, whatever reading it throws: its text throws that instead", () => {
+		const thrown = new Error("unreadable");
+		const value = {
+			get n(): number {
+				throw thrown;
+			},
+		};
+		expect(thrownBySending(copyCapture(value))).toBe(thrown);
+	});
 });
 
 describe("the reason for the copy", () => {
-	// A canary: Svelte's snapshot reads the web's EventTarget for every value, and structuredClone
-	// for most, and Lynx's threads have neither. When this fails, the snapshot runs there: the
-	// capture-copy workaround can go, and the compile step can write $state.snapshot again.
+	// A canary: Svelte's snapshot reads the web's EventTarget for every value, and hands most values
+	// to structuredClone, and Lynx's engine has neither. When this fails, the snapshot no longer
+	// needs them. The copy can go only once the snapshot also stops at a depth a Lynx thread's stack
+	// holds: until then, writing $state.snapshot again would lose the copy's two errors and bring
+	// back the overflow of a state object that holds itself.
 	it("is that $state.snapshot throws without EventTarget and structuredClone, even for a number", () => {
 		// Boundary: the test takes the two globals away, as Lynx's threads lack them.
 		const scope = globalThis as unknown as Record<string, unknown>;

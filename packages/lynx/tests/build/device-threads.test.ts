@@ -164,14 +164,29 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
-	it("has no EventTarget and no structuredClone on either thread, as on a device", () => {
-		const { page, mainThread, background } = startDevicePage(scripts);
+	it("copies a main-thread tap's captured state without Svelte's snapshot or structuredClone", async () => {
+		const calls: string[] = [];
+		// Svelte's snapshot tests every value with `instanceof EventTarget`.
+		class EventTarget {
+			static [Symbol.hasInstance](): boolean {
+				calls.push("instanceof EventTarget");
+				return false;
+			}
+		}
+		const structuredClone = (value: unknown) => {
+			calls.push("structuredClone");
+			return value;
+		};
+		const { page } = startDevicePage(scripts, { globals: { EventTarget, structuredClone } });
 		try {
-			for (const thread of [mainThread, background])
-				expect(vm.runInContext("[typeof EventTarget, typeof structuredClone]", thread)).toEqual([
-					"undefined",
-					"undefined",
-				]);
+			await page.settle();
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			page.engine.dispatch(byClass(page, "press"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(drawn(page).texts).toContain("Pressed 1 (Banana, 1)");
+			expect(calls).toEqual([]);
 		} finally {
 			page.dispose();
 		}

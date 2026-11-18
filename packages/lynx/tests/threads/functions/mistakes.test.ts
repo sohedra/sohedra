@@ -42,7 +42,7 @@ it("reports a captured element once, and goes on, in good time", async () => {
 		expect.objectContaining({
 			code: "element_in_main_thread_function",
 			message: expect.stringMatching(
-				/^A main-thread function captures the <view> element of the background, and an element cannot be sent to the main thread\./,
+				/^The main-thread function of main-thread:ontap on <view> captures the <view> element of the background, and an element cannot be sent to the main thread\./,
 			),
 		}),
 	]);

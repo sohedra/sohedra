@@ -22,15 +22,15 @@ https://sohedra.com/e/background_function_missing"
 `;
 
 exports[`the background's catalogue > capture_too_deep: the message 1`] = `
-"A main-thread function captures tree, which holds itself or is nested more than 1000 levels deep, so it cannot be copied to the main thread.
+"The main-thread function of main-thread:ontap on <view> captures tree, which holds itself or is nested more than 500 levels deep, so it cannot be sent to the main thread.
 src/Tree.svelte:12:2
 
-Read only the members the function needs, such as tree.id, so that it captures those alone. Refer to a parent by its id instead of holding it, so the state does not hold itself.
+Read only the members the function needs, such as tree.id, so that it captures those alone.
 https://sohedra.com/e/capture_too_deep"
 `;
 
 exports[`the background's catalogue > element_in_main_thread_function: the message 1`] = `
-"A main-thread function captures box, which holds the <view> element of the background, and an element cannot be sent to the main thread.
+"The main-thread function of main-thread:ontap on <text> captures box, which holds the <view> element of the background, and an element cannot be sent to the main thread.
 src/Box.svelte:8:2
 
 Give the element main-thread:ref={ref}, with const ref = mainThreadRef() from @sohedra/lynx, and capture ref instead: the function reads the element as ref.current.

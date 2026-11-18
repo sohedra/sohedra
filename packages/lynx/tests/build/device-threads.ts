@@ -11,8 +11,8 @@
 // not.
 //
 // Both threads lack what their engine (PrimJS) lacks, listed below, and the web's globals that no
-// Lynx engine has: `EventTarget`, `structuredClone` and `performance`. An app gets none of these
-// from the binding, and Svelte's runtime and the binding must run without them.
+// Lynx engine has: `EventTarget`, `structuredClone` and `performance`. Each realm starts without
+// them, as a device's threads do, so whatever the page's scripts need of them, they bring.
 //
 // What a thread hands the other crosses as text, and is made again in the receiving realm. What the
 // engine hands a thread is made in that thread's realm too: the main thread's element functions'
@@ -115,6 +115,9 @@ const ADOPT = `(function adopt(value) {
 /** A realm's `adopt`. */
 type Adopt = (value: unknown) => unknown;
 
+/** Globals a test sets on both threads before their scripts run, such as its spies. */
+type Given = Readonly<Record<string, unknown>>;
+
 /** What a device's main thread gives as `lynx.SystemInfo`. */
 export const SYSTEM_INFO: Readonly<Record<string, unknown>> = {
 	platform: "iOS",
@@ -139,12 +142,16 @@ const ELEMENT_FUNCTIONS = Object.keys(
 	createEngine({ document: new JSDOM("").window.document }).functions,
 );
 
-/** A realm with the built-ins a device lacks taken away, and `globals` as its global object's. */
-function realm(globals: object): { context: vm.Context; adopt: Adopt } {
+/**
+ * A realm with the built-ins a device lacks taken away, and `globals` as its global object's, then
+ * the test's own `given`.
+ */
+function realm(globals: object, given: Given): { context: vm.Context; adopt: Adopt } {
 	const context = vm.createContext(globals);
 	// Made before the built-ins go, from the realm's own `Array.from`, which a device has.
 	const adopt = vm.runInContext(ADOPT, context) as Adopt;
 	vm.runInContext(WITHOUT_MISSING, context);
+	Object.assign(context, given);
 	return { context, adopt };
 }
 
@@ -156,7 +163,7 @@ const requestAnimationFrame = (callback: (time: number) => void) =>
  * The main thread's realm. Its element functions, its `lynx` and the functions its script sets
  * are the test page's, on the process's global object, where the engine fake finds them.
  */
-function mainThreadRealm(): vm.Context {
+function mainThreadRealm(given: Given): vm.Context {
 	const globals = { setTimeout, clearTimeout };
 	// Boundary: any name may be a global.
 	const scope = globalThis as unknown as Record<string, unknown>;
@@ -181,7 +188,7 @@ function mainThreadRealm(): vm.Context {
 			configurable: true,
 		});
 	}
-	const made = realm(globals);
+	const made = realm(globals, given);
 	adopt = made.adopt;
 	return made.context;
 }
@@ -204,8 +211,8 @@ function wrapperArguments(lynx: BackgroundLynx): unknown[] {
 }
 
 /** Loads the background's script as lynx-core does, with `lynx` given to it alone. */
-function runBackground(script: string, lynx: BackgroundLynx): vm.Context {
-	const { context, adopt } = realm({ bundleSupportLoadScript: true });
+function runBackground(script: string, lynx: BackgroundLynx, given: Given): vm.Context {
+	const { context, adopt } = realm({ bundleSupportLoadScript: true }, given);
 	// The data the page was opened with, as lynx-core hands it to the page's script.
 	const app = lynx.getApp();
 	app._params = adopt(app._params) as typeof app._params;
@@ -246,8 +253,18 @@ export interface DevicePage {
 	readonly background: vm.Context;
 }
 
+/** What a page on threads shaped like a device's starts with. */
+export interface DevicePageOptions {
+	/** Globals set on both threads before their scripts run, such as a test's spies. */
+	globals?: Given;
+}
+
 /** Starts a page from a build's scripts, on threads shaped like a device's. */
-export function startDevicePage(scripts: { mainThread: string; background: string }): DevicePage {
+export function startDevicePage(
+	scripts: { mainThread: string; background: string },
+	options: DevicePageOptions = {},
+): DevicePage {
+	const { globals = {} } = options;
 	const { window } = new JSDOM("<!doctype html><body></body>");
 	let mainThread: vm.Context | undefined;
 	let background: vm.Context | undefined;
@@ -255,14 +272,14 @@ export function startDevicePage(scripts: { mainThread: string; background: strin
 		document: window.document,
 		mainThread: () => {
 			Object.assign(readGlobal("lynx") as object, { SystemInfo: SYSTEM_INFO });
-			mainThread = mainThreadRealm();
+			mainThread = mainThreadRealm(globals);
 			vm.runInContext(scripts.mainThread, mainThread, { filename: "main-thread.js" });
 		},
 		background: () => {
 			const lynx = readGlobal("lynx") as BackgroundLynx;
 			// lynx-core reports a script that throws as it loads ("loadCard failed").
 			try {
-				background = runBackground(scripts.background, lynx);
+				background = runBackground(scripts.background, lynx, globals);
 			} catch (error) {
 				lynx.reportError(error);
 			}

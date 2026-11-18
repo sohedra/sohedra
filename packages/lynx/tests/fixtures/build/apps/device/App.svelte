@@ -2,7 +2,7 @@
 	// What a first page uses: state, a tap, a keyed list, a `style` with a `style:` directive, state
 	// with an effect made as its modules load, and a main-thread handler that keeps a ref, reads
 	// state, and calls the background.
-	// The page itself uses nothing a device's engine lacks: the binding fills no gap for an app.
+	// The page itself uses nothing a device's engine lacks.
 	import { mainThreadRef, runOnBackground } from "@sohedra/lynx";
 	import { PanGesture } from "@sohedra/lynx/gesture";
 	import type { PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";

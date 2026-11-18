@@ -48,8 +48,20 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		tag: "view",
 		where: "src/Sheet.svelte:14:2",
 	},
-	capture_too_deep: { name: "tree", depth: 1000, where: "src/Tree.svelte:12:2" },
-	element_in_main_thread_function: { tag: "view", name: "box", where: "src/Box.svelte:8:2" },
+	capture_too_deep: {
+		attribute: "main-thread:ontap",
+		owner: "view",
+		name: "tree",
+		depth: 500,
+		where: "src/Tree.svelte:12:2",
+	},
+	element_in_main_thread_function: {
+		tag: "view",
+		attribute: "main-thread:ontap",
+		owner: "text",
+		name: "box",
+		where: "src/Box.svelte:8:2",
+	},
 	main_thread_event_spelling_removed: {
 		name: "main-thread:bindtap",
 		replacement: "main-thread:ontap",

@@ -2,7 +2,7 @@
 // member by member as the function is made, so a change anywhere inside it makes the function again
 // and sends it to the main thread. The first frame's copy matches the background's at hydration.
 // A capture that cannot be copied (one that holds itself, or an element) is reported with its own
-// message.
+// message, the function is not sent, and the page goes on.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -13,6 +13,7 @@ import drawCapturedElement from "../../fixtures/threads/functions/CapturedElemen
 import CapturedState from "../../fixtures/threads/functions/CapturedState.svelte";
 import drawCapturedState from "../../fixtures/threads/functions/CapturedState.svelte?first-frame";
 import { startFunctionsPage, tap } from "./pages.ts";
+import type { Draw } from "./pages.ts";
 
 const START = '{"size":{"n":0},"when":"1970-01-01T00:00:00.000Z"}';
 const NESTED = '{"size":{"n":1},"when":"1970-01-01T00:00:00.000Z"}';
@@ -72,30 +73,55 @@ describe("a main-thread function that captures $state whole", () => {
 	});
 });
 
-describe("a captured $state that cannot be copied", () => {
-	it("is reported when it holds itself, instead of overflowing the stack", async () => {
-		const page = startFunctionsPage(CapturedCycle, { draw: drawCapturedCycle });
+/** Starts a page whose main-thread function cannot be sent, with a count to change after. */
+function failing(App: typeof CapturedCycle, draw: Draw, firstFrame: boolean) {
+	const log: unknown[] = [];
+	const api: Record<string, () => void> = {};
+	const page = startFunctionsPage(App, { draw, props: { log, api }, firstFrame });
+	const count = async () => {
+		page.asBackground(() => api["count"]!());
 		await page.settle();
-		expect(page.errors).toEqual([
-			expect.objectContaining({
-				code: "capture_too_deep",
-				message: expect.stringMatching(
-					/^A main-thread function captures tree, which holds itself or is nested more than 1000 levels deep[^\n]*\n.*CapturedCycle\.svelte:\d+:\d+/,
-				),
-			}),
-		]);
-	});
+	};
+	return { page, log, count };
+}
 
-	it("is reported when it holds an element, which the function should reach through a ref", async () => {
-		const page = startFunctionsPage(CapturedElement, { draw: drawCapturedElement });
-		await page.settle();
-		expect(page.errors).toEqual([
-			expect.objectContaining({
-				code: "element_in_main_thread_function",
-				message: expect.stringMatching(
-					/^A main-thread function captures box, which holds the <view> element of the background[^\n]*\n.*CapturedElement\.svelte:\d+:\d+[\s\S]*main-thread:ref=\{ref\}/,
-				),
-			}),
-		]);
-	});
-});
+describe.each([false, true])(
+	"captured state that cannot be copied, with a first frame: %s",
+	(firstFrame) => {
+		it("is reported when it holds itself, and the page goes on drawing", async () => {
+			const { page, count } = failing(CapturedCycle, drawCapturedCycle, firstFrame);
+			await page.settle();
+			// The first frame cannot write the cycle either, and says so (`first_frame_threw`).
+			expect(page.errors).toHaveLength(firstFrame ? 2 : 1);
+			expect(page.errors).toContainEqual(
+				expect.objectContaining({
+					code: "capture_too_deep",
+					message: expect.stringMatching(
+						/^The main-thread function of main-thread:ontap on <view> captures tree, which holds itself or is nested more than 500 levels deep[^\n]*\n.*CapturedCycle\.svelte:\d+:\d+/,
+					),
+				}),
+			);
+			expect(page.engine.texts()).toEqual(["count 0", "tap"]);
+			await count();
+			expect(page.engine.texts()).toEqual(["count 1", "tap"]);
+		});
+
+		it("is reported once when it holds an element, and the function sent before stays", async () => {
+			const { page, log, count } = failing(CapturedElement, drawCapturedElement, firstFrame);
+			await page.settle();
+			expect(page.errors).toEqual([
+				expect.objectContaining({
+					code: "element_in_main_thread_function",
+					message: expect.stringMatching(
+						/^The main-thread function of main-thread:ontap on <view> captures box, which holds the <view> element of the background[^\n]*\n.*CapturedElement\.svelte:\d+:\d+[\s\S]*main-thread:ref=\{ref\}/,
+					),
+				}),
+			]);
+			await count();
+			expect(page.engine.texts()).toEqual(["count 1"]);
+			await tap(page, "box");
+			expect(log).toEqual(["tap null"]);
+			expect(page.errors).toHaveLength(1);
+		});
+	},
+);
