@@ -10,6 +10,8 @@ import FrameIdBranches from "../fixtures/threads/FrameIdBranches.svelte";
 import drawFrameIdBranches from "../fixtures/threads/FrameIdBranches.svelte?first-frame";
 import FrameIdPlain from "../fixtures/threads/FrameIdPlain.svelte";
 import drawFrameIdPlain from "../fixtures/threads/FrameIdPlain.svelte?first-frame";
+import FrameIdRuns from "../fixtures/threads/FrameIdRuns.svelte";
+import drawFrameIdRuns from "../fixtures/threads/FrameIdRuns.svelte?first-frame";
 import FrameIdShift from "../fixtures/threads/FrameIdShift.svelte";
 import drawFrameIdShift from "../fixtures/threads/FrameIdShift.svelte?first-frame";
 import FrameIdUnrecognized from "../fixtures/threads/FrameIdUnrecognized.svelte";
@@ -98,6 +100,17 @@ describe("$props.id() after a branch only the background renders", () => {
 		expect(ids(page)).toEqual(["lynx-b1", "lynx-s1"]);
 		expect(labeled(page)[1]).toBe(drawn);
 		expect(page.engine.state(drawn!).attrs["accessibility-label"]).toBe("label-lynx-s1");
+		expect(wroteIds(page)).toBe(false);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("is the first frame's id between and after several such branches of one parent", async () => {
+		const page = startSveltePage(FrameIdRuns, { firstFrame: { draw: drawFrameIdRuns } });
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-s2"]);
+		const last = labeled(page)[1];
+		await page.settle();
+		expect(ids(page)).toEqual(["lynx-b1", "lynx-s1", "lynx-b2", "lynx-s2"]);
+		expect(labeled(page)[3]).toBe(last);
 		expect(wroteIds(page)).toBe(false);
 		expect(page.errors).toEqual([]);
 	});
