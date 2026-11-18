@@ -19,6 +19,14 @@ function piledUp(parts: readonly string[]): boolean {
 	return rest > parts[0]!.length;
 }
 
+/**
+ * The most cells one request names. 64 rows of the device's feed, 0.9 kB each, come back in about
+ * 58 kB, the patch that changes a label in each of 1,000 rows; the rest wait for the next task. A
+ * scroll lets a few rows go at a time: only rows whose text piles up in step, changed together on
+ * a timer, ask for more.
+ */
+const CELLS_PER_REQUEST = 64;
+
 /** What the cells need of the runtime. */
 export interface CellsOptions {
 	page: MainThreadPage;
@@ -49,11 +57,19 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 		// A page written again, or gone, has none of its cells to let go of.
 		if (page.destroyed || page.rewriting || !page.applier) return;
 		try {
-			const nodes = page.applier.takeRewrites();
+			const nodes = page.applier.takeRewrites(CELLS_PER_REQUEST);
 			if (nodes.length > 0) send({ t: "rewrite", nodes });
+			if (nodes.length === CELLS_PER_REQUEST) schedule();
 		} catch (error) {
 			report(error);
 		}
+	}
+
+	function schedule(): void {
+		// Never inside Lynx's call of a list, and once for many cells.
+		if (due) return;
+		due = true;
+		later(askForRewrites);
 	}
 
 	return {
@@ -79,11 +95,6 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 			parts.push(text);
 			if (piledUp(parts)) page.applier!.askCell(id);
 		},
-		schedule() {
-			// Never inside Lynx's call of a list, and once for many cells.
-			if (due) return;
-			due = true;
-			later(askForRewrites);
-		},
+		schedule,
 	};
 }

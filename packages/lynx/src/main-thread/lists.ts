@@ -87,7 +87,7 @@ export interface Lists {
 	 * The cells to ask the background to write again: the oldest Lynx handed back past what each
 	 * list keeps, and those `ask` named. They are marked asked.
 	 */
-	takeRewrites(): number[];
+	takeRewrites(max: number): number[];
 	/** A cell Lynx never showed is to be written again, at the next `takeRewrites`. */
 	ask(id: number): void;
 	/**
@@ -332,7 +332,7 @@ export function createLists(scope: ListsScope): Lists {
 			const count = Number(value);
 			if (list) list.preload = Number.isFinite(count) && count > 0 ? count : 0;
 		},
-		takeRewrites: () => release?.takeRewrites() ?? [],
+		takeRewrites: (max) => release?.takeRewrites(max) ?? [],
 		ask: (id) => release?.ask(id),
 		rewritten: (id) => release?.rewritten(id) ?? "ignore",
 		heldCells: (id) => heldCells(lists.get(id)),

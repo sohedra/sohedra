@@ -3,6 +3,14 @@
 // still has not taken back leaves the list and its elements are let go of, which frees their views,
 // and the text is kept for the next time Lynx asks. A cell never shown whose kept text piled up is
 // asked for the same way.
+//
+// A released row keeps what the background holds: its `$state`, effects, handlers, attributes,
+// styles set from code, and a controlled input's value. What only its views held goes:
+//   - a running animation stops, and its `finished` rejects as canceled;
+//   - an uncontrolled input's text, focus, and a scroll offset, such as a carousel's in the row;
+//   - `layoutchange` and an image's `load` or `error` fire again when the row is made again;
+//   - an element's `uid` names the element that went, until an event comes from the new one.
+// A row with `recyclable={false}` is never handed back, so it keeps its views.
 
 import { mainThread } from "../globals.ts";
 import type { Cell, ListState } from "./state.ts";
@@ -10,8 +18,9 @@ import type { Cell, ListState } from "./state.ts";
 /**
  * The fewest cells Lynx handed back that a list keeps with their elements. Lynx holds a screen of
  * cells and `preload-buffer-count` more on each side (9, 19 and 49 cells at 0, 5 and 20 on an iOS
- * device, with rows of 15 elements), so what it holds less twice that count is a screen of this
- * list's rows; a list keeps that many, and at least this: such a screen, rounded up.
+ * device, with rows a ninth of the screen tall), so what it holds less twice that count is a
+ * screen of this list's rows. A list keeps that many, and at least this: a screen of such rows,
+ * rounded up. A list of tall rows, a few to a screen, so keeps several screens of them.
  */
 const KEPT_CELLS = 10;
 
@@ -23,10 +32,11 @@ export interface Release {
 	/** Lynx handed back a cell that keeps its element; past what the list keeps, it is asked for. */
 	handedBack(list: ListState, cell: Cell): void;
 	/**
-	 * The cells to ask the background to write again: the oldest Lynx handed back past what each
-	 * list keeps, and those `ask` named. They are marked asked.
+	 * The cells to ask the background to write again, `max` at most: those `ask` named that Lynx
+	 * has not asked for since, then the oldest Lynx handed back past what each list keeps. They are
+	 * marked asked; the others wait for the next call.
 	 */
-	takeRewrites(): number[];
+	takeRewrites(max: number): number[];
 	/** A cell Lynx never showed is to be written again, at the next `takeRewrites`. */
 	ask(id: number): void;
 	/**
@@ -45,7 +55,7 @@ export function createRelease(
 	schedule: () => void,
 ): Release {
 	// The cells `ask` named, until they are taken.
-	const wanted: number[] = [];
+	const wanted: Cell[] = [];
 
 	const kept = (list: ListState): number => Math.max(KEPT_CELLS, list.bound - 2 * list.preload);
 
@@ -63,12 +73,19 @@ export function createRelease(
 			list.unbound.add(cell);
 			if (list.unbound.size > kept(list)) schedule();
 		},
-		takeRewrites() {
-			const ids = wanted.splice(0);
+		takeRewrites(max) {
+			const ids: number[] = [];
+			let taken = 0;
+			for (; taken < wanted.length && ids.length < max; taken++) {
+				const cell = wanted[taken]!;
+				// Lynx asked for it since, and it has its elements.
+				if (cell.asked && !cell.element) ids.push(cell.id);
+			}
+			wanted.splice(0, taken);
 			for (const list of lists.values()) {
 				let past = list.unbound.size - kept(list);
 				for (const cell of list.unbound) {
-					if (past-- <= 0) break;
+					if (past-- <= 0 || ids.length >= max) break;
 					list.unbound.delete(cell);
 					cell.asked = true;
 					ids.push(cell.id);
@@ -80,7 +97,7 @@ export function createRelease(
 			const found = releasable(id);
 			if (!found || found.cell.element || found.cell.asked) return;
 			found.cell.asked = true;
-			wanted.push(id);
+			wanted.push(found.cell);
 			schedule();
 		},
 		rewritten(id) {
