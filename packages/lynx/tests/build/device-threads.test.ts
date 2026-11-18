@@ -68,7 +68,7 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
 			expect(drawn(page)).toEqual({
-				texts: ["Tapped 0, seen 0", "Apple", "Banana"],
+				texts: ["Tapped 0, seen 0", "Pressed 0", "Apple", "Banana"],
 				padding: "8px",
 				opacity: "1",
 			});
@@ -85,10 +85,26 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
 			expect(drawn(page)).toEqual({
-				texts: ["Tapped 1, seen 1", "Banana", "Apple"],
+				texts: ["Tapped 1, seen 1", "Pressed 0", "Banana", "Apple"],
 				padding: "8px",
 				opacity: "0.5",
 			});
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("runs a main-thread tap on the main thread, and its call of the background", async () => {
+		const { page } = startDevicePage(scripts);
+		try {
+			await page.settle();
+			const press = byClass(page, "press");
+			page.engine.dispatch(press, { type: "tap" });
+			page.engine.dispatch(press, { type: "tap" });
+			expect(page.engine.state(press).inlineStyles.get("width")).toBe("2px");
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(drawn(page).texts).toContain("Pressed 2");
 		} finally {
 			page.dispose();
 		}

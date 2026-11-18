@@ -8,6 +8,9 @@ import type { SplitItem } from "../../../src/background/split.ts";
 import { encodeCell, OpCode as O, ROOT_ID } from "../../../src/wire/index.ts";
 import type { Op } from "../../../src/wire/index.ts";
 
+/** A cell's text, as the channel writes it: these ops hold no main-thread function. */
+const cellText = (ops: Op[]) => ({ text: encodeCell(ops), contexts: [] });
+
 const page = (items: SplitItem[]): Op[] =>
 	items.flatMap((item) => (item[0] === "ops" ? item[1] : []));
 const cells = (items: SplitItem[]) =>
@@ -15,7 +18,7 @@ const cells = (items: SplitItem[]) =>
 
 describe("the splitter", () => {
 	it("sends nothing for an element until it is inserted under the page", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		expect(
 			split.split([
 				[O.Create, 2, "view"],
@@ -30,7 +33,7 @@ describe("the splitter", () => {
 	});
 
 	it("builds a subtree in order when its root is inserted", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		const out = split.split([
 			[O.Create, 2, "view"],
 			[O.Create, 3, "text"],
@@ -50,13 +53,13 @@ describe("the splitter", () => {
 	});
 
 	it("drops elements released before they were ever sent", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		split.split([[O.Create, 2, "view"]]);
 		expect(split.split([[O.Release, 2]])).toEqual([]);
 	});
 
 	it("sends a list's cells as segments and ends the batch with one list update", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		const out = split.split([
 			[O.Create, 2, "list"],
 			[O.Insert, ROOT_ID, 2, 0],
@@ -95,7 +98,7 @@ describe("the splitter", () => {
 	});
 
 	it("routes later changes inside a cell to the cell's segment, and info changes to a list update", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		split.split([
 			[O.Create, 2, "list"],
 			[O.Insert, ROOT_ID, 2, 0],
@@ -125,7 +128,7 @@ describe("the splitter", () => {
 	});
 
 	it("sends styles set from code and animations with their element: pending, in its cell, or now", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		const styles = { color: "red" };
 		const fade = [0, "fade", [{ opacity: 0 }], { duration: 1 }];
 		expect(
@@ -162,7 +165,7 @@ describe("the splitter", () => {
 	});
 
 	it("reports removed cells and sends their release to the page", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		split.split([
 			[O.Create, 2, "list"],
 			[O.Insert, ROOT_ID, 2, 0],
@@ -180,7 +183,7 @@ describe("the splitter", () => {
 	});
 
 	it("keeps a list nested inside a cell in that cell (the main thread tracks it)", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		const out = split.split([
 			[O.Create, 2, "list"],
 			[O.Insert, ROOT_ID, 2, 0],
@@ -206,7 +209,7 @@ describe("the splitter", () => {
 	});
 
 	it("keeps a pending parent's children in the order of their moves, without the removed ones", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		const out = split.split([
 			[O.Create, 2, "view"],
 			[O.Create, 3, "view"],
@@ -227,7 +230,7 @@ describe("the splitter", () => {
 	});
 
 	it("takes an item's info out of the list update when it is set to null", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		split.split([
 			[O.Create, 2, "list"],
 			[O.Insert, ROOT_ID, 2, 0],
@@ -243,7 +246,7 @@ describe("the splitter", () => {
 	});
 
 	it("sends a list update it is given to the page", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		split.split([
 			[O.Create, 2, "list"],
 			[O.Insert, ROOT_ID, 2, 0],

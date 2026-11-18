@@ -28,7 +28,7 @@ import { JSDOM } from "jsdom";
 import { readGlobal } from "../../src/testing/globals.ts";
 import { createEngine, startTestPage } from "../../src/testing/index.ts";
 import type { BackgroundLynx, TestPage } from "../../src/testing/index.ts";
-import { PATCH_METHOD } from "../../src/wire/index.ts";
+import { PATCH_METHOD, RUN_FUNCTION } from "../../src/wire/index.ts";
 
 /** The built-ins seen missing on a device, on both threads, by the object that would hold them. */
 const SEEN_MISSING: Readonly<Record<string, readonly string[]>> = {
@@ -118,7 +118,13 @@ export const SYSTEM_INFO: Readonly<Record<string, unknown>> = {
  * The functions the main thread's script sets on its global object for the engine to call: they
  * reach the engine fake's globals, which it calls them on.
  */
-const PAGE_FUNCTIONS = [PATCH_METHOD, "removeComponents", "updateGlobalProps", "processData"];
+const PAGE_FUNCTIONS = [
+	PATCH_METHOD,
+	RUN_FUNCTION,
+	"removeComponents",
+	"updateGlobalProps",
+	"processData",
+];
 
 /** Lynx's element functions, by name: the engine fake's. */
 const ELEMENT_FUNCTIONS = Object.keys(

@@ -108,6 +108,40 @@ const PATCHES: [name: string, page: number, items: PatchItem[]][] = [
 		0,
 		[["cell", 30, encodeCell(row(30, "c")), "unmount"]],
 	],
+	[
+		"a row whose main-thread handler calls the background, with the context its text holds",
+		0,
+		[
+			[
+				"cell",
+				30,
+				encodeCell([
+					...row(30, "c"),
+					[
+						OpCode.SetAttr,
+						30,
+						"main-thread:ontap",
+						{ _wkltId: "a1b2:c3d4:1", _jsFn: { _jsFn1: { _jsFnId: 5 } }, _execId: 7 },
+					],
+				]),
+				null,
+				[7],
+			],
+		],
+	],
+	[
+		"a row written again that holds a context",
+		0,
+		[["cell", 30, encodeCell(row(30, "c")), true, [8]]],
+	],
+	[
+		"refs the background let go of, after the ops",
+		0,
+		[
+			["ops", [[OpCode.SetText, 4, "Count: 1"]]],
+			["call", 0, 0, encodeCall(["unref", [3, 4]])],
+		],
+	],
 ];
 
 const MESSAGES: [name: string, message: ToBackground][] = [

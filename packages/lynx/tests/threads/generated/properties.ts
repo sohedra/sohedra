@@ -5,6 +5,7 @@ import fc from "fast-check";
 
 import { compilePage } from "./compile.ts";
 import type { CompiledBoth } from "./compile.ts";
+import { expectFunctionsAgree } from "./functions.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
 import {
@@ -122,6 +123,7 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 			expect(rewrote(running.page), "The page was written again").toBe(false);
 			expect(wroteIds(running.page), "Hydration wrote ids of $props.id() over").toBe(false);
 			expectSameTree(engineTree(running.page.engine), backgroundTree());
+			expectFunctionsAgree(running.page, "After hydration");
 			await expectEveryRowCame(running.page, model, "After hydration");
 		});
 	},
@@ -161,6 +163,7 @@ export function updatesProperty(
 					const after = `After ${index + 1} of the steps`;
 					expectNoErrors(running.page.errors, after);
 					expectSameTree(engineTree(running.page.engine), backgroundTree(), `${after}, Lynx shows`);
+					expectFunctionsAgree(running.page, after);
 					// Rows stay asked for and on their way across the other steps; the tree is kept
 					// only once every row came.
 					if (index % 2 === 0 && index !== steps.length - 1 && defers(model)) continue;

@@ -6,9 +6,13 @@ import * as env from "@sohedra/lynx/env";
 import fc from "fast-check";
 import type { Component } from "svelte";
 
+import * as functions from "../../../src/background/functions-entry.ts";
 import renderer, { deferredRow } from "../../../src/background/renderer/entry.ts";
+import * as root from "../../../src/background/root-entry.ts";
 import * as internals from "../../../src/svelte/runtime/client-internals.ts";
+import { readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
+import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
 import { recyclable, SCREEN } from "../scroll.ts";
 import { startSveltePage } from "../svelte-page.ts";
@@ -148,6 +152,21 @@ const rootData = (initData: Record<string, unknown>): Record<string, unknown> =>
 		...(initData["host"] as Record<string, unknown> | undefined),
 	});
 
+/**
+ * Loads a page's main-thread copy, which registers its main-thread functions, and keeps none of
+ * what it renders: no first frame is drawn.
+ */
+function registerBodies(compiled: CompiledBoth, data: PageState): void {
+	drawGeneratedFrame({
+		page: compiled.mainThread,
+		props: { data: copy(data), handles: {} },
+		ids: recorder([]),
+	});
+	// Boundary: the copy records a function of the page's data, which loads the copy.
+	(readGlobal(FIRST_FRAME_GLOBAL) as (data: object) => unknown)({});
+	removeGlobals([FIRST_FRAME_GLOBAL]);
+}
+
 /** Starts the page; its first frame is drawn when this returns, its first patch is on its way. */
 export function startGenerated(options: StartOptions): GeneratedPage {
 	const { compiled, data, firstFrame } = options;
@@ -159,10 +178,15 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 	const App = evaluatePage(compiled.background, {
 		[INTERNALS]: internals,
 		[RENDERER]: { default: renderer, deferredRow },
+		"@sohedra/lynx": root,
 		"@sohedra/lynx/env": backgroundEnv,
+		"@sohedra/lynx/internal/main-thread-functions": functions,
 		"svelte/internal/disclose-version": {},
 		[IDS]: recorder(ids.background),
 	}) as Component<Record<string, unknown>>;
+	// The page's main-thread functions register as its main-thread copy loads, as a built page's
+	// script does: drawn as the first frame, or loaded alone.
+	if (!firstFrame) registerBodies(compiled, data);
 	const page = startSveltePage(App, {
 		...splitData(data, options.fromTemplate ?? []),
 		props: (initData) => ({ data: rootData(initData), handles }),
@@ -248,13 +272,15 @@ function lists(page: SveltePage, under = page.engine.page()): LynxElement[] {
 	return found;
 }
 
-/** Elements with a tap handler bound, in document order. */
+/** Elements with a tap handler bound, on the background or the main thread, in document order. */
 function tappable(page: SveltePage): LynxElement[] {
-	return page.engine
-		.all()
-		.filter((element) =>
-			page.engine.state(element).handlers.some((handler) => handler.eventName === "tap"),
+	return page.engine.all().filter((element) => {
+		const state = page.engine.state(element);
+		return (
+			state.handlers.some((handler) => handler.eventName === "tap") ||
+			state.mainThreadEvents.some((bound) => bound.eventName === "tap")
 		);
+	});
 }
 
 /** Does `step` to the page. Nothing happens when what it picks is not there. */

@@ -21,6 +21,28 @@ function opening(tag: string, attributes: readonly string[]): string {
 	return attributes.length === 0 ? `<${tag}>` : `<${tag} ${attributes.join(" ")}>`;
 }
 
+/**
+ * What every component declares for its markup's main-thread attributes: a handler that counts
+ * its taps in a ref of the component, shows the count on its element and changes the page's state
+ * on the background; a ref for an element; and a function ref that marks its element while it is
+ * bound. What a main-thread function sets on an element starts with `mt-`, which the trees leave
+ * out: the background never knows it.
+ */
+const MAIN_THREAD_SCRIPT = `const mtTaps = mainThreadRef(0);
+const mtRef = mainThreadRef(null);
+function mtChange() { st.n0 = (st.n0 + 1) % 3; }
+function mtTap(event) {
+	"main thread";
+	mtTaps.current += 1;
+	event.currentTarget.setAttribute("mt-taps", mtTaps.current);
+	runOnBackground(mtChange)();
+}
+function mtAttach(element) {
+	"main thread";
+	element.setAttribute("mt-ref", "on");
+	return () => element.setAttribute("mt-ref", "off");
+}`;
+
 /** Whether an `{#if}` with this test has branches that only one thread renders. */
 const isThreadTest = (condition: string): boolean =>
 	(THREAD_TESTS as readonly string[]).includes(condition);
@@ -122,7 +144,10 @@ export function componentSource(
 	options: { isRoot: boolean; indented: boolean },
 ): string {
 	const markup = writer(options.indented ? "\n\t" : "");
-	const imports = ['import { background, mainThread } from "@sohedra/lynx/env";'];
+	const imports = [
+		'import { background, mainThread } from "@sohedra/lynx/env";',
+		'import { mainThreadRef, runOnBackground } from "@sohedra/lynx";',
+	];
 	if (component.uid) imports.push(`import { recordId } from "${IDS}";`);
 	for (const name of new Set(usedComponents(component)))
 		imports.push(`import ${name} from "./${name}.svelte";`);
@@ -139,6 +164,7 @@ export function componentSource(
 		);
 	// The flags are used only where a page has `{#if background}` or its kin: kept either way.
 	script.push("void background, mainThread;");
+	script.push(MAIN_THREAD_SCRIPT);
 	const snippets = component.snippets
 		.map((snippet) => `{#snippet ${snippet.name}(p, t)}${markup(snippet.body, "t")}{/snippet}`)
 		.join("");

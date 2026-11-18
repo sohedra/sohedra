@@ -8,6 +8,8 @@ import type { FirstFrameCode, FirstFrameDetails } from "../../../src/first-frame
 
 const SAMPLES: { [Code in FirstFrameCode]: FirstFrameDetails[Code] } = {
 	first_frame_skipped_await: { component: "Feed" },
+	main_thread_runtime_missing: { call: "runOnBackground" },
+	main_thread_ref_set_outside_function: {},
 };
 
 // Boundary: the keys of the catalogue are its codes.
@@ -20,12 +22,12 @@ describe("the first frame's catalogue", () => {
 
 	it.each(CODES)("%s has a fix and its own code as its docs page", (code) => {
 		const entry = FIRST_FRAME_CATALOGUE[code];
-		expect(entry.fix(SAMPLES[code]).trim()).not.toBe("");
+		expect(entry.fix(SAMPLES[code] as never).trim()).not.toBe("");
 		expect(entry.docs).toBe(code);
 	});
 
 	it.each(CODES)("%s: the message", (code) => {
-		const error = firstFrameError({ code, details: SAMPLES[code] });
+		const error = firstFrameError({ code, details: SAMPLES[code] as never });
 		expect(error.code).toBe(code);
 		expect(error.message.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
 		expect(error.message).not.toMatch(
