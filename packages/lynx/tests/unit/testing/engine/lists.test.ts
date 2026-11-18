@@ -246,7 +246,7 @@ describe("Lynx's async list", () => {
 		const handle = engine().list(element);
 		expect(handle.ask(1)).toBeUndefined();
 		const operation = handle.operation;
-		expect(() => handle.show(1)).toThrow(/comes later, with a flush of its request/);
+		expect(() => handle.show(2)).toThrow(/comes later, with a flush of its request/);
 		later[0]!();
 		expect(handle.given(operation)).toBeDefined();
 		expect(handle.given(operation)).toBe(element.childNodes[0]);

@@ -252,6 +252,18 @@ Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
 https://sohedra.com/e/in_directive"
 `;
 
+exports[`the build's catalogue > list_item_defer_ignored: the message 1`] = `
+"A \`defer\` written in a spread is not read, so the row's contents render with the row.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write it on the \`<list-item>\` itself: \`<list-item defer>\`.
+https://sohedra.com/e/list_item_defer_ignored"
+`;
+
 exports[`the build's catalogue > list_item_without_key: the message 1`] = `
 "A \`<list-item>\` has no key, and Lynx's list needs one to track its cells.
 /app/src/App.svelte:2:3
