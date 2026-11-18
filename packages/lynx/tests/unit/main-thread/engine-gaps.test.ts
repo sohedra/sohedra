@@ -31,6 +31,31 @@ describe("the main thread's SystemInfo", () => {
 	});
 });
 
+describe("the main thread's EventTarget and structuredClone, which Svelte's runtime reads as it copies state in the first frame", () => {
+	it("are put on a global object that lacks them", () => {
+		const { scope } = device();
+		const Target = scope["EventTarget"] as typeof EventTarget;
+		const heard: string[] = [];
+		const target = new Target();
+		target.addEventListener("ping", (event) => heard.push(event.type));
+		target.dispatchEvent(new Event("ping"));
+		expect(heard).toEqual(["ping"]);
+		const clone = scope["structuredClone"] as typeof structuredClone;
+		const value = { when: new Date(0), rows: [[1, [2]]] };
+		const copy = clone(value);
+		expect(copy).toEqual(value);
+		expect(copy.when).not.toBe(value.when);
+		expect(copy.rows[0]).not.toBe(value.rows[0]);
+	});
+
+	it("are the engine's own when it has them", () => {
+		const own = () => {};
+		const scope: Record<string, unknown> = { EventTarget: own, structuredClone: own };
+		fillEngineGaps({ scope, strings: {}, lynx: {} });
+		expect(scope).toEqual({ EventTarget: own, structuredClone: own });
+	});
+});
+
 describe("the main thread's replaceAll, which Svelte's server runtime uses in the first frame", () => {
 	const { strings } = device();
 	const fill = strings["replaceAll"] as (

@@ -40,7 +40,29 @@ describe("on a background that lacks them", () => {
 
 	it("puts no timers on the global object: the bundle's wrapper passes them", () => {
 		const { scope } = device();
-		expect(Object.keys(scope)).toEqual(["queueMicrotask"]);
+		for (const timer of ["setTimeout", "clearTimeout", "setInterval", "clearInterval"])
+			expect(timer in scope).toBe(false);
+	});
+
+	it("puts a global EventTarget, which Svelte's runtime tests values with", () => {
+		const { scope } = device();
+		const Target = scope["EventTarget"] as typeof EventTarget;
+		const target = new Target();
+		const heard: string[] = [];
+		target.addEventListener("ping", (event) => heard.push(event.type));
+		target.dispatchEvent(new Event("ping"));
+		expect(heard).toEqual(["ping"]);
+	});
+
+	it("puts a global structuredClone, which Svelte's runtime copies state with", () => {
+		const { scope } = device();
+		const clone = scope["structuredClone"] as typeof structuredClone;
+		const value = { when: new Date(0), sizes: new Map([["a", [1]]]), rows: [[1, [2]]] };
+		const copy = clone(value);
+		expect(copy).toEqual(value);
+		expect(copy.when).not.toBe(value.when);
+		expect(copy.sizes.get("a")).not.toBe(value.sizes.get("a"));
+		expect(copy.rows[0]).not.toBe(value.rows[0]);
 	});
 
 	it("gives strings a replaceAll that is not enumerable, as the built-in is", () => {
@@ -105,7 +127,11 @@ describe("the replaceAll it gives", () => {
 describe("on a background that has them", () => {
 	it("leaves the engine's own", () => {
 		const own = () => {};
-		const scope: Record<string, unknown> = { queueMicrotask: own };
+		const scope: Record<string, unknown> = {
+			queueMicrotask: own,
+			EventTarget: own,
+			structuredClone: own,
+		};
 		const strings = { replaceAll: own };
 		// Boundary: nothing of `lynx` is read when the engine has every global.
 		fillEngineGaps({ scope, strings, globals: {} as BackgroundGlobals });
@@ -116,10 +142,15 @@ describe("on a background that has them", () => {
 
 describe("the background's start", () => {
 	it("fills the thread's own global object, and leaves what this one has", async () => {
-		const own = [globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll];
+		const read = () => [
+			globalThis.queueMicrotask,
+			globalThis.setTimeout,
+			globalThis.EventTarget,
+			globalThis.structuredClone,
+			String.prototype.replaceAll,
+		];
+		const own = read();
 		await import("../../../src/background/start-up.ts");
-		expect([globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll]).toEqual(
-			own,
-		);
+		expect(read()).toEqual(own);
 	});
 });
