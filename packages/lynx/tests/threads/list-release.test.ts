@@ -6,97 +6,11 @@
 import { describe, expect, it } from "@rstest/core";
 
 import type { ElementNode } from "../../src/background/renderer/element.ts";
-import type { LynxElement } from "../../src/testing/index.ts";
-import { decodeToBackground } from "../../src/wire/index.ts";
-import type { CellItem, ThreadEvent } from "../../src/wire/index.ts";
 import NestedRows from "../fixtures/threads/NestedRows.svelte";
-import ReleasedRows from "../fixtures/threads/ReleasedRows.svelte";
 import { listKeys } from "./generated/trees.ts";
+import { askedFor, holdRequests, range, releasedRows, rewrittenCells } from "./released-rows.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
-import type { SveltePage } from "./svelte-page.ts";
-
-interface Feed {
-	rows: { id: number; label: string }[];
-	show: boolean;
-	fixed: number;
-}
-
-/** The ids `from` to `to`, both included. */
-const range = (from: number, to: number): number[] =>
-	Array.from({ length: to - from + 1 }, (_, index) => from + index);
-
-/** Holds the main thread's requests to write rows again, until `deliver`. */
-function holdRequests(page: SveltePage) {
-	const context = page.lynx.mainThread.getJSContext();
-	const send = context.dispatchEvent.bind(context);
-	const held: ThreadEvent[] = [];
-	context.dispatchEvent = (event) => {
-		if (decodeToBackground(event).t === "rewrite") held.push(event as ThreadEvent);
-		else send(event);
-	};
-	return {
-		held,
-		deliver() {
-			context.dispatchEvent = send;
-			for (const event of held.splice(0)) send(event);
-		},
-	};
-}
-
-/** The cell items that write a row again. */
-const rewrittenCells = (page: SveltePage): CellItem[] =>
-	page.patches
-		.flatMap((patch) => patch.items)
-		.filter((item): item is CellItem => item[0] === "cell" && item[3] === true);
-
-/** The ids the main thread asked the background to write again. */
-const askedFor = (page: SveltePage): number[] =>
-	page.messages.flatMap((message) => (message.t === "rewrite" ? message.nodes : []));
-
-async function releasedRows(
-	options: { count?: number; preload?: number; screen?: number; fixed?: number } = {},
-) {
-	const handles: Record<string, unknown> = {};
-	const { screen, fixed, ...props } = options;
-	const page = startSveltePage(ReleasedRows, { props: () => ({ handles, ...props }) });
-	await page.settle();
-	const feed = handles["feed"] as Feed;
-	if (fixed !== undefined) {
-		page.asBackground(() => (feed.fixed = fixed));
-		await page.settle();
-	}
-	const scroll = scroller(page.engine, page.byClass("list"), {
-		...(screen !== undefined && { screen }),
-		...(props.preload !== undefined && { preload: props.preload }),
-	});
-	scroll.to(0);
-	await page.settle();
-	const through = (from: number, to: number) =>
-		scrollThrough({ scroll, from, to, settle: page.settle });
-	const change = async (update: (feed: Feed) => void) => {
-		page.asBackground(() => update(feed));
-		await page.settle();
-	};
-	/** The ids of the rows whose elements are on the page, in order. */
-	const rowsOnPage = () =>
-		page.engine
-			.all()
-			.map((element) => /\brow-(\d+)\b/.exec(page.engine.state(element).classes)?.[1])
-			.filter((id) => id !== undefined)
-			.map(Number)
-			.sort((a, b) => a - b);
-	const row = (id: number) => page.byClass(`row-${id}`);
-	const within = (element: LynxElement, token: string) =>
-		page.engine
-			.all(element)
-			.find((found) => page.engine.state(found).classes.split(" ").includes(token))!;
-	const tap = async (id: number) => {
-		page.engine.dispatch(row(id), { type: "tap" });
-		await page.settle();
-	};
-	return { page, handles, feed, scroll, through, change, rowsOnPage, row, within, tap };
-}
 
 describe("list rows Lynx handed back", () => {
 	it("keep a screen of cells, and the oldest past it are released", async () => {
@@ -272,6 +186,22 @@ describe("a list in a released row", () => {
 		expect(again).not.toBe(inner);
 		expect(listKeys(page.engine, again)).toEqual(["a", "b", "c"]);
 		expect(page.engine.text(page.engine.list(again).show(1))).toBe("1b");
+		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("a released row", () => {
+	it("keeps its changes as one text too, written again once they pile up", async () => {
+		const { page, through, change, row } = await releasedRows();
+		await through(0, 31);
+		const before = rewrittenCells(page).length;
+		for (let version = 1; version <= 30; version++)
+			await change((feed) => (feed.rows[0]!.label = `Row 1, version ${version}`));
+		const rewritten = rewrittenCells(page).length - before;
+		expect(rewritten).toBeGreaterThan(0);
+		expect(rewritten).toBeLessThan(6);
+		await through(31, 0);
+		expect(page.engine.text(row(1))).toBe("Row 1, version 30: 0");
 		expect(page.errors).toEqual([]);
 	});
 });
