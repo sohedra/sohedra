@@ -46,7 +46,7 @@ export interface DrawnNode {
 	tag: string;
 	attrs: Map<string, AttrValue>;
 	/** The events the markup listens to. */
-	events: LynxListener[];
+	events: readonly LynxListener[];
 	/** A text's text. */
 	text: string | null;
 	children: DrawnChild[];
@@ -125,10 +125,13 @@ export type NextId = () => number;
 interface Tag {
 	name: string;
 	attrs: Map<string, AttrValue>;
-	events: LynxListener[];
+	events: readonly LynxListener[];
 	selfClosing: boolean;
 	end: number;
 }
+
+/** The events of a tag that listens to none: one array for all of them. */
+const NO_EVENTS: readonly LynxListener[] = Object.freeze([]);
 
 /**
  * An opening tag as Svelte's server writes it: its name, then each attribute after one space, its
@@ -159,7 +162,7 @@ function readTag(html: string, start: number): Tag {
 	const name = match[1]!;
 	const written = match[2]!;
 	const attrs = new Map<string, AttrValue>();
-	const events: LynxListener[] = [];
+	let events: LynxListener[] | undefined;
 	// After each attribute's space: its name runs to `=` or the next space.
 	let i = 1;
 	while (i <= written.length) {
@@ -168,7 +171,7 @@ function readTag(html: string, start: number): Tag {
 		if (equals === -1 || (space !== -1 && space < equals)) {
 			const end = space === -1 ? written.length : space;
 			const event = eventOfBare(written.slice(i, end));
-			if (event) events.push(event);
+			if (event) (events ??= []).push(event);
 			i = end + 1;
 			continue;
 		}
@@ -178,7 +181,13 @@ function readTag(html: string, start: number): Tag {
 		i = close + 2;
 	}
 	const selfClosing = match[3] === "/" || VOID_ELEMENTS.has(name);
-	return { name, attrs, events, selfClosing, end: WRITTEN_TAG.lastIndex };
+	return {
+		name,
+		attrs,
+		events: events ?? NO_EVENTS,
+		selfClosing,
+		end: WRITTEN_TAG.lastIndex,
+	};
 }
 
 /** Reads an opening tag a step at a time, and throws where it cannot be read. */
@@ -231,6 +240,11 @@ function takeDefer(attrs: Map<string, AttrValue>): AttrValue | undefined {
 /** A new drawn node. */
 function node(id: number, tag: string): DrawnNode {
 	return { id, tag, attrs: new Map(), events: [], text: null, children: [], cells: null };
+}
+
+/** A new drawn text. */
+function textNode(id: number, text: string): DrawnNode {
+	return { id, tag: "#text", attrs: new Map(), events: [], text, children: [], cells: null };
 }
 
 /** Whether a `<list-item>` tag starts at `at`. */
@@ -345,79 +359,106 @@ export function parseInto(
 	options: { nextId: NextId; inCell: boolean },
 ): void {
 	const { nextId, inCell } = options;
-	// The open elements, and in each the open blocks: where a child goes.
-	const stack: { node: DrawnNode; into: DrawnChild[][] }[] = [
-		{ node: parent, into: [parent.children] },
-	];
-	const top = () => stack[stack.length - 1]!;
-	const target = () => top().into[top().into.length - 1]!;
+	// The open element, where its next child goes (an open block's children, or its own), and how
+	// many blocks are open in it. The elements open around it wait in `outer`, each with where its
+	// own children went and its blocks' count; the children arrays the blocks were opened in wait
+	// in `blocks`. Arrays and locals: an object or a closure call per element costs the main
+	// thread's engine more than reading the markup does.
+	let node = parent;
+	let into = parent.children;
+	let depth = 0;
+	const outer: DrawnNode[] = [];
+	const outerInto: DrawnChild[][] = [];
+	const outerDepth: number[] = [];
+	const blocks: DrawnChild[][] = [];
+	const length = html.length;
 	let i = 0;
-	while (i < html.length) {
+	while (i < length) {
 		const lt = html.indexOf("<", i);
-		const end = lt === -1 ? html.length : lt;
+		const end = lt === -1 ? length : lt;
 		if (end > i) {
-			const container = top().node;
-			const text = decode(html.slice(i, end));
-			if (TEXT_CONTAINERS.has(container.tag)) {
-				const drawn = node(nextId(), "#text");
-				drawn.text = text;
-				target().push(drawn);
-			} else if (container.tag === "textarea") {
+			if (TEXT_CONTAINERS.has(node.tag)) {
+				const drawn = textNode(nextId(), decode(html.slice(i, end)));
+				into.push(drawn);
+			} else if (node.tag === "textarea") {
 				// Svelte's server writes a textarea's value as its content.
-				container.attrs.set("default-value", text);
+				node.attrs.set("default-value", decode(html.slice(i, end)));
 			}
 		}
 		if (lt === -1) break;
-		if (html.startsWith("<!--", lt)) {
-			const close = html.indexOf("-->", lt + 4);
+		const next = html.charCodeAt(lt + 1);
+		if (next === 33 /* ! */ && html.startsWith(COMMENT_START, lt)) {
+			const close = html.indexOf(COMMENT_END, lt + 4);
 			if (close === -1) throw new UnreadableMarkup("a comment is not closed", lt);
-			const data = html.slice(lt + 4, close);
-			if (data === "[") {
-				// A component's fragment, an `{#each}` or a `{#key}`: its content is the same on both
-				// threads for the same data, so it is read as if it were not there.
-				top().into.push(target());
-			} else if (data.startsWith("[")) {
-				// An `{#if}`'s branch (`[0`, `[-1`), an else (`[!`) or a failed boundary (`[?`).
-				const block: DrawnBlock = { block: true, children: [] };
-				target().push(block);
-				top().into.push(block.children);
-			} else if (data === "]" && top().into.length > 1) {
-				top().into.pop();
+			// Svelte's block markers: `[` and `]` alone, or `[` and a branch's mark.
+			if (html.charCodeAt(lt + 4) === 91 /* [ */) {
+				blocks.push(into);
+				depth++;
+				if (close > lt + 5) {
+					// An `{#if}`'s branch (`[0`, `[-1`), an else (`[!`) or a failed boundary (`[?`).
+					const block: DrawnBlock = { block: true, children: [] };
+					into.push(block);
+					into = block.children;
+				}
+				// Alone, a component's fragment, an `{#each}` or a `{#key}`: its content is the same on
+				// both threads for the same data, so it is read as if it were not there.
+			} else if (close === lt + 5 && html.charCodeAt(lt + 4) === 93 /* ] */ && depth > 0) {
+				into = blocks.pop()!;
+				depth--;
 			}
 			i = close + 3;
 			continue;
 		}
-		if (html.charCodeAt(lt + 1) === 47 /* / */) {
+		if (next === 47 /* / */) {
 			const close = html.indexOf(">", lt);
 			if (close === -1) throw new UnreadableMarkup("a closing tag is not closed", lt);
-			if (stack.length === 1) throw new UnreadableMarkup("a closing tag has no element", lt);
-			stack.pop();
+			if (outer.length === 0) throw new UnreadableMarkup("a closing tag has no element", lt);
+			// The element's blocks end with it.
+			blocks.length -= depth;
+			node = outer.pop()!;
+			into = outerInto.pop()!;
+			depth = outerDepth.pop()!;
 			i = close + 1;
 			continue;
 		}
 		const tag = readTag(html, lt);
-		const drawn = node(nextId(), tag.name);
-		drawn.attrs = tag.attrs;
+		const name = tag.name;
+		const attrs = tag.attrs;
 		// A row of a list inside a cell renders at once.
-		if (tag.name === "list-item") takeDefer(tag.attrs);
+		if (name === "list-item") takeDefer(attrs);
 		// A Lynx input has no `value`: its first value is `default-value`, as the background sets it.
-		const value = tag.attrs.get("value");
-		if ((tag.name === "input" || tag.name === "textarea") && value !== undefined) {
-			drawn.attrs.delete("value");
-			drawn.attrs.set("default-value", value);
+		if (name === "input" || name === "textarea") {
+			const value = attrs.get("value");
+			if (value !== undefined) {
+				attrs.delete("value");
+				attrs.set("default-value", value);
+			}
 		}
-		drawn.events = tag.events;
-		target().push(drawn);
+		const drawn: DrawnNode = {
+			id: nextId(),
+			tag: name,
+			attrs,
+			events: tag.events,
+			text: null,
+			children: [],
+			cells: null,
+		};
+		into.push(drawn);
 		i = tag.end;
 		if (tag.selfClosing) continue;
-		if (tag.name === "list" && !inCell) {
+		if (name === "list" && !inCell) {
 			i = scanCells(html, i, drawn, nextId);
 			continue;
 		}
-		stack.push({ node: drawn, into: [drawn.children] });
+		outer.push(node);
+		outerInto.push(into);
+		outerDepth.push(depth);
+		node = drawn;
+		into = drawn.children;
+		depth = 0;
 	}
-	if (stack.length > 1)
-		throw new UnreadableMarkup(`the element <${top().node.tag}> is not closed`, html.length);
+	if (outer.length > 0)
+		throw new UnreadableMarkup(`the element <${node.tag}> is not closed`, html.length);
 }
 
 /** The page's drawn tree from its markup; the page is `rootId`. */

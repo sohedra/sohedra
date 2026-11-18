@@ -16,8 +16,8 @@ import type { FunctionsPage } from "../functions/page.ts";
 import { mainThread } from "../globals.ts";
 import type { ListenerOptions, LynxElement } from "../globals.ts";
 import type { InputNumbers } from "../inputs.ts";
-import { cellInfo, elementsOf, parseCell, parsePage } from "./html.ts";
-import type { DrawnCell, DrawnNode } from "./html.ts";
+import { cellInfo, elementsOf, isBlock, parseCell, parsePage } from "./html.ts";
+import type { DrawnCell, DrawnChild, DrawnNode } from "./html.ts";
 
 /** An event the first frame heard before the background adopted it. */
 export interface EarlyEvent {
@@ -82,37 +82,56 @@ export function drawFrame(options: DrawOptions): Frame {
 	const slots: [number, string][] = [];
 	const pageListeners: [string, (event: unknown) => void][] = [];
 
-	function record(node: DrawnNode): void {
-		nodes.set(node.id, node);
-		for (const child of elementsOf(node.children)) record(child);
-		for (const cell of node.cells ?? []) cells.set(cell.id, cell);
+	/**
+	 * Keeps `node` and what is under it by id, and writes the ops that make it into `out`: its
+	 * element, attributes and events, then each child's ops and its insert, then a list's items.
+	 * One walk, by index: the main thread's engine pays for each iterator, and for each array a
+	 * walk makes of a node's children.
+	 */
+	function drawOps(node: DrawnNode, out: Op[]): void {
+		const id = node.id;
+		nodes.set(id, node);
+		if (node.tag === "#text") {
+			out.push([OpCode.CreateText, id, node.text ?? ""]);
+			return;
+		}
+		out.push([OpCode.Create, id, node.tag]);
+		node.attrs.forEach((value, name) => {
+			out.push([OpCode.SetAttr, id, name, value]);
+		});
+		const events = node.events;
+		for (let index = 0; index < events.length; index++) {
+			const { type, name } = events[index]!;
+			slots.push([id, `${type}:${name}`]);
+			out.push([OpCode.SetEvent, id, type as LynxEventType, name, slots.length]);
+		}
+		childOps(id, node.children, out);
+		const list = node.cells;
+		if (list) {
+			const items: number[] = [];
+			const infos = new Map<number, ListItemInfo>();
+			for (let index = 0; index < list.length; index++) {
+				const cell = list[index]!;
+				cells.set(cell.id, cell);
+				items.push(cell.id);
+				infos.set(cell.id, cellInfo(cell));
+			}
+			const info = listUpdateInfo({ committed: [], items, infos, changed: new Set() });
+			out.push([OpCode.ListUpdate, id, info, items, items, []]);
+		}
 	}
 
-	function opsOf(node: DrawnNode, out: Op[]): Op[] {
-		if (node.tag === "#text") {
-			out.push([OpCode.CreateText, node.id, node.text ?? ""]);
-			return out;
+	/** The ops of `children`, blocks opened, each inserted into `parent`. */
+	function childOps(parent: number, children: DrawnChild[], out: Op[]): void {
+		for (let index = 0; index < children.length; index++) {
+			const child = children[index]!;
+			if (isBlock(child)) {
+				childOps(parent, child.children, out);
+				continue;
+			}
+			drawOps(child, out);
+			out.push([OpCode.Insert, parent, child.id, 0]);
 		}
-		out.push([OpCode.Create, node.id, node.tag]);
-		for (const [name, value] of node.attrs) out.push([OpCode.SetAttr, node.id, name, value]);
-		for (const { type, name } of node.events) {
-			slots.push([node.id, `${type}:${name}`]);
-			const op: Op = [OpCode.SetEvent, node.id, type as LynxEventType, name, slots.length];
-			out.push(op);
-		}
-		for (const child of elementsOf(node.children)) {
-			opsOf(child, out);
-			out.push([OpCode.Insert, node.id, child.id, 0]);
-		}
-		if (node.cells) {
-			const items = node.cells.map((cell) => cell.id);
-			const infos = new Map<number, ListItemInfo>(
-				node.cells.map((cell) => [cell.id, cellInfo(cell)]),
-			);
-			const info = listUpdateInfo({ committed: [], items, infos, changed: new Set() });
-			out.push([OpCode.ListUpdate, node.id, info, items, items, []]);
-		}
-		return out;
 	}
 
 	const applier = createApplier({
@@ -142,19 +161,16 @@ export function drawFrame(options: DrawOptions): Frame {
 		openCell(id) {
 			const cell = cells.get(id);
 			if (!cell || cell.node) return;
-			const node = parseCell(cell, nextId);
-			record(node);
-			for (const { error } of applier.apply(opsOf(node, []))) report(error);
+			const ops: Op[] = [];
+			drawOps(parseCell(cell, nextId), ops);
+			for (const { error } of applier.apply(ops)) report(error);
 		},
 	});
 
 	const root = parsePage(html, ROOT_ID, nextId);
-	record(root);
+	nodes.set(ROOT_ID, root);
 	const ops: Op[] = [];
-	for (const child of elementsOf(root.children)) {
-		opsOf(child, ops);
-		ops.push([OpCode.Insert, ROOT_ID, child.id, 0]);
-	}
+	childOps(ROOT_ID, root.children, ops);
 	const failed = applier.apply(ops);
 	if (failed.length > 0) {
 		// The background's first patch makes the whole page: what was drawn goes.

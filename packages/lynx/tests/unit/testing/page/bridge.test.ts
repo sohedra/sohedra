@@ -146,6 +146,7 @@ describe("each thread's lynx", () => {
 		expect(own(page.lynx.mainThread)).toEqual([
 			"__globalProps",
 			"__initData",
+			"clearTimeout",
 			"getEngine",
 			"getJSContext",
 			"getNative",
@@ -227,6 +228,49 @@ describe("settle", () => {
 		main.dispatchEvent({ type: "ping", data: 0 });
 		await expect(page.settle()).rejects.toThrow("still sending after 100 rounds");
 		page.dispose();
+	});
+});
+
+describe("the main thread's setTimeout", () => {
+	it("runs a callback with no delay on a later task, which settle waits for", async () => {
+		const page = startTestPage();
+		const ran: unknown[] = [];
+		page.lynx.mainThread.setTimeout(() => ran.push(readGlobal("lynx")));
+		expect(ran).toEqual([]);
+		await page.settle();
+		expect(ran).toEqual([page.lynx.mainThread]);
+	});
+
+	it("waits out a delay in the process's time, which settle does not wait for", async () => {
+		const page = startTestPage();
+		rs.useFakeTimers();
+		const ran: string[] = [];
+		page.lynx.mainThread.setTimeout(() => ran.push("late"), 100);
+		await page.settle();
+		expect(ran).toEqual([]);
+		rs.advanceTimersByTime(100);
+		await page.settle();
+		expect(ran).toEqual(["late"]);
+	});
+
+	it("runs nothing once cleared, with a delay or without", async () => {
+		const page = startTestPage();
+		const lynx = page.lynx.mainThread;
+		const ran: string[] = [];
+		lynx.clearTimeout(lynx.setTimeout(() => ran.push("soon")));
+		lynx.clearTimeout(lynx.setTimeout(() => ran.push("late"), 1));
+		lynx.clearTimeout(1000);
+		await new Promise((resolve) => setTimeout(resolve, 5));
+		await page.settle();
+		expect(ran).toEqual([]);
+	});
+});
+
+describe("the main thread's clearTimeout", () => {
+	it("takes a number only, as Lynx's does", () => {
+		const page = startTestPage();
+		const lynx = page.lynx.mainThread as { clearTimeout(timer: unknown): void };
+		expect(() => lynx.clearTimeout({})).toThrow("takes the number setTimeout returned");
 	});
 });
 

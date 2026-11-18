@@ -8,7 +8,7 @@ import type { EngineEvent } from "./dispatch.ts";
 import { isText } from "./dom.ts";
 import { eventFunctions } from "./events.ts";
 import type { EventFunctions } from "./events.ts";
-import { frameFunctions, frameQueue } from "./frames.ts";
+import { frameFunctions, frameQueue, holdFrames } from "./frames.ts";
 import type { FrameFunctions } from "./frames.ts";
 import { createGestureDriver, gestureFunctions } from "./gestures.ts";
 import type { GestureCall, GestureFunctions } from "./gestures.ts";
@@ -133,6 +133,11 @@ export interface Engine {
 	cancelAnimation(element: LynxElement, name: string): boolean;
 	/** Decides what the page's UI methods get back. The default answers success with no data. */
 	respondWith(responder: Responder): void;
+	/**
+	 * Stops the platform's frames until the returned function is called, as while the app is in the
+	 * background: frame callbacks wait, and run at the first frame after.
+	 */
+	holdFrames(): () => void;
 	/** The style sheet `__LoadStyleSheet` finds for a bundle. */
 	provideStyleSheet(bundleName: string, sheet: unknown): void;
 	/** The style sheets the page adopted, in order. */
@@ -311,6 +316,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		respondWith(responder) {
 			engine.respond = responder;
 		},
+		holdFrames: () => holdFrames(engine),
 		provideStyleSheet: styleSheets.sheets.provide,
 		adoptedStyleSheets: styleSheets.sheets.adopted,
 		lifecycle,

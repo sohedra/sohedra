@@ -1,6 +1,6 @@
 // Patches that reach the main thread before the engine renders the page, when the page draws a
-// first frame: they wait, the frame is drawn when the engine renders, and then they are applied in
-// order, the first one hydrating the frame.
+// first frame: they wait, the frame is drawn when the engine renders and painted, and then they are
+// applied in order, the first one hydrating the frame.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -30,7 +30,7 @@ const FIRST: Op[] = [
 ];
 
 describe("a patch that comes before the first frame", () => {
-	it("waits, and hydrates the frame the engine's render draws, then the next applies", () => {
+	it("waits, and hydrates the frame the engine's render draws, then the next applies", async () => {
 		const page = startTestPage({
 			mainThread: () => {
 				startMainThread();
@@ -42,6 +42,7 @@ describe("a patch that comes before the first frame", () => {
 				patch(encodePatch({ page: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
 			},
 		});
+		await page.settle();
 		expect(page.errors).toEqual([]);
 		expect(page.engine.texts()).toEqual(["changed"]);
 		// Drawn once, then adopted: no element made twice.

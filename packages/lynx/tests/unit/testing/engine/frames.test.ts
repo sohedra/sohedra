@@ -46,6 +46,33 @@ describe("requestAnimationFrame", () => {
 	});
 });
 
+describe("frames held", () => {
+	it("run no callback until they are let go, then run those asked for at the next frame", async () => {
+		const ran: string[] = [];
+		const f = engine().functions;
+		const release = engine().holdFrames();
+		f.requestAnimationFrame(() => ran.push("first"));
+		await nextTask();
+		await nextTask();
+		expect(ran).toEqual([]);
+		release();
+		release();
+		await nextTask();
+		expect(ran).toEqual(["first"]);
+	});
+
+	it("stop a frame already on its way", async () => {
+		const ran: string[] = [];
+		engine().functions.requestAnimationFrame(() => ran.push("first"));
+		const release = engine().holdFrames();
+		await nextTask();
+		expect(ran).toEqual([]);
+		release();
+		await nextTask();
+		expect(ran).toEqual(["first"]);
+	});
+});
+
 describe("what the platform has measured", () => {
 	it("is nothing before the frame after the first flush", async () => {
 		const { page, outer } = smallPage(engine());

@@ -4,7 +4,7 @@
 // crosses the page's bridge as a copy, made when it is sent, as a device converts it.
 
 import type { Lifecycle, LifecycleProxy } from "../engine/lifecycle.ts";
-import { queueMicrotaskAs, readGlobal } from "../globals.ts";
+import { afterDelay, queueMicrotaskAs, readGlobal } from "../globals.ts";
 import type { Bridge } from "./bridge.ts";
 
 /** A thread of the page. */
@@ -68,10 +68,16 @@ export interface MainThreadLynx extends SharedLynx {
 	/** The native side's events: the page's end. */
 	getNative(): LifecycleProxy;
 	/**
-	 * Runs `callback` on the main thread on a later task, which `settle()` waits for. The delay is
-	 * not waited out: only the order is kept.
+	 * Runs `callback` on the main thread on a later task, which `settle()` waits for, and returns
+	 * the timer's number (core/runtime/lepus/bindings/renderer_functions.cc, SetTimeout). A `delay`
+	 * is waited out in the process's time first, which `settle()` does not wait for: on a device the
+	 * threads go on meanwhile.
 	 */
-	setTimeout(callback: () => void, delay?: number): void;
+	setTimeout(callback: () => void, delay?: number): number;
+	/**
+	 * Cancels a timer by its number, if it has not run; Lynx's takes a number only (ClearTimeout).
+	 */
+	clearTimeout(timer: number): void;
 }
 
 /** The background's `lynx`. */
@@ -159,6 +165,9 @@ export function createLynx(options: {
 	const { bridge, lifecycle, errors, warnings, app, enter } = options;
 	const mainThread = createSide();
 	const background = createSide();
+	/** The main thread's timers that have not run, and how to stop one that waits out a delay. */
+	const timers = new Map<number, (() => void) | undefined>();
+	let lastTimer = 0;
 
 	/** The context through which one thread sends to `to`; `origin` names the sender. */
 	function context(own: {
@@ -235,11 +244,25 @@ export function createLynx(options: {
 			getJSContext: () => jsContext,
 			getEngine: () => lifecycle.engine,
 			getNative: () => lifecycle.native,
-			setTimeout(callback) {
-				bridge.send(() => {
-					enter("main-thread");
-					callback();
-				});
+			setTimeout(callback, delay = 0) {
+				const timer = ++lastTimer;
+				const run = (): void =>
+					bridge.send(() => {
+						if (!timers.delete(timer)) return;
+						enter("main-thread");
+						callback();
+					});
+				timers.set(timer, delay > 0 ? afterDelay(run, delay) : undefined);
+				if (delay <= 0) run();
+				return timer;
+			},
+			clearTimeout(timer) {
+				if (typeof timer !== "number")
+					throw new TypeError(
+						`clearTimeout on the main thread takes the number setTimeout returned, not ${typeof timer}.`,
+					);
+				timers.get(timer)?.();
+				timers.delete(timer);
 			},
 		},
 		background: {
