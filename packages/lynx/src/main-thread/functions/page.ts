@@ -5,8 +5,9 @@
 // Only the registered bodies outlive a page (../globals.ts).
 //
 // The settle step runs the function refs bound since it last ran, each once its element is in the
-// tree and before the flush that shows it: at a patch's end, before a call of the patch, inside a
-// list's making of a cell, as the first frame is drawn and at hydration.
+// tree and before the flush that shows it, and sets the gesture detectors of the gestures that
+// changed: at a patch's end, before a call of the patch, inside a list's making of a cell, as the
+// first frame is drawn and at hydration.
 
 import { isMainThreadFunction, RUN_FUNCTION } from "../../wire/index.ts";
 import type { Result, ToBackground } from "../../wire/index.ts";
@@ -20,6 +21,7 @@ import type { HeldCall } from "./background-calls.ts";
 import { Entry, slotOf } from "./bindings.ts";
 import type { Binding, BindingScope } from "./bindings.ts";
 import { createElements } from "./element.ts";
+import { createGestures } from "./gestures.ts";
 import { carry } from "./hydrate.ts";
 import { createLifetimes } from "./lifetimes.ts";
 import { createLoopGuard } from "./loop-guard.ts";
@@ -86,7 +88,14 @@ export interface FunctionsPage {
 	/** The page reloads or ends: its functions run no more, and its calls reject. */
 	silence(): void;
 	/** What the page holds, for tests. */
-	sizes(): { elements: number; bindings: number; refs: number; contexts: number[] };
+	sizes(): {
+		elements: number;
+		bindings: number;
+		refs: number;
+		contexts: number[];
+		detectors: number;
+		gestureIds: number;
+	};
 	/** Whether the ref `id` holds `element`, for tests. */
 	refHolds(id: number, element: LynxElement): boolean;
 }
@@ -126,6 +135,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 	let depth = 0;
 	let flushing = false;
 	const reportedNames = new Set<string>();
+	const gestures = createGestures(() => scope);
 
 	const elements = createElements({
 		styles,
@@ -166,6 +176,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 		ran(id) {
 			if (DEV) guard?.ran(id, undefined);
 		},
+		gestures,
 	};
 
 	function applying(run: () => void, drain?: () => void): void {
@@ -188,6 +199,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 					if (binding.released || binding.value !== value) continue;
 					scope.guarded(() => binding.kind.settle?.(binding, scope));
 				}
+				gestures.flush();
 			}
 		});
 	}
@@ -357,12 +369,21 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 			silenced = true;
 			lifetimes.end();
 			pending = [];
+			gestures.silence();
 			calls.silence();
 		},
 		sizes() {
 			let bindings = 0;
 			for (const slots of store.values()) bindings += slots.size;
-			return { elements: elements.size, bindings, refs: refs.size, contexts: lifetimes.held() };
+			const held = gestures.sizes();
+			return {
+				elements: elements.size,
+				bindings,
+				refs: refs.size,
+				contexts: lifetimes.held(),
+				detectors: held.detectors,
+				gestureIds: held.ids,
+			};
 		},
 		refHolds(id, element) {
 			const current = refs.find(id)?.current;

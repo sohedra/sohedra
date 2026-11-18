@@ -104,14 +104,18 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	 * element functions on the main thread only. On a device the background has none, so a call of
 	 * one there fails as it would.
 	 */
-	const enter = (thread: Thread): void => {
-		if (ended) return;
+	let current: Thread | undefined;
+	const enter = (thread: Thread): Thread | undefined => {
+		const before = current;
+		if (ended) return before;
+		current = thread;
 		if (thread === "main-thread") {
 			installGlobals({ ...engine.functions, lynx: lynx.mainThread });
-			return;
+			return before;
 		}
 		installGlobals({ lynx: lynx.background });
 		removeGlobals(elementFunctions);
+		return before;
 	};
 	const engine = createEngine({
 		...(options.document && { document: options.document }),

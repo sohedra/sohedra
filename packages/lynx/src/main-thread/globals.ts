@@ -138,6 +138,20 @@ export interface MainThreadGlobals {
 		name: string,
 		value: { type: "worklet"; value: unknown } | undefined,
 	): void;
+	/**
+	 * Sets the element's gesture detector `id`, replacing one it had under that id
+	 * (renderer_functions.cc, FiberSetGestureDetector). The engine hands each callback's value back
+	 * to the global `runWorklet`, with the gesture's event and its gesture manager.
+	 */
+	__SetGestureDetector(
+		element: LynxElement,
+		id: number,
+		type: number,
+		callbacks: { callbacks: { name: string; callback: unknown }[]; config: unknown },
+		relations: { waitFor: number[]; simultaneous: number[]; continueWith: number[] },
+	): void;
+	/** Removes the element's gesture detector `id` (renderer_functions.cc, FiberRemoveGestureDetector). */
+	__RemoveGestureDetector(element: LynxElement, id: number): void;
 	/** The element's parent, or none (renderer_functions.cc, FiberGetParent). */
 	__GetParent(element: LynxElement): LynxElement | undefined | null;
 	/** The element's `id` (renderer_functions.cc, FiberGetID). */

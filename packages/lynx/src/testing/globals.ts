@@ -72,11 +72,19 @@ export function removeGlobals(names: readonly string[]): void {
 	for (const name of names) delete scope[name];
 }
 
-/** Runs `callback` on a microtask, as the thread that queued it. */
-export function queueMicrotaskAs(enter: () => void, callback: () => void): void {
+/**
+ * Runs `callback` on a microtask, as the thread that queued it: `enter` puts that thread's globals
+ * in place and returns what puts back the ones before, so a microtask another thread queued after
+ * it finds its own.
+ */
+export function queueMicrotaskAs(enter: () => () => void, callback: () => void): void {
 	queueMicrotask(() => {
-		enter();
-		callback();
+		const leave = enter();
+		try {
+			callback();
+		} finally {
+			leave();
+		}
 	});
 }
 
