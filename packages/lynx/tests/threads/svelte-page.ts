@@ -24,7 +24,10 @@ export interface SveltePage extends TestPage {
 
 /** What the page starts with. */
 export interface SveltePageOptions {
+	/** The data the host opens the page with. */
 	initData?: Record<string, unknown>;
+	/** The template's own data, under the host's. */
+	templateData?: Record<string, unknown>;
 	props?: (initData: Record<string, unknown>) => Record<string, unknown>;
 	/**
 	 * The first frame: the markup Svelte's server would write, from the page's data, or a
@@ -49,6 +52,7 @@ export function startSveltePage(
 	const patches: Patch[] = [];
 	const page = startTestPage({
 		...(options.initData && { initData: options.initData }),
+		...(options.templateData && { templateData: options.templateData }),
 		mainThread: () => {
 			startMainThread();
 			recordFirstFrame(options.firstFrame);
