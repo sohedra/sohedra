@@ -18,13 +18,17 @@ function wrappers(options: { later?: (run: () => void) => void } = {}) {
 	const restore = installGlobals({ ...engine().functions });
 	const styles = createCodeStyles();
 	const changes: string[] = [];
+	const reports: unknown[] = [];
+	const small = smallPage(engine());
 	const elements = createElements({
 		styles,
 		flattening: createFlattening(),
 		changed: (what, detail) => void changes.push(`${what} ${String(detail)}`),
 		invoke: options.later ?? ((run) => run()),
+		idOf: (element) => (element === small.inner ? 7 : undefined),
+		report: (error) => void reports.push(error),
 	});
-	return { elements, styles, changes, restore, ...smallPage(engine()) };
+	return { elements, styles, changes, reports, restore, ...small };
 }
 
 describe("an element as main-thread functions see it", () => {
@@ -51,6 +55,8 @@ describe("an element as main-thread functions see it", () => {
 		expect(wrapped.contains({})).toBe(false);
 		expect(wrapped.dataset).toEqual({ role: "handle", n: 3 });
 		expect(JSON.parse(JSON.stringify(wrapped))).toEqual({
+			node: 7,
+			id: "inner",
 			uid: engine().state(inner).uid,
 			dataset: { role: "handle", n: 3 },
 		});
@@ -66,6 +72,38 @@ describe("an element as main-thread functions see it", () => {
 		expect(inline.get("transform")).toBe("translateX(4px)");
 		expect(inline.get("width")).toBe("10px");
 		expect(changes).toEqual(["setStyleProperty transform"]);
+		restore();
+	});
+
+	it("is gone once the page forgets its element: it answers nothing, and its changes are refused", async () => {
+		const { elements, outer, inner, reports, restore } = wrappers();
+		const kept = elements.wrap(inner);
+		elements.forget(inner);
+		expect(kept.parentElement).toBeNull();
+		expect(elements.size).toBe(0);
+		expect(elements.wrap(outer).contains(kept)).toBe(false);
+		expect([kept.dataset, kept.getAttribute("id"), kept.getAttributeNames()]).toEqual([
+			{},
+			null,
+			[],
+		]);
+		expect([
+			kept.querySelector("*"),
+			kept.querySelectorAll("*"),
+			kept.getComputedStyleProperty("width"),
+		]).toEqual([null, [], ""]);
+		expect(JSON.parse(JSON.stringify(kept))).toEqual({ node: 0 });
+		kept.setAttribute("late", "yes");
+		kept.setStyleProperty("width", "1px");
+		kept.setStyleProperties({ height: "1px" });
+		expect(engine().state(inner).attrs["late"]).toBeUndefined();
+		expect(reports).toHaveLength(3);
+		expect(() => kept.animate([{ opacity: 0 }])).toThrow(
+			expect.objectContaining({ code: "element_released" }),
+		);
+		await expect(kept.invoke("boundingClientRect")).rejects.toMatchObject({
+			code: "element_released",
+		});
 		restore();
 	});
 

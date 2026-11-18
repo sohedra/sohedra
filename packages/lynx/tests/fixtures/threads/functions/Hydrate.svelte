@@ -1,7 +1,8 @@
 <!--
 	Main-thread functions across hydration: a handler that counts in a ref and calls the background,
 	a function ref that runs in the first frame, one whose captured value differs on the background,
-	a closure the first frame keeps in a ref, and functions in each branch of {#if background}.
+	a closure the first frame keeps in a ref, functions in each branch of {#if background}, and an
+	event only the first frame binds.
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground, runOnMainThread } from "@sohedra/lynx";
@@ -70,6 +71,15 @@
 		});
 	}
 
+	function attachLate() {
+		"main thread";
+		void runOnBackground(note)("late");
+	}
+
+	function onFrameOnlyTap() {
+		"main thread";
+		}
+
 	function read() {
 		"main thread";
 		return taps.current;
@@ -88,8 +98,10 @@
 	<view class="plain" ontap={plain}></view>
 	<view class="once" main-thread:ref={attachOnce}></view>
 	<view class="where" main-thread:ref={attachWhere}></view>
+	<view class="frame-only" main-thread:ontap={mainThread ? onFrameOnlyTap : undefined}></view>
 	{#if background}
 		<view class="background" main-thread:ref={attachBranch}></view>
+		<view class="late" main-thread:ref={attachLate}></view>
 	{:else}
 		<!-- Another tag: hydration makes the background's branch again in place. -->
 		<text class="else" main-thread:ref={attachBranch} main-thread:ontap={onFrameOnly}></text>

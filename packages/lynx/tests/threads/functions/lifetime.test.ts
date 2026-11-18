@@ -18,20 +18,33 @@ async function lifetime() {
 		await page.settle();
 		return answer;
 	};
-	return { page, api, read };
+	/** How the call the old page's timer made ended, as the timer wrote it on the main thread. */
+	const late = () => (page.lynx.mainThread as { late?: string }).late;
+	return { page, api, read, late };
 }
 
 describe("a page that reloads", () => {
 	it("rejects at once a call its old page's timer makes, and cleans up the old page's refs", async () => {
-		const { page } = await lifetime();
+		const { page, late } = await lifetime();
 		const old = page.byClass("tap");
 		page.engine.dispatch(old, { type: "tap" });
 		page.reload();
 		await page.settle();
-		expect(page.engine.state(old).attrs["late"]).toBe("page_is_gone");
+		expect(late()).toBe("page_is_gone");
 		expect(page.engine.state(old).attrs["cleaned"]).toBe("yes");
 		expect(page.byClass("tap")).not.toBe(old);
 		expect(page.errors).toEqual([]);
+	});
+
+	it("lets the old page's elements, still on the screen, run no main-thread function", async () => {
+		const { page, read, late } = await lifetime();
+		const old = page.byClass("tap");
+		page.reload();
+		expect(page.engine.all()).toContain(old);
+		page.engine.dispatch(old, { type: "tap" });
+		await page.settle();
+		expect(late()).toBeUndefined();
+		expect(await read()).toBe(0);
 	});
 
 	it("starts a ref made at a module's top level again from its initial value", async () => {
@@ -48,13 +61,13 @@ describe("a page that reloads", () => {
 
 describe("a page that ends", () => {
 	it("cleans up its function refs, and rejects a call made after", async () => {
-		const { page, api } = await lifetime();
+		const { page, api, late } = await lifetime();
 		const element = page.byClass("tap");
 		page.engine.dispatch(element, { type: "tap" });
 		page.destroy();
 		await page.settle();
 		expect(page.engine.state(element).attrs["cleaned"]).toBe("yes");
-		expect(page.engine.state(element).attrs["late"]).toBe("page_is_gone");
+		expect(late()).toBe("page_is_gone");
 		await expect(page.asBackground(() => api["read"]!())).rejects.toMatchObject({
 			code: "page_is_gone",
 		});

@@ -15,7 +15,7 @@ https://sohedra.com/e/attribute_not_copyable"
 `;
 
 exports[`the background's catalogue > background_function_missing: the message 1`] = `
-"A main-thread function called a background function through runOnBackground, and the background no longer has it: the page let go of that copy of the main-thread function.
+"A main-thread function called a background function through runOnBackground, and the background no longer has it: the page let go of the main-thread function that named it.
 
 Keep main-thread functions that call the background in an attribute, a ref or a call that is still on the page. If the page was made again after its first frame could not be hydrated, functions kept from before cannot call the background.
 https://sohedra.com/e/background_function_missing"
@@ -80,6 +80,14 @@ src/Feed.svelte:12:2
 
 Key the item with a string or a number that names it, such as its id: {#each items as item (item.id)}, or item-key={item.id}.
 https://sohedra.com/e/list_item_key_object"
+`;
+
+exports[`the background's catalogue > main_thread_event_spelling_removed: the message 1`] = `
+"The <view>'s main-thread:bindtap uses Lynx's own spelling of an event, which a component no longer writes.
+src/Sheet.svelte:14:2
+
+Write main-thread:ontap instead.
+https://sohedra.com/e/main_thread_event_spelling_removed"
 `;
 
 exports[`the background's catalogue > main_thread_ref_read_on_background: the message 1`] = `

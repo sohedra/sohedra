@@ -2,103 +2,103 @@
 
 exports[`golden messages to the background > a call of a background function 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"call","id":1,"fn":2,"context":3,"params":["done"]}",
+  "data": "{"v":2,"page":0,"t":"call","id":1,"fn":2,"context":3,"params":["done"]}",
   "type": "@sohedra/lynx:events",
 }
 `;
 
 exports[`golden messages to the background > a release 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"release","contexts":[3]}",
+  "data": "{"v":2,"page":0,"t":"release","contexts":[3]}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > a reply with a thrown error 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"reply","id":2,"result":{"ok":false,"error":{"name":"TypeError","message":"x is not a function"}}}",
+  "data": "{"v":2,"page":0,"t":"reply","id":2,"result":{"ok":false,"error":{"name":"TypeError","message":"x is not a function"}}}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > a reply with a value 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"reply","id":1,"result":{"ok":true,"value":{"width":120,"height":40}}}",
+  "data": "{"v":2,"page":0,"t":"reply","id":1,"result":{"ok":true,"value":{"width":120,"height":40}}}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > a tap 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"event","handler":1,"event":{"type":"tap","timestamp":1700,"target":{"id":"","uid":21,"dataset":{},"node":2}}}",
+  "data": "{"v":2,"page":0,"t":"event","handler":1,"event":{"type":"tap","timestamp":1700,"target":{"id":"","uid":21,"dataset":{},"node":2}}}",
   "type": "@sohedra/lynx:events",
 }
 `;
 
 exports[`golden messages to the background > an error with its code and where it was thrown 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"error","error":{"name":"Error","message":"The first frame differs.","code":"hydration_mismatch"},"place":{"component":"src/Card.svelte","mainThreadFunction":"a1b2:onScroll"}}",
+  "data": "{"v":2,"page":0,"t":"error","error":{"name":"Error","message":"The first frame differs.","code":"hydration_mismatch"},"place":{"component":"src/Card.svelte","mainThreadFunction":"a1b2:onScroll"}}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > deferred rows Lynx asked for 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"show","nodes":[30,40]}",
+  "data": "{"v":2,"page":0,"t":"show","nodes":[30,40]}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > deferred rows let go of, text and all 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"hide","nodes":[30]}",
+  "data": "{"v":2,"page":0,"t":"hide","nodes":[30]}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > ids of $props.id() written over the first frame's, in a development build 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"props-ids","differences":[{"node":4,"name":"aria-labelledby","expected":"lynx-s2","got":"lynx-s1"}]}",
+  "data": "{"v":2,"page":0,"t":"props-ids","differences":[{"node":4,"name":"aria-labelledby","expected":"lynx-s2","got":"lynx-s1"}]}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > list rows asked for again 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"rewrite","nodes":[30,40]}",
+  "data": "{"v":2,"page":0,"t":"rewrite","nodes":[30,40]}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
 exports[`golden messages to the background > the page asked for again after a refused hydration 1`] = `
 {
-  "data": "{"v":1,"page":0,"t":"rewrite","nodes":[1],"mismatch":{"kind":"attribute","node":2,"name":"class","expected":"counter","got":"open"}}",
+  "data": "{"v":2,"page":0,"t":"rewrite","nodes":[1],"mismatch":{"kind":"attribute","node":2,"name":"class","expected":"counter","got":"open"}}",
   "type": "@sohedra/lynx:replies",
 }
 `;
 
-exports[`golden patches > a counter's first patch 1`] = `"{"v":1,"page":0,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;
+exports[`golden patches > a counter's first patch 1`] = `"{"v":2,"page":0,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;
 
-exports[`golden patches > a counter's update 1`] = `"{"v":1,"page":0,"items":[["ops",[[3,4,"Count: 1"]]]]}"`;
+exports[`golden patches > a counter's update 1`] = `"{"v":2,"page":0,"items":[["ops",[[3,4,"Count: 1"]]]]}"`;
 
-exports[`golden patches > a deferred row written again, whose contents go with its elements 1`] = `"{"v":1,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]","unmount"]]}"`;
+exports[`golden patches > a deferred row written again, whose contents go with its elements 1`] = `"{"v":2,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]","unmount"]]}"`;
 
-exports[`golden patches > a list's insert 1`] = `"{"v":1,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]"],["ops",[[9,5,{"insertAction":[{"position":1,"type":"list-item","item-key":"c"}],"removeAction":[],"updateAction":[]},[10,30,20],[30],[]]]]]}"`;
+exports[`golden patches > a list's insert 1`] = `"{"v":2,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]"],["ops",[[9,5,{"insertAction":[{"position":1,"type":"list-item","item-key":"c"}],"removeAction":[],"updateAction":[]},[10,30,20],[30],[]]]]]}"`;
 
-exports[`golden patches > a row whose main-thread handler calls the background, with the context its text holds 1`] = `"{"v":1,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0],[4,30,\\"main-thread:ontap\\",{\\"_wkltId\\":\\"a1b2:c3d4:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_jsFnId\\":5}},\\"_execId\\":7}]]",null,[7]]]}"`;
+exports[`golden patches > a row whose main-thread handler calls the background, with the context its text holds 1`] = `"{"v":2,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0],[4,30,\\"main-thread:ontap\\",{\\"_wkltId\\":\\"a1b2:c3d4:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_jsFnId\\":5}},\\"_execId\\":7}]]",null,[7]]]}"`;
 
-exports[`golden patches > a row written again that holds a context 1`] = `"{"v":1,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]",true,[8]]]}"`;
+exports[`golden patches > a row written again that holds a context 1`] = `"{"v":2,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]",true,[8]]]}"`;
 
-exports[`golden patches > calls after the ops they depend on 1`] = `"{"v":1,"page":0,"items":[["ops",[[4,2,"class","counter open"]]],["call",1,2,"[\\"invoke\\",\\"boundingClientRect\\",{}]"],["call",2,0,"[\\"run\\",{\\"_wkltId\\":\\"a1b2:open\\",\\"_c\\":{\\"to\\":1},\\"_execId\\":3},[240]]"],["reply",1,"{\\"ok\\":true,\\"value\\":\\"saved\\"}"]]}"`;
+exports[`golden patches > calls after the ops they depend on 1`] = `"{"v":2,"page":0,"items":[["ops",[[4,2,"class","counter open"]]],["call",1,2,"[\\"invoke\\",\\"boundingClientRect\\",{}]"],["call",2,0,"[\\"run\\",{\\"_wkltId\\":\\"a1b2:open\\",\\"_c\\":{\\"to\\":1},\\"_execId\\":3},[240]]"],["reply",1,"{\\"ok\\":true,\\"value\\":\\"saved\\"}"]]}"`;
 
-exports[`golden patches > list rows written again 1`] = `"{"v":1,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]",true]]}"`;
+exports[`golden patches > list rows written again 1`] = `"{"v":2,"page":0,"items":[["cell",30,"[[1,30,\\"list-item\\"],[4,30,\\"item-key\\",\\"c\\"],[2,31,\\"c\\"],[5,30,31,0]]",true]]}"`;
 
-exports[`golden patches > refs the background let go of, after the ops 1`] = `"{"v":1,"page":0,"items":[["ops",[[3,4,"Count: 1"]]],["call",0,0,"[\\"unref\\",[3,4]]"]]}"`;
+exports[`golden patches > refs the background let go of, after the ops 1`] = `"{"v":2,"page":0,"items":[["ops",[[3,4,"Count: 1"]]],["call",0,0,"[\\"unref\\",[3,4]]"]]}"`;
 
-exports[`golden patches > say how many items hold the page as it rendered, at its start 1`] = `"{"v":1,"page":0,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]],["ops",[[3,4,"Count: 1"]]]],"rendered":1}"`;
+exports[`golden patches > say how many items hold the page as it rendered, at its start 1`] = `"{"v":2,"page":0,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]],["ops",[[3,4,"Count: 1"]]]],"rendered":1}"`;
 
-exports[`golden patches > styles set from code and an animation, with their element 1`] = `"{"v":1,"page":0,"items":[["ops",[[10,2,{"transform":"translateX(4px)","opacity":null}],[11,2,[0,"fade",[{"opacity":0},{"opacity":1}],{"duration":300}]]]]]}"`;
+exports[`golden patches > styles set from code and an animation, with their element 1`] = `"{"v":2,"page":0,"items":[["ops",[[10,2,{"transform":"translateX(4px)","opacity":null}],[11,2,[0,"fade",[{"opacity":0},{"opacity":1}],{"duration":300}]]]]]}"`;
 
-exports[`golden patches > the page written again 1`] = `"{"v":1,"page":0,"items":[["rewrite",1],["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;
+exports[`golden patches > the page written again 1`] = `"{"v":2,"page":0,"items":[["rewrite",1],["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;
 
-exports[`golden patches > the reloaded page's first patch 1`] = `"{"v":1,"page":1,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;
+exports[`golden patches > the reloaded page's first patch 1`] = `"{"v":2,"page":1,"items":[["ops",[[1,2,"view"],[4,2,"class","counter"],[7,2,"bindEvent","tap",1],[1,3,"text"],[2,4,"Count: 0"],[5,3,4,0],[5,2,3,0],[5,1,2,0]]]]}"`;

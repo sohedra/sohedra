@@ -8,7 +8,10 @@ import { describe, expect, it } from "@rstest/core";
 
 import FunctionRows from "../../fixtures/threads/functions/FunctionRows.svelte";
 import drawFunctionRows from "../../fixtures/threads/functions/FunctionRows.svelte?first-frame";
+import ThrowRows from "../../fixtures/threads/functions/ThrowRows.svelte";
+import drawThrowRows from "../../fixtures/threads/functions/ThrowRows.svelte?first-frame";
 import { scroller, scrollThrough } from "../scroll.ts";
+import { expectAccounted } from "./accounting.ts";
 import { startFunctionsPage } from "./pages.ts";
 
 interface Counts {
@@ -126,6 +129,8 @@ describe("a deferred row's function ref", () => {
 		const back = await read();
 		expect(back.first).toBe(1);
 		expect(back.runs - back.cleanups).toBe(made());
+		// The texts let go of with the rows' contents let their contexts go too.
+		expectAccounted(page, "after rows unmounted and shown again");
 		expect(page.errors).toEqual([]);
 	});
 
@@ -133,5 +138,38 @@ describe("a deferred row's function ref", () => {
 		const { page, read } = await rows({ async: true, defer: true, initial: 9, firstFrame: true });
 		expect(await read()).toEqual({ runs: 9, cleanups: 0, first: 1 });
 		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("a function ref that throws", () => {
+	async function throwing() {
+		const api: Record<string, () => void> = {};
+		const page = startFunctionsPage(ThrowRows, { draw: drawThrowRows, props: { api } });
+		await page.settle();
+		return { page, api };
+	}
+
+	it("leaves its row drawn and given to Lynx, and the rows after it bind and measure", async () => {
+		const { page } = await throwing();
+		const list = page.engine.list(page.byClass("list"));
+		const rows = [0, 1, 2].map((index) => page.engine.text(list.show(index)));
+		await page.settle();
+		expect(rows).toEqual(["row 1", "row 2", "row 3"]);
+		expect(page.engine.state(page.byClass("row-3")).attrs["attached"]).toBe("yes");
+		expect(
+			[1, 2, 3].map((id) => page.engine.state(page.byClass(`measured-${id}`)).attrs["measured"]),
+		).toEqual(["yes", "yes", "yes"]);
+		expect(page.errors).toEqual([expect.objectContaining({ message: "The row's ref threw." })]);
+	});
+
+	it("leaves the refs after it in its patch to run, and the patch flushed", async () => {
+		const { page, api } = await throwing();
+		const flushes = page.engine.flushes.length;
+		page.asBackground(() => api["late"]!());
+		await page.settle();
+		expect(page.engine.state(page.byClass("second")).attrs["second"]).toBe("ran");
+		expect(page.engine.flushes.length).toBeGreaterThan(flushes);
+		expect(page.engine.texts()).toContain("after");
+		expect(page.errors).toEqual([expect.objectContaining({ message: "The first ref threw." })]);
 	});
 });

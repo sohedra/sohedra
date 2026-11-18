@@ -28,6 +28,7 @@ const CALLED_BY_THE_MAIN_THREAD = [
 	"__GetComputedStyleByKey",
 	"__GetDataset",
 	"__GetElementUniqueID",
+	"__GetID",
 	"__GetPageElement",
 	"__GetParent",
 	"__InsertElementBefore",

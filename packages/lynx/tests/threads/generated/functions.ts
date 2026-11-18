@@ -1,7 +1,8 @@
 // The oracle of generated pages' main-thread functions: after hydration and after every step, the
-// threads agree on them. Every context the background keeps is accounted for on the main thread, a
-// ref one made element holds is that element's on the main thread, and a function ref of a made
-// element has run and not been cleaned up.
+// threads agree on them. Every context the background keeps is accounted for on the main thread,
+// and every one the main thread holds is kept by the background; a ref one made element holds is
+// that element's on the main thread, and a function ref of a made element has run and not been
+// cleaned up.
 
 import { expect } from "@rstest/core";
 
@@ -9,7 +10,7 @@ import type { TreeNode } from "../../../src/background/renderer/node.ts";
 import { pageRenderer } from "../../../src/background/renderer/page-renderer.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import { isMainThreadFunction, isRefHandle, REF_FIELDS, ROOT_ID } from "../../../src/wire/index.ts";
-import { unaccounted } from "../functions/accounting.ts";
+import { unaccounted, unheld } from "../functions/accounting.ts";
 import type { SveltePage } from "../svelte-page.ts";
 
 /** Every element node under `node`, through fragments. */
@@ -23,6 +24,9 @@ function* elementsUnder(node: TreeNode): Generator<TreeNode> {
 /** Throws, saying what differs, unless the threads agree on the page's main-thread functions. */
 export function expectFunctionsAgree(page: SveltePage, what: string): void {
 	expect(unaccounted(page), `${what}, the background keeps contexts nobody holds`).toEqual([]);
+	expect(unheld(page), `${what}, the main thread holds contexts the background let go of`).toEqual(
+		[],
+	);
 	const main = page.runtime.page;
 	const root = pageRenderer.nodeById(ROOT_ID);
 	if (!root || !main.applier) return;

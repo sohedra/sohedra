@@ -43,6 +43,12 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		tag: "view",
 		where: "src/Sheet.svelte:14:2",
 	},
+	main_thread_event_spelling_removed: {
+		name: "main-thread:bindtap",
+		replacement: "main-thread:ontap",
+		tag: "view",
+		where: "src/Sheet.svelte:14:2",
+	},
 };
 
 // Boundary: the keys of the catalogue are its codes.

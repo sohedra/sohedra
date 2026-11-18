@@ -5,9 +5,17 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { keptContexts } from "../../../src/background/functions/calls.ts";
+import { functionsGlobal } from "../../../src/main-thread/globals.ts";
 import { encodeToBackground } from "../../../src/wire/index.ts";
 import Calls from "../../fixtures/threads/functions/Calls.svelte";
 import drawCalls from "../../fixtures/threads/functions/Calls.svelte?first-frame";
+import EffectCall from "../../fixtures/threads/functions/EffectCall.svelte";
+import drawEffectCall from "../../fixtures/threads/functions/EffectCall.svelte?first-frame";
+import SamePatchMeasure from "../../fixtures/threads/functions/SamePatchMeasure.svelte";
+import drawSamePatchMeasure from "../../fixtures/threads/functions/SamePatchMeasure.svelte?first-frame";
+import TopLevelCall from "../../fixtures/threads/functions/TopLevelCall.svelte";
+import drawTopLevelCall from "../../fixtures/threads/functions/TopLevelCall.svelte?first-frame";
 import { startFunctionsPage, tap } from "./pages.ts";
 
 async function calls() {
@@ -42,11 +50,11 @@ describe("runOnMainThread", () => {
 		expect(await call("wait", "it")).toBe("waited for it");
 	});
 
-	it("lets a UI method of an element made in the same patch wait for its view", async () => {
+	it("rejects a call it cannot send, and keeps no context for it", async () => {
 		const { page, call } = await calls();
-		page.engine.respondWith(() => ({ code: 0, data: { width: 7 } }));
-		expect(await call("measure")).toEqual({ width: 7 });
-		expect(page.errors).toEqual([]);
+		const kept = page.asBackground(keptContexts);
+		await expect(call("big")).rejects.toMatchObject({ code: "value_not_copyable" });
+		expect(page.asBackground(keptContexts)).toEqual(kept);
 	});
 
 	it("rejects with what the function threw, which the main thread reports once", async () => {
@@ -65,7 +73,34 @@ describe("runOnMainThread", () => {
 		expect(log).toEqual([["nested", { sum: 3 }]]);
 	});
 
-	it("rejects a plain function, and says so in a development build", async () => {
+	it("lets a UI method wait for the view of an element made in the same patch", async () => {
+		const log: unknown[] = [];
+		const api: Record<string, () => void> = {};
+		const page = startFunctionsPage(SamePatchMeasure, {
+			draw: drawSamePatchMeasure,
+			props: { log, api },
+		});
+		await page.settle();
+		page.engine.respondWith(() => ({ code: 0, data: { width: 7 } }));
+		const before = page.patches.length;
+		page.asBackground(() => api["more"]!());
+		await page.settle();
+		// The element's ops and the call ride in one patch: the call runs before its flush.
+		expect(page.patches.slice(before).map((patch) => patch.items.map((item) => item[0]))).toEqual([
+			["ops", "call"],
+		]);
+		expect(log).toEqual([["measured", { width: 7 }]]);
+	});
+
+	it("sees what the function refs of its patch did, for a call from an effect at mount", async () => {
+		const log: unknown[] = [];
+		const page = startFunctionsPage(EffectCall, { draw: drawEffectCall, props: { log } });
+		await page.settle();
+		expect(page.patches[0]!.items.map((item) => item[0])).toEqual(["ops", "call"]);
+		expect(log).toEqual(["thumb"]);
+	});
+
+	it("rejects a plain function, and reports it", async () => {
 		const { page, call } = await calls();
 		await expect(call("plain")).rejects.toMatchObject({ code: "not_a_main_thread_function" });
 		expect(page.errors).toEqual([
@@ -101,6 +136,19 @@ describe("runOnBackground", () => {
 		expect(page.errors).toEqual([expect.objectContaining({ message: "The background failed." })]);
 	});
 
+	it("refuses a value that is not a background function, with its own error", async () => {
+		const { page } = await calls();
+		const answer = page.asMainThread(() => functionsGlobal().runtime!.runOnBackground(42, []));
+		await expect(answer).rejects.toMatchObject({ code: "not_a_background_function_handle" });
+		expect(page.errors).toEqual([
+			expect.objectContaining({
+				message: expect.stringMatching(
+					/^The value given to runOnBackground, a value of type number, is not a background function/,
+				),
+			}),
+		]);
+	});
+
 	it("answers a call of a function the background no longer has with an error, and reports it", async () => {
 		const { page } = await calls();
 		page.asMainThread(() =>
@@ -118,5 +166,46 @@ describe("runOnBackground", () => {
 			error: { code: "background_function_missing" },
 		});
 		expect(page.errors).toEqual([expect.objectContaining({ code: "background_function_missing" })]);
+	});
+});
+
+describe("a runOnMainThread call in a component's top-level script", () => {
+	interface Runs {
+		top: number;
+		effect: number;
+		topOnThisThread: number;
+	}
+
+	async function topLevel(firstFrame: boolean) {
+		const api: Record<string, () => Promise<unknown>> = {};
+		const page = startFunctionsPage(TopLevelCall, {
+			draw: drawTopLevelCall,
+			props: { api },
+			firstFrame,
+		});
+		await page.settle();
+		const read = page.asBackground(() => api["read"]!()) as Promise<Runs>;
+		await page.settle();
+		return { page, runs: await read };
+	}
+
+	it("does nothing as the first frame is drawn, runs once after hydration, and warns once", async () => {
+		const { page, runs } = await topLevel(true);
+		expect(runs).toEqual({ top: 1, effect: 1, topOnThisThread: 1 });
+		expect(page.warnings).toEqual([
+			expect.objectContaining({
+				code: "run_on_main_thread_in_first_frame",
+				message: expect.stringMatching(
+					/^A runOnMainThread call of \S+ was made as the first frame/,
+				),
+			}),
+		]);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("runs once with no first frame, and warns of nothing; a call from an effect runs once", async () => {
+		const { page, runs } = await topLevel(false);
+		expect(runs).toEqual({ top: 1, effect: 1, topOnThisThread: 1 });
+		expect(page.warnings).toEqual([]);
 	});
 });

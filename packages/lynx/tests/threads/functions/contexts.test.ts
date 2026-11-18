@@ -11,8 +11,9 @@ import FunctionRows from "../../fixtures/threads/functions/FunctionRows.svelte";
 import drawFunctionRows from "../../fixtures/threads/functions/FunctionRows.svelte?first-frame";
 import PureRows from "../../fixtures/threads/functions/PureRows.svelte";
 import drawPureRows from "../../fixtures/threads/functions/PureRows.svelte?first-frame";
+import { holdRequests } from "../released-rows.ts";
 import { scroller, scrollThrough } from "../scroll.ts";
-import { expectAccounted } from "./accounting.ts";
+import { expectAccounted, unheld } from "./accounting.ts";
 import { startFunctionsPage } from "./pages.ts";
 
 describe("a main-thread function's context", () => {
@@ -72,5 +73,32 @@ describe("a main-thread function's context", () => {
 		await page.settle();
 		expectAccounted(page, "after a reload");
 		expect(page.asBackground(keptContexts)).toHaveLength(40);
+	});
+});
+
+describe("the contexts of rows written again", () => {
+	it("are let go of when Lynx took the row back first, and the row's own still call", async () => {
+		const log: unknown[][] = [];
+		const page = startFunctionsPage(FunctionRows, {
+			draw: drawFunctionRows,
+			props: { log, api: {} },
+		});
+		await page.settle();
+		const scroll = scroller(page.engine, page.byClass("list"));
+		scroll.to(0);
+		await page.settle();
+		const first = page.byClass("row-1");
+		// The answers come after Lynx asked for the rows again: the main thread ignores them.
+		const hold = holdRequests(page);
+		await scrollThrough({ scroll, from: 0, to: 31, settle: page.settle });
+		await scrollThrough({ scroll, from: 31, to: 0, settle: page.settle });
+		hold.deliver();
+		await page.settle();
+		expect(page.byClass("row-1")).toBe(first);
+		expectAccounted(page, "after the ignored answers");
+		expect(unheld(page)).toEqual([]);
+		page.engine.dispatch(first, { type: "tap" });
+		await page.settle();
+		expect(log).toEqual([["tap", 1]]);
 	});
 });

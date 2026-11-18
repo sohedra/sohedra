@@ -85,6 +85,14 @@ describe("a function given as main-thread:ref", () => {
 		expect(after.elements).toBe(before.elements - 1);
 	});
 
+	it("never runs for an element made and taken away in one patch", async () => {
+		const { page, log, change } = await refs();
+		const patches = page.patches.length;
+		await change("flash");
+		expect(page.patches.length).toBe(patches + 1);
+		expect(log.filter(([what]) => what === "flash")).toEqual([]);
+	});
+
 	it("cleans up when its element goes, and runs when it comes back", async () => {
 		const { log, change } = await refs();
 		await change("hide");

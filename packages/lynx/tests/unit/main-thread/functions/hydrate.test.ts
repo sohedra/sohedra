@@ -29,6 +29,10 @@ describe("hydration's walk", () => {
 			carried,
 		);
 		expect(carried.refs.of({ _wvid: 7, _initValue: 0 })).toBe(made);
+		// The first frame's id names it no more: the background's `unref` lets go of it.
+		expect(carried.refs.find(-1)).toBeUndefined();
+		carried.refs.drop([7]);
+		expect(carried.refs.size).toBe(0);
 		// One the first frame never made starts from its initial value.
 		expect(carried.refs.of({ _wvid: 8, _initValue: 1 }).current).toBe(1);
 	});

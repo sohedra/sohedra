@@ -10,6 +10,7 @@ const SAMPLES: { [Code in FirstFrameCode]: FirstFrameDetails[Code] } = {
 	first_frame_skipped_await: { component: "Feed" },
 	main_thread_runtime_missing: { call: "runOnBackground" },
 	main_thread_ref_set_outside_function: {},
+	run_on_main_thread_in_first_frame: { id: "9aef:c44c3:2" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground, runOnMainThread } from "@sohedra/lynx";
+	import { flushSync } from "svelte";
 
 	interface Element {
 		readonly parentElement: Element | null;
@@ -18,6 +19,7 @@
 	let first = $state(true);
 	let label = $state("a");
 	let width = $state(10);
+	let flash = $state(false);
 	const box = mainThreadRef<Element | null>(null);
 
 	function note(...args: unknown[]) {
@@ -36,6 +38,11 @@
 		return () => {
 			void runOnBackground(note)("cleanup", name);
 		};
+	}
+
+	function attachFlash() {
+		"main thread";
+		void runOnBackground(note)("flash");
 	}
 
 	function broken() {
@@ -66,6 +73,13 @@
 	api["show"] = () => (show = true);
 	api["relabel"] = () => (label = "b");
 	api["widen"] = () => (width += 10);
+	// An element made and taken away again in one patch: its function ref never runs.
+	api["flash"] = () => {
+		flash = true;
+		flushSync();
+		flash = false;
+		flushSync();
+	};
 </script>
 
 <view class="holder" data-role="holder">
@@ -84,4 +98,7 @@
 	<view class="attached" data-role="attached" main-thread:ref={attach}></view>
 {/if}
 <view class="broken" main-thread:ref={broken}></view>
+{#if flash}
+	<view class="flash" main-thread:ref={attachFlash}></view>
+{/if}
 <text class="after">after</text>

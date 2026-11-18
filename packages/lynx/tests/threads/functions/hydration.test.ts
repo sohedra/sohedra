@@ -6,9 +6,13 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { keptContexts } from "../../../src/background/functions/calls.ts";
 import Hydrate from "../../fixtures/threads/functions/Hydrate.svelte";
 import drawHydrate from "../../fixtures/threads/functions/Hydrate.svelte?first-frame";
-import { startFunctionsPage } from "./pages.ts";
+import Refused from "../../fixtures/threads/functions/Refused.svelte";
+import drawRefused from "../../fixtures/threads/functions/Refused.svelte?first-frame";
+import { expectAccounted } from "./accounting.ts";
+import { startFunctionsPage, tap } from "./pages.ts";
 
 function hydrating() {
 	const log: unknown[][] = [];
@@ -37,7 +41,8 @@ describe("a main-thread function on the first frame", () => {
 		page.engine.dispatch(page.byClass("plain"), { type: "tap" });
 		page.engine.dispatch(page.byClass("tap"), { type: "tap" });
 		await page.settle();
-		expect(log).toEqual([["once"], ["bump", 1], ["plain"], ["bump", 2]]);
+		// The call a function ref the first patch made makes waits in the same log, after them.
+		expect(log).toEqual([["once"], ["bump", 1], ["plain"], ["bump", 2], ["late"]]);
 		expect(page.errors).toEqual([]);
 	});
 
@@ -89,11 +94,80 @@ describe("a function ref of the first frame", () => {
 		expect(attrs("outer")["else-cleaned"]).toBe("yes");
 	});
 
-	it("rejects a held call no background function takes over, and reports it", async () => {
+	it("rejects held calls no background function takes over, and reports them once, counted", async () => {
 		const { page, attrs } = hydrating();
+		page.engine.dispatch(page.byClass("else"), { type: "tap" });
 		page.engine.dispatch(page.byClass("else"), { type: "tap" });
 		await page.settle();
 		expect(attrs("outer")["frame-only"]).toBe("first_frame_call_unanswered");
-		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
+		expect(page.errors).toEqual([
+			expect.objectContaining({
+				code: "first_frame_call_unanswered",
+				message: expect.stringMatching(/so it has no answer \(2 calls\)\.\n/),
+			}),
+		]);
+	});
+
+	it("lets go at hydration of what only the first frame bound on an element it keeps", async () => {
+		const { page } = hydrating();
+		const element = page.byClass("frame-only");
+		expect(page.engine.state(element).mainThreadEvents).toHaveLength(1);
+		await page.settle();
+		expect(page.byClass("frame-only")).toBe(element);
+		expect(page.engine.state(element).mainThreadEvents).toEqual([]);
+	});
+
+	it("sends the held calls even when the first patch's flush throws, and the next calls at once", async () => {
+		const { page, log } = hydrating();
+		page.engine.dispatch(page.byClass("tap"), { type: "tap" });
+		const functions = page.engine.functions as unknown as Record<
+			string,
+			(...args: unknown[]) => unknown
+		>;
+		const flush = functions["__FlushElementTree"]!;
+		let thrown = false;
+		functions["__FlushElementTree"] = (...args) => {
+			if (!thrown && args.length > 0) {
+				thrown = true;
+				throw new Error("The flush failed.");
+			}
+			return flush(...args);
+		};
+		await page.settle();
+		functions["__FlushElementTree"] = flush;
+		expect(thrown).toBe(true);
+		page.engine.dispatch(page.byClass("tap"), { type: "tap" });
+		await page.settle();
+		expect(log).toEqual(
+			expect.arrayContaining([
+				["bump", 1],
+				["bump", 2],
+			]),
+		);
+		expect(page.errors).toEqual([expect.objectContaining({ message: "The flush failed." })]);
+	});
+});
+
+describe("a first frame the background cannot hydrate", () => {
+	it("is written again, its held calls reject unreported, and its functions go on", async () => {
+		const log: unknown[][] = [];
+		const api: Record<string, () => Promise<unknown>> = {};
+		const page = startFunctionsPage(Refused, {
+			draw: drawRefused,
+			props: { log, api },
+			firstFrame: true,
+		});
+		page.engine.dispatch(page.byClass("tap"), { type: "tap" });
+		await page.settle();
+		// Hydration says why: the calls it could not answer add nothing.
+		expect(page.errors).toEqual([expect.objectContaining({ code: "hydration_mismatch" })]);
+		// The first frame's tap was not answered, and the page written again made its function ref run.
+		expect(log).toEqual([["attached"]]);
+		await tap(page, "tap");
+		expect(log.at(-1)).toEqual(["tap", expect.any(Number)]);
+		// The background dropped what the main thread had of the page before: both agree.
+		expectAccounted(page, "after the page was written again");
+		const kept = new Set(page.asBackground(keptContexts));
+		expect(page.runtime.page.functions.sizes().contexts.filter((id) => !kept.has(id))).toEqual([]);
 	});
 });

@@ -11,21 +11,21 @@
 		setAttribute(name: string, value: unknown): void;
 	}
 
-	// The main thread's own: a timer of the page that outlives it.
-	declare const lynx: { setTimeout(callback: () => void, delay: number): void };
+	// The main thread's own `lynx`: a timer of the page that outlives it, and where the timer's call
+	// says how it ended (its element may be gone by then).
+	declare const lynx: { setTimeout(callback: () => void, delay: number): void; late?: string };
 
 	let { api }: { api: Record<string, unknown> } = $props();
 
 	function note() {}
 
-	function onTap(event: { currentTarget: Element }) {
+	function onTap() {
 		"main thread";
-		const element = event.currentTarget;
 		sharedCount.current += 1;
 		lynx.setTimeout(() => {
 			runOnBackground(note)().then(
-				() => element.setAttribute("late", "answered"),
-				(error: { code?: string }) => element.setAttribute("late", error.code ?? "?"),
+				() => (lynx.late = "answered"),
+				(error: { code?: string }) => (lynx.late = error.code ?? "?"),
 			);
 		}, 0);
 	}

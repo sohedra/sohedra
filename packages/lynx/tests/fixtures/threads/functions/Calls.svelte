@@ -8,14 +8,11 @@
 
 	interface Element {
 		readonly dataset: Record<string, unknown>;
-		invoke(method: string): Promise<unknown>;
 	}
 
 	let { log, api }: { log: unknown[]; api: Record<string, unknown> } = $props();
 	let n = $state(0);
-	let more = $state(false);
 	const counter = mainThreadRef<Element | null>(null);
-	const late = mainThreadRef<Element | null>(null);
 
 	function add(a: number, b: number) {
 		"main thread";
@@ -37,9 +34,9 @@
 		return counter.current?.dataset["n"];
 	}
 
-	function measure() {
+	function callsBack(value: unknown) {
 		"main thread";
-		return late.current!.invoke("boundingClientRect");
+		void runOnBackground(note)("called back", value);
 	}
 
 	function answer(value: number) {
@@ -95,17 +92,11 @@
 		await tick();
 		return runOnMainThread(readN)();
 	};
-	api["measure"] = async () => {
-		more = true;
-		await tick();
-		return runOnMainThread(measure)();
-	};
+	// An argument that cannot be sent: the call rejects, and keeps nothing on the background.
+	api["big"] = () => runOnMainThread(callsBack)(10n);
 </script>
 
 <view class="counter" data-n={n} main-thread:ref={counter}></view>
 <view class="ask" main-thread:ontap={onAsk}></view>
 <view class="ignore" main-thread:ontap={onIgnore}></view>
 <view class="nested" main-thread:ontap={onNested}></view>
-{#if more}
-	<view class="late" main-thread:ref={late}></view>
-{/if}

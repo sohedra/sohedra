@@ -20,3 +20,10 @@ exports[`the first frame's catalogue > main_thread_runtime_missing: the message 
 Call it from a main-thread function that an event, a ref or the background runs, not while the page's modules load.
 https://sohedra.com/e/main_thread_runtime_missing"
 `;
+
+exports[`the first frame's catalogue > run_on_main_thread_in_first_frame: the message 1`] = `
+"A runOnMainThread call of 9aef:c44c3:2 was made as the first frame was drawn, and does nothing there: it runs once the page starts, when the background makes the same call.
+
+To run it as the page starts, call it from $effect. To run it on an element from the first frame on, once, give the element a function ref: main-thread:ref={fn}.
+https://sohedra.com/e/run_on_main_thread_in_first_frame"
+`;
