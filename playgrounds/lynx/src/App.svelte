@@ -12,7 +12,7 @@
 	<view class="button" ontap={() => count++}>
 		<text>Tapped {count} {count === 1 ? "time" : "times"}</text>
 	</view>
-	<view class="button" ontap={() => (fruits = fruits.toReversed())}>
+	<view class="button" ontap={() => (fruits = [...fruits].reverse())}>
 		<text>Reverse the list</text>
 	</view>
 	{#each fruits as fruit (fruit.id)}
