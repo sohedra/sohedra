@@ -8,6 +8,12 @@ import type { CompileOptions, PreprocessorGroup } from "../../../src/svelte/buil
 import type { Thread } from "../../../src/wire/index.ts";
 import { APP_ROOT, inApp } from "./app.ts";
 
+/**
+ * The module the main thread's copy imports Svelte's server runtime from, unless a test names
+ * another: the binding's, which a component may import from, as Svelte's own it may not.
+ */
+export const SERVER_INTERNALS = "/binding/svelte/server-internals.ts";
+
 /** What a test changes about a compile. */
 export interface CompileCase {
 	thread?: Thread;
@@ -54,6 +60,6 @@ export function component(source: string, options: CompileCase = {}): Promise<Co
 		compilerOptions: options.compilerOptions,
 		clientInternals: options.clientInternals,
 		renderer: "@sohedra/lynx/internal/renderer",
-		serverInternals: options.serverInternals ?? "svelte/internal/server",
+		serverInternals: options.serverInternals ?? SERVER_INTERNALS,
 	});
 }

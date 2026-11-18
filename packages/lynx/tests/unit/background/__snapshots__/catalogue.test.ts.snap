@@ -36,6 +36,22 @@ Render the same markup on both threads from the page's data. Keep what only the 
 https://sohedra.com/e/hydration_mismatch"
 `;
 
+exports[`the background's catalogue > initial_item_count_not_a_count: the message 1`] = `
+"A <list>'s initial-item-count is "three", which is not a number of rows, so its first frame draws as many rows as it would without it.
+src/Feed.svelte:7:0
+
+Give initial-item-count a whole number of rows, 0 or more: initial-item-count={5} or initial-item-count="5".
+https://sohedra.com/e/initial_item_count_not_a_count"
+`;
+
+exports[`the background's catalogue > initial_scroll_index_past_first_screen: the message 1`] = `
+"A <list> starts at initial-scroll-index 150, more than 100 rows down, so its first frame draws only its first rows, and the deferred rows it starts at are empty until the background renders them.
+src/Feed.svelte:7:0
+
+Start the list at most 100 rows down, or take defer off the rows it starts at.
+https://sohedra.com/e/initial_scroll_index_past_first_screen"
+`;
+
 exports[`the background's catalogue > input_value_not_written: the message 1`] = `
 "The value of the <input> element could not be written: Lynx answered setValue with the code 4.
 

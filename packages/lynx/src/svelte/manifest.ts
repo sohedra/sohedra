@@ -216,7 +216,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/server/index.js",
 		anchor: "export { attr, clsx };",
 		reliesOn:
-			"`svelte/internal/server` exports `attr`, `attributes` and `css_props`, which the first frame's replacement of the server runtime overrides, and `attributes` keeps a spread's names' case with the flag `ELEMENT_PRESERVE_ATTRIBUTE_CASE` (2)",
+			"`svelte/internal/server` exports `attr`, `attributes` and `css_props`, which the first frame's replacement of the server runtime overrides, and `attributes` keeps a spread's names' case with the flag `ELEMENT_PRESERVE_ATTRIBUTE_CASE` (2); the server reads an element's attributes, a spread's too, in the order written and before its children, so a list's first screen opens in an attribute and its rows count after",
 		test: RUNTIME,
 	},
 	{

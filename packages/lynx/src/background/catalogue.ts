@@ -39,6 +39,14 @@ export interface BackgroundDetails {
 	};
 	/** `where` is the row's `file:line:col`, in development builds. */
 	list_item_defer_needs_async_list: { where?: string | undefined };
+	/** `index` is the list's `initial-scroll-index`; `where` the list's `file:line:col`. */
+	initial_scroll_index_past_first_screen: {
+		index: number;
+		cap: number;
+		where?: string | undefined;
+	};
+	/** `value` is the list's `initial-item-count`, as written; `where` the list's `file:line:col`. */
+	initial_item_count_not_a_count: { value: string; where?: string | undefined };
 }
 
 /** What a code of the background names. */
@@ -123,6 +131,20 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			'Give the list custom-list-name="list-container", the list that waits for a row Lynx asked for. Or remove defer.',
 		docs: "list_item_defer_needs_async_list",
+	},
+	initial_scroll_index_past_first_screen: {
+		message: ({ index, cap }) =>
+			`A <list> starts at initial-scroll-index ${index}, more than ${cap} rows down, so its first frame draws only its first rows, and the deferred rows it starts at are empty until the background renders them.`,
+		fix: ({ cap }) =>
+			`Start the list at most ${cap} rows down, or take defer off the rows it starts at.`,
+		docs: "initial_scroll_index_past_first_screen",
+	},
+	initial_item_count_not_a_count: {
+		message: ({ value }) =>
+			`A <list>'s initial-item-count is ${value}, which is not a number of rows, so its first frame draws as many rows as it would without it.`,
+		fix: () =>
+			'Give initial-item-count a whole number of rows, 0 or more: initial-item-count={5} or initial-item-count="5".',
+		docs: "initial_item_count_not_a_count",
 	},
 };
 

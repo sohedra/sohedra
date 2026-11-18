@@ -39,6 +39,7 @@ it(
 const longList = (body: MarkupNode[]): MarkupNode => ({
 	kind: "list",
 	attributes: [],
+	screen: [],
 	items: [{ kind: "rows", item: "item0", fixed: false, attributes: [], body }],
 });
 
@@ -90,6 +91,7 @@ it("counts an {#each} at its longest, and an {#if} by its larger branch", () => 
 	const oneItem: MarkupNode = {
 		kind: "list",
 		attributes: [],
+		screen: [],
 		items: [{ kind: "item", key: "s0", attributes: [], body: [] }],
 	};
 	const page = pageOf({

@@ -148,6 +148,24 @@ export const checks: Checks = {
 		);
 		// The first frame's components write elements with these.
 		expect(compileServer("<view id={x} {...el}>{x}</view>")).toMatch(/\$\.attributes\(/);
+		// An element's attributes, a spread's too, are read before its children, in the order
+		// written: a list's first screen opens in an attribute and its rows count after.
+		const page = (
+			await serverComponents(
+				{
+					Order: `<script>let { note } = $props();</script>
+<view a={note("a")} {...{ b: note("b") }}>{#if note("c")}{/if}<text d={note("d")}>{note("e")}</text></view>`,
+				},
+				false,
+			)
+		)["default"];
+		const { render } = await importSvelte("src/server/index.js");
+		const read: string[] = [];
+		// Boundary: Svelte's server `render` has no types here; it renders when its body is read.
+		void (render as (component: unknown, options: object) => { body: string })(page, {
+			props: { note: (name: string) => void read.push(name) },
+		}).body;
+		expect(read).toEqual(["a", "b", "c", "d", "e"]);
 	},
 
 	"server-markup-without-dev": async () => {

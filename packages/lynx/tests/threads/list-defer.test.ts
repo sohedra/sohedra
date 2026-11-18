@@ -220,10 +220,10 @@ describe("the rows ahead", () => {
 
 /**
  * The background's work for 5,000 deferred rows before the first patch, as measured: raise it only
- * on purpose. The patch is the list and its update, whose item info is most of it; no row's
- * contents render, and no row's text is sent.
+ * on purpose. The patch is the list, its `initial-item-count={0}` and its update, whose item info
+ * is most of it; no row's contents render, and no row's text is sent.
  */
-const START_BUDGET = { ops: 5, bytes: 328_001 };
+const START_BUDGET = { ops: 6, bytes: 328_033 };
 
 describe("5,000 deferred rows", () => {
 	it("render none of their contents, and send only the list's update, before Lynx asks", async () => {

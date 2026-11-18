@@ -25,7 +25,10 @@ export interface WaitingCells {
 	isHidden(id: number): boolean;
 	/** A cell's text was let go of with its contents: it is a deferred row not written again. */
 	hideCell(id: number): void;
-	/** After hydration: the cells Lynx waits for are made if they can be, and asked for if not. */
+	/**
+	 * After hydration: the cells Lynx waits for are made if they can be, and asked for if not, and
+	 * so are the rows ahead of the last one Lynx asked for.
+	 */
 	resumeWaiting(): void;
 	/** The cells of a list that Lynx waits for, with what answers it. */
 	waitingCells(id: number): { id: number; waiting: (uid: number) => void }[];
@@ -80,7 +83,8 @@ export function answerWaiting(cell: Cell, uid: number): void {
 
 /**
  * Lynx asked for the cell at `index`: the rows ahead of it that have no text are asked of the
- * background. Ahead is down the list while Lynx asks for higher indexes, up while lower.
+ * background. Ahead is down the list while Lynx asks for higher indexes, up while lower. Before
+ * hydration, with no background to ask, the request is only noted, for `askAheadOfLast`.
  */
 export function askAhead(
 	list: ListState,
@@ -94,12 +98,25 @@ export function askAhead(
 		scope: WaitingScope;
 	},
 ): void {
-	if (!scope.request) return;
 	const step = index > list.lastAsked ? 1 : index < list.lastAsked ? -1 : list.direction;
 	list.direction = step;
 	list.lastAsked = index;
+	askAheadOfLast(list, { cellAt, scope });
+}
+
+/**
+ * The rows ahead of the one Lynx asked for last, in the way it was asking, that have no text are
+ * asked of the background. At hydration, the rows Lynx asked for before were answered from the
+ * first frame, and none waits: their rows ahead are asked for here, or a fling would find the
+ * list ending at the first screen.
+ */
+export function askAheadOfLast(
+	list: ListState,
+	{ cellAt, scope }: { cellAt: (index: number) => Cell | undefined; scope: WaitingScope },
+): void {
+	if (!scope.request || list.lastAsked < 0) return;
 	for (let offset = 1; offset <= ROWS_AHEAD; offset++) {
-		const cell = cellAt(index + step * offset);
+		const cell = cellAt(list.lastAsked + list.direction * offset);
 		if (cell && !cell.element && !scope.written(cell.id)) request(cell, scope);
 	}
 }

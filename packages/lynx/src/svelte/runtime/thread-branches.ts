@@ -39,6 +39,9 @@ export function ThreadBranch<Target>(target: Target, props: ThreadBranchProps<Ta
 	}
 }
 
+/** Whether a branch only one thread renders is being drawn. */
+export const inThreadBranch = (): boolean => drawing.length > 0;
+
 /** Counts that start each sequence from the first. */
 export function newBranchCounts(): BranchCounts {
 	return { b: 0, m: 0 };
