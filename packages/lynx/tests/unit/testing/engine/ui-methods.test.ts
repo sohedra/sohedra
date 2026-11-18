@@ -62,6 +62,29 @@ describe("a UI method", () => {
 		expect(seen).toEqual([["setValue", { value: "a" }, inner]]);
 	});
 
+	it("is answered from the element as the last flush left it, not as it is now", () => {
+		const { page, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetClasses(inner, "before");
+		f.__SetInlineStyles(inner, "width: 1px");
+		f.__FlushElementTree(page);
+		f.__SetClasses(inner, "after");
+		f.__SetAttribute(inner, "title", "new");
+		f.__AddInlineStyle(inner, "width", "2px");
+		const seen: unknown[] = [];
+		engine().respondWith((_method, _params, _element, shown) => {
+			seen.push([shown?.classes, shown?.attrs["title"], shown?.inlineStyles.get("width")]);
+			return { code: 0 };
+		});
+		f.__InvokeUIMethod(inner, "boundingClientRect", {}, () => {});
+		f.__FlushElementTree(page);
+		f.__InvokeUIMethod(inner, "boundingClientRect", {}, () => {});
+		expect(seen).toEqual([
+			["before", undefined, "1px"],
+			["after", "new", "2px"],
+		]);
+	});
+
 	it("answers on a later task, as the UI thread does, never during the call", async () => {
 		const { page, inner } = smallPage(engine());
 		engine().functions.__FlushElementTree(page);

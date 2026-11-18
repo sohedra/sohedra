@@ -43,6 +43,12 @@ export class TreeNode {
 	 * inside one, 0 for the page.
 	 */
 	cell: number = 0;
+	/** How many patches the page had sent when its Lynx element was made. */
+	madeAt: number = 0;
+	/** The inline styles code set on it, sent again whenever its Lynx element is made. */
+	codeStyles: Map<string, string | number> | null = null;
+	/** The detail of the last `layoutchange` the page heard on it, while its Lynx element lives. */
+	layout: Record<string, unknown> | null = null;
 
 	constructor(kind: NodeKind) {
 		this.kind = kind;

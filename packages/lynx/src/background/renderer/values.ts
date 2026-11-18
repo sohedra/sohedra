@@ -48,3 +48,7 @@ export function attrValue(key: string, value: unknown): AttrValue {
 	}
 	return textOf(value);
 }
+
+/** Whether `value` is an object, to be read by field. */
+export const isRecord = (value: unknown): value is Record<string, unknown> =>
+	typeof value === "object" && value !== null;

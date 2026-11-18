@@ -1,10 +1,15 @@
 // The element nodes a component sees, through an attachment, `use:` or an event's target: the
 // tree questions of the DOM, their attributes and their listeners, answered from the renderer's
-// tree.
+// tree, and the methods that reach the Lynx element on the main thread.
 
+import { CSS_PROPS_HOLDERS } from "../../svelte/runtime/index.ts";
 import { listenerEvent } from "../../wire/index.ts";
 import type { LynxEventType } from "../../wire/index.ts";
+import { startAnimation } from "./animation.ts";
+import type { AnimationOptions, Keyframe, LynxAnimation } from "./animation.ts";
 import type { Handler, HandlerRegistry } from "./handlers.ts";
+import type { RendererHost } from "./host.ts";
+import { elementMethods, notOnPage, pageGone } from "./methods.ts";
 import { TreeNode } from "./node.ts";
 import { compareNodes, topOf } from "./tree.ts";
 import { attrValue, isFunction, textOf } from "./values.ts";
@@ -40,6 +45,30 @@ export interface ElementNode extends TreeNode {
 	removeEventListener(type: string, handler: Handler, options?: { capture?: boolean }): void;
 	/** Runs this element's own listeners of `event.type`, with no propagation. */
 	dispatchEvent(event: { type: string }): boolean;
+	/**
+	 * The last child, as in the DOM. Svelte reads it on the element that holds a component's
+	 * `--x` properties, before it is on the page: Lynx has no such element, so it becomes a `view`,
+	 * which is a real box in the layout (Lynx has no `display: contents`).
+	 */
+	readonly lastChild: TreeNode | null;
+	/**
+	 * Calls Lynx's UI method `method` of the element (`boundingClientRect`, `scrollTo`…) and
+	 * resolves with its answer. It runs once the platform has laid out the update it came with, so
+	 * it sees that update's layout. Rejects with Lynx's code when the method fails.
+	 */
+	invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
+	/** Sets one inline style from code; `null` or `""` gives the property back to `style`. */
+	setStyleProperty(name: string, value: string | number | null): void;
+	/** Sets inline styles from code, as `setStyleProperty` does each. */
+	setStyleProperties(styles: Record<string, string | number | null>): void;
+	/** The value Lynx computed for one of the element's styles. */
+	getComputedStyleProperty(name: string): Promise<string>;
+	/** The first element under this one that `selector` matches, or `null`. */
+	querySelector(selector: string): Promise<ElementNode | null>;
+	/** Every element under this one that `selector` matches. */
+	querySelectorAll(selector: string): Promise<ElementNode[]>;
+	/** Animates the element; a number is the duration in milliseconds. */
+	animate(keyframes: Keyframe[], options?: number | AnimationOptions): LynxAnimation<ElementNode>;
 }
 
 /** A listener added to or taken from an element's event slot. */
@@ -59,6 +88,14 @@ export interface ElementScope {
 	root(): TreeNode | undefined;
 	setAttribute(element: TreeNode, key: string, value: unknown): void;
 	setEvent(element: TreeNode, change: ListenerChange): void;
+	/** Sets inline styles from code: sent now, or kept until the node's Lynx element is made. */
+	setStyles(element: TreeNode, styles: Record<string, string | number | null>): void;
+	/** Sends `__ElementAnimate`'s arguments to the node's Lynx element, if it has one. */
+	animate(element: TreeNode, args: unknown[]): void;
+	/** The page's host; null when no page runs. */
+	host(): RendererHost | null;
+	/** The element node with this id, while it is on the page. */
+	nodeById(id: number): ElementNode | undefined;
 }
 
 /** The class of a renderer's element nodes. */
@@ -66,6 +103,8 @@ export type ElementClass = new (tag: string) => ElementNode;
 
 /** The class of the element nodes of one renderer: its methods reach that renderer's tree. */
 export function elementClass(scope: ElementScope): ElementClass {
+	const methods = elementMethods<ElementNode>(scope);
+
 	class Element extends TreeNode implements ElementNode {
 		constructor(tag: string) {
 			super("element");
@@ -146,7 +185,93 @@ export function elementClass(scope: ElementScope): ElementClass {
 				scope.handlers.dispatch(id, { target: this, ...event, currentTarget: this });
 			return true;
 		}
+
+		get lastChild(): TreeNode | null {
+			// Only here, before the node has a Lynx element: no other element pays for it.
+			if (this.lynxId === 0 && CSS_PROPS_HOLDERS.has(this.tag!)) this.tag = "view";
+			return this.last;
+		}
+
+		invoke(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
+			return methods.invoke(this, { method, params });
+		}
+
+		setStyleProperty(name: string, value: string | number | null): void {
+			scope.setStyles(this, { [name]: value });
+		}
+
+		setStyleProperties(styles: Record<string, string | number | null>): void {
+			scope.setStyles(this, styles);
+		}
+
+		getComputedStyleProperty(name: string): Promise<string> {
+			return methods.computedStyle(this, name);
+		}
+
+		querySelector(selector: string): Promise<ElementNode | null> {
+			return methods.querySelector(this, selector);
+		}
+
+		querySelectorAll(selector: string): Promise<ElementNode[]> {
+			return methods.querySelectorAll(this, selector);
+		}
+
+		animate(
+			keyframes: Keyframe[],
+			options: number | AnimationOptions = {},
+		): LynxAnimation<ElementNode> {
+			const host = scope.host();
+			if (host && this.lynxId === 0) throw notOnPage(this, "animate");
+			return startAnimation<ElementNode>({
+				node: this,
+				tag: this.tag ?? "",
+				keyframes,
+				options: typeof options === "number" ? { duration: options } : options,
+				send: host ? (args) => scope.animate(this, args) : undefined,
+				gone: () => pageGone("animate"),
+				listen: (type, handler) => this.addEventListener(type, handler),
+				unlisten: (type, handler) => this.removeEventListener(type, handler),
+			});
+		}
 	}
 
 	return Element;
+}
+
+/** What `svelteListener` adds or removes listeners with. */
+export interface ListenerOptions {
+	Element: ElementClass;
+	setEvent(element: TreeNode, change: ListenerChange): void;
+	add: boolean;
+}
+
+/**
+ * The renderer's `addEventListener` (or, with `add` false, `removeEventListener`), where Svelte's
+ * `on()` goes: a node listens through its event slots; any other target, such as a media query
+ * list, keeps its own listeners.
+ */
+export function svelteListener({
+	Element,
+	setEvent,
+	add,
+}: ListenerOptions): (
+	target: TreeNode,
+	type: string,
+	handler: Handler,
+	options?: { capture?: boolean },
+) => void {
+	return (target, type, handler, options) => {
+		if (!(target instanceof Element)) {
+			// Boundary: a target Svelte passes that is not a node, such as a media query list.
+			const own = target as unknown as {
+				addEventListener(type: string, handler: Handler, options?: unknown): void;
+				removeEventListener(type: string, handler: Handler, options?: unknown): void;
+			};
+			if (add) own.addEventListener(type, handler, options);
+			else own.removeEventListener(type, handler, options);
+			return;
+		}
+		const { type: lynxType, name } = listenerEvent(type, options?.capture === true);
+		setEvent(target, { type: lynxType, name, handler, add });
+	};
 }

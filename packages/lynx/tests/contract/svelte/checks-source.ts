@@ -45,7 +45,33 @@ const WINDOW_VALUES = [
 
 const byName = (a: string, b: string): number => a.localeCompare(b);
 
+/** The files of Svelte's source under `folder`, relative to the package, that contain `text`. */
+function filesWith(folder: string, text: string): string[] {
+	const found: string[] = [];
+	const walk = (relative: string): void => {
+		for (const entry of fs.readdirSync(path.join(SVELTE_ROOT, relative), { withFileTypes: true })) {
+			const child = path.posix.join(relative, entry.name);
+			if (entry.isDirectory()) walk(child);
+			else if (entry.name.endsWith(".js") && readSvelte(child).includes(text)) found.push(child);
+		}
+	};
+	walk(folder);
+	return found.sort();
+}
+
 export const checks: Checks = {
+	"renderer-cleared-by-async-context": () => {
+		// A new place that clears the current renderer is one more place `on()` must not depend on.
+		expect(filesWith("src", "set_renderer(null)")).toEqual([
+			"src/internal/client/reactivity/async.js",
+		]);
+		expect(filesWith("src", "unset_context(")).toEqual([
+			"src/internal/client/dom/blocks/await.js",
+			"src/internal/client/reactivity/async.js",
+			"src/internal/client/reactivity/deriveds.js",
+		]);
+	},
+
 	"spread-props-setter-anchors": () => {
 		const props = readSvelte("src/internal/client/reactivity/props.js");
 		// The two lines the build patches: each must be there exactly once.

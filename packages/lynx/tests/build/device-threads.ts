@@ -134,7 +134,7 @@ function realm(globals: object): { context: vm.Context; adopt: Adopt } {
 	return { context, adopt };
 }
 
-/** A frame's timer, as a device gives it. */
+/** The background's frame timer, as lynx-core gives it. The main thread's is the engine's. */
 const requestAnimationFrame = (callback: (time: number) => void) =>
 	setTimeout(() => callback(Date.now()), 16);
 
@@ -143,7 +143,7 @@ const requestAnimationFrame = (callback: (time: number) => void) =>
  * are the test page's, on the process's global object, where the engine fake finds them.
  */
 function mainThreadRealm(): vm.Context {
-	const globals = { setTimeout, clearTimeout, requestAnimationFrame };
+	const globals = { setTimeout, clearTimeout };
 	// Boundary: any name may be a global.
 	const scope = globalThis as unknown as Record<string, unknown>;
 	let adopt: Adopt = (value) => value;

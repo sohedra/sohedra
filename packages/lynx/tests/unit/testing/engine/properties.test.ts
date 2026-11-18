@@ -152,11 +152,31 @@ describe("inline styles", () => {
 		expect((inner as Element).getAttribute("style")).toBe("width: 20");
 	});
 
+	it("are computed at the flush: until then the computed style is the last flush's", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__AddInlineStyle(inner, "opacity", "0.5");
+		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("");
+		f.__FlushElementTree();
+		f.__AddInlineStyle(inner, "opacity", "0.7");
+		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("0.5");
+	});
+
+	it("drops a custom property added one by one, which has no style id", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__AddInlineStyle(inner, "--tone", "red");
+		f.__FlushElementTree();
+		expect(engine().state(inner).inlineStyles.has("--tone")).toBe(false);
+		expect(f.__GetComputedStyleByKey(inner, "--tone")).toBe("");
+	});
+
 	it("sets all at once from text, wiping the ones added one by one", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__AddInlineStyle(inner, "opacity", "0.5");
 		f.__SetInlineStyles(inner, "color: red; background: url(data:image/png;base64,AAA) no-repeat");
+		f.__FlushElementTree();
 		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("");
 		expect(f.__GetComputedStyleByKey(inner, "color")).toBe("red");
 		expect(f.__GetComputedStyleByKey(inner, "background")).toBe(
@@ -168,6 +188,7 @@ describe("inline styles", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__SetInlineStyles(inner, { flexDirection: "column", "--gap": "4px", opacity: 1 });
+		f.__FlushElementTree();
 		expect(f.__GetComputedStyleByKey(inner, "flex-direction")).toBe("column");
 		expect(f.__GetComputedStyleByKey(inner, "--gap")).toBe("4px");
 		expect(f.__GetComputedStyleByKey(inner, "opacity")).toBe("1");
@@ -212,10 +233,83 @@ describe("inline styles", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__SetInlineStyles(inner, "display: linear; linear-orientation: horizontal");
+		f.__FlushElementTree();
 		expect(f.__GetComputedStyleByKey(inner, "display")).toBe("linear");
 		expect((inner as Element).getAttribute("style")).toBe(
 			"display: linear; linear-orientation: horizontal",
 		);
+	});
+});
+
+describe("custom properties in the inline style", () => {
+	/** A custom property as `inner`, under `outer`, resolved it at the last flush. */
+	const seen = (inner: unknown) =>
+		engine().functions.__GetComputedStyleByKey(inner as never, "--tone");
+
+	it("reach the descendants when the flush reads the style text", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "width: 10px; --tone: red");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		f.__SetInlineStyles(outer, "width: 10px; --tone: blue");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("blue");
+	});
+
+	it("do not reach the descendants when a style added one by one reads the text first", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		f.__SetInlineStyles(outer, "--tone: blue");
+		f.__AddInlineStyle(outer, "opacity", "0.5");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		expect(f.__GetComputedStyleByKey(outer, "--tone")).toBe("blue");
+		f.__AddInlineStyle(outer, "opacity", "0.7");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+	});
+
+	it("reach the descendants at once from an object, whatever comes after it", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		f.__SetInlineStyles(outer, { "--tone": "blue" });
+		f.__SetInlineStyles(outer, "--tone: blue");
+		f.__AddInlineStyle(outer, "opacity", "0.5");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("blue");
+	});
+
+	it("stay after an empty style, which the engine does not read; an empty object clears them", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		f.__SetInlineStyles(outer, "");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		f.__SetInlineStyles(outer, undefined);
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		f.__SetInlineStyles(outer, {});
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("");
+	});
+
+	it("reach an element made after them, which resolves them when it is first flushed", () => {
+		const { outer } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		const late = f.__CreateView(0);
+		f.__AppendElement(outer, late);
+		expect(seen(late)).toBe("");
+		f.__FlushElementTree();
+		expect(seen(late)).toBe("red");
 	});
 });
 

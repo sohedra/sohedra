@@ -27,6 +27,19 @@ describe("an animation", () => {
 		expect(engine().animations.map((call) => call.args[0])).toEqual([0, 2, 1, 3]);
 	});
 
+	it("ends at once when it is finished, and says nothing of it", () => {
+		const { inner } = smallPage(engine());
+		const f = engine().functions;
+		const heard: unknown[] = [];
+		f.__AddEventListener(inner, "animationend", (event) => heard.push(event), {});
+		f.__AddEventListener(inner, "animationcancel", (event) => heard.push(event), {});
+		f.__ElementAnimate(inner, FADE);
+		f.__ElementAnimate(inner, [4, "fade"]);
+		expect(engine().state(inner).running.size).toBe(0);
+		expect(heard).toEqual([]);
+		expect(() => f.__ElementAnimate(inner, [5, "fade"])).toThrow(/3 to cancel or 4 to finish/);
+	});
+
 	it("does nothing to a name that is not running", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;

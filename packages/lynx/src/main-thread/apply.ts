@@ -3,12 +3,20 @@
 // Events use plain listeners (`__AddEventListener`, which the `enableEventHandleRefactor` page
 // config the plugin sets turns on): each element's event slot (`type:name`) gets one listener,
 // which sends its handler id to the background.
+//
+// A `<list>`'s cells do not go into the tree here: the list takes each one when Lynx asks for it
+// (./lists.ts).
 
-import { OpCode, ROOT_ID } from "../wire/index.ts";
+import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../wire/index.ts";
 import type { LynxEventType, Op } from "../wire/index.ts";
 import { mainThreadError } from "./catalogue.ts";
+import { createCodeStyles } from "./code-styles.ts";
+import type { CodeStyles } from "./code-styles.ts";
+import { createFlattening } from "./flatten.ts";
+import type { Flattening } from "./flatten.ts";
 import { mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
+import { createLists, LIST_ONLY_INFO } from "./lists.ts";
 
 /** The engine's `closure_type` with which it reads `bind_type`. */
 const CLOSURE_CORE = 2;
@@ -44,14 +52,36 @@ export interface FailedOp {
 export interface Applier {
 	/** Applies `ops` in order. An op that throws is skipped, and the others are applied. */
 	apply(ops: Op[]): FailedOp[];
+	/** Tells the lists inside cells whose items changed; ends a patch. */
+	flushLists(): void;
 	/** The element with this id. */
 	element(id: number): LynxElement | undefined;
 	/** The background's id of a Lynx element, by its unique id. */
 	idForUid(uid: number): number | undefined;
+	/** The background's id of a Lynx element. */
+	idOf(element: LynxElement): number | undefined;
+	/** The `flatten` of the page's elements, and the elements held so that Lynx gives them a UI. */
+	readonly flattening: Flattening;
+	/** The styles code set. */
+	readonly styles: CodeStyles;
 	/** Removes every listener it added, the page's own too: no event reaches the background after. */
 	silence(): void;
 	/** Takes the page's elements off it and lets go of every one. */
 	clear(): void;
+	/** The page is gone: Lynx gets no callbacks of its lists to call. */
+	destroy(): void;
+}
+
+/** What an applier is made with. */
+export interface ApplierOptions {
+	/** The page element. */
+	page: LynxElement;
+	/** Sends an element's event to the background. */
+	dispatch: Dispatch;
+	/** Makes the list cell with this id from what the main thread kept for it. */
+	openCell(id: number): void;
+	/** Reports an error the engine's call into the page threw. */
+	report(error: unknown): void;
 }
 
 interface Registration {
@@ -61,10 +91,13 @@ interface Registration {
 	options: ListenerOptions;
 }
 
-/** Makes the applier of `page`, whose events go to `dispatch`. */
-export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
+/** Makes the applier of a page. */
+export function createApplier({ page, dispatch, openCell, report }: ApplierOptions): Applier {
 	const elements = new Map<number, LynxElement>([[ROOT_ID, page]]);
 	const pageUid = mainThread.__GetElementUniqueID(page);
+	const flattening = createFlattening();
+	const styles = createCodeStyles();
+	const lists = createLists({ pageUid, openCell, elementOf: (id) => elements.get(id), report });
 	const idByUid = new Map<number, number>([[pageUid, ROOT_ID]]);
 	const uidById = new Map<number, number>([[ROOT_ID, pageUid]]);
 	// Each element's `data-*` attributes, which Lynx takes as one dataset.
@@ -115,6 +148,7 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 		// oxlint-disable-next-line unicorn/no-useless-spread -- copied: removeListener deletes from slots
 		if (slots) for (const slot of [...slots.keys()]) removeListener(id, slot);
 		datasets.delete(id);
+		lists.release(id);
 		const uid = uidById.get(id);
 		if (uid !== undefined) idByUid.delete(uid);
 		uidById.delete(id);
@@ -122,8 +156,10 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 		onPage.delete(id);
 	}
 
-	function create(tag: string): LynxElement {
+	function create(id: number, tag: string): LynxElement {
 		switch (tag) {
+			case "list":
+				return lists.create(id);
 			case "view":
 				return mainThread.__CreateView(pageUid);
 			case "text":
@@ -150,13 +186,20 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 			setDataset(id, key.slice(5), value);
 			return;
 		}
+		if (LIST_ITEM_INFO.has(key)) {
+			lists.setInfo(id, { key, value });
+			if (LIST_ONLY_INFO.has(key)) return;
+		}
 		const element = get(id);
 		switch (key) {
 			case "class":
 				mainThread.__SetClasses(element, value == null ? "" : textOf(value));
 				return;
 			case "style":
-				mainThread.__SetInlineStyles(element, value == null ? "" : textOf(value));
+				styles.write(element, value == null ? "" : textOf(value));
+				return;
+			case "flatten":
+				flattening.set(element, value);
 				return;
 			case "id":
 				mainThread.__SetID(element, value == null ? null : textOf(value));
@@ -169,7 +212,7 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 	function applyOne(op: Op): void {
 		switch (op[0]) {
 			case OpCode.Create: {
-				const element = create(op[2]);
+				const element = create(op[1], op[2]);
 				const uid = mainThread.__GetElementUniqueID(element);
 				elements.set(op[1], element);
 				idByUid.set(uid, op[1]);
@@ -189,12 +232,14 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 				setAttribute(op[1], op[2], op[3]);
 				return;
 			case OpCode.Insert:
-				if (op[3] === 0) mainThread.__AppendElement(get(op[1]), get(op[2]));
+				if (lists.isList(op[1])) lists.insert(op[1], { id: op[2], anchor: op[3] });
+				else if (op[3] === 0) mainThread.__AppendElement(get(op[1]), get(op[2]));
 				else mainThread.__InsertElementBefore(get(op[1]), get(op[2]), get(op[3]));
 				if (op[1] === ROOT_ID) onPage.add(op[2]);
 				return;
 			case OpCode.Remove:
-				mainThread.__RemoveElement(get(op[1]), get(op[2]));
+				if (lists.isList(op[1])) lists.remove(op[1], op[2]);
+				else mainThread.__RemoveElement(get(op[1]), get(op[2]));
 				if (op[1] === ROOT_ID) onPage.delete(op[2]);
 				return;
 			case OpCode.SetEvent:
@@ -204,8 +249,17 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 				release(op[1]);
 				return;
 			case OpCode.ListUpdate:
-				// A `<list>`'s items: the main thread's lists are not built yet, so the page shows none.
+				lists.update(op[1], { info: op[2], items: op[3], added: op[4], removed: op[5] });
 				return;
+			case OpCode.SetStyles:
+				styles.set(get(op[1]), op[2]);
+				return;
+			case OpCode.Animate: {
+				const element = get(op[1]);
+				flattening.hold(element);
+				mainThread.__ElementAnimate(element, op[2]);
+				return;
+			}
 		}
 	}
 
@@ -225,8 +279,12 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 			}
 			return failed;
 		},
+		flushLists: () => lists.flush(),
 		element: (id) => elements.get(id),
 		idForUid: (uid) => idByUid.get(uid),
+		idOf: (element) => idByUid.get(mainThread.__GetElementUniqueID(element)),
+		flattening,
+		styles,
 		silence() {
 			// oxlint-disable-next-line unicorn/no-useless-spread -- copied: removeListener deletes from the map
 			for (const id of [...registrations.keys()]) {
@@ -239,6 +297,9 @@ export function createApplier(page: LynxElement, dispatch: Dispatch): Applier {
 			onPage.clear();
 			// oxlint-disable-next-line unicorn/no-useless-spread -- copied: release deletes from the map
 			for (const id of [...elements.keys()]) if (id !== ROOT_ID) release(id);
+		},
+		destroy() {
+			lists.destroy();
 		},
 	};
 }

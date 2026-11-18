@@ -43,6 +43,7 @@ const CALLED_BY_THE_MAIN_THREAD = [
 	"__SetID",
 	"__SetInlineStyles",
 	"__UpdateListCallbacks",
+	"requestAnimationFrame",
 ];
 
 describe("the engine's element functions", () => {

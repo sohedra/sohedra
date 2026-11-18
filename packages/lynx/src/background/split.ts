@@ -40,8 +40,10 @@ export interface Splitter {
 export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 	// Made, not inserted under anything sent yet.
 	const pending = new Map<number, Pending>();
-	// The children of pending elements, in order.
+	// The children of pending elements, in order, and the pending element each child is placed in:
+	// a new child is appended without a search, so a pending list of n rows costs O(n).
 	const kids = new Map<number, number[]>();
+	const placedIn = new Map<number, number>();
 	// The sent elements that live in a cell's item, and that cell (a cell is its own).
 	const owner = new Map<number, number>();
 	const lists = new Set<number>();
@@ -90,6 +92,7 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 		kids.delete(id);
 		const cellsHere = cell === 0 && lists.has(id);
 		for (const child of children) {
+			placedIn.delete(child);
 			if (cellsHere) {
 				addCell(id, child, 0);
 				continue;
@@ -168,8 +171,8 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 	function place(parent: number, child: number, anchor: number): void {
 		let children = kids.get(parent);
 		if (!children) kids.set(parent, (children = []));
-		const at = children.indexOf(child);
-		if (at !== -1) children.splice(at, 1);
+		if (placedIn.get(child) === parent) children.splice(children.indexOf(child), 1);
+		placedIn.set(child, parent);
 		const before = anchor === 0 ? -1 : children.indexOf(anchor);
 		if (before === -1) children.push(child);
 		else children.splice(before, 0, child);
@@ -186,7 +189,9 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 				return;
 			case OpCode.SetText:
 			case OpCode.SetAttr:
-			case OpCode.SetEvent: {
+			case OpCode.SetEvent:
+			case OpCode.SetStyles:
+			case OpCode.Animate: {
 				const entry = pending.get(op[1]);
 				if (entry) {
 					entry.ops.push(op);
@@ -218,6 +223,7 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 					const children = kids.get(parent);
 					const at = children ? children.indexOf(child) : -1;
 					if (at !== -1) children!.splice(at, 1);
+					placedIn.delete(child);
 				} else if (tracked.has(parent)) {
 					removeCell(tracked.get(parent)!, child);
 				} else {
@@ -230,6 +236,7 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 				lists.delete(id);
 				tracked.delete(id);
 				infos.delete(id);
+				placedIn.delete(id);
 				if (pending.delete(id)) {
 					kids.delete(id);
 					return;

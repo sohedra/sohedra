@@ -2,6 +2,7 @@
 // it and its descendants. The engine's record keeps each value as it was given, and the DOM element
 // shows it.
 
+import { styleAdded, styleObjectWritten, styleTextWritten } from "./custom-properties.ts";
 import {
 	attributeText,
 	dashed,
@@ -143,14 +144,18 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 			// Replaces every inline style, those added one by one (`__AddInlineStyle`) too
 			// (core/runtime/lepus/bindings/renderer_functions.cc, FiberSetInlineStyles:
 			// `RemoveAllInlineStyles` first, which empties the map `SetStyle` writes to).
-			state.inlineStyles.clear();
-			if (typeof styles === "string") {
-				for (const [name, value] of parseStyleText(styles)) state.inlineStyles.set(name, value);
+			if (typeof styles === "string" || styles === undefined) {
+				state.inlineStyles.clear();
+				for (const [name, value] of parseStyleText(styles ?? ""))
+					state.inlineStyles.set(name, value);
+				styleTextWritten(state, styles);
 			} else if (typeof styles === "object" && styles !== null) {
+				state.inlineStyles.clear();
 				for (const [name, value] of Object.entries(styles)) {
 					state.inlineStyles.set(dashed(name), attributeText(value));
 				}
-			} else if (styles !== undefined) {
+				styleObjectWritten(state, styles);
+			} else {
 				throw argumentError({ fn: "__SetInlineStyles", index: 1, expected: "text or an object" });
 			}
 			reflectStyles(state);
@@ -161,24 +166,33 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 			checkName("__AddInlineStyle", 1, key);
 			// The engine looks the name up as it is written, and finds no style for a JavaScript name
 			// (FiberAddInlineStyle; core/renderer/css/css_property.cc, GetPropertyID).
-			if (!key.startsWith("--") && /[A-Z]/.test(key)) {
+			// A custom property has no style id: the engine drops it (css_property.cc, GetPropertyID;
+			// only the whole style, FiberSetInlineStyles, takes custom properties).
+			if (/[A-Z]/.test(key)) {
 				throw new Error(
 					`__AddInlineStyle was given ${key}, and Lynx finds no style by that name. ` +
 						`Name it as CSS does: ${dashed(key)}.`,
 				);
 			}
+			styleAdded(state);
+			if (key.startsWith("--")) return;
 			if (value == null) state.inlineStyles.delete(key);
 			else state.inlineStyles.set(key, attributeText(value));
 			reflectStyles(state);
 		},
 		// Inline styles only: the engine answers from the cascade and the layout, which the fake
 		// does not have (core/runtime/lepus/bindings/renderer_functions.cc,
-		// FiberGetComputedStyleByKey).
+		// FiberGetComputedStyleByKey). It reads the computed style at once, and styles are resolved
+		// at the flush (core/renderer/dom/element.cc, Element::GetComputedStyleByKey;
+		// core/renderer/dom/fiber/fiber_element.cc, ResolveCSSStylesNewPipelineCore): so the fake
+		// answers from the inline styles the last flush left. A custom property is the one the
+		// element resolved, its own or inherited, as `var()` in its styles would read it.
 		__GetComputedStyleByKey(element, key) {
 			const state = stateOf(engine, { value: element, fn: "__GetComputedStyleByKey", index: 0 });
 			if (typeof key !== "string")
 				throw argumentError({ fn: "__GetComputedStyleByKey", index: 1, expected: "text" });
-			return state.inlineStyles.get(key) ?? "";
+			const shown = engine.shown.get(state);
+			return (key.startsWith("--") ? shown?.customProperties : shown?.inlineStyles)?.get(key) ?? "";
 		},
 		// No match answers null, as Lynx 4.2 answers on iOS and Android.
 		__QuerySelector: (element, selector, settings) =>

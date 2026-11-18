@@ -124,6 +124,43 @@ describe("the splitter", () => {
 		]);
 	});
 
+	it("sends styles set from code and animations with their element: pending, in its cell, or now", () => {
+		const split = createSplitter(encodeCell);
+		const styles = { color: "red" };
+		const fade = [0, "fade", [{ opacity: 0 }], { duration: 1 }];
+		expect(
+			split.split([
+				[O.Create, 2, "view"],
+				[O.SetStyles, 2, styles],
+			]),
+		).toEqual([]);
+		expect(page(split.split([[O.Insert, ROOT_ID, 2, 0]]))).toEqual([
+			[O.Create, 2, "view"],
+			[O.SetStyles, 2, styles],
+			[O.Insert, ROOT_ID, 2, 0],
+		]);
+		expect(page(split.split([[O.Animate, 2, fade]]))).toEqual([[O.Animate, 2, fade]]);
+		split.split([
+			[O.Create, 3, "list"],
+			[O.Insert, ROOT_ID, 3, 0],
+			[O.Create, 4, "list-item"],
+			[O.Insert, 3, 4, 0],
+		]);
+		const out = split.split([
+			[O.SetStyles, 4, styles],
+			[O.Animate, 4, fade],
+		]);
+		expect(cells(out)).toEqual([
+			[
+				4,
+				[
+					[O.SetStyles, 4, styles],
+					[O.Animate, 4, fade],
+				],
+			],
+		]);
+	});
+
 	it("reports removed cells and sends their release to the page", () => {
 		const split = createSplitter(encodeCell);
 		split.split([

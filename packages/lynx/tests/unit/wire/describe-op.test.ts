@@ -40,6 +40,12 @@ describe("describeOp", () => {
 		],
 		[[OpCode.Release, 42], "release element 42", "release <view> 42"],
 		[
+			[OpCode.SetStyles, 42, { color: "red" }],
+			"set styles from code on element 42",
+			"set styles from code on <view> 42",
+		],
+		[[OpCode.Animate, 42, [1, "fade"]], "animate element 42", "animate <view> 42"],
+		[
 			[OpCode.ListUpdate, 7, { insertAction: [], removeAction: [], updateAction: [] }, [], [], []],
 			"update the list element 7",
 			"update the list <scroll-view> 7",

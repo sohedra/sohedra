@@ -84,7 +84,7 @@ describe("a patch", () => {
 	});
 
 	it("carries a call that wants no answer with the id 0", () => {
-		const request: CallRequest = ["style", { color: "red", width: null }];
+		const request: CallRequest = ["unref", [4, 5]];
 		const { items } = decodePatch(
 			encodePatch({ page: 0, items: [["call", 0, 3, encodeCall(request)]] }),
 		);

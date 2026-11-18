@@ -16,6 +16,9 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		tag: "view",
 		reason: "Do not know how to serialize a BigInt",
 	},
+	element_not_on_page: { method: "boundingClientRect", tag: "view" },
+	element_not_shown: { method: "boundingClientRect", tag: "view" },
+	animation_canceled: { tag: "view", name: "fade" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

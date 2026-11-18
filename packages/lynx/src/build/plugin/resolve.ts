@@ -65,6 +65,31 @@ export function configureSingleCopies(
 }
 
 /**
+ * Points the background's `svelte/events` at the binding's own (`src/svelte/runtime/events.ts`),
+ * whose `on()` listens through the page's renderer wherever it is called. That module itself, and
+ * the main thread, which never calls `on()`, get Svelte's.
+ */
+class SvelteEventsPlugin {
+	apply(compiler: Rspack.Compiler): void {
+		const name = `${PACKAGE_NAME}:svelte-events`;
+		compiler.hooks.normalModuleFactory.tap(name, (factory) => {
+			factory.hooks.beforeResolve.tap(name, (data) => {
+				if (data.request !== "svelte/events") return;
+				const { issuer, issuerLayer } = data.contextInfo;
+				if (issuerLayer === LAYERS["main-thread"]) return;
+				if (issuer.replace(/\\/g, "/") === RUNTIME_FILES.svelteEvents) return;
+				data.request = RUNTIME_FILES.svelteEvents;
+			});
+		});
+	}
+}
+
+/** The background's `svelte/events`: see `SvelteEventsPlugin`. */
+export function configureSvelteEvents(chain: RspackChain): void {
+	chain.plugin(`${PACKAGE_NAME}:svelte-events`).use(SvelteEventsPlugin);
+}
+
+/**
  * `import 'background-only'` keeps a module off the main thread: there the module becomes a stub
  * with the same exports. The import resolves to this package's own empty module, so apps need not
  * install a package for it.

@@ -140,6 +140,7 @@ export function openChannel({ queue, onEvent, tagOf }: ChannelOptions): Channel 
 			params = encodePatch({ ...patch, items: kept });
 		}
 		nativeApp.callLepusMethod(PATCH_METHOD, params);
+		queue.sent++;
 	}
 
 	function schedule(): void {

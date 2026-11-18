@@ -4,13 +4,13 @@
 //   - applies each patch the background sends (`callLepusMethod(PATCH_METHOD)`) and flushes the
 //     tree once for it;
 //   - keeps each list cell's ops as they came until the list shows the cell;
-//   - answers the calls a patch carries;
+//   - answers the calls a patch carries (./calls.ts);
 //   - sends the elements' events to the background;
 //   - starts the page over when it reloads, and lets go of it when its life ends.
 
 import {
 	checkMessage,
-	decodeCall,
+	decodeCell,
 	decodeError,
 	decodePatch,
 	describeOp,
@@ -20,21 +20,14 @@ import {
 	OpCode,
 	PATCH_METHOD,
 } from "../wire/index.ts";
-import type {
-	CallItem,
-	Op,
-	PatchParams,
-	Result,
-	SentEvent,
-	SentTarget,
-	ToBackground,
-} from "../wire/index.ts";
+import type { Op, PatchParams, SentEvent, SentTarget, ToBackground } from "../wire/index.ts";
 import { createApplier } from "./apply.ts";
 import type { Applier } from "./apply.ts";
+import { createCalls } from "./calls.ts";
 import { mainThreadError } from "./catalogue.ts";
 import { fillEngineGaps } from "./engine-gaps.ts";
 import { DEV, globalScope, mainThread, setGlobalFunction } from "./globals.ts";
-import type { EngineMessage, InvokeResult, LynxElement } from "./globals.ts";
+import type { EngineMessage, LynxElement } from "./globals.ts";
 
 /** Lynx's error code of an error on the main thread (`LYNX_ERROR_CODE_LEPUS`). */
 const MAIN_THREAD_ERROR = 1101;
@@ -143,38 +136,26 @@ export function startMainThread(): void {
 		}
 	}
 
-	/** Runs a call of the patch, and sends its result back when the call wants one. */
-	function call([, id, element, text]: CallItem, stamp: number): void {
-		const answer = (result: Result): void => {
+	const calls = createCalls({
+		applier: () => applier!,
+		// A call's result goes back when the call wants one; a failure that nobody waits for is
+		// reported.
+		answer({ id, stamp }, result) {
 			if (id !== 0) send({ t: "reply", id, result }, stamp);
 			else if (!result.ok) report(decodeError(result.error));
-		};
-		try {
-			const request = decodeCall(text);
-			if (request[0] !== "invoke")
-				throw mainThreadError({ code: "call_not_supported", details: { kind: request[0] } });
-			const [, method, params] = request;
-			const node = applier!.element(element);
-			if (node === undefined)
-				throw mainThreadError({ code: "element_missing", details: { id: element } });
-			mainThread.__InvokeUIMethod(node, method, params, (result: InvokeResult) => {
-				answer(
-					result.code === 0
-						? { ok: true, value: result.data ?? null }
-						: {
-								ok: false,
-								error: encodeError(
-									mainThreadError({
-										code: "ui_method_failed",
-										details: { method, code: result.code },
-									}),
-								),
-							},
-				);
-			});
-		} catch (error) {
-			answer({ ok: false, error: encodeError(error) });
-		}
+		},
+	});
+
+	/** The list shows a cell: makes it from what was kept. */
+	function openCell(id: number): void {
+		const parts = cells.get(id);
+		if (!parts) return;
+		cells.delete(id);
+		for (const part of parts) apply(decodeCell(part));
+	}
+
+	function newApplier(on: LynxElement): Applier {
+		return createApplier({ page: on, dispatch: onElementEvent, openCell, report });
 	}
 
 	/** Applies a patch of the page it shows, then flushes the tree once. */
@@ -192,23 +173,29 @@ export function startMainThread(): void {
 					apply(item[1]);
 					break;
 				case "cell": {
-					// Kept as text until the list shows the cell.
+					// A cell the list shows already takes it now; else it is kept as text until it does.
+					if (applier!.element(item[1])) {
+						apply(decodeCell(item[2]));
+						break;
+					}
 					let parts = cells.get(item[1]);
 					if (!parts) cells.set(item[1], (parts = []));
 					parts.push(item[2]);
 					break;
 				}
 				case "call":
-					call(item, patch.page);
+					calls.run(item, patch.page);
 					break;
 				case "reply":
 					// The answers to main-thread functions' calls, which their runtime reads.
 					break;
 			}
 		}
+		applier!.flushLists();
 		const dataUpdated = patch.dataUpdated === true || dataHeld;
 		dataHeld = false;
 		mainThread.__FlushElementTree(page, dataUpdated ? { triggerDataUpdated: true } : {});
+		calls.flushed();
 	}
 
 	function onPatch(params: PatchParams): void {
@@ -227,7 +214,7 @@ export function startMainThread(): void {
 	function onRenderPage(): void {
 		try {
 			page = mainThread.__CreatePage("0", 0);
-			applier = createApplier(page, onElementEvent);
+			applier = newApplier(page);
 			// No flush: the engine flushes the tree after the render.
 			for (const params of early.splice(0)) applyPatch(params);
 		} catch (error) {
@@ -251,7 +238,7 @@ export function startMainThread(): void {
 					// A reload during a reload: the page on screen is still the one before both.
 					applier?.clear();
 				}
-				if (page) applier = createApplier(page, onElementEvent);
+				if (page) applier = newApplier(page);
 				cells.clear();
 				shown = false;
 				dataHeld = false;
@@ -275,6 +262,7 @@ export function startMainThread(): void {
 			native.removeEventListener("__DestroyLifetime", onDestroyLifetime);
 			for (const old of [previous, applier]) {
 				old?.silence();
+				old?.destroy();
 				old?.clear();
 			}
 			previous = applier = undefined;

@@ -18,6 +18,7 @@ export type {
 	ManagerCallLog,
 	Responder,
 	RunLog,
+	ShownElement,
 } from "./engine/state.ts";
 export type {
 	ComponentAtIndex,

@@ -127,7 +127,10 @@ describe("the value of an input that has no element yet", () => {
 	it("is written as its default-value each time, and the main thread is not asked", () => {
 		const { renderer, root, ops } = rendererFixture();
 		const calls: unknown[] = [];
-		renderer.setHost({ call: (...args) => (calls.push(args), Promise.resolve(null)) });
+		renderer.setHost({
+			call: (...args) => (calls.push(args), Promise.resolve(null)),
+			run: () => {},
+		});
 		const input = renderer.createElement("input");
 		renderer.setAttribute(input, "value", "a");
 		renderer.setAttribute(input, "value", "b");

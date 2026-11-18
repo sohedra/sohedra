@@ -48,6 +48,8 @@ export const RUNTIME_FILES: Readonly<{
 	serverInternals: string;
 	/** What stands in for `svelte/internal/client` in the background's compiled components. */
 	clientInternals: string;
+	/** What `svelte/events` resolves to on the background. */
+	svelteEvents: string;
 }> = {
 	backgroundStartUp: programFile("background/start-up"),
 	mainThread: programFile("main-thread/entry"),
@@ -55,6 +57,7 @@ export const RUNTIME_FILES: Readonly<{
 	backgroundOnly: programFile("background/background-only"),
 	serverInternals: programFile("svelte/runtime/server-internals"),
 	clientInternals: programFile("svelte/runtime/client-internals"),
+	svelteEvents: programFile("svelte/runtime/events"),
 };
 
 /** Rstest's setup file for the test preset: it ends the page each test started. */

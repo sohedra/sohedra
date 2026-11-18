@@ -12,8 +12,10 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 		change: "insert <view> 42 into <scroll-view> 7",
 	},
 	element_missing: { id: 7 },
-	call_not_supported: { kind: "style" },
+	call_not_supported: { kind: "run" },
 	ui_method_failed: { method: "setValue", code: 4 },
+	element_has_no_view: { method: "boundingClientRect" },
+	element_left_page: { method: "scrollTo" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

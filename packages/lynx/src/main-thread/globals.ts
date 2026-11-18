@@ -32,6 +32,28 @@ export interface InvokeResult {
 	data?: unknown;
 }
 
+/** Lynx asks a list for the cell at an index: the callback answers the cell's unique id, or -1. */
+export type ComponentAtIndex = (
+	list: LynxElement,
+	listId: number,
+	index: number,
+	operationId: number,
+	enableReuseNotification?: boolean,
+) => number;
+
+/** Lynx asks a list for several cells at once. */
+export type ComponentAtIndexes = (
+	list: LynxElement,
+	listId: number,
+	indexes: number[],
+	operationIds: number[],
+	enableReuseNotification?: boolean,
+	asyncFlush?: boolean,
+) => void;
+
+/** Lynx hands a cell back, by its unique id. */
+export type EnqueueComponent = (list: LynxElement, listId: number, sign: number) => void;
+
 /** What the main thread's engine provides: Lynx's element functions, and a smaller `lynx`. */
 export interface MainThreadGlobals {
 	lynx: {
@@ -52,12 +74,41 @@ export interface MainThreadGlobals {
 	__CreateImage(parentComponentUniqueId: number): LynxElement;
 	__CreateScrollView(parentComponentUniqueId: number): LynxElement;
 	__CreateElement(tag: string, parentComponentUniqueId: number): LynxElement;
+	/** core/runtime/lepus/bindings/renderer_functions.cc, FiberCreateList. */
+	__CreateList(
+		parentComponentUniqueId: number,
+		componentAtIndex: ComponentAtIndex,
+		enqueueComponent: EnqueueComponent,
+		info: Record<string, unknown>,
+		componentAtIndexes: ComponentAtIndexes,
+	): LynxElement;
+	/** FiberUpdateListCallbacks: `null` lets go of the page's callbacks. */
+	__UpdateListCallbacks(
+		list: LynxElement,
+		componentAtIndex: ComponentAtIndex | null,
+		enqueueComponent: EnqueueComponent | null,
+		componentAtIndexes: ComponentAtIndexes | null,
+	): void;
 	__AppendElement(parent: LynxElement, child: LynxElement): void;
 	__InsertElementBefore(parent: LynxElement, child: LynxElement, reference: LynxElement): void;
 	__RemoveElement(parent: LynxElement, child: LynxElement): void;
 	__SetAttribute(element: LynxElement, key: string, value: unknown): void;
 	__SetClasses(element: LynxElement, classes: string): void;
-	__SetInlineStyles(element: LynxElement, styles: string): void;
+	__SetInlineStyles(element: LynxElement, styles: string | Record<string, string>): void;
+	__AddInlineStyle(element: LynxElement, name: string, value: string | number | null): void;
+	__GetComputedStyleByKey(element: LynxElement, name: string): string;
+	__QuerySelector(
+		element: LynxElement,
+		selector: string,
+		options: Record<string, unknown>,
+	): LynxElement | undefined | null;
+	__QuerySelectorAll(
+		element: LynxElement,
+		selector: string,
+		options: Record<string, unknown>,
+	): LynxElement[];
+	/** core/renderer/dom/element.cc, Element::AnimateV2: `[operation, name, keyframes, options]`. */
+	__ElementAnimate(element: LynxElement, args: unknown[]): void;
 	__SetID(element: LynxElement, id: string | null): void;
 	__SetDataset(element: LynxElement, dataset: Record<string, unknown>): void;
 	__AddEventListener(
@@ -80,6 +131,11 @@ export interface MainThreadGlobals {
 	): void;
 	__FlushElementTree(page?: LynxElement, options?: Record<string, unknown>): void;
 	__GetPageElement(): unknown;
+	/**
+	 * Runs `callback` at the platform's next frame (core/runtime/lepus/bindings/renderer_functions.cc,
+	 * RequestAnimationFrame).
+	 */
+	requestAnimationFrame(callback: () => void): number;
 	/**
 	 * Reports an error into Lynx with its code and level
 	 * (core/runtime/lepus/bindings/renderer_functions.cc, ReportError); `undefined` on an engine
