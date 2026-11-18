@@ -24,6 +24,9 @@ import type { Ref, Refs } from "./refs.ts";
 import { prepare } from "./run.ts";
 import type { Ready, RunScope } from "./run.ts";
 
+/** What an entry let go of runs: nothing, as no registered body has this id. */
+const LET_GO: MainThreadFunction = Object.freeze({ _wkltId: "" });
+
 /**
  * What the engine holds for a main-thread event or a gesture's callback: it hands it back to
  * `runWorklet` on each call.
@@ -44,9 +47,9 @@ export class Entry {
 		this.scope = scope;
 	}
 
-	/** The function, ready to call; `undefined` once the page is silenced. */
+	/** The function, ready to call; `undefined` once the page is silenced or the entry let go. */
 	ready(): Ready | undefined {
-		if (this.scope.silenced()) return undefined;
+		if (this.scope.silenced() || this.fn === LET_GO) return undefined;
 		return (this.made ??= prepare(this.fn, this.scope));
 	}
 
@@ -54,6 +57,16 @@ export class Entry {
 	swap(fn: MainThreadFunction): void {
 		this.fn = fn;
 		this.made = undefined;
+	}
+
+	/**
+	 * The engine no longer has the entry for anything: it runs nothing from now on, and holds
+	 * neither its function nor what made the second argument, in case the engine keeps it a while.
+	 */
+	letGo(): void {
+		this.fn = LET_GO;
+		this.made = undefined;
+		this.manager = undefined;
 	}
 }
 

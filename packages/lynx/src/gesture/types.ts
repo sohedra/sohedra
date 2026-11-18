@@ -28,7 +28,10 @@ export interface GestureElement {
 	invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
 }
 
-/** Where a touch is, as every gesture's event has it. */
+/**
+ * Where a touch is. A tap's `onStart` and `onEnd` carry none of it on Android: read it in
+ * `onBegin`.
+ */
 export interface GestureParams {
 	/** On the page. */
 	pageX: number;
@@ -83,15 +86,17 @@ export type DefaultScrollGestureChangeEvent = GestureChangeEvent<
 
 /**
  * What a gesture's callback gets second: it moves the callback's own detector along. Lynx ends
- * every gesture that began, also one that never moved; a pan takes the touch only once one of its
- * callbacks calls `active()`.
+ * every gesture that began, also one that never moved.
  */
 export interface StateManager {
-	/** The gesture takes the touch. */
+	/**
+	 * The gesture takes the touch from the gestures that compete for it. A scroll view around the
+	 * element with no gesture of its own still scrolls.
+	 */
 	active(): void;
-	/** The gesture gives the touch up: the gestures that wait for it may begin. */
+	/** The gesture gives the touch up to the others; it is tried again on the next move. */
 	fail(): void;
-	/** The gesture is over. */
+	/** The gesture is over: its `onEnd` runs, and the next touch begins it again. */
 	end(): void;
 }
 

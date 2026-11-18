@@ -6,9 +6,9 @@
 //
 // A gesture works from the first frame. Hydration keeps a drag that began before it when the
 // background's gesture has the same type, options, relations and callback names; so does a rebuild
-// that changes only the callbacks or what they captured (see `PanGesture`). This entry has not run
-// on a device yet; the gestures and calls that wait for a device probe to pass are in
-// `@sohedra/lynx/experimental`.
+// that changes only the callbacks or what they captured (see `PanGesture`). This entry ran on an
+// Android phone (Lynx 4.2); iOS is checked on an iPhone later, and what fails there moves to
+// `@sohedra/lynx/experimental`, with the gestures and calls that wait for a device probe to pass.
 
 export { DefaultScrollGesture, PanGesture, TapGesture } from "./gestures.ts";
 export type {

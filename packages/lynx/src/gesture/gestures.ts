@@ -11,6 +11,13 @@
 //   - iOS reads no option of a `DefaultScrollGesture` (LynxDefaultGestureHandler);
 //   - iOS reads a missing duration or distance as 0, so every option with a default is written.
 //
+// What Android shows (Lynx 4.2), which the classes' comments carry where a developer meets it:
+//   - a detector set again during a touch gives the drag no `onEnd`: a new `onBegin` follows at
+//     once under the finger, and setting one gesture of an element again restarts the drag of the
+//     element's others;
+//   - a gesture that failed or ended is tried again on the next move, so `onBegin` and `onEnd` may
+//     run several times in one touch (GestureHandlerTrigger.reCompeteByGestures).
+//
 // Adapted from @lynx-js/gesture-runtime (lynx-stack/packages/lynx/gesture-runtime/src), Copyright
 // 2025 The Lynx Authors, Apache License 2.0: the shape and the types.
 
@@ -40,16 +47,17 @@ export abstract class Gesture {
 }
 
 /**
- * A gesture: what `main-thread:gesture` takes, and what `waitFor` and `simultaneousWith` name.
+ * A gesture: what `main-thread:gesture` takes, and what `simultaneousWith` names.
  * Only the gesture classes make one.
  */
 export interface GestureKind extends Gesture {}
 
 /** What every gesture takes besides its own options. */
 export interface GestureRelations {
-	/** Gestures, on this element or another, this one waits for: it begins only once they fail. */
-	waitFor?: readonly GestureKind[];
-	/** Gestures, on this element or another, this one may run together with. */
+	/**
+	 * Gestures this one may run together with, on another element around or inside this one: a
+	 * drag on this element runs both. One that names nothing runs alone.
+	 */
 	simultaneousWith?: readonly GestureKind[];
 }
 
@@ -98,7 +106,10 @@ export interface TapGestureOptions
 /** The options of a `DefaultScrollGesture`. */
 export interface DefaultScrollGestureOptions
 	extends ContinuousGestureCallbacks<DefaultScrollGestureChangeEvent>, GestureRelations {
-	/** How far, in pixels, a touch moves before the element scrolls. Defaults to 3; iOS reads none. */
+	/**
+	 * How far, in pixels, one move goes before the touch stops counting as a tap. Defaults to 3; it
+	 * does not hold off scrolling on Android, which scrolls on every move, and iOS reads none.
+	 */
 	tapSlop?: number;
 }
 
@@ -208,11 +219,7 @@ abstract class PlainGesture extends Gesture {
 				});
 			this.callbacks[name] = callback;
 		}
-		this.waitFor = merge(
-			[],
-			refsOf(relation(options.waitFor, { gesture, name: "waitFor" })),
-			this.id,
-		);
+		this.waitFor = [];
 		this.simultaneousWith = merge(
 			[],
 			refsOf(relation(options.simultaneousWith, { gesture, name: "simultaneousWith" })),
@@ -224,14 +231,20 @@ abstract class PlainGesture extends Gesture {
 
 /**
  * A pan: the finger drags. `const pan = $derived(new PanGesture({ minDistance: 4, onUpdate }))`,
- * each callback a main-thread function; a callback calls `state.active()` to take the touch. Build
- * a gesture in `$derived` when its callbacks capture the component's values, so it follows them.
+ * each callback a main-thread function. Build a gesture in `$derived` when its callbacks capture
+ * the component's values, so it follows them. A pan runs without `state.active()` when no other
+ * gesture competes for the touch; `active()` takes the touch from a competing gesture, though not
+ * from a scroll view around the element that has no gesture of its own, which scrolls too.
  *
  * Built again with the same options but other callbacks, or callbacks that captured other values,
  * a gesture keeps its detector, and a drag goes on with the new callbacks. A change of the
- * gesture's type, its options, what it waits for or runs with, or which callbacks it has sets the
- * detector again, which ends a drag; so does taking the gesture away, with `undefined` or `false`
- * (`main-thread:gesture={on && pan}`).
+ * gesture's type, its options, what it runs with, or which callbacks it has sets the detector
+ * again: the drag gets no `onEnd`, and a new `onBegin` follows under the finger. Setting another
+ * gesture of the same element again does the same to this one. Taking the gesture away, with
+ * `undefined` or `false` (`main-thread:gesture={on && pan}`), stops its callbacks.
+ *
+ * `onBegin` and `onEnd` may run more than once in one touch: a gesture that called `fail()` or
+ * ended is tried again on the next move.
  */
 export class PanGesture extends PlainGesture {
 	constructor(options: PanGestureOptions = {}) {
@@ -246,7 +259,10 @@ export class PanGesture extends PlainGesture {
 
 /**
  * A tap. `new TapGesture({ maxDuration, maxDistance, onStart, onEnd })`, each callback a
- * main-thread function. A drag goes on across a rebuild as `PanGesture` says.
+ * main-thread function: `onStart` and `onEnd` for a quick tap; a hold past `maxDuration` or a
+ * move past `maxDistance` gives no `onStart`, and after such a move `onEnd` may come on every
+ * later move. Only `onBegin`'s event says where the touch is: `onStart`'s and `onEnd`'s carry no
+ * `x` or `y` on Android. A rebuild behaves as `PanGesture` says.
  */
 export class TapGesture extends PlainGesture {
 	constructor(options: TapGestureOptions = {}) {
@@ -260,10 +276,12 @@ export class TapGesture extends PlainGesture {
 }
 
 /**
- * The scrolling a `<scroll-view>` or a `<list>` does by itself, as a gesture. Set on the scrolling
- * element, it makes the element's scrolling a gesture that others can name in their relations
- * (`waitFor: [scroll]`), and its callbacks see the scrolling. Its callbacks are optional, each a
- * main-thread function.
+ * The scrolling a `<scroll-view>` or a `<list>` does by itself, as a gesture: its callbacks see the
+ * scrolling (`deltaY`, `isAtStart`, `isAtEnd`), and others can name it in their relations. Its
+ * callbacks are optional, each a main-thread function.
+ *
+ * Set on a scroll view inside another, it changes how they scroll: a drag or a fling on it scrolls
+ * both, where without it only the inner one scrolls.
  */
 export class DefaultScrollGesture extends PlainGesture {
 	constructor(options: DefaultScrollGestureOptions = {}) {
@@ -276,7 +294,7 @@ export class DefaultScrollGesture extends PlainGesture {
 	}
 }
 
-/** A long press. Experimental: no device has shown it on an element yet. */
+/** A long press. Experimental: Android ran it, and iOS has not yet. */
 export class LongPressGesture extends PlainGesture {
 	constructor(options: LongPressGestureOptions = {}) {
 		super({
@@ -288,7 +306,7 @@ export class LongPressGesture extends PlainGesture {
 	}
 }
 
-/** A fling: a quick swipe. Experimental: no device has shown it on an element yet. */
+/** A fling: a quick swipe. Experimental: on Android it ran no callback, slow or fast. */
 export class FlingGesture extends PlainGesture {
 	constructor(options: FlingGestureOptions = {}) {
 		super({

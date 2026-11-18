@@ -110,8 +110,11 @@ export interface Gestures extends GestureDetectors {
 	flush(): void;
 	/** The page goes: nothing waits to be set. */
 	silence(): void;
-	/** How many detectors the page holds, and how many gestures' ids, for tests. */
-	sizes(): { detectors: number; ids: number };
+	/**
+	 * How many detectors the page holds, how many gestures' ids, and how many entries its tables
+	 * hold in all, for tests.
+	 */
+	sizes(): { detectors: number; ids: number; tables: number };
 }
 
 /** Adds `by` to `key`'s count, dropping it at 0. */
@@ -190,7 +193,16 @@ export function createGestures(scope: () => BindingScope): Gestures {
 	}
 
 	function remove(element: LynxElement, detector: Detector): void {
+		letGoOf(detector);
 		mainThread.__RemoveGestureDetector(element, detector.native);
+	}
+
+	/**
+	 * A detector the engine no longer runs: its entries let go of their functions and its state
+	 * manager, which holds the element, so an entry the engine keeps a while holds neither.
+	 */
+	function letGoOf(detector: Detector): void {
+		for (const entry of detector.entries.values()) entry.letGo();
 	}
 
 	/** Gives the batch's gestures their native ids: places first, over the whole batch. */
@@ -330,6 +342,7 @@ export function createGestures(scope: () => BindingScope): Gestures {
 			},
 			relations,
 		);
+		if (old) letGoOf(old);
 		return { own: gesture.id, native, shape, related, entries };
 	}
 
@@ -413,7 +426,18 @@ export function createGestures(scope: () => BindingScope): Gestures {
 		sizes() {
 			let detectorCount = 0;
 			for (const list of detectors.values()) detectorCount += list.length;
-			return { detectors: detectorCount, ids: natives.size };
+			return {
+				detectors: detectorCount,
+				ids: natives.size,
+				tables:
+					detectors.size +
+					places.size +
+					natives.size +
+					owners.size +
+					holds.size +
+					used.size +
+					due.size,
+			};
 		},
 	};
 }

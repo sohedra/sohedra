@@ -95,6 +95,7 @@ export interface FunctionsPage {
 		contexts: number[];
 		detectors: number;
 		gestureIds: number;
+		gestureTables: number;
 	};
 	/** Whether the ref `id` holds `element`, for tests. */
 	refHolds(id: number, element: LynxElement): boolean;
@@ -384,6 +385,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 				contexts: lifetimes.held(),
 				detectors: held.detectors,
 				gestureIds: held.ids,
+				gestureTables: held.tables,
 			};
 		},
 		refHolds(id, element) {

@@ -9,14 +9,17 @@ import type { Catalogue } from "../wire/index.ts";
 export interface GestureDetails {
 	/** `gesture` is the class (`PanGesture`), `name` the option (`onUpdate`). */
 	gesture_callback_not_main_thread: { gesture: string; name: string };
-	/** `gesture` is the class, `name` the option (`waitFor`). */
+	/** `gesture` is the class, `name` the option (`simultaneousWith`). */
 	gesture_relation_not_gesture: { gesture: string; name: string };
-	/** `gesture` is the class, `name` the option (`waitFor`). */
+	/** `gesture` is the class, `name` the option (`simultaneousWith`). */
 	gesture_relation_not_a_list: { gesture: string; name: string };
 	/** `composition` is the class (`RaceGesture`). */
 	gesture_member_not_gesture: { composition: string };
-	/** `given` is what was wrong: the gesture, the list, or a value in the list. */
-	continue_with_not_gestures: { given: "gesture" | "list" | "member" };
+	/** `call` is the function; `given` what was wrong: the gesture, the list, or a value in it. */
+	relation_call_not_gestures: {
+		call: "continueWith" | "waitFor";
+		given: "gesture" | "list" | "member";
+	};
 }
 
 /** What a code of the gestures names. */
@@ -35,12 +38,12 @@ export const GESTURE_CATALOGUE: Catalogue<GestureDetails> = {
 		message: ({ gesture, name }) =>
 			`The ${name} of a ${gesture} holds a value that is not a gesture, so it cannot name it.`,
 		fix: ({ name }) =>
-			`Give ${name} the gestures themselves, as made with new: ${name}: [scroll], where scroll is a DefaultScrollGesture or another gesture.`,
+			`Give ${name} the gestures themselves, as made with new: ${name}: [pan], where pan is a PanGesture or another gesture.`,
 		docs: "gesture_relation_not_gesture",
 	},
 	gesture_relation_not_a_list: {
 		message: ({ gesture, name }) => `The ${name} of a ${gesture} is not a list of gestures.`,
-		fix: ({ name }) => `Give ${name} a list, also for one gesture: ${name}: [scroll].`,
+		fix: ({ name }) => `Give ${name} a list, also for one gesture: ${name}: [pan].`,
 		docs: "gesture_relation_not_a_list",
 	},
 	gesture_member_not_gesture: {
@@ -50,16 +53,16 @@ export const GESTURE_CATALOGUE: Catalogue<GestureDetails> = {
 			`Give it the gestures themselves, as made with new: new ${composition}(pan, tap).`,
 		docs: "gesture_member_not_gesture",
 	},
-	continue_with_not_gestures: {
-		message: ({ given }) =>
+	relation_call_not_gestures: {
+		message: ({ call, given }) =>
 			given === "gesture"
-				? "The gesture given to continueWith is not a gesture, so nothing can hand the touch on."
+				? `The gesture given to ${call} is not a gesture, so it has nothing to add the relation to.`
 				: given === "list"
-					? "The gestures given to continueWith are not in a list."
-					: "The list given to continueWith holds a value that is not a gesture, so the touch cannot go to it.",
-		fix: () =>
-			"Give it a gesture, then a list of the gestures that take over: continueWith(pan, [fling]).",
-		docs: "continue_with_not_gestures",
+					? `The gestures given to ${call} are not in a list.`
+					: `The list given to ${call} holds a value that is not a gesture, so it cannot name it.`,
+		fix: ({ call }) =>
+			`Give it a gesture, then a list of gestures: ${call}(pan, [${call === "waitFor" ? "tap" : "fling"}]).`,
+		docs: "relation_call_not_gestures",
 	},
 };
 
