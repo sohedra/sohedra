@@ -5,9 +5,9 @@
 // observation, and the runner compares it with the case's `expected`. Nothing here may need what
 // only the fake has, nor a built-in a device's main thread lacks, such as `toSorted` or `at`.
 //
-// Every case has run on Lynx 4.2 on iOS and Android, in Lynx Explorer, with real taps and pans;
-// where the device answered otherwise than Lynx's source had suggested (a query with no match, a
-// missing attribute, a flattened view's UI methods), the case expects what the device answered.
+// Every case but those marked `sourceOnly` has run on Lynx 4.2 on iOS and Android, in Lynx
+// Explorer, with real taps and pans, and expects what the device answered. A `sourceOnly` case
+// rests on Lynx's source alone until a device runs it.
 
 import type { ElementFunctions, LifecycleProxy, LynxElement } from "../../../src/testing/index.ts";
 
@@ -42,6 +42,8 @@ export interface Behavior {
 	source: string;
 	run(target: EngineTarget): Promise<unknown>;
 	expected: unknown;
+	/** The case rests on Lynx's source alone: no device has run it yet. */
+	sourceOnly?: true;
 }
 
 /** A view in the page, with a size a finger can tap and an id. */
@@ -126,7 +128,7 @@ export const BEHAVIORS: Behavior[] = [
 		expected: { before: 6, after: 0 },
 	},
 	{
-		name: "a plain view answers a UI method with code 0 and its box, flattened or not",
+		name: "a view with an id answers a UI method with code 0 and its box, flattened or not",
 		source:
 			"core/renderer/template_assembler.cc (LepusInvokeUIMethod), which the platform answers from the element's UI; a flattened view keeps one (Android: LynxFlattenUI)",
 		async run(target) {
@@ -161,6 +163,26 @@ export const BEHAVIORS: Behavior[] = [
 			};
 		},
 		expected: { placedBefore: true, sameAfter: true },
+	},
+	{
+		name: "a view with no attribute, id or event, and only layout styles, has no UI (code 6) until the flush after it gains an attribute",
+		source:
+			"core/renderer/dom/element_container.cc (ElementContainer::CreatePaintingNode returns for a layout-only element); core/renderer/dom/fiber/fiber_element.cc (Element::CanBeLayoutOnly, MarkHasLayoutOnlyPropsIfNecessary)",
+		sourceOnly: true,
+		async run(target) {
+			const f = target.functions;
+			const element = f.__CreateView(0);
+			f.__SetInlineStyles(element, "width: 100px; height: 100px; margin: 20px");
+			f.__AppendElement(f.__GetPageElement()!, element);
+			f.__FlushElementTree();
+			const flushed = (await invoke(target, element, "boundingClientRect")).code;
+			f.__SetAttribute(element, "accessibility-label", "box");
+			const given = (await invoke(target, element, "boundingClientRect")).code;
+			f.__FlushElementTree();
+			const flushedAgain = (await invoke(target, element, "boundingClientRect")).code;
+			return { flushed, given, flushedAgain };
+		},
+		expected: { flushed: 6, given: 6, flushedAgain: 0 },
 	},
 	{
 		name: "__SetInlineStyles wipes the styles added one by one",
