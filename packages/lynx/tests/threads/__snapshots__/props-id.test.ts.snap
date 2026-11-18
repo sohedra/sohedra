@@ -1,0 +1,16 @@
+// Rstest Snapshot v1
+
+exports[`ids that differ between the threads > are written over the first frame's, and a development build warns once per place 1`] = `
+[
+  "The <view>'s id is "lynx-s1" in the first frame and "lynx-s2" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.
+tests/fixtures/threads/FrameLabeled.svelte:5:0
+
+Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/env, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.
+https://sohedra.com/e/props_id_mismatch",
+  "The <view>'s accessibility-label is "label-lynx-s1" in the first frame and "label-lynx-s2" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.
+tests/fixtures/threads/FrameLabeled.svelte:5:0
+
+Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/env, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.
+https://sohedra.com/e/props_id_mismatch",
+]
+`;

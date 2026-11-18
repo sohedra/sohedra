@@ -38,6 +38,8 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap", spelling: "bind" },
 	global_event_attribute: { attribute: "global-bindtap", event: "tap" },
 	list_item_without_key: {},
+	thread_branch_test: { test: "background && user" },
+	thread_branch_name_taken: { name: "SohedraLynxThreadBranch" },
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",

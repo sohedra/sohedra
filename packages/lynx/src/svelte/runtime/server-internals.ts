@@ -10,18 +10,30 @@
 //     an event when the name is one (`bindtap`, or `ontap` from a spread), and drops it otherwise;
 //   - a spread keeps its names' case, as the background's renderer does;
 //   - a component given `--x` props is wrapped in a `<view>`, as on the background.
+//
+// And `$props.id()` inside a branch only one thread renders takes the branch's own id, as on the
+// background (./thread-branches.ts).
 
 // @ts-expect-error -- Svelte publishes no types for its internal modules; the casts below give these ones'.
 import * as server from "svelte/internal/server";
 
 import { escapeJsonText } from "../../wire/index.ts";
 import { CSS_PROPS_HOLDERS } from "./css-props.ts";
+import { branchId, newBranchCounts } from "./thread-branches.ts";
+import type { BranchCounts } from "./thread-branches.ts";
+
+export { ThreadBranch } from "./thread-branches.ts";
 
 // @ts-expect-error -- Svelte publishes no types for its internal modules.
 export * from "svelte/internal/server";
 
 interface Renderer {
 	push(html: string): void;
+}
+
+/** A component's renderer, as `$props.id()` is given it: `global` is one object per render. */
+interface RenderingRenderer extends Renderer {
+	global: object;
 }
 
 interface ServerInternals {
@@ -40,6 +52,7 @@ interface ServerInternals {
 		component: () => void,
 		dynamic?: boolean,
 	): void;
+	props_id(renderer: RenderingRenderer): string;
 }
 
 // Boundary: Svelte's server runtime, typed by the interface above.
@@ -131,4 +144,20 @@ export function css_props(
 		},
 	};
 	svelte.css_props(wrapper, isHtml, props, component, dynamic);
+}
+
+/** The ids each render's branches that only one thread renders have given. */
+const branchCounts = new WeakMap<object, BranchCounts>();
+
+/**
+ * `$props.id()`: Svelte's, `lynx-s1`, `lynx-s2`…, except in a branch only one thread renders,
+ * which counts its own from the first in each render (`lynx-m1`…) and leaves Svelte's count alone.
+ */
+export function props_id(renderer: RenderingRenderer): string {
+	let counts = branchCounts.get(renderer.global);
+	if (counts === undefined) {
+		counts = newBranchCounts();
+		branchCounts.set(renderer.global, counts);
+	}
+	return branchId(counts) ?? svelte.props_id(renderer);
 }

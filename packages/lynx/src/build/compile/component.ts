@@ -184,7 +184,8 @@ export async function compileComponent(
 	} catch (error) {
 		throw compileError(error, { source: text, locate: (offset) => offset });
 	}
-	const prepared: Prepared = prepare({ ...options, source: code, ast });
+	const internals = thread === "main-thread" ? options.serverInternals : options.clientInternals;
+	const prepared: Prepared = prepare({ ...options, source: code, ast, internals });
 	const map = options.sourceMap ? compose(prepared.map, preprocessMap) : undefined;
 	const hmr = options.hot === true && thread === "background" && prepared.functionIds.length === 0;
 	const compiling = compileOptions(options, map, hmr);

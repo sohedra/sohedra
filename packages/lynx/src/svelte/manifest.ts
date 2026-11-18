@@ -229,6 +229,42 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: SOURCE,
 	},
 	{
+		id: "if-block-branches",
+		program: "build",
+		file: "src/compiler/phases/1-parse/state/tag.js",
+		anchor: "elseif: true,",
+		reliesOn:
+			"an `{#if}` parses to an `IfBlock` with its `test` and its `consequent` and `alternate` fragments, whose nodes have positions in the component, and an `{:else if}` to an `IfBlock` marked `elseif`, alone in the alternate of the one before: the build wraps a branch only one thread renders by those positions",
+		test: COMPILER,
+	},
+	{
+		id: "thread-branch-component",
+		program: "runtime",
+		file: "src/compiler/phases/3-transform/client/transform-client.js",
+		anchor: "component_block.body.unshift(b.const(analysis.props_id, b.call('$.props_id')));",
+		reliesOn:
+			"a component in markup compiles to a call of its function with its anchor (client) or `$$renderer` (server) and its props, a snippet passed as a prop is a function of that one argument that renders there when called, and a component calls `$.props_id()` first: so `ThreadBranch`, a plain function, draws its branch at once, and the components in it take their ids while it does",
+		test: COMPILER,
+	},
+	{
+		id: "block-first-branch-sync",
+		program: "runtime",
+		file: "src/internal/client/dom/blocks/branches.js",
+		anchor: "branch(() => fn(this.anchor))",
+		reliesOn:
+			"a client block (`{#if}`, `{#each}`, `{#key}`, `<svelte:boundary>`) draws its first branch inside the call that makes it, as deep as blocks nest: so every component a branch only one thread renders holds starts while `ThreadBranch` marks the branch",
+		test: RUNTIME,
+	},
+	{
+		id: "server-render-global",
+		program: "runtime",
+		file: "src/internal/server/renderer.js",
+		anchor: "const head = new Renderer(this.global, this);",
+		reliesOn:
+			"a server render makes one `global` state and gives it to every renderer of that render, so the first frame counts the ids of a branch only one thread renders on `renderer.global`, from the first in each render",
+		test: SOURCE,
+	},
+	{
 		id: "server-render-await-invalid",
 		program: "runtime",
 		file: "src/internal/server/errors.js",

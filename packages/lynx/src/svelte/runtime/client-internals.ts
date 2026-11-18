@@ -1,8 +1,12 @@
 // What the background's compiled components import as Svelte's client runtime: the build points
-// `svelte/internal/client` here. Svelte's own, except `$props.id()`.
+// `svelte/internal/client` here. Svelte's own, except `$props.id()`, and with the wrapper of a
+// branch only one thread renders.
 
 import { PROPS_ID_PREFIX } from "../../wire/index.ts";
 import { svelteSlot } from "./globals.ts";
+import { branchId, newBranchCounts } from "./thread-branches.ts";
+
+export { ThreadBranch } from "./thread-branches.ts";
 
 // @ts-expect-error -- Svelte publishes no types for its internal modules.
 export * from "svelte/internal/client";
@@ -10,14 +14,21 @@ export * from "svelte/internal/client";
 /** The shared count when this page started: its ids are counted from there. */
 let base = 1;
 
+/** The ids this page's branches that only one thread renders have given. */
+let branches = newBranchCounts();
+
 /**
  * `$props.id()`: the same ids as Svelte's server gives the first frame, `lynx-s1`, `lynx-s2`…, in
  * the order the page's components render. Svelte's client gives `c1`… unless it hydrates, which a
  * custom renderer does not. The count is Svelte's own on the global object, shared by every runtime
  * in the realm (a lazy bundle's copy of this module, another page of a Lynx group), and is never set
- * back: each page counts from the base it took when it started.
+ * back: each page counts from the base it took when it started. A component rendered as a branch
+ * only one thread renders is drawn takes the branch's own id instead (`lynx-b1`…), and leaves the
+ * count alone.
  */
 export function props_id(): string {
+	const inBranch = branchId(branches);
+	if (inBranch !== undefined) return inBranch;
 	const slot = svelteSlot();
 	const count = slot.uid ?? 1;
 	slot.uid = count + 1;
@@ -28,4 +39,5 @@ export function props_id(): string {
 export function startPropsIds(): void {
 	const slot = svelteSlot();
 	base = slot.uid ??= 1;
+	branches = newBranchCounts();
 }

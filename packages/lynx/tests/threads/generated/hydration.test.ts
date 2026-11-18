@@ -15,7 +15,7 @@ describe("a generated page's first frame", () => {
 	);
 
 	it(
-		"is hydrated with no mismatch, and shows what the background rendered",
+		"is hydrated with no mismatch and with the first frame's ids, and shows what the background rendered",
 		async () => {
 			await check(hydrationProperty, 1);
 		},

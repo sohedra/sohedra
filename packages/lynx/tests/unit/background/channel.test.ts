@@ -8,22 +8,30 @@ import { OpQueue } from "../../../src/background/renderer/queue.ts";
 import { startMainThread } from "../../../src/main-thread/index.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
 import { decodePatch, encodeToBackground, OpCode, ROOT_ID } from "../../../src/wire/index.ts";
-import type { Patch, PatchParams, RewriteMessage, SentEvent } from "../../../src/wire/index.ts";
+import type {
+	Patch,
+	PatchParams,
+	PropsIdsMessage,
+	RewriteMessage,
+	SentEvent,
+} from "../../../src/wire/index.ts";
 
 function channel() {
 	const page = startTestPage({ mainThread: () => startMainThread() });
 	const events: [number, SentEvent][] = [];
 	const rewrites: RewriteMessage[] = [];
+	const propsIds: PropsIdsMessage[] = [];
 	const queue = new OpQueue();
 	const opened = page.asBackground(() =>
 		openChannel({
 			queue,
 			onEvent: (handler, event) => events.push([handler, event]),
 			onRewrite: (message) => rewrites.push(message),
+			onPropsIds: (message) => propsIds.push(message),
 			tagOf: () => "view",
 		}),
 	);
-	return { page, events, rewrites, queue, channel: opened };
+	return { page, events, rewrites, propsIds, queue, channel: opened };
 }
 
 /** What the channel sends, as the main thread receives it. */
@@ -117,6 +125,18 @@ describe("hydration's part of the channel", () => {
 		);
 		await page.settle();
 		expect(rewrites).toEqual([expect.objectContaining({ t: "rewrite", nodes: [ROOT_ID] })]);
+	});
+
+	it("hands the main thread's ids written over the first frame's on", async () => {
+		const { page, propsIds } = channel();
+		const differences = [{ node: 4, name: "id", expected: "lynx-s2", got: "lynx-s1" }];
+		page.asMainThread(() =>
+			page.lynx.mainThread
+				.getJSContext()
+				.dispatchEvent(encodeToBackground({ t: "props-ids", differences }, 0)),
+		);
+		await page.settle();
+		expect(propsIds).toEqual([expect.objectContaining({ t: "props-ids", differences })]);
 	});
 
 	it("writes the page again after what is queued, in a patch of its own that starts with the rewrite", () => {

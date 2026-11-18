@@ -1,13 +1,15 @@
-// The background's side of a refused hydration: the main thread found that its first frame differs
-// from the page the background rendered, and asked for the page again. This says what differs, in
-// the developer's names and at the element's place in a development build, with the code alone in
-// a production build.
+// The background's side of what hydration found. A refused hydration: the main thread's first
+// frame differs from the page the background rendered, and the page is asked for again. And, in a
+// development build, ids of `$props.id()` that differed, which the main thread wrote over. Each
+// says what differs in the developer's names, at the element's place in a development build, and
+// a refused one with its code alone in a production build.
 
 import { sourceLocation } from "../svelte/runtime/index.ts";
-import type { HydrationMismatch } from "../wire/index.ts";
+import type { HydrationMismatch, PropsIdDifference } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { BackgroundError } from "./catalogue.ts";
 import { DEV } from "./globals.ts";
+import { warnOnce } from "./report.ts";
 
 /** A value as the message shows it. */
 function shown(value: unknown): string {
@@ -56,4 +58,25 @@ export function mismatchError(
 			where: sourceLocation(node),
 		},
 	});
+}
+
+/**
+ * Warns, once per element's place and attribute, about each id of `$props.id()` the main thread
+ * wrote over the first frame's; `nodeOf` finds the element the difference names.
+ */
+export function warnPropsIds(
+	differences: readonly PropsIdDifference[],
+	nodeOf: (id: number) => { tag: string | null } | undefined,
+): void {
+	for (const { node, name, expected, got } of differences) {
+		const element = nodeOf(node);
+		const tag = element?.tag ?? "element";
+		const where = element && sourceLocation(element);
+		warnOnce(`props_id_mismatch:${where ?? tag}:${name}`, () =>
+			backgroundError({
+				code: "props_id_mismatch",
+				details: { tag, name, expected, got, where },
+			}),
+		);
+	}
 }

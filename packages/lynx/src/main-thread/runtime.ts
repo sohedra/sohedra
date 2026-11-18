@@ -228,7 +228,9 @@ export function startMainThread(): void {
 			});
 			return undefined;
 		}
-		const { hydrated, rendered } = result;
+		const { hydrated, rendered, propsIds } = result;
+		// The ids that differed were written over: a development build says where.
+		if (DEV && propsIds.length > 0) send({ t: "props-ids", differences: propsIds });
 		state.applier = pageApplier;
 		for (const [id, parts] of hydrated.cells) state.cells.set(id, parts);
 		for (const call of hydrated.calls) calls.run(call, patch.page);

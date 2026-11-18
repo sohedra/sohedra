@@ -58,6 +58,14 @@ Nothing to fix when the page closed on purpose. Otherwise, make the call again o
 https://sohedra.com/e/page_is_gone"
 `;
 
+exports[`the background's catalogue > props_id_mismatch: the message 1`] = `
+"The <text>'s id is "lynx-s2" in the first frame and "lynx-s3" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.
+src/Field.svelte:8:1
+
+Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/env, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.
+https://sohedra.com/e/props_id_mismatch"
+`;
+
 exports[`the background's catalogue > text_outside_text: the message 1`] = `
 "The text "Hello" is inside <view>, and Lynx shows text only inside <text>.
 src/App.svelte:3:1

@@ -14,7 +14,7 @@ import { recyclable, SCREEN } from "../scroll.ts";
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
 import type { CompiledBoth } from "./compile.ts";
-import { evaluatePage, INTERNALS, RENDERER } from "./evaluate.ts";
+import { evaluatePage, IDS, INTERNALS, RENDERER } from "./evaluate.ts";
 import { pageState, STATE_KEYS, stateValue } from "./state.ts";
 import type { PageState } from "./state.ts";
 import { listKeys } from "./trees.ts";
@@ -81,7 +81,21 @@ export interface GeneratedPage {
 	readonly page: SveltePage;
 	/** The root component's state, on the background. */
 	readonly handles: { st?: Record<string, unknown> };
+	/**
+	 * The `$props.id()` of each component, in the order each thread made them, as `Name id`, and
+	 * `Name id one-thread` for one the grammar put where only one thread renders.
+	 */
+	readonly ids: { readonly frame: string[]; readonly background: string[] };
 }
+
+/** The test module a generated component records its id with. */
+type Recorder = { recordId: (component: string, id: string, oneThread: boolean) => void };
+
+/** A module that records each id of `$props.id()` in `into`. */
+const recorder = (into: string[]): Recorder => ({
+	recordId: (component, id, oneThread) =>
+		void into.push(`${component} ${id}${oneThread ? " one-thread" : ""}`),
+});
 
 /** How a generated page starts. */
 export interface StartOptions {
@@ -90,8 +104,8 @@ export interface StartOptions {
 	/** Draw the first frame from the data, as a built page whose script draws it. */
 	firstFrame: boolean;
 	/**
-	 * What `background` from `@sohedra/lynx/env` is on the background: `false` renders there what
-	 * the first frame renders, as a reference for it.
+	 * What `background` from `@sohedra/lynx/env` is on the background: `false` (and `mainThread`
+	 * `true`) renders there what the first frame renders, as a reference for it.
 	 */
 	background?: boolean;
 	/** The keys of the data that come from the template; the host gives the rest. */
@@ -126,13 +140,16 @@ const rootData = (initData: Record<string, unknown>): Record<string, unknown> =>
 export function startGenerated(options: StartOptions): GeneratedPage {
 	const { compiled, data, firstFrame } = options;
 	const handles: { st?: Record<string, unknown> } = {};
-	const backgroundEnv = options.background === false ? { ...env, background: false } : env;
+	const ids = { frame: [] as string[], background: [] as string[] };
+	const backgroundEnv =
+		options.background === false ? { ...env, background: false, mainThread: true } : env;
 	// Boundary: the generated root component takes `data` and `handles`.
 	const App = evaluatePage(compiled.background, {
 		[INTERNALS]: internals,
 		[RENDERER]: { default: renderer },
 		"@sohedra/lynx/env": backgroundEnv,
 		"svelte/internal/disclose-version": {},
+		[IDS]: recorder(ids.background),
 	}) as Component<Record<string, unknown>>;
 	const page = startSveltePage(App, {
 		...splitData(data, options.fromTemplate ?? []),
@@ -140,11 +157,15 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		...(firstFrame && {
 			firstFrame: {
 				draw: drawGeneratedFrame,
-				props: { page: compiled.mainThread, props: { data: copy(data) } },
+				props: {
+					page: compiled.mainThread,
+					props: { data: copy(data) },
+					ids: recorder(ids.frame),
+				},
 			},
 		}),
 	});
-	return { page, handles };
+	return { page, handles, ids };
 }
 
 /** The key of a cell's item. */
@@ -281,4 +302,9 @@ export async function run(running: GeneratedPage, done: Step): Promise<void> {
 /** Whether a patch asked the main thread to make the page again. */
 export function rewrote(page: SveltePage): boolean {
 	return page.patches.some((patch) => patch.items.some((item) => item[0] === "rewrite"));
+}
+
+/** Whether the main thread wrote ids of `$props.id()` over the first frame's, and said so. */
+export function wroteIds(page: SveltePage): boolean {
+	return page.messages.some((message) => message.t === "props-ids");
 }

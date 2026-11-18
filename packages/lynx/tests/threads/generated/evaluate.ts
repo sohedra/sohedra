@@ -8,6 +8,12 @@ export type ModuleExports = Readonly<Record<string, unknown>>;
 /** The specifier generated components import Svelte's runtime by, on either thread. */
 export const INTERNALS = "generated:internals";
 
+/**
+ * The specifier of the module a generated component records its `$props.id()` with, as
+ * `recordId(component, id)`: a test module, not the binding's.
+ */
+export const IDS = "generated:ids";
+
 /** The specifier of the custom renderer, as the build gives it to the background's copy. */
 export const RENDERER = "@sohedra/lynx/internal/renderer";
 

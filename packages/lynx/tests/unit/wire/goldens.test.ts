@@ -138,6 +138,13 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 	],
 	["list rows asked for again", { t: "rewrite", nodes: [30, 40] }],
 	[
+		"ids of $props.id() written over the first frame's, in a development build",
+		{
+			t: "props-ids",
+			differences: [{ node: 4, name: "aria-labelledby", expected: "lynx-s2", got: "lynx-s1" }],
+		},
+	],
+	[
 		"an error with its code and where it was thrown",
 		{
 			t: "error",
