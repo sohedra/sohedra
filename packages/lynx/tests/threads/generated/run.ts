@@ -14,8 +14,8 @@ import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
 import type { CompiledBoth } from "./compile.ts";
 import { evaluatePage, INTERNALS, RENDERER } from "./evaluate.ts";
-import { pageState, STATE_KEYS, stateValue } from "./grammar.ts";
-import type { PageState } from "./grammar.ts";
+import { pageState, STATE_KEYS, stateValue } from "./state.ts";
+import type { PageState } from "./state.ts";
 import { listKeys } from "./trees.ts";
 
 /** Something that happens to a running page. Numbers pick among what is there when it happens. */
@@ -75,9 +75,33 @@ export interface StartOptions {
 	 * the first frame renders, as a reference for it.
 	 */
 	background?: boolean;
+	/** The keys of the data that come from the template; the host gives the rest. */
+	fromTemplate?: readonly (keyof PageState)[];
 }
 
 const copy = <T>(value: T): T => structuredClone(value);
+
+/** What the template's data holds under the host's: shown only when the host's is not merged over it. */
+const UNDER_THE_HOST: Partial<PageState> = { s0: "the template's", b0: true, n0: 2 };
+
+/**
+ * The page's data, as the template's and the host's: the engine renders the page with the host's
+ * over the template's, and gives the background each on its own (`_params`).
+ */
+function splitData(data: PageState, fromTemplate: readonly (keyof PageState)[]) {
+	const template: Record<string, unknown> = {};
+	const host: Record<string, unknown> = {};
+	for (const [key, value] of Object.entries(copy(data)))
+		(fromTemplate.includes(key as keyof PageState) ? template : host)[key] = value;
+	return { templateData: { template, host: UNDER_THE_HOST }, initData: { host } };
+}
+
+/** The root's props from the page's data: the host's keys over the template's. */
+const rootData = (initData: Record<string, unknown>): Record<string, unknown> =>
+	copy({
+		...(initData["template"] as Record<string, unknown> | undefined),
+		...(initData["host"] as Record<string, unknown> | undefined),
+	});
 
 /** Starts the page; its first frame is drawn when this returns, its first patch is on its way. */
 export function startGenerated(options: StartOptions): GeneratedPage {
@@ -92,8 +116,8 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		"svelte/internal/disclose-version": {},
 	}) as Component<Record<string, unknown>>;
 	const page = startSveltePage(App, {
-		initData: { page: copy(data) },
-		props: (initData) => ({ data: copy(initData["page"]), handles }),
+		...splitData(data, options.fromTemplate ?? []),
+		props: (initData) => ({ data: rootData(initData), handles }),
 		...(firstFrame && {
 			firstFrame: {
 				draw: drawGeneratedFrame,
@@ -173,10 +197,10 @@ export function apply(running: GeneratedPage, done: Step): void {
 			return;
 		}
 		case "update":
-			page.updateData({ page: copy(done.data) });
+			page.updateData({ host: copy(done.data) });
 			return;
 		case "reload":
-			page.reload({ page: copy(done.data) });
+			page.reload({ host: copy(done.data) });
 			return;
 	}
 }

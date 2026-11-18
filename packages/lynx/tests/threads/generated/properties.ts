@@ -4,10 +4,11 @@ import { expect } from "@rstest/core";
 import fc from "fast-check";
 
 import { compilePage } from "./compile.ts";
+import type { CompiledBoth } from "./compile.ts";
 import { pageModel } from "./grammar.ts";
-import type { PageModel } from "./grammar.ts";
+import type { PageModel, PageState } from "./grammar.ts";
 import { apply, earlyStep, rewrote, startGenerated, step } from "./run.ts";
-import type { Step } from "./run.ts";
+import type { GeneratedPage, StartOptions, Step } from "./run.ts";
 import { about } from "./settings.ts";
 import { pageSources } from "./source.ts";
 import { backgroundTree, engineTree, expectSameTree } from "./trees.ts";
@@ -19,6 +20,28 @@ function expectNoErrors(errors: readonly unknown[], when: string): void {
 	throw new Error(`${when}, the page reported:\n${messages.join("\n---\n")}`);
 }
 
+/** What a failure says about the page besides its source. */
+const described = (model: PageModel): Record<string, unknown> => ({
+	data: model.data,
+	fromTemplate: model.fromTemplate,
+	production: model.production,
+});
+
+/** Compiles the page and starts it as `model` says, with `options`. */
+async function start(
+	model: PageModel,
+	options: Omit<StartOptions, "compiled" | "data">,
+): Promise<{ compiled: CompiledBoth; running: GeneratedPage }> {
+	const compiled = await compilePage(pageSources(model), { production: model.production });
+	const running = startGenerated({
+		...options,
+		compiled,
+		data: model.data,
+		fromTemplate: model.fromTemplate,
+	});
+	return { compiled, running };
+}
+
 /**
  * The first frame the main thread draws from the page's data is what the background renders from
  * the same data, where `background` is false: the same elements, attributes and texts, in order.
@@ -26,21 +49,22 @@ function expectNoErrors(errors: readonly unknown[], when: string): void {
  */
 export const firstFrameProperty: fc.IAsyncPropertyWithHooks<[PageModel, boolean]> =
 	fc.asyncProperty(pageModel, fc.boolean(), async (model, cells) => {
-		const sources = pageSources(model);
-		await about(sources, { data: model.data, cells }, async () => {
-			const compiled = await compilePage(sources);
+		await about(pageSources(model), { ...described(model), cells }, async () => {
 			// The frame binds no events until the background's patch: they are compared after it.
 			const reading = { lists: cells ? "cells" : "keys", events: false } as const;
-			const reference = startGenerated({
-				compiled,
-				data: model.data,
+			const { compiled, running: reference } = await start(model, {
 				firstFrame: false,
 				background: false,
 			});
 			await reference.page.settle();
 			expectNoErrors(reference.page.errors, "With no first frame");
 			const rendered = backgroundTree(reading);
-			const { page } = startGenerated({ compiled, data: model.data, firstFrame: true });
+			const { page } = startGenerated({
+				compiled,
+				data: model.data,
+				fromTemplate: model.fromTemplate,
+				firstFrame: true,
+			});
 			expectNoErrors(page.errors, "Drawing the first frame");
 			expectSameTree(engineTree(page.engine, reading), rendered, "The first frame shows");
 		});
@@ -55,10 +79,8 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 	pageModel,
 	fc.array(earlyStep, { maxLength: 3 }),
 	async (model, early) => {
-		const sources = pageSources(model);
-		await about(sources, { data: model.data, early }, async () => {
-			const compiled = await compilePage(sources);
-			const running = startGenerated({ compiled, data: model.data, firstFrame: true });
+		await about(pageSources(model), { ...described(model), early }, async () => {
+			const { running } = await start(model, { firstFrame: true });
 			for (const done of early) apply(running, done);
 			await running.page.settle();
 			expectNoErrors(running.page.errors, "At hydration");
@@ -68,10 +90,16 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 	},
 );
 
+/** The ids of `$props.id()` count on across a page's renders: a fresh page counts from the first. */
+const withoutIds = (tree: string[]): string[] =>
+	tree.map((line) => line.replace(/lynx-s\d+/g, "lynx-s#"));
+
 /**
  * After each change of the state on the background, tap, cell Lynx asks for or hands back, data
  * update and reload, Lynx shows what the background rendered, and nothing is reported: with a
- * first frame, or with none, when the background builds the page alone.
+ * first frame, or with none, when the background builds the page alone. And what the background
+ * rendered after each step is what a page started from that step's state renders, so the
+ * renderer's updates are checked against a mount.
  */
 export function updatesProperty(
 	firstFrame: boolean,
@@ -81,18 +109,38 @@ export function updatesProperty(
 		fc.array(earlyStep, { maxLength: 2 }),
 		fc.array(step, { minLength: 1, maxLength: 6 }),
 		async (model, early, steps) => {
-			const sources = pageSources(model);
-			await about(sources, { data: model.data, early, steps }, async () => {
-				const compiled = await compilePage(sources);
-				const running = startGenerated({ compiled, data: model.data, firstFrame });
+			await about(pageSources(model), { ...described(model), early, steps }, async () => {
+				const { compiled, running } = await start(model, { firstFrame });
 				for (const done of early) apply(running, done);
 				await running.page.settle();
+				// What the background rendered after each step, by the state it rendered.
+				const renders = new Map<string, { after: number; tree: string[] }[]>();
 				for (const [index, done] of steps.entries()) {
 					apply(running, done);
 					await running.page.settle();
 					const after = `After ${index + 1} of the steps`;
 					expectNoErrors(running.page.errors, after);
-					expectSameTree(engineTree(running.page.engine), backgroundTree(), `${after}, Lynx shows`);
+					const rendered = backgroundTree();
+					expectSameTree(engineTree(running.page.engine), rendered, `${after}, Lynx shows`);
+					const state = running.page.asBackground(() => JSON.stringify(running.handles.st));
+					renders.set(state, [...(renders.get(state) ?? []), { after: index + 1, tree: rendered }]);
+				}
+				for (const [state, trees] of renders) {
+					const fresh = startGenerated({
+						compiled,
+						data: JSON.parse(state) as PageState,
+						firstFrame: false,
+					});
+					await fresh.page.settle();
+					expectNoErrors(fresh.page.errors, "A page started from a step's state");
+					const mounted = withoutIds(backgroundTree());
+					for (const { after, tree } of trees) {
+						expectSameTree(
+							withoutIds(tree),
+							mounted,
+							`After ${after} of the steps, the background updated the page to`,
+						);
+					}
 				}
 			});
 		},

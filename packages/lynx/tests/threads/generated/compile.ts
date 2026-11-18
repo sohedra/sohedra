@@ -2,7 +2,8 @@
 // (`compileComponent`, which the component loader runs), as a build would: the background's copy
 // through the custom renderer, the main thread's through Svelte's server renderer. What the loader
 // adds around it is not needed here: the pages have no styles, no TypeScript for SWC to strip, and
-// no hot reload.
+// no hot reload. A page compiled for production still runs on the test run's runtime, which is the
+// development one.
 
 import path from "node:path";
 
@@ -26,14 +27,18 @@ export interface CompiledBoth {
 	readonly mainThread: CompiledPage;
 }
 
-async function compileFor(sources: PageSources, thread: Thread): Promise<CompiledPage> {
+async function compileFor(
+	sources: PageSources,
+	options: { thread: Thread; development: boolean },
+): Promise<CompiledPage> {
+	const { thread, development } = options;
 	const modules: [string, string][] = [];
 	for (const [file, source] of sources) {
 		const compiled = await compileComponent(source, {
 			filename: path.join(FOLDER, file),
 			thread,
 			root: ROOT,
-			development: true,
+			development,
 			sourceMap: false,
 			renderer: RENDERER,
 			serverInternals: INTERNALS,
@@ -44,10 +49,14 @@ async function compileFor(sources: PageSources, thread: Thread): Promise<Compile
 	return { modules };
 }
 
-/** Compiles `sources` for both threads. */
-export async function compilePage(sources: PageSources): Promise<CompiledBoth> {
+/** Compiles `sources` for both threads, for development unless `production`. */
+export async function compilePage(
+	sources: PageSources,
+	options: { production?: boolean } = {},
+): Promise<CompiledBoth> {
+	const development = options.production !== true;
 	return {
-		background: await compileFor(sources, "background"),
-		mainThread: await compileFor(sources, "main-thread"),
+		background: await compileFor(sources, { thread: "background", development }),
+		mainThread: await compileFor(sources, { thread: "main-thread", development }),
 	};
 }
