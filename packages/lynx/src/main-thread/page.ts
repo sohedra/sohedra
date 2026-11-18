@@ -23,8 +23,10 @@ export interface MainThreadPage {
 	applier: Applier | undefined;
 	/** The elements of the page before, shown until the new page's patch replaces them. */
 	previous: Applier[];
-	/** Patches that came before the engine rendered the page. */
+	/** Patches that came before the engine rendered the page, or before its first frame painted. */
 	early: PatchParams[];
+	/** The first frame is drawn, and the platform has not painted it yet: patches wait. */
+	painting: boolean;
 	/** The page's life has ended: a patch that comes after is for no page, and is dropped. */
 	destroyed: boolean;
 	/** Whether the background's page is shown: a patch of it was applied. */
@@ -68,6 +70,7 @@ export function createMainThreadPage(
 		applier: undefined,
 		previous: [],
 		early: [],
+		painting: false,
 		destroyed: false,
 		shown: false,
 		cells: new Map(),
