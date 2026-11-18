@@ -385,6 +385,24 @@ export function startMainThread(): MainThreadRuntime {
 		}
 	}
 
+	/**
+	 * Holds the patches until the platform has painted the first frame: a patch that came early
+	 * would hold up the paint by what it costs. Whether it holds; not when the thread cannot wait.
+	 */
+	function holdForPaint(): boolean {
+		try {
+			afterFirstPaint(() => {
+				state.painting = false;
+				for (const params of state.early.splice(0)) onPatch(params);
+			});
+		} catch (error) {
+			report(error);
+			return false;
+		}
+		state.painting = true;
+		return true;
+	}
+
 	function onRenderPage(event: EngineMessage): void {
 		try {
 			const page = (state.element = mainThread.__CreatePage("0", 0));
@@ -406,18 +424,7 @@ export function startMainThread(): MainThreadRuntime {
 			}, calls.flushed);
 			if (state.frame) state.applier = state.frame.applier;
 			state.applier ??= newApplier(page);
-			if (state.frame) {
-				// The first frame paints before a patch that came early hydrates it: the patch would
-				// hold up the paint by what it costs.
-				state.painting = true;
-				const generation = state.generation;
-				afterFirstPaint(() => {
-					if (state.generation !== generation) return;
-					state.painting = false;
-					for (const params of state.early.splice(0)) onPatch(params);
-				});
-				return;
-			}
+			if (state.frame && holdForPaint()) return;
 			// No flush: the engine flushes the tree after the render.
 			for (const params of state.early.splice(0)) applyPatch(params);
 		} catch (error) {
