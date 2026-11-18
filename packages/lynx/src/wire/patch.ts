@@ -33,8 +33,9 @@ export type CallRequest =
 	/** A UI method of the element, with its params: `boundingClientRect`, `scrollTo`… */
 	| ["invoke", string, Record<string, unknown>]
 	/**
-	 * `setValue` of an input or a textarea, with the number of the field's `input` event it answers:
-	 * the main thread drops it when the field had a newer one.
+	 * `setValue` of an input or a textarea that answers typing, with the number of the field's
+	 * `input` event it answers: the main thread drops it when the field had a newer one. A value set
+	 * from code is a plain `invoke`, which always applies.
 	 */
 	| ["invoke", "setValue", Record<string, unknown>, number]
 	/** The value of one of the element's computed styles. */

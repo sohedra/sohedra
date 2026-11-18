@@ -5,12 +5,13 @@
 // - A write skips the value the input already holds, so typing is not echoed back.
 // - A setter that changes the typed value (a mask, upper case) is written back with the caret
 //   where the typing left it, moved by what the setter added or took away: iOS would put it at
-//   the end. Each write says which `input` event it answers, and the main thread drops one that
+//   the end. Such a write says which `input` event it answers, and the main thread drops one that
 //   answers an older event than the field's latest, which would put back text typed since.
 // - While the keyboard composes, a setter's change is not written, which would break the
 //   composition. Lynx sends no event when composition ends, so it is written with the next `input`
 //   event that does not compose, or when the field loses focus, whichever comes first.
-// - Any other change (a Clear button) is written at once.
+// - Any other change (a Clear button) is written at once, and applies whatever was typed since, as
+//   a web input's value set from code does.
 
 import { backgroundError } from "../catalogue.ts";
 import { background } from "../globals.ts";
@@ -26,10 +27,14 @@ export interface InputHost {
 	/** Sets an attribute the way the component would. */
 	setAttribute(element: TreeNode, key: string, value: unknown): void;
 	/**
-	 * Calls `setValue` on the element on the main thread, answering the field's `input` event
-	 * `answers`.
+	 * Calls `setValue` on the element on the main thread; one that answers typing says which of the
+	 * field's `input` events it answers (`answers`), one from code says none.
 	 */
-	setValue(element: TreeNode, params: Record<string, unknown>, answers: number): Promise<unknown>;
+	setValue(
+		element: TreeNode,
+		params: Record<string, unknown>,
+		answers: number | undefined,
+	): Promise<unknown>;
 }
 
 /** Where an `input` event's number rides, on the event the background's handlers get. */
@@ -44,15 +49,23 @@ export function numberInput(event: object, input: number): void {
 const pageIsGone = (error: unknown): boolean =>
 	typeof error === "object" && error !== null && "code" in error && error.code === "page_is_gone";
 
-/** Writes `value` to the field, with the caret at `cursor` when it is given. */
-function write(host: InputHost, element: TreeNode, value: string, cursor?: number): void {
+/**
+ * Writes `value` to the field. An answer to typing (`typing`) says which event it answers, with
+ * the caret at `cursor` when it is given; a write from code applies whatever was typed since.
+ */
+function write(
+	host: InputHost,
+	element: TreeNode,
+	value: string,
+	typing?: { cursor: number | undefined },
+): void {
 	const input = element.input!;
 	input.current = value;
 	input.skipped = undefined;
 	const tag = element.tag ?? "input";
 	const params: Record<string, unknown> = { value };
-	if (cursor !== undefined) params["cursor"] = cursor;
-	host.setValue(element, params, input.answers).catch((error: unknown) => {
+	if (typing?.cursor !== undefined) params["cursor"] = typing.cursor;
+	host.setValue(element, params, typing ? input.answers : undefined).catch((error: unknown) => {
 		if (pageIsGone(error)) return;
 		reportError(
 			backgroundError({
@@ -77,7 +90,8 @@ function writeSkipped(host: InputHost, element: TreeNode): void {
 	const input = element.input!;
 	const skipped = input.skipped;
 	input.skipped = undefined;
-	if (skipped !== undefined && skipped !== input.current) write(host, element, skipped);
+	if (skipped !== undefined && skipped !== input.current)
+		write(host, element, skipped, { cursor: undefined });
 }
 
 /** Starts the state of a field's value, and listens to its typing. */
@@ -149,7 +163,10 @@ export function setInputValue(host: InputHost, element: TreeNode, raw: unknown):
 		return;
 	}
 	// An answer to typing keeps the caret where the typing left it.
-	const cursor =
-		input.typing && input.selection >= 0 ? caret(input.typed, input.selection, value) : undefined;
-	write(host, element, value, cursor);
+	if (!input.typing) {
+		write(host, element, value);
+		return;
+	}
+	const cursor = input.selection >= 0 ? caret(input.typed, input.selection, value) : undefined;
+	write(host, element, value, { cursor });
 }

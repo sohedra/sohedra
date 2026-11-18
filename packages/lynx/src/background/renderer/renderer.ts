@@ -339,7 +339,12 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		setValue(element, params, answers) {
 			if (!host || element.lynxId === 0)
 				return Promise.reject(new Error(`<${element.tag}> is not on the page.`));
-			return host.call(element.lynxId, ["invoke", "setValue", params, answers]);
+			return host.call(
+				element.lynxId,
+				answers === undefined
+					? ["invoke", "setValue", params]
+					: ["invoke", "setValue", params, answers],
+			);
 		},
 	};
 

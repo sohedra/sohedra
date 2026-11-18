@@ -2,7 +2,8 @@
 // answers typing with `setValue` when the component changes what was typed (a mask, upper case),
 // and its write says which event it answers. A write that answers an older event than the field's
 // latest would put back text the user has typed past, and lose those keys: it is dropped. The
-// background cannot tell, since the newer events are still on their way to it.
+// background cannot tell, since the newer events are still on their way to it. A value set from
+// code (a Clear button) answers no event, and applies whatever was typed since, as on the web.
 //
 // Lynx answers a write with an `input` event of its own on Android (and for an iOS textarea), with
 // the written value: that echo is not typing, and keeps the number it follows.
