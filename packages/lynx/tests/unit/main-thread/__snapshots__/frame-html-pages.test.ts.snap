@@ -1,0 +1,1021 @@
+// Rstest Snapshot v1
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads CssVariables as before 1`] = `
+"2 <view> {"class":"host"}
+  3 <view> {"style":"--tone: green; --size: 1px;"}
+    4 <view> {"class":"child-root"}
+      5 <text>
+        6 "child"
+7 <view> {"style":"--root: 1;"}
+  8 <view> {"class":"child-root"}
+    9 <text>
+      10 "child"
+11 <view> {"class":"grow"} bindEvent:tap
+  12 <text>
+    13 "grow""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads DeferredNested as before 1`] = `
+"2 <list> {"class":"outer","custom-list-name":"list-container","initial-item-count":0}
+  3 cell {"item-key":"holder"} "<list class=\\"inner\\" custom-list-name=\\"list-container\\" initial-item-count='0'><!--[--><list-item item-key=\\"a\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"b\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list>"
+    6 <list> {"class":"inner","custom-list-name":"list-container","initial-item-count":0}
+      7 <list-item> {"item-key":"a"}
+        [block]
+      8 <list-item> {"item-key":"b"}
+        [block]
+      [block]
+  4 cell {"item-key":"outer-a"} deferred "<!--[-1--><!--]-->"
+    [block]
+  5 cell {"item-key":"outer-b"} deferred "<!--[-1--><!--]-->"
+    [block]"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads DeferredRows as before 1`] = `
+"[block]
+  2 <list> {"class":"list","custom-list-name":"list-container","initial-item-count":0}
+    3 cell {"item-key":"r1"} deferred "<!--[-1--><!--]-->"
+      [block]
+    4 cell {"item-key":"r2"} deferred "<!--[-1--><!--]-->"
+      [block]
+    5 cell {"item-key":"r3"} deferred "<!--[-1--><!--]-->"
+      [block]
+    6 cell {"item-key":"r4"} deferred "<!--[-1--><!--]-->"
+      [block]
+    7 cell {"item-key":"r5"} deferred "<!--[-1--><!--]-->"
+      [block]
+    8 cell {"item-key":"r6"} deferred "<!--[-1--><!--]-->"
+      [block]
+    9 cell {"item-key":"r7"} deferred "<!--[-1--><!--]-->"
+      [block]
+    10 cell {"item-key":"r8"} deferred "<!--[-1--><!--]-->"
+      [block]
+    11 cell {"item-key":"r9"} deferred "<!--[-1--><!--]-->"
+      [block]
+    12 cell {"item-key":"r10"} deferred "<!--[-1--><!--]-->"
+      [block]
+    13 cell {"item-key":"r11"} deferred "<!--[-1--><!--]-->"
+      [block]
+    14 cell {"item-key":"r12"} deferred "<!--[-1--><!--]-->"
+      [block]
+    15 cell {"item-key":"r13"} deferred "<!--[-1--><!--]-->"
+      [block]
+    16 cell {"item-key":"r14"} deferred "<!--[-1--><!--]-->"
+      [block]
+    17 cell {"item-key":"r15"} deferred "<!--[-1--><!--]-->"
+      [block]
+    18 cell {"item-key":"r16"} deferred "<!--[-1--><!--]-->"
+      [block]
+    19 cell {"item-key":"r17"} deferred "<!--[-1--><!--]-->"
+      [block]
+    20 cell {"item-key":"r18"} deferred "<!--[-1--><!--]-->"
+      [block]
+    21 cell {"item-key":"r19"} deferred "<!--[-1--><!--]-->"
+      [block]
+    22 cell {"item-key":"r20"} deferred "<!--[-1--><!--]-->"
+      [block]
+    23 cell {"item-key":"r21"} deferred "<!--[-1--><!--]-->"
+      [block]
+    24 cell {"item-key":"r22"} deferred "<!--[-1--><!--]-->"
+      [block]
+    25 cell {"item-key":"r23"} deferred "<!--[-1--><!--]-->"
+      [block]
+    26 cell {"item-key":"r24"} deferred "<!--[-1--><!--]-->"
+      [block]
+    27 cell {"item-key":"r25"} deferred "<!--[-1--><!--]-->"
+      [block]
+    28 cell {"item-key":"r26"} deferred "<!--[-1--><!--]-->"
+      [block]
+    29 cell {"item-key":"r27"} deferred "<!--[-1--><!--]-->"
+      [block]
+    30 cell {"item-key":"r28"} deferred "<!--[-1--><!--]-->"
+      [block]
+    31 cell {"item-key":"r29"} deferred "<!--[-1--><!--]-->"
+      [block]
+    32 cell {"item-key":"r30"} deferred "<!--[-1--><!--]-->"
+      [block]
+    33 cell {"item-key":"r31"} deferred "<!--[-1--><!--]-->"
+      [block]
+    34 cell {"item-key":"r32"} deferred "<!--[-1--><!--]-->"
+      [block]
+    35 cell {"item-key":"r33"} deferred "<!--[-1--><!--]-->"
+      [block]
+    36 cell {"item-key":"r34"} deferred "<!--[-1--><!--]-->"
+      [block]
+    37 cell {"item-key":"r35"} deferred "<!--[-1--><!--]-->"
+      [block]
+    38 cell {"item-key":"r36"} deferred "<!--[-1--><!--]-->"
+      [block]
+    39 cell {"item-key":"r37"} deferred "<!--[-1--><!--]-->"
+      [block]
+    40 cell {"item-key":"r38"} deferred "<!--[-1--><!--]-->"
+      [block]
+    41 cell {"item-key":"r39"} deferred "<!--[-1--><!--]-->"
+      [block]
+    42 cell {"item-key":"r40"} deferred "<!--[-1--><!--]-->"
+      [block]"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads EmptyClassSpread as before 1`] = `
+"2 <view> {"class":"outer"}
+  3 <view> {"data-k":"v","class":""}"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreen as before 1`] = `
+"2 <list> {"class":"list","custom-list-name":"list-container"}
+  3 cell {"item-key":"r1"} "<!--[0--><view class=\\"row row-1\\" bindtap><text class=\\"label\\">Row 1: 0</text></view><!--]-->"
+    [block]
+      33 <view> {"class":"row row-1"} bindEvent:tap
+        34 <text> {"class":"label"}
+          35 "Row 1: 0"
+  4 cell {"item-key":"r2"} "<!--[0--><view class=\\"row row-2\\" bindtap><text class=\\"label\\">Row 2: 0</text></view><!--]-->"
+    [block]
+      36 <view> {"class":"row row-2"} bindEvent:tap
+        37 <text> {"class":"label"}
+          38 "Row 2: 0"
+  5 cell {"item-key":"r3"} "<!--[0--><view class=\\"row row-3\\" bindtap><text class=\\"label\\">Row 3: 0</text></view><!--]-->"
+    [block]
+      39 <view> {"class":"row row-3"} bindEvent:tap
+        40 <text> {"class":"label"}
+          41 "Row 3: 0"
+  6 cell {"item-key":"r4"} "<!--[0--><view class=\\"row row-4\\" bindtap><text class=\\"label\\">Row 4: 0</text></view><!--]-->"
+    [block]
+      42 <view> {"class":"row row-4"} bindEvent:tap
+        43 <text> {"class":"label"}
+          44 "Row 4: 0"
+  7 cell {"item-key":"r5"} "<!--[0--><view class=\\"row row-5\\" bindtap><text class=\\"label\\">Row 5: 0</text></view><!--]-->"
+    [block]
+      45 <view> {"class":"row row-5"} bindEvent:tap
+        46 <text> {"class":"label"}
+          47 "Row 5: 0"
+  8 cell {"item-key":"r6"} "<!--[0--><view class=\\"row row-6\\" bindtap><text class=\\"label\\">Row 6: 0</text></view><!--]-->"
+    [block]
+      48 <view> {"class":"row row-6"} bindEvent:tap
+        49 <text> {"class":"label"}
+          50 "Row 6: 0"
+  9 cell {"item-key":"r7"} "<!--[0--><view class=\\"row row-7\\" bindtap><text class=\\"label\\">Row 7: 0</text></view><!--]-->"
+    [block]
+      51 <view> {"class":"row row-7"} bindEvent:tap
+        52 <text> {"class":"label"}
+          53 "Row 7: 0"
+  10 cell {"item-key":"r8"} "<!--[0--><view class=\\"row row-8\\" bindtap><text class=\\"label\\">Row 8: 0</text></view><!--]-->"
+    [block]
+      54 <view> {"class":"row row-8"} bindEvent:tap
+        55 <text> {"class":"label"}
+          56 "Row 8: 0"
+  11 cell {"item-key":"r9"} "<!--[0--><view class=\\"row row-9\\" bindtap><text class=\\"label\\">Row 9: 0</text></view><!--]-->"
+    [block]
+      57 <view> {"class":"row row-9"} bindEvent:tap
+        58 <text> {"class":"label"}
+          59 "Row 9: 0"
+  12 cell {"item-key":"r10"} "<!--[0--><view class=\\"row row-10\\" bindtap><text class=\\"label\\">Row 10: 0</text></view><!--]-->"
+    [block]
+      60 <view> {"class":"row row-10"} bindEvent:tap
+        61 <text> {"class":"label"}
+          62 "Row 10: 0"
+  13 cell {"item-key":"r11"} deferred "<!--[-1--><!--]-->"
+    [block]
+  14 cell {"item-key":"r12"} deferred "<!--[-1--><!--]-->"
+    [block]
+  15 cell {"item-key":"r13"} deferred "<!--[-1--><!--]-->"
+    [block]
+  16 cell {"item-key":"r14"} deferred "<!--[-1--><!--]-->"
+    [block]
+  17 cell {"item-key":"r15"} deferred "<!--[-1--><!--]-->"
+    [block]
+  18 cell {"item-key":"r16"} deferred "<!--[-1--><!--]-->"
+    [block]
+  19 cell {"item-key":"r17"} deferred "<!--[-1--><!--]-->"
+    [block]
+  20 cell {"item-key":"r18"} deferred "<!--[-1--><!--]-->"
+    [block]
+  21 cell {"item-key":"r19"} deferred "<!--[-1--><!--]-->"
+    [block]
+  22 cell {"item-key":"r20"} deferred "<!--[-1--><!--]-->"
+    [block]
+  23 cell {"item-key":"r21"} deferred "<!--[-1--><!--]-->"
+    [block]
+  24 cell {"item-key":"r22"} deferred "<!--[-1--><!--]-->"
+    [block]
+  25 cell {"item-key":"r23"} deferred "<!--[-1--><!--]-->"
+    [block]
+  26 cell {"item-key":"r24"} deferred "<!--[-1--><!--]-->"
+    [block]
+  27 cell {"item-key":"r25"} deferred "<!--[-1--><!--]-->"
+    [block]
+  28 cell {"item-key":"r26"} deferred "<!--[-1--><!--]-->"
+    [block]
+  29 cell {"item-key":"r27"} deferred "<!--[-1--><!--]-->"
+    [block]
+  30 cell {"item-key":"r28"} deferred "<!--[-1--><!--]-->"
+    [block]
+  31 cell {"item-key":"r29"} deferred "<!--[-1--><!--]-->"
+    [block]
+  32 cell {"item-key":"r30"} deferred "<!--[-1--><!--]-->"
+    [block]"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreenNested as before 1`] = `
+"2 <list> {"class":"outer","custom-list-name":"list-container"}
+  3 cell {"item-key":"o1"} "<!--[0--><text class=\\"outer-1\\">Outer 1</text> <list class=\\"inner-1\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-1-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-1-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-1-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      15 <text> {"class":"outer-1"}
+        16 "Outer 1"
+      17 <list> {"class":"inner-1","custom-list-name":"list-container","initial-item-count":3}
+        18 <list-item> {"item-key":"i1"}
+          [block]
+            19 <text> {"class":"inner-1-1"}
+              20 "Inner 1"
+        21 <list-item> {"item-key":"i2"}
+          [block]
+            22 <text> {"class":"inner-1-2"}
+              23 "Inner 2"
+        24 <list-item> {"item-key":"i3"}
+          [block]
+            25 <text> {"class":"inner-1-3"}
+              26 "Inner 3"
+        27 <list-item> {"item-key":"i4"}
+          [block]
+        28 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  4 cell {"item-key":"o2"} "<!--[0--><text class=\\"outer-2\\">Outer 2</text> <list class=\\"inner-2\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-2-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-2-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-2-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      29 <text> {"class":"outer-2"}
+        30 "Outer 2"
+      31 <list> {"class":"inner-2","custom-list-name":"list-container","initial-item-count":3}
+        32 <list-item> {"item-key":"i1"}
+          [block]
+            33 <text> {"class":"inner-2-1"}
+              34 "Inner 1"
+        35 <list-item> {"item-key":"i2"}
+          [block]
+            36 <text> {"class":"inner-2-2"}
+              37 "Inner 2"
+        38 <list-item> {"item-key":"i3"}
+          [block]
+            39 <text> {"class":"inner-2-3"}
+              40 "Inner 3"
+        41 <list-item> {"item-key":"i4"}
+          [block]
+        42 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  5 cell {"item-key":"o3"} "<!--[0--><text class=\\"outer-3\\">Outer 3</text> <list class=\\"inner-3\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-3-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-3-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-3-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      43 <text> {"class":"outer-3"}
+        44 "Outer 3"
+      45 <list> {"class":"inner-3","custom-list-name":"list-container","initial-item-count":3}
+        46 <list-item> {"item-key":"i1"}
+          [block]
+            47 <text> {"class":"inner-3-1"}
+              48 "Inner 1"
+        49 <list-item> {"item-key":"i2"}
+          [block]
+            50 <text> {"class":"inner-3-2"}
+              51 "Inner 2"
+        52 <list-item> {"item-key":"i3"}
+          [block]
+            53 <text> {"class":"inner-3-3"}
+              54 "Inner 3"
+        55 <list-item> {"item-key":"i4"}
+          [block]
+        56 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  6 cell {"item-key":"o4"} "<!--[0--><text class=\\"outer-4\\">Outer 4</text> <list class=\\"inner-4\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-4-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-4-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-4-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      57 <text> {"class":"outer-4"}
+        58 "Outer 4"
+      59 <list> {"class":"inner-4","custom-list-name":"list-container","initial-item-count":3}
+        60 <list-item> {"item-key":"i1"}
+          [block]
+            61 <text> {"class":"inner-4-1"}
+              62 "Inner 1"
+        63 <list-item> {"item-key":"i2"}
+          [block]
+            64 <text> {"class":"inner-4-2"}
+              65 "Inner 2"
+        66 <list-item> {"item-key":"i3"}
+          [block]
+            67 <text> {"class":"inner-4-3"}
+              68 "Inner 3"
+        69 <list-item> {"item-key":"i4"}
+          [block]
+        70 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  7 cell {"item-key":"o5"} "<!--[0--><text class=\\"outer-5\\">Outer 5</text> <list class=\\"inner-5\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-5-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-5-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-5-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      71 <text> {"class":"outer-5"}
+        72 "Outer 5"
+      73 <list> {"class":"inner-5","custom-list-name":"list-container","initial-item-count":3}
+        74 <list-item> {"item-key":"i1"}
+          [block]
+            75 <text> {"class":"inner-5-1"}
+              76 "Inner 1"
+        77 <list-item> {"item-key":"i2"}
+          [block]
+            78 <text> {"class":"inner-5-2"}
+              79 "Inner 2"
+        80 <list-item> {"item-key":"i3"}
+          [block]
+            81 <text> {"class":"inner-5-3"}
+              82 "Inner 3"
+        83 <list-item> {"item-key":"i4"}
+          [block]
+        84 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  8 cell {"item-key":"o6"} "<!--[0--><text class=\\"outer-6\\">Outer 6</text> <list class=\\"inner-6\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-6-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-6-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-6-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      85 <text> {"class":"outer-6"}
+        86 "Outer 6"
+      87 <list> {"class":"inner-6","custom-list-name":"list-container","initial-item-count":3}
+        88 <list-item> {"item-key":"i1"}
+          [block]
+            89 <text> {"class":"inner-6-1"}
+              90 "Inner 1"
+        91 <list-item> {"item-key":"i2"}
+          [block]
+            92 <text> {"class":"inner-6-2"}
+              93 "Inner 2"
+        94 <list-item> {"item-key":"i3"}
+          [block]
+            95 <text> {"class":"inner-6-3"}
+              96 "Inner 3"
+        97 <list-item> {"item-key":"i4"}
+          [block]
+        98 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  9 cell {"item-key":"o7"} "<!--[0--><text class=\\"outer-7\\">Outer 7</text> <list class=\\"inner-7\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-7-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-7-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-7-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      99 <text> {"class":"outer-7"}
+        100 "Outer 7"
+      101 <list> {"class":"inner-7","custom-list-name":"list-container","initial-item-count":3}
+        102 <list-item> {"item-key":"i1"}
+          [block]
+            103 <text> {"class":"inner-7-1"}
+              104 "Inner 1"
+        105 <list-item> {"item-key":"i2"}
+          [block]
+            106 <text> {"class":"inner-7-2"}
+              107 "Inner 2"
+        108 <list-item> {"item-key":"i3"}
+          [block]
+            109 <text> {"class":"inner-7-3"}
+              110 "Inner 3"
+        111 <list-item> {"item-key":"i4"}
+          [block]
+        112 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  10 cell {"item-key":"o8"} "<!--[0--><text class=\\"outer-8\\">Outer 8</text> <list class=\\"inner-8\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-8-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-8-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-8-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      113 <text> {"class":"outer-8"}
+        114 "Outer 8"
+      115 <list> {"class":"inner-8","custom-list-name":"list-container","initial-item-count":3}
+        116 <list-item> {"item-key":"i1"}
+          [block]
+            117 <text> {"class":"inner-8-1"}
+              118 "Inner 1"
+        119 <list-item> {"item-key":"i2"}
+          [block]
+            120 <text> {"class":"inner-8-2"}
+              121 "Inner 2"
+        122 <list-item> {"item-key":"i3"}
+          [block]
+            123 <text> {"class":"inner-8-3"}
+              124 "Inner 3"
+        125 <list-item> {"item-key":"i4"}
+          [block]
+        126 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  11 cell {"item-key":"o9"} "<!--[0--><text class=\\"outer-9\\">Outer 9</text> <list class=\\"inner-9\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-9-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-9-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-9-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      127 <text> {"class":"outer-9"}
+        128 "Outer 9"
+      129 <list> {"class":"inner-9","custom-list-name":"list-container","initial-item-count":3}
+        130 <list-item> {"item-key":"i1"}
+          [block]
+            131 <text> {"class":"inner-9-1"}
+              132 "Inner 1"
+        133 <list-item> {"item-key":"i2"}
+          [block]
+            134 <text> {"class":"inner-9-2"}
+              135 "Inner 2"
+        136 <list-item> {"item-key":"i3"}
+          [block]
+            137 <text> {"class":"inner-9-3"}
+              138 "Inner 3"
+        139 <list-item> {"item-key":"i4"}
+          [block]
+        140 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  12 cell {"item-key":"o10"} "<!--[0--><text class=\\"outer-10\\">Outer 10</text> <list class=\\"inner-10\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-10-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-10-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-10-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
+    [block]
+      141 <text> {"class":"outer-10"}
+        142 "Outer 10"
+      143 <list> {"class":"inner-10","custom-list-name":"list-container","initial-item-count":3}
+        144 <list-item> {"item-key":"i1"}
+          [block]
+            145 <text> {"class":"inner-10-1"}
+              146 "Inner 1"
+        147 <list-item> {"item-key":"i2"}
+          [block]
+            148 <text> {"class":"inner-10-2"}
+              149 "Inner 2"
+        150 <list-item> {"item-key":"i3"}
+          [block]
+            151 <text> {"class":"inner-10-3"}
+              152 "Inner 3"
+        153 <list-item> {"item-key":"i4"}
+          [block]
+        154 <list-item> {"item-key":"i5"}
+          [block]
+        [block]
+  13 cell {"item-key":"o11"} deferred "<!--[-1--><!--]-->"
+    [block]
+  14 cell {"item-key":"o12"} deferred "<!--[-1--><!--]-->"
+    [block]"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreenSnippet as before 1`] = `
+"2 <list> {"class":"list","custom-list-name":"list-container"}
+  3 cell {"item-key":"s1"} "<!--[0--><text class=\\"s-1\\">s 1</text><!--]-->"
+    [block]
+      23 <text> {"class":"s-1"}
+        24 "s 1"
+  4 cell {"item-key":"s2"} "<!--[0--><text class=\\"s-2\\">s 2</text><!--]-->"
+    [block]
+      25 <text> {"class":"s-2"}
+        26 "s 2"
+  5 cell {"item-key":"s3"} "<!--[0--><text class=\\"s-3\\">s 3</text><!--]-->"
+    [block]
+      27 <text> {"class":"s-3"}
+        28 "s 3"
+  6 cell {"item-key":"s4"} "<!--[0--><text class=\\"s-4\\">s 4</text><!--]-->"
+    [block]
+      29 <text> {"class":"s-4"}
+        30 "s 4"
+  7 cell {"item-key":"s5"} "<!--[0--><text class=\\"s-5\\">s 5</text><!--]-->"
+    [block]
+      31 <text> {"class":"s-5"}
+        32 "s 5"
+  8 cell {"item-key":"s6"} "<!--[0--><text class=\\"s-6\\">s 6</text><!--]-->"
+    [block]
+      33 <text> {"class":"s-6"}
+        34 "s 6"
+  9 cell {"item-key":"s7"} "<!--[0--><text class=\\"s-7\\">s 7</text><!--]-->"
+    [block]
+      35 <text> {"class":"s-7"}
+        36 "s 7"
+  10 cell {"item-key":"s8"} "<!--[0--><text class=\\"s-8\\">s 8</text><!--]-->"
+    [block]
+      37 <text> {"class":"s-8"}
+        38 "s 8"
+  11 cell {"item-key":"s9"} "<!--[0--><text class=\\"s-9\\">s 9</text><!--]-->"
+    [block]
+      39 <text> {"class":"s-9"}
+        40 "s 9"
+  12 cell {"item-key":"s10"} "<!--[0--><text class=\\"s-10\\">s 10</text><!--]-->"
+    [block]
+      41 <text> {"class":"s-10"}
+        42 "s 10"
+  13 cell {"item-key":"s11"} deferred "<!--[-1--><!--]-->"
+    [block]
+  14 cell {"item-key":"s12"} deferred "<!--[-1--><!--]-->"
+    [block]
+  15 cell {"item-key":"s13"} deferred "<!--[-1--><!--]-->"
+    [block]
+  16 cell {"item-key":"s14"} deferred "<!--[-1--><!--]-->"
+    [block]
+  17 cell {"item-key":"s15"} deferred "<!--[-1--><!--]-->"
+    [block]
+  18 cell {"item-key":"s16"} deferred "<!--[-1--><!--]-->"
+    [block]
+  19 cell {"item-key":"s17"} deferred "<!--[-1--><!--]-->"
+    [block]
+  20 cell {"item-key":"s18"} deferred "<!--[-1--><!--]-->"
+    [block]
+  21 cell {"item-key":"s19"} deferred "<!--[-1--><!--]-->"
+    [block]
+  22 cell {"item-key":"s20"} deferred "<!--[-1--><!--]-->"
+    [block]"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreenTwoLists as before 1`] = `
+"2 <list> {"class":"first","custom-list-name":"list-container"}
+  3 cell {"item-key":"a1"} "<!--[0--><text class=\\"a-1\\">a 1</text><!--]-->"
+    [block]
+      44 <text> {"class":"a-1"}
+        45 "a 1"
+  4 cell {"item-key":"a2"} "<!--[0--><text class=\\"a-2\\">a 2</text><!--]-->"
+    [block]
+      46 <text> {"class":"a-2"}
+        47 "a 2"
+  5 cell {"item-key":"a3"} "<!--[0--><text class=\\"a-3\\">a 3</text><!--]-->"
+    [block]
+      48 <text> {"class":"a-3"}
+        49 "a 3"
+  6 cell {"item-key":"a4"} "<!--[0--><text class=\\"a-4\\">a 4</text><!--]-->"
+    [block]
+      50 <text> {"class":"a-4"}
+        51 "a 4"
+  7 cell {"item-key":"a5"} "<!--[0--><text class=\\"a-5\\">a 5</text><!--]-->"
+    [block]
+      52 <text> {"class":"a-5"}
+        53 "a 5"
+  8 cell {"item-key":"a6"} "<!--[0--><text class=\\"a-6\\">a 6</text><!--]-->"
+    [block]
+      54 <text> {"class":"a-6"}
+        55 "a 6"
+  9 cell {"item-key":"a7"} "<!--[0--><text class=\\"a-7\\">a 7</text><!--]-->"
+    [block]
+      56 <text> {"class":"a-7"}
+        57 "a 7"
+  10 cell {"item-key":"a8"} "<!--[0--><text class=\\"a-8\\">a 8</text><!--]-->"
+    [block]
+      58 <text> {"class":"a-8"}
+        59 "a 8"
+  11 cell {"item-key":"a9"} "<!--[0--><text class=\\"a-9\\">a 9</text><!--]-->"
+    [block]
+      60 <text> {"class":"a-9"}
+        61 "a 9"
+  12 cell {"item-key":"a10"} "<!--[0--><text class=\\"a-10\\">a 10</text><!--]-->"
+    [block]
+      62 <text> {"class":"a-10"}
+        63 "a 10"
+  13 cell {"item-key":"a11"} deferred "<!--[-1--><!--]-->"
+    [block]
+  14 cell {"item-key":"a12"} deferred "<!--[-1--><!--]-->"
+    [block]
+  15 cell {"item-key":"a13"} deferred "<!--[-1--><!--]-->"
+    [block]
+  16 cell {"item-key":"a14"} deferred "<!--[-1--><!--]-->"
+    [block]
+  17 cell {"item-key":"a15"} deferred "<!--[-1--><!--]-->"
+    [block]
+  18 cell {"item-key":"a16"} deferred "<!--[-1--><!--]-->"
+    [block]
+  19 cell {"item-key":"a17"} deferred "<!--[-1--><!--]-->"
+    [block]
+  20 cell {"item-key":"a18"} deferred "<!--[-1--><!--]-->"
+    [block]
+  21 cell {"item-key":"a19"} deferred "<!--[-1--><!--]-->"
+    [block]
+  22 cell {"item-key":"a20"} deferred "<!--[-1--><!--]-->"
+    [block]
+23 <list> {"class":"second","custom-list-name":"list-container"}
+  24 cell {"item-key":"b1"} "<!--[0--><text class=\\"b-1\\">b 1</text><!--]-->"
+    [block]
+      64 <text> {"class":"b-1"}
+        65 "b 1"
+  25 cell {"item-key":"b2"} "<!--[0--><text class=\\"b-2\\">b 2</text><!--]-->"
+    [block]
+      66 <text> {"class":"b-2"}
+        67 "b 2"
+  26 cell {"item-key":"b3"} "<!--[0--><text class=\\"b-3\\">b 3</text><!--]-->"
+    [block]
+      68 <text> {"class":"b-3"}
+        69 "b 3"
+  27 cell {"item-key":"b4"} "<!--[0--><text class=\\"b-4\\">b 4</text><!--]-->"
+    [block]
+      70 <text> {"class":"b-4"}
+        71 "b 4"
+  28 cell {"item-key":"b5"} "<!--[0--><text class=\\"b-5\\">b 5</text><!--]-->"
+    [block]
+      72 <text> {"class":"b-5"}
+        73 "b 5"
+  29 cell {"item-key":"b6"} "<!--[0--><text class=\\"b-6\\">b 6</text><!--]-->"
+    [block]
+      74 <text> {"class":"b-6"}
+        75 "b 6"
+  30 cell {"item-key":"b7"} "<!--[0--><text class=\\"b-7\\">b 7</text><!--]-->"
+    [block]
+      76 <text> {"class":"b-7"}
+        77 "b 7"
+  31 cell {"item-key":"b8"} "<!--[0--><text class=\\"b-8\\">b 8</text><!--]-->"
+    [block]
+      78 <text> {"class":"b-8"}
+        79 "b 8"
+  32 cell {"item-key":"b9"} "<!--[0--><text class=\\"b-9\\">b 9</text><!--]-->"
+    [block]
+      80 <text> {"class":"b-9"}
+        81 "b 9"
+  33 cell {"item-key":"b10"} "<!--[0--><text class=\\"b-10\\">b 10</text><!--]-->"
+    [block]
+      82 <text> {"class":"b-10"}
+        83 "b 10"
+  34 cell {"item-key":"b11"} deferred "<!--[-1--><!--]-->"
+    [block]
+  35 cell {"item-key":"b12"} deferred "<!--[-1--><!--]-->"
+    [block]
+  36 cell {"item-key":"b13"} deferred "<!--[-1--><!--]-->"
+    [block]
+  37 cell {"item-key":"b14"} deferred "<!--[-1--><!--]-->"
+    [block]
+  38 cell {"item-key":"b15"} deferred "<!--[-1--><!--]-->"
+    [block]
+  39 cell {"item-key":"b16"} deferred "<!--[-1--><!--]-->"
+    [block]
+  40 cell {"item-key":"b17"} deferred "<!--[-1--><!--]-->"
+    [block]
+  41 cell {"item-key":"b18"} deferred "<!--[-1--><!--]-->"
+    [block]
+  42 cell {"item-key":"b19"} deferred "<!--[-1--><!--]-->"
+    [block]
+  43 cell {"item-key":"b20"} deferred "<!--[-1--><!--]-->"
+    [block]"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameAttributes as before 1`] = `
+"2 <view> {"class":"camel","customName":"x","catchphrase":"y","spreadName":"z","maxLength":4,"autoPlay":true,"data-info":{"a":1}} bindEvent:tap
+3 <view> {"class":"typed","span-count":2,"sticky-top":false,"accessibility-actions":["a","b"],"data-quote":"it's <5>"}
+4 <input> {"class":"field","default-value":"typed"}
+5 <view> {"class":"after-input"}
+  6 <text>
+    7 "after"
+8 <textarea> {"class":"area","default-value":"area text"}
+9 <text> {"class":"sibling"}
+  10 "sibling""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameBlocks as before 1`] = `
+"2 <view> {"class":"top"}
+  3 <text>
+    4 "top"
+[block]
+[block]
+  5 <view> {"class":"tone"}
+    6 <text>
+      7 "plain"
+[block]
+  8 <view> {"class":"badge"}
+    9 <text>
+      10 "."
+11 <view> {"class":"bottom","data-mounted":false}
+  12 <text>
+    13 "drawn""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameBranchList as before 1`] = `
+"[block]
+  2 <list> {"class":"list"}
+    3 cell {"item-key":"a","class":"row drawn"} "<text class=\\"label drawn\\">a</text>"
+      6 <text> {"class":"label drawn"}
+        7 "a"
+    4 cell {"item-key":"b","class":"row drawn"} "<text class=\\"label drawn\\">b</text>"
+      8 <text> {"class":"label drawn"}
+        9 "b"
+    5 cell {"item-key":"c","class":"row drawn"} "<text class=\\"label drawn\\">c</text>"
+      10 <text> {"class":"label drawn"}
+        11 "c""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameCounter as before 1`] = `
+"2 <view> {"class":"root","style":"padding: 24px;"}
+  3 <text> {"class":"count"}
+    4 "Taps: 0 (drawn)"
+  5 <view> {"class":"button"} bindEvent:tap
+    6 <text> {"class":"label"}
+      7 "Tap me""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameEvents as before 1`] = `
+"2 <scroll-view> {"class":"scroller"} bindEvent:scroll
+  3 <view> {"class":"outer"} bindEvent:tap
+    4 <view> {"class":"caught"} catchEvent:tap
+      5 <text> {"class":"inside"}
+        6 "inside"
+    7 <view> {"class":"bubbles"} bindEvent:tap
+      8 <text> {"class":"leaf"}
+        9 "leaf""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameFeed as before 1`] = `
+"2 <list> {"class":"feed"}
+  3 cell {"item-key":"row-1"} "<list class=\\"carousel\\" scroll-orientation=\\"horizontal\\"><!--[--><list-item item-key=\\"one\\"><text class=\\"card\\" bindtap>one</text></list-item><list-item item-key=\\"two\\"><text class=\\"card\\" bindtap>two</text></list-item><!--]--></list>"
+    4 <list> {"class":"carousel","scroll-orientation":"horizontal"}
+      5 <list-item> {"item-key":"one"}
+        6 <text> {"class":"card"} bindEvent:tap
+          7 "one"
+      8 <list-item> {"item-key":"two"}
+        9 <text> {"class":"card"} bindEvent:tap
+          10 "two""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIdBranches as before 1`] = `
+"2 <view> {"class":"part"}
+  [block]
+    3 <view> {"class":"labeled","id":"lynx-m1","accessibility-label":"label-lynx-m1"}
+      4 <text>
+        5 "lynx-m1"
+  6 <view> {"class":"labeled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
+    7 <text>
+      8 "lynx-s1"
+9 <view> {"class":"part"}
+  [block]
+  [block]
+  10 <view> {"class":"labeled","id":"lynx-s2","accessibility-label":"label-lynx-s2"}
+    11 <text>
+      12 "lynx-s2"
+13 <view> {"class":"slot"}
+  [block]
+    14 <view> {"class":"labeled","id":"lynx-m2","accessibility-label":"label-lynx-m2"}
+      15 <text>
+        16 "lynx-m2"
+  17 <view> {"class":"labeled","id":"lynx-s3","accessibility-label":"label-lynx-s3"}
+    18 <text>
+      19 "lynx-s3"
+20 <view> {"class":"part"}
+  [block]
+  [block]
+    21 <view> {"class":"labeled","id":"lynx-m3","accessibility-label":"label-lynx-m3"}
+      22 <text>
+        23 "lynx-m3"
+  24 <view> {"class":"labeled","id":"lynx-s4","accessibility-label":"label-lynx-s4"}
+    25 <text>
+      26 "lynx-s4"
+27 <view> {"class":"part"}
+  [block]
+  28 <view> {"class":"labeled","id":"lynx-s5","accessibility-label":"label-lynx-s5"}
+    29 <text>
+      30 "lynx-s5""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIdDeferred as before 1`] = `
+"2 <view> {"class":"labeled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
+  3 <text>
+    4 "lynx-s1"
+5 <list> {"class":"list","custom-list-name":"list-container","initial-item-count":0}
+  6 cell {"item-key":"a"} deferred "<!--[-1--><!--]-->"
+    [block]
+  7 cell {"item-key":"b"} deferred "<!--[-1--><!--]-->"
+    [block]
+8 <view> {"class":"labeled","id":"lynx-s2","accessibility-label":"label-lynx-s2"}
+  9 <text>
+    10 "lynx-s2""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIds as before 1`] = `
+"2 <view> {"class":"labelled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
+  3 <text>
+    4 "lynx-s1""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameList as before 1`] = `
+"2 <list> {"class":"list"}
+  3 cell {"item-key":"a","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>a</text>"
+    6 <text> {"class":"row"} bindEvent:tap
+      7 "a"
+  4 cell {"item-key":"b","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>b</text>"
+    8 <text> {"class":"row"} bindEvent:tap
+      9 "b"
+  5 cell {"item-key":"c","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>c</text>"
+    10 <text> {"class":"row"} bindEvent:tap
+      11 "c""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameMarkupValue as before 1`] = `
+"2 <list> {"class":"list"}
+  3 cell {"item-key":"a","data-raw":{"markup":"<list-item>a</list-item></list>"}} "<text class=\\"row\\">a</text>"
+    5 <text> {"class":"row"}
+      6 "a"
+  4 cell {"item-key":"b","data-raw":{"markup":"<list-item>b</list-item></list>"}} "<text class=\\"row\\">b</text>"
+    7 <text> {"class":"row"}
+      8 "b""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameTextInBlock as before 1`] = `
+"2 <view> {"class":"root"}
+  3 <text> {"class":"t"}
+    [block]
+      4 "B"
+      5 <text> {"class":"f"}
+        6 "f"
+      7 <text> {"class":"f"}
+        8 "f"
+      9 "A""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameTexts as before 1`] = `
+"2 <view> {"class":"root"}
+  3 <text> {"class":"message"}
+  4 <text> {"class":"mixed"}
+    5 <text> {"class":"inline"}
+      6 "inline"
+    7 "end"
+  8 <view> {"class":"after"}
+    9 <text>
+      10 "after""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads Hydrate as before 1`] = `
+"2 <view> {"class":"outer","main-thread:ref":{"_wvid":-3,"_initValue":null}}
+  3 <view> {"class":"tap","main-thread:bindtap":{"_c":{"bump":{"_c":{"taps":{"_wvid":-1,"_initValue":0}},"_wkltId":"4b32:60fe3:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}},"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:2","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
+  4 <view> {"class":"saved","main-thread:bindtap":{"_c":{"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:3"}}
+  5 <view> {"class":"plain"} bindEvent:tap
+  6 <view> {"class":"once","main-thread:ref":{"_wkltId":"4b32:60fe3:4","_jsFn":{"_jsFn1":{"_isFirstScreen":true},"_jsFn2":{"_isFirstScreen":true}}}}
+  7 <view> {"class":"where","main-thread:ref":{"_c":{"where":"frame","outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:5"}}
+  8 <view> {"class":"frame-only","main-thread:bindtap":{"_wkltId":"4b32:60fe3:9"}}
+  [block]
+    9 <text> {"class":"else","main-thread:ref":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:6"},"main-thread:bindtap":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:7","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads LongFeed plain as before 1`] = `
+"2 <view> {"class":"page"}
+  3 <text> {"class":"status"}
+    4 "3 rows, liked 0"
+  5 <list> {"class":"list","list-type":"single","span-count":1}
+    6 cell {"item-key":"1","reuse-identifier":"row"} "<view class=\\"row\\"><image class=\\"picture\\" src=\\"picture.png?row=1\\"></image><view class=\\"body\\"><text class=\\"title\\">Row 1</text><text class=\\"subtitle\\">A line of text under the title of row 1</text><view class=\\"meta\\"><text class=\\"tag\\">tag</text><text class=\\"tag\\">1 min</text><text class=\\"tag\\">#1</text></view><view class=\\"actions\\"><view class=\\"action\\" bindtap><text>Like</text></view><view class=\\"action\\"><text>Share</text></view></view></view></view>"
+      9 <view> {"class":"row"}
+        10 <image> {"class":"picture","src":"picture.png?row=1"}
+        11 <view> {"class":"body"}
+          12 <text> {"class":"title"}
+            13 "Row 1"
+          14 <text> {"class":"subtitle"}
+            15 "A line of text under the title of row 1"
+          16 <view> {"class":"meta"}
+            17 <text> {"class":"tag"}
+              18 "tag"
+            19 <text> {"class":"tag"}
+              20 "1 min"
+            21 <text> {"class":"tag"}
+              22 "#1"
+          23 <view> {"class":"actions"}
+            24 <view> {"class":"action"} bindEvent:tap
+              25 <text>
+                26 "Like"
+            27 <view> {"class":"action"}
+              28 <text>
+                29 "Share"
+    7 cell {"item-key":"2","reuse-identifier":"row"} "<view class=\\"row\\"><image class=\\"picture\\" src=\\"picture.png?row=2\\"></image><view class=\\"body\\"><text class=\\"title\\">Row 2</text><text class=\\"subtitle\\">A line of text under the title of row 2</text><view class=\\"meta\\"><text class=\\"tag\\">tag</text><text class=\\"tag\\">2 min</text><text class=\\"tag\\">#2</text></view><view class=\\"actions\\"><view class=\\"action\\" bindtap><text>Like</text></view><view class=\\"action\\"><text>Share</text></view></view></view></view>"
+      30 <view> {"class":"row"}
+        31 <image> {"class":"picture","src":"picture.png?row=2"}
+        32 <view> {"class":"body"}
+          33 <text> {"class":"title"}
+            34 "Row 2"
+          35 <text> {"class":"subtitle"}
+            36 "A line of text under the title of row 2"
+          37 <view> {"class":"meta"}
+            38 <text> {"class":"tag"}
+              39 "tag"
+            40 <text> {"class":"tag"}
+              41 "2 min"
+            42 <text> {"class":"tag"}
+              43 "#2"
+          44 <view> {"class":"actions"}
+            45 <view> {"class":"action"} bindEvent:tap
+              46 <text>
+                47 "Like"
+            48 <view> {"class":"action"}
+              49 <text>
+                50 "Share"
+    8 cell {"item-key":"3","reuse-identifier":"row"} "<view class=\\"row\\"><image class=\\"picture\\" src=\\"picture.png?row=3\\"></image><view class=\\"body\\"><text class=\\"title\\">Row 3</text><text class=\\"subtitle\\">A line of text under the title of row 3</text><view class=\\"meta\\"><text class=\\"tag\\">tag</text><text class=\\"tag\\">3 min</text><text class=\\"tag\\">#3</text></view><view class=\\"actions\\"><view class=\\"action\\" bindtap><text>Like</text></view><view class=\\"action\\"><text>Share</text></view></view></view></view>"
+      51 <view> {"class":"row"}
+        52 <image> {"class":"picture","src":"picture.png?row=3"}
+        53 <view> {"class":"body"}
+          54 <text> {"class":"title"}
+            55 "Row 3"
+          56 <text> {"class":"subtitle"}
+            57 "A line of text under the title of row 3"
+          58 <view> {"class":"meta"}
+            59 <text> {"class":"tag"}
+              60 "tag"
+            61 <text> {"class":"tag"}
+              62 "3 min"
+            63 <text> {"class":"tag"}
+              64 "#3"
+          65 <view> {"class":"actions"}
+            66 <view> {"class":"action"} bindEvent:tap
+              67 <text>
+                68 "Like"
+            69 <view> {"class":"action"}
+              70 <text>
+                71 "Share""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads LongFeed row as before 1`] = `
+"2 <view> {"class":"page"}
+  3 <text> {"class":"status"}
+    4 "3 rows, liked 0"
+  5 <list> {"class":"list","list-type":"single","span-count":1}
+    6 cell {"item-key":"1","reuse-identifier":"row"} "<view class=\\"row\\"><image class=\\"picture\\" src=\\"picture.png?row=1\\"></image><view class=\\"body\\"><text class=\\"title\\">Row 1</text><text class=\\"subtitle\\">A line of text under the title of row 1</text><view class=\\"meta\\"><text class=\\"tag\\">tag</text><text class=\\"tag\\">1 min</text><text class=\\"tag\\">#1</text></view><view class=\\"actions\\"><view class=\\"action\\" bindtap><text>Like</text></view><view class=\\"action\\"><text>Share</text></view></view></view></view><!---->"
+      9 <view> {"class":"row"}
+        10 <image> {"class":"picture","src":"picture.png?row=1"}
+        11 <view> {"class":"body"}
+          12 <text> {"class":"title"}
+            13 "Row 1"
+          14 <text> {"class":"subtitle"}
+            15 "A line of text under the title of row 1"
+          16 <view> {"class":"meta"}
+            17 <text> {"class":"tag"}
+              18 "tag"
+            19 <text> {"class":"tag"}
+              20 "1 min"
+            21 <text> {"class":"tag"}
+              22 "#1"
+          23 <view> {"class":"actions"}
+            24 <view> {"class":"action"} bindEvent:tap
+              25 <text>
+                26 "Like"
+            27 <view> {"class":"action"}
+              28 <text>
+                29 "Share"
+    7 cell {"item-key":"2","reuse-identifier":"row"} "<view class=\\"row\\"><image class=\\"picture\\" src=\\"picture.png?row=2\\"></image><view class=\\"body\\"><text class=\\"title\\">Row 2</text><text class=\\"subtitle\\">A line of text under the title of row 2</text><view class=\\"meta\\"><text class=\\"tag\\">tag</text><text class=\\"tag\\">2 min</text><text class=\\"tag\\">#2</text></view><view class=\\"actions\\"><view class=\\"action\\" bindtap><text>Like</text></view><view class=\\"action\\"><text>Share</text></view></view></view></view><!---->"
+      30 <view> {"class":"row"}
+        31 <image> {"class":"picture","src":"picture.png?row=2"}
+        32 <view> {"class":"body"}
+          33 <text> {"class":"title"}
+            34 "Row 2"
+          35 <text> {"class":"subtitle"}
+            36 "A line of text under the title of row 2"
+          37 <view> {"class":"meta"}
+            38 <text> {"class":"tag"}
+              39 "tag"
+            40 <text> {"class":"tag"}
+              41 "2 min"
+            42 <text> {"class":"tag"}
+              43 "#2"
+          44 <view> {"class":"actions"}
+            45 <view> {"class":"action"} bindEvent:tap
+              46 <text>
+                47 "Like"
+            48 <view> {"class":"action"}
+              49 <text>
+                50 "Share"
+    8 cell {"item-key":"3","reuse-identifier":"row"} "<view class=\\"row\\"><image class=\\"picture\\" src=\\"picture.png?row=3\\"></image><view class=\\"body\\"><text class=\\"title\\">Row 3</text><text class=\\"subtitle\\">A line of text under the title of row 3</text><view class=\\"meta\\"><text class=\\"tag\\">tag</text><text class=\\"tag\\">3 min</text><text class=\\"tag\\">#3</text></view><view class=\\"actions\\"><view class=\\"action\\" bindtap><text>Like</text></view><view class=\\"action\\"><text>Share</text></view></view></view></view><!---->"
+      51 <view> {"class":"row"}
+        52 <image> {"class":"picture","src":"picture.png?row=3"}
+        53 <view> {"class":"body"}
+          54 <text> {"class":"title"}
+            55 "Row 3"
+          56 <text> {"class":"subtitle"}
+            57 "A line of text under the title of row 3"
+          58 <view> {"class":"meta"}
+            59 <text> {"class":"tag"}
+              60 "tag"
+            61 <text> {"class":"tag"}
+              62 "3 min"
+            63 <text> {"class":"tag"}
+              64 "#3"
+          65 <view> {"class":"actions"}
+            66 <view> {"class":"action"} bindEvent:tap
+              67 <text>
+                68 "Like"
+            69 <view> {"class":"action"}
+              70 <text>
+                71 "Share""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads StaticCards as before 1`] = `
+"2 <view> {"class":"page"}
+  3 <text> {"class":"status"}
+    4 "2 static cards, liked 0"
+  5 <view> {"class":"cards"}
+    6 <view> {"class":"row"}
+      7 <image> {"class":"picture","src":"picture.png?row=1"}
+      8 <view> {"class":"body"}
+        9 <text> {"class":"title"}
+          10 "Row 1"
+        11 <text> {"class":"subtitle"}
+          12 "A line of text under the title of row 1"
+        13 <view> {"class":"meta"}
+          14 <text> {"class":"tag"}
+            15 "tag"
+          16 <text> {"class":"tag"}
+            17 "1 min"
+          18 <text> {"class":"tag"}
+            19 "#1"
+        20 <view> {"class":"actions"}
+          21 <view> {"class":"action"} bindEvent:tap
+            22 <text>
+              23 "Like"
+          24 <view> {"class":"action"}
+            25 <text>
+              26 "Share"
+    27 <view> {"class":"row"}
+      28 <image> {"class":"picture","src":"picture.png?row=2"}
+      29 <view> {"class":"body"}
+        30 <text> {"class":"title"}
+          31 "Row 2"
+        32 <text> {"class":"subtitle"}
+          33 "A line of text under the title of row 2"
+        34 <view> {"class":"meta"}
+          35 <text> {"class":"tag"}
+            36 "tag"
+          37 <text> {"class":"tag"}
+            38 "2 min"
+          39 <text> {"class":"tag"}
+            40 "#2"
+        41 <view> {"class":"actions"}
+          42 <view> {"class":"action"} bindEvent:tap
+            43 <text>
+              44 "Like"
+          45 <view> {"class":"action"}
+            46 <text>
+              47 "Share""
+`;
