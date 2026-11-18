@@ -4,8 +4,8 @@
 //
 // - A write skips the value the input already holds, so typing is not echoed back.
 // - A setter that changes the typed value (a mask, upper case) is written back with the caret
-//   where the typing left it, moved by what the setter added or took away: iOS would put it at
-//   the end. Such a write says which `input` event it answers, and the main thread drops one that
+//   where the typing left it, moved by what the setter added or took away before it: iOS would
+//   put it at the end. Such a write says which `input` event it answers, and the main thread drops one that
 //   answers an older event than the field's latest, which would put back text typed since.
 // - While the keyboard composes, a setter's change is not written, which would break the
 //   composition. Lynx sends no event when composition ends, so it is written with the next `input`
@@ -78,9 +78,15 @@ function write(
 
 /**
  * Where the caret goes in `value`, the setter's answer to typing that left `typed` with the caret
- * at `at`: after what the user typed, moved by what the setter added or took away before it.
+ * at `at`, after what the user typed. It stays put when all the setter changed lies after it, and
+ * else keeps its distance from the end, so it moves past what the setter added at the caret or
+ * before it.
  */
 function caret(typed: string, at: number, value: string): number {
+	const shortest = Math.min(typed.length, value.length);
+	let same = 0;
+	while (same < shortest && typed[same] === value[same]) same++;
+	if (at < same) return at;
 	const moved = at + value.length - typed.length;
 	return Math.max(0, Math.min(value.length, moved));
 }
