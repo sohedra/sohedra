@@ -38,21 +38,9 @@ describe("on a background that lacks them", () => {
 		expect(calls).toEqual([["queueMicrotask", callback]]);
 	});
 
-	it("puts lynx's timers on the global object, answering what they answer", () => {
-		const { calls, scope } = device();
-		const callback = () => {};
-		const call = (name: string, ...args: unknown[]) =>
-			(scope[name] as (...args: unknown[]) => unknown)(...args);
-		expect(call("setTimeout", callback, 5)).toBe(11);
-		call("clearTimeout", 11);
-		expect(call("setInterval", callback, 7)).toBe(12);
-		call("clearInterval", 12);
-		expect(calls).toEqual([
-			["setTimeout", callback, 5],
-			["clearTimeout", 11],
-			["setInterval", callback, 7],
-			["clearInterval", 12],
-		]);
+	it("puts no timers on the global object: the bundle's wrapper passes them", () => {
+		const { scope } = device();
+		expect(Object.keys(scope)).toEqual(["queueMicrotask"]);
 	});
 
 	it("gives strings a replaceAll that is not enumerable, as the built-in is", () => {
@@ -117,13 +105,7 @@ describe("the replaceAll it gives", () => {
 describe("on a background that has them", () => {
 	it("leaves the engine's own", () => {
 		const own = () => {};
-		const scope: Record<string, unknown> = {
-			queueMicrotask: own,
-			setTimeout: own,
-			clearTimeout: own,
-			setInterval: own,
-			clearInterval: own,
-		};
+		const scope: Record<string, unknown> = { queueMicrotask: own };
 		const strings = { replaceAll: own };
 		// Boundary: nothing of `lynx` is read when the engine has every global.
 		fillEngineGaps({ scope, strings, globals: {} as BackgroundGlobals });

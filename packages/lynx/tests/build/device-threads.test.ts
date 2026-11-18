@@ -94,19 +94,11 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
-	it("fills in the background's global timers and queueMicrotask from lynx", async () => {
+	it("fills in the background's global queueMicrotask from lynx, and no timers", () => {
 		const { page, background } = startDevicePage(scripts);
 		try {
-			const kinds = vm.runInContext(
-				"[setTimeout, clearTimeout, setInterval, clearInterval, queueMicrotask].map((fn) => typeof fn)",
-				background,
-			);
-			expect(kinds).toEqual(["function", "function", "function", "function", "function"]);
-			const later: Promise<string> = vm.runInContext(
-				"new Promise((resolve) => setTimeout(() => resolve('later'), 1))",
-				background,
-			);
-			expect(await later).toBe("later");
+			const kinds = vm.runInContext("[typeof queueMicrotask, typeof setTimeout]", background);
+			expect(kinds).toEqual(["function", "undefined"]);
 		} finally {
 			page.dispose();
 		}
