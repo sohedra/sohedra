@@ -1,6 +1,9 @@
 // What the main thread's engine lacks, filled in as its runtime starts, before the page's modules
-// load. Each fill is made only where the engine has none. The language's own gaps are filled only
-// where Svelte's runtime needs it: an app gets no fill of the language from the binding.
+// load. Each fill is made only where the engine has none, and only for what Svelte's runtime reads:
+// an app gets no other fill, of the language or of the web's APIs, from the binding.
+
+import EventTargetFill from "@ungap/event-target";
+import structuredCloneFill from "@ungap/structured-clone";
 
 /** Where the fills go. */
 export interface FillTargets {
@@ -16,6 +19,8 @@ export interface FillTargets {
 export function fillEngineGaps(targets: FillTargets): void {
 	fillSystemInfo(targets);
 	fillReplaceAll(targets.strings);
+	fillEventTarget(targets.scope);
+	fillStructuredClone(targets.scope);
 }
 
 /**
@@ -27,6 +32,29 @@ export function fillEngineGaps(targets: FillTargets): void {
 function fillSystemInfo({ scope, lynx }: FillTargets): void {
 	if (scope["SystemInfo"] === undefined && lynx.SystemInfo !== undefined)
 		scope["SystemInfo"] = lynx.SystemInfo;
+}
+
+/**
+ * Svelte's server runtime, which renders the first frame on the main thread, tests values with
+ * `instanceof EventTarget` as it copies state with `$state.snapshot`
+ * (svelte/src/internal/shared/clone.js). The background has its own fill.
+ *
+ * @workaround main-thread-event-target kind=lynx-gap delete-when="Lynx's threads have a global EventTarget"
+ */
+function fillEventTarget(scope: Record<string, unknown>): void {
+	if (typeof scope["EventTarget"] !== "function") scope["EventTarget"] = EventTargetFill;
+}
+
+/**
+ * The same copy, in the first frame, takes each value of state that is not an array, a plain object,
+ * a `Map` or a `Set` (a `Date`, a number) through `structuredClone`
+ * (svelte/src/internal/shared/clone.js).
+ *
+ * @workaround main-thread-structured-clone kind=lynx-gap delete-when="Lynx's threads have a global structuredClone"
+ */
+function fillStructuredClone(scope: Record<string, unknown>): void {
+	if (typeof scope["structuredClone"] !== "function")
+		scope["structuredClone"] = structuredCloneFill;
 }
 
 /**
