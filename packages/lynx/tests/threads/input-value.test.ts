@@ -111,6 +111,29 @@ describe("a setter's answer to typing", () => {
 		expect(writes("field").at(-1)).toEqual({ value: "HXELLO", cursor: 2 });
 	});
 
+	it("keeps the caret where it is when the setter changed only what follows it", async () => {
+		const { tap, fire, page, writes } = await input();
+		await tap("card");
+		expect(writes("field").at(-1)).toEqual({ value: "1234 5678" });
+		// 9 typed after `1234 `: the mask moves the space after 5678 to after 9567.
+		fire("1234 95678", { selectionEnd: 6 });
+		await page.settle();
+		expect(writes("field").at(-1)).toEqual({ value: "1234 9567 8", cursor: 6 });
+	});
+
+	it("moves the caret past what the setter added at the caret or before it", async () => {
+		const { tap, fire, page, writes } = await input();
+		await tap("card");
+		// 9 typed after `123`: the mask adds a space at the caret.
+		fire("12394 5678", { selectionEnd: 4 });
+		await page.settle();
+		expect(writes("field").at(-1)).toEqual({ value: "1239 4567 8", cursor: 5 });
+		// 5 typed at the end: the mask adds a space before it.
+		fire("12345", { selectionEnd: 5 });
+		await page.settle();
+		expect(writes("field").at(-1)).toEqual({ value: "1234 5", cursor: 6 });
+	});
+
 	it("lets a change from code win over a key typed while it was on its way", async () => {
 		const { page, fire, written, echo } = await input();
 		// The tap reaches the background first, which clears the field before it hears the key.
