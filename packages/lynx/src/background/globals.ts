@@ -39,8 +39,17 @@ export interface BackgroundGlobals {
 	};
 }
 
-// Boundary: the engine's globals have no types; this is the one place `globalThis` is typed.
-export const background: BackgroundGlobals = globalThis as unknown as BackgroundGlobals;
+// On a device the background's `lynx` is not on the global object: it is a parameter of the
+// function the bundle's wrapper hands lynx-core (lynx-core's app.ts, `require`), so it is read by
+// its name, which resolves to that parameter, as ReactLynx reads it.
+declare const lynx: BackgroundGlobals["lynx"];
+
+/** The background's globals, each read when it is used. */
+export const background: BackgroundGlobals = {
+	get lynx() {
+		return lynx;
+	},
+};
 
 declare const __DEV__: boolean;
 
