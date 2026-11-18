@@ -22,9 +22,10 @@ export function fillEngineGaps(targets: FillTargets): void {
 
 /**
  * Svelte schedules its work with the global `queueMicrotask`, which the background lacks.
- * lynx-core's `lynx.queueMicrotask` is a microtask. A promise is no stand-in: the bundle's
- * `Promise` is lynx-core's, whose callbacks wait for a timer unless the page turns on
- * `enableMicrotaskPromisePolyfill` (lynx-core's setup-promise.ts).
+ * lynx-core's `lynx.queueMicrotask` is the engine's microtask queue itself. The bundle's `Promise`
+ * is lynx-core's, which ticks on that same queue in the pages this plugin builds (it turns on
+ * `enableMicrotaskPromisePolyfill`; lynx-core's setup-promise.ts): a promise would only add a step
+ * in between, and make a throw a rejection.
  *
  * @workaround background-queue-microtask kind=lynx-gap delete-when="Lynx's background thread has a global queueMicrotask"
  */
