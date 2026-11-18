@@ -124,9 +124,20 @@ export function createCalls(scope: CallsScope): Calls {
 	): void {
 		const applier = scope.applier();
 		switch (request[0]) {
-			case "invoke":
+			case "invoke": {
+				const answers = request[3];
+				if (answers !== undefined) {
+					// A field's value that answers an older `input` event than its latest would undo
+					// typing: it is dropped (../inputs.ts).
+					if (applier.inputs.stale(element, answers)) {
+						done({ ok: true, value: null });
+						return;
+					}
+					applier.inputs.wrote(element, request[2]["value"]);
+				}
 				invoke(element, { method: request[1], params: request[2] }, done);
 				return;
+			}
 			case "computed":
 				done({ ok: true, value: mainThread.__GetComputedStyleByKey(element, request[1]) });
 				return;

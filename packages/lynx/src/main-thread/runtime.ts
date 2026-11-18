@@ -118,6 +118,7 @@ export function startMainThread(): MainThreadRuntime {
 				lynx.setTimeout(callback, 0);
 				return true;
 			},
+			idOf: (element) => state.applier?.idOf(element),
 		});
 	}
 
@@ -138,9 +139,9 @@ export function startMainThread(): MainThreadRuntime {
 	const sentEvent = (event: unknown): SentEvent =>
 		toSentEvent(event, (uid) => state.applier?.idForUid(uid));
 
-	function onElementEvent(handler: number, event: unknown): void {
+	function onElementEvent(handler: number, event: unknown, input?: number): void {
 		try {
-			send({ t: "event", handler, event: sentEvent(event) });
+			send({ t: "event", handler, event: sentEvent(event), ...(input !== undefined && { input }) });
 		} catch (error) {
 			report(error);
 		}
@@ -197,6 +198,7 @@ export function startMainThread(): MainThreadRuntime {
 			report,
 			styles: state.styles,
 			flattening: state.flattening,
+			inputs: state.inputs,
 			functions: state.functions,
 			settle: settleIn(state.functions),
 		});
@@ -309,14 +311,19 @@ export function startMainThread(): MainThreadRuntime {
 				applier: pageApplier,
 				rendered,
 				ids: hydrated.ids,
-				send: (handler, event, at) => {
-					const sent = sentEvent(event);
+				send: (handler, early, at) => {
+					const sent = sentEvent(early.event);
 					const element = pageApplier.element(at);
 					sent.currentTarget = {
 						node: at,
 						...(element && { uid: mainThread.__GetElementUniqueID(element) }),
 					};
-					send({ t: "event", handler, event: sent });
+					send({
+						t: "event",
+						handler,
+						event: sent,
+						...(early.input !== undefined && { input: early.input }),
+					});
 				},
 				call: (held) => functions.sendHeld(held),
 			});
@@ -333,26 +340,34 @@ export function startMainThread(): MainThreadRuntime {
 		if (!state.rewriting) clearPrevious(state);
 		let replay: (() => void) | undefined;
 		// What main-thread functions change as the patch applies lands in its flush, and the function
-		// refs it bound run before it.
+		// refs it bound run before it. The patch applies until it is flushed: a cell Lynx asks for in
+		// the lists' update or the flush (iOS asks in the update) leaves the patch's reads waiting.
 		const functions = state.functions;
-		functions.applying(() => {
-			if (state.frame) replay = hydrateFrame(patch);
-			else applyItems(patch.items, patch.page);
-			if (!state.rewriting) state.functions.settle();
-		});
-		const dataUpdated = patch.dataUpdated === true || state.dataHeld;
-		// Waiting for the page written again: nothing of this patch was applied.
-		if (state.rewriting) {
-			state.dataHeld = dataUpdated;
-			return;
+		try {
+			functions.applying(() => {
+				if (state.frame) replay = hydrateFrame(patch);
+				else applyItems(patch.items, patch.page);
+				if (state.rewriting) return;
+				functions.settle();
+				state.dataHeld ||= patch.dataUpdated === true;
+				// The background's page is shown: a patch of it was applied.
+				state.shown = true;
+				state.applier!.flushLists();
+				const options = state.dataHeld ? { triggerDataUpdated: true } : {};
+				state.dataHeld = false;
+				mainThread.__FlushElementTree(state.element, options);
+			});
+			// Waiting for the page written again: nothing of this patch was applied, and its new data
+			// is said with the rewrite's flush.
+			if (state.rewriting) {
+				state.dataHeld ||= patch.dataUpdated === true;
+				return;
+			}
+			calls.flushed();
+		} finally {
+			// The first frame's log closes even when the flush threw: calls made later go at once.
+			replay?.();
 		}
-		state.dataHeld = false;
-		// The background's page is shown: a patch of it was applied.
-		state.shown = true;
-		state.applier!.flushLists();
-		mainThread.__FlushElementTree(state.element, dataUpdated ? { triggerDataUpdated: true } : {});
-		calls.flushed();
-		replay?.();
 	}
 
 	function onPatch(params: PatchParams): void {
@@ -380,6 +395,7 @@ export function startMainThread(): MainThreadRuntime {
 					report,
 					styles: state.styles,
 					flattening: state.flattening,
+					inputs: state.inputs,
 					functions,
 					settle: settleIn(functions),
 				});

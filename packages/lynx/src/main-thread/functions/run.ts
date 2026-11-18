@@ -36,7 +36,7 @@ export interface RunScope {
 	elements: Elements;
 }
 
-/** How deep a value is walked; deeper, its captures are refused. */
+/** How deep a value is walked; deeper, its captures are refused. The background's walks agree. */
 const MAX_DEPTH = 1000;
 
 /** The engine's `EventResult` bits, which it reads from what an event's function returns. */
@@ -126,6 +126,19 @@ function hold(
 		hold((value as Record<string, unknown>)[key], lifetimes, context, depth + 1);
 }
 
+/** The contexts the copies of main-thread functions in `value` came with, as the background gave them. */
+export function contextsOf(value: unknown, out: number[] = [], depth = 0): number[] {
+	if (typeof value !== "object" || value === null || depth > MAX_DEPTH) return out;
+	if (isMainThreadFunction(value)) {
+		const id = value[FUNCTION_FIELDS.context];
+		if (id !== undefined) out.push(id);
+		return out;
+	}
+	for (const key of Object.keys(value))
+		contextsOf((value as Record<string, unknown>)[key], out, depth + 1);
+	return out;
+}
+
 /** An event or a gesture's event, with its targets' elements made wrappers. */
 function withTargets(event: unknown, elements: Elements): unknown {
 	if (typeof event !== "object" || event === null) return event;
@@ -145,24 +158,34 @@ function withTargets(event: unknown, elements: Elements): unknown {
 let running: object | undefined;
 let stopped = 0;
 
+// Taken off its event and called once the event is over (after an `await`), it does nothing.
 function stopPropagation(this: unknown): void {
-	if (this === running || this === undefined) stopped |= STOP_PROPAGATION;
+	if (running !== undefined && (this === running || this === undefined))
+		stopped |= STOP_PROPAGATION;
 }
 
 function stopImmediatePropagation(this: unknown): void {
-	if (this === running || this === undefined) stopped |= STOP_IMMEDIATE_PROPAGATION;
+	if (running !== undefined && (this === running || this === undefined))
+		stopped |= STOP_IMMEDIATE_PROPAGATION;
 }
 
 /**
  * Runs `ready` as the engine asks: `params` are an event's (`source` 1) or a gesture's (`source`
- * 2), as the engine gave them, or a call's, already made.
+ * 2), as the engine gave them, or a call's, already made. A gesture's callback gets as its second
+ * argument what `manager` makes of the engine's gesture manager, or the engine's own.
  */
 export function runAs(
 	ready: Ready,
-	call: { params: unknown[]; source: number | undefined; elements: Elements },
+	call: {
+		params: unknown[];
+		source: number | undefined;
+		elements: Elements;
+		manager?: ((engine: unknown) => unknown) | undefined;
+	},
 ): unknown {
-	const { params, source, elements } = call;
-	if (source === RUN_SOURCE.gesture) return ready(withTargets(params[0], elements), params[1]);
+	const { params, source, elements, manager } = call;
+	if (source === RUN_SOURCE.gesture)
+		return ready(withTargets(params[0], elements), manager ? manager(params[1]) : params[1]);
 	if (source !== RUN_SOURCE.event) return ready(...params);
 	const event = withTargets(params[0], elements);
 	if (typeof event !== "object" || event === null) return ready(event);

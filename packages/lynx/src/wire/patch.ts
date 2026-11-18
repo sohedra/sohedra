@@ -32,6 +32,11 @@ export type Result = { ok: true; value: unknown } | { ok: false; error: ThrownEr
 export type CallRequest =
 	/** A UI method of the element, with its params: `boundingClientRect`, `scrollTo`… */
 	| ["invoke", string, Record<string, unknown>]
+	/**
+	 * `setValue` of an input or a textarea, with the number of the field's `input` event it answers:
+	 * the main thread drops it when the field had a newer one.
+	 */
+	| ["invoke", "setValue", Record<string, unknown>, number]
 	/** The value of one of the element's computed styles. */
 	| ["computed", string]
 	/** The first element under this one that a selector matches. */

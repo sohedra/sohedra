@@ -24,10 +24,18 @@ import type { Ref, Refs } from "./refs.ts";
 import { prepare } from "./run.ts";
 import type { Ready, RunScope } from "./run.ts";
 
-/** What the engine holds for a main-thread event: it hands it back to `runWorklet` on each event. */
+/**
+ * What the engine holds for a main-thread event or a gesture's callback: it hands it back to
+ * `runWorklet` on each call.
+ */
 export class Entry {
-	/** The function the event runs now. */
+	/** The function it runs now. */
 	fn: MainThreadFunction;
+	/**
+	 * What a gesture's callback gets as its second argument, from what the engine gives: the
+	 * engine's own when this is not set.
+	 */
+	manager: ((engine: unknown) => unknown) | undefined;
 	private made: Ready | undefined;
 	private readonly scope: BindingScope;
 
@@ -74,10 +82,12 @@ export interface BindingScope extends RunScope {
 	flattening: Flattening;
 	/** Whether the page is silenced: its functions run no more. */
 	silenced(): boolean;
-	/** Runs a function ref, with the value it has now, at the next settle step. */
+	/** Settles the binding, with the value it has now, at the next settle step (`BindingKind.settle`). */
 	queue(binding: Binding): void;
 	/** Runs `run`, reporting what it throws. */
 	guarded(run: () => void): void;
+	/** A main-thread function runs, by its id: a development build watches for update loops. */
+	ran(id: string): void;
 }
 
 /** What one kind of binding does. */
@@ -93,6 +103,12 @@ export interface BindingKind {
 	carry(binding: Binding, value: unknown, scope: BindingScope): void;
 	/** The attribute or its element goes. */
 	release(binding: Binding, scope: BindingScope): void;
+	/**
+	 * The settle step, for a binding that queued itself: its element is in the tree, and the flush
+	 * that shows it has not come. Each binding settles on its own: what one throws is reported, and
+	 * the others settle.
+	 */
+	settle?(binding: Binding, scope: BindingScope): void;
 }
 
 /** Runs a function ref's cleanup, if it left one. */
@@ -136,6 +152,13 @@ const refKind: BindingKind = {
 			return;
 		}
 		this.change(binding, value, scope);
+	},
+	settle(binding, scope) {
+		// Boundary: a ref queues itself only with a main-thread function (`bind`).
+		const fn = binding.value as MainThreadFunction;
+		scope.ran(fn._wkltId);
+		const returned = prepare(fn, scope)(scope.elements.wrap(binding.element));
+		binding.cleanup = typeof returned === "function" ? (returned as () => void) : undefined;
 	},
 	release(binding, scope) {
 		binding.released = true;

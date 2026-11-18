@@ -2,9 +2,10 @@
 // names its function by the handle's id within the context of the copy that holds it, and settles
 // with the background's reply. The first frame's calls, and every call until its log is replayed,
 // wait in the first frame's log, in order with the events it heard; hydration names their
-// functions. A call the page cannot make rejects at once: from a page that is gone, or for a
-// first-frame function no background function took over, which is reported. The promise a call
-// returns is marked handled: a call nobody awaits reports nothing more.
+// functions. A call the page cannot make rejects at once: from a page that is gone, for a value
+// that is no handle, or for a first-frame function no background function took over. The binding
+// reports what it refuses, once for the first frame's calls with how many; the promise a call
+// returns is marked handled, so a call nobody awaits reports nothing more.
 
 import { decodeError, HANDLE_FIELDS, isBackgroundHandle } from "../../wire/index.ts";
 import type { BackgroundFunctionHandle, Result, ToBackground } from "../../wire/index.ts";
@@ -49,13 +50,21 @@ const isHeldCall = (entry: unknown): entry is HeldCall =>
 const gone = (): Error =>
 	mainThreadError({ code: "page_is_gone", details: { call: "runOnBackground" } });
 
+/** What a value given to `runOnBackground` is called in a message. */
+function nameOf(value: unknown): string {
+	if (typeof value === "function") return value.name === "" ? "an unnamed function" : value.name;
+	return value === null ? "null" : `a value of type ${typeof value}`;
+}
+
 /** The calls of one page, sent with `send`, for the contexts `lifetimes` holds. */
 export function createBackgroundCalls(options: {
 	send(message: ToBackground): void;
 	report(error: unknown): void;
 	lifetimes: Lifetimes;
+	/** Runs `callback` at the end of the task. */
+	soon(callback: () => void): void;
 }): BackgroundCalls {
-	const { send, report, lifetimes } = options;
+	const { send, report, lifetimes, soon } = options;
 	const waiting = new Map<
 		number,
 		{ resolve(value: unknown): void; reject(error: unknown): void }
@@ -64,6 +73,9 @@ export function createBackgroundCalls(options: {
 	let firstFrame: unknown[] | null = null;
 	let hydrated = false;
 	let silenced = false;
+	/** The first frame's calls with no answer: reported once, with how many came in that task. */
+	let unansweredCount = 0;
+	let unansweredReported = false;
 
 	function call(fn: number, context: number, params: unknown[]): Promise<unknown> {
 		const id = nextCall++;
@@ -78,10 +90,24 @@ export function createBackgroundCalls(options: {
 		});
 	}
 
-	/** The error of a call held for a first-frame function no background function took over. */
-	function unanswered(): Error {
-		const error = mainThreadError({ code: "first_frame_call_unanswered", details: {} });
-		report(error);
+	/**
+	 * The error of a call held for a first-frame function no background function took over. The
+	 * first of a page's is reported at the end of its task, with how many came in it; the rest only
+	 * reject. With `quiet`, nothing is reported: the hydration's own report says why.
+	 */
+	function unanswered(quiet = false): Error {
+		const error = mainThreadError({ code: "first_frame_call_unanswered", details: { count: 1 } });
+		if (quiet || unansweredReported) return error;
+		if (unansweredCount++ === 0)
+			soon(() => {
+				unansweredReported = true;
+				report(
+					mainThreadError({
+						code: "first_frame_call_unanswered",
+						details: { count: unansweredCount },
+					}),
+				);
+			});
 		return error;
 	}
 
@@ -96,11 +122,18 @@ export function createBackgroundCalls(options: {
 					}),
 				);
 			}
-			const id = isBackgroundHandle(handle) ? handle[HANDLE_FIELDS.id] : undefined;
+			if (!isBackgroundHandle(handle)) {
+				const error = mainThreadError({
+					code: "not_a_background_function_handle",
+					details: { name: nameOf(handle) },
+				});
+				report(error);
+				return handled(Promise.reject(error));
+			}
+			const id = handle[HANDLE_FIELDS.id];
 			if (id === undefined)
 				return handled(Promise.reject(hydrated && !silenced ? unanswered() : gone()));
-			// Boundary: a handle with an id is the background's, which the page held with its context.
-			const context = (handle as BackgroundFunctionHandle)[HANDLE_FIELDS.context];
+			const context = handle[HANDLE_FIELDS.context];
 			if (silenced || context === undefined || !lifetimes.has(context))
 				return handled(Promise.reject(gone()));
 			return handled(call(id, context, params));
@@ -120,10 +153,9 @@ export function createBackgroundCalls(options: {
 			firstFrame = null;
 			hydrated = adopted;
 			if (adopted || !log) return;
-			const calls = log.filter(isHeldCall);
-			if (calls.length === 0) return;
-			const error = unanswered();
-			for (const held of calls) held.call.reject(error);
+			// Hydration could not adopt the frame, and says why: the calls reject with no report.
+			const error = unanswered(true);
+			for (const held of log.filter(isHeldCall)) held.call.reject(error);
 		},
 		sendHeld({ call: held }) {
 			const id = held.handle[HANDLE_FIELDS.id];

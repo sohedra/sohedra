@@ -2,9 +2,15 @@
 // `value` attribute: `default-value` gives the first value, the `input` event reports typing in
 // `detail.value`, and the `setValue` UI method writes a new value.
 //
-// A write skips the value the input already holds, so typing is not echoed back. A setter that
-// changes the typed value (say, to upper case) is not written back while the keyboard composes,
-// which would break the composition; any other change (a Clear button) is written at once.
+// - A write skips the value the input already holds, so typing is not echoed back.
+// - A setter that changes the typed value (a mask, upper case) is written back with the caret
+//   where the typing left it, moved by what the setter added or took away: iOS would put it at
+//   the end. Each write says which `input` event it answers, and the main thread drops one that
+//   answers an older event than the field's latest, which would put back text typed since.
+// - While the keyboard composes, a setter's change is not written, which would break the
+//   composition. Lynx sends no event when composition ends, so it is written with the next `input`
+//   event that does not compose, or when the field loses focus, whichever comes first.
+// - Any other change (a Clear button) is written at once.
 
 import { backgroundError } from "../catalogue.ts";
 import { background } from "../globals.ts";
@@ -15,50 +21,38 @@ import { textOf } from "./values.ts";
 
 /** What the input needs of the renderer. */
 export interface InputHost {
-	/** Listens to the input's `input` event, beside the component's own listener. */
-	listen(element: TreeNode, handler: Handler): void;
+	/** Listens to the input's event `name`, beside the component's own listener. */
+	listen(element: TreeNode, name: "input" | "blur", handler: Handler): void;
 	/** Sets an attribute the way the component would. */
 	setAttribute(element: TreeNode, key: string, value: unknown): void;
-	/** Calls a UI method of the element on the main thread. */
-	invoke(element: TreeNode, method: string, params: Record<string, unknown>): Promise<unknown>;
+	/**
+	 * Calls `setValue` on the element on the main thread, answering the field's `input` event
+	 * `answers`.
+	 */
+	setValue(element: TreeNode, params: Record<string, unknown>, answers: number): Promise<unknown>;
+}
+
+/** Where an `input` event's number rides, on the event the background's handlers get. */
+const INPUT_NUMBER = Symbol("input number");
+
+/** Gives `event` the number the main thread gave it. */
+export function numberInput(event: object, input: number): void {
+	Object.defineProperty(event, INPUT_NUMBER, { value: input });
 }
 
 /** Whether a rejection means the page is gone, which needs no report. */
 const pageIsGone = (error: unknown): boolean =>
 	typeof error === "object" && error !== null && "code" in error && error.code === "page_is_gone";
 
-/** Sets the `value` of `element`, an input or a textarea. */
-export function setInputValue(host: InputHost, element: TreeNode, raw: unknown): void {
-	const value = raw == null ? "" : textOf(raw);
-	let input = element.input;
-	if (!input) {
-		const state: InputState = { current: value, composing: false, typing: false };
-		input = element.input = state;
-		host.listen(element, (event) => {
-			// Boundary: Lynx's input event, read by field.
-			const detail = (event as { detail?: { value?: unknown; isComposing?: unknown } }).detail;
-			state.composing = detail?.isComposing === true;
-			state.current = typeof detail?.value === "string" ? detail.value : "";
-			state.typing = true;
-			// The update the component's own handler makes runs before this microtask: the page
-			// flushes Svelte's updates right after an event's handlers.
-			background.lynx.queueMicrotask(() => {
-				state.typing = false;
-			});
-		});
-	} else {
-		if (value === input.current) return;
-		if (input.typing && input.composing) return;
-		input.current = value;
-		input.composing = false;
-	}
-	// An input that has no Lynx element yet starts from `default-value`, which it is made with.
-	if (element.lynxId === 0) {
-		host.setAttribute(element, "default-value", value);
-		return;
-	}
+/** Writes `value` to the field, with the caret at `cursor` when it is given. */
+function write(host: InputHost, element: TreeNode, value: string, cursor?: number): void {
+	const input = element.input!;
+	input.current = value;
+	input.skipped = undefined;
 	const tag = element.tag ?? "input";
-	host.invoke(element, "setValue", { value }).catch((error: unknown) => {
+	const params: Record<string, unknown> = { value };
+	if (cursor !== undefined) params["cursor"] = cursor;
+	host.setValue(element, params, input.answers).catch((error: unknown) => {
 		if (pageIsGone(error)) return;
 		reportError(
 			backgroundError({
@@ -67,4 +61,95 @@ export function setInputValue(host: InputHost, element: TreeNode, raw: unknown):
 			}),
 		);
 	});
+}
+
+/**
+ * Where the caret goes in `value`, the setter's answer to typing that left `typed` with the caret
+ * at `at`: after what the user typed, moved by what the setter added or took away before it.
+ */
+function caret(typed: string, at: number, value: string): number {
+	const moved = at + value.length - typed.length;
+	return Math.max(0, Math.min(value.length, moved));
+}
+
+/** Writes a setter's change that composition held back, unless the field holds it already. */
+function writeSkipped(host: InputHost, element: TreeNode): void {
+	const input = element.input!;
+	const skipped = input.skipped;
+	input.skipped = undefined;
+	if (skipped !== undefined && skipped !== input.current) write(host, element, skipped);
+}
+
+/** Starts the state of a field's value, and listens to its typing. */
+function startInput(host: InputHost, element: TreeNode, value: string): InputState {
+	const state: InputState = {
+		current: value,
+		composing: false,
+		typing: false,
+		answers: 0,
+		typed: value,
+		selection: -1,
+		skipped: undefined,
+		blurs: false,
+	};
+	host.listen(element, "input", (event) => {
+		// Boundary: Lynx's input event, read by field.
+		const detail = (
+			event as {
+				detail?: { value?: unknown; isComposing?: unknown; selectionEnd?: unknown };
+			}
+		).detail;
+		state.composing = detail?.isComposing === true;
+		state.current = typeof detail?.value === "string" ? detail.value : "";
+		state.typed = state.current;
+		state.selection = typeof detail?.selectionEnd === "number" ? detail.selectionEnd : -1;
+		const number: unknown = Reflect.get(event as object, INPUT_NUMBER);
+		if (typeof number === "number") state.answers = number;
+		state.typing = true;
+		// The update the component's own handler makes runs before this microtask: the page
+		// flushes Svelte's updates right after an event's handlers.
+		background.lynx.queueMicrotask(() => {
+			state.typing = false;
+			if (!state.composing) writeSkipped(host, element);
+		});
+	});
+	return state;
+}
+
+/** Sets the `value` of `element`, an input or a textarea. */
+export function setInputValue(host: InputHost, element: TreeNode, raw: unknown): void {
+	const value = raw == null ? "" : textOf(raw);
+	const input = element.input;
+	if (!input) {
+		element.input = startInput(host, element, value);
+		// An input that has no Lynx element yet starts from `default-value`, which it is made with.
+		if (element.lynxId === 0) host.setAttribute(element, "default-value", value);
+		else write(host, element, value);
+		return;
+	}
+	if (value === input.current) {
+		input.skipped = undefined;
+		return;
+	}
+	if (input.typing && input.composing) {
+		input.skipped = value;
+		if (!input.blurs) {
+			input.blurs = true;
+			host.listen(element, "blur", () => {
+				input.composing = false;
+				writeSkipped(host, element);
+			});
+		}
+		return;
+	}
+	input.composing = false;
+	if (element.lynxId === 0) {
+		input.current = value;
+		host.setAttribute(element, "default-value", value);
+		return;
+	}
+	// An answer to typing keeps the caret where the typing left it.
+	const cursor =
+		input.typing && input.selection >= 0 ? caret(input.typed, input.selection, value) : undefined;
+	write(host, element, value, cursor);
 }

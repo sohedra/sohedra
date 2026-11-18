@@ -14,6 +14,7 @@ import {
 	DEFERRED_ROW,
 	MAIN_THREAD_PREFIX,
 	OpCode,
+	removedEventSpelling,
 	ROOT_ID,
 	TEXT_CONTAINERS,
 } from "../../wire/index.ts";
@@ -332,15 +333,41 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 	}
 
 	const inputHost: InputHost = {
-		listen: (element, handler) =>
-			setEvent(element, { type: "bindEvent", name: "input", handler, add: true }),
+		listen: (element, name, handler) =>
+			setEvent(element, { type: "bindEvent", name, handler, add: true }),
 		setAttribute: (element, key, value) => setAttribute(element, key, value),
-		invoke(element, method, params) {
+		setValue(element, params, answers) {
 			if (!host || element.lynxId === 0)
 				return Promise.reject(new Error(`<${element.tag}> is not on the page.`));
-			return host.call(element.lynxId, ["invoke", method, params]);
+			return host.call(element.lynxId, ["invoke", "setValue", params, answers]);
 		},
 	};
+
+	/**
+	 * In a development build, the mistakes a `main-thread:` attribute can hold: a plain function,
+	 * which binds nothing, and Lynx's own spelling of an event, which a spread lets through.
+	 */
+	function checkMainThreadAttribute(element: TreeNode, key: string, value: unknown): void {
+		const where = sourceLocation(element);
+		const tag = element.tag ?? "element";
+		if (isFunction(value))
+			reportOnce(`plain_function_under_main_thread:${where ?? tag}:${key}`, () =>
+				backgroundError({
+					code: "plain_function_under_main_thread",
+					details: { name: key, tag, where },
+				}),
+			);
+		const removed = removedEventSpelling(key);
+		if (removed?.replacement !== undefined) {
+			const replacement = removed.replacement;
+			reportOnce(`main_thread_event_spelling_removed:${where ?? tag}:${key}`, () =>
+				backgroundError({
+					code: "main_thread_event_spelling_removed",
+					details: { name: key, replacement, tag, where },
+				}),
+			);
+		}
+	}
 
 	function setAttribute(element: TreeNode, key: string, value: unknown): void {
 		if (key === DEFERRED_ROW) {
@@ -358,15 +385,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			if (element.lynxId !== 0) queue.push([OpCode.SetAttr, element.lynxId, key, null]);
 			return;
 		}
-		if (DEV && isFunction(value) && key.startsWith(MAIN_THREAD_PREFIX)) {
-			const where = sourceLocation(element);
-			reportOnce(`plain_function_under_main_thread:${where ?? element.tag!}:${key}`, () =>
-				backgroundError({
-					code: "plain_function_under_main_thread",
-					details: { name: key, tag: element.tag ?? "element", where },
-				}),
-			);
-		}
+		if (DEV && key.startsWith(MAIN_THREAD_PREFIX)) checkMainThreadAttribute(element, key, value);
 		const stored = key === "item-key" ? itemKey(element, value) : value;
 		element.attrs ??= new Map();
 		element.attrs.set(key, stored);

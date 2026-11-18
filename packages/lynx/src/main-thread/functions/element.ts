@@ -4,10 +4,15 @@
 // same element is the same object wherever a function meets it (`event.target === ref.current`);
 // the page forgets it when it lets go of the element, and a list row made again gets new ones.
 //
+// A wrapper kept past its element's life (in a ref, a closure) is gone: it answers no tree
+// question, and a change through it is reported and does nothing, so it never wraps released
+// elements again.
+//
 // The tree questions use the background node's names: `parentElement`, `contains`, `dataset`.
 // Styles set here go through the page's store of styles set from code, so a `style` the background
 // writes later keeps them, as it keeps its own.
 
+import type { SentTarget } from "../../wire/index.ts";
 import { mainThreadError } from "../catalogue.ts";
 import type { CodeStyles } from "../code-styles.ts";
 import type { Flattening } from "../flatten.ts";
@@ -30,6 +35,9 @@ export interface ElementScope {
 	invoke(run: () => void): void;
 	/** The wrapper of an engine element. */
 	wrap(element: LynxElement): MainThreadElement;
+	/** The background's id of an engine element, while the page holds it. */
+	idOf(element: LynxElement): number | undefined;
+	report(error: unknown): void;
 }
 
 /** One of `__ElementAnimate`'s operations. */
@@ -68,20 +76,37 @@ export class MainThreadElement {
 	/** The page's scope, the same way. */
 	declare private readonly scope: ElementScope;
 
+	/** The page let go of the element: the wrapper is gone. */
+	declare private gone: boolean;
+
 	constructor(element: LynxElement, scope: ElementScope) {
 		Object.defineProperty(this, "node", { value: element });
 		Object.defineProperty(this, "scope", { value: scope });
+		Object.defineProperty(this, "gone", { value: false, writable: true });
 	}
 
-	/** The element that holds this one; null for the page. */
+	/** The page let go of the element. */
+	leave(): void {
+		this.gone = true;
+	}
+
+	/** Whether a change through the wrapper may go: one through a gone wrapper is reported. */
+	private live(method: string): boolean {
+		if (!this.gone) return true;
+		this.scope.report(mainThreadError({ code: "element_released", details: { method } }));
+		return false;
+	}
+
+	/** The element that holds this one; null for the page, and for a gone element. */
 	get parentElement(): MainThreadElement | null {
+		if (this.gone) return null;
 		const parent = mainThread.__GetParent(this.node);
 		return parent ? this.scope.wrap(parent) : null;
 	}
 
 	/** Whether `other` is this element or inside it. */
 	contains(other: unknown): boolean {
-		if (!(other instanceof MainThreadElement)) return false;
+		if (this.gone || !(other instanceof MainThreadElement) || other.gone) return false;
 		const self = this.node;
 		for (
 			let element: LynxElement | null | undefined = other.node;
@@ -94,47 +119,51 @@ export class MainThreadElement {
 
 	/** The element's `data-*` values, without the prefix. */
 	get dataset(): Record<string, unknown> {
-		return { ...mainThread.__GetDataset(this.node) };
+		return this.gone ? {} : { ...mainThread.__GetDataset(this.node) };
 	}
 
 	setAttribute(name: string, value: unknown): void {
+		if (!this.live("setAttribute")) return;
 		mainThread.__SetAttribute(this.node, name, value);
 		this.scope.changed("setAttribute", name);
 	}
 
 	/** Sets one inline style; `null` or "" gives the property back to `style`. */
 	setStyleProperty(name: string, value: string | number | null): void {
+		if (!this.live("setStyleProperty")) return;
 		this.scope.styles.set(this.node, { [name]: value });
 		this.scope.changed("setStyleProperty", name);
 	}
 
 	/** Sets inline styles, as `setStyleProperty` does each. */
 	setStyleProperties(styles: Record<string, string | number | null>): void {
+		if (!this.live("setStyleProperties")) return;
 		this.scope.styles.set(this.node, styles);
 		this.scope.changed("setStyleProperties", Object.keys(styles).join(", "));
 	}
 
 	getAttribute(name: string): unknown {
-		return mainThread.__GetAttributeByName(this.node, name);
+		return this.gone ? null : mainThread.__GetAttributeByName(this.node, name);
 	}
 
 	getAttributeNames(): string[] {
-		return mainThread.__GetAttributeNames(this.node);
+		return this.gone ? [] : mainThread.__GetAttributeNames(this.node);
 	}
 
 	querySelector(selector: string): MainThreadElement | null {
-		const found = mainThread.__QuerySelector(this.node, selector, {});
+		const found = this.gone ? null : mainThread.__QuerySelector(this.node, selector, {});
 		return found ? this.scope.wrap(found) : null;
 	}
 
 	querySelectorAll(selector: string): MainThreadElement[] {
+		if (this.gone) return [];
 		return mainThread
 			.__QuerySelectorAll(this.node, selector, {})
 			.map((found) => this.scope.wrap(found));
 	}
 
 	getComputedStyleProperty(name: string): string {
-		return mainThread.__GetComputedStyleByKey(this.node, name);
+		return this.gone ? "" : mainThread.__GetComputedStyleByKey(this.node, name);
 	}
 
 	/** Animates the element; a number is the duration in milliseconds. */
@@ -142,6 +171,8 @@ export class MainThreadElement {
 		keyframes: Record<string, string | number>[],
 		options?: number | Record<string, unknown>,
 	): MainThreadAnimation {
+		if (this.gone)
+			throw mainThreadError({ code: "element_released", details: { method: "animate" } });
 		const element = this.node;
 		this.scope.flattening.hold(element);
 		const animation = new MainThreadAnimation(
@@ -155,6 +186,8 @@ export class MainThreadElement {
 
 	/** Calls Lynx's UI method `method` of the element and resolves with its answer. */
 	invoke(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
+		if (this.gone)
+			return Promise.reject(mainThreadError({ code: "element_released", details: { method } }));
 		const element = this.node;
 		this.scope.flattening.hold(element);
 		this.scope.changed("invoke", method);
@@ -173,9 +206,19 @@ export class MainThreadElement {
 		});
 	}
 
-	/** The element as it crosses to the background: Lynx's id of it and its dataset, as a target. */
-	toJSON(): { uid: number; dataset: Record<string, unknown> } {
-		return { uid: mainThread.__GetElementUniqueID(this.node), dataset: this.dataset };
+	/**
+	 * The element as it crosses to the background, as an event's target does: the background's id
+	 * of it (`node`, 0 once gone), its `id`, Lynx's id of it and its dataset.
+	 */
+	toJSON(): SentTarget {
+		if (this.gone) return { node: 0 };
+		const id = mainThread.__GetID(this.node);
+		return {
+			node: this.scope.idOf(this.node) ?? 0,
+			id: typeof id === "string" ? id : "",
+			uid: mainThread.__GetElementUniqueID(this.node),
+			dataset: this.dataset,
+		};
 	}
 }
 
@@ -203,6 +246,7 @@ export function createElements(scope: Omit<ElementScope, "wrap">): Elements {
 	return {
 		wrap,
 		forget(element) {
+			wrappers.get(element)?.leave();
 			wrappers.delete(element);
 		},
 		find: (element) => wrappers.get(element),

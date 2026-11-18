@@ -40,7 +40,7 @@ import type {
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { BackgroundError } from "./catalogue.ts";
-import { createContexts } from "./functions/contexts.ts";
+import { contextsIn, createContexts } from "./functions/contexts.ts";
 import { takeCollectedRefs } from "./functions/refs.ts";
 import { background, DEV } from "./globals.ts";
 import type { CoreMessage } from "./globals.ts";
@@ -55,7 +55,7 @@ export interface ChannelOptions {
 	/** Where the renderer puts its ops. */
 	queue: OpQueue;
 	/** Runs the handlers of an event the main thread sent. */
-	onEvent(handler: number, event: SentEvent): void;
+	onEvent(handler: number, event: SentEvent, input: number | undefined): void;
 	/** The main thread asks for elements' subtrees again (`rewrite`). */
 	onRewrite(message: RewriteMessage): void;
 	/** In a development build, the ids of `$props.id()` that hydration wrote over (`props-ids`). */
@@ -160,12 +160,23 @@ export function openChannel(options: ChannelOptions): Channel {
 	let nextCall = 1;
 	let open = true;
 
-	/** `ops` without those that cannot be sent; each one dropped is reported. */
-	function sendable(ops: Op[]): Op[] {
+	/**
+	 * `ops` without those that cannot be sent; each one dropped is reported, and the contexts it was
+	 * given are let go of, and taken out of `given`.
+	 */
+	function sendable(ops: Op[], given?: number[]): Op[] {
 		return ops.filter((op) => {
 			const reason = unsendable(op);
 			if (reason === undefined) return true;
 			const id = op[1];
+			if (op[0] === OpCode.SetAttr) {
+				const dropped = contextsIn(op[3]);
+				contexts.release(dropped);
+				for (const context of dropped) {
+					const at = given?.indexOf(context) ?? -1;
+					if (at !== -1) given!.splice(at, 1);
+				}
+			}
 			reportError(
 				backgroundError({
 					code: "attribute_not_copyable",
@@ -201,7 +212,7 @@ export function openChannel(options: ChannelOptions): Channel {
 		try {
 			return { text: encodeCell(ops), contexts: given };
 		} catch {
-			return { text: encodeCell(sendable(ops)), contexts: given };
+			return { text: encodeCell(sendable(ops, given)), contexts: given };
 		}
 	};
 	let splitter = createSplitter(encode, waits);
@@ -264,7 +275,7 @@ export function openChannel(options: ChannelOptions): Channel {
 		}
 		if (!open || !keepsMessage(received, page)) return;
 		if (received.t === "event") {
-			onEvent(received.handler, received.event);
+			onEvent(received.handler, received.event, received.input);
 			return;
 		}
 		if (received.t === "rewrite") {

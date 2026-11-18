@@ -11,7 +11,6 @@
 import { HANDLE_FIELDS, isMainThreadFunction } from "../../wire/index.ts";
 import type { BackgroundFunctionHandle, CallRequest } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
-import { DEV } from "../globals.ts";
 import { reportError } from "../report.ts";
 
 /** Where calls reach the main thread: the running page's channel. */
@@ -50,10 +49,13 @@ function nameOf(value: unknown): string {
 }
 
 /**
- * Calls the main-thread function `fn` with `params` from the background, after the changes made
- * before the call: resolves with what it returns, awaited when it is a thenable. Rejects with what
- * it threw, when `fn` is not a main-thread function, and when the page reloads or closes first.
- * `params` and the result are copied as plain data.
+ * Calls the main-thread function `fn` with `params` from the background, after the elements made
+ * and changed before the call: a state change the call must see needs `await tick()` first, as
+ * for an element's methods. Resolves with what the function returns, awaited when it is a
+ * thenable. Rejects with what it threw, when `fn` is not a main-thread function (reported), and
+ * when the page reloads or closes first. `params` and the result are copied as plain data. Called
+ * as the page's first frame is drawn, on the main thread, it does nothing: the background's same
+ * call runs it once the page starts.
  */
 export function runOnMainThread<Args extends unknown[], Result>(
 	fn: (...args: Args) => Result,
@@ -64,7 +66,7 @@ export function runOnMainThread<Args extends unknown[], Result>(
 				code: "not_a_main_thread_function",
 				details: { name: nameOf(fn) },
 			});
-			if (DEV) reportError(error);
+			reportError(error);
 			return handled(Promise.reject(error));
 		}
 		if (!host) return handled(Promise.reject(pageGone()));

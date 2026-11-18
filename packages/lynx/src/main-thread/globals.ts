@@ -140,6 +140,8 @@ export interface MainThreadGlobals {
 	): void;
 	/** The element's parent, or none (renderer_functions.cc, FiberGetParent). */
 	__GetParent(element: LynxElement): LynxElement | undefined | null;
+	/** The element's `id` (renderer_functions.cc, FiberGetID). */
+	__GetID(element: LynxElement): string | undefined;
 	/** A copy of the element's dataset (renderer_functions.cc, FiberGetDataset). */
 	__GetDataset(element: LynxElement): Record<string, unknown> | undefined;
 	__GetAttributeByName(element: LynxElement, name: string): unknown;

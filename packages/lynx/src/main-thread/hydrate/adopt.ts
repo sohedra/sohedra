@@ -7,7 +7,7 @@
 import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../../wire/index.ts";
 import type { CallItem, ListItemInfo, Op } from "../../wire/index.ts";
 import type { Applier } from "../apply.ts";
-import type { Frame } from "../frame/draw.ts";
+import type { EarlyEvent, Frame } from "../frame/draw.ts";
 import type { HeldCall } from "../functions/background-calls.ts";
 import { mainThread } from "../globals.ts";
 import type { AdoptedItems, HeldCell } from "../lists.ts";
@@ -158,7 +158,7 @@ export function adoptFrame(options: {
 }
 
 /** Sends an early event to a handler, with the element that handles it as its current target. */
-export type Replay = (handler: number, event: unknown, currentTarget: number) => void;
+export type Replay = (handler: number, early: EarlyEvent, currentTarget: number) => void;
 
 /**
  * Replays the events the first frame heard, in order, through the handlers the background bound:
@@ -184,13 +184,13 @@ export function replayEarly(options: {
 		if (at === undefined) continue;
 		if (early.slot !== null) {
 			const handler = applier.handlerOf(at, early.slot);
-			if (handler !== undefined) send(handler, early.event, at);
+			if (handler !== undefined) send(handler, early, at);
 			continue;
 		}
 		for (let id = at; id !== ROOT_ID && id !== 0; id = rendered.nodes.get(id)?.parent ?? 0) {
 			const caught = applier.handlerOf(id, `catchEvent:${early.name}`);
 			const bound = caught ?? applier.handlerOf(id, `bindEvent:${early.name}`);
-			if (bound !== undefined) send(bound, early.event, id);
+			if (bound !== undefined) send(bound, early, id);
 			if (caught !== undefined) break;
 		}
 	}

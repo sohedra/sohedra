@@ -8,7 +8,7 @@
 // tree and before the flush that shows it: at a patch's end, before a call of the patch, inside a
 // list's making of a cell, as the first frame is drawn and at hydration.
 
-import { isMainThreadFunction } from "../../wire/index.ts";
+import { isMainThreadFunction, RUN_FUNCTION } from "../../wire/index.ts";
 import type { Result, ToBackground } from "../../wire/index.ts";
 import { mainThreadError } from "../catalogue.ts";
 import type { CodeStyles } from "../code-styles.ts";
@@ -24,7 +24,7 @@ import { carry } from "./hydrate.ts";
 import { createLifetimes } from "./lifetimes.ts";
 import { createLoopGuard } from "./loop-guard.ts";
 import { createRefs } from "./refs.ts";
-import { holdValue, made, prepare, runAs } from "./run.ts";
+import { contextsOf, holdValue, made, prepare, runAs } from "./run.ts";
 import type { Ready } from "./run.ts";
 
 /** An element hydration kept, with the background's `main-thread:` attributes for it. */
@@ -106,11 +106,13 @@ export interface FunctionsPageOptions {
 	soon(callback: () => void): void;
 	/** Runs `callback` at the main thread's next turn; false when the engine cannot. */
 	nextTurn(callback: () => void): boolean;
+	/** The background's id of an engine element, while the page shows it. */
+	idOf(element: LynxElement): number | undefined;
 }
 
 /** The main-thread functions of a page. */
 export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPage {
-	const { styles, flattening, send, report, flush, afterLayout, soon, nextTurn } = options;
+	const { styles, flattening, send, report, flush, afterLayout, soon, nextTurn, idOf } = options;
 	const guard = DEV ? createLoopGuard({ report, nextTurn }) : undefined;
 	const refs = createRefs();
 	const lifetimes = createLifetimes({
@@ -118,7 +120,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 		soon,
 	});
 	const store = new Map<LynxElement, Map<string, Binding>>();
-	const calls = createBackgroundCalls({ send, report, lifetimes });
+	const calls = createBackgroundCalls({ send, report, lifetimes, soon });
 	let pending: { binding: Binding; value: unknown }[] = [];
 	let silenced = false;
 	let depth = 0;
@@ -128,6 +130,8 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 	const elements = createElements({
 		styles,
 		flattening,
+		idOf,
+		report,
 		changed(what, detail) {
 			if (DEV) guard?.changed(what, detail);
 			if (depth > 0 || flushing) return;
@@ -159,6 +163,9 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 				report(error);
 			}
 		},
+		ran(id) {
+			if (DEV) guard?.ran(id, undefined);
+		},
 	};
 
 	function applying(run: () => void, drain?: () => void): void {
@@ -171,27 +178,16 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 		}
 	}
 
-	/** Runs a function ref with its element; what it returns, if a function, is its cleanup. */
-	function runRef(binding: Binding): void {
-		try {
-			// Boundary: a function ref's value is a main-thread function (`refKind.bind`).
-			const fn = binding.value as Parameters<typeof prepare>[0];
-			if (DEV) guard?.ran(fn._wkltId, undefined);
-			const returned = prepare(fn, scope)(elements.wrap(binding.element));
-			binding.cleanup = typeof returned === "function" ? (returned as () => void) : undefined;
-		} catch (error) {
-			report(error);
-		}
-	}
-
 	function settle(): void {
 		if (pending.length === 0) return;
 		applying(() => {
 			while (pending.length > 0) {
 				const due = pending;
 				pending = [];
-				for (const { binding, value } of due)
-					if (!binding.released && binding.value === value) runRef(binding);
+				for (const { binding, value } of due) {
+					if (binding.released || binding.value !== value) continue;
+					scope.guarded(() => binding.kind.settle?.(binding, scope));
+				}
 			}
 		});
 	}
@@ -199,6 +195,8 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 	function setAttribute(element: LynxElement, name: string, value: unknown): void {
 		const slot = slotOf(name);
 		if (!slot) {
+			// It binds nothing: the background lets go of what it gave the value.
+			lifetimes.dropUnread(contextsOf(value));
 			if (!reportedNames.has(name)) {
 				reportedNames.add(name);
 				report(mainThreadError({ code: "main_thread_attribute_unknown", details: { name } }));
@@ -282,7 +280,11 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 		runWorklet(value, params, options) {
 			let ready: Ready | undefined;
 			if (value instanceof Entry) ready = value.ready();
-			else if (isMainThreadFunction(value) && !silenced) ready = readyOf(value);
+			else if (isMainThreadFunction(value)) ready = silenced ? undefined : readyOf(value);
+			else if (DEV && !reportedNames.has(RUN_FUNCTION)) {
+				reportedNames.add(RUN_FUNCTION);
+				report(mainThreadError({ code: "main_thread_value_not_runnable", details: {} }));
+			}
 			if (!ready) return undefined;
 			const source =
 				typeof options === "object" && options !== null
@@ -299,6 +301,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 				params: source === undefined ? (made(list, scope, 0) as unknown[]) : list,
 				source,
 				elements,
+				manager: value instanceof Entry ? value.manager : undefined,
 			});
 		},
 		holdFirstFrame: calls.holdFirstFrame,

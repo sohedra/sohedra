@@ -56,6 +56,13 @@ export interface BackgroundDetails {
 	background_function_missing: Record<string, never>;
 	/** `name` is the attribute's; `where` the element's `file:line:col`, in development builds. */
 	plain_function_under_main_thread: { name: string; tag: string; where?: string | undefined };
+	/** `name` is the attribute as written, `replacement` what to write instead. */
+	main_thread_event_spelling_removed: {
+		name: string;
+		replacement: string;
+		tag: string;
+		where?: string | undefined;
+	};
 }
 
 /** What a code of the background names. */
@@ -185,7 +192,7 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 	},
 	background_function_missing: {
 		message: () =>
-			"A main-thread function called a background function through runOnBackground, and the background no longer has it: the page let go of that copy of the main-thread function.",
+			"A main-thread function called a background function through runOnBackground, and the background no longer has it: the page let go of the main-thread function that named it.",
 		fix: () =>
 			"Keep main-thread functions that call the background in an attribute, a ref or a call that is still on the page. If the page was made again after its first frame could not be hydrated, functions kept from before cannot call the background.",
 		docs: "background_function_missing",
@@ -196,6 +203,12 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Start the function's body with the 'main thread' directive, or use the attribute without the main-thread: prefix to run it on the background.",
 		docs: "plain_function_under_main_thread",
+	},
+	main_thread_event_spelling_removed: {
+		message: ({ name, tag }) =>
+			`The <${tag}>'s ${name} uses Lynx's own spelling of an event, which a component no longer writes.`,
+		fix: ({ replacement }) => `Write ${replacement} instead.`,
+		docs: "main_thread_event_spelling_removed",
 	},
 };
 

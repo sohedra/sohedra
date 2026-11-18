@@ -12,6 +12,8 @@ export interface FirstFrameDetails {
 	/** `call` is what the page's code called: `runOnBackground` or `runOnMainThread`. */
 	main_thread_runtime_missing: { call: string };
 	main_thread_ref_set_outside_function: Record<string, never>;
+	/** `id` is the function's, which names its file and its place in it. */
+	run_on_main_thread_in_first_frame: { id: string };
 }
 
 /** What a code of the first frame names. */
@@ -39,6 +41,13 @@ export const FIRST_FRAME_CATALOGUE: Catalogue<FirstFrameDetails> = {
 		fix: () =>
 			"Set it inside a main-thread function. A component's top-level code runs on both threads, and a ref's value lives on the main thread.",
 		docs: "main_thread_ref_set_outside_function",
+	},
+	run_on_main_thread_in_first_frame: {
+		message: ({ id }) =>
+			`A runOnMainThread call of ${id} was made as the first frame was drawn, and does nothing there: it runs once the page starts, when the background makes the same call.`,
+		fix: () =>
+			"To run it as the page starts, call it from $effect. To run it on an element from the first frame on, once, give the element a function ref: main-thread:ref={fn}.",
+		docs: "run_on_main_thread_in_first_frame",
 	},
 };
 

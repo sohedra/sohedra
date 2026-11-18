@@ -37,6 +37,7 @@ import { background } from "./globals.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
 import { bumpPage, clearPageState, currentPage, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
+import { numberInput } from "./renderer/input.ts";
 import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
 import type { ElementNode } from "./renderer/renderer.ts";
 import { rowOf, waitsToBeAsked } from "./renderer/rows.ts";
@@ -174,9 +175,10 @@ export function startPage<Props extends Record<string, unknown>>(
 		);
 	}
 
-	function dispatch(handler: number, event: SentEvent): void {
+	function dispatch(handler: number, event: SentEvent, input: number | undefined): void {
 		handle(() => {
 			const received = withNodes(event);
+			if (input !== undefined) numberInput(received, input);
 			if (received["type"] === "layoutchange")
 				pageRenderer.sawLayout(received["currentTarget"], received["detail"]);
 			pageHandlers.dispatch(handler, received);

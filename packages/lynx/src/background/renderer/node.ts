@@ -17,6 +17,15 @@ export interface InputState {
 	composing: boolean;
 	/** From an `input` event until its update has run: the change came from typing. */
 	typing: boolean;
+	/** The number of the last `input` event the background heard, which a write answers. */
+	answers: number;
+	/** What the last `input` event held, and where its caret was (-1: not said). */
+	typed: string;
+	selection: number;
+	/** A setter's change held back while the keyboard composed, written when it ends. */
+	skipped: string | undefined;
+	/** Whether the field's `blur` is listened to, to write what composition held back. */
+	blurs: boolean;
 }
 
 /** One node of the tree. */

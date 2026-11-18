@@ -29,7 +29,10 @@ export interface Refs {
 	of(handle: MainThreadRefHandle): Ref;
 	/** The ref `id` is, if the main thread has seen it. */
 	find(id: number): Ref | undefined;
-	/** From now on, `to` names the ref `from` names, unless `to` names one already. */
+	/**
+	 * From now on `to` names the ref `from` named, unless `to` names one already: hydration moves the
+	 * first frame's ref to the background's id, so an `unref` of that id lets go of it.
+	 */
 	alias(to: number, from: number): void;
 	/** The background let go of these refs. */
 	drop(ids: readonly number[]): void;
@@ -49,7 +52,9 @@ export function createRefs(): Refs {
 		find: (id) => refs.get(id),
 		alias(to, from) {
 			const ref = refs.get(from);
-			if (ref && !refs.has(to)) refs.set(to, ref);
+			if (!ref || refs.has(to)) return;
+			refs.set(to, ref);
+			refs.delete(from);
 		},
 		drop(ids) {
 			for (const id of ids) refs.delete(id);

@@ -15,6 +15,7 @@ import type { HeldCall } from "../functions/background-calls.ts";
 import type { FunctionsPage } from "../functions/page.ts";
 import { mainThread } from "../globals.ts";
 import type { ListenerOptions, LynxElement } from "../globals.ts";
+import type { InputNumbers } from "../inputs.ts";
 import { cellInfo, elementsOf, parseCell, parsePage } from "./html.ts";
 import type { DrawnCell, DrawnNode } from "./html.ts";
 
@@ -27,6 +28,8 @@ export interface EarlyEvent {
 	slot: string | null;
 	/** The event as Lynx gave it. */
 	event: unknown;
+	/** An `input` event's number (../inputs.ts). */
+	input?: number;
 }
 
 /** The first frame, until the background adopts it. */
@@ -60,6 +63,7 @@ export interface DrawOptions {
 	report(error: unknown): void;
 	styles: CodeStyles;
 	flattening: Flattening;
+	inputs: InputNumbers;
 	/** What the drawn elements' `main-thread:` attributes bind. */
 	functions: FunctionsPage;
 	/** Runs the function refs of a cell Lynx asks for, before it flushes the cell. */
@@ -68,7 +72,7 @@ export interface DrawOptions {
 
 /** Draws the first frame on `page`. Throws, with nothing left on the page, when it cannot. */
 export function drawFrame(options: DrawOptions): Frame {
-	const { page, html, report, styles, flattening, functions, settle } = options;
+	const { page, html, report, styles, flattening, inputs, functions, settle } = options;
 	let next = ROOT_ID;
 	const nextId = (): number => ++next;
 	const nodes = new Map<number, DrawnNode>();
@@ -115,16 +119,23 @@ export function drawFrame(options: DrawOptions): Frame {
 		page,
 		styles,
 		flattening,
+		inputs,
 		functions,
 		settle,
 		report,
-		dispatch(handler, event) {
+		dispatch(handler, event, input) {
 			const slot = slots[handler - 1];
 			if (!slot) return;
 			const name = slot[1].slice(slot[1].indexOf(":") + 1);
 			// The page's own listener hears these, on their way to their target.
 			if (PAGE_EVENTS.includes(name)) return;
-			early.push({ name, at: slot[0], slot: slot[1], event });
+			early.push({
+				name,
+				at: slot[0],
+				slot: slot[1],
+				event,
+				...(input !== undefined && { input }),
+			});
 		},
 		// A deferred row of the async list waits for the background's row.
 		written: (id) => cells.get(id)?.deferred !== true,

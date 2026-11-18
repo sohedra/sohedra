@@ -18,6 +18,8 @@ import type { Flattening } from "./flatten.ts";
 import type { FunctionsPage } from "./functions/page.ts";
 import { mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
+import { createInputNumbers, inputValue } from "./inputs.ts";
+import type { InputNumbers } from "./inputs.ts";
 import { LISTENER_OPTIONS } from "./listeners.ts";
 import { createLists, LIST_ONLY_INFO } from "./lists.ts";
 import type { AdoptedItems, HeldCell, ListState } from "./lists.ts";
@@ -30,8 +32,11 @@ function textOf(value: unknown): string {
 	return JSON.stringify(value) ?? "";
 }
 
-/** Sends an event of handler `handler` to the background. */
-export type Dispatch = (handler: number, event: unknown) => void;
+/**
+ * Sends an event of handler `handler` to the background; an `input` event with the number the
+ * page gave it (./inputs.ts).
+ */
+export type Dispatch = (handler: number, event: unknown, input?: number) => void;
 
 /** One op the applier could not apply, and why. */
 export interface FailedOp {
@@ -74,6 +79,8 @@ export interface Applier extends WaitingCells {
 	readonly flattening: Flattening;
 	/** The styles code set. */
 	readonly styles: CodeStyles;
+	/** The numbers of the fields' `input` events. */
+	readonly inputs: InputNumbers;
 	/** The handler id of an element's event slot (`bindEvent:tap`), if it listens there. */
 	handlerOf(id: number, slot: string): number | undefined;
 	/** The cells of a list that have elements, with whether Lynx holds them. */
@@ -120,6 +127,8 @@ export interface ApplierOptions {
 	flattening?: Flattening;
 	/** What the elements' `main-thread:` attributes bind: the page's main-thread functions. */
 	functions: FunctionsPage;
+	/** The numbers of the fields' `input` events, shared the same way as `styles`. */
+	inputs?: InputNumbers;
 	/** Runs the function refs bound since, once a list made a cell and before it is flushed. */
 	settle?: () => void;
 }
@@ -139,6 +148,7 @@ export function createApplier(options: ApplierOptions): Applier {
 	const pageUid = mainThread.__GetElementUniqueID(page);
 	const flattening = options.flattening ?? createFlattening();
 	const styles = options.styles ?? createCodeStyles();
+	const inputs = options.inputs ?? createInputNumbers();
 	const lists = createLists({
 		pageUid,
 		openCell,
@@ -186,7 +196,10 @@ export function createApplier(options: ApplierOptions): Applier {
 		const registration: Registration = {
 			name,
 			handler,
-			listener: (event) => dispatch(handler, event),
+			listener:
+				name === "input"
+					? (event) => dispatch(handler, event, inputs.heard(get(id), inputValue(event)))
+					: (event) => dispatch(handler, event),
 			options: LISTENER_OPTIONS[type],
 		};
 		mainThread.__AddEventListener(get(id), name, registration.listener, registration.options);
@@ -200,7 +213,10 @@ export function createApplier(options: ApplierOptions): Applier {
 		// oxlint-disable-next-line unicorn/no-useless-spread -- copied: removeListener deletes from slots
 		if (slots) for (const slot of [...slots.keys()]) removeListener(id, slot);
 		const element = elements.get(id);
-		if (element !== undefined) functions.release(element);
+		if (element !== undefined) {
+			functions.release(element);
+			inputs.forget(element);
+		}
 		datasets.delete(id);
 		lists.release(id);
 		const uid = uidById.get(id);
@@ -368,6 +384,7 @@ export function createApplier(options: ApplierOptions): Applier {
 		idOf: (element) => idByUid.get(mainThread.__GetElementUniqueID(element)),
 		flattening,
 		styles,
+		inputs,
 		handlerOf: (id, slot) => registrations.get(id)?.get(slot)?.handler,
 		heldCells: (id) => lists.heldCells(id),
 		listOrder: (id) => lists.orderOf(id),

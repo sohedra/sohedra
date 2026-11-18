@@ -9,6 +9,7 @@ import { render } from "svelte/server";
 
 import { FIRST_FRAME_GLOBAL, PROPS_ID_PREFIX } from "../wire/index.ts";
 import { firstFrameError } from "./catalogue.ts";
+import { whileDrawing } from "./drawing.ts";
 import { DEV, DRAWS, firstFrame, setGlobalFunction } from "./globals.ts";
 
 /** How the page starts: the background's options, of which the first frame reads `props`. */
@@ -34,10 +35,13 @@ export function startPage<Props extends Record<string, unknown>>(
 		const props = options.props?.(initData) ?? ({} as Props);
 		try {
 			// Boundary: `render` takes the component's props as `Omit<Props, …>`, which `Props` is.
-			return render(App as Component<Record<string, unknown>>, {
-				props,
-				idPrefix: PROPS_ID_PREFIX,
-			}).body;
+			return whileDrawing(
+				() =>
+					render(App as Component<Record<string, unknown>>, {
+						props,
+						idPrefix: PROPS_ID_PREFIX,
+					}).body,
+			);
 		} catch (error) {
 			if (!(error instanceof Error) || !error.message.startsWith(AWAIT_INVALID)) throw error;
 			if (DEV && !warned) {

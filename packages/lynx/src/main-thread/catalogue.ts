@@ -26,7 +26,13 @@ export interface MainThreadDetails {
 	main_thread_value_too_deep: { depth: number };
 	/** `call` names what was called. */
 	page_is_gone: { call: string };
-	first_frame_call_unanswered: Record<string, never>;
+	/** `count` is how many calls had no answer in the task it is reported in. */
+	first_frame_call_unanswered: { count: number };
+	main_thread_value_not_runnable: Record<string, never>;
+	/** `method` is what was called on the element. */
+	element_released: { method: string };
+	/** `name` is what was given: a function's name, or what the value is. */
+	not_a_background_function_handle: { name: string };
 	/** `name` is the attribute's. */
 	main_thread_attribute_unknown: { name: string };
 	/**
@@ -119,11 +125,31 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		docs: "page_is_gone",
 	},
 	first_frame_call_unanswered: {
-		message: () =>
-			"A main-thread function called runOnBackground in the first frame, and no background function took the call when the background took the page over, so it has no answer.",
+		message: ({ count }) =>
+			`A main-thread function called runOnBackground in the first frame, and no background function took the call when the background took the page over, so it has no answer${count > 1 ? ` (${count} calls)` : ""}.`,
 		fix: () =>
 			"Call it from an element the background renders the same way as the first frame, not one inside {#if mainThread} or a branch the threads take apart, or once the page has started.",
 		docs: "first_frame_call_unanswered",
+	},
+	main_thread_value_not_runnable: {
+		message: () =>
+			"Lynx asked the main thread to run a value that is not a main-thread function, so nothing ran.",
+		fix: () => `The engine handed back something the page did not give it. ${REPORT}`,
+		docs: "main_thread_value_not_runnable",
+	},
+	element_released: {
+		message: ({ method }) =>
+			`A main-thread function called ${method} on an element the page has let go of, so nothing happened.`,
+		fix: () =>
+			"Read the element where the function runs, from its event's target or a ref the element holds now, rather than keeping it past its element's life.",
+		docs: "element_released",
+	},
+	not_a_background_function_handle: {
+		message: ({ name }) =>
+			`The value given to runOnBackground, ${name}, is not a background function it can call, so the call has no answer.`,
+		fix: () =>
+			"Call runOnBackground(fn) in the body of a function that starts with 'main thread', with fn the background function itself: the build turns it into what the call needs there.",
+		docs: "not_a_background_function_handle",
 	},
 	main_thread_attribute_unknown: {
 		message: ({ name }) =>

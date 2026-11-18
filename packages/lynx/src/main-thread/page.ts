@@ -10,6 +10,8 @@ import type { Flattening } from "./flatten.ts";
 import type { Frame } from "./frame/draw.ts";
 import type { FunctionsPage } from "./functions/page.ts";
 import type { LynxElement } from "./globals.ts";
+import { createInputNumbers } from "./inputs.ts";
+import type { InputNumbers } from "./inputs.ts";
 
 /** The main thread's page. */
 export interface MainThreadPage {
@@ -50,6 +52,8 @@ export interface MainThreadPage {
 	flattening: Flattening;
 	/** The page's main-thread functions: a page that reloads starts new ones. */
 	functions: FunctionsPage;
+	/** The numbers of the fields' `input` events, which hydration carries over. */
+	inputs: InputNumbers;
 }
 
 /** A page before the engine renders it; `functions` makes its main-thread functions. */
@@ -75,6 +79,7 @@ export function createMainThreadPage(
 		styles,
 		flattening,
 		functions: functions({ styles, flattening }),
+		inputs: createInputNumbers(),
 	};
 }
 

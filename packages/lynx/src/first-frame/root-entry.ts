@@ -3,10 +3,11 @@
 // main thread's runtime through the global it shares with the page's code. Its background side is
 // ../background/root-entry.ts.
 
-import { REF_FIELDS } from "../wire/index.ts";
+import { FUNCTION_FIELDS, isMainThreadFunction, REF_FIELDS } from "../wire/index.ts";
 import type { FunctionsRuntime, MainThreadRefHandle } from "../wire/index.ts";
 import { firstFrameError } from "./catalogue.ts";
-import { functionsGlobal } from "./globals.ts";
+import { drawing } from "./drawing.ts";
+import { DEV, firstFrame, functionsGlobal } from "./globals.ts";
 
 declare const brand: unique symbol;
 
@@ -24,11 +25,29 @@ function runtimeFor(call: string): FunctionsRuntime | Error {
 	);
 }
 
-/** Calls the main-thread function `fn` now, from a main-thread function: resolves with its result. */
+/** The functions whose call as the first frame was drawn was warned about, by id. */
+const warned = new Set<string>();
+
+/**
+ * Calls the main-thread function `fn` now, from a main-thread function: resolves with its result.
+ * Called as the first frame is drawn, by a component's top-level code, it does nothing, and never
+ * settles: the background's same call runs it once the page starts, as `$effect` runs then.
+ */
 export function runOnMainThread<Args extends unknown[], Result>(
 	fn: (...args: Args) => Result,
 ): (...args: Args) => Promise<Awaited<Result>> {
 	return (...params) => {
+		if (drawing()) {
+			const id = isMainThreadFunction(fn) ? fn[FUNCTION_FIELDS.id] : String(fn);
+			if (DEV && !warned.has(id)) {
+				warned.add(id);
+				firstFrame.lynx.reportError(
+					firstFrameError({ code: "run_on_main_thread_in_first_frame", details: { id } }),
+					{ level: "warning" },
+				);
+			}
+			return new Promise(() => {});
+		}
 		const runtime = runtimeFor("runOnMainThread");
 		if (runtime instanceof Error) return Promise.reject(runtime);
 		// Boundary: the runtime answers with what the function returned.
