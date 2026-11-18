@@ -16,7 +16,13 @@ export type MarkupNode =
 			attributes: string[];
 			children: MarkupNode[];
 	  }
-	| { kind: "list"; attributes: string[]; items: ListChild[] }
+	| {
+			kind: "list";
+			attributes: string[];
+			/** The attributes that set the first screen of a list with deferred rows. */
+			screen: string[];
+			items: ListChild[];
+	  }
 	| { kind: "text"; source: string }
 	| { kind: "if"; condition: string; consequent: MarkupNode[]; otherwise: MarkupNode[] | undefined }
 	| {
@@ -33,14 +39,25 @@ export type MarkupNode =
 	| { kind: "component"; name: string; label: string; cssVariable: boolean }
 	| { kind: "render"; snippet: string; argument: string };
 
+/** How a row is deferred: not, plainly, or with `unmountRecycled`. */
+export type Deferred = "plain" | "unmount" | undefined;
+
 /**
- * A child of a `<list>`: one `<list-item>`, an `{#each}` of them, or an `{#each}` of enough rows
- * for a scroll to hand back more than the main thread keeps (`rows`), the second of which may be
- * held for good (`fixed`), and which may be deferred (`defer`, with `unmountRecycled` or not): the
- * list is then Lynx's async list.
+ * A child of a `<list>`: one `<list-item>` (a header or a footer, maybe `full-span`), an `{#each}`
+ * of them, or an `{#each}` of enough rows for a scroll to hand back more than the main thread keeps
+ * (`rows`), the second of which may be held for good (`fixed`). Each may be deferred (`defer`, with
+ * `unmountRecycled` or not), and the list is then Lynx's async list; an `{#each}` may be in an
+ * `{#if}` (`wrapped`, its test).
  */
 export type ListChild =
-	| { kind: "item"; key: string; attributes: string[]; body: MarkupNode[] }
+	| {
+			kind: "item";
+			key: string;
+			attributes: string[];
+			body: MarkupNode[];
+			defer?: Deferred;
+			fullSpan?: boolean;
+	  }
 	| {
 			kind: "items";
 			array: string;
@@ -49,6 +66,8 @@ export type ListChild =
 			prefix: string;
 			attributes: string[];
 			body: MarkupNode[];
+			defer?: Deferred;
+			wrapped?: string | undefined;
 	  }
 	| {
 			kind: "rows";
@@ -56,7 +75,8 @@ export type ListChild =
 			fixed: boolean;
 			attributes: string[];
 			body: MarkupNode[];
-			defer?: "plain" | "unmount" | undefined;
+			defer?: Deferred;
+			wrapped?: string | undefined;
 	  };
 
 /** The most lists around one another: a list holds at most one more, in an item. */
@@ -210,6 +230,36 @@ function element(
 		}));
 }
 
+/** Whether rows are deferred: on about half the lists, with `unmountRecycled` on half of those. */
+const deferred: fc.Arbitrary<Deferred> = fc.oneof(
+	{ weight: 2, arbitrary: fc.constant(undefined) },
+	fc.constant("plain" as const),
+	fc.constant("unmount" as const),
+);
+
+/** The test of an `{#if}` around an `{#each}` of a list, on about a third of them. */
+const wrapped: fc.Arbitrary<string | undefined> = fc.oneof(
+	{ weight: 2, arbitrary: fc.constant(undefined) },
+	fc.constantFrom(...BOOLEANS),
+);
+
+/**
+ * The attributes that set a list's first screen, on about half the lists: lines of two rows, a
+ * screen that grows with the state, a count of its own, a start further down.
+ */
+const screen: fc.Arbitrary<string[]> = fc.oneof(
+	fc.constant<string[]>([]),
+	fc.subarray(
+		[
+			"span-count={2}",
+			"preload-buffer-count={st.n0}",
+			"initial-item-count={3}",
+			"initial-scroll-index={4}",
+		],
+		{ minLength: 1, maxLength: 2 },
+	),
+);
+
 /**
  * Long rows, only in a list of the page, whose rows are released; small, with no list in them: a
  * scroll shows them many times over.
@@ -218,11 +268,8 @@ function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild>
 	return fc
 		.record({
 			fixed: fc.boolean(),
-			defer: fc.oneof(
-				{ weight: 2, arbitrary: fc.constant(undefined) },
-				fc.constant("plain" as const),
-				fc.constant("unmount" as const),
-			),
+			defer: deferred,
+			wrapped,
 			attributes: attributes(scope, "view"),
 			body: nodes("block", nested(scope, { lists: MOST_LISTS }), Math.min(1, size - 1)),
 		})
@@ -233,27 +280,33 @@ function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild>
 export function longList(scope: Scope): fc.Arbitrary<MarkupNode> {
 	const { item, scope: eachScope } = withItem(nested(scope, { lists: 1 }));
 	return fc
-		.record({ attributes: attributes(scope, "view"), child: rows(item, eachScope, 2) })
-		.map(({ attributes: written, child }): MarkupNode => ({
+		.record({ attributes: attributes(scope, "view"), screen, child: rows(item, eachScope, 2) })
+		.map(({ attributes: written, screen: first, child }): MarkupNode => ({
 			kind: "list",
 			attributes: written,
+			screen: first,
 			items: [child],
 		}));
 }
 
 function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 	const inner = nested(scope, { lists: scope.lists + 1 });
+	// A list inside a row renders its deferred rows in the next patch: only a list of the page's
+	// wait for Lynx, as the first frame draws them.
+	const defer = scope.lists === 0 ? deferred : fc.constant(undefined);
 	const listItem = fc
 		.record({
 			key: fc.constantFrom("s0", "s1", "s2"),
 			attributes: attributes(inner, "view"),
 			body: nodes("block", inner, size - 1),
+			defer,
+			fullSpan: fc.boolean(),
 		})
-		.map(({ key, attributes: written, body }): ListChild => ({
+		.map(({ key, attributes: written, ...rest }): ListChild => ({
 			kind: "item",
 			key,
 			attributes: written,
-			body,
+			...rest,
 		}));
 	const { item, scope: eachScope } = withItem(inner);
 	const eachItems = fc
@@ -263,6 +316,8 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			prefix: fc.constantFrom("e0", "e1"),
 			attributes: attributes(eachScope, "view"),
 			body: nodes("block", eachScope, size - 1),
+			defer,
+			wrapped,
 		})
 		.map((each): ListChild => ({ kind: "items", item, ...each }));
 	const kinds =
@@ -272,17 +327,19 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 	return fc
 		.record({
 			attributes: attributes(scope, "view"),
+			screen,
 			items: fc.uniqueArray(kinds, {
 				minLength: 1,
-				maxLength: 2,
+				maxLength: 3,
 				// Keys stay unique in the list: one static item per key, one `{#each}` per prefix.
 				selector: (child) =>
 					child.kind === "item" ? child.key : child.kind === "items" ? child.prefix : "r",
 			}),
 		})
-		.map(({ attributes: written, items: children }): MarkupNode => ({
+		.map(({ attributes: written, screen: first, items: children }): MarkupNode => ({
 			kind: "list",
 			attributes: written,
+			screen: first,
 			items: children,
 		}));
 }

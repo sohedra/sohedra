@@ -6,7 +6,7 @@ import type { PageSources } from "./compile.ts";
 import { IDS } from "./evaluate.ts";
 import type { ComponentModel, PageModel } from "./grammar.ts";
 import { THREAD_TESTS } from "./markup.ts";
-import type { ListChild, MarkupNode } from "./markup.ts";
+import type { Deferred, ListChild, MarkupNode } from "./markup.ts";
 
 /**
  * The rows of a long list, before the state adds a few: more than Lynx holds on a screen and the
@@ -31,28 +31,44 @@ const isThreadTest = (condition: string): boolean =>
  * `outer`, the expression of the markup around, says they do.
  */
 function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => string {
+	/** A row's `defer`, as written. */
+	const deferAttribute = (defer: Deferred): string[] =>
+		defer === "plain"
+			? ["defer"]
+			: defer === "unmount"
+				? ["defer={{ unmountRecycled: true }}"]
+				: [];
+
 	function listChild(child: ListChild, outer: string): string {
 		if (child.kind === "item") {
-			const item = opening("list-item", [`item-key="${child.key}"`, ...child.attributes]);
+			const item = opening("list-item", [
+				`item-key="${child.key}"`,
+				...deferAttribute(child.defer),
+				...(child.fullSpan ? ["full-span"] : []),
+				...child.attributes,
+			]);
 			return `${item}${markup(child.body, outer)}</list-item>`;
 		}
+		let each: string;
 		if (child.kind === "rows") {
 			const rows = `Array.from({ length: ${ROWS} + st.n0 * 2 }, (_, n) => "r" + n)`;
 			const item = opening("list-item", [
 				`item-key={${child.item}}`,
 				...(child.fixed ? [`recyclable={${child.item} !== "r1"}`] : []),
-				...(child.defer === "plain" ? ["defer"] : []),
-				...(child.defer === "unmount" ? ["defer={{ unmountRecycled: true }}"] : []),
+				...deferAttribute(child.defer),
 				...child.attributes,
 			]);
-			return `{#each ${rows} as ${child.item} (${child.item})}${item}${markup(child.body, outer)}</list-item>{/each}`;
+			each = `{#each ${rows} as ${child.item} (${child.item})}${item}${markup(child.body, outer)}</list-item>{/each}`;
+		} else {
+			const key = child.keyed ? ` (${child.item})` : "";
+			const item = opening("list-item", [
+				`item-key={"${child.prefix}-" + ${child.item}}`,
+				...deferAttribute(child.defer),
+				...child.attributes,
+			]);
+			each = `{#each ${child.array} as ${child.item}${key}}${item}${markup(child.body, outer)}</list-item>{/each}`;
 		}
-		const key = child.keyed ? ` (${child.item})` : "";
-		const item = opening("list-item", [
-			`item-key={"${child.prefix}-" + ${child.item}}`,
-			...child.attributes,
-		]);
-		return `{#each ${child.array} as ${child.item}${key}}${item}${markup(child.body, outer)}</list-item>{/each}`;
+		return child.wrapped === undefined ? each : `{#if ${child.wrapped}}${each}{/if}`;
 	}
 
 	function markupNode(node: MarkupNode, outer: string): string {
@@ -62,9 +78,9 @@ function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => s
 					? `${opening("image", node.attributes).slice(0, -1)} />`
 					: `${opening(node.tag, node.attributes)}${markup(node.children, outer)}</${node.tag}>`;
 			case "list": {
-				const deferred = node.items.some((child) => child.kind === "rows" && child.defer);
+				const deferred = node.items.some((child) => child.defer !== undefined);
 				const attributes = deferred
-					? ['custom-list-name="list-container"', ...node.attributes]
+					? ['custom-list-name="list-container"', ...node.screen, ...node.attributes]
 					: node.attributes;
 				return `${opening("list", attributes)}${node.items.map((child) => listChild(child, outer)).join(gap)}</list>`;
 			}
