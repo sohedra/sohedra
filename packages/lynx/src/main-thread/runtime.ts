@@ -71,7 +71,7 @@ const argsOf = (event: EngineMessage): unknown[] =>
  */
 export function startMainThread(): void {
 	const { lynx } = mainThread;
-	fillEngineGaps(globalScope, lynx);
+	fillEngineGaps({ scope: globalScope, strings: String.prototype, lynx });
 	const engine = lynx.getEngine();
 	const native = lynx.getNative();
 	const state = createMainThreadPage();
