@@ -8,6 +8,9 @@ import { createSplitter } from "../../../src/background/split.ts";
 import { encodeCell, OpCode as O, ROOT_ID } from "../../../src/wire/index.ts";
 import type { Op } from "../../../src/wire/index.ts";
 
+/** A cell's text, as the channel writes it: these ops hold no main-thread function. */
+const cellText = (ops: Op[]) => ({ text: encodeCell(ops), contexts: [] });
+
 const LIST: Op[] = [
 	[O.Create, 2, "list"],
 	[O.Insert, ROOT_ID, 2, 0],
@@ -20,7 +23,7 @@ const row = (id: number, key: string): Op[] => [
 
 describe("a cell held back", () => {
 	it("sends none of its ops, and its list hears of it with its info", () => {
-		const split = createSplitter(encodeCell, (id) => id === 10);
+		const split = createSplitter(cellText, (id) => id === 10);
 		const items = split.split([...LIST, ...row(10, "a"), ...row(20, "b")]);
 		expect(items.filter((item) => item[0] === "cell").map((item) => item[1])).toEqual([20]);
 		const update = items.flatMap((item) => (item[0] === "ops" ? item[1] : [])).at(-1)!;
@@ -38,7 +41,7 @@ describe("a cell held back", () => {
 	});
 
 	it("is sent again once written whole, and held again when the main thread lets go of it", () => {
-		const split = createSplitter(encodeCell, (id) => id === 10);
+		const split = createSplitter(cellText, (id) => id === 10);
 		split.split([...LIST, ...row(10, "a")]);
 		split.written(10);
 		expect(split.holds(10)).toBe(false);
@@ -50,7 +53,7 @@ describe("a cell held back", () => {
 	});
 
 	it("is forgotten when it is released", () => {
-		const split = createSplitter(encodeCell, (id) => id === 10);
+		const split = createSplitter(cellText, (id) => id === 10);
 		split.split([...LIST, ...row(10, "a")]);
 		split.split([
 			[O.Remove, 2, 10],
@@ -60,7 +63,7 @@ describe("a cell held back", () => {
 	});
 
 	it("is only a cell: holding another element does nothing", () => {
-		const split = createSplitter(encodeCell);
+		const split = createSplitter(cellText);
 		split.split([...LIST, ...row(10, "a"), [O.Create, 11, "view"], [O.Insert, 10, 11, 0]]);
 		split.hold(11);
 		expect(split.holds(11)).toBe(false);

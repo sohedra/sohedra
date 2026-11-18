@@ -27,10 +27,24 @@ export {
 	FIRST_FRAME_HANDLE,
 	FUNCTION_FIELDS,
 	FUNCTION_RUNTIME,
+	FUNCTIONS_GLOBAL,
+	HANDLE_FIELDS,
+	isBackgroundHandle,
+	isMainThreadFunction,
+	isRefHandle,
 	MAIN_THREAD_FUNCTIONS_ENTRY,
+	REF_FIELDS,
 	REGISTER_FUNCTION,
+	RUN_FUNCTION,
+	RUN_SOURCE,
 } from "./main-thread-functions.ts";
-export type { MainThreadFunction } from "./main-thread-functions.ts";
+export type {
+	BackgroundFunctionHandle,
+	FunctionsGlobal,
+	FunctionsRuntime,
+	MainThreadFunction,
+	MainThreadRefHandle,
+} from "./main-thread-functions.ts";
 export { DOCS_BASE, docsLink, formatMessage } from "./messages.ts";
 export type { Catalogue, Entry, MessageParts } from "./messages.ts";
 export {
@@ -69,6 +83,7 @@ export type {
 	CallItem,
 	CallRequest,
 	CellItem,
+	CellMark,
 	OpsItem,
 	Patch,
 	PatchItem,

@@ -9,6 +9,9 @@ import { encodeCell, OpCode } from "../../../src/wire/index.ts";
 import type { Op } from "../../../src/wire/index.ts";
 import { rendererFixture } from "./renderer-fixture.ts";
 
+/** A cell's text, as the channel writes it: these ops hold no main-thread function. */
+const cellText = (ops: Op[]) => ({ text: encodeCell(ops), contexts: [] });
+
 /** The ids an item's ops make and the ids they name. */
 function idsOf(ops: Op[]): { made: number[]; named: number[] } {
 	const made: number[] = [];
@@ -24,7 +27,7 @@ function idsOf(ops: Op[]): { made: number[]; named: number[] } {
 describe("a node moved out of a list cell", () => {
 	it("is made again on the page, so the page's ops name only elements the page made", () => {
 		const { renderer, root, element, ops } = rendererFixture();
-		const splitter = createSplitter(encodeCell);
+		const splitter = createSplitter(cellText);
 		const list = element("list");
 		const cell = element("list-item", list);
 		const moving = element("view", cell);

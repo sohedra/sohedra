@@ -33,6 +33,22 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	list_item_defer_needs_async_list: { where: "src/Feed.svelte:9:3" },
 	initial_scroll_index_past_first_screen: { index: 150, cap: 100, where: "src/Feed.svelte:7:0" },
 	initial_item_count_not_a_count: { value: '"three"', where: "src/Feed.svelte:7:0" },
+	not_a_main_thread_function: { name: "measure" },
+	run_on_background_outside_main_thread: { name: "save" },
+	main_thread_ref_read_on_background: {},
+	main_thread_ref_set_on_background: {},
+	background_function_missing: {},
+	plain_function_under_main_thread: {
+		name: "main-thread:ontap",
+		tag: "view",
+		where: "src/Sheet.svelte:14:2",
+	},
+	main_thread_event_spelling_removed: {
+		name: "main-thread:bindtap",
+		replacement: "main-thread:ontap",
+		tag: "view",
+		where: "src/Sheet.svelte:14:2",
+	},
 };
 
 // Boundary: the keys of the catalogue are its codes.

@@ -7,6 +7,9 @@
 // message, at the end of the task) and its first text comes as a marked cell item. A row deferred
 // with `unmountRecycled` loses its text with its elements, and the background is told (a hide
 // message) to unmount its contents; until it is written whole again, its ops are dropped.
+//
+// A text kept holds the contexts its cell item lists: a text let go of unread, replaced or dropped,
+// lets go of them, as reading it would have counted them.
 
 import { decodeCell } from "../wire/index.ts";
 import type { CellItem, Op, ToBackground } from "../wire/index.ts";
@@ -53,6 +56,8 @@ export interface Cells {
 	schedule(): void;
 	/** Asks the background, at the end of the task, to render a deferred row and write it. */
 	request(id: number): void;
+	/** A cell is gone: what was kept for it goes, unread. */
+	drop(id: number): void;
 }
 
 /** The cells of the page `page`. */
@@ -105,29 +110,57 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 		later(askForRewrites);
 	}
 
+	/** Lets go of what is kept for a cell, unread. */
+	function drop(id: number): void {
+		page.cells.delete(id);
+		const contexts = page.cellContexts.get(id);
+		if (!contexts) return;
+		page.cellContexts.delete(id);
+		page.functions.dropUnread(contexts);
+	}
+
+	/** Keeps a text for a cell, after what is kept, or, with `replace`, in its place. */
+	function keep(id: number, text: string, contexts: number[] | undefined, replace: boolean): void {
+		if (replace) drop(id);
+		let parts = page.cells.get(id);
+		if (!parts) page.cells.set(id, (parts = []));
+		parts.push(text);
+		if (contexts === undefined) return;
+		const held = page.cellContexts.get(id);
+		if (held) held.push(...contexts);
+		else page.cellContexts.set(id, [...contexts]);
+	}
+
 	return {
 		open(id) {
 			const parts = page.cells.get(id);
 			if (!parts) return;
+			// Read now: the contexts the texts hold are counted as the cell is made.
 			page.cells.delete(id);
+			page.cellContexts.delete(id);
 			for (const part of parts) apply(decodeCell(part));
 		},
 		take(item) {
-			const [, id, text, mark] = item;
+			const [, id, text, mark, contexts] = item;
 			const applier = page.applier!;
-			if (mark !== undefined) {
+			if (mark !== undefined && mark !== null) {
 				// A deferred row's first text: the answer to a show message.
 				if (!applier.element(id) && !page.cells.has(id)) {
-					page.cells.set(id, [text]);
+					keep(id, text, contexts, true);
 					applier.firstText(id);
 					return;
 				}
-				if (!applier.replaceCell(id, text)) return;
-				if (mark === true) {
-					page.cells.set(id, [text]);
+				if (!applier.replaceCell(id, text)) {
+					if (contexts) page.functions.dropUnread(contexts);
 					return;
 				}
-				page.cells.delete(id);
+				if (mark === true) {
+					keep(id, text, contexts, true);
+					return;
+				}
+				// Its contents go, and the text with them.
+				drop(id);
+				if (contexts) page.functions.dropUnread(contexts);
 				applier.hideCell(id);
 				hides.push(id);
 				sendSoon();
@@ -139,12 +172,14 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 				return;
 			}
 			// Its text went with its contents: it is written whole when Lynx asks for it again.
-			if (applier.isHidden(id)) return;
-			let parts = page.cells.get(id);
-			if (!parts) page.cells.set(id, (parts = []));
-			parts.push(text);
-			if (piledUp(parts)) applier.askCell(id);
+			if (applier.isHidden(id)) {
+				if (contexts) page.functions.dropUnread(contexts);
+				return;
+			}
+			keep(id, text, contexts, false);
+			if (piledUp(page.cells.get(id)!)) applier.askCell(id);
 		},
+		drop,
 		schedule,
 		request(id) {
 			shows.push(id);

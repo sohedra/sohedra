@@ -1,6 +1,9 @@
 // The globals of Lynx's main thread, as this folder's code may use them. Add a member when code
 // first uses it, after checking it on the engine.
 
+import { FUNCTIONS_GLOBAL, REGISTER_FUNCTION } from "../wire/index.ts";
+import type { FunctionsGlobal } from "../wire/index.ts";
+
 /** A Lynx element, as the element functions take and give it. */
 export type LynxElement = object;
 
@@ -124,6 +127,25 @@ export interface MainThreadGlobals {
 		listener: (event: unknown) => void,
 		options: ListenerOptions,
 	): void;
+	/**
+	 * Binds a main-thread function to an element's event, or with none, unbinds it
+	 * (core/runtime/lepus/bindings/renderer_functions.cc, FiberAddEvent). The engine hands `value`
+	 * back to the global `runWorklet` on each event.
+	 */
+	__AddEvent(
+		element: LynxElement,
+		type: string,
+		name: string,
+		value: { type: "worklet"; value: unknown } | undefined,
+	): void;
+	/** The element's parent, or none (renderer_functions.cc, FiberGetParent). */
+	__GetParent(element: LynxElement): LynxElement | undefined | null;
+	/** The element's `id` (renderer_functions.cc, FiberGetID). */
+	__GetID(element: LynxElement): string | undefined;
+	/** A copy of the element's dataset (renderer_functions.cc, FiberGetDataset). */
+	__GetDataset(element: LynxElement): Record<string, unknown> | undefined;
+	__GetAttributeByName(element: LynxElement, name: string): unknown;
+	__GetAttributeNames(element: LynxElement): string[];
 	__RemoveEventListener(
 		element: LynxElement,
 		name: string,
@@ -149,6 +171,8 @@ export interface MainThreadGlobals {
 	 * without it.
 	 */
 	_ReportError?: (error: Error, options: { errorCode: number }) => void;
+	/** The standard one, on an engine that has it: the main thread tells the background what it let go of. */
+	FinalizationRegistry?: typeof FinalizationRegistry;
 }
 
 // Boundary: the engine's globals have no types; this is the one place `globalThis` is typed.
@@ -174,4 +198,28 @@ export const DEV: boolean = __DEV__;
 /** The value of a global the page's own script set, by name. */
 export function readGlobal(name: string): unknown {
 	return globalScope[name];
+}
+
+/**
+ * What the main thread keeps for main-thread functions, shared with the page's own code: they are
+ * separate roots of the main thread's script, and meet only on the global object. Made by whichever
+ * loads first.
+ */
+export function functionsGlobal(): FunctionsGlobal {
+	// Boundary: the one object of this name, made here or by the page's code, of this shape.
+	return (globalScope[FUNCTIONS_GLOBAL] ??= {
+		bodies: {},
+		nextFirstFrameRef: -1,
+	} satisfies FunctionsGlobal) as FunctionsGlobal;
+}
+
+/** Puts the function compiled code registers each main-thread function's body with, once. */
+export function installRegistry(): void {
+	globalScope[REGISTER_FUNCTION] ??= (
+		_kind: string,
+		id: string,
+		body: FunctionsGlobal["bodies"][string],
+	) => {
+		functionsGlobal().bodies[id] = body;
+	};
 }

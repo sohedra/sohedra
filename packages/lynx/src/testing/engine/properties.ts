@@ -27,6 +27,8 @@ export interface PropertyFunctions {
 	__SetClasses(element: LynxElement, classes: string): void;
 	__SetID(element: LynxElement, id: string | null): void;
 	__SetDataset(element: LynxElement, dataset: Record<string, unknown>): void;
+	__GetDataset(element: LynxElement): Record<string, unknown>;
+	__GetID(element: LynxElement): string;
 	__SetInlineStyles(
 		element: LynxElement,
 		styles: string | Record<string, unknown> | undefined,
@@ -139,6 +141,13 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 				reflectAttribute(state, { name: datasetAttribute(key), value: attributeText(value) });
 			}
 		},
+		// The id selector, "" for none (renderer_functions.cc, FiberGetID).
+		__GetID: (element) => stateOf(engine, { value: element, fn: "__GetID", index: 0 }).id ?? "",
+		// A new object each time, with the dataset's keys and values (renderer_functions.cc,
+		// FiberGetDataset).
+		__GetDataset: (element) => ({
+			...stateOf(engine, { value: element, fn: "__GetDataset", index: 0 }).dataset,
+		}),
 		__SetInlineStyles(element, styles) {
 			const state = stateOf(engine, { value: element, fn: "__SetInlineStyles", index: 0 });
 			// Replaces every inline style, those added one by one (`__AddInlineStyle`) too

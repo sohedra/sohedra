@@ -23,6 +23,7 @@
 // (Element::GetEventTargetInfo).
 
 import { readGlobal } from "../globals.ts";
+import { asEngineCall, engineObject } from "./engine-objects.ts";
 import { flagsOfOptions, flagsOfType } from "./events.ts";
 import type { BindingFlags } from "./events.ts";
 import type { ElementState, EngineState } from "./state.ts";
@@ -43,7 +44,8 @@ export type EngineEvent = { type: string } & Record<string, unknown>;
 
 /**
  * Runs a main-thread function as the engine does: through whatever the global `runWorklet` is at
- * that moment. Without one nothing runs.
+ * that moment. Without one nothing runs. The event and the options are the engine's own objects
+ * (./engine-objects.ts).
  */
 export function runMainThreadFunction(call: {
 	value: unknown;
@@ -52,7 +54,11 @@ export function runMainThreadFunction(call: {
 }): { ran: boolean; returned?: unknown } {
 	const run = readGlobal("runWorklet");
 	if (typeof run !== "function") return { ran: false };
-	return { ran: true, returned: run(call.value, call.params, { source: call.source }) };
+	const params = call.params.map((param, index) =>
+		index === 0 && typeof param === "object" && param !== null ? engineObject(param) : param,
+	);
+	const options = engineObject({ source: call.source });
+	return { ran: true, returned: asEngineCall(() => run(call.value, params, options)) };
 }
 
 /** A target as Lynx sends it: plain `{ id, uid, dataset }`. */
@@ -164,12 +170,13 @@ export function createDispatcher(engine: EngineState): Dispatcher {
 				run: (target, current, event) => {
 					// Lynx sends a listener's targets as plain { id, uid, dataset }, and the listener a
 					// copy of the event (core/runtime/lepus/bindings/event/lepus_event_listener.cc).
-					entry.listener({
+					const copy = engineObject({
 						...event,
 						type: name,
 						target: targetInfo(target),
 						currentTarget: targetInfo(current),
 					});
+					asEngineCall(() => entry.listener(copy));
 					return 0;
 				},
 			});

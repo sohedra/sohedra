@@ -7,7 +7,8 @@
 import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../../wire/index.ts";
 import type { CallItem, ListItemInfo, Op } from "../../wire/index.ts";
 import type { Applier } from "../apply.ts";
-import type { Frame } from "../frame/draw.ts";
+import type { EarlyEvent, Frame } from "../frame/draw.ts";
+import type { HeldCall } from "../functions/background-calls.ts";
 import { mainThread } from "../globals.ts";
 import type { AdoptedItems, HeldCell } from "../lists.ts";
 import type { Plan } from "./match.ts";
@@ -17,6 +18,8 @@ import type { Rendered } from "./rendered.ts";
 /** What the page keeps after hydration: the cells' texts it waits with, and the calls to run. */
 export interface Hydrated {
 	cells: Map<number, string[]>;
+	/** The function contexts those texts hold. */
+	cellContexts: Map<number, number[]>;
 	calls: CallItem[];
 	/** The background's id of each drawn node the page kept. */
 	ids: Map<number, number>;
@@ -143,17 +146,25 @@ export function adoptFrame(options: {
 	applyAll(applier, ops);
 
 	const cells = new Map<number, string[]>();
-	for (const [id, parts] of rendered.cells) if (!plan.adoptedCells.has(id)) cells.set(id, parts);
-	return { cells, calls: rendered.calls, ids };
+	const cellContexts = new Map<number, number[]>();
+	for (const [id, parts] of rendered.cells) {
+		// An adopted cell's text was read as it was matched: its functions are bound with it.
+		if (plan.adoptedCells.has(id)) continue;
+		cells.set(id, parts);
+		const contexts = rendered.cellContexts.get(id);
+		if (contexts) cellContexts.set(id, contexts);
+	}
+	return { cells, cellContexts, calls: rendered.calls, ids };
 }
 
 /** Sends an early event to a handler, with the element that handles it as its current target. */
-export type Replay = (handler: number, event: unknown, currentTarget: number) => void;
+export type Replay = (handler: number, early: EarlyEvent, currentTarget: number) => void;
 
 /**
  * Replays the events the first frame heard, in order, through the handlers the background bound:
  * one a drawn element's listener heard goes to the handler in the same slot; one the page caught
- * goes from its target up, as Lynx bubbles it (a `catch` stops it).
+ * goes from its target up, as Lynx bubbles it (a `catch` stops it). A call of a background function
+ * the first frame held goes in its place among them (`call`).
  */
 export function replayEarly(options: {
 	frame: Frame;
@@ -161,20 +172,25 @@ export function replayEarly(options: {
 	rendered: Rendered;
 	ids: Map<number, number>;
 	send: Replay;
+	call: (held: HeldCall) => void;
 }): void {
-	const { frame, applier, rendered, ids, send } = options;
+	const { frame, applier, rendered, ids, send, call } = options;
 	for (const early of frame.early) {
+		if ("call" in early) {
+			call(early);
+			continue;
+		}
 		const at = ids.get(early.at);
 		if (at === undefined) continue;
 		if (early.slot !== null) {
 			const handler = applier.handlerOf(at, early.slot);
-			if (handler !== undefined) send(handler, early.event, at);
+			if (handler !== undefined) send(handler, early, at);
 			continue;
 		}
 		for (let id = at; id !== ROOT_ID && id !== 0; id = rendered.nodes.get(id)?.parent ?? 0) {
 			const caught = applier.handlerOf(id, `catchEvent:${early.name}`);
 			const bound = caught ?? applier.handlerOf(id, `bindEvent:${early.name}`);
-			if (bound !== undefined) send(bound, early.event, id);
+			if (bound !== undefined) send(bound, early, id);
 			if (caught !== undefined) break;
 		}
 	}

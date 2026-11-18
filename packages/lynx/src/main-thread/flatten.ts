@@ -2,8 +2,8 @@
 // and only layout styles (layout-only): it gets no UI at all, so a UI method or an animation on it
 // fails ("no UI for this node", code 6) on iOS and Android. On Android, Lynx also draws a plain
 // `<view>` into its parent (flattening); it keeps a UI, which lacks a full view's methods, such as
-// `takeScreenshot`. So an element that the background calls a method on, or animates, gets
-// `flatten` false, for good: as an attribute, it ends layout-only, and it also ends flattening.
+// `takeScreenshot`. So an element that the background calls a method on or animates, or that
+// main-thread code holds with `main-thread:ref` or calls a method on, gets `flatten` false, for good: as an attribute, it ends layout-only, and it also ends flattening.
 // Lynx makes its UI at the next flush of the tree. The app's own `flatten` is kept, and applies
 // while the element is not held.
 

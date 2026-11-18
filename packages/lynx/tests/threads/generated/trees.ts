@@ -14,7 +14,13 @@ import { attrValue, textOf } from "../../../src/background/renderer/values.ts";
 import { LIST_ONLY_INFO } from "../../../src/main-thread/lists.ts";
 import { parseStyleText } from "../../../src/testing/engine/dom.ts";
 import type { Engine, LynxElement } from "../../../src/testing/index.ts";
-import { ROOT_ID, TEXT_CONTAINERS } from "../../../src/wire/index.ts";
+import {
+	eventOf,
+	MAIN_THREAD_PREFIX,
+	removedEventSpelling,
+	ROOT_ID,
+	TEXT_CONTAINERS,
+} from "../../../src/wire/index.ts";
 
 /** How a tree is read. */
 export interface Reading {
@@ -98,6 +104,18 @@ const EVENT_TYPES: Record<number, string> = {
 	4: "catchEvent",
 };
 
+/**
+ * What the engine has of an element that the background never sets: `flatten`, which main-thread
+ * code holds false for a view of its own, and what the generated main-thread functions set (`mt-`).
+ */
+const MAIN_THREAD_ONLY = (key: string): boolean => key === "flatten" || key.startsWith("mt-");
+
+/** A main-thread event attribute as a bound event's name, in either spelling; none for another. */
+function mainThreadEvent(key: string): string | undefined {
+	const event = eventOf(key) ?? eventOf(removedEventSpelling(key)?.replacement ?? "");
+	return event?.mainThread ? `mt:${event.type}:${event.name}` : undefined;
+}
+
 /** The DOM's `nodeType` of a text node: a raw text in the engine. */
 const TEXT_NODE = 3;
 
@@ -124,7 +142,8 @@ function engineElement(
 ): string[] {
 	const state = engine.state(element);
 	const attrs: Record<string, unknown> = {};
-	for (const [key, value] of Object.entries(state.attrs)) if (value != null) attrs[key] = value;
+	for (const [key, value] of Object.entries(state.attrs))
+		if (value != null && !MAIN_THREAD_ONLY(key)) attrs[key] = value;
 	const read: ReadElement = {
 		tag: state.tag,
 		classes: state.classes,
@@ -132,9 +151,12 @@ function engineElement(
 		styles: [...state.inlineStyles],
 		dataset: state.dataset,
 		attrs,
-		events: state.listeners.map(
-			(listener) => `${EVENT_TYPES[listener.options.bind_type ?? 0] ?? "?"}:${listener.name}`,
-		),
+		events: [
+			...state.listeners.map(
+				(listener) => `${EVENT_TYPES[listener.options.bind_type ?? 0] ?? "?"}:${listener.name}`,
+			),
+			...state.mainThreadEvents.map(({ eventType, eventName }) => `mt:${eventType}:${eventName}`),
+		],
 	};
 	const lines = [line(read, depth, reading)];
 	if (state.list) {
@@ -198,6 +220,11 @@ function backgroundElement(node: TreeNode, depth: number, reading: Reading): str
 	};
 	for (const [key, value] of node.attrs ?? []) {
 		if (typeof value === "function" || RENDERER_ONLY.has(key)) continue;
+		if (key.startsWith(MAIN_THREAD_PREFIX)) {
+			const event = value == null ? undefined : mainThreadEvent(key);
+			if (event) read.events.push(event);
+			continue;
+		}
 		const sent = attrValue(key, value);
 		if (sent === null) continue;
 		if (key === "class") read.classes = textOf(sent);

@@ -27,3 +27,13 @@ export function warnOnce(place: string, warning: () => Error): void {
 		// Reporting must never throw.
 	}
 }
+
+/**
+ * Reports `error` into Lynx, in a development build, the first time `place` reports it: a mistake
+ * in the page's code that the binding finds, which repeats wherever the code runs again.
+ */
+export function reportOnce(place: string, error: () => Error): void {
+	if (!DEV || warned.has(place)) return;
+	warned.add(place);
+	reportError(error());
+}

@@ -12,13 +12,26 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 		change: "insert <view> 42 into <scroll-view> 7",
 	},
 	element_missing: { id: 7 },
-	call_not_supported: { kind: "run" },
 	ui_method_failed: { method: "setValue", code: 4 },
 	element_has_no_view: { method: "boundingClientRect" },
 	element_left_page: { method: "scrollTo" },
 	first_frame_markup_unreadable: { reason: "the value of class on <view> is not quoted", at: 11 },
 	first_frame_threw: { reason: "NativeModules is not defined" },
 	rewrite_not_page: { id: 7 },
+	main_thread_function_not_found: { id: "9aef:c44c3:1" },
+	main_thread_value_too_deep: { depth: 1000 },
+	page_is_gone: { call: "runOnBackground" },
+	first_frame_call_unanswered: { count: 3 },
+	main_thread_value_not_runnable: {},
+	element_released: { method: "setStyleProperty" },
+	not_a_background_function_handle: { name: "save" },
+	main_thread_attribute_unknown: { name: "main-thread:bindtap-later" },
+	main_thread_update_loop: {
+		limit: 1000,
+		fn: "9aef:c44c3:2",
+		event: "layoutchange",
+		change: "setStyleProperty(height)",
+	},
 };
 
 // Boundary: the keys of the catalogue are its codes.

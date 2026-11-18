@@ -67,6 +67,8 @@ export interface ListsScope {
 	/** The Lynx element of an id, once made. */
 	elementOf(id: number): LynxElement | undefined;
 	report(error: unknown): void;
+	/** Runs the function refs bound in a cell just made, before Lynx flushes it. */
+	settle?: () => void;
 }
 
 /** The page's lists. */
@@ -158,6 +160,8 @@ export function createLists(scope: ListsScope): Lists {
 			mainThread.__AppendElement(list.element, cell.element);
 			cell.attached = true;
 		}
+		// The cell is in the tree now, and Lynx flushes it after: its function refs run here.
+		scope.settle?.();
 		if (!cell.bound) {
 			cell.bound = true;
 			list.bound++;

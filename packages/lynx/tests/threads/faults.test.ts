@@ -77,16 +77,21 @@ describe("the main thread", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("answers a call it cannot make yet with an error, and reports one that wants no answer", async () => {
+	it("reports once a call of a main-thread function it has no body for, which wants no answer", async () => {
 		const page = startTestPage({ mainThread: () => startMainThread() });
 		const patch = readGlobal(PATCH_METHOD) as (params: { data: string }) => void;
 		page.asMainThread(() =>
-			patch(encodePatch({ page: 0, items: [["call", 0, 0, encodeCall(["unref", [1]])]] })),
+			patch(
+				encodePatch({
+					page: 0,
+					items: [["call", 0, 0, encodeCall(["run", { _wkltId: "a1b2:c3d4:9" }, []])]],
+				}),
+			),
 		);
 		expect(page.errors).toEqual([
 			expect.objectContaining({
-				code: "call_not_supported",
-				message: expect.stringMatching(/^The main thread cannot answer a call of unref yet\.\n/),
+				code: "main_thread_function_not_found",
+				message: expect.stringMatching(/^The main-thread function a1b2:c3d4:9 has no body/),
 			}),
 		]);
 	});

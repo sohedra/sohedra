@@ -160,8 +160,20 @@ function attribute(scope: Scope, tag: string): fc.Arbitrary<string> {
 	];
 	if (scope.uid) options.push(fc.constant("id={uid}"));
 	if (tag === "image") options.push(fc.constant('src="a.png"'));
-	if (tag === "view" || tag === "text")
+	if (tag === "view" || tag === "text") {
 		options.push(fc.constantFrom(...CHANGES).map((change) => `ontap={() => (${change})}`));
+		// Main-thread functions, written as attributes and through a spread, as a library does.
+		options.push(
+			fc.constantFrom(
+				"main-thread:ontap={mtTap}",
+				'{...{ "main-thread:ontap": mtTap }}',
+				"main-thread:ref={mtRef}",
+				"main-thread:ref={mtAttach}",
+				"main-thread:ref={st.b0 ? mtAttach : undefined}",
+				'{...{ "main-thread:ref": st.b1 ? mtRef : mtAttach }}',
+			),
+		);
+	}
 	return fc.oneof(...options);
 }
 

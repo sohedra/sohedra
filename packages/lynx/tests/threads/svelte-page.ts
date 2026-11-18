@@ -8,6 +8,7 @@ import type { Component } from "svelte";
 
 import { startPage } from "../../src/background/index.ts";
 import { startMainThread } from "../../src/main-thread/index.ts";
+import type { MainThreadRuntime } from "../../src/main-thread/index.ts";
 import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import type {
@@ -29,6 +30,8 @@ export interface SveltePage extends TestPage {
 	readonly messageSizes: number[];
 	/** The first element with this class token, in document order. */
 	byClass(token: string): LynxElement;
+	/** The main thread's runtime: the page it shows. */
+	readonly runtime: MainThreadRuntime;
 }
 
 /** What the page starts with. */
@@ -61,6 +64,7 @@ export function startSveltePage(
 	const patches: Patch[] = [];
 	const messages: ReceivedByBackground[] = [];
 	const messageSizes: number[] = [];
+	let runtime: MainThreadRuntime | undefined;
 	const page = startTestPage({
 		...(options.initData && { initData: options.initData }),
 		...(options.templateData && { templateData: options.templateData }),
@@ -72,7 +76,7 @@ export function startSveltePage(
 				messageSizes.push(String(event.data).length);
 				send(event);
 			};
-			startMainThread();
+			runtime = startMainThread();
 			recordFirstFrame(options.firstFrame);
 		},
 		background: () => {
@@ -90,6 +94,7 @@ export function startSveltePage(
 		patches,
 		messages,
 		messageSizes,
+		runtime: runtime!,
 		byClass(token: string): LynxElement {
 			const found = page.engine
 				.all()

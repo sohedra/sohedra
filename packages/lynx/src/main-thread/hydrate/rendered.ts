@@ -28,6 +28,8 @@ export interface Rendered {
 	nodes: Map<number, RenderedNode>;
 	/** The text of each list cell, by the cell's id, as the items carry it. */
 	cells: Map<number, string[]>;
+	/** The function contexts each cell's texts hold, when any do. */
+	cellContexts: Map<number, number[]>;
 	/** Calls among the rendered items, which run after the page is hydrated. */
 	calls: CallItem[];
 }
@@ -118,6 +120,7 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 		list: null,
 	});
 	const cells = new Map<number, string[]>();
+	const cellContexts = new Map<number, number[]>();
 	const calls: CallItem[] = [];
 	for (const item of items.slice(0, count)) {
 		switch (item[0]) {
@@ -128,6 +131,9 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 				let parts = cells.get(item[1]);
 				if (!parts) cells.set(item[1], (parts = []));
 				parts.push(item[2]);
+				const contexts = item[4];
+				if (contexts)
+					cellContexts.set(item[1], [...(cellContexts.get(item[1]) ?? []), ...contexts]);
 				break;
 			}
 			case "call":
@@ -137,7 +143,7 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 				throw new NotATree(`A patch's rendered part holds an item of kind ${item[0]}.`);
 		}
 	}
-	return { nodes, cells, calls };
+	return { nodes, cells, cellContexts, calls };
 }
 
 /** Adds a cell's own nodes, from its text, to the tree. */

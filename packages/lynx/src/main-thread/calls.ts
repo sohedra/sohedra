@@ -1,5 +1,10 @@
 // The calls a patch carries: what the background asks of an element (a UI method, a computed
-// style, a query), after the ops before them. Styles set from code and animations are ops.
+// style, a query), after the ops before them, and of main-thread functions (`runOnMainThread`, and
+// the refs the background let go of). Styles set from code and animations are ops.
+//
+// A main-thread function the background calls runs in place, in the order of the patch's items, so
+// what it changes lands in the patch's flush; what it returns goes back once a thenable it returns
+// settles, so it can wait for a UI method it calls, which waits for the flush and its layout.
 //
 // The patch's changes reach the screen at its flush: Lynx makes an element's view then, and a UI
 // method runs at once on the view as it is (core/renderer/ui_wrapper/painting, the painting
@@ -13,6 +18,7 @@ import { decodeCall, encodeError } from "../wire/index.ts";
 import type { CallItem, CallRequest, Result } from "../wire/index.ts";
 import type { Applier } from "./apply.ts";
 import { mainThreadError } from "./catalogue.ts";
+import type { FunctionsPage } from "./functions/page.ts";
 import { mainThread } from "./globals.ts";
 import type { InvokeResult, LynxElement } from "./globals.ts";
 
@@ -25,6 +31,10 @@ export interface CallsScope {
 	applier(): Applier;
 	/** Sends a call's result: its reply, or the report of a failed call that wants none. */
 	answer(call: { id: number; stamp: number }, result: Result): void;
+	/** The main-thread functions of the page being shown. */
+	functions(): FunctionsPage;
+	/** Reports what a main-thread function the background called threw, on this thread. */
+	report(error: unknown): void;
 }
 
 /** The calls of the patches of one page. */
@@ -36,6 +46,8 @@ export interface Calls {
 	 * the patch out, its UI methods, each kind in order.
 	 */
 	flushed(): void;
+	/** Runs a UI method a main-thread function called with the UI methods of the patch. */
+	afterLayout(run: () => void): void;
 }
 
 /** A request about an element; the others are for main-thread functions. */
@@ -55,6 +67,12 @@ function onceLaidOut(run: () => void): void {
 
 /** What a failed call rejects with. */
 const failure = (error: unknown): Result => ({ ok: false, error: encodeError(error) });
+
+/** Whether `value` is a thenable, to be awaited. */
+const isThenable = (value: unknown): value is PromiseLike<unknown> =>
+	(typeof value === "object" || typeof value === "function") &&
+	value !== null &&
+	typeof (value as Record<string, unknown>)["then"] === "function";
 
 /**
  * The calls of one page.
@@ -106,9 +124,18 @@ export function createCalls(scope: CallsScope): Calls {
 	): void {
 		const applier = scope.applier();
 		switch (request[0]) {
-			case "invoke":
+			case "invoke": {
+				const answers = request[3];
+				// A field's value that answers an older `input` event than its latest would undo typing:
+				// it is dropped (../inputs.ts). A value set from code applies whatever was typed since.
+				if (answers !== undefined && applier.inputs.stale(element, answers)) {
+					done({ ok: true, value: null });
+					return;
+				}
+				if (request[1] === "setValue") applier.inputs.wrote(element, request[2]["value"]);
 				invoke(element, { method: request[1], params: request[2] }, done);
 				return;
+			}
 			case "computed":
 				done({ ok: true, value: mainThread.__GetComputedStyleByKey(element, request[1]) });
 				return;
@@ -129,15 +156,50 @@ export function createCalls(scope: CallsScope): Calls {
 		}
 	}
 
+	/**
+	 * Runs a main-thread function the background called, and answers with what it returns. What it
+	 * throws is reported here; a call that wants no answer reports it with its answer.
+	 */
+	function runFunction(
+		call: { fn: unknown; params: unknown[]; answered: boolean },
+		done: (result: Result) => void,
+	): void {
+		const { fn, params, answered } = call;
+		const threw = (error: unknown): void => {
+			if (answered) scope.report(error);
+			done(failure(error));
+		};
+		let returned: unknown;
+		try {
+			returned = scope.functions().run(fn, params);
+		} catch (error) {
+			threw(error);
+			return;
+		}
+		if (!isThenable(returned)) {
+			done({ ok: true, value: returned });
+			return;
+		}
+		Promise.resolve(returned).then((value) => done({ ok: true, value }), threw);
+	}
+
 	return {
+		afterLayout(run) {
+			afterLayout.push(run);
+		},
 		run(item, stamp) {
 			const [, id, elementId, text] = item;
 			const done = (result: Result): void => scope.answer({ id, stamp }, result);
 			try {
 				const request = decodeCall(text);
-				// Main-thread functions come with their runtime.
-				if (request[0] === "unref" || request[0] === "run")
-					throw mainThreadError({ code: "call_not_supported", details: { kind: request[0] } });
+				if (request[0] === "unref") {
+					scope.functions().unref(request[1]);
+					return;
+				}
+				if (request[0] === "run") {
+					runFunction({ fn: request[1], params: request[2], answered: id !== 0 }, done);
+					return;
+				}
 				const applier = scope.applier();
 				const element = applier.element(elementId);
 				if (element === undefined)

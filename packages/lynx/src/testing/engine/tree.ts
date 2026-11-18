@@ -25,6 +25,7 @@ export interface TreeFunctions {
 		reference: LynxElement | null | undefined,
 	): void;
 	__RemoveElement(parent: LynxElement, child: LynxElement): void;
+	__GetParent(element: LynxElement): LynxElement | undefined;
 }
 
 /** Makes an element of `tag`, numbered and kept by the engine. */
@@ -164,6 +165,13 @@ export function treeFunctions(engine: EngineState): TreeFunctions {
 				);
 			}
 			holder.node.removeChild(removed.node);
+		},
+		// The element's parent, or none: the page's is none (renderer_functions.cc, FiberGetParent).
+		__GetParent(element) {
+			const parent = stateOf(engine, { value: element, fn: "__GetParent", index: 0 }).node
+				.parentNode;
+			// Boundary: the engine's tree holds its elements; the page's DOM parent is no element.
+			return parent && engine.states.has(parent) ? (parent as LynxElement) : undefined;
 		},
 	};
 }

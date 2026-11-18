@@ -2,8 +2,8 @@
 // build leaves. One build at a time in a checkout: a lock keeps two test files from building at
 // once, and every build test goes through here.
 //
-// The parts of the runtime not in this package yet (main-thread functions, the window's size) are
-// aliased to the stubs in tests/fixtures/build/stubs: they let the build resolve; nothing runs.
+// The parts of the runtime not in this package yet (the window's size) are aliased to the stubs in
+// tests/fixtures/build/stubs: they let the build resolve; nothing runs.
 
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -56,7 +56,6 @@ export interface AppBuild {
 
 const STUBS = path.join(FIXTURES, "stubs");
 const ALIASES: Record<string, string> = {
-	[`${PACKAGE_NAME}/internal/main-thread-functions`]: path.join(STUBS, "main-thread-functions.ts"),
 	[`${PACKAGE_NAME}/internal/window-size`]: path.join(STUBS, "window-size.ts"),
 };
 

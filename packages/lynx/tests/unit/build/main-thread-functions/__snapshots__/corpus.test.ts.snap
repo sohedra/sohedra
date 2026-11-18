@@ -283,7 +283,7 @@ exports[`the main-thread function transform, over the corpus > reactlynx/backgro
         "backgroundFunctions": 3,
         "captures": [],
         "extraKeys": [],
-        "id": "726e:327ab:1",
+        "id": "726e:10f03:1",
         "values": [],
       },
     ],
@@ -295,12 +295,12 @@ exports[`the main-thread function transform, over the corpus > reactlynx/backgro
         "backgroundFunctions": 3,
         "captures": [],
         "extraKeys": [],
-        "id": "726e:327ab:1",
+        "id": "726e:10f03:1",
         "values": [],
       },
     ],
     "registrations": [
-      "726e:327ab:1",
+      "726e:10f03:1",
     ],
   },
 }

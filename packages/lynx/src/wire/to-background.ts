@@ -31,6 +31,11 @@ export interface EventMessage {
 	t: "event";
 	handler: number;
 	event: SentEvent;
+	/**
+	 * An `input` event's number, which the main thread counts for each field: a write of the
+	 * field's value says which event it answers (`CallRequest`'s `invoke`).
+	 */
+	input?: number;
 }
 
 /**

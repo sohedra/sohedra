@@ -8,7 +8,7 @@ const obj = { fn2: () => 2, fn3: () => 3 };
 
 export function onTap() {
 	"main thread";
-	runOnBackground(fn1)();
-	runOnBackground(obj.fn2)();
-	runOnBackground(obj[fn3])();
+	void runOnBackground(fn1)();
+	void runOnBackground(obj.fn2)();
+	void runOnBackground(obj[fn3])();
 }

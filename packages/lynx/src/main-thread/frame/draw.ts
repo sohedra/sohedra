@@ -1,8 +1,9 @@
 // Draws the first frame: the page's markup, parsed (./html.ts), made into elements by an applier of
 // its own, so attributes, events, datasets and lists are set as the background's ops set them.
 // Until the background's first patch adopts them, the frame's listeners keep the events they hear,
-// to replay through the background's handlers then. A cell of a list is parsed only when Lynx asks
-// for it.
+// to replay through the background's handlers then; the calls of background functions its
+// main-thread functions make wait in the same log, in order. A cell of a list is parsed only when
+// Lynx asks for it. Main-thread functions run from the first frame on.
 
 import { listUpdateInfo, OpCode, ROOT_ID } from "../../wire/index.ts";
 import type { ListItemInfo, LynxEventType, Op } from "../../wire/index.ts";
@@ -10,8 +11,11 @@ import { createApplier } from "../apply.ts";
 import type { Applier } from "../apply.ts";
 import type { CodeStyles } from "../code-styles.ts";
 import type { Flattening } from "../flatten.ts";
+import type { HeldCall } from "../functions/background-calls.ts";
+import type { FunctionsPage } from "../functions/page.ts";
 import { mainThread } from "../globals.ts";
 import type { ListenerOptions, LynxElement } from "../globals.ts";
+import type { InputNumbers } from "../inputs.ts";
 import { cellInfo, elementsOf, parseCell, parsePage } from "./html.ts";
 import type { DrawnCell, DrawnNode } from "./html.ts";
 
@@ -24,6 +28,8 @@ export interface EarlyEvent {
 	slot: string | null;
 	/** The event as Lynx gave it. */
 	event: unknown;
+	/** An `input` event's number (../inputs.ts). */
+	input?: number;
 }
 
 /** The first frame, until the background adopts it. */
@@ -32,8 +38,8 @@ export interface Frame {
 	readonly root: DrawnNode;
 	/** The applier that made its elements, by the first frame's ids. */
 	readonly applier: Applier;
-	/** The events it heard, in order. */
-	readonly early: EarlyEvent[];
+	/** The events it heard and the calls of background functions it held, in order. */
+	readonly early: (EarlyEvent | HeldCall)[];
 	/** The drawn node of an id. */
 	node(id: number): DrawnNode | undefined;
 	/** The cells of a drawn list that have elements, with whether Lynx holds them. */
@@ -57,15 +63,21 @@ export interface DrawOptions {
 	report(error: unknown): void;
 	styles: CodeStyles;
 	flattening: Flattening;
+	inputs: InputNumbers;
+	/** What the drawn elements' `main-thread:` attributes bind. */
+	functions: FunctionsPage;
+	/** Runs the function refs of a cell Lynx asks for, before it flushes the cell. */
+	settle: () => void;
 }
 
 /** Draws the first frame on `page`. Throws, with nothing left on the page, when it cannot. */
-export function drawFrame({ page, html, report, styles, flattening }: DrawOptions): Frame {
+export function drawFrame(options: DrawOptions): Frame {
+	const { page, html, report, styles, flattening, inputs, functions, settle } = options;
 	let next = ROOT_ID;
 	const nextId = (): number => ++next;
 	const nodes = new Map<number, DrawnNode>();
 	const cells = new Map<number, DrawnCell>();
-	const early: EarlyEvent[] = [];
+	const early: (EarlyEvent | HeldCall)[] = [];
 	// The listener slot of each handler id the frame gives: [node, slot].
 	const slots: [number, string][] = [];
 	const pageListeners: [string, (event: unknown) => void][] = [];
@@ -107,14 +119,23 @@ export function drawFrame({ page, html, report, styles, flattening }: DrawOption
 		page,
 		styles,
 		flattening,
+		inputs,
+		functions,
+		settle,
 		report,
-		dispatch(handler, event) {
+		dispatch(handler, event, input) {
 			const slot = slots[handler - 1];
 			if (!slot) return;
 			const name = slot[1].slice(slot[1].indexOf(":") + 1);
 			// The page's own listener hears these, on their way to their target.
 			if (PAGE_EVENTS.includes(name)) return;
-			early.push({ name, at: slot[0], slot: slot[1], event });
+			early.push({
+				name,
+				at: slot[0],
+				slot: slot[1],
+				event,
+				...(input !== undefined && { input }),
+			});
 		},
 		// A deferred row of the async list waits for the background's row.
 		written: (id) => cells.get(id)?.deferred !== true,

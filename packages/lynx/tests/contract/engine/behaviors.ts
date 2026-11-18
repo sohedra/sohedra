@@ -339,6 +339,48 @@ export const BEHAVIORS: Behavior[] = [
 		},
 	},
 	{
+		name: "the value given to __AddEvent comes back to runWorklet as the same object on every event",
+		source:
+			"core/renderer/dom/fiber/fiber_element.cc (Element::FiberAddEvent, which keeps the value and hands it to runWorklet)",
+		sourceOnly: true,
+		async run(target) {
+			const f = target.functions;
+			const element = view(target, "entry");
+			const entry = { label: "entry" };
+			const values: unknown[] = [];
+			target.useRunWorklet((value) => {
+				values.push(value);
+				return undefined;
+			});
+			f.__AddEvent(element, "bindEvent", "tap", { type: "worklet", value: entry });
+			f.__FlushElementTree();
+			await target.tap(element);
+			await target.tap(element);
+			return { calls: values.length, same: values.every((value) => value === entry) };
+		},
+		expected: { calls: 2, same: true },
+	},
+	{
+		name: "__GetParent walks up to the page element, and __GetDataset gives a copy of the dataset",
+		source: "core/runtime/lepus/bindings/renderer_functions.cc (FiberGetParent, FiberGetDataset)",
+		sourceOnly: true,
+		async run(target) {
+			const f = target.functions;
+			const outer = view(target, "outer");
+			const inner = view(target, "inner", outer);
+			f.__SetDataset(inner, { role: "handle", n: 3 });
+			const dataset = f.__GetDataset(inner);
+			dataset["role"] = "changed";
+			return {
+				parent: f.__GetParent(inner) === outer,
+				page: f.__GetParent(outer) === f.__GetPageElement(),
+				top: f.__GetParent(f.__GetPageElement()!) ?? null,
+				dataset: f.__GetDataset(inner),
+			};
+		},
+		expected: { parent: true, page: true, top: null, dataset: { role: "handle", n: 3 } },
+	},
+	{
 		name: "an event goes capture down, the target's capture bindings first, bubble up, and ends at a catch",
 		source:
 			"core/event/event_dispatcher.cc (EventDispatcher::Dispatch); core/event/event_target.cc",

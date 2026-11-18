@@ -7,9 +7,11 @@
 // main thread asks the background to write the page again, and keeps the first frame on the screen
 // until that patch comes.
 
+import { MAIN_THREAD_PREFIX } from "../../wire/index.ts";
 import type { HydrationMismatch, PatchItem, PropsIdDifference } from "../../wire/index.ts";
 import type { Applier } from "../apply.ts";
 import type { Frame } from "../frame/draw.ts";
+import type { FunctionsPage, HydratedElement } from "../functions/page.ts";
 import { adoptFrame } from "./adopt.ts";
 import type { Hydrated } from "./adopt.ts";
 import { matchFrame } from "./match.ts";
@@ -27,21 +29,37 @@ export type Hydration =
 
 /**
  * Hydrates `frame` from the first `count` items of the background's first patch, into `applier`,
- * the page's new applier. The frame stops listening first.
+ * the page's new applier. The frame stops listening first. The background's main-thread functions
+ * take over from the first frame's on the elements kept: what the first frame's left is carried
+ * into them before anything is adopted or made, and they are bound once it is.
  */
 export function hydrate(options: {
 	frame: Frame;
 	applier: Applier;
 	items: PatchItem[];
 	count: number;
+	functions: FunctionsPage;
 }): Hydration {
-	const { frame, applier, items, count } = options;
+	const { frame, applier, items, count, functions } = options;
 	frame.stop();
 	try {
 		const rendered = readRendered(items, count);
 		const plan = matchFrame({ root: frame.root, rendered, lists: frame });
 		if ("mismatch" in plan) return { kind: "refused", mismatch: plan.mismatch };
+		const kept: HydratedElement[] = [];
+		for (const [id, drawn] of plan.adopt) {
+			const element = frame.applier.element(drawn);
+			const node = rendered.nodes.get(id);
+			if (!element || !node) continue;
+			const values: HydratedElement["values"] = [];
+			node.attrs.forEach((value, name) => {
+				if (name.startsWith(MAIN_THREAD_PREFIX)) values.push([name, value]);
+			});
+			if (values.length > 0 || functions.binds(element)) kept.push({ element, values });
+		}
+		functions.carry(kept);
 		const hydrated = adoptFrame({ frame, applier, rendered, plan });
+		functions.adopt(kept);
 		return { kind: "adopted", hydrated, rendered, propsIds: plan.propsIds };
 	} catch (error) {
 		return { kind: "failed", error };

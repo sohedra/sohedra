@@ -6,3 +6,24 @@ exports[`the first frame's catalogue > first_frame_skipped_await: the message 1`
 Put the part that awaits in a <svelte:boundary> with a pending snippet: the first frame then shows the pending snippet, and the page shows the rest when it is ready.
 https://sohedra.com/e/first_frame_skipped_await"
 `;
+
+exports[`the first frame's catalogue > main_thread_ref_set_outside_function: the message 1`] = `
+"The current value of a main-thread ref was set outside a main-thread function, as the first frame was drawn.
+
+Set it inside a main-thread function. A component's top-level code runs on both threads, and a ref's value lives on the main thread.
+https://sohedra.com/e/main_thread_ref_set_outside_function"
+`;
+
+exports[`the first frame's catalogue > main_thread_runtime_missing: the message 1`] = `
+"A call of runOnBackground ran on the main thread before its runtime started, so it has no answer.
+
+Call it from a main-thread function that an event, a ref or the background runs, not while the page's modules load.
+https://sohedra.com/e/main_thread_runtime_missing"
+`;
+
+exports[`the first frame's catalogue > run_on_main_thread_in_first_frame: the message 1`] = `
+"A runOnMainThread call of 9aef:c44c3:2 was made as the first frame was drawn, and does nothing there: it runs once the page starts, when the background makes the same call.
+
+To run it as the page starts, call it from $effect. To run it on an element from the first frame on, once, give the element a function ref: main-thread:ref={fn}.
+https://sohedra.com/e/run_on_main_thread_in_first_frame"
+`;

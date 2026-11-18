@@ -172,6 +172,83 @@ describe("an event bound with __AddEvent", () => {
 	});
 });
 
+describe("the objects the engine hands the main thread", () => {
+	/** How each read of `value` went: its value, or the message it threw. */
+	const reads = (value: object, key: string) => {
+		const attempt = (read: () => unknown) => {
+			try {
+				return { value: read() };
+			} catch (error) {
+				return { threw: (error as Error).message };
+			}
+		};
+		return {
+			prototype: Object.getPrototypeOf(value) as unknown,
+			property: attempt(() => (value as Record<string, unknown>)[key]),
+			reflect: attempt(() => Reflect.get(value, key)),
+		};
+	};
+	const refused = (value: unknown) => ({
+		prototype: null,
+		property: { value },
+		reflect: { threw: "not an object" },
+	});
+
+	it("have no prototype, and refuse Reflect.get while a property read works, as on Android", () => {
+		const { inner, bind } = bindable();
+		let seen: unknown;
+		worklets.use((_value, params, options) => {
+			const event = params[0] as Record<string, object>;
+			seen = {
+				options: reads(options as object, "source"),
+				event: reads(event, "type"),
+				target: reads(event["target"]!, "id"),
+				currentTarget: reads(event["currentTarget"]!, "id"),
+				detail: reads(event["detail"]!, "x"),
+			};
+		});
+		bind(inner, "bindEvent", "tap", {});
+		engine().fire(inner, { type: "tap", detail: { x: 1 } });
+		expect(seen).toEqual({
+			options: refused(1),
+			event: refused("tap"),
+			target: refused("inner"),
+			currentTarget: refused("inner"),
+			detail: refused(1),
+		});
+	});
+
+	it("are refused only while the engine runs the page's code, and only they", () => {
+		const { inner, bind } = bindable();
+		let own: unknown;
+		let event: object | undefined;
+		worklets.use((_value, params) => {
+			own = Reflect.get({ mine: true }, "mine");
+			event = params[0] as object;
+		});
+		bind(inner, "bindEvent", "tap", {});
+		engine().fire(inner, { type: "tap" });
+		expect(own).toBe(true);
+		expect(Reflect.get(event!, "type")).toBe("tap");
+	});
+
+	it("include a listener's event", () => {
+		const { inner } = bindable();
+		let seen: unknown;
+		engine().functions.__AddEventListener(
+			inner,
+			"input",
+			(event) => {
+				const fields = event as Record<string, object>;
+				seen = { event: reads(fields, "type"), detail: reads(fields["detail"]!, "value") };
+			},
+			{},
+		);
+		engine().fire(inner, { type: "input", detail: { value: "a" } });
+		expect(seen).toEqual({ event: refused("input"), detail: refused("a") });
+	});
+});
+
 describe("a global-bind event", () => {
 	it("runs a function for an event on any element, first", () => {
 		const { page, inner, bind } = bindable();
