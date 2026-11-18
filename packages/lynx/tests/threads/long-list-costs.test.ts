@@ -22,11 +22,19 @@ import drawLongFeed from "../fixtures/threads/LongFeed.svelte?first-frame";
 const SCAN = { matchesPerItem: 1, matchesAround: 10, iterations: 0 };
 
 /**
- * The budgets of the background's start to its first patch, Svelte's calls and the binding's
- * counted together: map and set calls per row, and map iterations (a row written as a component
- * spreads its props).
+ * The background's start to its first patch, as measured per row for each shape, Svelte's calls
+ * and the binding's counted together: map and set calls, and map iterations (a row written as a
+ * component spreads its props). Each budget is the measure with the same headroom. The calls guard
+ * against regressions; they are not the engine's cost model (a version of the splitter with fewer
+ * calls ran slower there). A Svelte upgrade may move Svelte's share.
  */
-const MOUNT = { lookupsPerRow: 285, lookupsAround: 100, iterationsPerRow: 2, iterationsAround: 10 };
+const MOUNT = {
+	plain: { lookupsPerRow: 269.1, iterationsPerRow: 0 },
+	row: { lookupsPerRow: 284.1, iterationsPerRow: 2 },
+};
+const HEADROOM = 1.04;
+/** What the page around the list counts, once. */
+const AROUND = { lookups: 100, iterations: 10 };
 
 const MAP_AND_SET: [object, PropertyKey][] = [Map.prototype, Set.prototype].flatMap((owner) =>
 	["get", "set", "has", "add", "delete"]
@@ -113,9 +121,10 @@ describe.each([1000, 5000])("a list of %i rows", (count) => {
 				[Map.prototype, Symbol.iterator],
 				[Map.prototype, "entries"],
 			]);
-			expect(lookups).toBeLessThanOrEqual(MOUNT.lookupsPerRow * count + MOUNT.lookupsAround);
+			const budget = MOUNT[shape];
+			expect(lookups).toBeLessThanOrEqual(budget.lookupsPerRow * HEADROOM * count + AROUND.lookups);
 			expect(iterations).toBeLessThanOrEqual(
-				MOUNT.iterationsPerRow * count + MOUNT.iterationsAround,
+				budget.iterationsPerRow * HEADROOM * count + AROUND.iterations,
 			);
 		});
 	});

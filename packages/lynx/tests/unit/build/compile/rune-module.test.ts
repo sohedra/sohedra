@@ -6,12 +6,17 @@ import { describe, expect, it } from "@rstest/core";
 import { compileRuneModule } from "../../../../src/build/index.ts";
 import { APP_ROOT, inApp } from "../app.ts";
 
-const compile = (source: string, thread: "background" | "main-thread", sourceMap = false) =>
+const compile = (
+	source: string,
+	thread: "background" | "main-thread",
+	sourceMap = false,
+	development = false,
+) =>
 	compileRuneModule(source, {
 		filename: inApp("counter.svelte.js"),
 		thread,
 		root: APP_ROOT,
-		development: false,
+		development,
 		sourceMap,
 	});
 
@@ -28,6 +33,14 @@ describe("a rune module", () => {
 		const { code } = compile(counter, "main-thread");
 		expect(code).toContain("svelte/internal/server");
 		expect(code).toMatch(/n = 0;/);
+	});
+
+	it("leaves Svelte's development code out of the main thread's copy, as a component does", () => {
+		const source = "let count = $state(0);\n$inspect(count);\nexport const read = () => count;\n";
+		const mainThread = compile(source, "main-thread", false, true);
+		expect(mainThread.code).toBe(compile(source, "main-thread").code);
+		expect(mainThread.code).not.toContain("inspect");
+		expect(compile(source, "background", false, true).code).toContain("$.inspect(");
 	});
 
 	it("reports its warnings once, from the background thread's copy", () => {
