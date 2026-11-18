@@ -48,11 +48,19 @@ export type OpsItem = ["ops", Op[]];
 
 /**
  * A list cell's ops, as text from `encodeCell`, with the cell's id. The main thread keeps the text
- * until the list shows the cell. Marked `true`, it is the whole cell written again, the answer to a
- * rewrite message: it replaces the kept text, and a cell Lynx handed back lets go of its elements;
- * a cell Lynx showed since it was asked for ignores it.
+ * until the list shows the cell. Marked, it is the whole cell written again:
+ *
+ * - `true`, the answer to a rewrite or a show message. It replaces the kept text, and a cell Lynx
+ *   handed back lets go of its elements; a cell Lynx showed since it was asked for ignores it. A
+ *   deferred row's first text comes so, and a cell Lynx waits for is made from it at once.
+ * - `"unmount"`, the answer to a rewrite message for a row deferred with `unmountRecycled`: the
+ *   same, except that a cell that lets go of its elements, or has none, lets go of its text too,
+ *   and the main thread sends a hide message.
  */
-export type CellItem = ["cell", number, string] | ["cell", number, string, true];
+export type CellItem =
+	| ["cell", number, string]
+	| ["cell", number, string, true]
+	| ["cell", number, string, "unmount"];
 
 /**
  * A call: its id (0 when no reply is wanted), the element's id (0 for none) and the request as

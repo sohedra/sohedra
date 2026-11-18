@@ -3,12 +3,15 @@
 // a typed value as JSON in single quotes, and a function as a bare name, an event when the name is
 // one. The branches Svelte's block markers bound (`<!--[0-->`, `<!--[-1-->`, `<!--[!-->` to
 // `<!--]-->`) are kept as blocks: where the first frame and the background may render differently.
-// The cells of a list on the page keep their markup unparsed until Lynx asks for them.
+// The cells of a list on the page keep their markup unparsed until Lynx asks for them. A
+// `<list-item>`'s `defer` is read here, and never set: Lynx has no such attribute.
 //
 // Plain string search and sticky regexes: the main thread's engine runs loops in JavaScript far
 // slower than its regex matcher.
 
 import {
+	ASYNC_LIST,
+	DEFER,
 	eventOf,
 	LIST_ITEM_INFO,
 	removedEventSpelling,
@@ -66,6 +69,11 @@ export interface DrawnCell {
 	html: string;
 	/** The cell's node, once its markup is parsed. */
 	node: DrawnNode | null;
+	/**
+	 * A deferred row of Lynx's async list: drawn with nothing in it, so the list waits for the
+	 * background's row instead of showing it.
+	 */
+	deferred: boolean;
 }
 
 /** Whether a child is a block. */
@@ -157,6 +165,13 @@ function readTag(html: string, start: number): Tag {
 	}
 }
 
+/** Takes a `<list-item>`'s `defer` out of its attributes, and returns its value. */
+function takeDefer(attrs: Map<string, AttrValue>): AttrValue | undefined {
+	const value = attrs.get(DEFER);
+	attrs.delete(DEFER);
+	return value;
+}
+
 /** A new drawn node. */
 function node(id: number, tag: string): DrawnNode {
 	return { id, tag, attrs: new Map(), events: [], text: null, children: [], cells: null };
@@ -169,6 +184,7 @@ function node(id: number, tag: string): DrawnNode {
 function scanCells(html: string, start: number, list: DrawnNode, nextId: NextId): number {
 	const cells: DrawnCell[] = [];
 	list.cells = cells;
+	const async = list.attrs.get("custom-list-name") === ASYNC_LIST;
 	CELL_BOUNDARY.lastIndex = start;
 	let depth = 0;
 	let open: DrawnCell | null = null;
@@ -184,7 +200,8 @@ function scanCells(html: string, start: number, list: DrawnNode, nextId: NextId)
 			}
 			// Boundary: the attributes of a cell's tag, read as a tag of their own.
 			const tag = readTag(`<list-item${match[1]!}>`, 0);
-			const cell: DrawnCell = { id: nextId(), attrs: tag.attrs, html: "", node: null };
+			const deferred = Boolean(takeDefer(tag.attrs)) && async;
+			const cell: DrawnCell = { id: nextId(), attrs: tag.attrs, html: "", node: null, deferred };
 			cells.push(cell);
 			if (match[2] !== "/") {
 				open = cell;
@@ -266,6 +283,8 @@ export function parseInto(
 		const tag = readTag(html, lt);
 		const drawn = node(nextId(), tag.name);
 		drawn.attrs = tag.attrs;
+		// A row of a list inside a cell renders at once.
+		if (tag.name === "list-item") takeDefer(tag.attrs);
 		// A Lynx input has no `value`: its first value is `default-value`, as the background sets it.
 		const value = tag.attrs.get("value");
 		if ((tag.name === "input" || tag.name === "textarea") && value !== undefined) {

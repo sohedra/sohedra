@@ -34,6 +34,9 @@ export type { MainThreadFunction } from "./main-thread-functions.ts";
 export { DOCS_BASE, docsLink, formatMessage } from "./messages.ts";
 export type { Catalogue, Entry, MessageParts } from "./messages.ts";
 export {
+	ASYNC_LIST,
+	DEFER,
+	DEFERRED_ROW,
 	FIRST_FRAME_GLOBAL,
 	LAZY_BUNDLE_METHOD,
 	MAIN_THREAD_PREFIX,
@@ -82,6 +85,7 @@ export type {
 	ErrorMessage,
 	ErrorPlace,
 	EventMessage,
+	HideMessage,
 	HydrationMismatch,
 	PropsIdDifference,
 	PropsIdsMessage,
@@ -91,6 +95,7 @@ export type {
 	RewriteMessage,
 	SentEvent,
 	SentTarget,
+	ShowMessage,
 	ThreadEvent,
 	ToBackground,
 } from "./to-background.ts";

@@ -23,6 +23,8 @@ export interface PassContext {
 	 * build gives none, and the component runs on Svelte's.
 	 */
 	internals?: string | undefined;
+	/** The module of the custom renderer, which background components import. */
+	renderer?: string | undefined;
 	/** The warnings the passes add. */
 	warnings: BuildWarning[];
 }

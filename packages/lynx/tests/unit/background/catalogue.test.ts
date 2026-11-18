@@ -30,6 +30,7 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		got: "lynx-s2",
 		where: "src/Field.svelte:8:1",
 	},
+	list_item_defer_needs_async_list: { where: "src/Feed.svelte:9:3" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

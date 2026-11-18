@@ -14,6 +14,7 @@ import { applyEdits, pieceMap, pieceText } from "../source-map/edits.ts";
 import type { Piece } from "../source-map/edits.ts";
 import type { SourceMap } from "../source-map/maps.ts";
 import { bareAttributes } from "./bare-attributes.ts";
+import { deferredRows } from "./deferred-rows.ts";
 import { effectImports } from "./effect-imports.ts";
 import { eventSpellings } from "./event-spellings.ts";
 import { firstFrameEvents } from "./first-frame-events.ts";
@@ -37,6 +38,8 @@ export interface PrepareOptions {
 	root: string;
 	/** Whether to also return source maps. */
 	sourceMap: boolean;
+	/** The module of the custom renderer, which background components import. */
+	renderer?: string | undefined;
 }
 
 /** A component ready for Svelte's compiler. */
@@ -64,6 +67,7 @@ const PASSES: readonly Pass[] = [
 	effectImports,
 	listItemKeys,
 	threadBranches,
+	deferredRows,
 ];
 
 /** Run every pass over the component and apply what they return. */

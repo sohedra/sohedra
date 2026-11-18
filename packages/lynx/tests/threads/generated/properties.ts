@@ -7,7 +7,16 @@ import { compilePage } from "./compile.ts";
 import type { CompiledBoth } from "./compile.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
-import { apply, earlyStep, rewrote, run, startGenerated, step, wroteIds } from "./run.ts";
+import {
+	apply,
+	askEveryRow,
+	earlyStep,
+	rewrote,
+	run,
+	startGenerated,
+	step,
+	wroteIds,
+} from "./run.ts";
 import type { GeneratedPage, StartOptions, Step } from "./run.ts";
 import { about } from "./settings.ts";
 import { pageSources } from "./source.ts";
@@ -18,6 +27,22 @@ function expectNoErrors(errors: readonly unknown[], when: string): void {
 	if (errors.length === 0) return;
 	const messages = errors.map((error) => (error instanceof Error ? error.message : String(error)));
 	throw new Error(`${when}, the page reported:\n${messages.join("\n---\n")}`);
+}
+
+/** Whether the page has deferred rows: Lynx then asks for every row before a tree is kept. */
+const defers = (model: PageModel): boolean => /\bdefer\b/.test(JSON.stringify(pageSources(model)));
+
+/**
+ * Lynx shows what the background rendered once every row asked for came: Lynx asks for every row,
+ * the threads settle, and nothing waits. A page with no deferred row is left as it is.
+ */
+async function expectEveryRowCame(page: GeneratedPage["page"], model: PageModel, what: string) {
+	if (!defers(model)) return;
+	await askEveryRow(page);
+	expectNoErrors(page.errors, `${what}, once every row came`);
+	const rendered = backgroundTree();
+	expect(rendered.join("\n")).not.toContain("(waits)");
+	expectSameTree(engineTree(page.engine), rendered, `${what}, once every row came, Lynx shows`);
 }
 
 /** What a failure says about the page besides its source. */
@@ -97,6 +122,7 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 			expect(rewrote(running.page), "The page was written again").toBe(false);
 			expect(wroteIds(running.page), "Hydration wrote ids of $props.id() over").toBe(false);
 			expectSameTree(engineTree(running.page.engine), backgroundTree());
+			await expectEveryRowCame(running.page, model, "After hydration");
 		});
 	},
 );
@@ -134,8 +160,12 @@ export function updatesProperty(
 					await running.page.settle();
 					const after = `After ${index + 1} of the steps`;
 					expectNoErrors(running.page.errors, after);
+					expectSameTree(engineTree(running.page.engine), backgroundTree(), `${after}, Lynx shows`);
+					// Rows stay asked for and on their way across the other steps; the tree is kept
+					// only once every row came.
+					if (index % 2 === 0 && index !== steps.length - 1 && defers(model)) continue;
+					await expectEveryRowCame(running.page, model, after);
 					const rendered = backgroundTree();
-					expectSameTree(engineTree(running.page.engine), rendered, `${after}, Lynx shows`);
 					const state = running.page.asBackground(() => JSON.stringify(running.handles.st));
 					renders.set(state, [...(renders.get(state) ?? []), { after: index + 1, tree: rendered }]);
 				}
@@ -146,6 +176,7 @@ export function updatesProperty(
 						firstFrame: false,
 					});
 					await fresh.page.settle();
+					if (defers(model)) await askEveryRow(fresh.page);
 					expectNoErrors(fresh.page.errors, "A page started from a step's state");
 					const mounted = withoutIds(backgroundTree());
 					for (const { after, tree } of trees) {

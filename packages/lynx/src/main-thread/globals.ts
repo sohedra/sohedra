@@ -32,14 +32,19 @@ export interface InvokeResult {
 	data?: unknown;
 }
 
-/** Lynx asks a list for the cell at an index: the callback answers the cell's unique id, or -1. */
+/**
+ * Lynx asks a list for the cell at an index: the callback answers the cell's unique id, or -1. On
+ * Lynx's async list (`custom-list-name="list-container"`) it may answer later: it returns
+ * `undefined`, which the engine reads as no answer (0), and flushes the cell with `operationId`
+ * when it is made.
+ */
 export type ComponentAtIndex = (
 	list: LynxElement,
 	listId: number,
 	index: number,
 	operationId: number,
 	enableReuseNotification?: boolean,
-) => number;
+) => number | undefined;
 
 /** Lynx asks a list for several cells at once. */
 export type ComponentAtIndexes = (

@@ -116,6 +116,8 @@ export function drawFrame({ page, html, report, styles, flattening }: DrawOption
 			if (PAGE_EVENTS.includes(name)) return;
 			early.push({ name, at: slot[0], slot: slot[1], event });
 		},
+		// A deferred row of the async list waits for the background's row.
+		written: (id) => cells.get(id)?.deferred !== true,
 		openCell(id) {
 			const cell = cells.get(id);
 			if (!cell || cell.node) return;

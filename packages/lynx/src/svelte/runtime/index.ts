@@ -7,6 +7,8 @@ export { startPropsIds } from "./client-internals.ts";
 export { CSS_PROPS_HOLDERS } from "./css-props.ts";
 export { listenThrough } from "./events.ts";
 export { sourceLocation } from "./locations.ts";
+export { signal } from "./signal.ts";
+export type { Signal } from "./signal.ts";
 
 /** Makes `renderer` current; returns the function that makes the one before current again. */
 export const pushRenderer: (renderer: object | null) => () => void = push_renderer;

@@ -18,6 +18,15 @@ export interface Cell {
 	removed: boolean;
 	/** The background was asked to write it again, and Lynx has not asked for it since. */
 	asked: boolean;
+	/**
+	 * Lynx asked for it before the main thread had its text (a deferred row): what answers Lynx's
+	 * newest request when the cell is made, with its unique id, or -1 when it never will be.
+	 */
+	waiting: ((uid: number) => void) | null;
+	/** The background was asked to render it, and has not written it yet. */
+	requested: boolean;
+	/** Its text was let go of with its contents: until it is written whole, its ops are dropped. */
+	hidden: boolean;
 }
 
 /** A cell with no element yet. */
@@ -29,6 +38,9 @@ export const newCell = (id: number): Cell => ({
 	bound: false,
 	removed: false,
 	asked: false,
+	waiting: null,
+	requested: false,
+	hidden: false,
 });
 
 /** A list's own state: its element, its items and its cells. */
@@ -50,6 +62,10 @@ export interface ListState {
 	bound: number;
 	/** Its `preload-buffer-count`. */
 	preload: number;
+	/** The index Lynx asked for last, -1 before any. */
+	lastAsked: number;
+	/** Which way Lynx asks: 1 down the list, -1 up. */
+	direction: 1 | -1;
 }
 
 /** A list with no items yet. */
@@ -70,5 +86,7 @@ export function newList(options: {
 		unbound: new Set(),
 		bound: 0,
 		preload: options.preload ?? 0,
+		lastAsked: -1,
+		direction: 1,
 	};
 }

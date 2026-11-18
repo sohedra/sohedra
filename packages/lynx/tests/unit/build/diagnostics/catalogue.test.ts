@@ -40,6 +40,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	list_item_without_key: {},
 	thread_branch_test: { test: "background && user" },
 	thread_branch_name_taken: { name: "SohedraLynxThreadBranch" },
+	list_item_defer_ignored: { written: "in a spread" },
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",

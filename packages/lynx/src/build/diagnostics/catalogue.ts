@@ -49,6 +49,8 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	thread_branch_test: { test: string };
 	/** `name` is the name the component declares that the build adds too. */
 	thread_branch_name_taken: { name: string };
+	/** `written` says where: "in a spread" or "on <svelte:element>". */
+	list_item_defer_ignored: { written: string };
 }
 
 /** What a code names: a message the build throws, or one it only warns with. */
@@ -218,5 +220,11 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 			`The name ${name} is one the build adds to this component, to draw a part only one thread renders, and the component declares it too.`,
 		fix: ({ name }) => `Rename your ${name}.`,
 		docs: "thread_branch_name_taken",
+	},
+	list_item_defer_ignored: {
+		message: ({ written }) =>
+			`A \`defer\` written ${written} is not read, so the row's contents render with the row.`,
+		fix: () => "Write it on the `<list-item>` itself: `<list-item defer>`.",
+		docs: "list_item_defer_ignored",
 	},
 };

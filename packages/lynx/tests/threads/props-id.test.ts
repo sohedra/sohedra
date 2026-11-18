@@ -10,6 +10,8 @@ import FrameIdBound from "../fixtures/threads/FrameIdBound.svelte";
 import drawFrameIdBound from "../fixtures/threads/FrameIdBound.svelte?first-frame";
 import FrameIdBranches from "../fixtures/threads/FrameIdBranches.svelte";
 import drawFrameIdBranches from "../fixtures/threads/FrameIdBranches.svelte?first-frame";
+import FrameIdDeferred from "../fixtures/threads/FrameIdDeferred.svelte";
+import drawFrameIdDeferred from "../fixtures/threads/FrameIdDeferred.svelte?first-frame";
 import FrameIdJoined from "../fixtures/threads/FrameIdJoined.svelte";
 import drawFrameIdJoined from "../fixtures/threads/FrameIdJoined.svelte?first-frame";
 import FrameIdPlain from "../fixtures/threads/FrameIdPlain.svelte";
@@ -143,6 +145,42 @@ describe("$props.id() after a branch only the background renders", () => {
 		expect(ids(second)).toEqual(["lynx-b1", "lynx-s1"]);
 		expect(wroteIds(second)).toBe(false);
 		expect(second.errors).toEqual([]);
+	});
+});
+
+describe("$props.id() in a deferred list row", () => {
+	it("takes the page's next ids when Lynx asks for the row, after every id of the first frame", async () => {
+		const page = startSveltePage(FrameIdDeferred, { firstFrame: { draw: drawFrameIdDeferred } });
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-s2"]);
+		const drawn = pageIds(page);
+		await page.settle();
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-s2"]);
+		expect(wroteIds(page)).toBe(false);
+		const list = page.engine.list(page.byClass("list"));
+		list.ask(0);
+		await page.settle();
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-b1", "lynx-s3", "lynx-s2"]);
+		// The row after it rendered with it, as a row ahead.
+		list.show(1);
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-b1", "lynx-s3", "lynx-b2", "lynx-s4", "lynx-s2"]);
+		for (const [element, id] of drawn) expect(page.engine.state(element).id).toBe(id);
+		expect(page.errors).toEqual([]);
+		expect(page.warnings).toEqual([]);
+	});
+
+	it("takes the page's next ids on a list that is not Lynx's async list", async () => {
+		const page = startSveltePage(FrameIdDeferred, {
+			props: () => ({ async: false }),
+			firstFrame: { draw: drawFrameIdDeferred, props: { async: false } },
+		});
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-s2"]);
+		await page.settle();
+		page.engine.list(page.byClass("list")).show(1);
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-b2", "lynx-s4", "lynx-s2"]);
+		expect(wroteIds(page)).toBe(false);
+		expect(page.errors.map((error) => (error as { code?: string }).code)).toEqual([
+			"list_item_defer_needs_async_list",
+		]);
 	});
 });
 

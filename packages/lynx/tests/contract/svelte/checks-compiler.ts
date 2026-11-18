@@ -55,7 +55,46 @@ const BOUNDARY_FAILED =
 const BOUNDARY_PENDING =
 	"<svelte:boundary>{#snippet pending()}<text>wait</text>{/snippet}<view></view></svelte:boundary>";
 
+/** Where the build puts a deferred row's `{@const}`, by the node and field that hold it. */
+const CONST_PLACES = [
+	["EachBlock", "body", "{#each xs as x}{@const r = 1}<view></view>{/each}"],
+	[
+		"EachBlock",
+		"fallback",
+		"{#each xs as x}<view></view>{:else}{@const r = 1}<view></view>{/each}",
+	],
+	["IfBlock", "consequent", "{#if x}{@const r = 1}<view></view>{/if}"],
+	["IfBlock", "alternate", "{#if x}<view></view>{:else}{@const r = 1}<view></view>{/if}"],
+	["KeyBlock", "fragment", "{#key x}{@const r = 1}<view></view>{/key}"],
+	["AwaitBlock", "pending", "{#await x}{@const r = 1}<view></view>{/await}"],
+	["AwaitBlock", "then", "{#await x then v}{@const r = 1}<view></view>{/await}"],
+	["AwaitBlock", "catch", "{#await x catch e}{@const r = 1}<view></view>{/await}"],
+	["SnippetBlock", "body", "{#snippet s()}{@const r = 1}<view></view>{/snippet}"],
+	["Component", "fragment", "<Child>{@const r = 1}<view></view></Child>"],
+	["SvelteBoundary", "fragment", "<svelte:boundary>{@const r = 1}<view></view></svelte:boundary>"],
+] as const;
+
 export const checks: Checks = {
+	"const-tag-places": () => {
+		for (const [type, field, source] of CONST_PLACES) {
+			const code = `<script>import Child from "./Child.svelte"; let { x, xs } = $props();</script>${source}`;
+			expect(
+				thrown(() => compile(code, clientOptions())),
+				source,
+			).toBeUndefined();
+			const ast = parse(code, { modern: true, filename: "Places.svelte" });
+			const node = ast.fragment.nodes.find((child) => child.type === type);
+			// Boundary: the field is read by name, as the build reads it.
+			const fragment = (node as unknown as Record<string, AST.Fragment>)[field];
+			expect(
+				fragment?.nodes.some((child) => child.type === "ConstTag"),
+				source,
+			).toBe(true);
+		}
+		expect(
+			thrown(() => compileClient("<list>{@const r = 1}<list-item></list-item></list>"))?.code,
+		).toBe("const_tag_invalid_placement");
+	},
 	"css-props-holder": () => {
 		// A component given `--x` props is wrapped in an element that holds them, and placed at its
 		// `lastChild`, read before the wrapper is on the page.

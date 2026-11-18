@@ -11,8 +11,9 @@
 // no longer shows it.
 //
 // A list of the page keeps about a screen of the cells Lynx handed back with their elements, and
-// lets go of the others' (./lists/release.ts). The first frame's lists hand theirs to the page's at
-// hydration (./lists/adopt.ts).
+// lets go of the others' (./lists/release.ts). A deferred row comes only once Lynx asks for it
+// (./lists/waiting.ts). The first frame's lists hand theirs to the page's at hydration
+// (./lists/adopt.ts).
 //
 // A list inside a cell is rare: its items come as inserts and removals, and its update is written
 // here. It keeps its cells, and goes with the cell it is in.
@@ -20,18 +21,16 @@
 import { listUpdateInfo } from "../wire/index.ts";
 import type { ListItemInfo, ListUpdateInfo } from "../wire/index.ts";
 import { mainThread } from "./globals.ts";
-import type {
-	ComponentAtIndex,
-	ComponentAtIndexes,
-	EnqueueComponent,
-	LynxElement,
-} from "./globals.ts";
-import { adoptedList, heldCells } from "./lists/adopt.ts";
+import type { ComponentAtIndex, LynxElement } from "./globals.ts";
+import { adoptedList, heldCells, waitingCells } from "./lists/adopt.ts";
 import type { AdoptedItems, HeldCell } from "./lists/adopt.ts";
+import { listCallbacks } from "./lists/callbacks.ts";
 import { createRelease } from "./lists/release.ts";
 import type { Rewritten } from "./lists/release.ts";
 import { newCell, newList } from "./lists/state.ts";
 import type { Cell, ListState } from "./lists/state.ts";
+import { answerWaiting, request } from "./lists/waiting.ts";
+import type { WaitingCells } from "./lists/waiting.ts";
 
 export type { AdoptedItems, HeldCell } from "./lists/adopt.ts";
 export type { ListState } from "./lists/state.ts";
@@ -54,6 +53,13 @@ export interface ListsScope {
 	/** Makes the cell with this id from what the main thread kept for it: Lynx waits for it. */
 	openCell(id: number): void;
 	/**
+	 * Whether the main thread can make the cell now. One it cannot, a deferred row, is answered
+	 * when it is written. Without it, every cell can be made.
+	 */
+	written?: (id: number) => boolean;
+	/** Asks the background to render a deferred row and write it. */
+	request?: (id: number) => void;
+	/**
 	 * Asks for `takeRewrites` on a later task, outside Lynx's callbacks: a list keeps more cells
 	 * Lynx handed back than it should, or a cell was asked for. Without it, every cell is kept.
 	 */
@@ -64,7 +70,7 @@ export interface ListsScope {
 }
 
 /** The page's lists. */
-export interface Lists {
+export interface Lists extends WaitingCells {
 	create(id: number): LynxElement;
 	isList(id: number): boolean;
 	/** A list inside a cell: an item joins it, before `anchor` (0 appends), or moves. */
@@ -123,6 +129,19 @@ export function createLists(scope: ListsScope): Lists {
 	const dirty = new Set<ListState>();
 	// Without a way to ask on a later task, every cell is kept.
 	const release = scope.schedule && createRelease(lists, scope.schedule);
+	// A cell of a list inside a cell has its element from its ops before Lynx asks for it.
+	const writtenText = scope.written ?? (() => true);
+	const written = (id: number): boolean => writtenText(id) || scope.elementOf(id) !== undefined;
+	const waitingScope = { written, ...(scope.request && { request: scope.request }) };
+
+	/** A cell of one of the lists, with its list. */
+	function find(id: number): { list: ListState; cell: Cell } | undefined {
+		for (const list of lists.values()) {
+			const cell = list.cells.get(id);
+			if (cell) return { list, cell };
+		}
+		return undefined;
+	}
 
 	function attach(list: ListState, cell: Cell): number {
 		if (!cell.element) {
@@ -149,6 +168,7 @@ export function createLists(scope: ListsScope): Lists {
 	}
 
 	function drop(list: ListState, cell: Cell): void {
+		answerWaiting(cell, -1);
 		if (cell.attached && cell.element) mainThread.__RemoveElement(list.element, cell.element);
 		list.cells.delete(cell.id);
 		list.cellsByUid.delete(cell.uid);
@@ -170,65 +190,18 @@ export function createLists(scope: ListsScope): Lists {
 		for (const cell of [...list.cells.values()]) if (cell.removed && !cell.bound) drop(list, cell);
 	}
 
-	function callbacks(id: number): {
-		componentAtIndex: ComponentAtIndex;
-		componentAtIndexes: ComponentAtIndexes;
-		enqueueComponent: EnqueueComponent;
-	} {
-		return {
-			componentAtIndex(_element, listId, index, operationId) {
-				try {
-					const list = lists.get(id);
-					const cell = list && cellAt(list, index);
-					if (!list || !cell) return -1;
-					const uid = attach(list, cell);
-					mainThread.__FlushElementTree(cell.element, {
-						triggerLayout: true,
-						operationID: operationId,
-						elementID: uid,
-						listID: listId,
-					});
-					return uid;
-				} catch (error) {
-					scope.report(error);
-					return -1;
-				}
-			},
-			componentAtIndexes(_element, listId, indexes, operationIds, _reuse, asyncFlush) {
-				try {
-					const list = lists.get(id);
-					if (!list) return;
-					const uids = indexes.map((index) => {
-						const cell = cellAt(list, index);
-						if (!cell) return -1;
-						const uid = attach(list, cell);
-						if (asyncFlush) mainThread.__FlushElementTree(cell.element, { asyncFlush: true });
-						return uid;
-					});
-					mainThread.__FlushElementTree(list.element, {
-						triggerLayout: true,
-						operationIDs: operationIds,
-						elementIDs: uids,
-						listID: listId,
-					});
-				} catch (error) {
-					scope.report(error);
-				}
-			},
-			enqueueComponent(_element, _listId, sign) {
-				const list = lists.get(id);
-				const cell = list?.cellsByUid.get(sign);
-				if (!list || !cell?.bound) return;
-				cell.bound = false;
-				list.bound--;
-				if (cell.removed) {
-					drop(list, cell);
-					return;
-				}
-				if (list.releases) release!.handedBack(list, cell);
-			},
-		};
-	}
+	const callbacks = listCallbacks({
+		list: (id) => lists.get(id),
+		cellAt,
+		attach,
+		written,
+		waiting: waitingScope,
+		handedBack(list, cell) {
+			if (cell.removed) drop(list, cell);
+			else if (list.releases) release!.handedBack(list, cell);
+		},
+		report: scope.report,
+	});
 
 	function flush(): void {
 		if (dirty.size === 0) return;
@@ -336,6 +309,31 @@ export function createLists(scope: ListsScope): Lists {
 		ask: (id) => release?.ask(id),
 		rewritten: (id) => release?.rewritten(id) ?? "ignore",
 		heldCells: (id) => heldCells(lists.get(id)),
+		waitingCells: (id) => waitingCells(lists.get(id)),
+		firstText(id) {
+			const found = find(id);
+			if (!found) return;
+			const { list, cell } = found;
+			cell.hidden = false;
+			cell.requested = false;
+			if (cell.waiting && !cell.removed) answerWaiting(cell, attach(list, cell));
+		},
+		isHidden: (id) => find(id)?.cell.hidden ?? false,
+		hideCell(id) {
+			const found = find(id);
+			if (!found) return;
+			found.cell.hidden = true;
+			found.cell.requested = false;
+		},
+		resumeWaiting() {
+			for (const list of lists.values()) {
+				for (const cell of list.cells.values()) {
+					if (!cell.waiting || cell.element) continue;
+					if (written(cell.id)) answerWaiting(cell, attach(list, cell));
+					else request(cell, waitingScope);
+				}
+			}
+		},
 		orderOf(id) {
 			const list = lists.get(id);
 			return { items: list?.items.toArray() ?? [], committed: list?.committed ?? [] };

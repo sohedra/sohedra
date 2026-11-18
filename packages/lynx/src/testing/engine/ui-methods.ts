@@ -9,6 +9,7 @@
 import { resolveAtFlush } from "./custom-properties.ts";
 import { requestFrame } from "./frames.ts";
 import { isLayoutOnly } from "./layout-only.ts";
+import { bindFlushed } from "./lists.ts";
 import { argumentError, stateOf } from "./state.ts";
 import type { ElementState, EngineState } from "./state.ts";
 import { descendantsOf } from "./tree.ts";
@@ -79,6 +80,7 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 		// (core/renderer/dom/element_manager.cc). The platform measures them at the next frame.
 		__FlushElementTree(_page, options) {
 			engine.log.flushes.push(options);
+			bindFlushed(engine, options);
 			const inPage = engine.page ? descendantsOf(engine.page) : [];
 			const told = new Set<ElementState>();
 			for (const node of inPage) {

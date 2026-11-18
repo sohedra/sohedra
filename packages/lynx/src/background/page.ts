@@ -14,7 +14,13 @@ import type { Component } from "svelte";
 
 import { listenThrough, pushRenderer, startPropsIds } from "../svelte/runtime/index.ts";
 import { ROOT_ID } from "../wire/index.ts";
-import type { RewriteMessage, SentEvent, SentTarget } from "../wire/index.ts";
+import type {
+	HideMessage,
+	RewriteMessage,
+	SentEvent,
+	SentTarget,
+	ShowMessage,
+} from "../wire/index.ts";
 import { openChannel } from "./channel.ts";
 import { background } from "./globals.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
@@ -22,6 +28,7 @@ import { bumpPage, clearPageState, runAll, startGeneration } from "./page-state.
 import type { Handler } from "./renderer/handlers.ts";
 import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
 import type { ElementNode } from "./renderer/renderer.ts";
+import { rowOf, waitsToBeAsked } from "./renderer/rows.ts";
 import { reportError } from "./report.ts";
 
 /** How the page starts. */
@@ -111,8 +118,36 @@ export function startPage<Props extends Record<string, unknown>>(
 	 */
 	function rewrite({ nodes, mismatch }: RewriteMessage): void {
 		if (mismatch) reportError(mismatchError(mismatch, pageRenderer.nodeById(mismatch.node)));
-		if (nodes.includes(ROOT_ID)) channel.rewritePage(() => pageRenderer.writePage());
-		else channel.rewriteCells(nodes, (id) => pageRenderer.writeCell(id));
+		if (nodes.includes(ROOT_ID)) {
+			channel.rewritePage(() => pageRenderer.writePage());
+			return;
+		}
+		// A row held back has no text on the main thread to replace: it is written when asked for.
+		const cells = nodes.filter((id) => !channel.holds(id));
+		channel.rewriteCells(cells, (id) => {
+			if (!pageRenderer.writeCell(id)) return false;
+			return rowOf(pageRenderer.nodeById(id))?.unmountsRecycled ? "unmount" : true;
+		});
+	}
+
+	/** Deferred rows Lynx asked for: their contents render, and each is written whole. */
+	function show({ nodes }: ShowMessage): void {
+		const rows = nodes.filter((id) => channel.holds(id));
+		if (rows.length === 0) return;
+		handle(() => {
+			for (const id of rows) rowOf(pageRenderer.nodeById(id))?.show();
+		});
+		channel.rewriteCells(rows, (id) => pageRenderer.writeCell(id));
+	}
+
+	/** Deferred rows the main thread let go of, text and all: their contents unmount. */
+	function hide({ nodes }: HideMessage): void {
+		const rows = nodes.filter((id) => !channel.holds(id) && rowOf(pageRenderer.nodeById(id)));
+		if (rows.length === 0) return;
+		channel.holdCells(rows);
+		handle(() => {
+			for (const id of rows) rowOf(pageRenderer.nodeById(id))?.hide();
+		});
 	}
 
 	const channel = openChannel({
@@ -120,6 +155,12 @@ export function startPage<Props extends Record<string, unknown>>(
 		onEvent: dispatch,
 		onRewrite: rewrite,
 		onPropsIds: ({ differences }) => warnPropsIds(differences, (id) => pageRenderer.nodeById(id)),
+		onShow: show,
+		onHide: hide,
+		waits: (id) => {
+			const node = pageRenderer.nodeById(id);
+			return node !== undefined && waitsToBeAsked(node);
+		},
 		tagOf: (id) => pageRenderer.tagOf(id),
 	});
 

@@ -57,9 +57,17 @@ export function adoptFrame(options: {
 			if (cell.attached) mainThread.__RemoveElement(listElement, cell.element);
 			applyAll(drawnApplier, frame.releaseOps(cell.id));
 		}
+		// Lynx's requests for deferred rows wait on, for the background's rows at the same places.
+		const waiting = new Map(
+			drawnApplier.waitingCells(list.drawn).map((cell) => [cell.id, cell.waiting]),
+		);
+		const drawnCells = frame.node(list.drawn)?.cells ?? [];
 		lists.set(list.drawn, {
 			items: list.items,
 			cells: list.cells.map((cell) => (cell === undefined ? undefined : held.get(cell))),
+			...(waiting.size > 0 && {
+				waiting: list.items.map((_, index) => waiting.get(drawnCells[index]?.id ?? -1)),
+			}),
 		});
 	}
 
