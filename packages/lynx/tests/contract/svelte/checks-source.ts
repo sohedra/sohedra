@@ -143,6 +143,17 @@ export const checks: Checks = {
 		);
 	},
 
+	"server-render-global": () => {
+		const renderer = readSvelte("src/internal/server/renderer.js");
+		// A render makes one state, and every renderer it makes shares it.
+		expect(renderer).toMatch(/return new Renderer\(\n\t+new SSRState\(/);
+		expect(occurrences(renderer, "new Renderer(this.global, this)")).toBeGreaterThan(2);
+		expect(renderer).not.toMatch(/new Renderer\(new SSRState/);
+		expect(readSvelte("src/internal/server/index.js")).toMatch(
+			/export function props_id\(renderer\) \{\n\tconst uid = renderer\.global\.uid\(\);/,
+		);
+	},
+
 	"spring-source": () => {
 		const spring = readSvelte("src/motion/spring.js");
 		expect(spring).toMatch(/export class Spring/);

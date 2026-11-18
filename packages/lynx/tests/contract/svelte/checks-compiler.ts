@@ -194,6 +194,52 @@ export const checks: Checks = {
 		});
 	},
 
+	"if-block-branches": () => {
+		const text = "{#if a}<A />{:else if b}<B />{:else}<C />{/if}";
+		const [block] = parse(text, { modern: true }).fragment.nodes as AST.IfBlock[];
+		expect(block).toMatchObject({ type: "IfBlock", elseif: false, test: { name: "a" } });
+		const [a] = block!.consequent.nodes as (AST.Component & { start: number; end: number })[];
+		expect(text.slice(a!.start, a!.end)).toBe("<A />");
+		// The `{:else if}` is alone in the alternate, with branches of its own.
+		const [elseIf, ...rest] = block!.alternate!.nodes as AST.IfBlock[];
+		expect(rest).toEqual([]);
+		expect(elseIf).toMatchObject({ type: "IfBlock", elseif: true, test: { name: "b" } });
+		const [c] = elseIf!.alternate!.nodes as (AST.Component & { start: number; end: number })[];
+		expect(text.slice(c!.start, c!.end)).toBe("<C />");
+		expect(elseIf!.consequent.nodes[0]?.type).toBe("Component");
+		expect(
+			(parse("{@render s()}", { modern: true }).fragment.nodes[0] as { type: string }).type,
+		).toBe("RenderTag");
+	},
+
+	"thread-branch-component": () => {
+		const source =
+			'<script>import Wrapper from "./wrapper.js"; import Child from "./Child.svelte";</script>' +
+			"{#snippet s()}<Child />{/snippet}<Wrapper render={s} />";
+		const passed =
+			/Wrapper\((\$\$anchor|node(?:_\d+)?|\$\$renderer), \{\s*(?:render: s|get render\(\) \{\s*return s;\s*\})\s*\}\)/;
+		for (const dev of [false, true]) {
+			const client = compile(source, { ...clientOptions(), dev }).js.code;
+			expect(client).toMatch(passed);
+			// The snippet is a function of the anchor alone.
+			expect(client).toMatch(
+				/const s = \$\.renderer_snippet\(\$renderer, (?:\(\$\$anchor\) =>|\$\.wrap_snippet\(\w+, function \(\$\$anchor\))/,
+			);
+		}
+		const server = compile(source, { filename: "Contract.svelte", generate: "server", runes: true })
+			.js.code;
+		expect(server).toContain("Wrapper($$renderer, { render: s });");
+		expect(server).toMatch(/function s\(\$\$renderer\) \{/);
+		// A component calls `$props.id()` first, on both threads.
+		const id = "<script>const uid = $props.id();</script><view id={uid}></view>";
+		expect(compile(id, clientOptions()).js.code).toMatch(
+			/var \$\$pop_renderer = \$\.push_renderer\(\$renderer\);\s*const uid = \$\.props_id\(\);/,
+		);
+		expect(
+			compile(id, { filename: "Contract.svelte", generate: "server", runes: true }).js.code,
+		).toMatch(/function Contract\(\$\$renderer\) \{\s*const uid = \$\.props_id\(\$\$renderer\);/);
+	},
+
 	"options-unrecognised-error": () => {
 		// A Svelte without custom renderers fails on the option by this code.
 		const error = thrown(() => compileClient("<view></view>", { notAnOption: true }));

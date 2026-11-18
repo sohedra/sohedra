@@ -1,0 +1,16 @@
+// Rstest Snapshot v1
+
+exports[`ids that differ between the threads > are written over the first frame's, and a development build warns once per place 1`] = `
+[
+  "The <view>'s id is "lynx-s1" in the first frame and "lynx-s2" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.
+tests/fixtures/threads/FrameLabeled.svelte:5:0
+
+Render a component that only one thread renders inside {#if background} or {#if mainThread} from @sohedra/lynx/env, with nothing else in the condition, so that the ids after it stay the same on both threads.
+https://sohedra.com/e/props_id_mismatch",
+  "The <view>'s accessibility-label is "label-lynx-s1" in the first frame and "label-lynx-s2" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.
+tests/fixtures/threads/FrameLabeled.svelte:5:0
+
+Render a component that only one thread renders inside {#if background} or {#if mainThread} from @sohedra/lynx/env, with nothing else in the condition, so that the ids after it stay the same on both threads.
+https://sohedra.com/e/props_id_mismatch",
+]
+`;

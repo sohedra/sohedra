@@ -42,6 +42,13 @@ exports[`golden messages to the background > an error with its code and where it
 }
 `;
 
+exports[`golden messages to the background > ids of $props.id() written over the first frame's, in a development build 1`] = `
+{
+  "data": "{"v":1,"page":0,"t":"props-ids","differences":[{"node":4,"name":"aria-labelledby","expected":"lynx-s2","got":"lynx-s1"}]}",
+  "type": "@sohedra/lynx:replies",
+}
+`;
+
 exports[`golden messages to the background > list rows asked for again 1`] = `
 {
   "data": "{"v":1,"page":0,"t":"rewrite","nodes":[30,40]}",

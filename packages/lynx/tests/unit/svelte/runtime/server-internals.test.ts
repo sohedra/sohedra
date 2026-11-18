@@ -1,11 +1,18 @@
 // The first frame's server runtime: Svelte's, with each value written as the main thread's parser
-// reads it back, and a component's `--x` props wrapped in a <view>.
+// reads it back, a component's `--x` props wrapped in a <view>, and `$props.id()` in a branch only
+// one thread renders counted on its own.
 
 import { describe, expect, it } from "@rstest/core";
 
 import { isBlock, parsePage } from "../../../../src/main-thread/frame/html.ts";
 import type { DrawnNode } from "../../../../src/main-thread/frame/html.ts";
-import { attr, attributes, css_props } from "../../../../src/svelte/runtime/server-internals.ts";
+import {
+	attr,
+	attributes,
+	css_props,
+	props_id,
+	ThreadBranch,
+} from "../../../../src/svelte/runtime/server-internals.ts";
 
 /** The attributes of `<view>` with `written` in its tag, as the parser reads them. */
 function readBack(written: string): { attrs: Record<string, unknown>; events: string[] } {
@@ -98,5 +105,35 @@ describe("a component given --x props", () => {
 		const renderer = { push: (part: string) => (html += part) };
 		css_props(renderer, false, { "--tone": "red" }, () => {}, true);
 		expect(html).toMatch(/^<view style="[^"]*--tone: red;?"><\/view>$/);
+	});
+});
+
+describe("$props.id() in the first frame", () => {
+	/** A component's renderer in one render, whose own count Svelte keeps on `global`. */
+	function rendering() {
+		let uid = 1;
+		const pushed: string[] = [];
+		const global = { uid: () => `lynx-s${uid++}` };
+		return { global, pushed, push: (html: string) => void pushed.push(html) };
+	}
+
+	it("is Svelte's outside a branch only one thread renders", () => {
+		const renderer = rendering();
+		expect([props_id(renderer), props_id(renderer)]).toEqual(["lynx-s1", "lynx-s2"]);
+		expect(renderer.pushed).toEqual(["<!--$lynx-s1-->", "<!--$lynx-s2-->"]);
+	});
+
+	it("counts its own in such a branch, from the first in each render, and leaves Svelte's alone", () => {
+		const renderer = rendering();
+		const ids: string[] = [];
+		ThreadBranch(renderer, {
+			thread: "main-thread",
+			render: (target) => ids.push(props_id(target), props_id(target)),
+		});
+		ids.push(props_id(renderer));
+		expect(ids).toEqual(["lynx-m1", "lynx-m2", "lynx-s1"]);
+		const next = rendering();
+		ThreadBranch(next, { thread: "main-thread", render: (target) => ids.push(props_id(target)) });
+		expect(ids.at(-1)).toBe("lynx-m1");
 	});
 });

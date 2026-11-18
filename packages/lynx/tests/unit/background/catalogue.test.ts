@@ -23,6 +23,13 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		difference: `the <view>'s class is "card" on the background and "card wide" in the first frame`,
 		where: "src/Card.svelte:4:1",
 	},
+	props_id_mismatch: {
+		tag: "text",
+		name: "id",
+		expected: "lynx-s3",
+		got: "lynx-s2",
+		where: "src/Field.svelte:8:1",
+	},
 };
 
 // Boundary: the keys of the catalogue are its codes.
