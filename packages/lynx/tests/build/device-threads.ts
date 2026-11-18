@@ -6,8 +6,9 @@
 // calls it with `lynx`, the timers and the rest as its parameters (lynx-core's app.ts, `require`).
 // The global object holds none of them, and no `queueMicrotask`.
 //
-// The main thread: Lynx's element functions and `lynx` are globals, and so are the timers and
-// `queueMicrotask`, as a device showed. `lynx.SystemInfo` is there; a global `SystemInfo` is not.
+// The main thread: Lynx's element functions and `lynx` are globals, and so are the timers, as a
+// device showed. It has no `queueMicrotask`. `lynx.SystemInfo` is there; a global `SystemInfo` is
+// not.
 //
 // Both threads lack what their engine (PrimJS) lacks, listed below, and neither has `performance`.
 // An app gets none of these from the binding, and Svelte's runtime and the binding must run without
@@ -142,7 +143,7 @@ const requestAnimationFrame = (callback: (time: number) => void) =>
  * are the test page's, on the process's global object, where the engine fake finds them.
  */
 function mainThreadRealm(): vm.Context {
-	const globals = { setTimeout, clearTimeout, queueMicrotask, requestAnimationFrame };
+	const globals = { setTimeout, clearTimeout, requestAnimationFrame };
 	// Boundary: any name may be a global.
 	const scope = globalThis as unknown as Record<string, unknown>;
 	let adopt: Adopt = (value) => value;

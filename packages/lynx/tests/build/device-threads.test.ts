@@ -104,6 +104,17 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
+	it("runs the main thread with no global queueMicrotask, as on a device", async () => {
+		const { page, mainThread } = startDevicePage(scripts);
+		try {
+			await page.settle();
+			expect(vm.runInContext("typeof queueMicrotask", mainThread)).toBe("undefined");
+			expect(page.errors.map(String)).toEqual([]);
+		} finally {
+			page.dispose();
+		}
+	});
+
 	it("fills in the main thread's global SystemInfo from lynx", () => {
 		const { page, mainThread } = startDevicePage(scripts);
 		try {
