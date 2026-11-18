@@ -1,10 +1,17 @@
 // `<list-item defer>`: on the background, the row's contents go in an `{#if}` on the row's state,
 // made once per row and linked to the element; the first frame draws the row empty and keeps
-// `defer` in its markup.
+// `defer` in its markup, unless the row is in its list's first screen. Each list counts its first
+// screen, from where it opens to where it closes.
 
 import { describe, expect, it } from "@rstest/core";
 
-import { component } from "../compiling.ts";
+import { component, SERVER_INTERNALS } from "../compiling.ts";
+
+/** The background's copy, with the binding's runtime, which the first screen's helpers come from. */
+const CLIENT_INTERNALS = "/binding/svelte/client-internals.ts";
+const background = (source: string, options: { development?: boolean } = {}) =>
+	component(source, { clientInternals: CLIENT_INTERNALS, ...options });
+const mainThread = (source: string) => component(source, { thread: "main-thread" });
 
 const each = (item: string, script = "<script>let rows = $state([{ id: 1 }]);</script>\n") =>
 	`${script}<list custom-list-name="list-container">{#each rows as row (row.id)}${item}{/each}</list>`;
@@ -26,25 +33,27 @@ describe("a deferred row", () => {
 		expect(code).not.toContain("if (true)");
 	});
 
-	it("in the first frame, is drawn empty, and keeps defer in its markup", async () => {
-		const { code } = await component(each("<list-item defer><text>{row.id}</text></list-item>"), {
-			thread: "main-thread",
-		});
-		expect(code).toContain("$.attr('defer', true, true)");
-		expect(code).toContain("if (!true) {");
-		expect(code).not.toContain("__sohedraLynx");
+	it("in the first frame, writes its defer as its first screen says, and its contents when drawn", async () => {
+		const { code } = await mainThread(each("<list-item defer><text>{row.id}</text></list-item>"));
+		expect(code).toContain("$.attr('defer', __sohedraLynxDefer(true), true)");
+		expect(code).toContain("if (!__sohedraLynxWaits()) {");
+		expect(code).toContain("firstScreenDefer as __sohedraLynxDefer");
+		expect(code).toContain("firstScreenWaits as __sohedraLynxWaits");
+		expect(code).toContain(`} from "${SERVER_INTERNALS}";`);
 	});
 
 	it("reads the value of defer where it is written, so a change of it reaches the row", async () => {
 		const source = each(
 			"<list-item defer={row.id > 1 ? { unmountRecycled: true } : false}><text>{row.id}</text></list-item>",
 		);
-		const background = await component(source);
-		expect(background.code).toContain(
+		const { code } = await background(source);
+		expect(code).toContain(
 			"__sohedraLynxDeferredRow(() => $.get(row).id > 1 ? { unmountRecycled: true } : false)",
 		);
-		const mainThread = await component(source, { thread: "main-thread" });
-		expect(mainThread.code).toContain("if (!(row.id > 1 ? { unmountRecycled: true } : false)) {");
+		const drawn = await mainThread(source);
+		expect(drawn.code).toContain(
+			"__sohedraLynxDefer(row.id > 1 ? { unmountRecycled: true } : false)",
+		);
 	});
 
 	it("outside a block, gets one, which a {@const} needs, and a script for its import", async () => {
@@ -110,11 +119,88 @@ describe("a deferred row", () => {
 	it("takes a quoted value as the text it is: empty, it does not defer", async () => {
 		const quoted = await component(each('<list-item defer="yes"><text>a</text></list-item>'));
 		expect(quoted.code).toContain('__sohedraLynxDeferredRow(() => "yes")');
-		const empty = await component(each('<list-item defer=""><text>a</text></list-item>'), {
-			thread: "main-thread",
-		});
-		expect(empty.code).toContain('if (!"") {');
+		const empty = await mainThread(each('<list-item defer=""><text>a</text></list-item>'));
+		expect(empty.code).toContain('__sohedraLynxDefer("")');
 		const mixed = await component(each('<list-item defer="a{row.id}"><text>a</text></list-item>'));
 		expect(mixed.code).toContain("__sohedraLynxDeferredRow(() => true)");
+	});
+});
+
+describe("a list's first screen", () => {
+	const list = (attributes: string, rows: string) =>
+		`<script>let rows = $state([1]); let preload = 5;</script>\n<list custom-list-name="list-container" ${attributes}>${rows}</list>`;
+	const deferred =
+		"{#each rows as row (row)}<list-item defer><text>{row}</text></list-item>{/each}";
+
+	it("on the background, opens in a block before the rows and closes in one after them", async () => {
+		const { code } = await background(
+			list('span-count={2} preload-buffer-count={preload} initial-item-count="3"', deferred),
+		);
+		expect(code).toContain('"span-count": 2,\n\t\t\t"preload-buffer-count": preload,');
+		expect(code).toContain('"initial-item-count": "3"');
+		expect(code).toContain("__sohedraLynxListEnd()");
+		expect(code.indexOf("__sohedraLynxList(")).toBeLessThan(code.indexOf("$.each("));
+		expect(code.indexOf("__sohedraLynxListEnd()")).toBeGreaterThan(code.indexOf("$.each("));
+	});
+
+	it("in the first frame, opens in an attribute never written, and closes after the rows", async () => {
+		const { code } = await mainThread(list("{...{ 'span-count': 2 }}", deferred));
+		expect(code).toContain(
+			"'sohedra-lynx-list': __sohedraLynxList(() => ({ ...{ 'span-count': 2 } }))",
+		);
+		expect(code).toContain("if (__sohedraLynxListEnd()) {");
+	});
+
+	it("names the list's place on the background in a development build, for its warning", async () => {
+		const { code } = await background(list("", deferred), { development: true });
+		expect(code).toMatch(/__sohedraLynxList\(undefined, "src\/Component\.svelte:2:1"\)/);
+	});
+
+	it("counts a row with no defer in a list with a deferred row: a header, a footer", async () => {
+		const rows = `<list-item item-key="h" full-span><text>h</text></list-item>${deferred}<list-item item-key="f"><text>f</text></list-item>`;
+		const { code } = await background(list("", rows));
+		expect(code).toContain("__sohedraLynxCount(true)");
+		expect(code).toContain("__sohedraLynxCount()");
+		const drawn = await mainThread(list("", rows));
+		expect(drawn.code).toContain("$.attr('sohedra-lynx-count', __sohedraLynxCount(true))");
+		expect(drawn.code).toContain("$.attr('sohedra-lynx-count', __sohedraLynxCount())");
+	});
+
+	it("gives a deferred row its full-span, a whole line of the first screen", async () => {
+		const rows =
+			"{#each rows as row (row)}<list-item defer full-span={row > 1}><text>{row}</text></list-item>{/each}";
+		const { code } = await background(list("", rows));
+		expect(code).toContain("__sohedraLynxDeferredRow(() => true, { fullSpan: () => row > 1 })");
+		const drawn = await mainThread(list("", rows));
+		expect(drawn.code).toContain("__sohedraLynxDefer(true, row > 1)");
+	});
+
+	it("counts no row only one thread renders, in {#if background}, on either thread", async () => {
+		const rows = `{#if background}<list-item item-key="h"><text>h</text></list-item><list-item defer><text>d</text></list-item>{/if}${deferred}`;
+		const source = `<script>import { background } from "@sohedra/lynx/env"; let rows = $state([1]);</script>\n<list custom-list-name="list-container">${rows}</list>`;
+		const { code } = await background(source);
+		expect(code).not.toContain("__sohedraLynxCount");
+		expect(code).toContain("__sohedraLynxDeferredRow(() => true, { oneThread: true })");
+		const drawn = await mainThread(source);
+		expect(drawn.code).not.toContain("__sohedraLynxCount");
+		expect(drawn.code).toContain("__sohedraLynxDefer(true)");
+		expect(drawn.code).toContain("if (!true) {");
+	});
+
+	it("counts no row of a list with no deferred row, which only opens and closes", async () => {
+		const plain = "{#each rows as row (row)}<list-item><text>{row}</text></list-item>{/each}";
+		const { code } = await background(list("", plain));
+		expect(code).not.toContain("__sohedraLynxCount");
+		expect(code).toContain("__sohedraLynxList()");
+		const drawn = await mainThread(list("", plain));
+		expect(drawn.code).not.toContain("__sohedraLynxCount");
+	});
+
+	it("imports its helpers on one line, so the elements keep the lines they are written on", async () => {
+		const { code } = await background(list("", deferred), { development: true });
+		// Svelte's development build records the list where it is written: line 2.
+		expect(code).toMatch(/\[\[2, 0\b/);
+		const bare = await background(`<list>${deferred}</list>`, { development: true });
+		expect(bare.code).toMatch(/\[\[1, \d+\b/);
 	});
 });

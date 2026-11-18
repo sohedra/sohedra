@@ -168,6 +168,26 @@ describe("$props.id() in a deferred list row", () => {
 		expect(page.warnings).toEqual([]);
 	});
 
+	it("in its list's first screen, takes the first frame's ids, where the first frame drew it", async () => {
+		const props = { initial: 2 };
+		const page = startSveltePage(FrameIdDeferred, {
+			props: () => props,
+			firstFrame: { draw: drawFrameIdDeferred, props },
+		});
+		// Lynx makes a row's elements when it asks for the row: the first frame drew both whole.
+		const list = page.engine.list(page.byClass("list"));
+		list.show(0);
+		list.show(1);
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-s2", "lynx-s3", "lynx-s4"]);
+		const drawn = pageIds(page);
+		await page.settle();
+		expect(wroteIds(page)).toBe(false);
+		expect(ids(page)).toEqual(["lynx-s1", "lynx-b1", "lynx-s2", "lynx-b2", "lynx-s3", "lynx-s4"]);
+		for (const [element, id] of drawn) expect(page.engine.state(element).id).toBe(id);
+		expect(page.errors).toEqual([]);
+		expect(page.warnings).toEqual([]);
+	});
+
 	it("takes the page's next ids on a list that is not Lynx's async list", async () => {
 		const page = startSveltePage(FrameIdDeferred, {
 			props: () => ({ async: false }),

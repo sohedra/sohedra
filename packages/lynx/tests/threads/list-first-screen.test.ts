@@ -1,0 +1,271 @@
+// A deferred list's first screen: its first rows render whole on both threads as the page starts,
+// deferred or not, so the first frame shows them and hydration adopts them. A list draws
+// (10 + preload-buffer-count) × span-count rows, or initial-item-count, counted across its
+// `{#each}` blocks and static rows, and up to its initial-scroll-index too, to a cap. The rows after
+// wait for Lynx to ask for them, as before.
+
+import { describe, expect, it } from "@rstest/core";
+
+import { readGlobal } from "../../src/testing/globals.ts";
+import { FIRST_FRAME_GLOBAL } from "../../src/wire/index.ts";
+import FirstScreen from "../fixtures/threads/FirstScreen.svelte";
+import drawFirstScreen from "../fixtures/threads/FirstScreen.svelte?first-frame";
+import FirstScreenNested from "../fixtures/threads/FirstScreenNested.svelte";
+import drawFirstScreenNested from "../fixtures/threads/FirstScreenNested.svelte?first-frame";
+import { expectInSyncOnceAsked, range } from "./released-rows.ts";
+import { scroller, scrollThrough } from "./scroll.ts";
+import { startSveltePage } from "./svelte-page.ts";
+import type { SveltePage } from "./svelte-page.ts";
+
+interface Props {
+	count?: number;
+	more?: number;
+	header?: boolean;
+	footer?: boolean;
+	defer?: boolean | { unmountRecycled?: boolean };
+	fullSpan?: boolean;
+	span?: number;
+	preload?: number;
+	initial?: number;
+	scrollIndex?: number;
+}
+
+interface Feed {
+	rows: { id: number; label: string }[];
+	more: { id: number; label: string }[];
+}
+
+interface Screen {
+	span?: number;
+	preload?: number;
+	initial?: number;
+}
+
+/** The keys of the rows `r<from>` to `r<to>`. */
+const keys = (from: number, to: number, prefix = "r"): string[] =>
+	range(from, to).map((id) => `${prefix}${id}`);
+
+/**
+ * Starts the page with its first frame: the ids of the rows the background rendered as it started.
+ * With `ask`, Lynx then asks for every row of the list, as it may before the background's first
+ * patch: the keys of the rows it gets at once, drawn whole.
+ */
+function startFirstScreen(props: Props = {}, { ask = true } = {}) {
+	const handles: Record<string, unknown> = {};
+	const page = startSveltePage(FirstScreen, {
+		props: () => ({ handles, ...props }),
+		firstFrame: { draw: drawFirstScreen, props: { handles: {}, ...props } },
+	});
+	const atStart = [...(handles["rendered"] as number[])];
+	const list = page.engine.list(page.byClass("list"));
+	const all = list.updates.at(-1)!.insertAction.map((item) => String(item["item-key"]));
+	const whole = ask ? all.filter((_, index) => list.ask(index) !== undefined) : [];
+	return { page, handles, list, all, whole, atStart, feed: handles["feed"] as Feed };
+}
+
+/** The page hydrated with nothing reported and nothing written again, and stays in sync. */
+async function expectHydrated(page: SveltePage) {
+	await page.settle();
+	expect(page.messages.filter((message) => message.t === "rewrite")).toEqual([]);
+	expect(page.errors).toEqual([]);
+	expect(page.warnings).toEqual([]);
+	await expectInSyncOnceAsked("after hydration", page);
+}
+
+/** The ids of the rows the main thread asked the background for. */
+const shown = (page: SveltePage) =>
+	page.messages.flatMap((message) => (message.t === "show" ? message.nodes : []));
+
+describe("a deferred list's first screen", () => {
+	it("is drawn whole in the first frame, and rendered by the background as it starts", async () => {
+		const { page, list, whole, atStart, all } = startFirstScreen();
+		expect(all).toHaveLength(30);
+		expect(whole).toEqual(keys(1, 10));
+		expect(atStart).toEqual(range(1, 10));
+		// Lynx gets the row's contents at once, from the first frame.
+		expect(page.engine.text(list.show(0))).toBe("Row 1: 0");
+		await expectHydrated(page);
+	});
+
+	it("is counted on with a footer, which the first frame draws as before", async () => {
+		const { page, whole, atStart } = startFirstScreen({ footer: true });
+		expect(whole).toEqual([...keys(1, 10), "footer"]);
+		expect(atStart).toEqual(range(1, 10));
+		await expectHydrated(page);
+	});
+
+	it("counts a header with no defer as a row of its own", async () => {
+		const { page, whole, atStart } = startFirstScreen({ header: true, footer: true });
+		expect(whole).toEqual(["header", ...keys(1, 9), "footer"]);
+		expect(atStart).toEqual(range(1, 9));
+		await expectHydrated(page);
+	});
+
+	it("is counted across two {#each} blocks, the first in an {#if}", async () => {
+		const { page, whole, atStart } = startFirstScreen({ count: 4, more: 20 });
+		expect(whole).toEqual([...keys(1, 4), ...keys(1001, 1006, "m")]);
+		expect(atStart).toEqual([...range(1, 4), ...range(1001, 1006)]);
+		await expectHydrated(page);
+	});
+
+	it("holds a screen of lines of span-count rows each", async () => {
+		const { page, whole } = startFirstScreen({ span: 2, count: 40 });
+		expect(whole).toEqual(keys(1, 20));
+		await expectHydrated(page);
+	});
+
+	it("counts a full-span row as a whole line", async () => {
+		const { page, whole } = startFirstScreen({ span: 2, count: 40, fullSpan: true });
+		expect(whole).toEqual(["wide", ...keys(1, 18)]);
+		await expectHydrated(page);
+	});
+
+	it("holds as many more rows as preload-buffer-count, as Lynx asks for them", async () => {
+		const { page, whole } = startFirstScreen({ preload: 5 });
+		expect(whole).toEqual(keys(1, 15));
+		await expectHydrated(page);
+	});
+
+	it("holds initial-item-count rows when the list says", async () => {
+		const three = startFirstScreen({ initial: 3, preload: 5 });
+		expect(three.whole).toEqual(keys(1, 3));
+		await expectHydrated(three.page);
+		const none = startFirstScreen({ initial: 0 });
+		expect(none.whole).toEqual([]);
+		expect(none.atStart).toEqual([]);
+		await expectHydrated(none.page);
+	});
+
+	it("runs from the start up to initial-scroll-index and a screen past it", async () => {
+		const { page, whole } = startFirstScreen({ count: 60, scrollIndex: 30 });
+		expect(whole).toEqual(keys(1, 40));
+		await expectHydrated(page);
+	});
+
+	it("is only the first screen, with a warning, when initial-scroll-index is past the cap", async () => {
+		const handles: Record<string, unknown> = {};
+		const props = { count: 200, scrollIndex: 150 };
+		const page = startSveltePage(FirstScreen, {
+			props: () => ({ handles, ...props }),
+			firstFrame: { draw: drawFirstScreen, props: { handles: {}, ...props } },
+		});
+		expect(handles["rendered"]).toEqual(range(1, 10));
+		await page.settle();
+		expect(page.warnings).toEqual([
+			expect.objectContaining({
+				code: "initial_scroll_index_past_first_screen",
+				message: expect.stringMatching(
+					/^A <list> starts at initial-scroll-index 150, more than 100 rows down.*\n.*FirstScreen\.svelte:\d+:\d+/,
+				),
+			}),
+		]);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("leaves a list with no deferred row as it was: every row drawn whole", async () => {
+		const { page, whole, all, list } = startFirstScreen({ defer: false, footer: true });
+		expect(whole).toEqual(all);
+		expect(all).toHaveLength(31);
+		const attributes = Object.keys(page.engine.state(page.byClass("list")).attrs);
+		expect(attributes.filter((name) => name.startsWith("sohedra"))).toEqual([]);
+		expect(page.engine.text(list.show(29))).toBe("Row 30: 0");
+		await expectHydrated(page);
+	});
+
+	it("gives a row's contents to a nested list, which counts its own first screen", async () => {
+		const page = startSveltePage(FirstScreenNested, {
+			firstFrame: { draw: drawFirstScreenNested },
+		});
+		const outer = page.engine.list(page.byClass("outer"));
+		expect(outer.ask(0)).toBeDefined();
+		expect(outer.ask(10)).toBeUndefined();
+		const inner = page.engine.list(page.byClass("inner-1"));
+		expect(inner.ask(2)).toBeDefined();
+		expect(page.engine.text(inner.show(2))).toBe("Inner 3");
+		await page.settle();
+		expect(page.messages.filter((message) => message.t === "rewrite")).toEqual([]);
+		expect(page.errors).toEqual([]);
+		await expectInSyncOnceAsked("after hydration", page);
+	});
+});
+
+describe("a row of the first screen, after the page starts", () => {
+	it("is a row Lynx asked for: handed back and asked again, it keeps its state", async () => {
+		const { page, list, handles } = startFirstScreen({}, { ask: false });
+		await page.settle();
+		const cell = list.show(0);
+		page.engine.dispatch(page.byClass("row-1"), { type: "tap" });
+		await page.settle();
+		list.hide(cell);
+		await page.settle();
+		expect(list.show(0)).toBe(cell);
+		expect(page.engine.text(cell)).toBe("Row 1: 1");
+		// Rendered once, as the page started.
+		expect((handles["rendered"] as number[]).filter((id) => id === 1)).toEqual([1]);
+		await expectInSyncOnceAsked("after the row came back", page);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("with unmountRecycled, loses its state once the main thread lets go of it", async () => {
+		const { page, handles } = startFirstScreen({ count: 60, defer: { unmountRecycled: true } });
+		await page.settle();
+		const scroll = scroller(page.engine, page.byClass("list"));
+		scroll.to(0);
+		await page.settle();
+		page.engine.dispatch(page.byClass("row-1"), { type: "tap" });
+		await page.settle();
+		expect(page.engine.text(page.byClass("row-1"))).toBe("Row 1: 1");
+		await scrollThrough({ scroll, from: 0, to: 40, settle: page.settle });
+		expect(handles["unmounted"]).toContain(1);
+		await scrollThrough({ scroll, from: 40, to: 0, settle: page.settle });
+		expect(page.engine.text(page.byClass("row-1"))).toBe("Row 1: 0");
+		await expectInSyncOnceAsked("after scrolling back", page);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("is not changed by a list's attributes that change later: they act on rows to come", async () => {
+		const { page, handles } = startFirstScreen({}, { ask: false });
+		await page.settle();
+		const screen = handles["screen"] as Screen;
+		page.asBackground(() => {
+			screen.preload = 10;
+			screen.span = 2;
+			screen.initial = 30;
+		});
+		await page.settle();
+		expect(handles["rendered"]).toEqual(range(1, 10));
+		expect(shown(page)).toEqual([]);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("leaves rows added before hydration to wait for Lynx, as rows that come later do", async () => {
+		const { page, feed, handles, list } = startFirstScreen({ count: 5 });
+		page.asBackground(() => {
+			feed.rows.unshift({ id: 99, label: "Row 99" });
+		});
+		await page.settle();
+		expect(handles["rendered"]).toEqual(range(1, 5));
+		expect(list.ask(0)).toBeUndefined();
+		await page.settle();
+		expect(handles["rendered"]).toContain(99);
+		expect(page.messages.filter((message) => message.t === "rewrite")).toEqual([]);
+		expect(page.errors).toEqual([]);
+		await expectInSyncOnceAsked("after hydration", page);
+	});
+});
+
+/** The markup of the first frame of a feed of `count` deferred rows, as measured. */
+const FIRST_FRAME_BYTES: Record<number, number> = { 1000: 70_697, 5000: 354_697 };
+
+describe.each([1000, 5000])("a first frame of %i deferred rows", (count) => {
+	it("draws its first screen whole and the rest empty, within its budget, as the background renders it", () => {
+		drawFirstScreen({ handles: {}, count });
+		const markup = (readGlobal(FIRST_FRAME_GLOBAL) as (data: object) => string)({});
+		// A row of the fixture drawn whole holds a <view>; one that waits holds nothing.
+		expect(markup.split("<view").length - 1).toBe(10);
+		expect(markup.length).toBeLessThanOrEqual(FIRST_FRAME_BYTES[count]!);
+		const { atStart, page } = startFirstScreen({ count }, { ask: false });
+		expect(atStart).toEqual(range(1, 10));
+		expect(page.errors).toEqual([]);
+	});
+});

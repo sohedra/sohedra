@@ -31,6 +31,7 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		where: "src/Field.svelte:8:1",
 	},
 	list_item_defer_needs_async_list: { where: "src/Feed.svelte:9:3" },
+	initial_scroll_index_past_first_screen: { index: 150, cap: 100, where: "src/Feed.svelte:7:1" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

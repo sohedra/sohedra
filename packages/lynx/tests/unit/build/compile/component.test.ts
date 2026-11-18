@@ -4,7 +4,7 @@
 import { describe, expect, it } from "@rstest/core";
 
 import { inApp, withoutRoot } from "../app.ts";
-import { component } from "../compiling.ts";
+import { component, SERVER_INTERNALS } from "../compiling.ts";
 
 describe("the options Svelte compiles with", () => {
 	it("are the thread's own, whatever the app's config says", async () => {
@@ -19,7 +19,7 @@ describe("the options Svelte compiles with", () => {
 			thread: "main-thread",
 			compilerOptions: options,
 		});
-		expect(mainThread.code).toContain("svelte/internal/server");
+		expect(mainThread.code).toContain(SERVER_INTERNALS);
 		expect(mainThread.code).not.toContain("@sohedra/lynx/internal/renderer");
 	});
 
