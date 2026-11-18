@@ -50,7 +50,7 @@ describe("a built page on threads shaped like a device's", () => {
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
 			expect(drawn(page)).toEqual({
-				texts: ["Tapped 0", "Apple", "Banana"],
+				texts: ["Tapped 0, seen 0", "Apple", "Banana"],
 				padding: "8px",
 				opacity: "1",
 			});
@@ -67,7 +67,7 @@ describe("a built page on threads shaped like a device's", () => {
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
 			expect(drawn(page)).toEqual({
-				texts: ["Tapped 1", "Banana", "Apple"],
+				texts: ["Tapped 1, seen 1", "Banana", "Apple"],
 				padding: "8px",
 				opacity: "0.5",
 			});
