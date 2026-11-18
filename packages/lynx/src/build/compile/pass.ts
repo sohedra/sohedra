@@ -18,6 +18,11 @@ export interface PassContext {
 	thread: Thread;
 	/** A development build. */
 	development: boolean;
+	/**
+	 * The module this thread's copy imports Svelte's runtime from, the binding's own; none when the
+	 * build gives none, and the component runs on Svelte's.
+	 */
+	internals?: string | undefined;
 	/** The warnings the passes add. */
 	warnings: BuildWarning[];
 }

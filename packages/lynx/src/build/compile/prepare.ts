@@ -20,6 +20,7 @@ import { firstFrameEvents } from "./first-frame-events.ts";
 import { listItemKeys } from "./list-item-keys.ts";
 import type { Pass, PassContext } from "./pass.ts";
 import { svelteOptions } from "./svelte-options.ts";
+import { threadBranches } from "./thread-branches.ts";
 
 /** What `prepare` reads. */
 export interface PrepareOptions {
@@ -30,6 +31,8 @@ export interface PrepareOptions {
 	ast: ComponentAst;
 	thread: Thread;
 	development: boolean;
+	/** The module this thread's copy imports Svelte's runtime from, when it is the binding's own. */
+	internals?: string | undefined;
 	/** The app's folder, which the ids of main-thread functions are made relative to. */
 	root: string;
 	/** Whether to also return source maps. */
@@ -60,6 +63,7 @@ const PASSES: readonly Pass[] = [
 	firstFrameEvents,
 	effectImports,
 	listItemKeys,
+	threadBranches,
 ];
 
 /** Run every pass over the component and apply what they return. */

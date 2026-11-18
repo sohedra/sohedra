@@ -7,7 +7,7 @@
 // main thread asks the background to write the page again, and keeps the first frame on the screen
 // until that patch comes.
 
-import type { HydrationMismatch, PatchItem } from "../../wire/index.ts";
+import type { HydrationMismatch, PatchItem, PropsIdDifference } from "../../wire/index.ts";
 import type { Applier } from "../apply.ts";
 import type { Frame } from "../frame/draw.ts";
 import { adoptFrame } from "./adopt.ts";
@@ -21,7 +21,7 @@ export type { Hydrated, Replay } from "./adopt.ts";
 
 /** How hydration ended. */
 export type Hydration =
-	| { kind: "adopted"; hydrated: Hydrated; rendered: Rendered }
+	| { kind: "adopted"; hydrated: Hydrated; rendered: Rendered; propsIds: PropsIdDifference[] }
 	| { kind: "refused"; mismatch: HydrationMismatch }
 	| { kind: "failed"; error: unknown };
 
@@ -42,7 +42,7 @@ export function hydrate(options: {
 		const plan = matchFrame({ root: frame.root, rendered, lists: frame });
 		if ("mismatch" in plan) return { kind: "refused", mismatch: plan.mismatch };
 		const hydrated = adoptFrame({ frame, applier, rendered, plan });
-		return { kind: "adopted", hydrated, rendered };
+		return { kind: "adopted", hydrated, rendered, propsIds: plan.propsIds };
 	} catch (error) {
 		return { kind: "failed", error };
 	}

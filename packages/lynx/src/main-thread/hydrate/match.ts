@@ -12,9 +12,12 @@
 //     the first frame.
 // What refuses hydration (a mismatch): outside a block, a tag that differs, an element that one
 // side has and the other lacks, or an attribute that differs; and a list whose keys differ.
+// Outside a block, an attribute that differs only in `$props.id()`'s ids is written over the first
+// frame's, and kept for a development build's warning: the ids agree unless a component only one
+// thread renders is in a branch whose test the build does not recognize as one.
 
 import { MAIN_THREAD_PREFIX, PROPS_ID } from "../../wire/index.ts";
-import type { AttrValue, HydrationMismatch } from "../../wire/index.ts";
+import type { AttrValue, HydrationMismatch, PropsIdDifference } from "../../wire/index.ts";
 import { elementsOf, isBlock } from "../frame/html.ts";
 import type { DrawnChild, DrawnNode } from "../frame/html.ts";
 import { readCell } from "./rendered.ts";
@@ -68,6 +71,8 @@ export interface Plan {
 	textRepairs: TextRepair[];
 	/** The cells adopted, whose rendered text the page does not need. */
 	adoptedCells: Set<number>;
+	/** Attributes outside a block whose ids of `$props.id()` differ, written over the first frame's. */
+	propsIds: PropsIdDifference[];
 }
 
 /** Hydration was refused: what differs. */
@@ -102,13 +107,10 @@ function same(name: string, a: AttrValue | undefined, b: AttrValue | undefined):
 }
 
 /**
- * Whether two values differ only in the ids of `$props.id()`. A component only the background
- * renders takes ids the first frame never gave, so the ids after it differ: the background's are
- * written over the frame's, which is not the developer's mistake.
+ * Whether two values differ only in the ids of `$props.id()`: then the background's are written
+ * over the frame's, and the page goes on.
  */
-const sameButIds = (a: AttrValue | undefined, b: AttrValue | undefined): boolean =>
-	typeof a === "string" &&
-	typeof b === "string" &&
+const sameButIds = (a: string, b: string): boolean =>
 	a.replace(PROPS_ID, "") === b.replace(PROPS_ID, "");
 
 /** An item key as text: Lynx reads it as text. */
@@ -133,6 +135,7 @@ export function matchFrame(options: {
 		repairs: [],
 		textRepairs: [],
 		adoptedCells: new Set(),
+		propsIds: [],
 	};
 	const node = (id: number): RenderedNode => rendered.nodes.get(id)!;
 	const isText = (id: number): boolean => node(id).tag === "#text";
@@ -170,15 +173,13 @@ export function matchFrame(options: {
 			return;
 		}
 		for (const [name, value] of built.attrs) {
-			if (!compared(name) || same(name, value, drawn.attrs.get(name))) continue;
-			if (!inBlock && !sameButIds(value, drawn.attrs.get(name)))
-				throw new Mismatch({
-					kind: "attribute",
-					node: id,
-					name,
-					expected: value,
-					got: drawn.attrs.get(name),
-				});
+			const got = drawn.attrs.get(name);
+			if (!compared(name) || same(name, value, got)) continue;
+			if (!inBlock) {
+				if (typeof value !== "string" || typeof got !== "string" || !sameButIds(value, got))
+					throw new Mismatch({ kind: "attribute", node: id, name, expected: value, got });
+				plan.propsIds.push({ node: id, name, expected: value, got });
+			}
 			plan.writes.push({ id, name, value });
 		}
 		for (const [name, value] of drawn.attrs) {

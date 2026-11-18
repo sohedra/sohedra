@@ -17,7 +17,7 @@ import { ROOT_ID } from "../wire/index.ts";
 import type { RewriteMessage, SentEvent, SentTarget } from "../wire/index.ts";
 import { openChannel } from "./channel.ts";
 import { background } from "./globals.ts";
-import { mismatchError } from "./hydration.ts";
+import { mismatchError, warnPropsIds } from "./hydration.ts";
 import { bumpPage, clearPageState, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
@@ -119,6 +119,7 @@ export function startPage<Props extends Record<string, unknown>>(
 		queue: pageQueue,
 		onEvent: dispatch,
 		onRewrite: rewrite,
+		onPropsIds: ({ differences }) => warnPropsIds(differences, (id) => pageRenderer.nodeById(id)),
 		tagOf: (id) => pageRenderer.tagOf(id),
 	});
 

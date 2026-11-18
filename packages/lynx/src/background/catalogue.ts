@@ -26,6 +26,17 @@ export interface BackgroundDetails {
 	 * `file:line:col` there.
 	 */
 	hydration_mismatch: { difference?: string | undefined; where?: string | undefined };
+	/**
+	 * `name` is the attribute's; `expected` its value on the background and `got` in the first
+	 * frame; `where` the element's `file:line:col`.
+	 */
+	props_id_mismatch: {
+		tag: string;
+		name: string;
+		expected: string;
+		got: string;
+		where?: string | undefined;
+	};
 }
 
 /** What a code of the background names. */
@@ -96,6 +107,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.",
 		docs: "hydration_mismatch",
+	},
+	props_id_mismatch: {
+		message: ({ tag, name, expected, got }) =>
+			`The <${tag}>'s ${name} is "${got}" in the first frame and "${expected}" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.`,
+		fix: () =>
+			"Render a component that only one thread renders inside {#if background} or {#if mainThread} from @sohedra/lynx/env, with nothing else in the condition, so that the ids after it stay the same on both threads.",
+		docs: "props_id_mismatch",
 	},
 };
 

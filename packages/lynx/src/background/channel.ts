@@ -21,6 +21,7 @@ import type {
 	Op,
 	PatchItem,
 	PatchParams,
+	PropsIdsMessage,
 	RewriteMessage,
 	SentEvent,
 } from "../wire/index.ts";
@@ -41,6 +42,8 @@ export interface ChannelOptions {
 	onEvent(handler: number, event: SentEvent): void;
 	/** The main thread asks for elements' subtrees again (`rewrite`). */
 	onRewrite(message: RewriteMessage): void;
+	/** In a development build, the ids of `$props.id()` that hydration wrote over (`props-ids`). */
+	onPropsIds(message: PropsIdsMessage): void;
 	/** An element's tag, for the error of a value that cannot be sent. */
 	tagOf(id: number): string | undefined;
 }
@@ -105,7 +108,8 @@ interface Waiting {
 }
 
 /** Opens the page's channel. */
-export function openChannel({ queue, onEvent, onRewrite, tagOf }: ChannelOptions): Channel {
+export function openChannel(options: ChannelOptions): Channel {
+	const { queue, onEvent, onRewrite, onPropsIds, tagOf } = options;
 	const nativeApp = background.lynx.getNativeApp();
 	const core = background.lynx.getCoreContext();
 	const waiting = new Map<number, Waiting>();
@@ -203,6 +207,10 @@ export function openChannel({ queue, onEvent, onRewrite, tagOf }: ChannelOptions
 		}
 		if (received.t === "rewrite") {
 			onRewrite(received);
+			return;
+		}
+		if (received.t === "props-ids") {
+			onPropsIds(received);
 			return;
 		}
 		if (received.t === "reply") {

@@ -86,6 +86,26 @@ export interface HydrationMismatch {
 	got?: unknown;
 }
 
+/**
+ * In a development build, after a hydration: the attributes whose `$props.id()` ids differed
+ * between the first frame and the background, outside any `{#if}` branch, which the main thread
+ * wrote over the first frame's. A page whose ids agree never sends it.
+ */
+export interface PropsIdsMessage {
+	t: "props-ids";
+	differences: PropsIdDifference[];
+}
+
+/** An attribute of an element, by the background's id, and its value on each side. */
+export interface PropsIdDifference {
+	node: number;
+	name: string;
+	/** The background's value. */
+	expected: string;
+	/** The first frame's value. */
+	got: string;
+}
+
 /** Where on the main thread an error was thrown, as far as the main thread knows. */
 export interface ErrorPlace {
 	/** The component, as its file. */
@@ -113,7 +133,8 @@ export type ToBackground =
 	| ReplyMessage
 	| ReleaseMessage
 	| ErrorMessage
-	| RewriteMessage;
+	| RewriteMessage
+	| PropsIdsMessage;
 
 /** A message to the background as the background receives it. */
 export type ReceivedByBackground = ToBackground & Stamp;

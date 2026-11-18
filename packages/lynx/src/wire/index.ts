@@ -83,6 +83,8 @@ export type {
 	ErrorPlace,
 	EventMessage,
 	HydrationMismatch,
+	PropsIdDifference,
+	PropsIdsMessage,
 	ReceivedByBackground,
 	ReleaseMessage,
 	ReplyMessage,
