@@ -22,11 +22,16 @@ export interface InputNumbers {
 	forget(element: LynxElement): void;
 }
 
-/** The `input` event's value, as Lynx puts it in `detail`. */
+/**
+ * The `input` event's value, as Lynx puts it in `detail`. Read as plain properties: the engine's
+ * objects refuse `Reflect.get` on Android.
+ */
 export function inputValue(event: unknown): unknown {
 	if (typeof event !== "object" || event === null) return undefined;
-	const detail: unknown = Reflect.get(event, "detail");
-	return typeof detail === "object" && detail !== null ? Reflect.get(detail, "value") : undefined;
+	const detail: unknown = (event as Record<string, unknown>)["detail"];
+	return typeof detail === "object" && detail !== null
+		? (detail as Record<string, unknown>)["value"]
+		: undefined;
 }
 
 /** The numbered events of one page's fields. */

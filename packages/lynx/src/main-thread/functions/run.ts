@@ -64,7 +64,8 @@ export function made(value: unknown, scope: RunScope, depth: number): unknown {
 	if (depth > MAX_DEPTH)
 		throw mainThreadError({ code: "main_thread_value_too_deep", details: { depth: MAX_DEPTH } });
 	if (value instanceof MainThreadElement || value instanceof Ref) return value;
-	const element: unknown = Reflect.get(value, "elementRefptr");
+	// Read as a plain property, never with `Reflect`: see `withTargets`.
+	const element: unknown = (value as Record<string, unknown>)["elementRefptr"];
 	if (element !== undefined && element !== null) return scope.elements.wrap(element as LynxElement);
 	if (isRefHandle(value)) return scope.refs.of(value);
 	if (isMainThreadFunction(value)) return prepare(value, scope);
@@ -139,14 +140,18 @@ export function contextsOf(value: unknown, out: number[] = [], depth = 0): numbe
 	return out;
 }
 
-/** An event or a gesture's event, with its targets' elements made wrappers. */
+/**
+ * An event or a gesture's event, with its targets' elements made wrappers. The engine's objects
+ * are read as plain properties: on Android they have no prototype, and `Reflect.get` refuses them
+ * ("not an object"), while a property read works.
+ */
 function withTargets(event: unknown, elements: Elements): unknown {
 	if (typeof event !== "object" || event === null) return event;
 	const record = event as Record<string, unknown>;
 	for (const key of ["target", "currentTarget"]) {
 		const target = record[key];
 		if (typeof target !== "object" || target === null) continue;
-		const element: unknown = Reflect.get(target, "elementRefptr");
+		const element: unknown = (target as Record<string, unknown>)["elementRefptr"];
 		if (element !== undefined && element !== null)
 			record[key] = elements.wrap(element as LynxElement);
 	}

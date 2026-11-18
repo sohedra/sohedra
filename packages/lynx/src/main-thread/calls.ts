@@ -72,7 +72,7 @@ const failure = (error: unknown): Result => ({ ok: false, error: encodeError(err
 const isThenable = (value: unknown): value is PromiseLike<unknown> =>
 	(typeof value === "object" || typeof value === "function") &&
 	value !== null &&
-	typeof Reflect.get(value, "then") === "function";
+	typeof (value as Record<string, unknown>)["then"] === "function";
 
 /**
  * The calls of one page.

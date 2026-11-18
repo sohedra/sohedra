@@ -76,12 +76,15 @@ export function isMainThreadFunction(value: unknown): value is MainThreadFunctio
 	return typeof value === "object" && value !== null && FUNCTION_FIELDS.id in value;
 }
 
-/** Whether `value` is a main-thread ref as it travels. */
+/**
+ * Whether `value` is a main-thread ref as it travels. Read as a plain property: on the main thread
+ * the value may be the engine's own, which refuses `Reflect.get` on Android.
+ */
 export function isRefHandle(value: unknown): value is MainThreadRefHandle {
 	return (
 		typeof value === "object" &&
 		value !== null &&
-		typeof Reflect.get(value, REF_FIELDS.id) === "number"
+		typeof (value as Record<string, unknown>)[REF_FIELDS.id] === "number"
 	);
 }
 

@@ -286,15 +286,18 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 				report(mainThreadError({ code: "main_thread_value_not_runnable", details: {} }));
 			}
 			if (!ready) return undefined;
+			// The engine's objects, read as plain properties: see `withTargets` (./run.ts).
 			const source =
 				typeof options === "object" && options !== null
-					? (Reflect.get(options, "source") as number | undefined)
+					? ((options as Record<string, unknown>)["source"] as number | undefined)
 					: undefined;
 			const list = Array.isArray(params) ? params : [];
 			if (DEV && value instanceof Entry) {
 				const event: unknown = list[0];
 				const type =
-					typeof event === "object" && event !== null ? Reflect.get(event, "type") : undefined;
+					typeof event === "object" && event !== null
+						? (event as Record<string, unknown>)["type"]
+						: undefined;
 				guard?.ran(value.fn._wkltId, typeof type === "string" ? type : undefined);
 			}
 			return runAs(ready, {

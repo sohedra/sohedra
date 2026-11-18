@@ -37,6 +37,40 @@
 			"files": ["src/**/globals.ts"],
 			"rules": { "no-restricted-globals": "off" },
 		},
+		// The main thread reads values the engine hands it (events, their targets, `runWorklet`'s
+		// options). On Android those objects have no prototype and `Reflect.get` refuses them ("not an
+		// object"), while a plain property read works, so code that runs there never uses `Reflect`.
+		// wire/ runs on both threads, and gesture/ in main-thread functions.
+		{
+			"files": ["src/main-thread/**", "src/first-frame/**", "src/wire/**", "src/gesture/**"],
+			"rules": {
+				"no-restricted-globals": [
+					"error",
+					{ "name": "globalThis", "message": "Reach globals through this folder's globals.ts." },
+					{
+						"name": "Reflect",
+						"message": "Read a property plainly: Android's engine objects refuse Reflect.",
+					},
+				],
+			},
+		},
+		{
+			"files": [
+				"src/main-thread/globals.ts",
+				"src/first-frame/globals.ts",
+				"src/wire/globals.ts",
+				"src/gesture/globals.ts",
+			],
+			"rules": {
+				"no-restricted-globals": [
+					"error",
+					{
+						"name": "Reflect",
+						"message": "Read a property plainly: Android's engine objects refuse Reflect.",
+					},
+				],
+			},
+		},
 
 		// Which folder of the binding may import which (the table in this package's AGENTS.md).
 		// Each folder's own `index.ts` is its only face to the others, named as that file: not as the
