@@ -121,6 +121,21 @@ describe("a first patch that comes before the first paint", () => {
 		expect(page.errors).toEqual([]);
 	});
 
+	it("waits for its frame when the timer fires a little late, behind work that ended just after it", async () => {
+		rs.useFakeTimers();
+		const page = counter();
+		const frames = page.engine.holdFrames();
+		await page.settle();
+		rs.setSystemTime(Date.now() + 50);
+		rs.advanceTimersByTime(500);
+		await page.settle();
+		expect(page.engine.texts()[0]).toBe("Taps: 0 (drawn)");
+		frames();
+		await page.settle();
+		expect(page.engine.texts()[0]).toBe("Taps: 0 (patched)");
+		expect(page.errors).toEqual([]);
+	});
+
 	it("applies after a few late timers when no frame comes", async () => {
 		rs.useFakeTimers();
 		const page = counter();
