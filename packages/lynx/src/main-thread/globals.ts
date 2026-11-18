@@ -132,6 +132,11 @@ export interface MainThreadGlobals {
 	__FlushElementTree(page?: LynxElement, options?: Record<string, unknown>): void;
 	__GetPageElement(): unknown;
 	/**
+	 * Runs `callback` at the platform's next frame (core/runtime/lepus/bindings/renderer_functions.cc,
+	 * RequestAnimationFrame).
+	 */
+	requestAnimationFrame(callback: () => void): number;
+	/**
 	 * Reports an error into Lynx with its code and level
 	 * (core/runtime/lepus/bindings/renderer_functions.cc, ReportError); `undefined` on an engine
 	 * without it.

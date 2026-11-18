@@ -53,7 +53,8 @@ export interface ElementNode extends TreeNode {
 	readonly lastChild: TreeNode | null;
 	/**
 	 * Calls Lynx's UI method `method` of the element (`boundingClientRect`, `scrollTo`…) and
-	 * resolves with its answer. Rejects with Lynx's code when the method fails.
+	 * resolves with its answer. It runs once the platform has laid out the update it came with, so
+	 * it sees that update's layout. Rejects with Lynx's code when the method fails.
 	 */
 	invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
 	/** Sets one inline style from code; `null` or `""` gives the property back to `style`. */

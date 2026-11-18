@@ -4,9 +4,10 @@
 // The patch's changes reach the screen at its flush: Lynx makes an element's view then, and a UI
 // method runs at once on the view as it is (core/renderer/ui_wrapper/painting, the painting
 // contexts' Invoke). A UI method before the flush would answer "no UI for this node" (code 6) for a
-// new element, or see the screen from before the update. So reads (a UI method, a computed style)
-// run once the patch is flushed, in the order they came; queries run in place. An element a UI
-// method is called on is held from then on, so that Lynx gives it a UI (./flatten.ts).
+// new element, or see the screen from before the update. So reads run after the patch's flush, in
+// the order they came: a computed style at once, a UI method once the platform has also laid the
+// patch out (`onceLaidOut`). Queries run in place. An element a UI method is called on is held
+// from then on, so that Lynx gives it a UI (./flatten.ts).
 
 import { decodeCall, encodeError } from "../wire/index.ts";
 import type { CallItem, CallRequest, Result } from "../wire/index.ts";
@@ -30,12 +31,27 @@ export interface CallsScope {
 export interface Calls {
 	/** Runs a call of the patch being applied, or keeps it until the patch is flushed. */
 	run(item: CallItem, stamp: number): void;
-	/** The patch was flushed: runs the calls that waited, in order. */
+	/**
+	 * The patch was flushed: runs the computed styles that waited, then, once the platform has laid
+	 * the patch out, its UI methods, each kind in order.
+	 */
 	flushed(): void;
 }
 
 /** A request about an element; the others are for main-thread functions. */
 type ElementRequest = Exclude<CallRequest, ["unref", ...unknown[]] | ["run", ...unknown[]]>;
+
+/**
+ * Runs `run` once the platform has laid out the last flush: at the second frame after it. Android
+ * measures a view's content, such as a scroll view's range, in the frame after a flush, after that
+ * frame's callbacks (UIScrollView.measure, from the root view's onMeasure); a UI method run before
+ * then reads the content from before the update, and a `scrollTo` past its old end fails.
+ *
+ * @workaround ui-methods-after-layout kind=lynx-limit delete-when="Lynx runs a UI method after the platform has measured the flush before it"
+ */
+function onceLaidOut(run: () => void): void {
+	mainThread.requestAnimationFrame(() => mainThread.requestAnimationFrame(run));
+}
 
 /** What a failed call rejects with. */
 const failure = (error: unknown): Result => ({ ok: false, error: encodeError(error) });
@@ -46,7 +62,8 @@ const failure = (error: unknown): Result => ({ ok: false, error: encodeError(err
  * @workaround ui-methods-after-flush kind=lynx-limit delete-when="the binding sets the engine's enableElementInvokeUIMethodPendingTask, which runs a UI method after its element's flush"
  */
 export function createCalls(scope: CallsScope): Calls {
-	const waiting: (() => void)[] = [];
+	const afterFlush: (() => void)[] = [];
+	const afterLayout: (() => void)[] = [];
 
 	/** The name of what was called, in the developer's words, for an error. */
 	function nameOf(request: ElementRequest): string {
@@ -131,7 +148,7 @@ export function createCalls(scope: CallsScope): Calls {
 					execute(request, element, done);
 					return;
 				}
-				waiting.push(() => {
+				(request[0] === "invoke" ? afterLayout : afterFlush).push(() => {
 					try {
 						if (scope.applier().element(elementId) !== element)
 							throw mainThreadError({
@@ -148,7 +165,12 @@ export function createCalls(scope: CallsScope): Calls {
 			}
 		},
 		flushed() {
-			for (const run of waiting.splice(0)) run();
+			for (const run of afterFlush.splice(0)) run();
+			const due = afterLayout.splice(0);
+			if (due.length > 0)
+				onceLaidOut(() => {
+					for (const run of due) run();
+				});
 		},
 	};
 }
