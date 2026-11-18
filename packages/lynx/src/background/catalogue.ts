@@ -59,16 +59,26 @@ export interface BackgroundDetails {
 	/** `value` says what was given: a function, a list, an object. */
 	main_thread_gesture_not_a_gesture: { value: string; tag: string; where?: string | undefined };
 	/**
-	 * `name` is the captured value as written and `where` its function's `file:line:col`, in
-	 * development builds; `depth` is how deep a copy goes.
+	 * `attribute` is the one the function is bound to and `owner` its element's tag, when it is bound
+	 * to one; `name` the captured value as written and `where` the function's `file:line:col`, in
+	 * development builds; `depth` how deep a copy goes.
 	 */
-	capture_too_deep: { name?: string | undefined; depth: number; where?: string | undefined };
+	capture_too_deep: {
+		attribute?: string | undefined;
+		owner?: string | undefined;
+		name?: string | undefined;
+		depth: number;
+		where?: string | undefined;
+	};
 	/**
-	 * `tag` is the element's; `name` the captured value as written and `where` its function's
-	 * `file:line:col`, in development builds.
+	 * `tag` is the captured element's; `attribute` the one the function is bound to and `owner` its
+	 * element's tag, when it is bound to one; `name` the captured value as written and `where` the
+	 * function's `file:line:col`, in development builds.
 	 */
 	element_in_main_thread_function: {
 		tag: string;
+		attribute?: string | undefined;
+		owner?: string | undefined;
 		name?: string | undefined;
 		where?: string | undefined;
 	};
@@ -83,6 +93,19 @@ export interface BackgroundDetails {
 
 /** What a code of the background names. */
 export type BackgroundCode = keyof BackgroundDetails;
+
+/** A main-thread function, named by the attribute it is bound to, when it is bound to one. */
+function mainThreadFunction({
+	attribute,
+	owner,
+}: {
+	attribute?: string | undefined;
+	owner?: string | undefined;
+}): string {
+	return attribute === undefined
+		? "A main-thread function"
+		: `The main-thread function of ${attribute} on <${owner ?? "element"}>`;
+}
 
 /** Every message of the background. */
 export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
@@ -228,15 +251,15 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		docs: "main_thread_gesture_not_a_gesture",
 	},
 	capture_too_deep: {
-		message: ({ name, depth }) =>
-			`A main-thread function captures ${name ?? "a value"}, which holds itself or is nested more than ${depth} levels deep, so it cannot be copied to the main thread.`,
+		message: (details) =>
+			`${mainThreadFunction(details)} captures ${details.name ?? "a value"}, which holds itself or is nested more than ${details.depth} levels deep, so it cannot be sent to the main thread.`,
 		fix: ({ name }) =>
-			`Read only the members the function needs, such as ${name ?? "value"}.id, so that it captures those alone. Refer to a parent by its id instead of holding it, so the state does not hold itself.`,
+			`Read only the members the function needs, such as ${name ?? "value"}.id, so that it captures those alone.`,
 		docs: "capture_too_deep",
 	},
 	element_in_main_thread_function: {
-		message: ({ tag, name }) =>
-			`A main-thread function captures ${name === undefined ? "" : `${name}, which holds `}the <${tag}> element of the background, and an element cannot be sent to the main thread.`,
+		message: (details) =>
+			`${mainThreadFunction(details)} captures ${details.name === undefined ? "" : `${details.name}, which holds `}the <${details.tag}> element of the background, and an element cannot be sent to the main thread.`,
 		fix: () =>
 			"Give the element main-thread:ref={ref}, with const ref = mainThreadRef() from @sohedra/lynx, and capture ref instead: the function reads the element as ref.current.",
 		docs: "element_in_main_thread_function",
