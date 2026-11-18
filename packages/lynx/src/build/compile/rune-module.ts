@@ -44,7 +44,8 @@ export function compileRuneModule(source: string, options: ModuleOptions): Compi
 			...options.compilerOptions,
 			filename,
 			generate: thread === "main-thread" ? "server" : "client",
-			dev: options.development,
+			// As a component's: the main thread's copy runs only for the first frame.
+			dev: options.development && thread !== "main-thread",
 		});
 	} catch (error) {
 		throw compileError(error, text);
