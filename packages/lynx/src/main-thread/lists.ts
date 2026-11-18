@@ -29,7 +29,7 @@ import { createRelease } from "./lists/release.ts";
 import type { Rewritten } from "./lists/release.ts";
 import { newCell, newList } from "./lists/state.ts";
 import type { Cell, ListState } from "./lists/state.ts";
-import { answerWaiting, request } from "./lists/waiting.ts";
+import { answerWaiting, askAheadOfLast, request } from "./lists/waiting.ts";
 import type { WaitingCells } from "./lists/waiting.ts";
 
 export type { AdoptedItems, HeldCell } from "./lists/adopt.ts";
@@ -332,6 +332,7 @@ export function createLists(scope: ListsScope): Lists {
 					if (written(cell.id)) answerWaiting(cell, attach(list, cell));
 					else request(cell, waitingScope);
 				}
+				askAheadOfLast(list, { cellAt: (at) => cellAt(list, at), scope: waitingScope });
 			}
 		},
 		orderOf(id) {
