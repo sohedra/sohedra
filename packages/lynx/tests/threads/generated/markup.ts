@@ -147,12 +147,17 @@ export function nodes(context: Context, scope: Scope, size: number): fc.Arbitrar
 	return fc.array(node(context, scope, size), { maxLength: 3 });
 }
 
-/** At least one node in `context`, at most `size` deep. */
+/**
+ * Nodes in `context`, at most `size` deep, that render a node whatever the state: a text or a
+ * `<view>` first. A block or a component may render nothing.
+ */
 function filled(context: Context, scope: Scope, size: number): fc.Arbitrary<MarkupNode[]> {
-	if (size > 0) return fc.array(node(context, scope, size), { minLength: 1, maxLength: 2 });
-	return context === "inline"
-		? leafText(scope).map((text) => [text])
-		: fc.constant<MarkupNode[]>([{ kind: "element", tag: "view", attributes: [], children: [] }]);
+	const first: fc.Arbitrary<MarkupNode> =
+		context === "inline"
+			? leafText(scope)
+			: fc.constant({ kind: "element", tag: "view", attributes: [], children: [] });
+	const rest = size > 0 ? fc.array(node(context, scope, size), { maxLength: 1 }) : fc.constant([]);
+	return fc.tuple(first, rest).map(([head, tail]) => [head, ...tail]);
 }
 
 function leafText(scope: Scope): fc.Arbitrary<MarkupNode> {
@@ -182,6 +187,32 @@ function element(
 		}));
 }
 
+/**
+ * Long rows, only in a list of the page, whose rows are released; small, with no list in them: a
+ * scroll shows them many times over.
+ */
+function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild> {
+	return fc
+		.record({
+			fixed: fc.boolean(),
+			attributes: attributes(scope, "view"),
+			body: nodes("block", nested(scope, { lists: 2 }), Math.min(1, size - 1)),
+		})
+		.map((each): ListChild => ({ kind: "rows", item, ...each }));
+}
+
+/** A list of the page with long rows only, which a scroll lets go of. */
+export function longList(scope: Scope): fc.Arbitrary<MarkupNode> {
+	const { item, scope: eachScope } = withItem(nested(scope, { lists: 1 }));
+	return fc
+		.record({ attributes: attributes(scope, "view"), child: rows(item, eachScope, 2) })
+		.map(({ attributes: written, child }): MarkupNode => ({
+			kind: "list",
+			attributes: written,
+			items: [child],
+		}));
+}
+
 function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 	const inner = nested(scope, { lists: scope.lists + 1 });
 	const listItem = fc
@@ -206,18 +237,9 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			body: nodes("block", eachScope, size - 1),
 		})
 		.map((each): ListChild => ({ kind: "items", item, ...each }));
-	// Only in a list of the page, whose rows are released, and small, with no list in them: a
-	// scroll shows them many times over.
-	const rows = fc
-		.record({
-			fixed: fc.boolean(),
-			attributes: attributes(eachScope, "view"),
-			body: nodes("block", nested(eachScope, { lists: 2 }), Math.min(1, size - 1)),
-		})
-		.map((each): ListChild => ({ kind: "rows", item, ...each }));
 	const kinds =
 		scope.lists === 0
-			? fc.oneof(listItem, eachItems, { weight: 2, arbitrary: rows })
+			? fc.oneof(listItem, eachItems, { weight: 2, arbitrary: rows(item, eachScope, size) })
 			: fc.oneof(listItem, eachItems);
 	return fc
 		.record({
@@ -263,8 +285,9 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 					keyed: fc.boolean(),
 					body: nodes(context, eachScope, size - 1),
 					/**
-					 * Never empty: Svelte throws when an `{#each}` whose `{:else}` holds nothing fills.
-					 * The canary in ./svelte-each-else.test.ts fails when that is fixed.
+					 * Never without a node: Svelte throws when an `{#each}` whose `{:else}` renders no node
+					 * fills, an empty one or one whose component renders nothing, on the DOM too. The
+					 * canary in ./svelte-each-else.test.ts fails when that is fixed.
 					 *
 					 * @workaround svelte-empty-each-else kind=svelte-internal delete-when="Svelte fills an {#each} with an empty {:else} without throwing"
 					 */

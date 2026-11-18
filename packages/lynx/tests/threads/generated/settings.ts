@@ -21,9 +21,9 @@ export const SEED: number = Number(variables["GENERATED_SEED"] ?? 2026);
 const PATH = variables["GENERATED_PATH"];
 
 /**
- * The time a page may take. A page of the costliest property took 45 ms on average, at 300 runs
- * with the four properties running at once; a second leaves room for costlier pages and a busier
- * machine.
+ * The time a page may take. A page of the costliest property took 165 ms on average, 243 ms on a
+ * busier machine and 411 ms from seed 7, at 300 runs with the four properties running at once; a
+ * second is over twice the most.
  */
 const PAGE_BUDGET = 1_000;
 

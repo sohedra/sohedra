@@ -7,7 +7,7 @@
 //
 //   - elements: `<view>`, `<text>` (inline `<text>` and texts inside it), `<image>`, `<list>` with
 //     `<list-item>`s, one list inside a list's item, and a list long enough that a scroll releases
-//     rows, one of which may not be recyclable;
+//     rows, one of which may not be recyclable, which the root leads with on about half the pages;
 //   - static and dynamic attributes, classes (text and object), styles (text and `style:`),
 //     `data-*` (text, number and object), `id`, an attribute of Lynx's, and a `tap` handler that
 //     changes the state;
@@ -25,7 +25,7 @@
 
 import fc from "fast-check";
 
-import { nested, nodes } from "./markup.ts";
+import { longList, nested, nodes } from "./markup.ts";
 import type { Context, MarkupNode, Scope } from "./markup.ts";
 import { pageState, STATE_KEYS, STRING_KEYS } from "./state.ts";
 import type { PageState } from "./state.ts";
@@ -85,6 +85,16 @@ function component(options: {
 				context: snippetContext,
 			}));
 			const snippetScope = nested(base, { texts: [...base.texts, "p"] });
+			const scope = nested(base, { snippets: named });
+			// The root leads with a long list on about half the pages: scrolls then release rows.
+			const body = isRoot
+				? fc
+						.tuple(
+							fc.option(longList(scope), { nil: undefined, freq: 2 }),
+							nodes(context, scope, size),
+						)
+						.map(([long, rest]) => (long ? [long, ...rest] : rest))
+				: nodes(context, scope, size);
 			return fc
 				.record({
 					snippets: fc.tuple(
@@ -92,7 +102,7 @@ function component(options: {
 							nodes(snippet.context, snippetScope, size - 1).map((body) => ({ ...snippet, body })),
 						),
 					),
-					body: nodes(context, nested(base, { snippets: named }), size),
+					body,
 				})
 				.map(({ snippets, body }): ComponentModel => ({ name, context, uid, snippets, body }));
 		});
