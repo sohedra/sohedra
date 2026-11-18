@@ -10,7 +10,8 @@
 //   <name>__main-thread  layer svelte:main-thread  the main thread's runtime, then the page's entry
 //                                                  compiled for Svelte's server renderer (the first
 //                                                  frame; the `worker` condition)
-//   <name>               layer svelte:background   the page's entry (Svelte and the app run here)
+//   <name>               layer svelte:background   what the engine lacks, filled in, then the page's
+//                                                  entry (Svelte and the app run here)
 //   <bundle filename>    the engine's LynxTemplatePlugin (dsl react_nodiff) and the encoder
 //
 // Each `import()` becomes its own bundle (`lazy-bundle/<name>.<hash>.bundle`, next to the page),
