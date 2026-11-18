@@ -225,7 +225,9 @@ export function matchFrame(options: {
 	/**
 	 * Matches a parent's texts, which never refuse. Texts go by the element they follow: where both
 	 * sides have as many there, one to one; else the drawn ones are taken off and the background's
-	 * made in place.
+	 * made in place. Where the two sides have a different number of elements, every text is made
+	 * again: an element adopted from a run keeps its drawn place, which a drawn text may be on the
+	 * wrong side of.
 	 */
 	function texts(id: number, drawn: DrawnNode): void {
 		const children = node(id).children;
@@ -239,17 +241,17 @@ export function matchFrame(options: {
 			}
 			return slots;
 		};
-		let built = bySlot(children, isText);
-		let drawnTexts = bySlot(drawnChildren, (child) => child.tag === "#text");
-		if (built.length !== drawnTexts.length) {
-			// The elements differ too: the texts are matched as one group.
-			built = [built.flat()];
-			drawnTexts = [drawnTexts.flat()];
+		const built = bySlot(children, isText);
+		const drawnTexts = bySlot(drawnChildren, (child) => child.tag === "#text");
+		const aligned = built.length === drawnTexts.length;
+		if (!aligned) {
+			built.splice(0, built.length, built.flat());
+			drawnTexts.splice(0, drawnTexts.length, drawnTexts.flat());
 		}
 		for (let slot = 0; slot < built.length; slot++) {
 			const ours = built[slot]!;
 			const theirs = drawnTexts[slot]!;
-			if (ours.length === theirs.length) {
+			if (aligned && ours.length === theirs.length) {
 				for (let index = 0; index < ours.length; index++) pair(ours[index]!, theirs[index]!, true);
 				continue;
 			}
