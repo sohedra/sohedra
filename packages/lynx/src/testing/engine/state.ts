@@ -1,5 +1,6 @@
 // What the engine keeps: a record for each element it made, and the logs of what the page asked.
 
+import type { FrameQueue } from "./frames.ts";
 import type {
 	ComponentAtIndex,
 	ComponentAtIndexes,
@@ -208,17 +209,21 @@ export interface ShownElement {
 	readonly inlineStyles: ReadonlyMap<string, string>;
 	/** The custom properties it resolved, its own and those it inherits. */
 	readonly customProperties: ReadonlyMap<string, string>;
+	/** Its children. */
+	readonly children: readonly LynxElement[];
 }
 
 /**
- * Decides what a UI method answers, from the method, its params, the element, and the element as
- * the screen shows it (`undefined` before a flush has found it in the page).
+ * Decides what a UI method answers, from the method, its params, the element, the element as the
+ * screen shows it (`undefined` before a flush has found it in the page), and the element as the
+ * platform last measured it: at the frame after a flush, as Android measures (frames.ts).
  */
 export type Responder = (
 	method: string,
 	params: unknown,
 	element: LynxElement,
 	shown: ShownElement | undefined,
+	measured: ShownElement | undefined,
 ) => InvokeResult;
 
 /** Everything one engine holds, passed to the modules that make its functions. */
@@ -240,6 +245,10 @@ export interface EngineState {
 	readonly withUi: Set<ElementState>;
 	/** Each element as the last flush that found it in the page left it. */
 	readonly shown: WeakMap<ElementState, ShownElement>;
+	/** Each element as the platform last measured it: at the frame after a flush (frames.ts). */
+	readonly measured: WeakMap<ElementState, ShownElement>;
+	/** The main thread's frame callbacks, and whether a frame is coming. */
+	readonly frames: FrameQueue;
 	/**
 	 * The elements in the global phase, with the event names they hear there: an element enters at
 	 * the flush that finds its `global-bindEvent` filed, and leaves when it is destroyed.

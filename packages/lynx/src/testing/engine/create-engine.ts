@@ -8,6 +8,8 @@ import type { EngineEvent } from "./dispatch.ts";
 import { isText } from "./dom.ts";
 import { eventFunctions } from "./events.ts";
 import type { EventFunctions } from "./events.ts";
+import { frameFunctions, frameQueue } from "./frames.ts";
+import type { FrameFunctions } from "./frames.ts";
 import { createGestureDriver, gestureFunctions } from "./gestures.ts";
 import type { GestureCall, GestureFunctions } from "./gestures.ts";
 import { createLifecycle } from "./lifecycle.ts";
@@ -46,6 +48,7 @@ export type ElementFunctions = TreeFunctions &
 	ListFunctions &
 	AnimationFunctions &
 	UiFunctions &
+	FrameFunctions &
 	StyleSheetFunctions;
 
 /** Where an engine puts its page. */
@@ -170,6 +173,8 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		made: new Map(),
 		withUi: new Set(),
 		shown: new WeakMap(),
+		measured: new WeakMap(),
+		frames: frameQueue(),
 		globalPhase: new Map(),
 		respond: () => ({ code: 0 }),
 		schedule: options.schedule ?? nextMacrotask,
@@ -203,6 +208,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		...listFunctions(engine),
 		...animationFunctions(engine, dispatcher),
 		...uiFunctions(engine),
+		...frameFunctions(engine),
 		...styleSheets.functions,
 	};
 
@@ -263,6 +269,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			engine.made.clear();
 			engine.withUi.clear();
 			engine.globalPhase.clear();
+			engine.frames.callbacks.clear();
 		},
 		fire: dispatcher.fire,
 		dispatch: dispatcher.dispatch,

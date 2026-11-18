@@ -7,6 +7,7 @@
 // that to the test's responder, as it models no platform.
 
 import { resolveAtFlush } from "./custom-properties.ts";
+import { requestFrame } from "./frames.ts";
 import { isLayoutOnly } from "./layout-only.ts";
 import { argumentError, stateOf } from "./state.ts";
 import type { ElementState, EngineState } from "./state.ts";
@@ -38,7 +39,8 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 		// the last flush left it, since changes reach the view only at the flush
 		// (core/renderer/ui_wrapper/painting/ios/painting_context_darwin.mm, Invoke; the Android
 		// painting context's Invoke). The fake decides it from the element at the call, and gives the
-		// responder the element as the last flush left it.
+		// responder the element as the last flush left it, and as the platform last measured it
+		// (frames.ts).
 		__InvokeUIMethod(element, method, params, callback) {
 			const state = stateOf(engine, { value: element, fn: "__InvokeUIMethod", index: 0 });
 			if (typeof method !== "string")
@@ -51,7 +53,13 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 			// No UI before the flush that finds the element in the page, or for a layout-only view.
 			const result: InvokeResult = !engine.withUi.has(state)
 				? { code: NO_UI }
-				: engine.respond(method, params, state.node, engine.shown.get(state));
+				: engine.respond(
+						method,
+						params,
+						state.node,
+						engine.shown.get(state),
+						engine.measured.get(state),
+					);
 			engine.log.invocations.push({
 				element: state.node,
 				method,
@@ -68,7 +76,7 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 		// The flush makes the UIs of the elements in the page, except layout-only views, with their
 		// changes; one that is not in the page gets none. It also resolves their events: a
 		// `global-bindEvent` filed by then puts the element in the global-bind table
-		// (core/renderer/dom/element_manager.cc).
+		// (core/renderer/dom/element_manager.cc). The platform measures them at the next frame.
 		__FlushElementTree(_page, options) {
 			engine.log.flushes.push(options);
 			const inPage = engine.page ? descendantsOf(engine.page) : [];
@@ -82,6 +90,8 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 					attrs: { ...state.attrs },
 					inlineStyles: new Map(state.inlineStyles),
 					customProperties: resolveAtFlush(engine, state, told),
+					// Boundary: the engine puts only its elements and text nodes in its tree.
+					children: [...state.node.childNodes] as LynxElement[],
 				});
 				for (const key of state.filedEvents) {
 					if (!key.startsWith(GLOBAL_BIND)) continue;
@@ -90,6 +100,7 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 					engine.globalPhase.set(state, names);
 				}
 			}
+			requestFrame(engine);
 		},
 	};
 }
