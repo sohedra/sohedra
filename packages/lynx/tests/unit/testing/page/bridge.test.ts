@@ -2,6 +2,8 @@
 // later macrotask, as a copy, as from another thread on a device, and `settle()` waits until
 // nothing is on its way.
 
+import vm from "node:vm";
+
 import { afterEach, describe, expect, it, rs } from "@rstest/core";
 
 import { installGlobals, readGlobal } from "../../../../src/testing/globals.ts";
@@ -69,11 +71,23 @@ describe("a message between the threads", () => {
 		expect(heard[0]).not.toBe(ops);
 	});
 
+	it("carries plain data made in another realm, as each thread is on a device", async () => {
+		const page = startTestPage();
+		const { main, background } = contexts(page);
+		const heard: unknown[] = [];
+		background.addEventListener("ops", (event) => heard.push(event.data));
+		const data: unknown = vm.runInNewContext("({ ops: [1, { at: 'a' }], none: null })");
+		main.dispatchEvent({ type: "ops", data });
+		await page.settle();
+		expect(heard).toEqual([{ ops: [1, { at: "a" }], none: null }]);
+	});
+
 	it.each([
 		["a function", () => {}],
 		["a DOM node", "node"],
 		["a Map", new Map()],
 		["a class instance", new (class Op {})()],
+		["a class instance made in another realm", vm.runInNewContext("new (class Op {})()")],
 		["a number that is not finite", Number.NaN],
 		["a cycle", "cycle"],
 	])("is refused when it holds %s, naming the message", (_name, value) => {
