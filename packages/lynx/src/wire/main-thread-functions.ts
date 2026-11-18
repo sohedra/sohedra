@@ -119,6 +119,8 @@ export const FUNCTION_RUNTIME = {
 	load: "loadWorkletRuntime",
 	/** Background: turns a background function into the handle a main-thread function holds. */
 	handle: "transformToWorklet",
+	/** Background: copies a captured `$state` value, reading it whole. */
+	copy: "copyCapture",
 } as const;
 
 /**

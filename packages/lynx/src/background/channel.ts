@@ -40,6 +40,7 @@ import type {
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { BackgroundError } from "./catalogue.ts";
+import { elementIn } from "./functions/capture-copy.ts";
 import { contextsIn, createContexts } from "./functions/contexts.ts";
 import { takeCollectedRefs } from "./functions/refs.ts";
 import { background, DEV } from "./globals.ts";
@@ -160,6 +161,26 @@ export function openChannel(options: ChannelOptions): Channel {
 	let nextCall = 1;
 	let open = true;
 
+	/** Why `op` cannot be sent, in the developer's words. */
+	function unsendableError(op: Op, reason: string): BackgroundError {
+		if (op[0] === OpCode.SetAttr && op[2].startsWith(MAIN_THREAD_PREFIX)) {
+			const element = elementIn(op[3]);
+			if (element !== undefined)
+				return backgroundError({
+					code: "element_in_main_thread_function",
+					details: { tag: element.tag ?? element.kind },
+				});
+		}
+		return backgroundError({
+			code: "attribute_not_copyable",
+			details: {
+				name: op[0] === OpCode.SetAttr ? op[2] : "update-list-info",
+				tag: tagOf(op[1]) ?? "list",
+				reason,
+			},
+		});
+	}
+
 	/**
 	 * `ops` without those that cannot be sent; each one dropped is reported, and the contexts it was
 	 * given are let go of, and taken out of `given`.
@@ -168,7 +189,6 @@ export function openChannel(options: ChannelOptions): Channel {
 		return ops.filter((op) => {
 			const reason = unsendable(op);
 			if (reason === undefined) return true;
-			const id = op[1];
 			if (op[0] === OpCode.SetAttr) {
 				const dropped = contextsIn(op[3]);
 				contexts.release(dropped);
@@ -177,16 +197,7 @@ export function openChannel(options: ChannelOptions): Channel {
 					if (at !== -1) given!.splice(at, 1);
 				}
 			}
-			reportError(
-				backgroundError({
-					code: "attribute_not_copyable",
-					details: {
-						name: op[0] === OpCode.SetAttr ? op[2] : "update-list-info",
-						tag: tagOf(id) ?? "list",
-						reason,
-					},
-				}),
-			);
+			reportError(unsendableError(op, reason));
 			return false;
 		});
 	}

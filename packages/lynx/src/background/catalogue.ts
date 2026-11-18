@@ -58,6 +58,20 @@ export interface BackgroundDetails {
 	plain_function_under_main_thread: { name: string; tag: string; where?: string | undefined };
 	/** `value` says what was given: a function, a list, an object. */
 	main_thread_gesture_not_a_gesture: { value: string; tag: string; where?: string | undefined };
+	/**
+	 * `name` is the captured value as written and `where` its function's `file:line:col`, in
+	 * development builds; `depth` is how deep a copy goes.
+	 */
+	capture_too_deep: { name?: string | undefined; depth: number; where?: string | undefined };
+	/**
+	 * `tag` is the element's; `name` the captured value as written and `where` its function's
+	 * `file:line:col`, in development builds.
+	 */
+	element_in_main_thread_function: {
+		tag: string;
+		name?: string | undefined;
+		where?: string | undefined;
+	};
 	/** `name` is the attribute as written, `replacement` what to write instead. */
 	main_thread_event_spelling_removed: {
 		name: string;
@@ -212,6 +226,20 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture. Several gestures on one element go in one composition, such as RaceGesture from @sohedra/lynx/experimental.",
 		docs: "main_thread_gesture_not_a_gesture",
+	},
+	capture_too_deep: {
+		message: ({ name, depth }) =>
+			`A main-thread function captures ${name ?? "a value"}, which holds itself or is nested more than ${depth} levels deep, so it cannot be copied to the main thread.`,
+		fix: ({ name }) =>
+			`Read only the members the function needs, such as ${name ?? "value"}.id, so that it captures those alone. Refer to a parent by its id instead of holding it, so the state does not hold itself.`,
+		docs: "capture_too_deep",
+	},
+	element_in_main_thread_function: {
+		message: ({ tag, name }) =>
+			`A main-thread function captures ${name === undefined ? "" : `${name}, which holds `}the <${tag}> element of the background, and an element cannot be sent to the main thread.`,
+		fix: () =>
+			"Give the element main-thread:ref={ref}, with const ref = mainThreadRef() from @sohedra/lynx, and capture ref instead: the function reads the element as ref.current.",
+		docs: "element_in_main_thread_function",
 	},
 	main_thread_event_spelling_removed: {
 		message: ({ name, tag }) =>

@@ -72,10 +72,18 @@ export interface Guard {
 	wrap: (name: string, value: string) => string;
 }
 
+/**
+ * Wraps the value of a captured `$state` name in the binding's copy, which reads it whole: `value`
+ * as the function reads it, `name` as it is written in the source (`cfg.a`).
+ */
+export interface Copy {
+	names: Set<string>;
+	wrap: (value: string, name: string) => string;
+}
+
 /** How `writeCaptures` writes the values. */
 export interface WriteOptions {
-	/** `$state` objects go through a snapshot. */
-	deepState?: Set<string> | undefined;
+	copy?: Copy | undefined;
 	guard?: Guard | undefined;
 }
 
@@ -90,7 +98,11 @@ function writeMembers(captures: Captures, options: WriteOptions, root: string | 
 		const { key } = entry;
 		if (entry.members) return `${key}: ${writeMembers(entry.members, options, root ?? name)}`;
 		const { value } = entry;
-		if (options.deepState?.has(root ?? name)) return `${key}: $state.snapshot(${value})`;
+		if (options.copy?.names.has(root ?? name))
+			return `${key}: ${options.copy.wrap(
+				value,
+				value.replace(/\?\.(\[?)/g, (_, bracket: string) => bracket || "."),
+			)}`;
 		if (root === undefined && options.guard?.names.has(name))
 			return `${key}: ${options.guard.wrap(name, value)}`;
 		return key === value ? key : `${key}: ${value}`;
