@@ -104,7 +104,22 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 			expect(page.engine.state(press).inlineStyles.get("width")).toBe("2px");
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
-			expect(drawn(page).texts).toContain("Pressed 2");
+			expect(drawn(page).texts).toContain("Pressed 2 (Apple, 0)");
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("gives a main-thread tap the state the background changed inside", async () => {
+		const { page } = startDevicePage(scripts);
+		try {
+			await page.settle();
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			page.engine.dispatch(byClass(page, "press"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(drawn(page).texts).toContain("Pressed 1 (Banana, 1)");
 		} finally {
 			page.dispose();
 		}
@@ -144,6 +159,19 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 			await page.settle();
 			expect(vm.runInContext("typeof queueMicrotask", mainThread)).toBe("undefined");
 			expect(page.errors.map(String)).toEqual([]);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("has no EventTarget and no structuredClone on either thread, as on a device", () => {
+		const { page, mainThread, background } = startDevicePage(scripts);
+		try {
+			for (const thread of [mainThread, background])
+				expect(vm.runInContext("[typeof EventTarget, typeof structuredClone]", thread)).toEqual([
+					"undefined",
+					"undefined",
+				]);
 		} finally {
 			page.dispose();
 		}

@@ -10,9 +10,9 @@
 // device showed. It has no `queueMicrotask`. `lynx.SystemInfo` is there; a global `SystemInfo` is
 // not.
 //
-// Both threads lack what their engine (PrimJS) lacks, listed below, and neither has `performance`.
-// An app gets none of these from the binding, and Svelte's runtime and the binding must run without
-// them.
+// Both threads lack what their engine (PrimJS) lacks, listed below, and the web's globals that no
+// Lynx engine has: `EventTarget`, `structuredClone` and `performance`. An app gets none of these
+// from the binding, and Svelte's runtime and the binding must run without them.
 //
 // What a thread hands the other crosses as text, and is made again in the receiving realm. What the
 // engine hands a thread is made in that thread's realm too: the main thread's element functions'
@@ -84,8 +84,16 @@ const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
 	globalThis: ["Iterator"],
 };
 
+/**
+ * The web's globals that neither thread has: a fresh realm has none of them either, and taking them
+ * away keeps it so.
+ */
+const NOT_ON_LYNX: Readonly<Record<string, readonly string[]>> = {
+	globalThis: ["EventTarget", "structuredClone", "performance"],
+};
+
 /** Takes away, in a realm, the built-ins a device lacks. */
-const WITHOUT_MISSING = [SEEN_MISSING, ABSENT_FROM_PRIMJS]
+const WITHOUT_MISSING = [SEEN_MISSING, ABSENT_FROM_PRIMJS, NOT_ON_LYNX]
 	.flatMap((missing) => Object.entries(missing))
 	.flatMap(([owner, names]) => names.map((name) => `delete ${owner}.${name};`))
 	.join("\n");
