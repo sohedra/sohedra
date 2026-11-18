@@ -241,6 +241,78 @@ describe("inline styles", () => {
 	});
 });
 
+describe("custom properties in the inline style", () => {
+	/** A custom property as `inner`, under `outer`, resolved it at the last flush. */
+	const seen = (inner: unknown) =>
+		engine().functions.__GetComputedStyleByKey(inner as never, "--tone");
+
+	it("reach the descendants when the flush reads the style text", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "width: 10px; --tone: red");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		f.__SetInlineStyles(outer, "width: 10px; --tone: blue");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("blue");
+	});
+
+	it("do not reach the descendants when a style added one by one reads the text first", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		f.__SetInlineStyles(outer, "--tone: blue");
+		f.__AddInlineStyle(outer, "opacity", "0.5");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		expect(f.__GetComputedStyleByKey(outer, "--tone")).toBe("blue");
+		f.__AddInlineStyle(outer, "opacity", "0.7");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+	});
+
+	it("reach the descendants at once from an object, whatever comes after it", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		f.__SetInlineStyles(outer, { "--tone": "blue" });
+		f.__SetInlineStyles(outer, "--tone: blue");
+		f.__AddInlineStyle(outer, "opacity", "0.5");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("blue");
+	});
+
+	it("stay after an empty style, which the engine does not read; an empty object clears them", () => {
+		const { outer, inner } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		f.__SetInlineStyles(outer, "");
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		f.__SetInlineStyles(outer, undefined);
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("red");
+		f.__SetInlineStyles(outer, {});
+		f.__FlushElementTree();
+		expect(seen(inner)).toBe("");
+	});
+
+	it("reach an element made after them, which resolves them when it is first flushed", () => {
+		const { outer } = smallPage(engine());
+		const f = engine().functions;
+		f.__SetInlineStyles(outer, "--tone: red");
+		f.__FlushElementTree();
+		const late = f.__CreateView(0);
+		f.__AppendElement(outer, late);
+		expect(seen(late)).toBe("");
+		f.__FlushElementTree();
+		expect(seen(late)).toBe("red");
+	});
+});
+
 describe("queries", () => {
 	it("finds the first element or all of them, by class, id, tag, and the two combinators", () => {
 		const { page, outer, inner } = smallPage(engine());
