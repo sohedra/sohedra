@@ -287,9 +287,10 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 					/**
 					 * Never without a node: Svelte throws when an `{#each}` whose `{:else}` renders no node
 					 * fills, an empty one or one whose component renders nothing, on the DOM too. The
-					 * canary in ./svelte-each-else.test.ts fails when that is fixed.
+					 * canaries in ./svelte-each-else.test.ts and ./svelte-each-else-component.test.ts
+					 * fail when each is fixed.
 					 *
-					 * @workaround svelte-empty-each-else kind=svelte-internal delete-when="Svelte fills an {#each} with an empty {:else} without throwing"
+					 * @workaround svelte-empty-each-else kind=svelte-internal delete-when="Svelte fills an {#each} with an empty {:else}, or one whose component renders nothing, without throwing"
 					 */
 					otherwise: fc.option(filled(context, scope, size - 1), { nil: undefined }),
 				})
