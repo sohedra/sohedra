@@ -25,6 +25,8 @@ export interface SveltePage extends TestPage {
 	readonly patches: Patch[];
 	/** Every message the main thread sent the background, in order. */
 	readonly messages: ReceivedByBackground[];
+	/** The size of each of those messages as sent: the length of its text. */
+	readonly messageSizes: number[];
 	/** The first element with this class token, in document order. */
 	byClass(token: string): LynxElement;
 }
@@ -58,6 +60,7 @@ export function startSveltePage(
 ): SveltePage {
 	const patches: Patch[] = [];
 	const messages: ReceivedByBackground[] = [];
+	const messageSizes: number[] = [];
 	const page = startTestPage({
 		...(options.initData && { initData: options.initData }),
 		...(options.templateData && { templateData: options.templateData }),
@@ -66,6 +69,7 @@ export function startSveltePage(
 			const send = context.dispatchEvent.bind(context);
 			context.dispatchEvent = (event) => {
 				messages.push(decodeToBackground(event));
+				messageSizes.push(String(event.data).length);
 				send(event);
 			};
 			startMainThread();
@@ -85,6 +89,7 @@ export function startSveltePage(
 	return Object.assign(page, {
 		patches,
 		messages,
+		messageSizes,
 		byClass(token: string): LynxElement {
 			const found = page.engine
 				.all()

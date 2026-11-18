@@ -17,15 +17,20 @@ interface Row {
 /**
  * The budgets, as measured: raise one only on purpose, and say why in the pull request. A list
  * update carries the list's whole order, so a change of one row still sends 1,001 ids. A scroll
- * through the rows sends the ids of the rows the main thread lets go of (`up`, in bytes), and each
- * of those rows written again.
+ * through the rows sends the ids of the rows the main thread lets go of (`up`, in bytes as sent),
+ * and each of those rows written again. A change of every row on each tick piles up the text of
+ * rows never shown in step: `tick` is the largest patch it sends.
  */
 const BUDGET = {
 	start: { ops: 9004, bytes: 261_608 },
 	append: { ops: 10, bytes: 5377 },
 	reverse: { ops: 1, bytes: 62_229 },
 	scroll: { ops: 8829, bytes: 222_981, up: 15_726 },
+	tick: { bytes: 52_919 },
 };
+
+/** The most ids one request to write rows again names. */
+const IDS_PER_REQUEST = 64;
 
 /** The ops of patches, those of their cells too, and their size as sent. */
 function measure(patches: Patch[]): { ops: number; bytes: number } {
@@ -96,11 +101,33 @@ describe("a list of 1,000 rows", () => {
 		const down = measure(page.patches.slice(sent));
 		within(down, BUDGET.scroll);
 		const up = page.messages
-			.filter((message) => message.t === "rewrite")
-			.reduce((bytes, message) => bytes + JSON.stringify(message).length, 0);
+			.map((message, index) => (message.t === "rewrite" ? page.messageSizes[index]! : 0))
+			.reduce((bytes, size) => bytes + size, 0);
 		expect(up).toBeLessThanOrEqual(BUDGET.scroll.up);
 		// Lynx holds nine; the ten it handed back last keep their elements.
 		expect(list.childNodes).toHaveLength(19);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("changes every row on each tick, its rows written again a few at a time", async () => {
+		const { page, change } = await manyRows();
+		let largest = 0;
+		for (let tick = 1; tick <= 12; tick++) {
+			const sent = page.patches.length;
+			await change((rows) =>
+				rows.map((row) => ({ ...row, label: `Row ${row.id}, ${tick} min ago` })),
+			);
+			for (const patch of page.patches.slice(sent))
+				largest = Math.max(largest, JSON.stringify(patch).length);
+		}
+		expect(largest).toBeLessThanOrEqual(BUDGET.tick.bytes);
+		const requests = page.messages.flatMap((message) => (message.t === "rewrite" ? [message] : []));
+		expect(Math.max(...requests.map((request) => request.nodes.length))).toBeLessThanOrEqual(
+			IDS_PER_REQUEST,
+		);
+		expect(new Set(requests.flatMap((request) => request.nodes)).size).toBeGreaterThan(900);
+		const list = page.engine.list(page.byClass("list"));
+		expect(page.engine.text(list.show(999))).toBe("Row 1000, 12 min ago");
 		expect(page.errors).toEqual([]);
 	});
 

@@ -8,7 +8,14 @@ import { describe, expect, it } from "@rstest/core";
 import type { ElementNode } from "../../src/background/renderer/element.ts";
 import NestedRows from "../fixtures/threads/NestedRows.svelte";
 import { listKeys } from "./generated/trees.ts";
-import { askedFor, holdRequests, range, releasedRows, rewrittenCells } from "./released-rows.ts";
+import {
+	askedFor,
+	holdRequests,
+	holdTimers,
+	range,
+	releasedRows,
+	rewrittenCells,
+} from "./released-rows.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
 
@@ -149,15 +156,21 @@ describe("what a released row keeps", () => {
 		const { page, handles, through, row, within, tap } = await releasedRows();
 		await tap(1);
 		page.engine.fire(within(row(1), "kept"), { type: "input", detail: { value: "typed" } });
-		page.asBackground(() =>
-			(handles["row-1"] as { animate(keyframes: object[], duration: number): unknown }).animate(
-				[{ opacity: 0 }, { opacity: 1 }],
-				100,
-			),
-		);
+		let ended = "running";
+		page.asBackground(() => {
+			const node = handles["row-1"] as {
+				animate(keyframes: object[], duration: number): { finished: Promise<void> };
+			};
+			node.animate([{ opacity: 0 }, { opacity: 1 }], 100).finished.then(
+				() => (ended = "finished"),
+				(error: { code?: string }) => (ended = error.code ?? "rejected"),
+			);
+		});
 		await page.settle();
 		expect(page.engine.animations.map((call) => call.element)).toEqual([row(1)]);
 		await through(0, 31);
+		// The engine cancels an element's animations when the element goes.
+		expect(ended).toBe("animation_canceled");
 		await through(31, 0);
 		expect(page.engine.text(row(1))).toBe("Row 1: 1");
 		expect(page.engine.state(within(row(1), "kept")).attrs["default-value"]).toBe("typed");
@@ -218,6 +231,40 @@ describe("a row Lynx never showed", () => {
 		scroll.to(31);
 		await page.settle();
 		expect(page.engine.text(page.byClass("row-40"))).toBe("Row 40, version 30: 0");
+		expect(page.errors).toEqual([]);
+	});
+
+	it("is not asked for once Lynx shows it before the request goes", async () => {
+		const { page, change, scroll } = await releasedRows();
+		const timers = holdTimers(page);
+		for (let version = 1; version <= 30; version++)
+			await change((feed) => (feed.rows[39]!.label = `Row 40, version ${version}`));
+		expect(timers.held).toHaveLength(1);
+		scroll.to(31);
+		timers.release();
+		timers.run();
+		await page.settle();
+		expect(askedFor(page)).toEqual([]);
+		expect(page.engine.text(page.byClass("row-40"))).toBe("Row 40, version 30: 0");
+		expect(page.errors).toEqual([]);
+	});
+
+	it("is asked for a few rows at a time, the rest on the next task", async () => {
+		const { page, change } = await releasedRows({ count: 200 });
+		const timers = holdTimers(page);
+		for (let tick = 1; tick <= 20; tick++)
+			await change((feed) => feed.rows.forEach((item) => (item.label = `Row ${item.id}, ${tick}`)));
+		const requests = () =>
+			page.messages.flatMap((message) => (message.t === "rewrite" ? [message.nodes.length] : []));
+		timers.run();
+		await page.settle();
+		expect(requests()).toEqual([64]);
+		expect(timers.held).toHaveLength(1);
+		timers.release();
+		timers.run();
+		await page.settle();
+		expect(requests().every((count) => count <= 64)).toBe(true);
+		expect(requests().reduce((sum, count) => sum + count, 0)).toBeGreaterThan(150);
 		expect(page.errors).toEqual([]);
 	});
 });

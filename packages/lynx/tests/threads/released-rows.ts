@@ -8,6 +8,7 @@ import type { CellItem, ThreadEvent } from "../../src/wire/index.ts";
 import ReleasedRows from "../fixtures/threads/ReleasedRows.svelte";
 import { backgroundTree, engineTree, expectSameTree } from "./generated/trees.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
+import type { Scroller } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
 import type { SveltePage } from "./svelte-page.ts";
 
@@ -21,8 +22,17 @@ export interface Feed {
 export const range = (from: number, to: number): number[] =>
 	Array.from({ length: to - from + 1 }, (_, index) => from + index);
 
+/** Requests to write rows again, held on their way to the background. */
+export interface HeldRequests {
+	held: ThreadEvent[];
+	/** Sends the request held at `index`, and goes on holding the others. */
+	deliverOne(index: number): void;
+	/** Sends every request held, and holds no more. */
+	deliver(): void;
+}
+
 /** Holds the main thread's requests to write rows again, until `deliver`. */
-export function holdRequests(page: SveltePage) {
+export function holdRequests(page: SveltePage): HeldRequests {
 	const context = page.lynx.mainThread.getJSContext();
 	const send = context.dispatchEvent.bind(context);
 	const held: ThreadEvent[] = [];
@@ -32,8 +42,7 @@ export function holdRequests(page: SveltePage) {
 	};
 	return {
 		held,
-		/** Sends the request held at `index`, and goes on holding the others. */
-		deliverOne(index: number) {
+		deliverOne(index) {
 			send(held.splice(index, 1)[0]!);
 		},
 		deliver() {
@@ -43,15 +52,23 @@ export function holdRequests(page: SveltePage) {
 	};
 }
 
+/** What the main thread scheduled on a later task, held. */
+export interface HeldTimers {
+	held: (() => void)[];
+	/** Runs what is held now, as the main thread; what that schedules is held in turn. */
+	run(): void;
+	/** Schedules as before, from now on. */
+	release(): void;
+}
+
 /** Holds what the main thread schedules on a later task, until `run`. */
-export function holdTimers(page: SveltePage) {
+export function holdTimers(page: SveltePage): HeldTimers {
 	const lynx = page.lynx.mainThread;
 	const schedule = lynx.setTimeout.bind(lynx);
 	const held: (() => void)[] = [];
 	lynx.setTimeout = (callback) => void held.push(callback);
 	return {
 		held,
-		/** Runs what is held now, as the main thread; what that schedules is held in turn. */
 		run() {
 			for (const callback of held.splice(0)) page.asMainThread(callback);
 		},
@@ -76,10 +93,30 @@ export const rewrittenCells = (page: SveltePage): CellItem[] =>
 export const askedFor = (page: SveltePage): number[] =>
 	page.messages.flatMap((message) => (message.t === "rewrite" ? message.nodes : []));
 
+/** The page of released rows, and what a test does to it. */
+export interface RowsPage {
+	page: SveltePage;
+	handles: Record<string, unknown>;
+	feed: Feed;
+	scroll: Scroller;
+	/** Scrolls one row at a time, letting the threads settle on the way. */
+	through(from: number, to: number): Promise<void>;
+	/** Changes the rows on the background, and lets the threads settle. */
+	change(update: (feed: Feed) => void): Promise<void>;
+	/** The ids of the rows whose elements are on the page, in order. */
+	rowsOnPage(): number[];
+	/** The element of a row. */
+	row(id: number): LynxElement;
+	/** The element with this class token under `element`. */
+	within(element: LynxElement, token: string): LynxElement;
+	/** Taps a row, and lets the threads settle. */
+	tap(id: number): Promise<void>;
+}
+
 /** Starts the page, and Lynx shows its first screen of rows. */
 export async function releasedRows(
 	options: { count?: number; preload?: number; screen?: number; fixed?: number } = {},
-) {
+): Promise<RowsPage> {
 	const handles: Record<string, unknown> = {};
 	const { screen, fixed, ...props } = options;
 	const page = startSveltePage(ReleasedRows, { props: () => ({ handles, ...props }) });
