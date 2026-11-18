@@ -102,31 +102,69 @@ describe("a first patch that comes before the first paint", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("is dropped with its page when the page reloads before the paint", async () => {
+	it("waits for its frame when the timer fires late, behind work that kept the thread busy", async () => {
+		rs.useFakeTimers();
 		const page = counter();
 		const frames = page.engine.holdFrames();
 		await page.settle();
-		page.reload();
+		// The timer comes due long after its time: the frame waiting behind the same work is next.
+		rs.setSystemTime(Date.now() + 2000);
+		rs.advanceTimersByTime(500);
+		await page.settle();
+		expect(page.engine.texts()[0]).toBe("Taps: 0 (drawn)");
 		frames();
 		await page.settle();
-		expect(page.patches).toHaveLength(2);
-		expect(page.engine.texts()).toEqual(["Taps: 0 (patched)", "Tap me"]);
-		page.engine.dispatch(page.byClass("button"), { type: "tap" });
-		await page.settle();
-		expect(page.engine.texts()[0]).toBe("Taps: 1 (odd)");
+		expect(page.engine.texts()[0]).toBe("Taps: 0 (patched)");
 		expect(page.errors).toEqual([]);
 	});
 
-	it("is dropped when the page's life ends before the paint", async () => {
+	it("applies after a few late timers when no frame comes", async () => {
+		rs.useFakeTimers();
 		const page = counter();
-		const frames = page.engine.holdFrames();
+		page.engine.holdFrames();
 		await page.settle();
-		page.destroy();
-		const flushes = page.engine.flushes.length;
-		frames();
-		await page.settle();
-		expect(page.engine.flushes.length).toBe(flushes);
+		let late = 0;
+		while (page.engine.texts()[0] === "Taps: 0 (drawn)" && late < 100) {
+			rs.setSystemTime(Date.now() + 2000);
+			rs.advanceTimersByTime(500);
+			await page.settle();
+			late++;
+		}
+		expect(late).toBeGreaterThan(1);
+		expect(late).toBeLessThan(100);
+		expect(page.engine.texts()[0]).toBe("Taps: 0 (patched)");
 		expect(page.errors).toEqual([]);
+	});
+
+	it("applies at once on a host whose main thread has no timers, which is reported", async () => {
+		const page = startTestPage({
+			mainThread: () => {
+				startMainThread();
+				installGlobals({
+					[FIRST_FRAME_GLOBAL]: () => `<view class="box"><text>drawn</text></view>`,
+				});
+				const lynx = readGlobal("lynx") as { setTimeout: () => number };
+				lynx.setTimeout = () => {
+					throw new Error("no timers");
+				};
+				const patch = patchMethod();
+				patch(encodePatch({ page: 0, items: [["ops", FIRST]], rendered: 1 }));
+				patch(encodePatch({ page: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
+			},
+		});
+		await page.settle();
+		expect(page.engine.texts()).toEqual(["changed"]);
+		expect(page.errors.map((error) => (error as Error).message)).toEqual(["no timers"]);
+	});
+
+	it("hydrates when clearing its timer throws, which is reported", async () => {
+		const page = counter();
+		page.lynx.mainThread.clearTimeout = () => {
+			throw new Error("no clearing");
+		};
+		await page.settle();
+		expect(page.engine.texts()[0]).toBe("Taps: 0 (patched)");
+		expect(page.errors.map((error) => (error as Error).message)).toEqual(["no clearing"]);
 	});
 });
 
