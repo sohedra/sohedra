@@ -93,8 +93,11 @@ describe("a first patch that comes before the first paint", () => {
 		const frames = page.engine.holdFrames();
 		await page.settle();
 		expect(page.engine.texts()[0]).toBe("Taps: 0 (drawn)");
-		rs.advanceTimersByTime(1000);
-		await page.settle();
+		// A second passes with the thread free: each timer runs when it is due.
+		for (let ms = 0; ms < 1000; ms += 100) {
+			rs.advanceTimersByTime(100);
+			await page.settle();
+		}
 		expect(page.engine.texts()[0]).toBe("Taps: 0 (patched)");
 		frames();
 		await page.settle();
