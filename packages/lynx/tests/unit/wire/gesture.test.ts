@@ -6,16 +6,18 @@ import { describe, expect, it } from "@rstest/core";
 import {
 	decodePatch,
 	encodePatch,
+	GestureState,
 	GestureType,
 	isGesture,
 	OpCode,
+	plainGestures,
 } from "../../../src/wire/index.ts";
 import type { SerializedGesture } from "../../../src/wire/index.ts";
 
 const PAN: SerializedGesture = {
 	id: 1,
 	type: GestureType.PAN,
-	config: { enabled: true, minDistance: 10 },
+	config: { minDistance: 10 },
 	callbacks: { onUpdate: { _wkltId: "a1b2:onPan" } },
 	waitFor: [{ id: 2 }],
 	simultaneousWith: [],
@@ -60,5 +62,19 @@ describe("a gesture", () => {
 			PINCH: 6,
 			NATIVE: 7,
 		});
+	});
+
+	it("has its plain gestures in order, each once: one detector each", () => {
+		const nested: SerializedGesture = {
+			type: GestureType.COMPOSED,
+			gestures: [RACE, PAN],
+			__isSerialized: true,
+		};
+		expect(plainGestures(nested).map((gesture) => gesture.id)).toEqual([1, 2]);
+		expect(plainGestures(PAN)).toEqual([PAN]);
+	});
+
+	it("moves its detector to the states the engine's gesture manager numbers", () => {
+		expect(GestureState).toEqual({ ACTIVE: 1, FAIL: 2, END: 3 });
 	});
 });

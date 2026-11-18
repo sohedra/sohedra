@@ -24,8 +24,9 @@ function opening(tag: string, attributes: readonly string[]): string {
 /**
  * What every component declares for its markup's main-thread attributes: a handler that counts
  * its taps in a ref of the component, shows the count on its element and changes the page's state
- * on the background; a ref for an element; and a function ref that marks its element while it is
- * bound. What a main-thread function sets on an element starts with `mt-`, which the trees leave
+ * on the background; a ref for an element; a function ref that marks its element while it is
+ * bound; and gestures built from the page's state, a pan and a tap that waits for it, whose
+ * callback counts in the same ref. What a main-thread function sets on an element starts with `mt-`, which the trees leave
  * out: the background never knows it.
  */
 const MAIN_THREAD_SCRIPT = `const mtTaps = mainThreadRef(0);
@@ -41,7 +42,15 @@ function mtAttach(element) {
 	"main thread";
 	element.setAttribute("mt-ref", "on");
 	return () => element.setAttribute("mt-ref", "off");
-}`;
+}
+function mtMove(event, state) {
+	"main thread";
+	state.active();
+	mtTaps.current += 1;
+	event.currentTarget.setAttribute("mt-moves", mtTaps.current);
+}
+const mtPan = $derived(new PanGesture({ minDistance: st.n0, onUpdate: mtMove }));
+const mtWait = $derived(new TapGesture({ waitFor: [mtPan], onEnd: mtMove }));`;
 
 /** Whether an `{#if}` with this test has branches that only one thread renders. */
 const isThreadTest = (condition: string): boolean =>
@@ -147,6 +156,7 @@ export function componentSource(
 	const imports = [
 		'import { background, mainThread } from "@sohedra/lynx/env";',
 		'import { mainThreadRef, runOnBackground } from "@sohedra/lynx";',
+		'import { PanGesture, TapGesture } from "@sohedra/lynx/gesture";',
 	];
 	if (component.uid) imports.push(`import { recordId } from "${IDS}";`);
 	for (const name of new Set(usedComponents(component)))

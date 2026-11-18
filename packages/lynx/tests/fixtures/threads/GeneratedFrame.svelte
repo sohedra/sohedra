@@ -1,12 +1,13 @@
 <!--
 	A generated page's first frame. Imported as `./GeneratedFrame.svelte?first-frame`, this runs in
 	the main thread's layer: the page's main-thread copy runs with that layer's Svelte runtime,
-	`@sohedra/lynx` and `@sohedra/lynx/env`, as a built page's first frame does. Its main-thread
+	`@sohedra/lynx`, `@sohedra/lynx/env` and `@sohedra/lynx/gesture`, as a built page's first frame does. Its main-thread
 	functions register as it loads.
 -->
 <script lang="ts">
 	import * as root from "@sohedra/lynx";
 	import * as env from "@sohedra/lynx/env";
+	import * as gesture from "@sohedra/lynx/gesture";
 	import * as functions from "@sohedra/lynx/internal/main-thread-functions";
 	import type { Component } from "svelte";
 
@@ -25,6 +26,7 @@
 		[IDS]: ids,
 		"@sohedra/lynx": root,
 		"@sohedra/lynx/env": env,
+		"@sohedra/lynx/gesture": gesture,
 		"@sohedra/lynx/internal/main-thread-functions": functions,
 	}) as Component<Record<string, unknown>>;
 </script>

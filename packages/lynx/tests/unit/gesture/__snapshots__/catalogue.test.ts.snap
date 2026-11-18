@@ -1,0 +1,15 @@
+// Rstest Snapshot v1
+
+exports[`the gestures' catalogue > gesture_callback_not_main_thread: the message 1`] = `
+"The onUpdate given to a PanGesture is not a main-thread function, so the gesture could not run it.
+
+Start the function's body with the 'main thread' directive: a gesture's callbacks run on the main thread.
+https://sohedra.com/e/gesture_callback_not_main_thread"
+`;
+
+exports[`the gestures' catalogue > gesture_relation_not_gesture: the message 1`] = `
+"The waitFor of a PanGesture holds a value that is not a gesture, so it cannot name it.
+
+Give waitFor the gestures themselves, as made with new: waitFor: [scroll], where scroll is a DefaultScrollGesture or another gesture.
+https://sohedra.com/e/gesture_relation_not_gesture"
+`;

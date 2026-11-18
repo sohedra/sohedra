@@ -7,8 +7,6 @@ import { describe, expect, it } from "@rstest/core";
 
 import Events from "../../fixtures/threads/functions/Events.svelte";
 import drawEvents from "../../fixtures/threads/functions/Events.svelte?first-frame";
-import Gesture from "../../fixtures/threads/functions/Gesture.svelte";
-import drawGesture from "../../fixtures/threads/functions/Gesture.svelte?first-frame";
 import { startFunctionsPage, tap } from "./pages.ts";
 
 async function events(firstFrame = false) {
@@ -102,27 +100,6 @@ describe("a main-thread event", () => {
 		await tap(page, "spread");
 		await tap(page, "tap");
 		expect(log).toEqual(["spread", "outer", "tap 1", "outer"]);
-		expect(page.errors).toEqual([]);
-	});
-});
-
-describe("a main-thread gesture", () => {
-	it("binds nothing yet, sets no attribute, and changes and goes without a word", async () => {
-		const api: Record<string, () => void> = {};
-		const page = startFunctionsPage(Gesture, {
-			draw: drawGesture,
-			props: { api },
-			firstFrame: true,
-		});
-		await page.settle();
-		const dragged = page.byClass("dragged");
-		expect(page.engine.state(dragged).attrs).toEqual({});
-		expect(page.engine.detectors(dragged)).toEqual([]);
-		page.asBackground(() => api["next"]!());
-		await page.settle();
-		page.asBackground(() => api["off"]!());
-		await page.settle();
-		expect(page.engine.state(dragged).attrs).toEqual({});
 		expect(page.errors).toEqual([]);
 	});
 });

@@ -486,6 +486,41 @@ export const BEHAVIORS: Behavior[] = [
 		},
 	},
 	{
+		name: "a gesture detector's callback value comes back to runWorklet as the same object, with the same manager, on every call",
+		source:
+			"core/renderer/events/gesture.h (the detector keeps each callback's object) and core/renderer/events/touch_event_handler.cc (EnsureGestureManager makes one manager)",
+		sourceOnly: true,
+		async run(target) {
+			const f = target.functions;
+			const element = view(target, "entry");
+			const entry = { label: "entry" };
+			const values: unknown[] = [];
+			const managers: unknown[] = [];
+			target.useRunWorklet((value, params) => {
+				values.push(value);
+				managers.push(params[1]);
+				return undefined;
+			});
+			const relations = { waitFor: [], simultaneous: [], continueWith: [] };
+			f.__SetGestureDetector(
+				element,
+				4,
+				0,
+				{ callbacks: [{ name: "onBegin", callback: entry }] },
+				relations,
+			);
+			f.__FlushElementTree();
+			await target.gesture(element, 4, "onBegin");
+			await target.gesture(element, 4, "onBegin");
+			return {
+				calls: values.length,
+				same: values.every((value) => value === entry),
+				oneManager: managers[0] === managers[1],
+			};
+		},
+		expected: { calls: 2, same: true, oneManager: true },
+	},
+	{
 		// A device shows no more than this: what the state and consumption do is the gesture's own
 		// recognition, which no observation of the page reaches.
 		name: "a gesture callback can call the gesture manager's two functions on its element",
