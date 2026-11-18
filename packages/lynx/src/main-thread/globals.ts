@@ -74,8 +74,10 @@ export interface MainThreadGlobals {
 		getNative(): EventSource;
 		/** The platform, the screen and the engine's version, which the background has as a global. */
 		SystemInfo?: unknown;
-		/** Runs `callback` on a later task of the main thread. */
+		/** Runs `callback` on a later task of the main thread, `delay` milliseconds from now. */
 		setTimeout(callback: () => void, delay: number): unknown;
+		/** Cancels what `setTimeout` returned. */
+		clearTimeout(timer: unknown): void;
 	};
 	__CreatePage(componentId: string, cssId: number): LynxElement;
 	__GetElementUniqueID(element: LynxElement): number;

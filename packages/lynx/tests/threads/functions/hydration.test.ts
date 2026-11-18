@@ -46,6 +46,23 @@ describe("a main-thread function on the first frame", () => {
 		expect(page.errors).toEqual([]);
 	});
 
+	it("runs on a tap while the first patch waits for the paint, and its calls follow it in order", async () => {
+		const { page, log, attrs } = hydrating();
+		const frames = page.engine.holdFrames();
+		await page.settle();
+		expect(page.patches).toHaveLength(1);
+		page.engine.dispatch(page.byClass("tap"), { type: "tap" });
+		page.engine.dispatch(page.byClass("plain"), { type: "tap" });
+		page.engine.dispatch(page.byClass("tap"), { type: "tap" });
+		expect(log).toEqual([]);
+		expect(attrs("where")["ran-in"]).toBe("frame");
+		frames();
+		await page.settle();
+		expect(log).toEqual([["once"], ["bump", 1], ["plain"], ["bump", 2], ["late"]]);
+		expect(attrs("where")["ran-in"]).toBe("background");
+		expect(page.errors).toEqual([]);
+	});
+
 	it("goes on as the background's copy from what the first frame's left in its refs", async () => {
 		const { page, log, api } = hydrating();
 		const tapped = page.byClass("tap");

@@ -2,8 +2,9 @@
 // elements, which must happen here. It
 //   - makes the page when the engine renders it, draws its first frame (./frame/), and flushes its
 //     updates;
-//   - hydrates the first frame with the background's first patch (./hydrate/), or asks the
-//     background to write the page again when it cannot;
+//   - hydrates the first frame with the background's first patch (./hydrate/), once the platform
+//     has painted the frame (./paint.ts), or asks the background to write the page again when it
+//     cannot;
 //   - applies each patch the background sends (`callLepusMethod(PATCH_METHOD)`) and flushes the
 //     tree once for it;
 //   - keeps each list cell's ops as text until the list shows the cell, and asks the background
@@ -59,6 +60,7 @@ import type { EngineMessage, LynxElement } from "./globals.ts";
 import { hydrate, replayEarly, sentMismatch } from "./hydrate/hydrate.ts";
 import { clearPrevious, createMainThreadPage } from "./page.ts";
 import type { MainThreadPage } from "./page.ts";
+import { afterFirstPaint } from "./paint.ts";
 import { isRecord, toSentEvent } from "./sent-event.ts";
 
 /** Lynx's error code of an error on the main thread (`LYNX_ERROR_CODE_LEPUS`). */
@@ -372,7 +374,7 @@ export function startMainThread(): MainThreadRuntime {
 
 	function onPatch(params: PatchParams): void {
 		if (state.destroyed) return;
-		if (!state.applier) {
+		if (!state.applier || state.painting) {
 			state.early.push(params);
 			return;
 		}
@@ -381,6 +383,24 @@ export function startMainThread(): MainThreadRuntime {
 		} catch (error) {
 			report(error);
 		}
+	}
+
+	/**
+	 * Holds the patches until the platform has painted the first frame: a patch that came early
+	 * would hold up the paint by what it costs. Whether it holds; not when the thread cannot wait.
+	 */
+	function holdForPaint(): boolean {
+		try {
+			afterFirstPaint(() => {
+				state.painting = false;
+				for (const params of state.early.splice(0)) onPatch(params);
+			});
+		} catch (error) {
+			report(error);
+			return false;
+		}
+		state.painting = true;
+		return true;
 	}
 
 	function onRenderPage(event: EngineMessage): void {
@@ -404,6 +424,7 @@ export function startMainThread(): MainThreadRuntime {
 			}, calls.flushed);
 			if (state.frame) state.applier = state.frame.applier;
 			state.applier ??= newApplier(page);
+			if (state.frame && holdForPaint()) return;
 			// No flush: the engine flushes the tree after the render.
 			for (const params of state.early.splice(0)) applyPatch(params);
 		} catch (error) {
@@ -421,6 +442,9 @@ export function startMainThread(): MainThreadRuntime {
 				state.generation++;
 				state.frame?.stop();
 				state.frame = undefined;
+				// The old page's patches waiting for its paint are dropped, as they would be on arrival.
+				state.painting = false;
+				state.early.length = 0;
 				state.rewriting = false;
 				state.held.length = 0;
 				state.dataHeld = false;
