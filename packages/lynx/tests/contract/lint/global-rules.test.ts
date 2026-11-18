@@ -36,6 +36,7 @@ describe("globals by folder", () => {
 			files[`${SRC}/${folder}/probe-${name}.ts`] = source;
 		}
 		files[`${SRC}/${folder}/probe-global-this.ts`] = "export const value = globalThis;\n";
+		files[`${SRC}/${folder}/probe-reflect.ts`] = 'export const value = Reflect.get({}, "a");\n';
 		files[`${SRC}/${folder}/globals.ts`] = "export const value = globalThis;\n";
 	}
 	const problems = lint(files);
@@ -65,6 +66,18 @@ describe("globals by folder", () => {
 			expect(restricted.has(`${SRC}/${folder}/globals.ts`)).toBe(false);
 		});
 	}
+
+	// The engine's objects refuse `Reflect.get` on Android: code that runs on the main thread reads
+	// properties plainly.
+	for (const folder of ["main-thread", "first-frame", "wire", "gesture"]) {
+		it(`${folder} may not use Reflect`, () => {
+			expect(restricted.has(`${SRC}/${folder}/probe-reflect.ts`)).toBe(true);
+		});
+	}
+
+	it("lets the background use Reflect, which never meets the main thread's engine objects", () => {
+		expect(restricted.has(`${SRC}/background/probe-reflect.ts`)).toBe(false);
+	});
 
 	it("refuses the DOM everywhere", () => {
 		for (const folder of NODE_FOLDERS) {
