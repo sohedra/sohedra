@@ -12,13 +12,18 @@ import type { LynxElement } from "./globals.ts";
 export interface CodeStyles {
 	/** Code sets a property of the element's inline style; `null` or "" gives it back to `style`. */
 	set(element: LynxElement, styles: Record<string, string | number | null>): void;
-	/** `css` was just written as the element's `style`: puts back what code set that it does not. */
-	restore(element: LynxElement, css: string): void;
+	/** Writes `css` as the element's `style`, and puts back what code set that it does not. */
+	write(element: LynxElement, css: string): void;
 }
 
-/** The names of the properties a `style` text sets. */
-function propertiesOf(css: string): Set<string> {
-	const names = new Set<string>();
+const isCustom = (name: string): boolean => name.startsWith("--");
+
+/** A property's name as it is compared: custom properties are case sensitive, others are not. */
+const propertyKey = (name: string): string => (isCustom(name) ? name : name.toLowerCase());
+
+/** The declarations of a `style` text, by name as compared; a later one wins. */
+function declarationsOf(css: string): Map<string, string> {
+	const declarations = new Map<string, string>();
 	let start = 0;
 	// Parentheses may hold a `;` in a value: `url(data:image/png;base64,…)`.
 	let depth = 0;
@@ -28,76 +33,92 @@ function propertiesOf(css: string): Set<string> {
 		else if (char === ")") depth--;
 		else if (char === ";" && depth <= 0) {
 			const colon = css.indexOf(":", start);
-			if (colon !== -1 && colon < i) names.add(propertyKey(css.slice(start, colon).trim()));
+			if (colon !== -1 && colon < i) {
+				const name = propertyKey(css.slice(start, colon).trim());
+				declarations.set(name, css.slice(colon + 1, i).trim());
+			}
 			start = i + 1;
 			depth = 0;
 		}
 	}
-	return names;
+	return declarations;
 }
-
-const isCustom = (name: string): boolean => name.startsWith("--");
-
-/** A property's name as it is compared: custom properties are case sensitive, others are not. */
-const propertyKey = (name: string): string => (isCustom(name) ? name : name.toLowerCase());
 
 /** The code styles of one page. */
 export function createCodeStyles(): CodeStyles {
 	const kept = new WeakMap<LynxElement, Map<string, string | number>>();
 	// Each element's `style` text, as last written: custom properties from code are written with it.
 	const written = new WeakMap<LynxElement, string>();
+	// The elements whose style text has held a custom property.
+	const withCustom = new WeakSet<LynxElement>();
 
 	/**
-	 * Writes the element's style with the custom properties code set, then adds the rest.
+	 * Writes the element's style with the custom properties code set, then adds the rest. Lynx tells
+	 * the children of a custom property's change only when it reads the style text at the flush. A
+	 * style added one by one reads it before, and an empty text is never read; either way the
+	 * children keep the old value (core/renderer/dom/fiber/fiber_element.cc,
+	 * ParseRawInlineStyles; core/renderer/dom/element.cc, Element::SetStyle). So, once the style
+	 * has held one, the custom properties are first set as an object, which tells the children.
 	 *
-	 * @workaround custom-properties-in-style-text kind=lynx-gap delete-when="__AddInlineStyle takes a custom property"
+	 * @workaround custom-properties-in-style-text kind=lynx-gap delete-when="__AddInlineStyle takes a custom property, and Lynx tells the children of a change in the style text whenever it reads it"
 	 */
-	function rewrite(element: LynxElement, own: Map<string, string | number>): void {
+	function rewrite(element: LynxElement): void {
 		let css = written.get(element)?.trim() ?? "";
-		for (const [name, value] of own) {
-			if (!isCustom(name)) continue;
+		const rest: [string, string | number][] = [];
+		for (const [name, value] of kept.get(element) ?? []) {
+			if (!isCustom(name)) {
+				rest.push([name, value]);
+				continue;
+			}
 			if (css !== "" && !css.endsWith(";")) css += ";";
 			css += `${name}:${String(value)};`;
 		}
+		const custom: Record<string, string> = {};
+		for (const [name, value] of declarationsOf(css)) if (isCustom(name)) custom[name] = value;
+		const held = withCustom.has(element) || Object.keys(custom).length > 0;
+		if (held) withCustom.add(element);
+		if (held && (rest.length > 0 || css === "")) mainThread.__SetInlineStyles(element, custom);
 		mainThread.__SetInlineStyles(element, css);
-		for (const [name, value] of own)
-			if (!isCustom(name)) mainThread.__AddInlineStyle(element, name, value);
+		for (const [name, value] of rest) mainThread.__AddInlineStyle(element, name, value);
 	}
 
 	return {
 		set(element, styles) {
 			let own = kept.get(element);
-			let custom = false;
+			// A custom property has no style id of its own: it goes in the whole style.
+			let whole = withCustom.has(element);
 			for (const name of Object.keys(styles)) {
 				const value = styles[name];
-				// A custom property has no style id of its own: it goes in the whole style.
-				custom ||= isCustom(name);
+				whole ||= isCustom(name);
 				if (value == null || value === "") {
 					own?.delete(name);
-					if (!isCustom(name)) mainThread.__AddInlineStyle(element, name, null);
 					continue;
 				}
 				if (!own) kept.set(element, (own = new Map()));
 				own.set(name, value);
-				if (!isCustom(name)) mainThread.__AddInlineStyle(element, name, value);
 			}
-			if (custom) rewrite(element, own ?? new Map());
-		},
-		restore(element, css) {
-			written.set(element, css);
-			const own = kept.get(element);
-			if (!own || own.size === 0) return;
-			const ownWritten = css === "" ? undefined : propertiesOf(css);
-			let custom = false;
-			for (const name of own.keys()) {
-				if (ownWritten?.has(propertyKey(name))) own.delete(name);
-				else custom ||= isCustom(name);
-			}
-			if (custom) {
-				rewrite(element, own);
+			if (whole) {
+				rewrite(element);
 				return;
 			}
-			for (const [name, value] of own) mainThread.__AddInlineStyle(element, name, value);
+			for (const name of Object.keys(styles)) {
+				const value = styles[name];
+				mainThread.__AddInlineStyle(element, name, value == null || value === "" ? null : value);
+			}
+		},
+		write(element, css) {
+			written.set(element, css);
+			const own = kept.get(element);
+			if (own && own.size > 0) {
+				const ownWritten = declarationsOf(css);
+				for (const name of own.keys()) if (ownWritten.has(propertyKey(name))) own.delete(name);
+			}
+			if ((own === undefined || own.size === 0) && !withCustom.has(element)) {
+				if (css.includes("--")) withCustom.add(element);
+				mainThread.__SetInlineStyles(element, css);
+				return;
+			}
+			rewrite(element);
 		},
 	};
 }

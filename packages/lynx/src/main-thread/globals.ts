@@ -94,7 +94,7 @@ export interface MainThreadGlobals {
 	__RemoveElement(parent: LynxElement, child: LynxElement): void;
 	__SetAttribute(element: LynxElement, key: string, value: unknown): void;
 	__SetClasses(element: LynxElement, classes: string): void;
-	__SetInlineStyles(element: LynxElement, styles: string): void;
+	__SetInlineStyles(element: LynxElement, styles: string | Record<string, string>): void;
 	__AddInlineStyle(element: LynxElement, name: string, value: string | number | null): void;
 	__GetComputedStyleByKey(element: LynxElement, name: string): string;
 	__QuerySelector(

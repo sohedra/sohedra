@@ -195,13 +195,9 @@ export function createApplier({ page, dispatch, openCell, report }: ApplierOptio
 			case "class":
 				mainThread.__SetClasses(element, value == null ? "" : textOf(value));
 				return;
-			case "style": {
-				const css = value == null ? "" : textOf(value);
-				mainThread.__SetInlineStyles(element, css);
-				// That replaced every inline style: what code set comes back.
-				styles.restore(element, css);
+			case "style":
+				styles.write(element, value == null ? "" : textOf(value));
 				return;
-			}
 			case "flatten":
 				flattening.set(element, value);
 				return;
