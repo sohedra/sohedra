@@ -16,6 +16,14 @@ export interface GestureElement {
 	setStyleProperties(styles: Record<string, string | number | null>): void;
 	querySelector(selector: string): GestureElement | null;
 	querySelectorAll(selector: string): GestureElement[];
+	getAttributeNames(): string[];
+	/** The value a style of the element has now, as laid out. */
+	getComputedStyleProperty(name: string): string;
+	/** Animates the element; a number is the duration in milliseconds. */
+	animate(
+		keyframes: Record<string, string | number>[],
+		options?: number | Record<string, unknown>,
+	): { cancel(): void; pause(): void; play(): void };
 	/** Calls one of the element's UI methods, once the frame it is in is laid out. */
 	invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
 }
@@ -39,7 +47,7 @@ export interface GestureChangeEvent<Params extends GestureParams = GestureParams
 	type: string;
 	/** When it happened, in milliseconds: on the event, not in `params`. */
 	timestamp: number;
-	/** The element touched. */
+	/** The element the gesture is on, as `currentTarget`: a gesture names no touched element. */
 	target: GestureElement;
 	/** The element the gesture is on. */
 	currentTarget: GestureElement;

@@ -56,6 +56,8 @@ export interface BackgroundDetails {
 	background_function_missing: Record<string, never>;
 	/** `name` is the attribute's; `where` the element's `file:line:col`, in development builds. */
 	plain_function_under_main_thread: { name: string; tag: string; where?: string | undefined };
+	/** `value` says what was given: a function, a list, an object. */
+	main_thread_gesture_not_a_gesture: { value: string; tag: string; where?: string | undefined };
 	/** `name` is the attribute as written, `replacement` what to write instead. */
 	main_thread_event_spelling_removed: {
 		name: string;
@@ -203,6 +205,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Start the function's body with the 'main thread' directive, or use the attribute without the main-thread: prefix to run it on the background.",
 		docs: "plain_function_under_main_thread",
+	},
+	main_thread_gesture_not_a_gesture: {
+		message: ({ value, tag }) =>
+			`The <${tag}>'s main-thread:gesture is ${value}, not a gesture, so the main thread sets no gesture on it.`,
+		fix: () =>
+			"Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture; several gestures on one element go in one composition.",
+		docs: "main_thread_gesture_not_a_gesture",
 	},
 	main_thread_event_spelling_removed: {
 		message: ({ name, tag }) =>

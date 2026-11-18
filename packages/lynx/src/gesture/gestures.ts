@@ -6,13 +6,13 @@
 //   - one gesture of each type per element: each platform keeps an element's handlers by type
 //     (Android BaseGestureHandler.convertToGestureHandler, iOS LynxBaseGestureHandler);
 //   - a pan reads only `minDistance` (Android PanGestureHandler, iOS LynxPanGestureHandler);
-//   - on Android, only the first detector of an element, in id order, that has a `waitFor` or
-//     `continueWith` relation follows it (GestureDetectorManager);
+//   - only the first detector of an element, in id order, that has a `waitFor` or `continueWith`
+//     relation follows it, on iOS and Android (GestureDetectorManager);
 //   - iOS reads no option of a `DefaultScrollGesture` (LynxDefaultGestureHandler);
 //   - iOS reads a missing duration or distance as 0, so every option with a default is written.
 //
 // Adapted from @lynx-js/gesture-runtime (lynx-stack/packages/lynx/gesture-runtime/src), Copyright
-// 2025 The Lynx Authors, Apache License 2.0: the shape, the types and the compositions' relations.
+// 2025 The Lynx Authors, Apache License 2.0: the shape and the types.
 
 import { GestureType, isGesture, isMainThreadFunction, plainGestures } from "../wire/index.ts";
 import type {
@@ -35,7 +35,7 @@ import type {
 } from "./types.ts";
 
 /** What every gesture is: marked as one, which the main thread reads. */
-abstract class Gesture {
+export abstract class Gesture {
 	private readonly __isSerialized: true = true;
 }
 
@@ -47,11 +47,7 @@ export interface GestureKind extends Gesture {}
 
 /** What every gesture takes besides its own options. */
 export interface GestureRelations {
-	/**
-	 * Gestures, on this element or another, this one waits for: it begins only once they fail. A
-	 * pan that holds a scrolling element waits for the element's `DefaultScrollGesture`, so the
-	 * element scrolls first.
-	 */
+	/** Gestures, on this element or another, this one waits for: it begins only once they fail. */
 	waitFor?: readonly GestureKind[];
 	/** Gestures, on this element or another, this one may run together with. */
 	simultaneousWith?: readonly GestureKind[];
@@ -143,15 +139,13 @@ function nextId(): number {
 	return MAIN_THREAD ? -made : made;
 }
 
-/** `kind` as it crosses; throws, naming the option, when it is no gesture. */
-function serialized(kind: unknown, place: { gesture: string; name: string }): SerializedGesture {
-	if (!isGesture(kind))
-		throw gestureError({ code: "gesture_relation_not_gesture", details: place });
-	return kind;
+/** `kind` as it crosses, or `undefined` when it is no gesture. */
+export function crossing(kind: unknown): SerializedGesture | undefined {
+	return isGesture(kind) ? kind : undefined;
 }
 
 /** `refs` with the plain gestures of `more` it lacks, leaving out `self`: `refs` if none. */
-function merge(refs: GestureRef[], more: readonly GestureRef[], self: number): GestureRef[] {
+export function merge(refs: GestureRef[], more: readonly GestureRef[], self: number): GestureRef[] {
 	let merged: GestureRef[] | undefined;
 	for (const ref of more) {
 		const list = merged ?? refs;
@@ -161,15 +155,21 @@ function merge(refs: GestureRef[], more: readonly GestureRef[], self: number): G
 	return merged ?? refs;
 }
 
-/** The plain gestures of `kinds`, as refs. */
-function refsOf(
-	kinds: readonly unknown[] | undefined,
-	place: { gesture: string; name: string },
-): GestureRef[] {
-	const refs: GestureRef[] = [];
-	for (const kind of kinds ?? [])
-		for (const gesture of plainGestures(serialized(kind, place))) refs.push({ id: gesture.id });
-	return refs;
+/** The refs of the plain gestures of `gestures`. */
+export function refsOf(gestures: readonly SerializedGesture[]): GestureRef[] {
+	return gestures.flatMap((gesture) => plainGestures(gesture).map((plain) => ({ id: plain.id })));
+}
+
+/** The gestures a relation option holds; throws, naming the option, when it holds something else. */
+function relation(kinds: unknown, place: { gesture: string; name: string }): SerializedGesture[] {
+	if (kinds === undefined) return [];
+	if (!Array.isArray(kinds))
+		throw gestureError({ code: "gesture_relation_not_a_list", details: place });
+	return kinds.map((kind) => {
+		const value = crossing(kind);
+		if (!value) throw gestureError({ code: "gesture_relation_not_gesture", details: place });
+		return value;
+	});
 }
 
 /** What a plain gesture is made from. */
@@ -208,10 +208,14 @@ abstract class PlainGesture extends Gesture {
 				});
 			this.callbacks[name] = callback;
 		}
-		this.waitFor = merge([], refsOf(options.waitFor, { gesture, name: "waitFor" }), this.id);
+		this.waitFor = merge(
+			[],
+			refsOf(relation(options.waitFor, { gesture, name: "waitFor" })),
+			this.id,
+		);
 		this.simultaneousWith = merge(
 			[],
-			refsOf(options.simultaneousWith, { gesture, name: "simultaneousWith" }),
+			refsOf(relation(options.simultaneousWith, { gesture, name: "simultaneousWith" })),
 			this.id,
 		);
 		this.continueWith = [];
@@ -255,9 +259,9 @@ export class TapGesture extends PlainGesture {
 }
 
 /**
- * The scrolling a `<scroll-view>` or a `<list>` does by itself, as a gesture: set it on the
- * scrolling element, and have a gesture around it wait for it (`waitFor: [scroll]`), so the
- * element scrolls before the gesture around it begins. Its callbacks are optional, each a
+ * The scrolling a `<scroll-view>` or a `<list>` does by itself, as a gesture. Set on the scrolling
+ * element, it makes the element's scrolling a gesture that others can name in their relations
+ * (`waitFor: [scroll]`), and its callbacks see the scrolling. Its callbacks are optional, each a
  * main-thread function.
  */
 export class DefaultScrollGesture extends PlainGesture {
@@ -305,97 +309,4 @@ export class NativeGesture extends PlainGesture {
 			options,
 		});
 	}
-}
-
-// ---- Compositions ----------------------------------------------------------------------------
-
-/** What a composition adds to its members' relations. */
-interface Added {
-	waitFor: readonly GestureRef[];
-	simultaneousWith: readonly GestureRef[];
-	continueWith?: readonly GestureRef[];
-}
-
-/** `gesture` with `added`: a copy, its members copied too. */
-function withRelations(gesture: SerializedGesture, added: Added): SerializedGesture {
-	if (gesture.type === GestureType.COMPOSED)
-		return { ...gesture, gestures: gesture.gestures.map((member) => withRelations(member, added)) };
-	return {
-		...gesture,
-		waitFor: merge(gesture.waitFor, added.waitFor, gesture.id),
-		simultaneousWith: merge(gesture.simultaneousWith, added.simultaneousWith, gesture.id),
-		continueWith: merge(gesture.continueWith, added.continueWith ?? [], gesture.id),
-	};
-}
-
-/** The refs of the plain gestures of `members`. */
-const refsOfMembers = (members: readonly SerializedGesture[]): GestureRef[] =>
-	members.flatMap((member) => plainGestures(member).map((gesture) => ({ id: gesture.id })));
-
-/** How a composition relates each member to the others. */
-type Relate = (member: number, members: readonly SerializedGesture[]) => Added;
-
-/** Several gestures on one element. */
-abstract class ComposedGesture extends Gesture {
-	private readonly type: typeof GestureType.COMPOSED;
-	private readonly gestures: SerializedGesture[];
-
-	protected constructor(gesture: string, kinds: readonly GestureKind[], relate: Relate) {
-		super();
-		const members = kinds.map((kind) => serialized(kind, { gesture, name: "gestures" }));
-		this.type = GestureType.COMPOSED;
-		this.gestures = members.map((member, index) => withRelations(member, relate(index, members)));
-	}
-}
-
-const NONE: Added = { waitFor: [], simultaneousWith: [] };
-
-/**
- * Several gestures on one element, of which the first to begin wins. Experimental: Lynx follows
- * the relations of only one detector of an element on Android.
- */
-export class RaceGesture extends ComposedGesture {
-	constructor(...gestures: GestureKind[]) {
-		super("RaceGesture", gestures, () => NONE);
-	}
-}
-
-/** Several gestures on one element that may run together. Experimental, as `RaceGesture`. */
-export class SimultaneousGesture extends ComposedGesture {
-	constructor(...gestures: GestureKind[]) {
-		super("SimultaneousGesture", gestures, (index, members) => ({
-			waitFor: [],
-			simultaneousWith: refsOfMembers(members.filter((_, other) => other !== index)),
-		}));
-	}
-}
-
-/**
- * Several gestures on one element, in order of priority: each begins only once all before it
- * failed. Experimental, as `RaceGesture`.
- */
-export class ExclusiveGesture extends ComposedGesture {
-	constructor(...gestures: GestureKind[]) {
-		super("ExclusiveGesture", gestures, (index, members) => ({
-			waitFor: refsOfMembers(members.slice(0, index)),
-			simultaneousWith: [],
-		}));
-	}
-}
-
-/**
- * A copy of `gesture` that hands the touch to `next` when it ends. Experimental: no device has
- * shown it.
- */
-export function continueWith<Kind extends GestureKind>(
-	gesture: Kind,
-	next: readonly GestureKind[],
-): Kind {
-	const own = serialized(gesture, { gesture: "continueWith", name: "gesture" });
-	const added = withRelations(own, {
-		...NONE,
-		continueWith: refsOf(next, { gesture: "continueWith", name: "next" }),
-	});
-	// Boundary: the copy is the same class's instance, its fields the gesture as it crosses.
-	return Object.assign(Object.create(Object.getPrototypeOf(gesture) as object) as Kind, added);
 }

@@ -11,6 +11,11 @@ export interface GestureDetails {
 	gesture_callback_not_main_thread: { gesture: string; name: string };
 	/** `gesture` is the class, `name` the option (`waitFor`). */
 	gesture_relation_not_gesture: { gesture: string; name: string };
+	/** `gesture` is the class, `name` the option (`waitFor`). */
+	gesture_relation_not_a_list: { gesture: string; name: string };
+	/** `composition` is the class (`RaceGesture`). */
+	gesture_member_not_gesture: { composition: string };
+	continue_with_not_gestures: Record<string, never>;
 }
 
 /** What a code of the gestures names. */
@@ -31,6 +36,25 @@ export const GESTURE_CATALOGUE: Catalogue<GestureDetails> = {
 		fix: ({ name }) =>
 			`Give ${name} the gestures themselves, as made with new: ${name}: [scroll], where scroll is a DefaultScrollGesture or another gesture.`,
 		docs: "gesture_relation_not_gesture",
+	},
+	gesture_relation_not_a_list: {
+		message: ({ gesture, name }) => `The ${name} of a ${gesture} is not a list of gestures.`,
+		fix: ({ name }) => `Give ${name} a list, also for one gesture: ${name}: [scroll].`,
+		docs: "gesture_relation_not_a_list",
+	},
+	gesture_member_not_gesture: {
+		message: ({ composition }) =>
+			`A ${composition} was given a value that is not a gesture, so it cannot hold it.`,
+		fix: ({ composition }) =>
+			`Give it the gestures themselves, as made with new: new ${composition}(pan, tap).`,
+		docs: "gesture_member_not_gesture",
+	},
+	continue_with_not_gestures: {
+		message: () =>
+			"continueWith was given a value that is not a gesture, so the gesture cannot hand the touch on to it.",
+		fix: () =>
+			"Give it a gesture, then a list of the gestures that take over: continueWith(pan, [fling]).",
+		docs: "continue_with_not_gestures",
 	},
 };
 

@@ -4,17 +4,28 @@
 // Lynx knows a detector by an id the page gives (a native id), and relations name detectors by
 // those ids. A gesture's own id changes whenever it is built again (`$derived`) and at hydration,
 // where the background's gesture takes the first frame's place; Android registers an element's
-// detector ids once, when it first joins the gesture arena. So a gesture's native id stays with
-// its place: a gesture the page knows keeps its native id, and a new one takes the native id of the
-// detector it replaces on its element. The ids are given out at the settle step, for every element
-// whose gesture changed since, before any detector is set: a relation may name a gesture set later
-// in the same patch, or rebuilt in it.
+// detector ids once, when it first joins the gesture arena (GestureArenaManager.addMember). So
+// native ids stay with their element, which keeps the ids it had for as long as it lives, also
+// while it has no gesture: a gesture set on it again, or a new one there, takes them. A gesture
+// keeps its native id while a detector of another element has it; one that only relations know
+// yet takes its element's place, and what names it is set again.
+//
+// The ids are given out at the settle step, for every element whose gesture changed since, before
+// any detector is set: a relation may name a gesture set later in the same patch, or rebuilt in
+// it. Places first, over the whole batch, then new ids: an element made in the batch never takes
+// an id another element keeps.
 //
 // The engine holds one entry for each callback of a detector (./bindings.ts). A gesture built again
 // with only other callbacks, or callbacks with other captured values, swaps them into the entries:
-// the detector stays, and so does a drag in progress, as Lynx's own templates do (core/renderer/dom/
-// fiber/tree_resolver.cc). A change of type, config, relations or callback names sets the detector
-// again, which ends a drag.
+// no engine call, so the detector stays, and so does a drag in progress, as Lynx's own templates
+// do (core/renderer/dom/fiber/tree_resolver.cc). A change of type, config, relations or callback
+// names sets the detector again, which ends a drag; so does setting another detector of the same
+// element, since the platform rebuilds all of an element's handlers.
+//
+// Taking an element's last gesture away stops its callbacks, but Android is not told: an element
+// with no detector sends the platform no set, and its handlers stay in the arena until the element
+// goes (LynxUIOwner.updateProperties). The element's ids are kept, so a gesture set on it again
+// meets them.
 //
 // Each detector has one state manager, made with it, which a callback gets as its second
 // argument: it moves that detector along through the engine's gesture manager.
@@ -51,7 +62,7 @@ interface EngineManager {
 }
 
 /** What a detector's callbacks get as their second argument. */
-export interface DetectorState {
+interface DetectorState {
 	active(): void;
 	fail(): void;
 	end(): void;
@@ -85,7 +96,8 @@ function stateManager(element: LynxElement, native: number): (engine: unknown) =
 interface Plan {
 	binding: Binding;
 	gestures: SerializedPlainGesture[];
-	natives: number[];
+	/** The native id of each gesture, once given. */
+	natives: (number | undefined)[];
 	before: Detector[];
 }
 
@@ -99,34 +111,52 @@ export interface Gestures extends GestureDetectors {
 	sizes(): { detectors: number; ids: number };
 }
 
+/** Adds `by` to `key`'s count, dropping it at 0. */
+function count<Key>(counts: Map<Key, number>, key: Key, by: number): void {
+	const next = (counts.get(key) ?? 0) + by;
+	if (next > 0) counts.set(key, next);
+	else counts.delete(key);
+}
+
 /** The gesture detectors of a page, whose bindings reach `scope`. */
 export function createGestures(scope: () => BindingScope): Gestures {
 	const detectors = new Map<Binding, Detector[]>();
+	/** The native ids each element has had, in order, while it lives. */
+	const places = new Map<LynxElement, number[]>();
 	/** A gesture's own id → the native id Lynx knows it by. */
 	const natives = new Map<number, number>();
+	/** A native id → the own ids that have it. */
+	const owners = new Map<number, Set<number>>();
 	/** How many detectors hold each own id, as theirs or in a relation. */
 	const holds = new Map<number, number>();
+	/** How many detectors are set under each native id. */
+	const used = new Map<number, number>();
 	let nextNative = 1;
 	let due = new Set<Binding>();
 
-	function hold(own: number): void {
-		holds.set(own, (holds.get(own) ?? 0) + 1);
+	function name(own: number, native: number): void {
+		const before = natives.get(own);
+		if (before === native) return;
+		if (before !== undefined) owners.get(before)?.delete(own);
+		natives.set(own, native);
+		let set = owners.get(native);
+		if (!set) owners.set(native, (set = new Set()));
+		set.add(own);
 	}
 
-	function letGo(own: number): void {
-		const count = (holds.get(own) ?? 0) - 1;
-		if (count > 0) {
-			holds.set(own, count);
-			return;
-		}
-		holds.delete(own);
+	function unname(own: number): void {
+		const native = natives.get(own);
+		if (native === undefined) return;
 		natives.delete(own);
+		const set = owners.get(native);
+		set?.delete(own);
+		if (set?.size === 0) owners.delete(native);
 	}
 
 	/** The native id of the gesture `own`: one is given now to a gesture not set yet. */
 	function nativeOf(own: number): number {
 		let native = natives.get(own);
-		if (native === undefined) natives.set(own, (native = nextNative++));
+		if (native === undefined) name(own, (native = nextNative++));
 		return native;
 	}
 
@@ -137,28 +167,105 @@ export function createGestures(scope: () => BindingScope): Gestures {
 		});
 	}
 
-	/** Native ids for a plan's gestures: a known gesture keeps its own, a new one its place's. */
-	function giveIds(plan: Plan): void {
-		const { gestures, before, natives: given } = plan;
-		const owns = new Set(gestures.map((gesture) => gesture.id));
-		// The natives of the detectors this value no longer has, in order: free for new gestures.
-		const free = before
-			.filter((detector) => !owns.has(detector.own))
-			.map((detector) => detector.native);
-		gestures.forEach((gesture, index) => {
-			let native = natives.get(gesture.id);
-			if (native === undefined) {
-				native = free.find((id) => !given.includes(id)) ?? nextNative++;
-				natives.set(gesture.id, native);
-			}
-			given[index] = native;
-			// Held from now, so the detectors that go let go of nothing it needs.
-			hold(gesture.id);
-		});
+	/** The detector is the binding's from now on. */
+	function keep(detector: Detector): void {
+		count(holds, detector.own, 1);
+		for (const id of detector.related) count(holds, id, 1);
+		count(used, detector.native, 1);
+	}
+
+	/** The detector is the binding's no more. */
+	function letGo(detector: Detector): void {
+		count(holds, detector.own, -1);
+		for (const id of detector.related) count(holds, id, -1);
+		count(used, detector.native, -1);
+	}
+
+	/** Forgets the own ids no detector holds. */
+	function sweep(ids: Iterable<number>): void {
+		for (const id of ids) if (!holds.has(id)) unname(id);
 	}
 
 	function remove(element: LynxElement, detector: Detector): void {
 		mainThread.__RemoveGestureDetector(element, detector.native);
+	}
+
+	/** Gives the batch's gestures their native ids: places first, over the whole batch. */
+	function giveIds(plans: Plan[]): void {
+		const leavingHolds = new Map<number, number>();
+		const leavingUses = new Map<number, number>();
+		const leave = (plan: Plan): void => {
+			for (const detector of plan.before) {
+				count(leavingHolds, detector.own, 1);
+				for (const id of detector.related) count(leavingHolds, id, 1);
+				count(leavingUses, detector.native, 1);
+			}
+		};
+		/** Whether a detector the batch does not replace holds `own`. */
+		const heldElsewhere = (own: number): boolean =>
+			(holds.get(own) ?? 0) > (leavingHolds.get(own) ?? 0);
+		/** Whether a detector the batch does not replace is set under `native`. */
+		const setElsewhere = (native: number): boolean =>
+			(used.get(native) ?? 0) > (leavingUses.get(native) ?? 0);
+		const placed = new Map<number, number>();
+		const taken = new Set<number>();
+		/** Whether `native` is someone else's than `own`'s. */
+		const busy = (native: number, own: number): boolean => {
+			if (taken.has(native) || setElsewhere(native)) return true;
+			for (const other of owners.get(native) ?? [])
+				if (other !== own && heldElsewhere(other)) return true;
+			return false;
+		};
+		const moved = new Set<number>();
+
+		/** A plan's gestures that a detector elsewhere keeps, or that take a place of their element. */
+		const place = (plan: Plan): void => {
+			const mine = places.get(plan.binding.element) ?? [];
+			plan.gestures.forEach((gesture, index) => {
+				const { id } = gesture;
+				let native = placed.get(id);
+				// Set on another element: it keeps its id there.
+				const current = natives.get(id);
+				if (native === undefined && current !== undefined && setElsewhere(current))
+					native = current;
+				if (native === undefined) {
+					native =
+						current !== undefined && mine.includes(current) && !busy(current, id)
+							? current
+							: mine.find((free) => !busy(free, id) && !plan.natives.includes(free));
+					if (native !== undefined && current !== undefined && current !== native) moved.add(id);
+				}
+				if (native === undefined) return;
+				plan.natives[index] = native;
+				placed.set(id, native);
+				taken.add(native);
+			});
+		};
+
+		const inBatch = new Set(plans.map((plan) => plan.binding));
+		for (const plan of plans) leave(plan);
+		for (const plan of plans) place(plan);
+		// What names a gesture that moved to its element's place is set again, with the new id.
+		if (moved.size > 0)
+			for (const [binding, list] of detectors) {
+				if (inBatch.has(binding)) continue;
+				if (!list.some((detector) => detector.related.some((id) => moved.has(id)))) continue;
+				const plan = planOf(binding);
+				if (!plan) continue;
+				plans.push(plan);
+				inBatch.add(binding);
+				leave(plan);
+				place(plan);
+			}
+		// The rest: a gesture a relation gave an id keeps it; a new one gets a new id.
+		for (const plan of plans)
+			plan.gestures.forEach((gesture, index) => {
+				if (plan.natives[index] !== undefined) return;
+				const native = placed.get(gesture.id) ?? natives.get(gesture.id) ?? nextNative++;
+				plan.natives[index] = native;
+				placed.set(gesture.id, native);
+			});
+		for (const [own, native] of placed) name(own, native);
 	}
 
 	/** Sets one gesture of a plan; returns its detector, once the engine has it. */
@@ -172,36 +279,35 @@ export function createGestures(scope: () => BindingScope): Gestures {
 			simultaneous: relationIds(gesture.simultaneousWith, related),
 			continueWith: relationIds(gesture.continueWith, related),
 		};
-		const names = Object.keys(gesture.callbacks).filter((name) =>
-			isMainThreadFunction(gesture.callbacks[name]),
+		const names = Object.keys(gesture.callbacks).filter((callback) =>
+			isMainThreadFunction(gesture.callbacks[callback]),
 		);
 		const shape = JSON.stringify([gesture.type, gesture.config, relations, names]);
 		const old = before.find((detector) => detector.native === native && !reused.has(detector));
 		if (old) reused.add(old);
 		if (old && old.shape === shape) {
 			// Only the callbacks changed: the engine's entries run the new ones.
-			for (const name of names) {
-				const entry = old.entries.get(name)!;
-				const fn = gesture.callbacks[name]!;
+			for (const callback of names) {
+				const entry = old.entries.get(callback)!;
+				const fn = gesture.callbacks[callback]!;
 				if (entry.fn !== fn) entry.swap(fn);
 			}
 			return { own: gesture.id, native, shape, related, entries: old.entries };
 		}
 		const manager = stateManager(binding.element, native);
 		const entries = new Map<string, Entry>();
-		for (const name of names) {
-			const entry = new Entry(gesture.callbacks[name]!, scope());
+		for (const callback of names) {
+			const entry = new Entry(gesture.callbacks[callback]!, scope());
 			entry.manager = manager;
-			entries.set(name, entry);
+			entries.set(callback, entry);
 		}
-		// Set again: what was recognized of a touch ends.
-		if (old) remove(binding.element, old);
+		// It replaces the detector under its id, if any: what was recognized of a touch ends.
 		mainThread.__SetGestureDetector(
 			binding.element,
 			native,
 			gesture.type,
 			{
-				callbacks: [...entries].map(([name, entry]) => ({ name, callback: entry })),
+				callbacks: [...entries].map(([callback, entry]) => ({ name: callback, callback: entry })),
 				config: gesture.config,
 			},
 			relations,
@@ -215,27 +321,42 @@ export function createGestures(scope: () => BindingScope): Gestures {
 	 */
 	function setDetectors(plan: Plan): void {
 		const { binding, gestures, before } = plan;
+		const { element } = binding;
 		const { guarded } = scope();
 		const after: Detector[] = [];
 		const reused = new Set<Detector>();
-		gestures.forEach((gesture, index) => {
+		// The detectors need the element's own view.
+		if (gestures.length > 0) scope().flattening.hold(element);
+		gestures.forEach((_, index) => {
 			guarded(() => {
 				const detector = setDetector(plan, index, reused);
 				after.push(detector);
-				for (const id of detector.related) hold(id);
+				keep(detector);
 			});
 		});
 		for (const detector of before)
-			if (!reused.has(detector)) guarded(() => remove(binding.element, detector));
-		if (after.length > 0) detectors.set(binding, after);
-		else detectors.delete(binding);
-		// What went, or the engine refused, lets go of the ids it held.
-		for (const detector of before) {
-			letGo(detector.own);
-			for (const id of detector.related) letGo(id);
-		}
-		const kept = new Set(after.map((detector) => detector.own));
-		for (const gesture of gestures) if (!kept.has(gesture.id)) letGo(gesture.id);
+			if (!reused.has(detector)) guarded(() => remove(element, detector));
+		for (const detector of before) letGo(detector);
+		if (after.length > 0) {
+			detectors.set(binding, after);
+			places.set(element, [
+				...after.map((detector) => detector.native),
+				...(places.get(element) ?? []).filter(
+					(native) => !after.some((detector) => detector.native === native),
+				),
+			]);
+		} else detectors.delete(binding);
+	}
+
+	/** What the settle step does for `binding`, as its value is now. */
+	function planOf(binding: Binding): Plan | undefined {
+		if (binding.released) return undefined;
+		const { value } = binding;
+		let gestures: SerializedPlainGesture[] = [];
+		scope().guarded(() => {
+			if (isGesture(value)) gestures = plainGestures(value);
+		});
+		return { binding, gestures, natives: [], before: detectors.get(binding) ?? [] };
 	}
 
 	return {
@@ -247,10 +368,13 @@ export function createGestures(scope: () => BindingScope): Gestures {
 			if (!before) return;
 			detectors.delete(binding);
 			for (const detector of before) {
-				letGo(detector.own);
-				for (const id of detector.related) letGo(id);
+				letGo(detector);
 				scope().guarded(() => remove(binding.element, detector));
 			}
+			sweep(before.flatMap((detector) => [detector.own, ...detector.related]));
+		},
+		forget(element) {
+			places.delete(element);
 		},
 		flush() {
 			if (due.size === 0) return;
@@ -258,25 +382,20 @@ export function createGestures(scope: () => BindingScope): Gestures {
 			due = new Set();
 			const plans: Plan[] = [];
 			for (const binding of batch) {
-				if (binding.released) continue;
-				const { value } = binding;
-				plans.push({
-					binding,
-					gestures: isGesture(value) ? plainGestures(value) : [],
-					natives: [],
-					before: detectors.get(binding) ?? [],
-				});
+				const plan = planOf(binding);
+				if (plan) plans.push(plan);
 			}
-			for (const plan of plans) giveIds(plan);
+			giveIds(plans);
 			for (const plan of plans) setDetectors(plan);
+			sweep([...natives.keys()]);
 		},
 		silence() {
 			due = new Set();
 		},
 		sizes() {
-			let count = 0;
-			for (const list of detectors.values()) count += list.length;
-			return { detectors: count, ids: natives.size };
+			let detectorCount = 0;
+			for (const list of detectors.values()) detectorCount += list.length;
+			return { detectors: detectorCount, ids: natives.size };
 		},
 	};
 }

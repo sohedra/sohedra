@@ -261,6 +261,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 				for (const binding of bindings.values())
 					scope.guarded(() => binding.kind.release(binding, scope));
 			}
+			gestures.forget(element);
 			elements.forget(element);
 		},
 		settle,

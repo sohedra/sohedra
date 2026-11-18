@@ -4,9 +4,10 @@
 //   const pan = $derived(new PanGesture({ minDistance: 4, onUpdate }));
 //   <view main-thread:gesture={pan}></view>
 //
-// A gesture works from the first frame, and hydration keeps a drag that began before it; so does a
-// rebuild that changes only the callbacks or what they captured (see `PanGesture`). The
-// gestures and calls no device has shown working yet are in `@sohedra/lynx/experimental`.
+// A gesture works from the first frame. Hydration keeps a drag that began before it when the
+// background's gesture has the same type, options, relations and callback names; so does a rebuild
+// that changes only the callbacks or what they captured (see `PanGesture`). Gestures and calls
+// with no device probe yet are in `@sohedra/lynx/experimental`.
 
 export { DefaultScrollGesture, PanGesture, TapGesture } from "./gestures.ts";
 export type {

@@ -99,8 +99,10 @@ export interface GestureDetectors {
 	 * known, so a relation may name a gesture set after it.
 	 */
 	due(binding: Binding): void;
-	/** The binding goes: its detectors go. */
+	/** The binding goes: its detectors go, and its element keeps their ids. */
 	release(binding: Binding): void;
+	/** The element goes: the ids it kept are free. */
+	forget(element: LynxElement): void;
 }
 
 /** What one kind of binding does. */
@@ -212,13 +214,9 @@ const eventKind: BindingKind = {
 	},
 };
 
-/**
- * A gesture's value: Lynx's detectors, set at the settle step. The element gets a UI of its own,
- * which the detectors need.
- */
+/** A gesture's value: Lynx's detectors, set at the settle step. */
 const gestureKind: BindingKind = {
 	bind(binding, scope) {
-		scope.flattening.hold(binding.element);
 		scope.queue(binding);
 	},
 	change(binding, value, scope) {

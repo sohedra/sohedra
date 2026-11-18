@@ -1,5 +1,6 @@
 // The build's per-thread constant, as this folder reads it. The plugin replaces the name with the
-// thread's value in each thread's bundle; it is declared here and never named elsewhere.
+// thread's value in each thread's bundle; in this folder it is declared here and named nowhere
+// else.
 
 declare const __MAIN_THREAD__: boolean | undefined;
 
