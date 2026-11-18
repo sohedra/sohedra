@@ -9,7 +9,7 @@
 import type { createRenderer } from "svelte/renderer";
 
 import { sourceLocation } from "../../svelte/runtime/index.ts";
-import { OpCode, ROOT_ID, TEXT_CONTAINERS } from "../../wire/index.ts";
+import { DEFER, DEFERRED_ROW, OpCode, ROOT_ID, TEXT_CONTAINERS } from "../../wire/index.ts";
 import type { LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import { background } from "../globals.ts";
@@ -24,6 +24,7 @@ import { itemKey } from "./item-key.ts";
 import { lateLayouts } from "./layout.ts";
 import { TreeNode } from "./node.ts";
 import type { OpQueue } from "./queue.ts";
+import { linkRow, rowOf } from "./rows.ts";
 import { link, nextRealAnchor, realContainer, topReals, unlink } from "./tree.ts";
 import { attrValue, isFunction, isRecord, textOf } from "./values.ts";
 
@@ -149,6 +150,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (node.lynxId === 0) node.lynxId = nextId++;
 		node.madeAt = queue.sent;
 		node.cell = cellUnder(container, node);
+		// A deferred row waits to be asked for only as a cell of a list of the page.
+		if (container.tag !== "list" || container.cell !== 0) rowOf(node)?.show();
 		node.layout = null;
 		// Boundary: every element node is made by `createElement`, from the element class.
 		elementsById.set(node.lynxId, node as ElementNode);
@@ -331,6 +334,12 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 	};
 
 	function setAttribute(element: TreeNode, key: string, value: unknown): void {
+		if (key === DEFERRED_ROW) {
+			linkRow(element, value);
+			return;
+		}
+		// The row's state reads `defer` where it is written; Lynx has no such attribute.
+		if (key === DEFER && element.tag === "list-item") return;
 		if (key === "value" && (element.tag === "input" || element.tag === "textarea")) {
 			setInputValue(inputHost, element, value);
 			return;

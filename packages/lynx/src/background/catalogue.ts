@@ -37,6 +37,8 @@ export interface BackgroundDetails {
 		got: string;
 		where?: string | undefined;
 	};
+	/** `where` is the row's `file:line:col`, in development builds. */
+	list_item_defer_needs_async_list: { where?: string | undefined };
 }
 
 /** What a code of the background names. */
@@ -114,6 +116,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/env, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.",
 		docs: "props_id_mismatch",
+	},
+	list_item_defer_needs_async_list: {
+		message: () =>
+			"A <list-item defer> is in a <list> that is not Lynx's async list, so its row cannot wait for Lynx to ask for it, and renders now.",
+		fix: () =>
+			'Give the list custom-list-name="list-container", the list that waits for a row Lynx asked for. Or remove defer.',
+		docs: "list_item_defer_needs_async_list",
 	},
 };
 

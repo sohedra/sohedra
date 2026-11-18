@@ -24,11 +24,24 @@ export interface AdoptedItems {
 	cells: (HeldCell | undefined)[];
 	/** The items as Lynx last heard of them, when that is not `items`. */
 	committed?: number[];
+	/** For each item, what answers Lynx's requests for it that wait for the background's row. */
+	waiting?: (((uid: number) => void)[] | undefined)[];
 	/**
 	 * The items' info, for a list inside a cell, whose updates this module writes: its items are
 	 * then this list's.
 	 */
 	infos?: Map<number, ListItemInfo>;
+}
+
+/** The cells of a list that Lynx waits for, with what answers it. */
+export function waitingCells(
+	list: ListState | undefined,
+): { id: number; waiting: ((uid: number) => void)[] }[] {
+	const found: { id: number; waiting: ((uid: number) => void)[] }[] = [];
+	for (const cell of list?.cells.values() ?? []) {
+		if (cell.waiting) found.push({ id: cell.id, waiting: cell.waiting });
+	}
+	return found;
 }
 
 /** The cells of a list that have elements. */
@@ -47,17 +60,28 @@ export function heldCells(list: ListState | undefined): HeldCell[] {
  * element of its cell in `cells`.
  */
 export function adoptedList(
-	{ state, items, cells, committed = items }: { state: ListState } & AdoptedItems,
+	{ state, items, cells, committed = items, waiting }: { state: ListState } & AdoptedItems,
 	releases: boolean,
 ): ListState {
 	const list = newList({ element: state.element, committed, releases, preload: state.preload });
+	list.lastAsked = state.lastAsked;
+	list.direction = state.direction;
 	for (let index = 0; index < items.length; index++) {
 		const itemId = items[index]!;
 		list.items.insert(itemId, 0);
 		const held = cells[index];
 		const cell: Cell = held
-			? { ...held, id: itemId, removed: false, asked: false }
+			? {
+					...held,
+					id: itemId,
+					removed: false,
+					asked: false,
+					waiting: null,
+					requested: false,
+					hidden: false,
+				}
 			: newCell(itemId);
+		cell.waiting = waiting?.[index] ?? null;
 		list.cells.set(itemId, cell);
 		if (held) list.cellsByUid.set(held.uid, cell);
 		if (cell.bound) list.bound++;

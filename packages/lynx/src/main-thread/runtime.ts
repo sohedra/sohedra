@@ -137,6 +137,8 @@ export function startMainThread(): void {
 			dispatch: onElementEvent,
 			openCell: cells.open,
 			scheduleRewrites: cells.schedule,
+			written: (id) => state.cells.has(id),
+			request: cells.request,
 			report,
 			styles: state.styles,
 			flattening: state.flattening,
@@ -233,6 +235,7 @@ export function startMainThread(): void {
 		if (DEV && propsIds.length > 0) send({ t: "props-ids", differences: propsIds });
 		state.applier = pageApplier;
 		for (const [id, parts] of hydrated.cells) state.cells.set(id, parts);
+		pageApplier.resumeWaiting();
 		for (const call of hydrated.calls) calls.run(call, patch.page);
 		applyItems(patch.items.slice(patch.rendered ?? 0), patch.page);
 		return () =>

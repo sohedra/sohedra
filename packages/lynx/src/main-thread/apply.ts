@@ -17,22 +17,10 @@ import { createFlattening } from "./flatten.ts";
 import type { Flattening } from "./flatten.ts";
 import { mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
+import { LISTENER_OPTIONS } from "./listeners.ts";
 import { createLists, LIST_ONLY_INFO } from "./lists.ts";
 import type { AdoptedItems, HeldCell, ListState } from "./lists.ts";
-
-/** The engine's `closure_type` with which it reads `bind_type`. */
-const CLOSURE_CORE = 2;
-
-/**
- * How each event type is bound: `bind_type` 1 is bubble, 2 capture, 3 capture and catch, 4
- * bubble and catch (Lynx's `Event::BindType`).
- */
-const LISTENER_OPTIONS: Readonly<Record<LynxEventType, ListenerOptions>> = {
-	bindEvent: { closure_type: CLOSURE_CORE, bind_type: 1 },
-	"capture-bind": { closure_type: CLOSURE_CORE, bind_type: 2 },
-	"capture-catch": { closure_type: CLOSURE_CORE, bind_type: 3 },
-	catchEvent: { closure_type: CLOSURE_CORE, bind_type: 4 },
-};
+import type { WaitingCells } from "./lists/waiting.ts";
 
 /** `value` as an attribute's text: a string as it is, a number or a boolean written out, else JSON. */
 function textOf(value: unknown): string {
@@ -60,7 +48,7 @@ export interface TakenElement {
 }
 
 /** The page's elements, as the background's ops made them. */
-export interface Applier {
+export interface Applier extends WaitingCells {
 	/** Applies `ops` in order. An op that throws is skipped, and the others are applied. */
 	apply(ops: Op[]): FailedOp[];
 	/** Tells the lists inside cells whose items changed; ends a patch. */
@@ -114,6 +102,10 @@ export interface ApplierOptions {
 	dispatch: Dispatch;
 	/** Makes the list cell with this id from what the main thread kept for it. */
 	openCell(id: number): void;
+	/** Whether a list cell can be made now; one that cannot is a deferred row, answered later. */
+	written?: (id: number) => boolean;
+	/** Asks the background to render a deferred row and write it. */
+	request?: (id: number) => void;
 	/**
 	 * Asks for `takeRewrites` on a later task, outside Lynx's callbacks. Without it, the lists keep
 	 * every cell they made.
@@ -136,7 +128,7 @@ interface Registration {
 
 /** Makes the applier of a page. */
 export function createApplier(options: ApplierOptions): Applier {
-	const { page, dispatch, openCell, report, scheduleRewrites } = options;
+	const { page, dispatch, openCell, report, scheduleRewrites, written, request } = options;
 	const elements = new Map<number, LynxElement>([[ROOT_ID, page]]);
 	const pageUid = mainThread.__GetElementUniqueID(page);
 	const flattening = options.flattening ?? createFlattening();
@@ -147,6 +139,8 @@ export function createApplier(options: ApplierOptions): Applier {
 		elementOf: (id) => elements.get(id),
 		report,
 		...(scheduleRewrites && { schedule: scheduleRewrites }),
+		...(written && { written }),
+		...(request && { request }),
 	});
 	const idByUid = new Map<number, number>([[pageUid, ROOT_ID]]);
 	const uidById = new Map<number, number>([[ROOT_ID, pageUid]]);
@@ -339,6 +333,11 @@ export function createApplier(options: ApplierOptions): Applier {
 		flushLists: () => lists.flush(),
 		takeRewrites: (max) => lists.takeRewrites(max),
 		askCell: (id) => lists.ask(id),
+		firstText: (id) => lists.firstText(id),
+		isHidden: (id) => lists.isHidden(id),
+		hideCell: (id) => lists.hideCell(id),
+		resumeWaiting: () => lists.resumeWaiting(),
+		waitingCells: (id) => lists.waitingCells(id),
 		replaceCell(id, text) {
 			const outcome = lists.rewritten(id);
 			if (outcome !== "release") return outcome === "keep";

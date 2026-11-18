@@ -8,7 +8,9 @@
 //   - a cell of a list that is not itself inside a cell, and everything in it, goes in the cell's
 //     own item, as text the main thread keeps unparsed until the list shows the cell;
 //   - such a list's items (their order, their info) are tracked here, and each batch ends with one
-//     `ListUpdate` op per list that changed.
+//     `ListUpdate` op per list that changed;
+//   - a cell held back (a deferred row whose contents have not rendered, or whose text the main
+//     thread let go of) sends nothing: it is written whole when it is asked for.
 //
 // Applied in order, the items do what the ops did.
 
@@ -34,10 +36,22 @@ interface ListState {
 /** Turns batches of ops into a patch's items. */
 export interface Splitter {
 	split(ops: Op[]): SplitItem[];
+	/** Whether the cell is held back: none of its ops is sent. */
+	holds(id: number): boolean;
+	/** Holds the cell back from now on: the main thread let go of its text. */
+	hold(id: number): void;
+	/** The cell was written whole, outside the splitter: its ops are sent again. */
+	written(id: number): void;
 }
 
-/** Makes a splitter; `encode` writes a cell's ops as the text of its item. */
-export function createSplitter(encode: (ops: Op[]) => string): Splitter {
+/**
+ * Makes a splitter; `encode` writes a cell's ops as the text of its item, and `waits` says whether
+ * a new cell of a list of the page is held back until it is asked for.
+ */
+export function createSplitter(
+	encode: (ops: Op[]) => string,
+	waits?: (id: number) => boolean,
+): Splitter {
 	// Made, not inserted under anything sent yet.
 	const pending = new Map<number, Pending>();
 	// The children of pending elements, in order, and the pending element each child is placed in:
@@ -52,6 +66,8 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 	// The info of the cells of tracked lists, and the list each cell is in.
 	const infos = new Map<number, ListItemInfo>();
 	const listOf = new Map<number, number>();
+	// The cells held back.
+	const held = new Set<number>();
 
 	let items: SplitItem[] = [];
 	let current = 0;
@@ -64,6 +80,7 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 	}
 
 	function to(cell: number, op: Op): void {
+		if (held.has(cell)) return;
 		if (cell !== current) {
 			close();
 			current = cell;
@@ -128,6 +145,7 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 		const entry = take(id);
 		if (entry) {
 			for (const op of entry.ops) if (isInfo(op)) setInfo(id, op[2], op[3]);
+			if (waits?.(id)) held.add(id);
 			owner.set(id, id);
 			pending.set(id, entry);
 			materialize(id, id);
@@ -237,6 +255,7 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 				tracked.delete(id);
 				infos.delete(id);
 				placedIn.delete(id);
+				held.delete(id);
 				if (pending.delete(id)) {
 					kids.delete(id);
 					return;
@@ -262,6 +281,13 @@ export function createSplitter(encode: (ops: Op[]) => string): Splitter {
 			updateLists();
 			close();
 			return items;
+		},
+		holds: (id) => held.has(id),
+		hold(id) {
+			if (owner.get(id) === id) held.add(id);
+		},
+		written(id) {
+			held.delete(id);
 		},
 	};
 }

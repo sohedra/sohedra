@@ -2,6 +2,11 @@
 // shows the cell, and are applied then. The main thread asks the background to write cells again,
 // in one message on a later task: those its lists let go of, and those never shown whose kept text
 // piled up. The answer replaces what was kept.
+//
+// A deferred row has no text until the background renders it: the lists ask for it (a show
+// message, at the end of the task) and its first text comes as a marked cell item. A row deferred
+// with `unmountRecycled` loses its text with its elements, and the background is told (a hide
+// message) to unmount its contents; until it is written whole again, its ops are dropped.
 
 import { decodeCell } from "../wire/index.ts";
 import type { CellItem, Op, ToBackground } from "../wire/index.ts";
@@ -46,11 +51,39 @@ export interface Cells {
 	take(item: CellItem): void;
 	/** Asks the background, on a later task, to write again the cells the page's lists name. */
 	schedule(): void;
+	/** Asks the background, at the end of the task, to render a deferred row and write it. */
+	request(id: number): void;
 }
 
 /** The cells of the page `page`. */
 export function createCells({ page, apply, send, report, later }: CellsOptions): Cells {
 	let due = false;
+	// Deferred rows to ask for and to let go of, sent together at the end of the task: hides first,
+	// so a row let go of and asked for again is unmounted before it renders.
+	let shows: number[] = [];
+	let hides: number[] = [];
+	let sending = false;
+
+	function sendRows(): void {
+		sending = false;
+		const [hidden, shown] = [hides, shows];
+		hides = [];
+		shows = [];
+		if (page.destroyed || page.rewriting) return;
+		try {
+			if (hidden.length > 0) send({ t: "hide", nodes: hidden });
+			if (shown.length > 0) send({ t: "show", nodes: shown });
+		} catch (error) {
+			report(error);
+		}
+	}
+
+	function sendSoon(): void {
+		if (sending) return;
+		sending = true;
+		// The main thread has no `queueMicrotask`; a promise's reaction runs at the end of the task.
+		void Promise.resolve().then(sendRows);
+	}
 
 	function askForRewrites(): void {
 		due = false;
@@ -80,21 +113,42 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 			for (const part of parts) apply(decodeCell(part));
 		},
 		take(item) {
-			const [, id, text] = item;
-			if (item[3] === true) {
-				if (page.applier!.replaceCell(id, text)) page.cells.set(id, [text]);
+			const [, id, text, mark] = item;
+			const applier = page.applier!;
+			if (mark !== undefined) {
+				// A deferred row's first text: the answer to a show message.
+				if (!applier.element(id) && !page.cells.has(id)) {
+					page.cells.set(id, [text]);
+					applier.firstText(id);
+					return;
+				}
+				if (!applier.replaceCell(id, text)) return;
+				if (mark === true) {
+					page.cells.set(id, [text]);
+					return;
+				}
+				page.cells.delete(id);
+				applier.hideCell(id);
+				hides.push(id);
+				sendSoon();
 				return;
 			}
 			// A cell the list shows already takes it now; else it is kept as text until it does.
-			if (page.applier!.element(id)) {
+			if (applier.element(id)) {
 				apply(decodeCell(text));
 				return;
 			}
+			// Its text went with its contents: it is written whole when Lynx asks for it again.
+			if (applier.isHidden(id)) return;
 			let parts = page.cells.get(id);
 			if (!parts) page.cells.set(id, (parts = []));
 			parts.push(text);
-			if (piledUp(parts)) page.applier!.askCell(id);
+			if (piledUp(parts)) applier.askCell(id);
 		},
 		schedule,
+		request(id) {
+			shows.push(id);
+			sendSoon();
+		},
 	};
 }

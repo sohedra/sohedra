@@ -47,13 +47,16 @@ export interface GestureRelations {
 	continueWith: number[];
 }
 
-/** Lynx asks a list for the cell at `index`: the callback answers the cell's unique id. */
+/**
+ * Lynx asks a list for the cell at `index`: the callback answers the cell's unique id. On Lynx's
+ * async list it may answer later, with a flush that names `operationId`, and return anything else.
+ */
 export type ComponentAtIndex = (
 	list: LynxElement,
 	listId: number,
 	index: number,
 	operationId: number,
-) => number;
+) => unknown;
 
 /** Lynx asks a list for several cells at once. */
 export type ComponentAtIndexes = (

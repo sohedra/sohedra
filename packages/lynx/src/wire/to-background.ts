@@ -73,6 +73,25 @@ export interface RewriteMessage {
 }
 
 /**
+ * Lynx asked for these list cells, or will soon, and the main thread has no text for them: rows
+ * whose contents are deferred. The background renders their contents and answers each with a cell
+ * item marked `true`; an id that is no longer a deferred row with no text sent gets nothing.
+ */
+export interface ShowMessage {
+	t: "show";
+	nodes: number[];
+}
+
+/**
+ * The main thread let go of these cells and of their text, after a cell item marked `"unmount"`:
+ * the background unmounts the rows' contents, and sends nothing of them until a show message.
+ */
+export interface HideMessage {
+	t: "hide";
+	nodes: number[];
+}
+
+/**
  * What differs between the first frame and the page the background rendered, by the background's
  * ids. `node` is the element where it differs (for an element the background lacks, its parent);
  * `expected` is the background's and `got` the first frame's.
@@ -134,7 +153,9 @@ export type ToBackground =
 	| ReleaseMessage
 	| ErrorMessage
 	| RewriteMessage
-	| PropsIdsMessage;
+	| PropsIdsMessage
+	| ShowMessage
+	| HideMessage;
 
 /** A message to the background as the background receives it. */
 export type ReceivedByBackground = ToBackground & Stamp;

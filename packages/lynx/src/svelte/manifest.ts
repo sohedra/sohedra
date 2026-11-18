@@ -82,6 +82,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: COMPILER,
 	},
 	{
+		id: "const-tag-places",
+		program: "build",
+		file: "src/compiler/phases/2-analyze/visitors/ConstTag.js",
+		anchor: "e.const_tag_invalid_placement(node);",
+		reliesOn:
+			"a `{@const}` may stand in the fragment of an `{#each}` (`body`, `fallback`), an `{#if}` (`consequent`, `alternate`), a `{#key}`, an `{#await}` (`pending`, `then`, `catch`), a snippet (`body`), a component's children or a `<svelte:boundary>` (`fragment`), and not directly in an element: the build makes each deferred row's state with one",
+		test: COMPILER,
+	},
+	{
 		id: "server-drops-handlers-and-effects",
 		program: "build",
 		file: "src/compiler/phases/3-transform/server/visitors/shared/element.js",
@@ -281,6 +290,16 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		anchor: "export function push_renderer",
 		reliesOn:
 			"`svelte/internal/client` exports `push_renderer`, and a compiled component imports its renderer as a default export and makes it current for the time it builds",
+		test: RUNTIME,
+	},
+	{
+		id: "client-state-signals",
+		program: "runtime",
+		file: "src/internal/client/index.js",
+		anchor:
+			"export { mutable_source, mutate, set, state, update, update_pre } from './reactivity/sources.js';",
+		reliesOn:
+			"`svelte/internal/client` exports `state`, `get` and `set`, the signal `$state` compiles to: an effect that `get`s it re-runs when it is `set`, and an untracked `set` is allowed while an effect runs. A deferred row's `{#if}` reads one",
 		test: RUNTIME,
 	},
 	{

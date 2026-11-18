@@ -20,6 +20,21 @@ export const PACKAGE_NAME = "@sohedra/lynx";
 /** The module Svelte's compiler imports as each component's custom renderer. */
 export const RENDERER_ENTRY: string = `${PACKAGE_NAME}/internal/renderer`;
 
+/**
+ * The attribute that defers a `<list-item>`'s contents until Lynx first asks for the row. The
+ * renderer never sends it; the first frame's markup keeps it, and the main thread reads it there.
+ */
+export const DEFER = "defer";
+
+/**
+ * The attribute the build gives a deferred `<list-item>` on the background, whose value is the
+ * row's state: the renderer takes it and sends nothing.
+ */
+export const DEFERRED_ROW = "sohedra-lynx-row";
+
+/** The `custom-list-name` of Lynx's list that takes a cell after `componentAtIndex` returns. */
+export const ASYNC_LIST = "list-container";
+
 /** The global where a page's main-thread copy records how to draw its first frame. */
 export const FIRST_FRAME_GLOBAL = "__sohedraLynxFirstFrame";
 

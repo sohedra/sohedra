@@ -18,12 +18,14 @@ import {
 } from "../wire/index.ts";
 import type {
 	CallRequest,
+	HideMessage,
 	Op,
 	PatchItem,
 	PatchParams,
 	PropsIdsMessage,
 	RewriteMessage,
 	SentEvent,
+	ShowMessage,
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { BackgroundError } from "./catalogue.ts";
@@ -44,6 +46,12 @@ export interface ChannelOptions {
 	onRewrite(message: RewriteMessage): void;
 	/** In a development build, the ids of `$props.id()` that hydration wrote over (`props-ids`). */
 	onPropsIds(message: PropsIdsMessage): void;
+	/** The main thread asks for deferred rows Lynx asked for (`show`). */
+	onShow?(message: ShowMessage): void;
+	/** The main thread let go of deferred rows and their text (`hide`). */
+	onHide?(message: HideMessage): void;
+	/** Whether a new cell of a list of the page is held back until it is asked for. */
+	waits?(id: number): boolean;
 	/** An element's tag, for the error of a value that cannot be sent. */
 	tagOf(id: number): string | undefined;
 }
@@ -73,10 +81,14 @@ export interface Channel {
 	rewritePage(write: () => void): void;
 	/**
 	 * Writes list cells again, after what is queued: for each id, what `write` makes, as a cell item
-	 * marked as written again. `write` returns false for an id that is no longer a cell, which gets
-	 * no item.
+	 * marked with what `write` returns (see `CellItem`), and sent from then on if it was held back.
+	 * `write` returns false for an id that is no longer a cell, which gets no item.
 	 */
-	rewriteCells(ids: readonly number[], write: (id: number) => boolean): void;
+	rewriteCells(ids: readonly number[], write: (id: number) => boolean | "unmount"): void;
+	/** Whether a cell is held back: the main thread has no text for it. */
+	holds(id: number): boolean;
+	/** Holds cells back from now on, the ops already queued included: the main thread let go of them. */
+	holdCells(ids: readonly number[]): void;
 	/**
 	 * The page was bumped: the ops made so far and the calls waiting belong to a page the main
 	 * thread no longer shows. The ops are dropped, and the calls reject.
@@ -109,7 +121,7 @@ interface Waiting {
 
 /** Opens the page's channel. */
 export function openChannel(options: ChannelOptions): Channel {
-	const { queue, onEvent, onRewrite, onPropsIds, tagOf } = options;
+	const { queue, onEvent, onRewrite, onPropsIds, onShow, onHide, waits, tagOf } = options;
 	const nativeApp = background.lynx.getNativeApp();
 	const core = background.lynx.getCoreContext();
 	const waiting = new Map<number, Waiting>();
@@ -147,7 +159,7 @@ export function openChannel(options: ChannelOptions): Channel {
 			return encodeCell(sendable(ops));
 		}
 	};
-	let splitter = createSplitter(encode);
+	let splitter = createSplitter(encode, waits);
 
 	/** Moves the renderer's queued ops into the patch being written, in order. */
 	function takeOps(): void {
@@ -213,6 +225,14 @@ export function openChannel(options: ChannelOptions): Channel {
 			onPropsIds(received);
 			return;
 		}
+		if (received.t === "show") {
+			onShow?.(received);
+			return;
+		}
+		if (received.t === "hide") {
+			onHide?.(received);
+			return;
+		}
 		if (received.t === "reply") {
 			const entry = waiting.get(received.id);
 			if (!entry) return;
@@ -270,7 +290,7 @@ export function openChannel(options: ChannelOptions): Channel {
 			if (!open) return;
 			flush();
 			// The page is written from nothing: its lists are told every item again.
-			splitter = createSplitter(encode);
+			splitter = createSplitter(encode, waits);
 			items.push(["rewrite", ROOT_ID]);
 			write();
 			flush(true);
@@ -282,9 +302,15 @@ export function openChannel(options: ChannelOptions): Channel {
 			for (const id of ids) {
 				const written = write(id);
 				const ops = queue.take();
-				if (written && ops.length > 0) items.push(["cell", id, encode(ops), true]);
+				if (written === false || ops.length === 0) continue;
+				items.push(["cell", id, encode(ops), written]);
+				splitter.written(id);
 			}
 			flush();
+		},
+		holds: (id) => splitter.holds(id),
+		holdCells(ids) {
+			for (const id of ids) splitter.hold(id);
 		},
 		abandon,
 		close() {
