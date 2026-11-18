@@ -36,9 +36,9 @@ error messages, workarounds and tests apply to every package.
   old code is deleted along with its docs; npm and git keep the old versions.
 - A new package needs a second consumer, or an audience that exists now. Until then its code is a
   folder inside an existing package.
-- Build output stays out of git. The pull request that adds a package adds its output folder to
-  `.gitignore` by exact path, such as `packages/lynx/lib/`. A bare `lib/` would also hide
-  SvelteKit's `src/lib/`.
+- A package's own settings live in it: build output in its `.gitignore`, anchored (`/lib/`, since
+  `lib/` also hides SvelteKit's `src/lib/`), and lint rules in its `.oxlintrc.jsonc`, extending the
+  root's. oxlint reads their globs from the package.
 - When pnpm refuses a version under its release-age gate, use an older version; exceptions in
   `minimumReleaseAgeExclude` are the maintainer's call.
 
