@@ -47,8 +47,7 @@ export type CallRequest =
 export type OpsItem = ["ops", Op[]];
 
 /**
- * A list cell's ops, as text from `encodeCell`, with the cell's id. The main thread keeps the text
- * until the list shows the cell. Marked, it is the whole cell written again:
+ * How a cell item marks the whole cell written again:
  *
  * - `true`, the answer to a rewrite or a show message. It replaces the kept text, and a cell Lynx
  *   handed back lets go of its elements; a cell Lynx showed since it was asked for ignores it. A
@@ -57,10 +56,19 @@ export type OpsItem = ["ops", Op[]];
  *   same, except that a cell that lets go of its elements, or has none, lets go of its text too,
  *   and the main thread sends a hide message.
  */
+export type CellMark = true | "unmount";
+
+/**
+ * A list cell's ops, as text from `encodeCell`, with the cell's id. The main thread keeps the text
+ * until the list shows the cell. Marked (`CellMark`), it is the whole cell written again; `null`
+ * marks nothing. The last member, when there is one, lists the function contexts the text holds
+ * (`MainThreadFunction`'s `context`): a text the main thread lets go of unread, it tells the
+ * background of, so the background lets go of them too.
+ */
 export type CellItem =
 	| ["cell", number, string]
-	| ["cell", number, string, true]
-	| ["cell", number, string, "unmount"];
+	| ["cell", number, string, CellMark]
+	| ["cell", number, string, CellMark | null, number[]];
 
 /**
  * A call: its id (0 when no reply is wanted), the element's id (0 for none) and the request as

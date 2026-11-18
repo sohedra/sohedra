@@ -9,11 +9,18 @@
 import type { createRenderer } from "svelte/renderer";
 
 import { sourceLocation } from "../../svelte/runtime/index.ts";
-import { DEFER, DEFERRED_ROW, OpCode, ROOT_ID, TEXT_CONTAINERS } from "../../wire/index.ts";
+import {
+	DEFER,
+	DEFERRED_ROW,
+	MAIN_THREAD_PREFIX,
+	OpCode,
+	ROOT_ID,
+	TEXT_CONTAINERS,
+} from "../../wire/index.ts";
 import type { LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
-import { background } from "../globals.ts";
-import { warnOnce } from "../report.ts";
+import { background, DEV } from "../globals.ts";
+import { reportOnce, warnOnce } from "../report.ts";
 import { elementClass, svelteListener } from "./element.ts";
 import type { ElementNode, ListenerChange } from "./element.ts";
 import type { HandlerRegistry } from "./handlers.ts";
@@ -350,6 +357,15 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			if (!element.attrs?.delete(key)) return;
 			if (element.lynxId !== 0) queue.push([OpCode.SetAttr, element.lynxId, key, null]);
 			return;
+		}
+		if (DEV && isFunction(value) && key.startsWith(MAIN_THREAD_PREFIX)) {
+			const where = sourceLocation(element);
+			reportOnce(`plain_function_under_main_thread:${where ?? element.tag!}:${key}`, () =>
+				backgroundError({
+					code: "plain_function_under_main_thread",
+					details: { name: key, tag: element.tag ?? "element", where },
+				}),
+			);
 		}
 		const stored = key === "item-key" ? itemKey(element, value) : value;
 		element.attrs ??= new Map();

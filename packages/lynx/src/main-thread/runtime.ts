@@ -10,12 +10,14 @@
 //     to write cells again (./cells.ts);
 //   - answers the calls a patch carries (./calls.ts);
 //   - sends the elements' events to the background;
+//   - runs main-thread functions (./functions/): the engine's `runWorklet`, and the page's calls;
 //   - starts the page over when it reloads, and lets go of it when its life ends.
 
 import {
 	checkMessage,
 	decodeError,
 	decodePatch,
+	decodeResult,
 	describeOp,
 	encodeError,
 	encodeToBackground,
@@ -23,6 +25,7 @@ import {
 	OpCode,
 	PATCH_METHOD,
 	ROOT_ID,
+	RUN_FUNCTION,
 } from "../wire/index.ts";
 import type {
 	Op,
@@ -38,12 +41,24 @@ import type { Applier } from "./apply.ts";
 import { createCalls } from "./calls.ts";
 import { mainThreadError } from "./catalogue.ts";
 import { createCells } from "./cells.ts";
+import type { CodeStyles } from "./code-styles.ts";
 import { fillEngineGaps } from "./engine-gaps.ts";
+import type { Flattening } from "./flatten.ts";
 import { drawRecordedFrame } from "./frame/recorded.ts";
-import { DEV, globalScope, mainThread, setGlobalFunction } from "./globals.ts";
+import { createFunctionsPage } from "./functions/page.ts";
+import type { FunctionsPage } from "./functions/page.ts";
+import {
+	DEV,
+	functionsGlobal,
+	globalScope,
+	installRegistry,
+	mainThread,
+	setGlobalFunction,
+} from "./globals.ts";
 import type { EngineMessage, LynxElement } from "./globals.ts";
 import { hydrate, replayEarly, sentMismatch } from "./hydrate/hydrate.ts";
 import { clearPrevious, createMainThreadPage } from "./page.ts";
+import type { MainThreadPage } from "./page.ts";
 import { isRecord, toSentEvent } from "./sent-event.ts";
 
 /** Lynx's error code of an error on the main thread (`LYNX_ERROR_CODE_LEPUS`). */
@@ -64,19 +79,46 @@ function reportIntoLynx(error: Error): void {
 const argsOf = (event: EngineMessage): unknown[] =>
 	Array.isArray(event.data) ? event.data : [event.data];
 
+/** A running main thread: the page it shows, which tests read. */
+export interface MainThreadRuntime {
+	readonly page: MainThreadPage;
+}
+
 /**
  * Starts the main thread's runtime: it fills in what the engine lacks, listens to the engine and
  * takes the background's patches.
  */
-export function startMainThread(): void {
+export function startMainThread(): MainThreadRuntime {
 	const { lynx } = mainThread;
 	fillEngineGaps({ scope: globalScope, strings: String.prototype, lynx });
 	const engine = lynx.getEngine();
 	const native = lynx.getNative();
-	const state = createMainThreadPage();
+	const state = createMainThreadPage((scope) => newFunctions(scope, 0));
 
 	function send(message: ToBackground, stamp: number = state.generation): void {
 		lynx.getJSContext().dispatchEvent(encodeToBackground(message, stamp));
+	}
+
+	/** The main-thread functions of the page `generation`, whose messages are of that page. */
+	function newFunctions(
+		scope: { styles: CodeStyles; flattening: Flattening },
+		generation: number,
+	): FunctionsPage {
+		return createFunctionsPage({
+			...scope,
+			send: (message) => send(message, generation),
+			report: (error) => report(error),
+			flush: () => {
+				if (state.element) mainThread.__FlushElementTree(state.element);
+			},
+			afterLayout: (run) => calls.afterLayout(run),
+			// The main thread has no `queueMicrotask`; a promise's reaction runs at the end of the task.
+			soon: (callback) => void Promise.resolve().then(callback),
+			nextTurn(callback) {
+				lynx.setTimeout(callback, 0);
+				return true;
+			},
+		});
 	}
 
 	/** Reports an error into Lynx, and tells the background, which has the page's error handler. */
@@ -105,7 +147,7 @@ export function startMainThread(): void {
 	}
 
 	function apply(ops: Op[]): void {
-		for (const op of ops) if (op[0] === OpCode.Release) state.cells.delete(op[1]);
+		for (const op of ops) if (op[0] === OpCode.Release) cells.drop(op[1]);
 		for (const { op, error } of state.applier!.apply(ops)) {
 			const reason = error instanceof Error ? error.message : String(error);
 			const change = DEV ? describeOp(op) : undefined;
@@ -115,11 +157,20 @@ export function startMainThread(): void {
 
 	const calls = createCalls({
 		applier: () => state.applier!,
+		functions: () => state.functions,
+		report: (error) => report(error),
 		// A call's result goes back when the call wants one; a failure that nobody waits for is
-		// reported.
+		// reported. A result that cannot cross answers with why.
 		answer({ id, stamp }, result) {
-			if (id !== 0) send({ t: "reply", id, result }, stamp);
-			else if (!result.ok) report(decodeError(result.error));
+			if (id === 0) {
+				if (!result.ok) report(decodeError(result.error));
+				return;
+			}
+			try {
+				send({ t: "reply", id, result }, stamp);
+			} catch (error) {
+				send({ t: "reply", id, result: { ok: false, error: encodeError(error) } }, stamp);
+			}
 		},
 	});
 
@@ -130,6 +181,10 @@ export function startMainThread(): void {
 		report,
 		later: (callback) => lynx.setTimeout(callback, 0),
 	});
+
+	/** Runs a cell's function refs as Lynx makes the cell, before it flushes it. */
+	const settleIn = (functions: FunctionsPage) => (): void =>
+		functions.applying(() => functions.settle(), calls.flushed);
 
 	function newApplier(on: LynxElement): Applier {
 		return createApplier({
@@ -142,6 +197,8 @@ export function startMainThread(): void {
 			report,
 			styles: state.styles,
 			flattening: state.flattening,
+			functions: state.functions,
+			settle: settleIn(state.functions),
 		});
 	}
 
@@ -150,7 +207,9 @@ export function startMainThread(): void {
 		state.applier!.silence();
 		state.previous.push(state.applier!);
 		state.applier = newApplier(state.element!);
+		// The background lets go of what the page held as it writes it again.
 		state.cells.clear();
+		state.cellContexts.clear();
 		clearPrevious(state);
 	}
 
@@ -165,8 +224,10 @@ export function startMainThread(): void {
 	function applyItems(items: PatchItem[], stamp: number): void {
 		for (const item of items) {
 			if (state.rewriting) {
-				// Until the rewrite, the background's page is written again: only the calls wait for it.
+				// Until the rewrite, the background's page is written again: only the calls wait for it,
+				// and the answers to calls are read.
 				if (item[0] === "call") state.held.push({ item, stamp });
+				else if (item[0] === "reply") state.functions.reply(item[1], decodeResult(item[2]));
 				else if (item[0] === "rewrite") {
 					if (isPageRewrite(item)) {
 						state.rewriting = false;
@@ -192,7 +253,7 @@ export function startMainThread(): void {
 					if (isPageRewrite(item)) replacePage();
 					break;
 				case "reply":
-					// The answers to main-thread functions' calls, which their runtime reads.
+					state.functions.reply(item[1], decodeResult(item[2]));
 					break;
 			}
 		}
@@ -213,8 +274,10 @@ export function startMainThread(): void {
 			applier: pageApplier,
 			items: patch.items,
 			count: patch.rendered ?? 0,
+			functions: state.functions,
 		});
 		if (result.kind !== "adopted") {
+			state.functions.endFirstFrame(false);
 			state.previous.push(frame.applier);
 			if (result.kind === "failed") {
 				report(result.error);
@@ -231,14 +294,16 @@ export function startMainThread(): void {
 			return undefined;
 		}
 		const { hydrated, rendered, propsIds } = result;
+		const functions = state.functions;
 		// The ids that differed were written over: a development build says where.
 		if (DEV && propsIds.length > 0) send({ t: "props-ids", differences: propsIds });
 		state.applier = pageApplier;
 		for (const [id, parts] of hydrated.cells) state.cells.set(id, parts);
+		for (const [id, contexts] of hydrated.cellContexts) state.cellContexts.set(id, contexts);
 		pageApplier.resumeWaiting();
 		for (const call of hydrated.calls) calls.run(call, patch.page);
 		applyItems(patch.items.slice(patch.rendered ?? 0), patch.page);
-		return () =>
+		return () => {
 			replayEarly({
 				frame,
 				applier: pageApplier,
@@ -253,7 +318,10 @@ export function startMainThread(): void {
 					};
 					send({ t: "event", handler, event: sent });
 				},
+				call: (held) => functions.sendHeld(held),
 			});
+			functions.endFirstFrame(true);
+		};
 	}
 
 	/** Applies a patch of the page it shows, then flushes the tree once. */
@@ -264,8 +332,14 @@ export function startMainThread(): void {
 		// The new page replaces the old one in the same flush, with no empty frame between.
 		if (!state.rewriting) clearPrevious(state);
 		let replay: (() => void) | undefined;
-		if (state.frame) replay = hydrateFrame(patch);
-		else applyItems(patch.items, patch.page);
+		// What main-thread functions change as the patch applies lands in its flush, and the function
+		// refs it bound run before it.
+		const functions = state.functions;
+		functions.applying(() => {
+			if (state.frame) replay = hydrateFrame(patch);
+			else applyItems(patch.items, patch.page);
+			if (!state.rewriting) state.functions.settle();
+		});
 		const dataUpdated = patch.dataUpdated === true || state.dataHeld;
 		// Waiting for the page written again: nothing of this patch was applied.
 		if (state.rewriting) {
@@ -297,13 +371,21 @@ export function startMainThread(): void {
 	function onRenderPage(event: EngineMessage): void {
 		try {
 			const page = (state.element = mainThread.__CreatePage("0", 0));
-			state.frame = drawRecordedFrame({
-				page,
-				data: argsOf(event)[0],
-				report,
-				styles: state.styles,
-				flattening: state.flattening,
-			});
+			const functions = state.functions;
+			// The engine flushes the tree after the render: the first frame's function refs run before.
+			functions.applying(() => {
+				state.frame = drawRecordedFrame({
+					page,
+					data: argsOf(event)[0],
+					report,
+					styles: state.styles,
+					flattening: state.flattening,
+					functions,
+					settle: settleIn(functions),
+				});
+				if (state.frame) functions.holdFirstFrame(state.frame.early);
+				functions.settle();
+			}, calls.flushed);
 			if (state.frame) state.applier = state.frame.applier;
 			state.applier ??= newApplier(page);
 			// No flush: the engine flushes the tree after the render.
@@ -327,6 +409,9 @@ export function startMainThread(): void {
 				state.held.length = 0;
 				state.dataHeld = false;
 				state.applier?.silence();
+				// The old page's functions run no more; its elements let go of them as they leave.
+				state.functions.silence();
+				state.functions = newFunctions(state, state.generation);
 				if (state.shown || state.previous.length === 0) {
 					clearPrevious(state);
 					if (state.applier) state.previous.push(state.applier);
@@ -336,6 +421,7 @@ export function startMainThread(): void {
 				}
 				if (state.element) state.applier = newApplier(state.element);
 				state.cells.clear();
+				state.cellContexts.clear();
 				state.shown = false;
 			}
 			if (state.element) mainThread.__FlushElementTree(state.element, options);
@@ -348,6 +434,7 @@ export function startMainThread(): void {
 		try {
 			state.generation++;
 			state.destroyed = true;
+			state.functions.silence();
 			engine.removeEventListener("__RenderPage", onRenderPage);
 			engine.removeEventListener("__UpdatePage", onUpdatePage);
 			native.removeEventListener("__DestroyLifetime", onDestroyLifetime);
@@ -362,10 +449,22 @@ export function startMainThread(): void {
 			state.early.length = 0;
 			state.held.length = 0;
 			state.cells.clear();
+			state.cellContexts.clear();
 		} catch (error) {
 			report(error);
 		}
 	}
+
+	// Main-thread functions: the bodies the page's code registers, the engine's entry to run them, and
+	// the calls the page's code makes.
+	installRegistry();
+	setGlobalFunction(RUN_FUNCTION, (value: unknown, params: unknown, options: unknown) =>
+		state.functions.runWorklet(value, params, options),
+	);
+	functionsGlobal().runtime = {
+		runOnBackground: (handle, params) => state.functions.runOnBackground(handle, params),
+		runOnMainThread: (fn, params) => state.functions.runOnMainThread(fn, params),
+	};
 
 	engine.addEventListener("__RenderPage", onRenderPage);
 	engine.addEventListener("__UpdatePage", onUpdatePage);
@@ -386,4 +485,5 @@ export function startMainThread(): void {
 	// The engine runs the page's data through this before each render and update
 	// (core/renderer/template_assembler.cc, ProcessTemplateDataForFiber); the page keeps it as is.
 	setGlobalFunction("processData", (data: unknown) => data);
+	return { page: state };
 }

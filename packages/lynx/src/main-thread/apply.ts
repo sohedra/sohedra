@@ -7,7 +7,7 @@
 // A `<list>`'s cells do not go into the tree here: the list takes each one when Lynx asks for it,
 // and lets go of one Lynx handed back once the background wrote it again (./lists.ts).
 
-import { decodeCell, LIST_ITEM_INFO, OpCode, ROOT_ID } from "../wire/index.ts";
+import { decodeCell, LIST_ITEM_INFO, MAIN_THREAD_PREFIX, OpCode, ROOT_ID } from "../wire/index.ts";
 import type { LynxEventType, Op } from "../wire/index.ts";
 import { createAnimations } from "./animations.ts";
 import { mainThreadError } from "./catalogue.ts";
@@ -15,6 +15,7 @@ import { createCodeStyles } from "./code-styles.ts";
 import type { CodeStyles } from "./code-styles.ts";
 import { createFlattening } from "./flatten.ts";
 import type { Flattening } from "./flatten.ts";
+import type { FunctionsPage } from "./functions/page.ts";
 import { mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
 import { LISTENER_OPTIONS } from "./listeners.ts";
@@ -117,6 +118,10 @@ export interface ApplierOptions {
 	styles?: CodeStyles;
 	/** The `flatten` of the elements, and those held for a UI, shared the same way. */
 	flattening?: Flattening;
+	/** What the elements' `main-thread:` attributes bind: the page's main-thread functions. */
+	functions: FunctionsPage;
+	/** Runs the function refs bound since, once a list made a cell and before it is flushed. */
+	settle?: () => void;
 }
 
 interface Registration {
@@ -128,7 +133,8 @@ interface Registration {
 
 /** Makes the applier of a page. */
 export function createApplier(options: ApplierOptions): Applier {
-	const { page, dispatch, openCell, report, scheduleRewrites, written, request } = options;
+	const { page, dispatch, openCell, report, scheduleRewrites, written, request, functions } =
+		options;
 	const elements = new Map<number, LynxElement>([[ROOT_ID, page]]);
 	const pageUid = mainThread.__GetElementUniqueID(page);
 	const flattening = options.flattening ?? createFlattening();
@@ -141,6 +147,7 @@ export function createApplier(options: ApplierOptions): Applier {
 		...(scheduleRewrites && { schedule: scheduleRewrites }),
 		...(written && { written }),
 		...(request && { request }),
+		...(options.settle && { settle: options.settle }),
 	});
 	const idByUid = new Map<number, number>([[pageUid, ROOT_ID]]);
 	const uidById = new Map<number, number>([[ROOT_ID, pageUid]]);
@@ -192,6 +199,8 @@ export function createApplier(options: ApplierOptions): Applier {
 		const slots = registrations.get(id);
 		// oxlint-disable-next-line unicorn/no-useless-spread -- copied: removeListener deletes from slots
 		if (slots) for (const slot of [...slots.keys()]) removeListener(id, slot);
+		const element = elements.get(id);
+		if (element !== undefined) functions.release(element);
 		datasets.delete(id);
 		lists.release(id);
 		const uid = uidById.get(id);
@@ -228,6 +237,10 @@ export function createApplier(options: ApplierOptions): Applier {
 	}
 
 	function setAttribute(id: number, key: string, value: unknown): void {
+		if (key.startsWith(MAIN_THREAD_PREFIX)) {
+			functions.setAttribute(get(id), key, value);
+			return;
+		}
 		if (key.startsWith("data-")) {
 			setDataset(id, key.slice(5), value);
 			return;

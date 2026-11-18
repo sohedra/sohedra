@@ -1,6 +1,9 @@
 // The globals of the page's own main-thread script, as this folder's code may use them. Add a
 // member when code first uses it, after checking it on the engine.
 
+import { FUNCTIONS_GLOBAL, REGISTER_FUNCTION } from "../wire/index.ts";
+import type { FunctionsGlobal } from "../wire/index.ts";
+
 /** What the main thread's engine provides to the first frame. */
 export interface FirstFrameGlobals {
 	lynx: {
@@ -16,6 +19,34 @@ export const firstFrame: FirstFrameGlobals = globalThis as unknown as FirstFrame
 export function setGlobalFunction(name: string, fn: (...args: never[]) => unknown): void {
 	// Boundary: the runtime finds it by name on the global object.
 	(globalThis as unknown as Record<string, unknown>)[name] = fn;
+}
+
+/** Any global, by name. */
+// Boundary: the engine's globals have no types; the runtime's are typed where they are read.
+const scope = globalThis as unknown as Record<string, unknown>;
+
+/**
+ * What the main thread keeps for main-thread functions, shared with its runtime: the page's code
+ * and the runtime are separate roots of the main thread's script, and meet only on the global
+ * object. Made by whichever loads first.
+ */
+export function functionsGlobal(): FunctionsGlobal {
+	// Boundary: the one object of this name, made here or by the runtime, of this shape.
+	return (scope[FUNCTIONS_GLOBAL] ??= {
+		bodies: {},
+		nextFirstFrameRef: -1,
+	} satisfies FunctionsGlobal) as FunctionsGlobal;
+}
+
+/** Puts the function compiled code registers each main-thread function's body with, once. */
+export function installRegistry(): void {
+	scope[REGISTER_FUNCTION] ??= (
+		_kind: string,
+		id: string,
+		body: FunctionsGlobal["bodies"][string],
+	) => {
+		functionsGlobal().bodies[id] = body;
+	};
 }
 
 declare const __DEV__: boolean;

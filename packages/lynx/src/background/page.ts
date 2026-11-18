@@ -20,9 +20,11 @@ import {
 	startFirstScreens,
 	startPropsIds,
 } from "../svelte/runtime/index.ts";
-import { ROOT_ID } from "../wire/index.ts";
+import { encodeError, ROOT_ID } from "../wire/index.ts";
 import type {
+	CallMessage,
 	HideMessage,
+	Result,
 	RewriteMessage,
 	SentEvent,
 	SentTarget,
@@ -30,9 +32,10 @@ import type {
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import { openChannel } from "./channel.ts";
+import { callThrough } from "./functions/calls.ts";
 import { background } from "./globals.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
-import { bumpPage, clearPageState, runAll, startGeneration } from "./page-state.ts";
+import { bumpPage, clearPageState, currentPage, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
 import type { ElementNode } from "./renderer/renderer.ts";
@@ -65,6 +68,15 @@ const QUIET_HOOKS = [
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null;
 
+/** Whether `value` is a thenable, to be awaited. */
+const isThenable = (value: unknown): value is PromiseLike<unknown> =>
+	(typeof value === "object" || typeof value === "function") &&
+	value !== null &&
+	typeof Reflect.get(value, "then") === "function";
+
+/** What a call that threw answers. */
+const failure = (error: unknown): Result => ({ ok: false, error: encodeError(error) });
+
 /** An event's targets as the element nodes themselves; a target with no node stays as it came. */
 function withNodes(event: SentEvent): Record<string, unknown> {
 	const node = (sent: SentTarget | undefined): unknown => {
@@ -93,8 +105,11 @@ export function startPage<Props extends Record<string, unknown>>(
 	let root: ElementNode | undefined;
 	let anchor: ReturnType<typeof pageRenderer.createComment> | undefined;
 
-	/** Runs handlers as Svelte runs effects, then sends their updates at once. */
-	function handle(run: () => void): void {
+	/**
+	 * Runs handlers as Svelte runs effects, then sends their updates at once; `after` runs once
+	 * Svelte's updates are queued, before the send.
+	 */
+	function handle(run: () => void, after?: () => void): void {
 		try {
 			// With the renderer current, as Svelte runs effects: `on()` called in a handler listens
 			// through the renderer.
@@ -108,7 +123,55 @@ export function startPage<Props extends Record<string, unknown>>(
 		} catch (error) {
 			reportError(error);
 		}
+		after?.();
 		channel.flush();
+	}
+
+	/**
+	 * A main-thread function calls a background function: it runs as an event's handlers do, and
+	 * its answer follows the updates it made, in the same patch. A thenable is awaited, and answered
+	 * in a later patch of the same page. What it throws is reported here, and answered.
+	 */
+	function callBackground({ id, fn, context, params }: CallMessage): void {
+		const page = currentPage();
+		const answer = (result: Result): void => {
+			if (currentPage() === page) channel.reply(id, result);
+		};
+		const target = channel.backgroundFunction(context, fn);
+		if (!target) {
+			const error = backgroundError({ code: "background_function_missing", details: {} });
+			reportError(error);
+			answer(failure(error));
+			channel.flush();
+			return;
+		}
+		let returned: unknown;
+		let thrown: { error: unknown } | undefined;
+		handle(
+			() => {
+				try {
+					returned = target(...params);
+				} catch (error) {
+					thrown = { error };
+				}
+			},
+			() => {
+				if (thrown) {
+					reportError(thrown.error);
+					answer(failure(thrown.error));
+				} else if (!isThenable(returned)) {
+					answer({ ok: true, value: returned });
+				} else {
+					Promise.resolve(returned).then(
+						(value) => answer({ ok: true, value }),
+						(error: unknown) => {
+							reportError(error);
+							answer(failure(error));
+						},
+					);
+				}
+			},
+		);
 	}
 
 	function dispatch(handler: number, event: SentEvent): void {
@@ -165,6 +228,7 @@ export function startPage<Props extends Record<string, unknown>>(
 		onPropsIds: ({ differences }) => warnPropsIds(differences, (id) => pageRenderer.nodeById(id)),
 		onShow: show,
 		onHide: hide,
+		onCall: callBackground,
 		waits: (id) => {
 			const node = pageRenderer.nodeById(id);
 			return node !== undefined && waitsToBeAsked(node);
@@ -225,6 +289,7 @@ export function startPage<Props extends Record<string, unknown>>(
 		bumpPage();
 		runAll([
 			teardown,
+			() => callThrough(null),
 			() => channel.close(),
 			() => pageRenderer.retire(),
 			() => listenThrough(null),
@@ -263,6 +328,7 @@ export function startPage<Props extends Record<string, unknown>>(
 			call: channel.call,
 			run: (handler: Handler, event: unknown) => handle(() => handler(event)),
 		});
+		callThrough({ call: (request) => channel.call(0, request), contexts: channel.contexts });
 		root = pageRenderer.createRoot();
 		anchor = pageRenderer.createComment("");
 		pageRenderer.insert(root, anchor, null);

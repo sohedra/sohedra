@@ -58,6 +58,18 @@ type Scope = Record<string, unknown>;
 /** The background's global object, where start-up fills in what the engine lacks. */
 export const globalScope: Scope = globalThis as unknown as Scope;
 
+/**
+ * The engine's `FinalizationRegistry`, where it has one: it tells the main thread when the page let
+ * go of a main-thread ref. Without one, the main thread keeps every ref until the page ends.
+ */
+export function finalizationRegistry<T>(
+	cleanup: (held: T) => void,
+): FinalizationRegistry<T> | undefined {
+	// Boundary: a standard global, which an engine may lack.
+	const Registry = globalScope["FinalizationRegistry"] as typeof FinalizationRegistry | undefined;
+	return typeof Registry === "function" ? new Registry<T>(cleanup) : undefined;
+}
+
 declare const __DEV__: boolean;
 
 /** `true` in a development build: the build replaces it, and drops what it guards otherwise. */

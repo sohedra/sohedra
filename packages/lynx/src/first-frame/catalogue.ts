@@ -9,6 +9,9 @@ import type { Catalogue } from "../wire/index.ts";
 export interface FirstFrameDetails {
 	/** `component` is the page's root component. */
 	first_frame_skipped_await: { component: string };
+	/** `call` is what the page's code called: `runOnBackground` or `runOnMainThread`. */
+	main_thread_runtime_missing: { call: string };
+	main_thread_ref_set_outside_function: Record<string, never>;
 }
 
 /** What a code of the first frame names. */
@@ -22,6 +25,20 @@ export const FIRST_FRAME_CATALOGUE: Catalogue<FirstFrameDetails> = {
 		fix: () =>
 			"Put the part that awaits in a <svelte:boundary> with a pending snippet: the first frame then shows the pending snippet, and the page shows the rest when it is ready.",
 		docs: "first_frame_skipped_await",
+	},
+	main_thread_runtime_missing: {
+		message: ({ call }) =>
+			`A call of ${call} ran on the main thread before its runtime started, so it has no answer.`,
+		fix: () =>
+			"Call it from a main-thread function that an event, a ref or the background runs, not while the page's modules load.",
+		docs: "main_thread_runtime_missing",
+	},
+	main_thread_ref_set_outside_function: {
+		message: () =>
+			"The current value of a main-thread ref was set outside a main-thread function, as the first frame was drawn.",
+		fix: () =>
+			"Set it inside a main-thread function. A component's top-level code runs on both threads, and a ref's value lives on the main thread.",
+		docs: "main_thread_ref_set_outside_function",
 	},
 };
 

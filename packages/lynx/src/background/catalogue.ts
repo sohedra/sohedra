@@ -47,6 +47,15 @@ export interface BackgroundDetails {
 	};
 	/** `value` is the list's `initial-item-count`, as written; `where` the list's `file:line:col`. */
 	initial_item_count_not_a_count: { value: string; where?: string | undefined };
+	/** `name` is the function's name, or what the value is. */
+	not_a_main_thread_function: { name: string };
+	/** `name` is the function's name, or what the value is. */
+	run_on_background_outside_main_thread: { name: string };
+	main_thread_ref_read_on_background: Record<string, never>;
+	main_thread_ref_set_on_background: Record<string, never>;
+	background_function_missing: Record<string, never>;
+	/** `name` is the attribute's; `where` the element's `file:line:col`, in development builds. */
+	plain_function_under_main_thread: { name: string; tag: string; where?: string | undefined };
 }
 
 /** What a code of the background names. */
@@ -145,6 +154,48 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			'Give initial-item-count a whole number of rows, 0 or more: initial-item-count={5} or initial-item-count="5".',
 		docs: "initial_item_count_not_a_count",
+	},
+	not_a_main_thread_function: {
+		message: ({ name }) =>
+			`The value given to runOnMainThread, ${name}, is not a main-thread function, so nothing runs on the main thread.`,
+		fix: () =>
+			"Start the function's body with the 'main thread' directive, and pass the function itself: runOnMainThread(fn)(...args).",
+		docs: "not_a_main_thread_function",
+	},
+	run_on_background_outside_main_thread: {
+		message: ({ name }) =>
+			`A call of runOnBackground(${name}) ran on the background: it calls a background function from a main-thread function only.`,
+		fix: () =>
+			"On the background, call the function itself. Use runOnBackground inside a function whose body starts with 'main thread'.",
+		docs: "run_on_background_outside_main_thread",
+	},
+	main_thread_ref_read_on_background: {
+		message: () =>
+			"The current value of a main-thread ref was read on the background, where it is only the ref's initial value: the ref's value lives on the main thread.",
+		fix: () =>
+			"Read it inside a main-thread function. To get it on the background, return it from one: await runOnMainThread(read)().",
+		docs: "main_thread_ref_read_on_background",
+	},
+	main_thread_ref_set_on_background: {
+		message: () =>
+			"The current value of a main-thread ref was set on the background: the ref's value lives on the main thread, and only main-thread functions set it.",
+		fix: () =>
+			"Set it inside a main-thread function, and call that from the background with runOnMainThread(set)(value).",
+		docs: "main_thread_ref_set_on_background",
+	},
+	background_function_missing: {
+		message: () =>
+			"A main-thread function called a background function through runOnBackground, and the background no longer has it: the page let go of that copy of the main-thread function.",
+		fix: () =>
+			"Keep main-thread functions that call the background in an attribute, a ref or a call that is still on the page. If the page was made again after its first frame could not be hydrated, functions kept from before cannot call the background.",
+		docs: "background_function_missing",
+	},
+	plain_function_under_main_thread: {
+		message: ({ name, tag }) =>
+			`The <${tag}>'s ${name} is a plain function, so the main thread binds nothing: a main-thread attribute takes a main-thread function.`,
+		fix: () =>
+			"Start the function's body with the 'main thread' directive, or use the attribute without the main-thread: prefix to run it on the background.",
+		docs: "plain_function_under_main_thread",
 	},
 };
 

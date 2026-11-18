@@ -13,7 +13,6 @@ export interface MainThreadDetails {
 	/** `change` is what the main thread was doing, in development builds (`describeOp`). */
 	change_not_applied: { reason: string; change?: string | undefined };
 	element_missing: { id: number };
-	call_not_supported: { kind: string };
 	ui_method_failed: { method: string; code: number };
 	element_has_no_view: { method: string };
 	element_left_page: { method: string };
@@ -22,6 +21,24 @@ export interface MainThreadDetails {
 	/** `reason` is the first line of what the page's components threw. */
 	first_frame_threw: { reason: string };
 	rewrite_not_page: { id: number };
+	/** `id` is the function's, which names its file and its place in it. */
+	main_thread_function_not_found: { id: string };
+	main_thread_value_too_deep: { depth: number };
+	/** `call` names what was called. */
+	page_is_gone: { call: string };
+	first_frame_call_unanswered: Record<string, never>;
+	/** `name` is the attribute's. */
+	main_thread_attribute_unknown: { name: string };
+	/**
+	 * `limit` is how many flushes in a row; `fn` the id of the last main-thread function that ran,
+	 * `event` its event, `change` the last change it made.
+	 */
+	main_thread_update_loop: {
+		limit: number;
+		fn?: string | undefined;
+		event?: string | undefined;
+		change?: string | undefined;
+	};
 }
 
 /** What a code of the main thread names. */
@@ -40,11 +57,6 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		message: ({ id }) => `The main thread has no element ${id}.`,
 		fix: () => `The two threads disagree about the page. ${REPORT}`,
 		docs: "element_missing",
-	},
-	call_not_supported: {
-		message: ({ kind }) => `The main thread cannot answer a call of ${kind} yet.`,
-		fix: () => `The background asked for something this main thread does not know. ${REPORT}`,
-		docs: "call_not_supported",
 	},
 	ui_method_failed: {
 		message: ({ method, code }) =>
@@ -85,6 +97,51 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 			`The background wrote element ${id} again, and the main thread writes only the whole page again.`,
 		fix: () => `The rest of the change was applied. ${REPORT}`,
 		docs: "rewrite_not_page",
+	},
+	main_thread_function_not_found: {
+		message: ({ id }) =>
+			`The main-thread function ${id} has no body on the main thread: the module that declares it did not load there.`,
+		fix: () =>
+			`A function of a bundle loaded with import() runs once that bundle has loaded. Otherwise, ${REPORT.charAt(0).toLowerCase()}${REPORT.slice(1)}`,
+		docs: "main_thread_function_not_found",
+	},
+	main_thread_value_too_deep: {
+		message: ({ depth }) =>
+			`A value a main-thread function captured or was given is nested more than ${depth} levels deep, so the function did not run.`,
+		fix: () => "Give the function a flatter value, or only the part of it the function reads.",
+		docs: "main_thread_value_too_deep",
+	},
+	page_is_gone: {
+		message: ({ call }) =>
+			`A call of ${call} has no answer: the page it was made on has been closed or reloaded.`,
+		fix: () =>
+			"Nothing to fix when the page closed on purpose. Otherwise, stop the timers and animations of a page that reloads, so they make no calls for it.",
+		docs: "page_is_gone",
+	},
+	first_frame_call_unanswered: {
+		message: () =>
+			"A main-thread function called runOnBackground in the first frame, and no background function took the call when the background took the page over, so it has no answer.",
+		fix: () =>
+			"Call it from an element the background renders the same way as the first frame, not one inside {#if mainThread} or a branch the threads take apart, or once the page has started.",
+		docs: "first_frame_call_unanswered",
+	},
+	main_thread_attribute_unknown: {
+		message: ({ name }) =>
+			`The attribute ${name} binds nothing: a main-thread attribute is main-thread:ref, main-thread:gesture or a main-thread event.`,
+		fix: () =>
+			"Write a main-thread event as main-thread:ontap, main-thread:ontapcapture, main-thread:oncatchtap or main-thread:oncatchtapcapture, with the event's name in place of tap.",
+		docs: "main_thread_attribute_unknown",
+	},
+	main_thread_update_loop: {
+		message: ({ limit, fn, event, change }) =>
+			`Main-thread functions changed the page ${limit} times in a row, and the main thread got no turn for anything else: a main-thread function probably changes what makes it run again.` +
+			(fn === undefined
+				? ""
+				: `\nThe last to run was ${fn}${event === undefined ? "" : `, for the event ${event}`}.`) +
+			(change === undefined ? "" : `\nIts last change was ${change}.`),
+		fix: () =>
+			"Change the element only when the value differs, as a layout handler that sets a size or a scroll handler that sets a scroll position must. Until the main thread's next turn, what main-thread functions change is not shown.",
+		docs: "main_thread_update_loop",
 	},
 };
 

@@ -8,6 +8,7 @@ import type { CodeStyles } from "./code-styles.ts";
 import { createFlattening } from "./flatten.ts";
 import type { Flattening } from "./flatten.ts";
 import type { Frame } from "./frame/draw.ts";
+import type { FunctionsPage } from "./functions/page.ts";
 import type { LynxElement } from "./globals.ts";
 
 /** The main thread's page. */
@@ -31,6 +32,8 @@ export interface MainThreadPage {
 	 * released, whose text the background wrote again.
 	 */
 	cells: Map<number, string[]>;
+	/** The function contexts the texts of each cell in `cells` hold, when any do. */
+	cellContexts: Map<number, number[]>;
 	/** The first frame, until the background's first patch hydrates it. */
 	frame: Frame | undefined;
 	/**
@@ -45,10 +48,16 @@ export interface MainThreadPage {
 	/** The styles code set and the elements held for a UI, which hydration carries over. */
 	styles: CodeStyles;
 	flattening: Flattening;
+	/** The page's main-thread functions: a page that reloads starts new ones. */
+	functions: FunctionsPage;
 }
 
-/** A page before the engine renders it. */
-export function createMainThreadPage(): MainThreadPage {
+/** A page before the engine renders it; `functions` makes its main-thread functions. */
+export function createMainThreadPage(
+	functions: (scope: { styles: CodeStyles; flattening: Flattening }) => FunctionsPage,
+): MainThreadPage {
+	const styles = createCodeStyles();
+	const flattening = createFlattening();
 	return {
 		generation: 0,
 		element: undefined,
@@ -58,12 +67,14 @@ export function createMainThreadPage(): MainThreadPage {
 		destroyed: false,
 		shown: false,
 		cells: new Map(),
+		cellContexts: new Map(),
 		frame: undefined,
 		rewriting: false,
 		held: [],
 		dataHeld: false,
-		styles: createCodeStyles(),
-		flattening: createFlattening(),
+		styles,
+		flattening,
+		functions: functions({ styles, flattening }),
 	};
 }
 

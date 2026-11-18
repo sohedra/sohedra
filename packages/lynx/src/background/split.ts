@@ -15,10 +15,22 @@
 // Applied in order, the items do what the ops did.
 
 import { LIST_ITEM_INFO, listUpdateInfo, OpCode, Order } from "../wire/index.ts";
-import type { AttrValue, CellItem, ListItemInfo, Op, OpsItem } from "../wire/index.ts";
+import type { AttrValue, CellItem, CellMark, ListItemInfo, Op, OpsItem } from "../wire/index.ts";
 
 /** An item of a patch the splitter writes. */
 export type SplitItem = OpsItem | CellItem;
+
+/** A cell's ops as text, and the main-thread function contexts the text holds. */
+export interface CellText {
+	text: string;
+	contexts: number[];
+}
+
+/** The cell item of a cell's text, marked or not: its contexts are listed when it holds any. */
+export function cellItem(id: number, cell: CellText, mark: CellMark | null = null): CellItem {
+	if (cell.contexts.length > 0) return ["cell", id, cell.text, mark, cell.contexts];
+	return mark === null ? ["cell", id, cell.text] : ["cell", id, cell.text, mark];
+}
 
 interface Pending {
 	create: Op;
@@ -54,7 +66,7 @@ export interface Splitter {
  * a new cell of a list of the page is held back until it is asked for.
  */
 export function createSplitter(
-	encode: (ops: Op[]) => string,
+	encode: (ops: Op[]) => CellText,
 	waits?: (id: number) => boolean,
 ): Splitter {
 	// Made, not inserted under anything sent yet.
@@ -78,7 +90,7 @@ export function createSplitter(
 
 	function close(): void {
 		if (ops.length === 0) return;
-		items.push(current === 0 ? ["ops", ops] : ["cell", current, encode(ops)]);
+		items.push(current === 0 ? ["ops", ops] : cellItem(current, encode(ops)));
 		ops = [];
 	}
 

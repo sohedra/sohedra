@@ -122,6 +122,13 @@ const keyText = (key: unknown): string =>
 /** The attributes compared: those of a main-thread function are its runtime's. */
 const compared = (name: string): boolean => !name.startsWith(MAIN_THREAD_PREFIX);
 
+/**
+ * Whether a value is the same as no attribute: an empty class, which Svelte's server writes beside
+ * a spread and its client does not set, is no class to Lynx.
+ */
+const asNone = (name: string, value: AttrValue | undefined): boolean =>
+	value === undefined || (name === "class" && value === "");
+
 /** Matches the drawn page against the rendered one. */
 export function matchFrame(options: {
 	root: DrawnNode;
@@ -177,6 +184,7 @@ export function matchFrame(options: {
 		for (const [name, value] of built.attrs) {
 			const got = drawn.attrs.get(name);
 			if (!compared(name) || same(name, value, got)) continue;
+			if (asNone(name, value) && asNone(name, got)) continue;
 			if (!inBlock) {
 				if (typeof value !== "string" || typeof got !== "string" || !sameButIds(value, got))
 					throw new Mismatch({ kind: "attribute", node: id, name, expected: value, got });
@@ -185,7 +193,7 @@ export function matchFrame(options: {
 			plan.writes.push({ id, name, value });
 		}
 		for (const [name, value] of drawn.attrs) {
-			if (!compared(name) || built.attrs.has(name)) continue;
+			if (!compared(name) || built.attrs.has(name) || asNone(name, value)) continue;
 			if (!inBlock)
 				throw new Mismatch({ kind: "attribute", node: id, name, expected: undefined, got: value });
 			plan.writes.push({ id, name, value: null });
