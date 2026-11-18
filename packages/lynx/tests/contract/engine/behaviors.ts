@@ -3,7 +3,7 @@
 // (Lynx's element functions, `lynx.getEngine()`, the global `runWorklet`) and what a device can be
 // made to do (tap, pan, show a list's cell, update the page's data); it returns a plain
 // observation, and the runner compares it with the case's `expected`. Nothing here may need what
-// only the fake has.
+// only the fake has, nor a built-in a device's main thread lacks, such as `toSorted` or `at`.
 //
 // Behaviors with no device probe yet: the tree's own functions; `__SetInlineStyles` wiping the
 // styles added one by one; one main-thread function per event name and type; the lifecycle events.
@@ -359,7 +359,7 @@ export const BEHAVIORS: Behavior[] = [
 				target: event.target.elementRefptr === element,
 				manager: Object.keys(manager)
 					.filter((key) => typeof manager[key] === "function")
-					.toSorted(),
+					.sort(),
 			};
 		},
 		expected: {
@@ -486,7 +486,7 @@ export const BEHAVIORS: Behavior[] = [
 				options: f.__GetAttributeByName(element, "options"),
 				count: f.__GetAttributeByName(element, "count"),
 				missing: f.__GetAttributeByName(element, "gone") === undefined,
-				names: f.__GetAttributeNames(element).toSorted(),
+				names: [...f.__GetAttributeNames(element)].sort(),
 			};
 		},
 		expected: { options: { a: [1] }, count: 3, missing: true, names: ["count", "options"] },
