@@ -76,6 +76,34 @@ export async function mountComponent(markup: string, dev = false): Promise<Mount
 	return { target, app, log: renderer.log, file, unmount: () => client.unmount(app) };
 }
 
+/**
+ * Compiles components for Svelte's server, with `dev` or without, into this run's folder, and
+ * returns the first one's module. Each source imports the others as `./<name>.svelte`.
+ */
+export async function serverComponents(
+	sources: Record<string, string>,
+	dev: boolean,
+): Promise<Record<string, unknown>> {
+	folder ??= fs.mkdtempSync(path.join(PACKAGE_ROOT, "node_modules", ".contract-fixtures-"));
+	const run = count++;
+	const fileOf = (name: string): string => path.join(folder!, `server-${run}-${name}.mjs`);
+	for (const [name, source] of Object.entries(sources)) {
+		const { js } = compile(source, {
+			filename: `${name}.svelte`,
+			generate: "server",
+			runes: true,
+			css: "external",
+			dev,
+		});
+		const code = js.code.replace(
+			/(['"])\.\/([A-Za-z]+)\.svelte\1/g,
+			(_, quote: string, other: string) => `${quote}./server-${run}-${other}.mjs${quote}`,
+		);
+		fs.writeFileSync(fileOf(name), code);
+	}
+	return importNative(fileOf(Object.keys(sources)[0]!));
+}
+
 /** Removes the compiled components this run wrote. */
 export function removeFixtures(): void {
 	if (folder !== undefined) fs.rmSync(folder, { recursive: true, force: true });

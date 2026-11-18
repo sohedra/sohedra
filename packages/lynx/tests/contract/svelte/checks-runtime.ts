@@ -4,10 +4,11 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { expect } from "@rstest/core";
+import { compile } from "svelte/compiler";
 
 import type { Checks } from "./check.ts";
 import { compileClient, compileServer } from "./compile.ts";
-import { mountComponent, treeRenderer } from "./runtime-fixture.ts";
+import { mountComponent, serverComponents, treeRenderer } from "./runtime-fixture.ts";
 import { SVELTE_ROOT, importNative, importSvelte } from "./svelte-package.ts";
 
 interface RendererState {
@@ -147,6 +148,48 @@ export const checks: Checks = {
 		);
 		// The first frame's components write elements with these.
 		expect(compileServer("<view id={x} {...el}>{x}</view>")).toMatch(/\$\.attributes\(/);
+	},
+
+	"server-markup-without-dev": async () => {
+		// The page and a component it renders: blocks, snippets, spreads and `$props.id()`.
+		const sources = {
+			Page: `<script>
+	import Row from "./Row.svelte";
+	let { rows, title, ...rest } = $props();
+	const id = $props.id();
+</script>
+{#snippet label(text)}<text class="label">{text}</text>{/snippet}
+<view id={id} {...rest}>
+	{#if title}<text>{title}</text>{:else}<view></view>{/if}
+	<list>
+		{#each rows as row (row)}<Row key={row}>{@render label(row)}</Row>{/each}
+	</list>
+	{#key title}<text>{rows.length}</text>{/key}
+	<svelte:boundary><text>b</text></svelte:boundary>
+</view>`,
+			Row: `<script>
+	let { key, children } = $props();
+	const id = $props.id();
+</script>
+<list-item item-key={key} data-id={id}><view>{@render children?.()}</view></list-item>`,
+		};
+		const { render } = await importSvelte("src/server/index.js");
+		const bodies: string[] = [];
+		for (const dev of [true, false]) {
+			const page = (await serverComponents(sources, dev))["default"];
+			// Boundary: Svelte's server `render` has no types here.
+			const rendered = (render as (component: unknown, options: object) => { body: string })(page, {
+				props: { rows: ["a", "b"], title: "Feed", class: "page" },
+				idPrefix: "lynx",
+			});
+			bodies.push(rendered.body);
+		}
+		expect(bodies[0]).toContain('data-id="lynx-s2"');
+		expect(bodies[1]).toBe(bodies[0]);
+		// Development output is where the element checks are, which the main thread's copy leaves out.
+		expect(compile("<view></view>", { generate: "server", dev: true }).js.code).toContain(
+			"$.push_element(",
+		);
 	},
 
 	"server-render-await-invalid": async () => {

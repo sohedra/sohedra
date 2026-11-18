@@ -23,6 +23,17 @@ describe("the options Svelte compiles with", () => {
 		expect(mainThread.code).not.toContain("@sohedra/lynx/internal/renderer");
 	});
 
+	it("leave Svelte's development code out of the main thread's copy, and keep it on the background", async () => {
+		const source = `<script>import Row from "./Row.svelte";</script><view><text>a</text><Row /></view>`;
+		const mainThread = await component(source, { thread: "main-thread", development: true });
+		expect(mainThread.code).not.toContain("push_element");
+		expect(mainThread.code).not.toContain("$$renderer.component(");
+		const production = await component(source, { thread: "main-thread" });
+		expect(mainThread.code).toBe(production.code);
+		const background = await component(source, { development: true });
+		expect(background.code).toContain("$.add_locations(");
+	});
+
 	it("keep the app's other options", async () => {
 		const { code } = await component("<view>   </view>", {
 			compilerOptions: { preserveWhitespace: true },
