@@ -68,18 +68,16 @@ export interface MainThreadLynx extends SharedLynx {
 	/** The native side's events: the page's end. */
 	getNative(): LifecycleProxy;
 	/**
-	 * Runs `callback` on the main thread on a later task, which `settle()` waits for. A `delay` is
-	 * waited out in the process's time first, which `settle()` does not wait for: on a device the
+	 * Runs `callback` on the main thread on a later task, which `settle()` waits for, and returns
+	 * the timer's number (core/runtime/lepus/bindings/renderer_functions.cc, SetTimeout). A `delay`
+	 * is waited out in the process's time first, which `settle()` does not wait for: on a device the
 	 * threads go on meanwhile.
 	 */
-	setTimeout(callback: () => void, delay?: number): MainThreadTimer;
-	/** Cancels a timer, if it has not run. */
-	clearTimeout(timer: unknown): void;
-}
-
-/** A timer of the main thread's `setTimeout`. */
-export interface MainThreadTimer {
-	canceled: boolean;
+	setTimeout(callback: () => void, delay?: number): number;
+	/**
+	 * Cancels a timer by its number, if it has not run; Lynx's takes a number only (ClearTimeout).
+	 */
+	clearTimeout(timer: number): void;
 }
 
 /** The background's `lynx`. */
@@ -168,7 +166,8 @@ export function createLynx(options: {
 	const mainThread = createSide();
 	const background = createSide();
 	/** The main thread's timers that have not run, and how to stop one that waits out a delay. */
-	const timers = new Map<MainThreadTimer, (() => void) | undefined>();
+	const timers = new Map<number, (() => void) | undefined>();
+	let lastTimer = 0;
 
 	/** The context through which one thread sends to `to`; `origin` names the sender. */
 	function context(own: {
@@ -246,11 +245,10 @@ export function createLynx(options: {
 			getEngine: () => lifecycle.engine,
 			getNative: () => lifecycle.native,
 			setTimeout(callback, delay = 0) {
-				const timer: MainThreadTimer = { canceled: false };
+				const timer = ++lastTimer;
 				const run = (): void =>
 					bridge.send(() => {
-						timers.delete(timer);
-						if (timer.canceled) return;
+						if (!timers.delete(timer)) return;
 						enter("main-thread");
 						callback();
 					});
@@ -259,12 +257,12 @@ export function createLynx(options: {
 				return timer;
 			},
 			clearTimeout(timer) {
-				if (!timers.has(timer as MainThreadTimer)) return;
-				// Boundary: a timer this `setTimeout` returned, which the map holds.
-				const own = timer as MainThreadTimer;
-				own.canceled = true;
-				timers.get(own)?.();
-				timers.delete(own);
+				if (typeof timer !== "number")
+					throw new TypeError(
+						`clearTimeout on the main thread takes the number setTimeout returned, not ${typeof timer}.`,
+					);
+				timers.get(timer)?.();
+				timers.delete(timer);
 			},
 		},
 		background: {

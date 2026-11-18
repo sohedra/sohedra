@@ -68,7 +68,8 @@ export function holdTimers(page: SveltePage): HeldTimers {
 	const held: (() => void)[] = [];
 	lynx.setTimeout = (callback) => {
 		held.push(callback);
-		return { canceled: false };
+		// No timer of the main thread's has the number 0: none of them is canceled.
+		return 0;
 	};
 	return {
 		held,

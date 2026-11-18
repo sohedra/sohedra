@@ -259,10 +259,18 @@ describe("the main thread's setTimeout", () => {
 		const ran: string[] = [];
 		lynx.clearTimeout(lynx.setTimeout(() => ran.push("soon")));
 		lynx.clearTimeout(lynx.setTimeout(() => ran.push("late"), 1));
-		lynx.clearTimeout({ canceled: false });
+		lynx.clearTimeout(1000);
 		await new Promise((resolve) => setTimeout(resolve, 5));
 		await page.settle();
 		expect(ran).toEqual([]);
+	});
+});
+
+describe("the main thread's clearTimeout", () => {
+	it("takes a number only, as Lynx's does", () => {
+		const page = startTestPage();
+		const lynx = page.lynx.mainThread as { clearTimeout(timer: unknown): void };
+		expect(() => lynx.clearTimeout({})).toThrow("takes the number setTimeout returned");
 	});
 });
 
