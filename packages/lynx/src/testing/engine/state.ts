@@ -103,6 +103,13 @@ export interface ElementState {
 	detectors: Map<number, Detector>;
 	/** Its animations (`__ElementAnimate`), by name. */
 	running: Map<string, RunningAnimation>;
+	/**
+	 * Whether Lynx may lay it out with no UI: not once it was put straight in a scroll view, even if
+	 * it was taken out again (layout-only.ts).
+	 */
+	canBeLayoutOnly: boolean;
+	/** Whether `__CreateScrollView` made it: Lynx gives its children a UI (layout-only.ts). */
+	scrollView: boolean;
 	list?: ListState;
 }
 
@@ -198,22 +205,15 @@ export interface EngineState {
 	/** Every element made, attached or not, by unique id. */
 	readonly made: Map<number, ElementState>;
 	/**
-	 * The elements made since the last `__FlushElementTree`: Lynx makes an element's UI when the
-	 * tree is flushed.
+	 * The elements Lynx has made a UI for: at the flush that finds one in the page, unless it is
+	 * layout-only then (layout-only.ts). An element keeps its UI.
 	 */
-	readonly unflushed: Set<ElementState>;
-	/**
-	 * The elements that were flattened at the last flush: until the next one, the engine has made
-	 * no view for them, whatever has changed since.
-	 */
-	readonly flattenedAtFlush: Set<ElementState>;
+	readonly withUi: Set<ElementState>;
 	/**
 	 * The elements in the global phase, with the event names they hear there: an element enters at
 	 * the flush that finds its `global-bindEvent` filed, and leaves when it is destroyed.
 	 */
 	readonly globalPhase: Map<ElementState, Set<string>>;
-	/** Whether a plain `<view>` is flattened: on, as on a device, unless a test turns it off. */
-	flattening: boolean;
 	respond: Responder;
 	/** Runs `deliver` when the engine's answer comes back from another thread. */
 	readonly schedule: (deliver: () => void) => void;

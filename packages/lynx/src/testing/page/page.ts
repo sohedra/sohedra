@@ -3,12 +3,13 @@
 // before the engine renders, the background's after. They are the runtime's and the app's; a test
 // passes them, and nothing runs in their place.
 
+import { PATCH_METHOD } from "../../wire/index.ts";
 import { createEngine } from "../engine/create-engine.ts";
 import type { Engine } from "../engine/create-engine.ts";
-import { activeSession, installGlobals, setActiveSession } from "../globals.ts";
+import { activeSession, installGlobals, removeGlobals, setActiveSession } from "../globals.ts";
 import { createBridge } from "./bridge.ts";
 import { createLynx } from "./lynx.ts";
-import type { BackgroundLynx, MainThreadLynx, Thread } from "./lynx.ts";
+import type { BackgroundLynx, MainThreadLynx, TestApp, Thread } from "./lynx.ts";
 
 /** What a test page starts with. */
 export interface TestPageOptions {
@@ -40,6 +41,32 @@ export interface TestPage {
 	 * other sent, and what Lynx would report about the page.
 	 */
 	readonly errors: unknown[];
+	/** What the page reported with `lynx.reportError` at the warning level. */
+	readonly warnings: unknown[];
+	/** The app the engine calls the page's hooks on, on the background. */
+	readonly app: TestApp;
+	/**
+	 * The host updates the page's data: the engine updates the page on the main thread, then posts
+	 * the data to the app's `updateCardData`, with its `type` (core/runtime/js/bindings/js_app.cc,
+	 * NotifyUpdatePageData). Type 1 starts the data from none.
+	 */
+	updateData(data: Record<string, unknown>, options?: { type?: number }): void;
+	/**
+	 * The host reloads the page, with data to add: the engine removes the main thread's components,
+	 * posts the data to the app's `onAppReload` (js_app.cc, OnAppReload), then updates the main
+	 * thread's page with `reloadTemplate`, in one task (core/renderer/template_assembler.cc,
+	 * ReloadTemplate): the background hears of it after the main thread.
+	 */
+	reload(data?: Record<string, unknown>): void;
+	/**
+	 * The page's life ends: the native side tells the main thread, then the app's
+	 * `callDestroyLifetimeFun` runs on the background (js_app.cc, CallDestroyLifetimeFun).
+	 */
+	destroy(): void;
+	/** Runs `code` as the main thread's, with that thread's globals in place, as the engine runs it. */
+	asMainThread<T>(code: () => T): T;
+	/** Runs `code` as the background's, with that thread's globals in place. */
+	asBackground<T>(code: () => T): T;
 	/** Waits until nothing crosses between the threads and the engine has answered. */
 	settle(): Promise<void>;
 	/** Ends the page: its end is said, its elements leave the document, the globals are put back. */
@@ -53,18 +80,31 @@ const PAGE_GLOBALS = [
 	"updatePage",
 	"updateGlobalProps",
 	"removeComponents",
+	"processData",
+	PATCH_METHOD,
 ];
 
 /** Starts a test page, and ends the one that was running, if any. */
 export function startTestPage(options: TestPageOptions = {}): TestPage {
 	activeSession()?.dispose();
 	const errors: unknown[] = [];
+	const warnings: unknown[] = [];
 	const bridge = createBridge((error) => void errors.push(error));
 	let ended = false;
-	/** Puts the thread's `lynx` in place as the global, before that thread's code runs. */
+	let destroyed = false;
+	/**
+	 * Puts the thread's globals in place, before that thread's code runs: its `lynx`, and Lynx's
+	 * element functions on the main thread only. On a device the background has none, so a call of
+	 * one there fails as it would.
+	 */
 	const enter = (thread: Thread): void => {
 		if (ended) return;
-		installGlobals({ lynx: thread === "main-thread" ? lynx.mainThread : lynx.background });
+		if (thread === "main-thread") {
+			installGlobals({ ...engine.functions, lynx: lynx.mainThread });
+			return;
+		}
+		installGlobals({ lynx: lynx.background });
+		removeGlobals(elementFunctions);
 	};
 	const engine = createEngine({
 		...(options.document && { document: options.document }),
@@ -73,15 +113,30 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		enter: () => enter("main-thread"),
 		report: (error) => void errors.push(error),
 	});
+	const elementFunctions = Object.keys(engine.functions);
 	const initData = options.initData ?? {};
+	const app: TestApp = { _params: { initData: { ...initData }, updateData: {} } };
 	const lynx = createLynx({
 		bridge,
 		lifecycle: engine.lifecycle,
 		initData,
 		globalProps: options.globalProps ?? {},
 		errors,
+		warnings,
+		app,
 		enter,
 	});
+	/**
+	 * Calls a hook of the app, as the engine does: a missing one is skipped (js_app.cc, which
+	 * looks it up with `getPropertyAsFunction` and returns when there is none).
+	 */
+	const callApp = (name: string, ...args: unknown[]): void => {
+		enter("background");
+		const hook = app[name];
+		if (typeof hook === "function") hook.apply(app, args);
+	};
+	const toBackground = (name: string, ...args: unknown[]): void =>
+		bridge.send(() => callApp(name, ...args));
 	// On a device, Lynx's element functions are the main thread's globals.
 	const restoreGlobals = installGlobals(
 		{ ...engine.functions, lynx: lynx.mainThread },
@@ -92,11 +147,44 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		engine,
 		lynx,
 		errors,
+		warnings,
+		app,
+		updateData(data, updateOptions = {}) {
+			engine.lifecycle.update(data, {});
+			toBackground("updateCardData", data, { type: updateOptions.type ?? 0 });
+		},
+		reload(data = {}) {
+			engine.lifecycle.removeComponents();
+			toBackground("onAppReload", data);
+			engine.lifecycle.update(data, { reloadTemplate: true });
+		},
+		destroy() {
+			if (destroyed) return;
+			destroyed = true;
+			engine.lifecycle.destroy();
+			toBackground("callDestroyLifetimeFun");
+		},
+		asMainThread(code) {
+			enter("main-thread");
+			return code();
+		},
+		asBackground(code) {
+			enter("background");
+			return code();
+		},
 		settle: bridge.settle,
 		dispose() {
 			if (ended) return;
 			if (activeSession() === page) setActiveSession(undefined);
-			engine.lifecycle.destroy();
+			if (!destroyed) {
+				destroyed = true;
+				engine.lifecycle.destroy();
+				try {
+					callApp("callDestroyLifetimeFun");
+				} catch (error) {
+					errors.push(error);
+				}
+			}
 			ended = true;
 			bridge.close();
 			restoreGlobals();

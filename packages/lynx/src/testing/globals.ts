@@ -65,6 +65,21 @@ export function installGlobals(
 	};
 }
 
+/** Deletes the globals named `names`: what `installGlobals` saved puts them back at the end. */
+export function removeGlobals(names: readonly string[]): void {
+	// Boundary: any name may be a global.
+	const scope = globalThis as unknown as Record<string, unknown>;
+	for (const name of names) delete scope[name];
+}
+
+/** Runs `callback` on a microtask, as the thread that queued it. */
+export function queueMicrotaskAs(enter: () => void, callback: () => void): void {
+	queueMicrotask(() => {
+		enter();
+		callback();
+	});
+}
+
 /** What the test setup needs of the page it cleans up. */
 export interface ActiveSession {
 	dispose(): void;

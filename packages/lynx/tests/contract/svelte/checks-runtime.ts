@@ -15,6 +15,11 @@ interface RendererState {
 
 const MARKUP = '<view id="a"><text>hello</text></view>';
 
+/** A node as Svelte's development build leaves it. */
+interface Located {
+	__svelte_meta?: { loc?: unknown };
+}
+
 export const checks: Checks = {
 	"push-renderer": async () => {
 		// Boundary: Svelte's internal modules have no types.
@@ -59,6 +64,16 @@ export const checks: Checks = {
 		// `mount` takes the renderer as an option: without it, it sets up DOM event delegation.
 		const { target } = await mountComponent(MARKUP);
 		expect(target.children.map((node) => node.name)).toContain("view");
+	},
+
+	"dev-element-locations": async () => {
+		// A development build records where each element of a template was written.
+		const { target, file } = await mountComponent('<view id="a"></view>', true);
+		// Boundary: the tree renderer's nodes, with the field Svelte adds.
+		const nodes = target.children as unknown as (Located & { name?: string })[];
+		const view = nodes.find((node) => node.name === "view");
+		const fixture = path.basename(file).replace(/^fixture-(\d+)\.mjs$/, "Fixture$1.svelte");
+		expect(view?.__svelte_meta?.loc).toMatchObject({ file: fixture, line: 1, column: 0 });
 	},
 
 	"unmount-synchronous": async () => {

@@ -38,6 +38,7 @@ export type {
 	BackgroundLynx,
 	MainThreadLynx,
 	NativeApp,
+	TestApp,
 	ThreadContext,
 	ThreadMessage,
 } from "./page/lynx.ts";

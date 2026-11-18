@@ -4,7 +4,7 @@
 // crosses the page's bridge as a copy, made when it is sent, as a device converts it.
 
 import type { Lifecycle, LifecycleProxy } from "../engine/lifecycle.ts";
-import { readGlobal } from "../globals.ts";
+import { queueMicrotaskAs, readGlobal } from "../globals.ts";
 import type { Bridge } from "./bridge.ts";
 
 /** A thread of the page. */
@@ -43,8 +43,20 @@ interface SharedLynx {
 	readonly __initData: Record<string, unknown>;
 	/** The host's global props. */
 	readonly __globalProps: Record<string, unknown>;
-	/** Reports an error into Lynx; the test page keeps it. */
-	reportError(error: unknown): void;
+	/**
+	 * Reports an error into Lynx, at the `level` given: `"error"`, the default, or `"warning"`
+	 * (lynx-core's lynx.ts, reportError). The test page keeps it.
+	 */
+	reportError(error: unknown, options?: { level?: string }): void;
+}
+
+/**
+ * The app the engine calls on the background (`lynx.getApp()`): a page puts its hooks on it, and
+ * it keeps the data the page was opened with (lynx-core's app, `_params`).
+ */
+export interface TestApp {
+	[hook: string]: unknown;
+	_params: { initData: Record<string, unknown>; updateData: Record<string, unknown> };
 }
 
 /** The main thread's `lynx`. */
@@ -63,6 +75,13 @@ export interface BackgroundLynx extends SharedLynx {
 	getCoreContext(): ThreadContext;
 	/** The native app. */
 	getNativeApp(): NativeApp;
+	/** The app the engine calls the page's hooks on. */
+	getApp(): TestApp;
+	/**
+	 * Runs `callback` on a microtask (lynx-core's lynx.ts, queueMicrotask, which hands it to the
+	 * engine's own queue).
+	 */
+	queueMicrotask(callback: () => void): void;
 }
 
 /** What may cross between the threads, to be checked: anything else is named in the error. */
@@ -72,8 +91,9 @@ function describe(value: unknown): string | undefined {
 	if (typeof value === "bigint") return "a bigint";
 	if (typeof value === "number" && !Number.isFinite(value)) return `the number ${value}`;
 	if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+	// A plain object of any realm: each thread is a realm of its own on a device.
 	const prototype: unknown = Object.getPrototypeOf(value);
-	if (prototype === Object.prototype || prototype === null) return undefined;
+	if (prototype === null || Object.getPrototypeOf(prototype) === null) return undefined;
 	return `an instance of ${value.constructor.name}`;
 }
 
@@ -124,10 +144,14 @@ export function createLynx(options: {
 	initData: Record<string, unknown>;
 	globalProps: Record<string, unknown>;
 	errors: unknown[];
+	/** Where a report at the warning level goes. */
+	warnings: unknown[];
+	/** The app of the background. */
+	app: TestApp;
 	/** Puts a thread's `lynx` in place: it runs before that thread's code does. */
 	enter: (thread: Thread) => void;
 }): { mainThread: MainThreadLynx; background: BackgroundLynx } {
-	const { bridge, lifecycle, errors, enter } = options;
+	const { bridge, lifecycle, errors, warnings, app, enter } = options;
 	const mainThread = createSide();
 	const background = createSide();
 
@@ -159,7 +183,8 @@ export function createLynx(options: {
 	const shared = (): SharedLynx => ({
 		__initData: options.initData,
 		__globalProps: options.globalProps,
-		reportError: (error) => void errors.push(error),
+		reportError: (error, reportOptions) =>
+			void (reportOptions?.level === "warning" ? warnings : errors).push(error),
 	});
 	const jsContext = context({
 		from: mainThread,
@@ -210,6 +235,8 @@ export function createLynx(options: {
 			...shared(),
 			getCoreContext: () => coreContext,
 			getNativeApp: () => nativeApp,
+			getApp: () => app,
+			queueMicrotask: (callback) => queueMicrotaskAs(() => enter("background"), callback),
 		},
 	};
 }

@@ -1,13 +1,13 @@
 // What the binding counts on Lynx's engine to do, written once as cases that a runner applies to a
-// target: the engine fake here, a device later. A case uses only what a page's main thread has
+// target: the engine fake here, and a device. A case uses only what a page's main thread has
 // (Lynx's element functions, `lynx.getEngine()`, the global `runWorklet`) and what a device can be
 // made to do (tap, pan, show a list's cell, update the page's data); it returns a plain
 // observation, and the runner compares it with the case's `expected`. Nothing here may need what
-// only the fake has.
+// only the fake has, nor a built-in a device's main thread lacks, such as `toSorted` or `at`.
 //
-// Behaviors with no device probe yet: the tree's own functions; `__SetInlineStyles` wiping the
-// styles added one by one; one main-thread function per event name and type; the lifecycle events.
-// The stop bits have a weak one: one probe page returns `stopPropagation`, none the other bit.
+// Every case but those marked `sourceOnly` has run on Lynx 4.2 on iOS and Android, in Lynx
+// Explorer, with real taps and pans, and expects what the device answered. A `sourceOnly` case
+// rests on Lynx's source alone until a device runs it.
 
 import type { ElementFunctions, LifecycleProxy, LynxElement } from "../../../src/testing/index.ts";
 
@@ -42,6 +42,8 @@ export interface Behavior {
 	source: string;
 	run(target: EngineTarget): Promise<unknown>;
 	expected: unknown;
+	/** The case rests on Lynx's source alone: no device has run it yet. */
+	sourceOnly?: true;
 }
 
 /** A view in the page, with a size a finger can tap and an id. */
@@ -106,7 +108,7 @@ export const BEHAVIORS: Behavior[] = [
 			]);
 			return {
 				children: f.__QuerySelectorAll(box, "#box > view", {}).map((child) => labels.get(child)),
-				removedFound: f.__QuerySelector(f.__GetPageElement()!, "#a", {}) !== undefined,
+				removedFound: f.__QuerySelector(f.__GetPageElement()!, "#a", {}) !== null,
 			};
 		},
 		expected: { children: ["b", "c"], removedFound: false },
@@ -126,23 +128,26 @@ export const BEHAVIORS: Behavior[] = [
 		expected: { before: 6, after: 0 },
 	},
 	{
-		name: "a plain view is flattened and has no UI of its own; flatten=false keeps one",
-		source: "core/renderer/dom/element.cc (Element::TendToFlatten, CheckFlattenRelatedProp)",
+		name: "a view with an id answers a UI method with code 0 and its box, flattened or not",
+		source:
+			"core/renderer/template_assembler.cc (LepusInvokeUIMethod), which the platform answers from the element's UI; a flattened view keeps one (Android: LynxFlattenUI)",
 		async run(target) {
 			const f = target.functions;
 			const plain = view(target, "plain");
 			const kept = view(target, "kept");
 			f.__SetAttribute(kept, "flatten", false);
 			f.__FlushElementTree();
+			const answer = await invoke(target, plain, "boundingClientRect");
 			return {
-				plain: (await invoke(target, plain, "boundingClientRect")).code,
+				plain: answer.code,
+				plainHasBox: (answer.data as Rect).width > 0 && (answer.data as Rect).height > 0,
 				kept: (await invoke(target, kept, "boundingClientRect")).code,
 			};
 		},
-		expected: { plain: 6, kept: 0 },
+		expected: { plain: 0, plainHasBox: true, kept: 0 },
 	},
 	{
-		name: "a view that stops being flattened answers at 0, 0 until the next flush",
+		name: "a view that stops being flattened answers at its place before the next flush",
 		source: "core/renderer/dom/element.cc (Element::CheckFlattenRelatedProp)",
 		async run(target) {
 			const f = target.functions;
@@ -153,12 +158,81 @@ export const BEHAVIORS: Behavior[] = [
 			f.__FlushElementTree();
 			const after = (await invoke(target, element, "boundingClientRect")).data as Rect;
 			return {
-				before: { left: before.left, top: before.top },
-				sameSize: before.width === after.width && before.height === after.height,
-				placedAfter: after.left !== 0 || after.top !== 0,
+				placedBefore: before.left !== 0 || before.top !== 0,
+				sameAfter: JSON.stringify(before) === JSON.stringify(after),
 			};
 		},
-		expected: { before: { left: 0, top: 0 }, sameSize: true, placedAfter: true },
+		expected: { placedBefore: true, sameAfter: true },
+	},
+	{
+		name: "a view with no attribute, id or event, and only layout styles, has no UI (code 6) until the flush after it gains an attribute",
+		source:
+			"core/renderer/dom/element_container.cc (ElementContainer::CreatePaintingNode returns for a layout-only element); core/renderer/dom/fiber/fiber_element.cc (Element::CanBeLayoutOnly, MarkHasLayoutOnlyPropsIfNecessary)",
+		async run(target) {
+			const f = target.functions;
+			const element = f.__CreateView(0);
+			f.__SetInlineStyles(element, "width: 100px; height: 100px; margin: 20px");
+			f.__AppendElement(f.__GetPageElement()!, element);
+			f.__FlushElementTree();
+			const flushed = (await invoke(target, element, "boundingClientRect")).code;
+			f.__SetAttribute(element, "accessibility-label", "box");
+			const given = (await invoke(target, element, "boundingClientRect")).code;
+			f.__FlushElementTree();
+			const flushedAgain = (await invoke(target, element, "boundingClientRect")).code;
+			return { flushed, given, flushedAgain };
+		},
+		expected: { flushed: 6, given: 6, flushedAgain: 0 },
+	},
+	{
+		name: "a class, an empty dataset or a custom property leaves a view with no UI; an id of none, or a scroll view as its parent, gives it one",
+		source:
+			"core/renderer/dom/fiber/fiber_element.cc (Element::ParseRawInlineStyles keeps a custom property out of the styles); core/runtime/lepus/bindings/renderer_functions.cc (FiberSetID writes an empty id for none); core/renderer/dom/fiber/scroll_element.cc (ScrollElement::OnNodeAdded)",
+		async run(target) {
+			const f = target.functions;
+			const page = f.__GetPageElement()!;
+			const scroller = f.__CreateScrollView(0);
+			f.__SetInlineStyles(scroller, "width: 100px; height: 100px");
+			f.__AppendElement(page, scroller);
+			const inner = f.__CreateView(0);
+			f.__SetInlineStyles(inner, "width: 100px; height: 40px");
+			f.__AppendElement(scroller, inner);
+			const shapes: [string, LynxElement, (element: LynxElement) => void][] = [
+				["unmatchedClass", page, (element) => f.__SetClasses(element, "no-such-class")],
+				["emptyDataset", page, (element) => f.__SetDataset(element, {})],
+				[
+					"customPropertyInText",
+					page,
+					(element) => f.__SetInlineStyles(element, "width: 100px; height: 20px; --x: red"),
+				],
+				["customPropertyAdded", page, (element) => f.__AddInlineStyle(element, "--x", "red")],
+				["customPropertyObject", page, (element) => f.__SetInlineStyles(element, { "--x": "red" })],
+				["idSetToNone", page, (element) => f.__SetID(element, null)],
+				["inScrollView", scroller, () => {}],
+				["inViewInScrollView", inner, () => {}],
+			];
+			const made = shapes.map(([name, parent, shape]) => {
+				const element = f.__CreateView(0);
+				f.__SetInlineStyles(element, "width: 100px; height: 20px");
+				shape(element);
+				f.__AppendElement(parent, element);
+				return [name, element] as const;
+			});
+			f.__FlushElementTree();
+			const codes: Record<string, number> = {};
+			for (const [name, element] of made)
+				codes[name] = (await invoke(target, element, "boundingClientRect")).code;
+			return codes;
+		},
+		expected: {
+			unmatchedClass: 6,
+			emptyDataset: 6,
+			customPropertyInText: 6,
+			customPropertyAdded: 6,
+			customPropertyObject: 6,
+			idSetToNone: 0,
+			inScrollView: 0,
+			inViewInScrollView: 6,
+		},
 	},
 	{
 		name: "__SetInlineStyles wipes the styles added one by one",
@@ -359,7 +433,7 @@ export const BEHAVIORS: Behavior[] = [
 				target: event.target.elementRefptr === element,
 				manager: Object.keys(manager)
 					.filter((key) => typeof manager[key] === "function")
-					.toSorted(),
+					.sort(),
 			};
 		},
 		expected: {
@@ -472,7 +546,7 @@ export const BEHAVIORS: Behavior[] = [
 		expected: ["fade"],
 	},
 	{
-		name: "attributes read back as they were set, and a missing one is undefined",
+		name: "attributes read back as they were set, and a missing one is null",
 		source:
 			"core/runtime/lepus/bindings/renderer_functions.cc (FiberGetAttributeByName, FiberGetAttributeNames)",
 		async run(target) {
@@ -485,11 +559,18 @@ export const BEHAVIORS: Behavior[] = [
 			return {
 				options: f.__GetAttributeByName(element, "options"),
 				count: f.__GetAttributeByName(element, "count"),
-				missing: f.__GetAttributeByName(element, "gone") === undefined,
-				names: f.__GetAttributeNames(element).toSorted(),
+				gone: f.__GetAttributeByName(element, "gone") === null,
+				neverSet: f.__GetAttributeByName(element, "never") === null,
+				names: [...f.__GetAttributeNames(element)].sort(),
 			};
 		},
-		expected: { options: { a: [1] }, count: 3, missing: true, names: ["count", "options"] },
+		expected: {
+			options: { a: [1] },
+			count: 3,
+			gone: true,
+			neverSet: true,
+			names: ["count", "options"],
+		},
 	},
 	{
 		name: "the engine tells the main thread of a data update through lynx.getEngine()",

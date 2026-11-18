@@ -36,6 +36,8 @@ function programFile(file: string): string {
  * the package, so no app imports them.
  */
 export const RUNTIME_FILES: Readonly<{
+	/** What the background's engine lacks, filled in before anything else on that thread loads. */
+	backgroundStartUp: string;
 	/** The main thread's element applier and runtime for main-thread functions. */
 	mainThread: string;
 	/** The main thread's copy of the page, for the first frame. */
@@ -47,7 +49,8 @@ export const RUNTIME_FILES: Readonly<{
 	/** What stands in for `svelte/internal/client` in the background's compiled components. */
 	clientInternals: string;
 }> = {
-	mainThread: programFile("main-thread/index"),
+	backgroundStartUp: programFile("background/start-up"),
+	mainThread: programFile("main-thread/entry"),
 	firstFrame: programFile("first-frame/index"),
 	backgroundOnly: programFile("background/background-only"),
 	serverInternals: programFile("svelte/runtime/server-internals"),

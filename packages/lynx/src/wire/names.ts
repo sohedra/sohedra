@@ -6,6 +6,14 @@ export type Thread = "background" | "main-thread";
 /** The prefix of attributes whose value runs on the main thread: `main-thread:ontap`, `main-thread:ref`. */
 export const MAIN_THREAD_PREFIX = "main-thread:";
 
+/** The elements whose children may be text: a text node is a `raw-text` element only inside one. */
+export const TEXT_CONTAINERS: ReadonlySet<string> = new Set([
+	"text",
+	"inline-text",
+	"x-text",
+	"x-inline-text",
+]);
+
 /** The package's name, which compiled code and the build name its entries with. */
 export const PACKAGE_NAME = "@sohedra/lynx";
 

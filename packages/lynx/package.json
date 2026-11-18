@@ -7,9 +7,11 @@
 	"type": "module",
 	"sideEffects": [
 		"./src/background/background-only.ts",
+		"./src/background/start-up.ts",
 		"./src/first-frame/**",
 		"./src/main-thread/**",
 		"./lib/background/background-only.js",
+		"./lib/background/start-up.js",
 		"./lib/first-frame/**",
 		"./lib/main-thread/**"
 	],
@@ -18,6 +20,11 @@
 		"./config/rstest": "./src/build/presets/rstest.ts",
 		"./config/svelte": "./src/build/svelte-config/index.ts",
 		"./env": "./src/env/index.ts",
+		"./internal/renderer": "./src/background/renderer/entry.ts",
+		"./internal/page": {
+			"worker": "./src/first-frame/page.ts",
+			"default": "./src/background/page-entry.ts"
+		},
 		"./client": {
 			"types": "./types/client.d.ts"
 		}
@@ -39,6 +46,15 @@
 			"./env": {
 				"types": "./lib/env/index.d.ts",
 				"default": "./lib/env/index.js"
+			},
+			"./internal/renderer": {
+				"types": "./lib/background/renderer/entry.d.ts",
+				"default": "./lib/background/renderer/entry.js"
+			},
+			"./internal/page": {
+				"types": "./lib/background/page-entry.d.ts",
+				"worker": "./lib/first-frame/page.js",
+				"default": "./lib/background/page-entry.js"
 			},
 			"./client": {
 				"types": "./types/client.d.ts"

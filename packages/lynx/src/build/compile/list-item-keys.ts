@@ -1,7 +1,10 @@
 // A list item needs a key, because Lynx's list tracks its cells by `item-key`. A `<list-item>`
 // written directly inside a keyed `{#each}` takes the block's key expression as its `item-key`,
 // so a list has the one key Svelte already asks for. Lynx's list drops an item whose key is not a
-// non-empty string, so the key goes through `String`. An `item-key` written on the element wins.
+// non-empty string, so the key goes through `String`. In a development build, the background's
+// copy gives the key as it is: the renderer writes it as text and warns about a key that is neither
+// a string nor a number, which `String` would turn into "[object Object]". An `item-key` written
+// on the element wins.
 // A `<list-item>` with no key at all (not directly in a keyed block, no `item-key`, no spread
 // that could carry one) is a warning in a development build.
 
@@ -40,10 +43,12 @@ export const listItemKeys: Pass = ({ source, filename, ast, thread, development,
 		const key = keys.get(element);
 		if (key !== undefined) {
 			const at = element.start! + 1 + TAG.length;
+			const expression = source.slice(key.start, key.end);
+			const raw = development && thread === "background";
 			edits.push({
 				start: at,
 				end: at,
-				text: ` ${KEY}={String(${source.slice(key.start, key.end)})}`,
+				text: ` ${KEY}={${raw ? expression : `String(${expression})`}}`,
 			});
 			continue;
 		}

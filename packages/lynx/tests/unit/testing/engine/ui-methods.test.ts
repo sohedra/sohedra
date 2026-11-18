@@ -1,7 +1,8 @@
-// UI methods and the flush: no UI before the tree is flushed, flattened views have none, and an
-// element that stopped being flattened answers as it was until the next flush.
+// UI methods and the flush: no UI before the tree is flushed, none for a layout-only view, and a
+// view with an attribute answers whether Lynx flattens it or not. The layout-only shapes are those
+// Lynx 4.2 answered on iOS and Android.
 
-import { beforeEach, describe, expect, it } from "@rstest/core";
+import { describe, expect, it } from "@rstest/core";
 
 import type { LynxElement } from "../../../../src/testing/index.ts";
 import { engineForEach, smallPage } from "./engine-fixture.ts";
@@ -22,13 +23,9 @@ async function invoke(element: LynxElement) {
 }
 
 describe("a UI method", () => {
-	// These tests are about the flush, not flattening: their plain views keep a view of their own.
-	beforeEach(() => engine().flattenViews(false));
-
 	it("has no UI for an element before the tree is flushed, then answers what the test says", async () => {
 		const { page, inner } = smallPage(engine());
 		engine().respondWith((method) => ({ code: 0, data: `${method} done` }));
-		engine().flattenViews(false);
 		expect(await invoke(inner)).toEqual([{ code: 6 }]);
 		engine().functions.__FlushElementTree(page);
 		expect(await invoke(inner)).toEqual([{ code: 0, data: "boundingClientRect done" }]);
@@ -103,22 +100,12 @@ describe("a UI method", () => {
 	});
 });
 
-describe("flattening", () => {
-	it("is on unless a test turns it off, as on a device", async () => {
-		const { page, inner } = smallPage(engine());
-		engine().functions.__FlushElementTree(page);
-		expect(await invoke(inner)).toEqual([{ code: 6 }]);
-		engine().flattenViews(false);
-		expect(await invoke(inner)).toEqual([{ code: 0 }]);
-	});
-});
-
 describe("an element that is not in the page at the flush", () => {
 	it("gets no view, and has no UI until a flush finds it in the page", async () => {
 		const { page } = smallPage(engine());
 		const f = engine().functions;
-		engine().flattenViews(false);
 		const loose = f.__CreateView(0);
+		f.__SetID(loose, "loose");
 		f.__FlushElementTree(page);
 		expect(await invoke(loose)).toEqual([{ code: 6 }]);
 		f.__AppendElement(page, loose);
@@ -128,96 +115,169 @@ describe("an element that is not in the page at the flush", () => {
 });
 
 describe("a plain view", () => {
-	it("has no UI once flattening is on, until it is told it has one of its own", async () => {
-		const { page, inner } = smallPage(engine());
-		engine().flattenViews();
-		engine().functions.__FlushElementTree(page);
-		expect(await invoke(inner)).toEqual([{ code: 6 }]);
-		engine().functions.__SetAttribute(inner, "flatten", false);
-		engine().functions.__FlushElementTree(page);
-		expect(await invoke(inner)).toEqual([{ code: 0 }]);
-	});
+	const box = { left: 12, top: 200, width: 30, height: 40 };
 
-	it("does not take a view of another tag as flattened", async () => {
-		const { page, inner, outer } = smallPage(engine());
+	it("answers once the tree is flushed, flattened or not, as Lynx 4.2 does", async () => {
+		const { page, outer, inner } = smallPage(engine());
 		const f = engine().functions;
-		const scroller = f.__CreateScrollView(0);
-		f.__AppendElement(outer, scroller);
-		engine().flattenViews();
+		f.__SetAttribute(outer, "flatten", false);
 		f.__FlushElementTree(page);
-		expect(await invoke(scroller)).toEqual([{ code: 0 }]);
-		expect(await invoke(inner)).toEqual([{ code: 6 }]);
+		engine().respondWith(() => ({ code: 0, data: box }));
+		expect([...(await invoke(inner)), ...(await invoke(outer))]).toEqual([
+			{ code: 0, data: box },
+			{ code: 0, data: box },
+		]);
 	});
 
-	it("has a view of its own with a listener", async () => {
+	it("answers at its place when it stops being flattened, before the next flush", async () => {
 		const { page, inner } = smallPage(engine());
-		engine().flattenViews();
-		engine().functions.__AddEventListener(inner, "tap", () => {}, {});
 		engine().functions.__FlushElementTree(page);
-		expect(await invoke(inner)).toEqual([{ code: 0 }]);
-	});
-
-	it("has a view of its own with a main-thread function", async () => {
-		const { page, inner } = smallPage(engine());
-		engine().flattenViews();
-		engine().functions.__AddEvent(inner, "bindEvent", "tap", { type: "worklet", value: {} });
-		engine().functions.__FlushElementTree(page);
-		expect(await invoke(inner)).toEqual([{ code: 0 }]);
+		engine().respondWith(() => ({ code: 0, data: box }));
+		engine().functions.__SetAttribute(inner, "flatten", false);
+		expect(await invoke(inner)).toEqual([{ code: 0, data: box }]);
 	});
 });
 
-describe("an element that stopped being flattened", () => {
-	it("answers as the flattened element until the tree is flushed, then rightly", async () => {
-		const { page, inner } = smallPage(engine());
-		engine().flattenViews();
+describe("a layout-only view", () => {
+	/** A view in the page with only layout styles and nothing else, flushed. */
+	function layoutOnly() {
+		const { page, outer } = smallPage(engine());
+		const f = engine().functions;
+		const view = f.__CreateView(0);
+		f.__SetInlineStyles(view, "width: 10px; margin: 2px; display: flex; overflow: visible");
+		f.__SetClasses(view, "row");
+		f.__SetDataset(view, { row: 1 });
+		f.__AppendElement(outer, view);
+		f.__FlushElementTree(page);
+		return { page, view };
+	}
+
+	it("has no UI after any number of flushes", async () => {
+		const { page, view } = layoutOnly();
 		engine().functions.__FlushElementTree(page);
-		engine().respondWith(() => ({ code: 0, data: { left: 12, top: 200, width: 30, height: 40 } }));
-		const answers = [...(await invoke(inner))];
-		engine().functions.__SetAttribute(inner, "flatten", false);
-		answers.push(...(await invoke(inner)));
-		engine().functions.__FlushElementTree(page);
-		answers.push(...(await invoke(inner)));
-		expect(answers).toEqual([
-			{ code: 6 },
-			{ code: 0, data: { left: 0, top: 0, width: 30, height: 40 } },
-			{ code: 0, data: { left: 12, top: 200, width: 30, height: 40 } },
-		]);
-		expect(engine().invocations.map((call) => call.code)).toEqual([6, 0, 0]);
+		expect(await invoke(view)).toEqual([{ code: 6 }]);
+	});
+
+	it("has one from the flush after it gains an attribute, which it keeps", async () => {
+		const { page, view } = layoutOnly();
+		const f = engine().functions;
+		f.__SetAttribute(view, "flatten", false);
+		const answers = [...(await invoke(view))];
+		f.__FlushElementTree(page);
+		answers.push(...(await invoke(view)));
+		f.__SetAttribute(view, "flatten", null);
+		f.__FlushElementTree(page);
+		answers.push(...(await invoke(view)));
+		expect(answers).toEqual([{ code: 6 }, { code: 0 }, { code: 0 }]);
 	});
 
 	it.each([
 		[
+			"a custom property in the style text",
+			(view: LynxElement) => engine().functions.__SetInlineStyles(view, "width: 10px; --x: red"),
+		],
+		[
+			"a custom property added one by one",
+			(view: LynxElement) => engine().functions.__AddInlineStyle(view, "--x", "red"),
+		],
+		[
+			"a custom property set as an object",
+			(view: LynxElement) => engine().functions.__SetInlineStyles(view, { "--x": "red" }),
+		],
+	])("still has none with %s, as on Lynx 4.2", async (_name, give) => {
+		const { page, view } = layoutOnly();
+		give(view);
+		engine().functions.__FlushElementTree(page);
+		expect(await invoke(view)).toEqual([{ code: 6 }]);
+	});
+
+	it.each([
+		["an id", (view: LynxElement) => engine().functions.__SetID(view, "box")],
+		["an id of none", (view: LynxElement) => engine().functions.__SetID(view, null)],
+		[
 			"a listener",
-			(element: LynxElement) => engine().functions.__AddEventListener(element, "tap", () => {}, {}),
+			(view: LynxElement) => engine().functions.__AddEventListener(view, "tap", () => {}, {}),
+		],
+		[
+			"a main-thread function",
+			(view: LynxElement) =>
+				engine().functions.__AddEvent(view, "bindEvent", "tap", { type: "worklet", value: {} }),
 		],
 		[
 			"a gesture detector",
-			(element: LynxElement) =>
+			(view: LynxElement) =>
 				engine().functions.__SetGestureDetector(
-					element,
+					view,
 					1,
 					0,
 					{ callbacks: [] },
 					{ waitFor: [], simultaneous: [], continueWith: [] },
 				),
 		],
-	])(
-		"answers as the flattened element after %s gave it a view, until the next flush",
-		async (_name, give) => {
-			const { page, inner } = smallPage(engine());
-			engine().functions.__FlushElementTree(page);
-			engine().respondWith(() => ({
-				code: 0,
-				data: { left: 12, top: 200, width: 30, height: 40 },
-			}));
-			give(inner);
-			const answers = [...(await invoke(inner))];
-			engine().functions.__FlushElementTree(page);
-			answers.push(...(await invoke(inner)));
-			expect(answers).toEqual([
-				{ code: 0, data: { left: 0, top: 0, width: 30, height: 40 } },
-				{ code: 0, data: { left: 12, top: 200, width: 30, height: 40 } },
-			]);
-		},
-	);
+		[
+			"a style that is not layout",
+			(view: LynxElement) => engine().functions.__AddInlineStyle(view, "background-color", "red"),
+		],
+		[
+			"an overflow that is not visible",
+			(view: LynxElement) => engine().functions.__AddInlineStyle(view, "overflow", "hidden"),
+		],
+		[
+			"a fixed position",
+			(view: LynxElement) => engine().functions.__AddInlineStyle(view, "position", "fixed"),
+		],
+	])("has one once %s is there at a flush", async (_name, give) => {
+		const { page, view } = layoutOnly();
+		give(view);
+		engine().functions.__FlushElementTree(page);
+		expect(await invoke(view)).toEqual([{ code: 0 }]);
+	});
+
+	it("has one straight in a scroll view, and keeps it there; further down it has none", async () => {
+		const { page } = smallPage(engine());
+		const f = engine().functions;
+		const scroller = f.__CreateScrollView(0);
+		f.__AppendElement(page, scroller);
+		const [child, grandchild] = [f.__CreateView(0), f.__CreateView(0)];
+		f.__AppendElement(scroller, child);
+		f.__AppendElement(child, grandchild);
+		f.__FlushElementTree(page);
+		expect([...(await invoke(child)), ...(await invoke(grandchild))]).toEqual([
+			{ code: 0 },
+			{ code: 6 },
+		]);
+	});
+
+	it("keeps the UI a scroll view gave it once it is taken out, flushed there or not", async () => {
+		const { page, outer } = smallPage(engine());
+		const f = engine().functions;
+		const scroller = f.__CreateScrollView(0);
+		f.__AppendElement(page, scroller);
+		const view = f.__CreateView(0);
+		f.__AppendElement(scroller, view);
+		f.__RemoveElement(scroller, view);
+		f.__AppendElement(outer, view);
+		f.__FlushElementTree(page);
+		expect(await invoke(view)).toEqual([{ code: 0 }]);
+	});
+
+	it("has none in an element tagged scroll-view that __CreateScrollView did not make", async () => {
+		const { page } = smallPage(engine());
+		const f = engine().functions;
+		const scroller = f.__CreateElement("scroll-view", 0);
+		f.__AppendElement(page, scroller);
+		const view = f.__CreateView(0);
+		f.__AppendElement(scroller, view);
+		f.__FlushElementTree(page);
+		expect(await invoke(view)).toEqual([{ code: 6 }]);
+	});
+
+	it("is a view only: an element of another tag has a UI", async () => {
+		const { page, outer } = smallPage(engine());
+		const f = engine().functions;
+		const text = f.__CreateText(0);
+		f.__AppendElement(outer, text);
+		f.__FlushElementTree(page);
+		expect(await invoke(text)).toEqual([{ code: 0 }]);
+	});
 });

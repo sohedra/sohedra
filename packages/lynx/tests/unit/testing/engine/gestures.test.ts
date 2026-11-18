@@ -134,16 +134,4 @@ describe("a detector set with __SetGestureDetector", () => {
 				.map((entry) => entry.id),
 		).toEqual([7, 3]);
 	});
-
-	it("makes the element need a view of its own: a detector stops it being flattened", async () => {
-		const { page, inner } = detector();
-		engine().flattenViews();
-		engine().functions.__FlushElementTree(page);
-		const answers: number[] = [];
-		engine().functions.__InvokeUIMethod(inner, "boundingClientRect", {}, (result) =>
-			answers.push(result.code),
-		);
-		await new Promise((resolve) => setImmediate(resolve));
-		expect(answers).toEqual([0]);
-	});
 });

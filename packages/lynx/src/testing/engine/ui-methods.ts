@@ -1,9 +1,14 @@
-// UI methods and the flush. The engine makes an element's view when it flushes the tree, so a UI
-// method on an element before that finds no UI; a flattened element has no view of its own
-// either.
+// UI methods and the flush. The engine makes an element's UI when it flushes the tree, so a UI
+// method on an element before that finds none, and it makes none for a layout-only view
+// (layout-only.ts). A view that Lynx flattens still has a UI (Android keeps a LynxFlattenUI for it,
+// and iOS does not flatten), and answers as any other: on Lynx 4.2, on iOS and Android, a flattened
+// view with an id gives `boundingClientRect` code 0 and its box, also right after `flatten` turns
+// false. Android's LynxFlattenUI has no `takeScreenshot`, which answers 3 there; the fake leaves
+// that to the test's responder, as it models no platform.
 
+import { isLayoutOnly } from "./layout-only.ts";
 import { argumentError, stateOf } from "./state.ts";
-import type { ElementState, EngineState } from "./state.ts";
+import type { EngineState } from "./state.ts";
 import { descendantsOf } from "./tree.ts";
 import type { InvokeResult, LynxElement } from "./types.ts";
 
@@ -24,28 +29,6 @@ export interface UiFunctions {
 	__FlushElementTree(page?: LynxElement, options?: unknown): void;
 }
 
-/**
- * Whether the engine gives the element no view of its own. A plain `<view>` with nothing that
- * needs one is flattened into its parent's drawing (on, as on a device, unless a test turns it
- * off): `flatten="false"` keeps a view
- * (core/renderer/dom/element.cc, Element::CheckFlattenRelatedProp and Element::TendToFlatten).
- * An event handler or a gesture detector also keeps one in what the binding's device probes saw;
- * that is not read off the engine's source, where Element::TendToFlatten asks only for the
- * `attach` and `detach` events (Element::SetEventHandler).
- */
-export function isFlattened(engine: EngineState, state: ElementState): boolean {
-	return (
-		engine.flattening &&
-		state.tag === "view" &&
-		state.attrs["flatten"] !== false &&
-		state.attrs["flatten"] !== "false" &&
-		state.listeners.length === 0 &&
-		state.mainThreadEvents.length === 0 &&
-		state.handlers.length === 0 &&
-		state.detectors.size === 0
-	);
-}
-
 /** The functions that reach the page's UI, over the engine's records. */
 export function uiFunctions(engine: EngineState): UiFunctions {
 	return {
@@ -61,26 +44,10 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 			}
 			if (typeof callback !== "function")
 				throw argumentError({ fn: "__InvokeUIMethod", index: 3, expected: "a function" });
-			// No UI before the flush that finds the element in the page; none while it was flattened
-			// at the last flush and still is.
-			const flattenedThen = engine.flattenedAtFlush.has(state);
-			let result: InvokeResult =
-				engine.unflushed.has(state) || (flattenedThen && isFlattened(engine, state))
-					? { code: NO_UI }
-					: engine.respond(method, params, state.node);
-			// Flattened at the last flush and given a reason for a view since (`flatten="false"`, a
-			// listener, a detector): the engine has not made the view yet and answers as the
-			// flattened element it still is, with the right size and the wrong position.
-			const data = result.data;
-			if (
-				flattenedThen &&
-				result.code === 0 &&
-				typeof data === "object" &&
-				data !== null &&
-				("left" in data || "top" in data)
-			) {
-				result = { code: 0, data: { ...data, left: 0, top: 0 } };
-			}
+			// No UI before the flush that finds the element in the page, or for a layout-only view.
+			const result: InvokeResult = !engine.withUi.has(state)
+				? { code: NO_UI }
+				: engine.respond(method, params, state.node);
 			engine.log.invocations.push({
 				element: state.node,
 				method,
@@ -94,18 +61,16 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 				callback(answer);
 			});
 		},
-		// The flush makes the views of the elements in the page; one that is not in the page gets
-		// none. It also resolves their events: a `global-bindEvent` filed by then puts the element
+		// The flush makes the UIs of the elements in the page, except layout-only views; one that
+		// is not in the page gets none. It also resolves their events: a `global-bindEvent` filed by then puts the element
 		// in the global-bind table (core/renderer/dom/element_manager.cc).
 		__FlushElementTree(_page, options) {
 			engine.log.flushes.push(options);
-			engine.flattenedAtFlush.clear();
 			const inPage = engine.page ? descendantsOf(engine.page) : [];
 			for (const node of inPage) {
 				const state = engine.states.get(node);
 				if (!state) continue;
-				engine.unflushed.delete(state);
-				if (isFlattened(engine, state)) engine.flattenedAtFlush.add(state);
+				if (!isLayoutOnly(state)) engine.withUi.add(state);
 				for (const key of state.filedEvents) {
 					if (!key.startsWith(GLOBAL_BIND)) continue;
 					const names = engine.globalPhase.get(state) ?? new Set<string>();

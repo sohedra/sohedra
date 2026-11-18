@@ -18,7 +18,7 @@ describe("the engine fake", () => {
 	}
 
 	it("has a case for each behavior, each naming the engine source it follows", () => {
-		expect(BEHAVIORS).toHaveLength(17);
+		expect(BEHAVIORS).toHaveLength(19);
 		expect(BEHAVIORS.filter((behavior) => !behavior.source.startsWith("core/"))).toEqual([]);
 	});
 });

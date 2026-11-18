@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "ES2021",
+		"lib": ["ES2021"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"types": ["node", "@sohedra/lynx/client"],
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"strict": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true
+	},
+	"svelteOptions": { "namespace": "svelteLynx" },
+	"include": ["src"]
+}

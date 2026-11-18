@@ -93,6 +93,8 @@ export function addPageEntries(chain: RspackChain, options: PageEntryOptions): s
 			.add({
 				layer: LAYERS.background,
 				import: [
+					// First: what the engine lacks is filled in before any other module loads.
+					RUNTIME_FILES.backgroundStartUp,
 					// Bare specifier on purpose: the Lynx engine aliases it to the client with the dev
 					// server's ?hostname&port query attached.
 					...(liveReload || hot ? ["@lynx-js/webpack-dev-transport/client"] : []),

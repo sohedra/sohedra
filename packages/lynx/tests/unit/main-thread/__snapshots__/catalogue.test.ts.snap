@@ -1,0 +1,30 @@
+// Rstest Snapshot v1
+
+exports[`the main thread's catalogue > call_not_supported: the message 1`] = `
+"The main thread cannot answer a call of style yet.
+
+The background asked for something this main thread does not know. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/call_not_supported"
+`;
+
+exports[`the main thread's catalogue > change_not_applied: the message 1`] = `
+"A change to the page could not be applied on the main thread: The main thread has no element 7.
+While trying to insert <view> 42 into <scroll-view> 7.
+
+The rest of the change was applied. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/change_not_applied"
+`;
+
+exports[`the main thread's catalogue > element_missing: the message 1`] = `
+"The main thread has no element 7.
+
+The two threads disagree about the page. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/element_missing"
+`;
+
+exports[`the main thread's catalogue > ui_method_failed: the message 1`] = `
+"Lynx could not run setValue on the element: it answered with the code 4.
+
+Check that the element is on the page, and that Lynx's docs list setValue as a UI method of its tag.
+https://sohedra.com/e/ui_method_failed"
+`;

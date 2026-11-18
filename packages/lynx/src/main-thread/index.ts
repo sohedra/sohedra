@@ -1,3 +1,3 @@
 // Runs on Lynx's main thread: applies the background's patches with Lynx's element functions.
 
-export {};
+export { startMainThread } from "./runtime.ts";
