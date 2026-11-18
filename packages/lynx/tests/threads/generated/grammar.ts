@@ -9,7 +9,8 @@
 //     `<list-item>`s, one list inside a list's item, and a list long enough that a scroll releases
 //     rows, one of which may not be recyclable, which the root leads with on about half the pages;
 //     a long list renders only at the page level, through snippets and child components too, since
-//     each counts the lists around it and renders only where no more are;
+//     each counts the lists around it and renders only where no more are; and a page renders at
+//     most `MOST_ROWS` rows at once;
 //   - static and dynamic attributes, classes (text and object), styles (text and `style:`),
 //     `data-*` (text, number and object), `id`, an attribute of Lynx's, and a `tap` handler that
 //     changes the state;
@@ -29,6 +30,7 @@ import fc from "fast-check";
 
 import { longList, MOST_LISTS, nested, nodes } from "./markup.ts";
 import type { Context, MarkupNode, Renderable, Scope } from "./markup.ts";
+import { pageShape } from "./shape.ts";
 import { pageState, STATE_KEYS, STRING_KEYS } from "./state.ts";
 import type { PageState } from "./state.ts";
 
@@ -55,6 +57,14 @@ export interface PageModel {
 	/** Whether the page is compiled for production. */
 	production: boolean;
 }
+
+/**
+ * The most rows a page renders at once (`PageShape.rows`): about a dozen long lists' worth. About
+ * 98% of pages render no more; one past it is made again. The rules on lists keep nested long
+ * lists out, but `{#each}`, snippets and components still multiply rows: a page that nested long
+ * lists rendered tens of thousands of rows, and never finished.
+ */
+export const MOST_ROWS = 300;
 
 const ROOT_TEXTS = STRING_KEYS.map((key) => `st.${key}`);
 
@@ -167,4 +177,5 @@ export const pageModel: fc.Arbitrary<PageModel> = fc
 			indented: fc.boolean(),
 			production: fc.boolean(),
 		});
-	});
+	})
+	.filter((page) => pageShape(page).rows <= MOST_ROWS);

@@ -12,6 +12,9 @@ import type { ListChild, MarkupNode } from "./markup.ts";
  */
 const ROWS = 22;
 
+/** The most rows a long list has: `st.n0` is at most 2. */
+export const LONG_ROWS: number = ROWS + 2 * 2;
+
 function opening(tag: string, attributes: readonly string[]): string {
 	return attributes.length === 0 ? `<${tag}>` : `<${tag} ${attributes.join(" ")}>`;
 }

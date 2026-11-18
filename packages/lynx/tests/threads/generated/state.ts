@@ -39,6 +39,9 @@ export const ARRAY_KEYS: readonly ["a0", "a1"] = ["a0", "a1"];
 const items = (): fc.Arbitrary<string[]> =>
 	fc.uniqueArray(fc.constantFrom(...ITEMS), { maxLength: 4 });
 
+/** The most items an array of the state holds: four, and a tap may add `"z"`. */
+export const MOST_ITEMS = 5;
+
 /** A value for one key of the state. */
 export function stateValue(key: keyof PageState): fc.Arbitrary<PageState[keyof PageState]> {
 	if (key.startsWith("s")) return fc.constantFrom(...TEXTS);

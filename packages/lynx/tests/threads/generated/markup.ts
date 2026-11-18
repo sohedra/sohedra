@@ -274,7 +274,7 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 		}));
 }
 
-/** What of `renderables` may render here: in `context`, with no more lists around than it counts. */
+/** Those of `renderables` that may render here: in `context`, with no more lists around. */
 const renderableHere = (
 	renderables: readonly Renderable[],
 	context: Context,
