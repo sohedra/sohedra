@@ -19,10 +19,10 @@ export interface Cell {
 	/** The background was asked to write it again, and Lynx has not asked for it since. */
 	asked: boolean;
 	/**
-	 * Lynx asked for it before the main thread had its text (a deferred row): each answers Lynx
-	 * when the cell is made, with its unique id, or -1 when it never will be.
+	 * Lynx asked for it before the main thread had its text (a deferred row): what answers Lynx's
+	 * newest request when the cell is made, with its unique id, or -1 when it never will be.
 	 */
-	waiting: ((uid: number) => void)[] | null;
+	waiting: ((uid: number) => void) | null;
 	/** The background was asked to render it, and has not written it yet. */
 	requested: boolean;
 	/** Its text was let go of with its contents: until it is written whole, its ops are dropped. */

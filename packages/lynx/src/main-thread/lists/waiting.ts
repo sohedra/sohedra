@@ -28,7 +28,7 @@ export interface WaitingCells {
 	/** After hydration: the cells Lynx waits for are made if they can be, and asked for if not. */
 	resumeWaiting(): void;
 	/** The cells of a list that Lynx waits for, with what answers it. */
-	waitingCells(id: number): { id: number; waiting: ((uid: number) => void)[] }[];
+	waitingCells(id: number): { id: number; waiting: (uid: number) => void }[];
 }
 
 /** What the waiting cells need of the page. */
@@ -49,17 +49,24 @@ export function request(cell: Cell, scope: WaitingScope): void {
 /**
  * Lynx asked for a cell the main thread has no text for: the promise of its unique id. `answer`
  * runs with the id when the cell is made, before the promise resolves; never with -1.
+ *
+ * Only Lynx's newest request for a cell is answered: an older one resolves with -1, unflushed.
+ * Lynx asks again for a row it binds again (every row, at each update of the list), binds only the
+ * newest request, and hands back a cell flushed for an older one while it shows it
+ * (core/renderer/ui_component/list/default_list_adapter.cc, BindItemHolder and
+ * OnFinishBindItemHolder).
  */
 export function waitFor(
 	cell: Cell,
 	{ scope, answer }: { scope: WaitingScope; answer: (uid: number) => void },
 ): Promise<number> {
 	request(cell, scope);
+	cell.waiting?.(-1);
 	return new Promise((resolve) => {
-		(cell.waiting ??= []).push((uid) => {
+		cell.waiting = (uid) => {
 			if (uid !== -1) answer(uid);
 			resolve(uid);
-		});
+		};
 	});
 }
 
@@ -68,7 +75,7 @@ export function answerWaiting(cell: Cell, uid: number): void {
 	const waiting = cell.waiting;
 	if (!waiting) return;
 	cell.waiting = null;
-	for (const answer of waiting) answer(uid);
+	waiting(uid);
 }
 
 /**

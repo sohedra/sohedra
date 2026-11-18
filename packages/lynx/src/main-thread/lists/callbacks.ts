@@ -42,7 +42,7 @@ export function listCallbacks(scope: CallbacksScope): (id: number) => ListCallba
 					if (!list || !cell) return -1;
 					askAhead(list, { index, cellAt: (at) => scope.cellAt(list, at), scope: scope.waiting });
 					if (!cell.element && !scope.written(cell.id)) {
-						return waitFor(cell, {
+						void waitFor(cell, {
 							scope: scope.waiting,
 							answer: (uid) =>
 								mainThread.__FlushElementTree(cell.element, {
@@ -52,6 +52,9 @@ export function listCallbacks(scope: CallbacksScope): (id: number) => ListCallba
 									listID: listId,
 								}),
 						});
+						// Answered by the flush, later. The engine reads anything but a number as no
+						// answer; ReactLynx returns `undefined`, as a device ran it.
+						return undefined;
 					}
 					const uid = scope.attach(list, cell);
 					mainThread.__FlushElementTree(cell.element, {
@@ -87,16 +90,29 @@ export function listCallbacks(scope: CallbacksScope): (id: number) => ListCallba
 						if (asyncFlush) mainThread.__FlushElementTree(cell.element, { asyncFlush: true });
 						return uid;
 					});
-					const flush = (): void =>
+					const last = indexes[indexes.length - 1];
+					if (last !== undefined)
+						askAhead(list, {
+							index: last,
+							cellAt: (at) => scope.cellAt(list, at),
+							scope: scope.waiting,
+						});
+					const flush = (elementIDs: number[]): void =>
 						mainThread.__FlushElementTree(list.element, {
 							triggerLayout: true,
 							operationIDs: operationIds,
-							elementIDs: uids,
+							elementIDs,
 							listID: listId,
 						});
-					// The cells there are now, then all of them, with the same requests, once the rest come.
-					flush();
-					if (later.length > 0) void Promise.all(later).then(flush);
+					// The cells there are now, then the rest once they come, with the same requests both
+					// times, as the engine needs. A request is bound once: the batch adapter hands back a
+					// cell flushed again for one (batch_list_adapter.cc, OnFinishBindInternal).
+					const now = [...uids];
+					flush(now);
+					if (later.length > 0)
+						void Promise.all(later).then(() =>
+							flush(uids.map((uid, at) => (now[at] === -1 ? uid : -1))),
+						);
 				} catch (error) {
 					scope.report(error);
 				}

@@ -22,6 +22,7 @@ import {
 } from "../../svelte/build/index.ts";
 import type { AnyNode } from "../../svelte/build/index.ts";
 import { DEFER, DEFERRED_ROW, RENDERER_ENTRY } from "../../wire/index.ts";
+import { buildWarning, placeAt } from "../diagnostics/messages.ts";
 import type { Edit } from "../source-map/edits.ts";
 import { stringLiteral } from "../string-literal.ts";
 import type { Pass } from "./pass.ts";
@@ -77,12 +78,64 @@ function importEdit(context: { ast: Parameters<Pass>[0]["ast"]; renderer: string
 	return { start: 0, end: 0, text: `<script module>${line}</script>\n` };
 }
 
+/** Whether a spread is an object written out with a `defer` in it. */
+function spreadsDefer(attribute: AnyNode): boolean {
+	const expression = field(attribute, "expression");
+	if (expression?.type !== "ObjectExpression") return false;
+	// Boundary: the node is read by shape; an object expression has its properties.
+	return (expression["properties"] as AnyNode[]).some((property) => {
+		const key = field(property, "key");
+		return (
+			property.type === "Property" &&
+			((key?.type === "Identifier" && key["name"] === DEFER) ||
+				(key?.type === "Literal" && key["value"] === DEFER))
+		);
+	});
+}
+
+/**
+ * Where `defer` is written that the pass cannot see to: in a spread written out on a `<list-item>`,
+ * or on a `<svelte:element>`. A spread held in a variable cannot be read here.
+ */
+function ignoredDefer(element: AnyNode): string | undefined {
+	const attributes = attributesOf(element);
+	if (element.type === "SvelteElement")
+		return attributes.some(
+			(attribute) => attribute.type === "Attribute" && attribute.name === DEFER,
+		)
+			? "on <svelte:element>"
+			: undefined;
+	if (element.type !== "RegularElement" || element.name !== TAG) return undefined;
+	return attributes.some(
+		(attribute) => attribute.type === "SpreadAttribute" && spreadsDefer(attribute),
+	)
+		? "in a spread"
+		: undefined;
+}
+
 /** The edits that defer the contents of each `<list-item defer>`. */
-export const deferredRows: Pass = ({ source, ast, thread, renderer }) => {
+export const deferredRows: Pass = ({
+	source,
+	filename,
+	ast,
+	thread,
+	development,
+	renderer,
+	warnings,
+}) => {
 	const edits: Edit[] = [];
 	const places = thread === "background" ? constPlaces(ast.fragment) : new Set<AnyNode>();
 	let count = 0;
 	for (const element of nodes(ast.fragment)) {
+		const ignored = development && thread === "background" ? ignoredDefer(element) : undefined;
+		if (ignored)
+			warnings.push(
+				buildWarning({
+					code: "list_item_defer_ignored",
+					details: { written: ignored },
+					place: placeAt({ file: filename, text: source }, element.start!),
+				}),
+			);
 		if (element.type !== "RegularElement" || element.name !== TAG) continue;
 		const defer = attributesOf(element).find(
 			(attribute) => attribute.type === "Attribute" && attribute.name === DEFER,

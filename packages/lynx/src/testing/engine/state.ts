@@ -74,6 +74,12 @@ export interface ListState {
 	onUpdate?: (update: ListUpdate) => void;
 	/** The number of the last cell request: Lynx numbers them. */
 	operations: number;
+	/** The index of each request not bound yet. */
+	binding: Map<number, number>;
+	/** The newest request of each index. */
+	newest: Map<number, number>;
+	/** The unique id of the cell each request bound. */
+	bound: Map<number, number>;
 	/** How many items the updates have given the list so far. */
 	items: number;
 }

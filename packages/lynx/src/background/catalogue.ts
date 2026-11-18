@@ -119,7 +119,7 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 	},
 	list_item_defer_needs_async_list: {
 		message: () =>
-			"A <list-item defer> is in a <list> that is not Lynx's async list, so its row cannot wait for Lynx to ask for it, and renders now.",
+			'A <list-item defer> is in a <list> without custom-list-name="list-container", so its row renders now instead of waiting until Lynx asks for it.',
 		fix: () =>
 			'Give the list custom-list-name="list-container", the list that waits for a row Lynx asked for. Or remove defer.',
 		docs: "list_item_defer_needs_async_list",

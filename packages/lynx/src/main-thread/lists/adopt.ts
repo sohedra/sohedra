@@ -25,7 +25,7 @@ export interface AdoptedItems {
 	/** The items as Lynx last heard of them, when that is not `items`. */
 	committed?: number[];
 	/** For each item, what answers Lynx's requests for it that wait for the background's row. */
-	waiting?: (((uid: number) => void)[] | undefined)[];
+	waiting?: (((uid: number) => void) | undefined)[];
 	/**
 	 * The items' info, for a list inside a cell, whose updates this module writes: its items are
 	 * then this list's.
@@ -36,8 +36,8 @@ export interface AdoptedItems {
 /** The cells of a list that Lynx waits for, with what answers it. */
 export function waitingCells(
 	list: ListState | undefined,
-): { id: number; waiting: ((uid: number) => void)[] }[] {
-	const found: { id: number; waiting: ((uid: number) => void)[] }[] = [];
+): { id: number; waiting: (uid: number) => void }[] {
+	const found: { id: number; waiting: (uid: number) => void }[] = [];
 	for (const cell of list?.cells.values() ?? []) {
 		if (cell.waiting) found.push({ id: cell.id, waiting: cell.waiting });
 	}

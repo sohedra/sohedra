@@ -2,7 +2,8 @@
 // row. The build gives the row's contents an `{#if}` on the row's state (`deferredRow`) and links
 // the state to the element (`DEFERRED_ROW`). On a list of the page, a row whose contents have not
 // rendered sends no text: the main thread asks for it when Lynx does (a show message), and the
-// background renders the contents and writes the whole row. Anywhere else, a row renders at once.
+// background renders the contents and writes the whole row. Anywhere else, a row renders in the
+// next patch.
 
 import { signal, sourceLocation } from "../../svelte/runtime/index.ts";
 import type { Signal } from "../../svelte/runtime/index.ts";
@@ -95,7 +96,8 @@ export function rowOf(element: TreeNode | undefined): DeferredRow | undefined {
 /**
  * Whether the main thread waits for the row `element`, a cell of a list of the page, to be asked
  * for before it gets the row's text: it is deferred, its contents have not rendered, and its list
- * is Lynx's async list. On another list, the row is reported, once per list, and renders now.
+ * is Lynx's async list. On another list, the row is reported, once per list, and renders in the
+ * next patch.
  */
 export function waitsToBeAsked(element: TreeNode): boolean {
 	const row = rows.get(element);
