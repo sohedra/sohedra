@@ -4,10 +4,11 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { expect } from "@rstest/core";
+import { compile } from "svelte/compiler";
 
 import type { Checks } from "./check.ts";
 import { compileClient, compileServer } from "./compile.ts";
-import { mountComponent, treeRenderer } from "./runtime-fixture.ts";
+import { mountComponent, serverComponents, treeRenderer } from "./runtime-fixture.ts";
 import { SVELTE_ROOT, importNative, importSvelte } from "./svelte-package.ts";
 
 interface RendererState {
@@ -147,6 +148,73 @@ export const checks: Checks = {
 		);
 		// The first frame's components write elements with these.
 		expect(compileServer("<view id={x} {...el}>{x}</view>")).toMatch(/\$\.attributes\(/);
+	},
+
+	"server-markup-without-dev": async () => {
+		// A sample through Svelte's own server runtime: blocks, snippets, spreads, `$props.id()`,
+		// `--x` props, `<svelte:element>` and boundaries. The thread and generated tests are the broad
+		// check: they hydrate a first frame compiled without `dev` with a development background.
+		const sources = {
+			Page: `<script>
+	import Row from "./Row.svelte";
+	let { rows, title, tag, waiting, ...rest } = $props();
+	const id = $props.id();
+</script>
+{#snippet label(text)}<text class="label">{text}</text>{/snippet}
+<view id={id} {...rest}>
+	{#if title}<text>{title}</text>{:else}<view></view>{/if}
+	<list>
+		{#each rows as row, index (row)}
+			{@const place = index + 1}
+			<Row key={row} --tone="red">{@render label(\`\${place}. \${row}\`)}</Row>
+		{:else}
+			<text>none</text>
+		{/each}
+	</list>
+	{#each [] as nothing}<text>{nothing}</text>{:else}<text>empty</text>{/each}
+	{#key title}<text>{rows.length}</text>{/key}
+	<svelte:element this={tag} class="dynamic"><text>inside</text></svelte:element>
+	{#await waiting}<text>waiting</text>{:then value}<text>{value}</text>{/await}
+	<svelte:boundary><text>b</text></svelte:boundary>
+	<svelte:boundary>{#snippet pending()}<text>pending</text>{/snippet}<text>content</text></svelte:boundary>
+</view>`,
+			Row: `<script>
+	let { key, children } = $props();
+	const id = $props.id();
+</script>
+<list-item item-key={key} data-id={id}><view>{@render children?.()}</view></list-item>`,
+		};
+		const { render } = await importSvelte("src/server/index.js");
+		const bodies: string[] = [];
+		for (const dev of [true, false]) {
+			const page = (await serverComponents(sources, dev))["default"];
+			// Boundary: Svelte's server `render` has no types here.
+			const rendered = (render as (component: unknown, options: object) => { body: string })(page, {
+				props: {
+					rows: ["a", "b"],
+					title: "Feed",
+					tag: "view",
+					waiting: new Promise(() => {}),
+					class: "page",
+				},
+				idPrefix: "lynx",
+			});
+			bodies.push(rendered.body);
+		}
+		for (const written of [
+			'data-id="lynx-s2"',
+			"--tone: red;",
+			'<view class="dynamic">',
+			"<text>empty</text>",
+			"<text>waiting</text>",
+			"<text>pending</text>",
+		])
+			expect(bodies[0]).toContain(written);
+		expect(bodies[1]).toBe(bodies[0]);
+		// Development output is where the element checks are, which the main thread's copy leaves out.
+		expect(compile("<view></view>", { generate: "server", dev: true }).js.code).toContain(
+			"$.push_element(",
+		);
 	},
 
 	"server-render-await-invalid": async () => {

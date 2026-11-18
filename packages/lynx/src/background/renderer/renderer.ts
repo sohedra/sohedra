@@ -123,12 +123,12 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 
 	/** Binds the events a node collected, on its Lynx element. */
 	function pushEvents(node: TreeNode): void {
-		for (const [slot, id] of node.events ?? []) {
+		node.events?.forEach((id, slot) => {
 			const colon = slot.indexOf(":");
 			// Boundary: a slot's key is written by `setEvent` from a Lynx event type.
 			const type = slot.slice(0, colon) as LynxEventType;
 			queue.push([OpCode.SetEvent, node.lynxId, type, slot.slice(colon + 1), id]);
-		}
+		});
 	}
 
 	/**
@@ -151,17 +151,18 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		node.madeAt = queue.sent;
 		node.cell = cellUnder(container, node);
 		// A deferred row waits to be asked for only as a cell of a list of the page.
-		if (container.tag !== "list" || container.cell !== 0) rowOf(node)?.show();
+		if (node.tag === "list-item" && (container.tag !== "list" || container.cell !== 0))
+			rowOf(node)?.show();
 		node.layout = null;
 		// Boundary: every element node is made by `createElement`, from the element class.
 		elementsById.set(node.lynxId, node as ElementNode);
-		queue.push([OpCode.Create, node.lynxId, node.tag!]);
-		if (node.attrs) {
-			for (const [key, value] of node.attrs) {
-				if (!isFunction(value))
-					queue.push([OpCode.SetAttr, node.lynxId, key, attrValue(key, value)]);
-			}
-		}
+		const id = node.lynxId;
+		queue.push([OpCode.Create, id, node.tag!]);
+		// `forEach`, here and below: a `for…of` over a map's entries makes an array for each, which
+		// Lynx's engine pays for on every element of the page.
+		node.attrs?.forEach((value, key) => {
+			if (!isFunction(value)) queue.push([OpCode.SetAttr, id, key, attrValue(key, value)]);
+		});
 		// Written again, an input starts from what it holds now.
 		if (again && node.input)
 			queue.push([OpCode.SetAttr, node.lynxId, "default-value", node.input.current]);
@@ -170,7 +171,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		pushEvents(node);
 		for (let child = node.first; child; child = child.next) {
 			realize(child, node, again);
-			for (const real of topReals(child)) queue.push([OpCode.Insert, node.lynxId, real.lynxId, 0]);
+			if (child.lynxId !== 0) queue.push([OpCode.Insert, id, child.lynxId, 0]);
+			else for (const real of topReals(child)) queue.push([OpCode.Insert, id, real.lynxId, 0]);
 		}
 	}
 

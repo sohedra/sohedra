@@ -23,6 +23,11 @@ export type SplitItem = OpsItem | CellItem;
 interface Pending {
 	create: Op;
 	ops: Op[];
+	/**
+	 * Its children, in order: a new child is appended without a search, so a pending list of n rows
+	 * costs O(n).
+	 */
+	kids: number[] | null;
 }
 
 interface ListState {
@@ -54,9 +59,7 @@ export function createSplitter(
 ): Splitter {
 	// Made, not inserted under anything sent yet.
 	const pending = new Map<number, Pending>();
-	// The children of pending elements, in order, and the pending element each child is placed in:
-	// a new child is appended without a search, so a pending list of n rows costs O(n).
-	const kids = new Map<number, number[]>();
+	// The pending element each child is placed in.
 	const placedIn = new Map<number, number>();
 	// The sent elements that live in a cell's item, and that cell (a cell is its own).
 	const owner = new Map<number, number>();
@@ -80,8 +83,8 @@ export function createSplitter(
 	}
 
 	function to(cell: number, op: Op): void {
-		if (held.has(cell)) return;
 		if (cell !== current) {
+			if (held.has(cell)) return;
 			close();
 			current = cell;
 		}
@@ -104,9 +107,8 @@ export function createSplitter(
 		if (cell !== 0) owner.set(id, cell);
 		to(cell, entry.create);
 		for (const op of entry.ops) to(cell, op);
-		const children = kids.get(id);
+		const children = entry.kids;
 		if (!children) return;
-		kids.delete(id);
 		const cellsHere = cell === 0 && lists.has(id);
 		for (const child of children) {
 			placedIn.delete(child);
@@ -186,9 +188,8 @@ export function createSplitter(
 		}
 	}
 
-	function place(parent: number, child: number, anchor: number): void {
-		let children = kids.get(parent);
-		if (!children) kids.set(parent, (children = []));
+	function place(parent: number, entry: Pending, child: number, anchor: number): void {
+		const children = (entry.kids ??= []);
 		if (placedIn.get(child) === parent) children.splice(children.indexOf(child), 1);
 		placedIn.set(child, parent);
 		const before = anchor === 0 ? -1 : children.indexOf(anchor);
@@ -200,10 +201,10 @@ export function createSplitter(
 		switch (op[0]) {
 			case OpCode.Create:
 				if (op[2] === "list") lists.add(op[1]);
-				pending.set(op[1], { create: op, ops: [] });
+				pending.set(op[1], { create: op, ops: [], kids: null });
 				return;
 			case OpCode.CreateText:
-				pending.set(op[1], { create: op, ops: [] });
+				pending.set(op[1], { create: op, ops: [], kids: null });
 				return;
 			case OpCode.SetText:
 			case OpCode.SetAttr:
@@ -221,9 +222,13 @@ export function createSplitter(
 				return;
 			}
 			case OpCode.Insert: {
-				const [, parent, child, anchor] = op;
-				if (pending.has(parent)) {
-					place(parent, child, anchor);
+				// Read by index: destructuring an array walks its iterator, op by op.
+				const parent = op[1];
+				const child = op[2];
+				const anchor = op[3];
+				const entry = pending.get(parent);
+				if (entry) {
+					place(parent, entry, child, anchor);
 					return;
 				}
 				const cell = owner.get(parent) ?? 0;
@@ -236,9 +241,11 @@ export function createSplitter(
 				return;
 			}
 			case OpCode.Remove: {
-				const [, parent, child] = op;
-				if (pending.has(parent)) {
-					const children = kids.get(parent);
+				const parent = op[1];
+				const child = op[2];
+				const entry = pending.get(parent);
+				if (entry) {
+					const children = entry.kids;
 					const at = children ? children.indexOf(child) : -1;
 					if (at !== -1) children!.splice(at, 1);
 					placedIn.delete(child);
@@ -256,10 +263,7 @@ export function createSplitter(
 				infos.delete(id);
 				placedIn.delete(id);
 				held.delete(id);
-				if (pending.delete(id)) {
-					kids.delete(id);
-					return;
-				}
+				if (pending.delete(id)) return;
 				const cell = owner.get(id) ?? 0;
 				owner.delete(id);
 				// A cell's own release goes to the page, where the list forgets it.

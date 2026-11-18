@@ -274,6 +274,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: SOURCE,
 	},
 	{
+		id: "server-markup-without-dev",
+		program: "build",
+		file: "src/compiler/phases/3-transform/server/visitors/RegularElement.js",
+		anchor: "'$.push_element',",
+		reliesOn:
+			"a server render compiled without `dev` writes the same markup, block markers and `$props.id()` ids as one compiled with it, whose additions are checks (`push_element` and `pop_element` around each element, for HTML's nesting rules): so the main thread's copy compiles without `dev`, and the background's development copy hydrates it. The check renders a sample through Svelte's own server runtime; the thread and generated tests, which hydrate such a first frame with a development background, are the broad check",
+		test: RUNTIME,
+	},
+	{
 		id: "server-render-await-invalid",
 		program: "runtime",
 		file: "src/internal/server/errors.js",

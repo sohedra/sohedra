@@ -117,6 +117,59 @@ describe("the first frame's parser", () => {
 		]);
 	});
 
+	it("reads the cells of a list whatever is between them, and the page after the list", () => {
+		const root = parse(
+			`<list><!--[--><list-item item-key="a"/>\n<list-item\titem-key="b"  title='{"t":"x > y"}'\n>b</list-item><!--]--> <list-item item-key="c" bindtap/></list><text>after</text>`,
+		);
+		const list = root.children[0] as DrawnNode;
+		expect(list.cells!.map((cell) => [Object.fromEntries(cell.attrs), cell.html])).toEqual([
+			[{ "item-key": "a" }, ""],
+			[{ "item-key": "b", title: { t: "x > y" } }, "b"],
+			[{ "item-key": "c" }, ""],
+		]);
+		expect(root.children.map(shape)).toEqual([
+			expect.objectContaining({ tag: "list" }),
+			{ tag: "text", children: ["after"] },
+		]);
+	});
+
+	it("keeps a cell's markup whole when it holds a list, and reads the cells after it", () => {
+		const inner = `<list><list-item item-key="x"><text>x</text></list-item><list-item item-key="y"/></list>`;
+		const root = parse(
+			`<list><list-item item-key="a">${inner}<text>a</text></list-item><list-item item-key="b"><text>b</text></list-item></list>`,
+		);
+		const cells = (root.children[0] as DrawnNode).cells!;
+		expect(cells.map((cell) => cell.attrs.get("item-key"))).toEqual(["a", "b"]);
+		expect(cells[0]!.html).toBe(`${inner}<text>a</text>`);
+		expect(cells[1]!.html).toBe("<text>b</text>");
+	});
+
+	it("reads a value holding what ends a cell's markup as text", () => {
+		const root = parse(
+			`<list><list-item item-key="a" title="a = b c" data-x='"&lt;/list-item&gt;"'><text>&lt;/list-item&gt;</text></list-item></list>`,
+		);
+		const [cell] = (root.children[0] as DrawnNode).cells!;
+		expect(Object.fromEntries(cell!.attrs)).toEqual({
+			"item-key": "a",
+			title: "a = b c",
+			"data-x": "</list-item>",
+		});
+		expect(cell!.html).toBe("<text>&lt;/list-item&gt;</text>");
+	});
+
+	it("says where in the page a cell's tag cannot be read", () => {
+		let thrown: unknown;
+		try {
+			parse(`<list><list-item item-key=a></list-item></list>`);
+		} catch (error) {
+			thrown = error;
+		}
+		expect((thrown as UnreadableMarkup).message).toBe(
+			"the value of item-key on <list-item> is not quoted",
+		);
+		expect((thrown as UnreadableMarkup).at).toBe(25);
+	});
+
 	it.each([
 		["a tag with no name", "<view><1></view>", 6, "a tag has no name"],
 		["an attribute with no name", `<view ="a"></view>`, 6, "an attribute of <view> has no name"],
@@ -138,6 +191,13 @@ describe("the first frame's parser", () => {
 		["a closing tag with no element", "</view>", 0, "a closing tag has no element"],
 		["an element not closed", "<view><text>", 12, "the element <text> is not closed"],
 		["a list not closed", "<list><list-item></list-item>", 6, "a <list> is not closed"],
+		[
+			"a row's end with no row open",
+			"<list><!----></list-item></list>",
+			13,
+			"a </list-item> closes no <list-item>",
+		],
+		["a comment in a list not closed", "<list><!-- </list>", 6, "a comment is not closed"],
 	])("throws for %s, and says where", (_, html, at, reason) => {
 		let thrown: unknown;
 		try {

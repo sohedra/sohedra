@@ -92,9 +92,16 @@ export class UnreadableMarkup extends Error {
 const TAG_NAME = /[A-Za-z][A-Za-z0-9-]*/y;
 const NAME = /[^\s=/>"']+/y;
 const SPACE = /\s*/y;
-// Inside a list on the page only the cells' bounds and the list's end matter. A tag's quoted values
-// may hold `>`.
-const CELL_BOUNDARY = /<list-item\b((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>|<\/list-item>|<\/list>/g;
+// Inside a list on the page only the cells' bounds, the list's end and comments matter: a comment is
+// skipped whole, so that a tag in it is never read (an app may keep its comments). A tag's quoted
+// values may hold `>`. The `<` before the alternatives lets Lynx's regex engine skip from one `<` to
+// the next; with an alternation first, it tries the pattern at every character.
+const CELL_BOUNDARY =
+	/<(?:!--|list-item\b(?:[^>"']|"[^"]*"|'[^']*')*?(\/?)>|\/list-item>|\/list>)/g;
+const CELL_START = "<list-item";
+const CELL_END = "</list-item>";
+const COMMENT_START = "<!--";
+const COMMENT_END = "-->";
 
 const ENTITY = /&(amp|lt|gt|quot|#39);/g;
 const ENTITIES: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" };
@@ -123,8 +130,59 @@ interface Tag {
 	end: number;
 }
 
-/** Reads an opening tag from `start` (at its `<`). */
+/**
+ * An opening tag as Svelte's server writes it: its name, then each attribute after one space, its
+ * value, if any, in double or single quotes.
+ */
+const WRITTEN_TAG = /<([A-Za-z][A-Za-z0-9-]*)((?: [^\s=/>"']+(?:="[^"]*"|='[^']*')?)*)(\/?)>/y;
+
+/** Sets an attribute from its raw value: a single-quoted one is JSON. */
+function setAttribute(
+	attrs: Map<string, AttrValue>,
+	key: string,
+	raw: string,
+	quote: number,
+): void {
+	const value = decode(raw);
+	// Boundary: a single-quoted value is JSON that the server's `attr` wrote.
+	attrs.set(key, quote === 34 /* " */ ? value : (JSON.parse(value) as AttrValue));
+}
+
+/**
+ * Reads an opening tag from `start` (at its `<`). A tag as the server writes it takes one regex
+ * match and string searches; any other is read a step at a time, which says where it went wrong.
+ */
 function readTag(html: string, start: number): Tag {
+	WRITTEN_TAG.lastIndex = start;
+	const match = WRITTEN_TAG.exec(html);
+	if (!match) return readTagSteps(html, start);
+	const name = match[1]!;
+	const written = match[2]!;
+	const attrs = new Map<string, AttrValue>();
+	const events: LynxListener[] = [];
+	// After each attribute's space: its name runs to `=` or the next space.
+	let i = 1;
+	while (i <= written.length) {
+		const equals = written.indexOf("=", i);
+		const space = written.indexOf(" ", i);
+		if (equals === -1 || (space !== -1 && space < equals)) {
+			const end = space === -1 ? written.length : space;
+			const event = eventOfBare(written.slice(i, end));
+			if (event) events.push(event);
+			i = end + 1;
+			continue;
+		}
+		const quote = written.charCodeAt(equals + 1);
+		const close = written.indexOf(written[equals + 1]!, equals + 2);
+		setAttribute(attrs, written.slice(i, equals), written.slice(equals + 2, close), quote);
+		i = close + 2;
+	}
+	const selfClosing = match[3] === "/" || VOID_ELEMENTS.has(name);
+	return { name, attrs, events, selfClosing, end: WRITTEN_TAG.lastIndex };
+}
+
+/** Reads an opening tag a step at a time, and throws where it cannot be read. */
+function readTagSteps(html: string, start: number): Tag {
 	TAG_NAME.lastIndex = start + 1;
 	const match = TAG_NAME.exec(html);
 	if (!match) throw new UnreadableMarkup("a tag has no name", start);
@@ -158,9 +216,7 @@ function readTag(html: string, start: number): Tag {
 		const close = html.indexOf(quote, i + 2);
 		if (close === -1)
 			throw new UnreadableMarkup(`the value of ${key} on <${name}> is not closed`, i);
-		const raw = decode(html.slice(i + 2, close));
-		// Boundary: a single-quoted value is JSON that the server's `attr` wrote.
-		attrs.set(key, quote === '"' ? raw : (JSON.parse(raw) as AttrValue));
+		setAttribute(attrs, key, html.slice(i + 2, close), html.charCodeAt(i + 1));
 		i = close + 1;
 	}
 }
@@ -177,6 +233,68 @@ function node(id: number, tag: string): DrawnNode {
 	return { id, tag, attrs: new Map(), events: [], text: null, children: [], cells: null };
 }
 
+/** Whether a `<list-item>` tag starts at `at`. */
+function cellStartsAt(html: string, at: number): boolean {
+	if (!html.startsWith(CELL_START, at)) return false;
+	const next = html.charCodeAt(at + CELL_START.length);
+	return next === 32 /* space */ || next === 62 /* > */ || next === 47; /* / */
+}
+
+/** The index after the comment that starts at `at`. */
+function afterComment(html: string, at: number): number {
+	const close = html.indexOf(COMMENT_END, at + COMMENT_START.length);
+	if (close === -1) throw new UnreadableMarkup("a comment is not closed", at);
+	return close + COMMENT_END.length;
+}
+
+/** Whether `text` has a comment that may hide a tag: one with a `<` in it, or not closed. */
+function hidesTag(text: string): boolean {
+	let at = text.indexOf(COMMENT_START);
+	while (at !== -1) {
+		const close = text.indexOf(COMMENT_END, at + COMMENT_START.length);
+		if (close === -1) return true;
+		const lt = text.indexOf("<", at + COMMENT_START.length);
+		if (lt !== -1 && lt < close) return true;
+		at = text.indexOf(COMMENT_START, close + COMMENT_END.length);
+	}
+	return false;
+}
+
+/**
+ * Reads the markup of `cell`, from `from` to its `</list-item>`, past those of the list items
+ * inside it and any in a comment, and returns the index after it. `start` is where the list's
+ * cells start, for the error.
+ */
+function readCell(html: string, from: number, start: number, cell: DrawnCell): number {
+	// A cell with no list inside ends at the first `</list-item>` that no comment hides: text
+	// searches, which cost far less than matching the regex at every tag in the cell.
+	const end = html.indexOf(CELL_END, from);
+	const inner = html.indexOf("<list", from);
+	if (end !== -1 && (inner === -1 || inner > end)) {
+		const text = html.slice(from, end);
+		if (!hidesTag(text)) {
+			cell.html = text;
+			return end + CELL_END.length;
+		}
+	}
+	CELL_BOUNDARY.lastIndex = from;
+	let depth = 1;
+	for (;;) {
+		const match = CELL_BOUNDARY.exec(html);
+		if (!match) throw new UnreadableMarkup("a <list> is not closed", start);
+		const token = match[0];
+		if (token === COMMENT_START) {
+			CELL_BOUNDARY.lastIndex = afterComment(html, match.index);
+		} else if (token === CELL_END) {
+			if (--depth > 0) continue;
+			cell.html = html.slice(from, match.index);
+			return CELL_BOUNDARY.lastIndex;
+		} else if (token !== "</list>" && match[1] !== "/") {
+			depth++;
+		}
+	}
+}
+
 /**
  * The cells of a list on the page, from `start` (just after `<list …>`), each one's markup kept as
  * it is. Returns the index after `</list>`.
@@ -185,38 +303,35 @@ function scanCells(html: string, start: number, list: DrawnNode, nextId: NextId)
 	const cells: DrawnCell[] = [];
 	list.cells = cells;
 	const async = list.attrs.get("custom-list-name") === ASYNC_LIST;
-	CELL_BOUNDARY.lastIndex = start;
-	let depth = 0;
-	let open: DrawnCell | null = null;
-	let from = 0;
+	let at = start;
 	for (;;) {
-		const match = CELL_BOUNDARY.exec(html);
-		if (!match) throw new UnreadableMarkup("a <list> is not closed", start);
-		const token = match[0];
-		if (token.charCodeAt(1) !== 47 /* / */) {
-			if (depth > 0) {
-				if (match[2] !== "/") depth++;
+		// The cells of an `{#each}` follow one another, with Svelte's block markers around them.
+		if (!cellStartsAt(html, at)) {
+			if (html.startsWith(COMMENT_START, at)) {
+				at = afterComment(html, at);
 				continue;
 			}
-			// Boundary: the attributes of a cell's tag, read as a tag of their own.
-			const tag = readTag(`<list-item${match[1]!}>`, 0);
-			const deferred = Boolean(takeDefer(tag.attrs)) && async;
-			const cell: DrawnCell = { id: nextId(), attrs: tag.attrs, html: "", node: null, deferred };
-			cells.push(cell);
-			if (match[2] !== "/") {
-				open = cell;
-				from = CELL_BOUNDARY.lastIndex;
-				depth = 1;
+			CELL_BOUNDARY.lastIndex = at;
+			const match = CELL_BOUNDARY.exec(html);
+			if (!match) throw new UnreadableMarkup("a <list> is not closed", start);
+			const token = match[0];
+			if (token === COMMENT_START) {
+				at = afterComment(html, match.index);
+				continue;
 			}
-		} else if (token === "</list-item>") {
-			depth--;
-			if (depth === 0 && open) {
-				open.html = html.slice(from, match.index);
-				open = null;
-			}
-		} else if (depth === 0) {
-			return CELL_BOUNDARY.lastIndex;
+			if (token === "</list>") return CELL_BOUNDARY.lastIndex;
+			// The server never writes one: a cell before it ended in the wrong place.
+			if (token === CELL_END)
+				throw new UnreadableMarkup("a </list-item> closes no <list-item>", match.index);
+			at = match.index;
 		}
+		const tag = readTag(html, at);
+		const deferred = Boolean(takeDefer(tag.attrs)) && async;
+		const cell: DrawnCell = { id: nextId(), attrs: tag.attrs, html: "", node: null, deferred };
+		cells.push(cell);
+		at = tag.end;
+		if (tag.selfClosing) continue;
+		at = readCell(html, at, start, cell);
 	}
 }
 
@@ -333,6 +448,10 @@ export function elementsOf(children: DrawnChild[], out: DrawnNode[] = []): Drawn
 /** The info a cell gives its list (`item-key` and the rest). */
 export function cellInfo(cell: DrawnCell): Record<string, unknown> {
 	const info: Record<string, unknown> = {};
-	for (const [key, value] of cell.attrs) if (LIST_ITEM_INFO.has(key)) info[key] = value;
+	// `forEach`: a `for…of` over a map's entries makes an array of each, which the main thread's
+	// engine pays for in every cell of the list.
+	cell.attrs.forEach((value, key) => {
+		if (LIST_ITEM_INFO.has(key)) info[key] = value;
+	});
 	return info;
 }
