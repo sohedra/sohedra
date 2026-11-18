@@ -75,6 +75,37 @@ describe("a list", () => {
 		expect(returned).toEqual([[listId, engine().functions.__GetElementUniqueID(first)]]);
 	});
 
+	it("never hands back the cell of an item that is not recyclable, as Lynx", () => {
+		const { element } = list();
+		const f = engine().functions;
+		const handle = engine().list(element);
+		const keep = { position: 6, type: "item", "item-key": "kept", recyclable: false };
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [keep, { position: 7, type: "item", "item-key": "later" }],
+			removeAction: [],
+			updateAction: [],
+		});
+		const kept = handle.show(6);
+		f.__SetAttribute(kept, "item-key", "kept");
+		expect(() => handle.hide(kept)).toThrow(
+			'Lynx never hands back the cell of an item that is not recyclable: "kept".',
+		);
+		const later = handle.show(7);
+		f.__SetAttribute(later, "item-key", "later");
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [],
+			removeAction: [],
+			updateAction: [{ from: 7, to: 7, type: "item", "item-key": "later", recyclable: false }],
+		});
+		expect(() => handle.hide(later)).toThrow('not recyclable: "later".');
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [],
+			removeAction: [],
+			updateAction: [{ from: 6, to: 6, type: "item", "item-key": "kept", recyclable: true }],
+		});
+		handle.hide(kept);
+	});
+
 	it("throws when asked for a cell past the items the page gave it", () => {
 		const { element } = list();
 		const f = engine().functions;

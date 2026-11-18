@@ -22,9 +22,9 @@ https://sohedra.com/e/element_not_on_page"
 `;
 
 exports[`the background's catalogue > element_not_shown: the message 1`] = `
-"The <view> is in a list row Lynx has not shown yet, so its boundingClientRect cannot run: Lynx makes a row's elements only when it shows the row.
+"The <view> is in a list row Lynx is not showing, so its boundingClientRect cannot run: Lynx makes a row's elements only while it shows the row.
 
-Call boundingClientRect once Lynx shows the row, for example from the row's layoutchange event.
+Call boundingClientRect while Lynx shows the row, for example from the row's layoutchange event.
 https://sohedra.com/e/element_not_shown"
 `;
 

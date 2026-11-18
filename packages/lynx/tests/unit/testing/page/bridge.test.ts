@@ -150,6 +150,7 @@ describe("each thread's lynx", () => {
 			"getJSContext",
 			"getNative",
 			"reportError",
+			"setTimeout",
 		]);
 		expect(own(page.lynx.background)).toEqual([
 			"__globalProps",

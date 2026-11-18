@@ -102,6 +102,7 @@ const PATCHES: [name: string, page: number, items: PatchItem[]][] = [
 			["ops", COUNTER],
 		],
 	],
+	["list rows written again", 0, [["cell", 30, encodeCell(row(30, "c")), true]]],
 ];
 
 const MESSAGES: [name: string, message: ToBackground][] = [
@@ -135,6 +136,7 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 			mismatch: { kind: "attribute", node: 2, name: "class", expected: "counter", got: "open" },
 		},
 	],
+	["list rows asked for again", { t: "rewrite", nodes: [30, 40] }],
 	[
 		"an error with its code and where it was thrown",
 		{

@@ -1,7 +1,8 @@
 // Lynx's <list>: the background tracks the items and sends the list's update ready to set; each
 // cell's ops travel as text of their own, and the main thread makes a cell, its element and what
 // is in it, only when Lynx asks for it. A cell Lynx hands back stays for reuse, and leaves once it
-// is no longer an item.
+// is no longer an item; past a screen of such cells, the oldest are let go of
+// (./list-release.test.ts).
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -242,7 +243,7 @@ describe("a row Lynx has not shown", () => {
 		await page.settle();
 		await expect(answer).rejects.toMatchObject({
 			code: "element_not_shown",
-			message: expect.stringContaining("list row Lynx has not shown"),
+			message: expect.stringContaining("list row Lynx is not showing"),
 		});
 		expect(page.errors).toEqual([]);
 	});

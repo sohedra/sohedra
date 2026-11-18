@@ -6,6 +6,7 @@ import { describe, expect, it } from "@rstest/core";
 import { decodeCell } from "../../src/wire/index.ts";
 import type { Patch } from "../../src/wire/index.ts";
 import ManyRows from "../fixtures/threads/ManyRows.svelte";
+import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
 
 interface Row {
@@ -15,12 +16,15 @@ interface Row {
 
 /**
  * The budgets, as measured: raise one only on purpose, and say why in the pull request. A list
- * update carries the list's whole order, so a change of one row still sends 1,001 ids.
+ * update carries the list's whole order, so a change of one row still sends 1,001 ids. A scroll
+ * through the rows sends the ids of the rows the main thread lets go of (`up`, in bytes), and each
+ * of those rows written again.
  */
 const BUDGET = {
 	start: { ops: 9004, bytes: 261_608 },
 	append: { ops: 10, bytes: 5377 },
 	reverse: { ops: 1, bytes: 62_229 },
+	scroll: { ops: 8829, bytes: 222_981, up: 15_726 },
 };
 
 /** The ops of patches, those of their cells too, and their size as sent. */
@@ -81,6 +85,23 @@ describe("a list of 1,000 rows", () => {
 		const sent = await change((rows) => rows.toReversed());
 		within(sent, BUDGET.reverse);
 		expect(page.engine.madeCount("view")).toBe(made);
+	});
+
+	it("scrolls through the rows within its budget, keeping a screen of cells past those shown", async () => {
+		const { page } = await manyRows();
+		const list = page.byClass("list");
+		const sent = page.patches.length;
+		const scroll = scroller(page.engine, list);
+		await scrollThrough({ scroll, from: 0, to: 991, settle: page.settle });
+		const down = measure(page.patches.slice(sent));
+		within(down, BUDGET.scroll);
+		const up = page.messages
+			.filter((message) => message.t === "rewrite")
+			.reduce((bytes, message) => bytes + JSON.stringify(message).length, 0);
+		expect(up).toBeLessThanOrEqual(BUDGET.scroll.up);
+		// Lynx holds nine; the ten it handed back last keep their elements.
+		expect(list.childNodes).toHaveLength(19);
+		expect(page.errors).toEqual([]);
 	});
 
 	it("shows a cell Lynx asks for", async () => {
