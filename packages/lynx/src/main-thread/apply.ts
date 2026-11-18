@@ -60,7 +60,7 @@ export interface Applier {
 	idForUid(uid: number): number | undefined;
 	/** The background's id of a Lynx element. */
 	idOf(element: LynxElement): number | undefined;
-	/** The elements kept from being flattened. */
+	/** The `flatten` of the page's elements, and the elements held so that Lynx gives them a UI. */
 	readonly flattening: Flattening;
 	/** The styles code set. */
 	readonly styles: CodeStyles;

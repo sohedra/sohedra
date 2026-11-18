@@ -1,9 +1,9 @@
-// The first UI method on an element, and flattening. Lynx makes an element's view when the tree is
-// flushed, and flattens a plain <view> into its parent, so a UI method on a new element or on a
-// flattened one answers "no UI for this node" (code 6), and on one just given a view answers as
-// the flattened element did, with the wrong place (the engine fake answers both ways). So the
-// element is kept from being flattened, and every UI method waits for the patch's flush: Lynx is
-// asked once, after it has made the view and taken the update. Writes after it do not wait.
+// The first UI method on an element, and layout-only views. Lynx makes an element's UI when the
+// tree is flushed, and makes none for a <view> with no attribute, no event and only layout styles,
+// so a UI method on a new element or on a layout-only one answers "no UI for this node" (code 6)
+// (the engine fake answers both ways). So the element gets `flatten` false, an attribute, and every
+// UI method waits for the patch's flush: Lynx is asked once, after it has made the UI and taken the
+// update. Writes after it do not wait.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -11,7 +11,7 @@ import type { ElementNode } from "../../src/background/renderer/element.ts";
 import FirstCall from "../fixtures/threads/FirstCall.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
-/** Where the element is, as the engine knows it once it has a view of its own. */
+/** Where the element is, as the engine knows it once it has a UI. */
 const RIGHT = { left: 12, top: 200, width: 30, height: 40 };
 
 async function firstCall() {
@@ -35,7 +35,7 @@ async function firstCall() {
 }
 
 describe("the first UI method on an element", () => {
-	it("waits for the flush that gives a flattened view its own, and gets its right place", async () => {
+	it("waits for the flush that gives a layout-only view a UI, and gets its place", async () => {
 		const { page, measure } = await firstCall();
 		const flushes = page.engine.flushes.length;
 		await expect(measure("a")).resolves.toEqual(RIGHT);
@@ -65,7 +65,7 @@ describe("the first UI method on an element", () => {
 		]);
 	});
 
-	it("unflattens a view the app flattened, which the call needs", async () => {
+	it("unflattens a view the app flattened, whose UI lacks a full view's methods", async () => {
 		const { page, measure } = await firstCall();
 		await expect(measure("told")).resolves.toEqual(RIGHT);
 		expect(page.engine.state(page.byClass("told")).attrs["flatten"]).toBe(false);

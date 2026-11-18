@@ -6,7 +6,7 @@
 // contexts' Invoke). A UI method before the flush would answer "no UI for this node" (code 6) for a
 // new element, or see the screen from before the update. So reads (a UI method, a computed style)
 // run once the patch is flushed, in the order they came; queries run in place. An element a UI
-// method is called on is kept from being flattened from then on (./flatten.ts).
+// method is called on is held from then on, so that Lynx gives it a UI (./flatten.ts).
 
 import { decodeCall, encodeError } from "../wire/index.ts";
 import type { CallItem, CallRequest, Result } from "../wire/index.ts";
