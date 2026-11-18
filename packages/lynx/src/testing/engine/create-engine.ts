@@ -244,7 +244,9 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			}
 			for (const element of gone) {
 				const state = engine.states.get(element);
-				if (state) engine.globalPhase.delete(state);
+				if (!state) continue;
+				engine.globalPhase.delete(state);
+				engine.withUi.delete(state);
 			}
 			// The logs would keep what the page let go of, and so would a test.
 			const logs: { element: LynxElement }[][] = [
@@ -262,6 +264,15 @@ export function createEngine(options: EngineOptions = {}): Engine {
 				log.length = 0;
 				log.push(...kept);
 			}
+			// A flush's options hold what the page passed, which may be one of the elements.
+			const flushes = engine.log.flushes.filter(
+				(options) =>
+					typeof options !== "object" ||
+					options === null ||
+					!Object.values(options).some((value) => gone.has(value as LynxElement)),
+			);
+			engine.log.flushes.length = 0;
+			engine.log.flushes.push(...flushes);
 		},
 		dispose() {
 			engine.page?.parentNode?.removeChild(engine.page);
