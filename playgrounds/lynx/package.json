@@ -14,6 +14,7 @@
 		"svelte": "https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea"
 	},
 	"devDependencies": {
+		"@lynx-js/qrcode-rsbuild-plugin": "^0.7.3",
 		"@lynx-js/rspeedy": "^0.18.6",
 		"@sohedra/lynx": "workspace:*",
 		"@types/node": "^26.6.6",
