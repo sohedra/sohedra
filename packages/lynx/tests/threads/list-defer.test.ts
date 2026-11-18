@@ -322,3 +322,43 @@ describe("deferred rows in a first frame that is not hydrated", () => {
 		]);
 	});
 });
+
+describe("deferred rows asked for several at once", () => {
+	it("are flushed now for those written, and again with all of them once the rest come", async () => {
+		const { page, list } = await deferredRows();
+		const element = page.byClass("list");
+		const uid = page.engine.state(element).uid;
+		// Row 1 and the ten after it are written; row 30 is not.
+		list().ask(0);
+		await page.settle();
+		const before = page.engine.flushes.length;
+		page.asMainThread(() =>
+			list().componentAtIndexes!(element, uid, [1, 30], [501, 502], false, false),
+		);
+		const now = page.engine.flushes.slice(before);
+		expect(now).toContainEqual(
+			expect.objectContaining({ operationIDs: [501, 502], elementIDs: [expect.any(Number), -1] }),
+		);
+		await page.settle();
+		expect(list().given(501)).toBeDefined();
+		expect(page.engine.text(list().given(502)!)).toBe("Row 31: 0");
+		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("a row deferred in the first frame and not on the background", () => {
+	it("is answered from the background's text at hydration, with nothing to ask for", async () => {
+		const handles: Record<string, unknown> = {};
+		const page = startSveltePage(DeferredRows, {
+			props: () => ({ handles, defer: false }),
+			firstFrame: { draw: drawDeferredRows, props: { handles: {}, defer: true } },
+		});
+		const list = page.engine.list(page.byClass("list"));
+		expect(list.ask(2)).toBeUndefined();
+		const operation = list.operation;
+		await page.settle();
+		expect(page.engine.text(list.given(operation)!)).toBe("Row 3: 0");
+		expect(page.messages.filter((message) => message.t === "show")).toEqual([]);
+		expect(page.errors).toEqual([]);
+	});
+});

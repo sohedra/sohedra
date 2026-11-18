@@ -83,4 +83,15 @@ describe("a deferred row", () => {
 		const { code } = await component(each("<list-item><text>{row.id}</text></list-item>"));
 		expect(code).not.toContain("__sohedraLynx");
 	});
+
+	it("takes a quoted value as the text it is: empty, it does not defer", async () => {
+		const quoted = await component(each('<list-item defer="yes"><text>a</text></list-item>'));
+		expect(quoted.code).toContain('__sohedraLynxDeferredRow(() => "yes")');
+		const empty = await component(each('<list-item defer=""><text>a</text></list-item>'), {
+			thread: "main-thread",
+		});
+		expect(empty.code).toContain('if (!"") {');
+		const mixed = await component(each('<list-item defer="a{row.id}"><text>a</text></list-item>'));
+		expect(mixed.code).toContain("__sohedraLynxDeferredRow(() => true)");
+	});
 });
