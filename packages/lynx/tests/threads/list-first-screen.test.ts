@@ -252,6 +252,20 @@ describe("a deferred list's first screen", () => {
 });
 
 describe("a row of the first screen, after the page starts", () => {
+	it("has the rows ahead of the last one Lynx asked for rendered at hydration, unasked", async () => {
+		const { page, list, handles } = startFirstScreen({}, { ask: false });
+		// Lynx asks for a screen of rows before the first patch: all drawn whole, none waits.
+		for (let index = 0; index < 9; index++) expect(list.ask(index)).toBeDefined();
+		await page.settle();
+		// A fling then finds the next rows written, and none waits for the background.
+		expect(handles["rendered"]).toEqual(range(1, 19));
+		expect(list.ask(10)).toBeDefined();
+		expect(list.ask(18)).toBeDefined();
+		await page.settle();
+		expect(page.errors).toEqual([]);
+		await expectInSyncOnceAsked("after the rows ahead", page);
+	});
+
 	it("is a row Lynx asked for: handed back and asked again, it keeps its state", async () => {
 		const { page, list, handles } = startFirstScreen({}, { ask: false });
 		await page.settle();
