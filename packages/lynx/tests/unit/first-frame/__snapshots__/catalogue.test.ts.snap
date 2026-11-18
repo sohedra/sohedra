@@ -1,0 +1,8 @@
+// Rstest Snapshot v1
+
+exports[`the first frame's catalogue > first_frame_skipped_await: the message 1`] = `
+"The page Feed has no first frame: a component in it (Svelte does not say which) awaits outside a <svelte:boundary> with a pending snippet, and the first frame is drawn without waiting.
+
+Put the part that awaits in a <svelte:boundary> with a pending snippet: the first frame then shows the pending snippet, and the page shows the rest when it is ready.
+https://sohedra.com/e/first_frame_skipped_await"
+`;

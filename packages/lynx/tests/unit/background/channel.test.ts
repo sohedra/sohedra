@@ -7,20 +7,31 @@ import { openChannel } from "../../../src/background/channel.ts";
 import { OpQueue } from "../../../src/background/renderer/queue.ts";
 import { startMainThread } from "../../../src/main-thread/index.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
-import { encodeToBackground } from "../../../src/wire/index.ts";
-import type { SentEvent } from "../../../src/wire/index.ts";
+import { decodePatch, encodeToBackground, OpCode, ROOT_ID } from "../../../src/wire/index.ts";
+import type { Patch, PatchParams, RewriteMessage, SentEvent } from "../../../src/wire/index.ts";
 
 function channel() {
 	const page = startTestPage({ mainThread: () => startMainThread() });
 	const events: [number, SentEvent][] = [];
+	const rewrites: RewriteMessage[] = [];
+	const queue = new OpQueue();
 	const opened = page.asBackground(() =>
 		openChannel({
-			queue: new OpQueue(),
+			queue,
 			onEvent: (handler, event) => events.push([handler, event]),
+			onRewrite: (message) => rewrites.push(message),
 			tagOf: () => "view",
 		}),
 	);
-	return { page, events, channel: opened };
+	return { page, events, rewrites, queue, channel: opened };
+}
+
+/** What the channel sends, as the main thread receives it. */
+function sentBy(page: ReturnType<typeof channel>["page"]): Patch[] {
+	const sent: Patch[] = [];
+	const native = page.lynx.background.getNativeApp();
+	native.callLepusMethod = (_name, params) => void sent.push(decodePatch(params as PatchParams));
+	return sent;
 }
 
 const gone = expect.objectContaining({
@@ -77,5 +88,64 @@ describe("a message from the main thread", () => {
 		expect(events.map(([handler]) => handler)).toEqual([3]);
 		// A later page means one thread reloaded alone: reported in development.
 		expect(page.errors).toEqual([expect.objectContaining({ code: "page_reloaded_on_one_thread" })]);
+	});
+});
+
+describe("hydration's part of the channel", () => {
+	it("says how many of the first patch's items hold the page as it rendered", () => {
+		const { page, queue, channel: opened } = channel();
+		const sent = sentBy(page);
+		page.asBackground(() => {
+			queue.push([OpCode.Create, 2, "view"]);
+			queue.push([OpCode.Insert, ROOT_ID, 2, 0]);
+			opened.markRendered();
+			queue.push([OpCode.SetAttr, 2, "class", "after"]);
+			opened.flush();
+			queue.push([OpCode.SetAttr, 2, "class", "later"]);
+			opened.flush();
+		});
+		expect(sent.map((patch) => patch.rendered)).toEqual([1, undefined]);
+		expect(sent[0]!.items).toHaveLength(2);
+	});
+
+	it("hands the main thread's rewrite message on", async () => {
+		const { page, rewrites } = channel();
+		page.asMainThread(() =>
+			page.lynx.mainThread
+				.getJSContext()
+				.dispatchEvent(encodeToBackground({ t: "rewrite", nodes: [ROOT_ID] }, 0)),
+		);
+		await page.settle();
+		expect(rewrites).toEqual([expect.objectContaining({ t: "rewrite", nodes: [ROOT_ID] })]);
+	});
+
+	it("writes the page again after what is queued, in a patch of its own that starts with the rewrite", () => {
+		const { page, queue, channel: opened } = channel();
+		const sent = sentBy(page);
+		page.asBackground(() => {
+			queue.push([OpCode.Create, 2, "view"]);
+			queue.push([OpCode.Insert, ROOT_ID, 2, 0]);
+			opened.rewritePage(() => {
+				queue.push([OpCode.Create, 2, "view"]);
+				queue.push([OpCode.Insert, ROOT_ID, 2, 0]);
+			});
+		});
+		expect(sent.map((patch) => patch.items[0])).toEqual([
+			[
+				"ops",
+				[
+					[OpCode.Create, 2, "view"],
+					[OpCode.Insert, ROOT_ID, 2, 0],
+				],
+			],
+			["rewrite", ROOT_ID],
+		]);
+		expect(sent[1]!.items[1]).toEqual([
+			"ops",
+			[
+				[OpCode.Create, 2, "view"],
+				[OpCode.Insert, ROOT_ID, 2, 0],
+			],
+		]);
 	});
 });

@@ -207,7 +207,34 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/server/index.js",
 		anchor: "export { attr, clsx };",
 		reliesOn:
-			"`svelte/internal/server` exports `attr`, `attributes`, `escape` and `css_props`, which the first frame's replacement of the server runtime overrides or reuses",
+			"`svelte/internal/server` exports `attr`, `attributes` and `css_props`, which the first frame's replacement of the server runtime overrides, and `attributes` keeps a spread's names' case with the flag `ELEMENT_PRESERVE_ATTRIBUTE_CASE` (2)",
+		test: RUNTIME,
+	},
+	{
+		id: "server-block-markers",
+		program: "runtime",
+		file: "src/compiler/phases/3-transform/server/visitors/IfBlock.js",
+		anchor: "prepend_block_marker(final_alternate, `<!--[-1-->`);",
+		reliesOn:
+			"the server writes an `{#if}`'s branch between `<!--[0-->` (`<!--[1-->`…, `<!--[-1-->` for the else) and `<!--]-->`, and a component's fragment, an `{#each}` and a `{#key}` between `<!--[-->` and `<!--]-->`: the first frame's parser keeps the branches, where the background may render otherwise, and reads through the rest",
+		test: SOURCE,
+	},
+	{
+		id: "props-id-order",
+		program: "runtime",
+		file: "src/internal/server/renderer.js",
+		anchor: "this.uid = () =>",
+		reliesOn:
+			"the server's `$props.id()` gives `<idPrefix>-s1`, `-s2`… in the order the components render, from 1 for each render, and a client component calls `$.props_id()`, which the background's client runtime replaces with the same ids, counted on Svelte's own `globalThis.__svelte.uid`",
+		test: SOURCE,
+	},
+	{
+		id: "server-render-await-invalid",
+		program: "runtime",
+		file: "src/internal/server/errors.js",
+		anchor: "export function await_invalid() {",
+		reliesOn:
+			"reading the `body` of a synchronous render throws an error whose message starts with `await_invalid` when a component awaits outside a `pending` boundary: the page then has no first frame",
 		test: RUNTIME,
 	},
 	// What runs on a thread
@@ -289,7 +316,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/client/custom-renderer/state.js",
 		anchor: "should_disable_hydration",
 		reliesOn:
-			"making a renderer current turns hydration off, so the entry is `mountPage` and not `hydrate`",
+			"making a renderer current turns Svelte's own hydration off only while it is on, and the way back turns it on again: the background never runs Svelte's `hydrate` (the first frame is adopted on the main thread, and the entry mounts), so the renderer made current around effects, handlers and `on()` never meets it",
 		test: RUNTIME,
 	},
 	// Svelte's modules that read the window or the DOM when they load

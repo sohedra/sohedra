@@ -17,6 +17,11 @@ export interface MainThreadDetails {
 	ui_method_failed: { method: string; code: number };
 	element_has_no_view: { method: string };
 	element_left_page: { method: string };
+	/** `at` is the index in the markup where it could not be read. */
+	first_frame_markup_unreadable: { reason: string; at: number };
+	/** `reason` is the first line of what the page's components threw. */
+	first_frame_threw: { reason: string };
+	rewrite_not_page: { id: number };
 }
 
 /** What a code of the main thread names. */
@@ -61,6 +66,25 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		fix: () =>
 			"Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.",
 		docs: "element_left_page",
+	},
+	first_frame_markup_unreadable: {
+		message: ({ reason, at }) =>
+			`The first frame was not drawn: its markup could not be read at character ${at}, where ${reason}.`,
+		fix: () => `The page is shown when the background has made it. ${REPORT}`,
+		docs: "first_frame_markup_unreadable",
+	},
+	first_frame_threw: {
+		message: ({ reason }) =>
+			`The first frame was not drawn: a component threw as the page rendered it on the main thread (${reason.split("\n")[0]!.trim()}).`,
+		fix: () =>
+			"Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/env. The page is shown when the background has made it.",
+		docs: "first_frame_threw",
+	},
+	rewrite_not_page: {
+		message: ({ id }) =>
+			`The background wrote element ${id} again, and the main thread writes only the whole page again.`,
+		fix: () => `The rest of the change was applied. ${REPORT}`,
+		docs: "rewrite_not_page",
 	},
 };
 

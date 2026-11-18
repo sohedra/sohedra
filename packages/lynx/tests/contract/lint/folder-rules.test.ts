@@ -20,7 +20,7 @@ const MAY_IMPORT: Record<string, string[]> = {
 	"main-thread": ["wire"],
 	"first-frame": ["wire"],
 	"svelte/build": [],
-	"svelte/runtime": [],
+	"svelte/runtime": ["wire"],
 	testing: ["wire", "background", "main-thread", "first-frame", "svelte/runtime"],
 	gesture: ["wire"],
 	host: ["wire"],

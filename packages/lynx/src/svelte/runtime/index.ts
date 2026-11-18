@@ -3,6 +3,7 @@
 // @ts-expect-error -- Svelte publishes no types for its internal modules; the export below gives this one's.
 import { push_renderer } from "svelte/internal/client";
 
+export { startPropsIds } from "./client-internals.ts";
 export { CSS_PROPS_HOLDERS } from "./css-props.ts";
 export { listenThrough } from "./events.ts";
 export { sourceLocation } from "./locations.ts";

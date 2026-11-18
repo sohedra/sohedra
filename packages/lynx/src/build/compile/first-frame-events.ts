@@ -35,6 +35,8 @@ export const firstFrameEvents: Pass = ({ source, ast, thread }) => {
 	for (const record of nodes(ast.fragment)) {
 		if (record.type !== "RegularElement" && record.type !== "SvelteElement") continue;
 		for (const attribute of attributesOf(record)) {
+			// A spread or an attachment has no name.
+			if (attribute.type !== "Attribute") continue;
 			const written = attributeName(attribute);
 			// `main-thread:ontap` is the event of a main-thread function: the prefix stays.
 			const prefix = written.startsWith(MAIN_THREAD_PREFIX) ? MAIN_THREAD_PREFIX : "";

@@ -4,6 +4,7 @@
 export { WIRE_CATALOGUE, wireError, wireMessage } from "./catalogue.ts";
 export type { WireCode, WireDetails, WireError, WireReport } from "./catalogue.ts";
 export { describeOp } from "./describe-op.ts";
+export { escapeJsonText } from "./escape.ts";
 export type { TagOf } from "./describe-op.ts";
 export { eventOf, listenerEvent, lynxEventName, removedEventSpelling } from "./events.ts";
 export type { LynxEvent, LynxEventType, LynxListener, RemovedEventSpelling } from "./events.ts";
@@ -38,6 +39,8 @@ export {
 	MAIN_THREAD_PREFIX,
 	PACKAGE_NAME,
 	PATCH_METHOD,
+	PROPS_ID,
+	PROPS_ID_PREFIX,
 	RENDERER_ENTRY,
 	TEXT_CONTAINERS,
 	TO_BACKGROUND,
@@ -70,6 +73,7 @@ export type {
 	PatchParams,
 	ReplyItem,
 	Result,
+	RewriteItem,
 	ThrownError,
 } from "./patch.ts";
 export { decodeToBackground, encodeToBackground } from "./to-background.ts";
@@ -78,9 +82,11 @@ export type {
 	ErrorMessage,
 	ErrorPlace,
 	EventMessage,
+	HydrationMismatch,
 	ReceivedByBackground,
 	ReleaseMessage,
 	ReplyMessage,
+	RewriteMessage,
 	SentEvent,
 	SentTarget,
 	ThreadEvent,

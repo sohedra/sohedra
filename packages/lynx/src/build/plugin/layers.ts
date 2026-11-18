@@ -42,6 +42,8 @@ export const RUNTIME_FILES: Readonly<{
 	mainThread: string;
 	/** The main thread's copy of the page, for the first frame. */
 	firstFrame: string;
+	/** The page's start on the main thread, which records how to draw the first frame. */
+	firstFramePage: string;
 	/** What `import "background-only"` resolves to: an empty module that marks its importer. */
 	backgroundOnly: string;
 	/** What stands in for `svelte/internal/server` in the main thread's compiled components. */
@@ -54,6 +56,7 @@ export const RUNTIME_FILES: Readonly<{
 	backgroundStartUp: programFile("background/start-up"),
 	mainThread: programFile("main-thread/entry"),
 	firstFrame: programFile("first-frame/index"),
+	firstFramePage: programFile("first-frame/page"),
 	backgroundOnly: programFile("background/background-only"),
 	serverInternals: programFile("svelte/runtime/server-internals"),
 	clientInternals: programFile("svelte/runtime/client-internals"),

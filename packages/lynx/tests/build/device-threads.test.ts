@@ -124,6 +124,15 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
+	it("fills in the main thread's replaceAll, which the first frame's style: path calls", () => {
+		const { page, mainThread } = startDevicePage(scripts);
+		try {
+			expect(vm.runInContext('typeof "".replaceAll', mainThread)).toBe("function");
+		} finally {
+			page.dispose();
+		}
+	});
+
 	it("hands the main thread the element functions' answers as its own", () => {
 		const { page, mainThread } = startDevicePage(scripts);
 		try {

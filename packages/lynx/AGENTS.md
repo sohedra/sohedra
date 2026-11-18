@@ -7,16 +7,16 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
 - Each folder of `src/` is a program, and imports another only through its `index.ts`.
   `.oxlintrc.jsonc` enforces this table; `tests/contract/lint/` pins it:
 
-  | Folder                      | Runs                | May import                 |
-  | --------------------------- | ------------------- | -------------------------- |
-  | `wire/`                     | both threads        | nothing                    |
-  | `build/` (and `presets/`)   | Node, at build time | `wire/`, `svelte/build/`   |
-  | `background/`               | background thread   | `wire/`, `svelte/runtime/` |
-  | `main-thread/`              | main thread         | `wire/`                    |
-  | `first-frame/`              | the page's script   | `wire/`                    |
-  | `svelte/build/`, `runtime/` | Node, a thread      | nothing                    |
-  | `testing/`                  | Node                | every thread's folder      |
-  | `gesture/`, `host/`, `env/` | their entries       | `wire/`                    |
+  | Folder                      | Runs                | May import                   |
+  | --------------------------- | ------------------- | ---------------------------- |
+  | `wire/`                     | both threads        | nothing                      |
+  | `build/` (and `presets/`)   | Node, at build time | `wire/`, `svelte/build/`     |
+  | `background/`               | background thread   | `wire/`, `svelte/runtime/`   |
+  | `main-thread/`              | main thread         | `wire/`                      |
+  | `first-frame/`              | the page's script   | `wire/`                      |
+  | `svelte/build/`, `runtime/` | Node, a thread      | nothing; `runtime/`: `wire/` |
+  | `testing/`                  | Node                | every thread's folder        |
+  | `gesture/`, `host/`, `env/` | their entries       | `wire/`                      |
 
 - **A thread's globals** (`lynx`, timers, Lynx's element functions, `process`) are reached only
   through the folder's `globals.ts`, typed for that thread. Never name them elsewhere, declare them
@@ -37,4 +37,4 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
   `buildApp`, one at a time; `tests/fixtures/` is not type-checked. Runtime not written yet is
   stubbed in `fixtures/build/stubs/`. `apps/package.json` ends `sideEffects` for fixtures.
 - Only a bare `pnpm test` checks `tests/coverage-baseline.json`. The engine fake cites Lynx's source
-  per behavior, and throws where that is unverified.
+  per behavior, and throws where unverified.

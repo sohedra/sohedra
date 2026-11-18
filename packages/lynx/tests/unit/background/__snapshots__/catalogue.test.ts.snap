@@ -28,6 +28,14 @@ Call boundingClientRect once Lynx shows the row, for example from the row's layo
 https://sohedra.com/e/element_not_shown"
 `;
 
+exports[`the background's catalogue > hydration_mismatch: the message 1`] = `
+"The first frame did not match the page the background rendered: the <view>'s class is "card" on the background and "card wide" in the first frame. The page was made again.
+src/Card.svelte:4:1
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch"
+`;
+
 exports[`the background's catalogue > input_value_not_written: the message 1`] = `
 "The value of the <input> element could not be written: Lynx answered setValue with the code 4.
 

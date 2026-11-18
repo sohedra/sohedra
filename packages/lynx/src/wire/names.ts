@@ -52,3 +52,12 @@ export const TO_BACKGROUND = {
 	events: "@sohedra/lynx:events",
 	replies: "@sohedra/lynx:replies",
 } as const;
+
+/**
+ * The prefix of `$props.id()`'s ids on both threads: Svelte's server gives `lynx-s1`, `lynx-s2`… in
+ * the order the components render, and the background's client runtime gives the same.
+ */
+export const PROPS_ID_PREFIX = "lynx";
+
+/** An id of `$props.id()` in a value, as hydration finds it. */
+export const PROPS_ID: RegExp = /\blynx-s\d+\b/g;

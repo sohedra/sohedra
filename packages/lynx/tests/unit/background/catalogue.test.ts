@@ -19,6 +19,10 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	element_not_on_page: { method: "boundingClientRect", tag: "view" },
 	element_not_shown: { method: "boundingClientRect", tag: "view" },
 	animation_canceled: { tag: "view", name: "fade" },
+	hydration_mismatch: {
+		difference: `the <view>'s class is "card" on the background and "card wide" in the first frame`,
+		where: "src/Card.svelte:4:1",
+	},
 };
 
 // Boundary: the keys of the catalogue are its codes.

@@ -113,6 +113,36 @@ export const checks: Checks = {
 		expect(names.toSorted(byName)).toEqual(VOID_ELEMENTS.toSorted(byName));
 	},
 
+	"server-block-markers": () => {
+		const ifBlock = readSvelte("src/compiler/phases/3-transform/server/visitors/IfBlock.js");
+		expect(ifBlock).toContain("prepend_block_marker(consequent, `<!--[0-->`);");
+		expect(ifBlock).toMatch(/prepend_block_marker\(branch, `<!--\[\$\{index\+\+\}-->`\);/);
+		expect(ifBlock).toContain("prepend_block_marker(final_alternate, `<!--[-1-->`);");
+		const markers = readSvelte("src/internal/server/hydration.js");
+		expect(markers).toMatch(/export const BLOCK_OPEN = `<!--\$\{HYDRATION_START\}-->`;/);
+		expect(markers).toMatch(/export const BLOCK_CLOSE = `<!--\$\{HYDRATION_END\}-->`;/);
+		const constants = readSvelte("src/constants.js");
+		expect(constants).toContain("export const HYDRATION_START = '[';");
+		expect(constants).toContain("export const HYDRATION_END = ']';");
+	},
+
+	"props-id-order": () => {
+		expect(readSvelte("src/internal/server/renderer.js")).toMatch(
+			/this\.uid = \(\) => `\$\{id_prefix\}s\$\{uid\+\+\}`;/,
+		);
+		expect(readSvelte("src/internal/server/index.js")).toMatch(
+			/export function props_id\(renderer\) \{\n\tconst uid = renderer\.global\.uid\(\);/,
+		);
+		expect(readSvelte("src/internal/client/index.js")).toContain("props_id,");
+		// The server's prefix is `render`'s `idPrefix` and a dash; the client's count is on the global.
+		expect(readSvelte("src/internal/server/renderer.js")).toContain(
+			"options.idPrefix ? options.idPrefix + '-' : ''",
+		);
+		expect(readSvelte("src/internal/client/dom/template.js")).toContain(
+			"(globalThis.__svelte ??= {}).uid ??= 1;",
+		);
+	},
+
 	"spring-source": () => {
 		const spring = readSvelte("src/motion/spring.js");
 		expect(spring).toMatch(/export class Spring/);

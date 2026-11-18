@@ -129,12 +129,28 @@ export function splitScriptRule(options: {
 		// Boundary: `Object.fromEntries` types its keys as `string`; the threads are the keys.
 	) as SwcByThread;
 
-	// A test run has one thread and no layers: Rsbuild's rule keeps its uses, because plugins after
-	// this one read and change them there (Rstest's coverage adds its instrumentation to them).
-	const [only] = threads;
-	if (threads.length === 1 && only?.unlayered === true) {
-		jsMain.use(CHAIN_ID.USE.SWC).options(swc[only.thread]);
-		useMainThreadFunctions(jsMain, only);
+	// A test run's thread takes every module: Rsbuild's rule keeps its uses, because plugins after
+	// this one read and change them there (Rstest's coverage adds its instrumentation to them). A
+	// layered thread beside it gets a rule of its own, tried first.
+	const unlayered = threads.find((rules) => rules.unlayered === true);
+	if (unlayered) {
+		jsMain.use(CHAIN_ID.USE.SWC).options(swc[unlayered.thread]);
+		useMainThreadFunctions(jsMain, unlayered);
+		for (const rules of threads) {
+			if (rules === unlayered) continue;
+			const rule = jsRule
+				.oneOf(`${PACKAGE_NAME}:${rules.thread}`)
+				.before(CHAIN_ID.ONE_OF.JS_MAIN)
+				.issuerLayer(LAYERS[rules.thread]);
+			if (type !== undefined) rule.type(type);
+			for (const [name, use] of Object.entries(uses)) {
+				rule
+					.use(name)
+					.loader(use.get("loader"))
+					.options(name === CHAIN_ID.USE.SWC ? swc[rules.thread] : use.get("options"));
+			}
+			useMainThreadFunctions(rule, rules);
+		}
 		return swc;
 	}
 

@@ -3,7 +3,7 @@
 // before the engine renders, the background's after. They are the runtime's and the app's; a test
 // passes them, and nothing runs in their place.
 
-import { PATCH_METHOD } from "../../wire/index.ts";
+import { FIRST_FRAME_GLOBAL, PATCH_METHOD } from "../../wire/index.ts";
 import { createEngine } from "../engine/create-engine.ts";
 import type { Engine } from "../engine/create-engine.ts";
 import { activeSession, installGlobals, removeGlobals, setActiveSession } from "../globals.ts";
@@ -13,8 +13,14 @@ import type { BackgroundLynx, MainThreadLynx, TestApp, Thread } from "./lynx.ts"
 
 /** What a test page starts with. */
 export interface TestPageOptions {
-	/** The page's initial data, which the engine renders the page with. */
+	/**
+	 * The data the host opens the page with. The engine renders the page with the template's data
+	 * and this over it, and gives the background this as `_params.updateData`
+	 * (core/runtime/js/bindings/js_app.cc).
+	 */
 	initData?: Record<string, unknown>;
+	/** The template's own data, which the engine gives the background as `_params.initData`. */
+	templateData?: Record<string, unknown>;
 	/** The host's global props. */
 	globalProps?: Record<string, unknown>;
 	/** The main thread's script: it runs first, before the engine renders the page. */
@@ -82,6 +88,7 @@ const PAGE_GLOBALS = [
 	"removeComponents",
 	"processData",
 	PATCH_METHOD,
+	FIRST_FRAME_GLOBAL,
 ];
 
 /** Starts a test page, and ends the one that was running, if any. */
@@ -114,8 +121,11 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		report: (error) => void errors.push(error),
 	});
 	const elementFunctions = Object.keys(engine.functions);
-	const initData = options.initData ?? {};
-	const app: TestApp = { _params: { initData: { ...initData }, updateData: {} } };
+	const templateData = options.templateData ?? {};
+	const hostData = options.initData ?? {};
+	// The data the engine renders the page with (core/renderer/template_assembler.cc).
+	const initData = { ...templateData, ...hostData };
+	const app: TestApp = { _params: { initData: { ...templateData }, updateData: { ...hostData } } };
 	const lynx = createLynx({
 		bridge,
 		lifecycle: engine.lifecycle,

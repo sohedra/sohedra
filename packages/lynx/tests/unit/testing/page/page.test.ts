@@ -231,10 +231,24 @@ describe("the app on the background", () => {
 		return { page, calls };
 	}
 
-	it("keeps the data the page was opened with", () => {
-		const page = startTestPage({ initData: { a: 1 } });
-		expect(page.app._params).toEqual({ initData: { a: 1 }, updateData: {} });
+	it("keeps the data the page was opened with as the engine does: the template's, then the host's", () => {
+		const page = startTestPage({ templateData: { a: 1, b: 1 }, initData: { b: 2 } });
+		// core/runtime/js/bindings/js_app.cc: `initData` is the template's, `updateData` the host's.
+		expect(page.app._params).toEqual({ initData: { a: 1, b: 1 }, updateData: { b: 2 } });
 		expect(page.lynx.background.getApp()).toBe(page.app);
+	});
+
+	it("renders the page with the template's data and the host's over it", () => {
+		const rendered: unknown[] = [];
+		startTestPage({
+			templateData: { a: 1, b: 1 },
+			initData: { b: 2 },
+			mainThread: () => {
+				const engine = (readGlobal("lynx") as MainThreadLynx).getEngine();
+				engine.addEventListener("__RenderPage", (event) => rendered.push(event.data));
+			},
+		});
+		expect(rendered).toEqual([[{ a: 1, b: 2 }, {}]]);
 	});
 
 	it("hears new data after the main thread, with its type", async () => {

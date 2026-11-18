@@ -35,7 +35,8 @@
 
 		// Imports
 		"import/no-cycle": "error",
-		"import/no-duplicates": "error",
+		// A query makes another module: `./Card.svelte?first-frame` is the card's first-frame copy.
+		"import/no-duplicates": ["error", { "considerQueryString": true }],
 		"import/no-mutable-exports": "error",
 		"import/no-self-import": "error",
 		"typescript/consistent-type-imports": "error",
@@ -166,7 +167,7 @@
 				],
 			},
 		},
-		// May import: Nothing of the binding
+		// May import: wire/
 		{
 			"files": ["packages/lynx/src/svelte/runtime/**"],
 			"rules": {
@@ -205,6 +206,9 @@
 									"../**/host/**",
 									"../**/env",
 									"../**/env/**",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
 								],
 								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
 							},

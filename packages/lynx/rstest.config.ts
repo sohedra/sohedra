@@ -1,8 +1,9 @@
 import fs from "node:fs";
 
 import { defineConfig } from "@rstest/core";
-import type { RstestConfig } from "@rstest/core";
+import type { ExtendConfigFn, RstestConfig } from "@rstest/core";
 
+import { pluginFirstFrameCopies } from "./src/build/plugin/first-frame-copies.ts";
 import { withSvelteLynx } from "./src/build/presets/rstest.ts";
 
 // The coverage floor: the measured values, rounded down. Coverage may never drop below it; a pull
@@ -31,16 +32,24 @@ const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 const onTheTestTree = [
 	"tests/unit/testing/**",
 	"tests/unit/background/**",
+	"tests/unit/first-frame/**",
 	"tests/unit/globals/**",
+	"tests/unit/main-thread/**",
 	"tests/contract/engine/**",
 	"tests/threads/**",
 ];
+
+/** The package's preset, with the binding's own first-frame copies (`./Card.svelte?first-frame`). */
+const withFirstFrameCopies: ExtendConfigFn = async (user) => {
+	const preset = await withSvelteLynx()(user);
+	return { ...preset, plugins: [...(preset.plugins ?? []), pluginFirstFrameCopies()] };
+};
 
 const config: RstestConfig = defineConfig({
 	projects: [
 		{
 			name: "page",
-			extends: withSvelteLynx(),
+			extends: withFirstFrameCopies,
 			include: onTheTestTree.map((folder) => `${folder}/*.test.ts`),
 		},
 		{

@@ -59,6 +59,32 @@ export interface ReleaseMessage {
 	contexts: number[];
 }
 
+/**
+ * The main thread asks the background to write the page again, with the ids it has: `nodes` is the
+ * page's root (`ROOT_ID`), the one subtree written again yet. It answers with a patch that starts
+ * with a rewrite item. The main thread asks after a hydration it refused or could not finish;
+ * `mismatch` then says why, with the values that differ in development builds only.
+ */
+export interface RewriteMessage {
+	t: "rewrite";
+	nodes: number[];
+	mismatch?: HydrationMismatch;
+}
+
+/**
+ * What differs between the first frame and the page the background rendered, by the background's
+ * ids. `node` is the element where it differs (for an element the background lacks, its parent);
+ * `expected` is the background's and `got` the first frame's.
+ */
+export interface HydrationMismatch {
+	kind: "tag" | "missing" | "extra" | "attribute" | "list-keys";
+	node: number;
+	/** The attribute that differs. */
+	name?: string;
+	expected?: unknown;
+	got?: unknown;
+}
+
 /** Where on the main thread an error was thrown, as far as the main thread knows. */
 export interface ErrorPlace {
 	/** The component, as its file. */
@@ -85,7 +111,8 @@ export type ToBackground =
 	| CallMessage
 	| ReplyMessage
 	| ReleaseMessage
-	| ErrorMessage;
+	| ErrorMessage
+	| RewriteMessage;
 
 /** A message to the background as the background receives it. */
 export type ReceivedByBackground = ToBackground & Stamp;

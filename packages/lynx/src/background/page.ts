@@ -12,10 +12,12 @@
 import { flushSync, mount, unmount } from "svelte";
 import type { Component } from "svelte";
 
-import { listenThrough, pushRenderer } from "../svelte/runtime/index.ts";
-import type { SentEvent, SentTarget } from "../wire/index.ts";
+import { listenThrough, pushRenderer, startPropsIds } from "../svelte/runtime/index.ts";
+import { ROOT_ID } from "../wire/index.ts";
+import type { RewriteMessage, SentEvent, SentTarget } from "../wire/index.ts";
 import { openChannel } from "./channel.ts";
 import { background } from "./globals.ts";
+import { mismatchError } from "./hydration.ts";
 import { bumpPage, clearPageState, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
@@ -103,16 +105,31 @@ export function startPage<Props extends Record<string, unknown>>(
 		});
 	}
 
+	/** The main thread asks for the page again: its first frame could not be hydrated. */
+	function rewrite({ nodes, mismatch }: RewriteMessage): void {
+		if (mismatch) reportError(mismatchError(mismatch, pageRenderer.nodeById(mismatch.node)));
+		// The page's root is the one subtree asked for yet.
+		if (nodes.includes(ROOT_ID)) channel.rewritePage(() => pageRenderer.writePage());
+	}
+
 	const channel = openChannel({
 		queue: pageQueue,
 		onEvent: dispatch,
+		onRewrite: rewrite,
 		tagOf: (id) => pageRenderer.tagOf(id),
 	});
 
-	function render(): void {
+	/**
+	 * Mounts the app. At the page's start, what it rendered before its effects ran is marked: the main
+	 * thread hydrates its first frame from it.
+	 */
+	function render(starting: boolean): void {
 		// Boundary: an app without `props` has a root component that takes none.
 		const props = options.props?.(lynx.__initData) ?? ({} as Props);
+		// The ids of `$props.id()` are the first frame's: a reload draws no frame, and starts them too.
+		startPropsIds();
 		instance = mount(App, { target: root!, anchor: anchor!, renderer: pageRenderer, props });
+		if (starting) channel.markRendered();
 		flushSync();
 	}
 
@@ -132,7 +149,7 @@ export function startPage<Props extends Record<string, unknown>>(
 		mergeData(data);
 		runAll([teardown, () => channel.abandon()]);
 		try {
-			render();
+			render(false);
 		} finally {
 			// A patch of the new page even when it shows nothing yet, or failed to: the main thread
 			// keeps the old page on screen until one comes.
@@ -175,6 +192,8 @@ export function startPage<Props extends Record<string, unknown>>(
 	try {
 		// Boundary: lynx-core's app keeps the data the page was opened with here.
 		const params = (app["_params"] ?? {}) as AppParams;
+		// The template's data and the host's over it (core/runtime/js/bindings/js_app.cc), as the
+		// engine rendered the page with them: the data the first frame was drawn from.
 		lynx.__initData = { ...params.initData, ...params.updateData };
 		pageRenderer.setHost({
 			call: channel.call,
@@ -183,7 +202,7 @@ export function startPage<Props extends Record<string, unknown>>(
 		root = pageRenderer.createRoot();
 		anchor = pageRenderer.createComment("");
 		pageRenderer.insert(root, anchor, null);
-		render();
+		render(true);
 		channel.flush();
 	} catch (error) {
 		reportError(error);

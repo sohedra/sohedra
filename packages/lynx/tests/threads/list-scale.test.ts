@@ -18,7 +18,7 @@ interface Row {
  * update carries the list's whole order, so a change of one row still sends 1,001 ids.
  */
 const BUDGET = {
-	start: { ops: 9004, bytes: 261_592 },
+	start: { ops: 9004, bytes: 261_608 },
 	append: { ops: 10, bytes: 5377 },
 	reverse: { ops: 1, bytes: 62_229 },
 };

@@ -36,6 +36,27 @@ The two threads disagree about the page. This is a bug in @sohedra/lynx: report 
 https://sohedra.com/e/element_missing"
 `;
 
+exports[`the main thread's catalogue > first_frame_markup_unreadable: the message 1`] = `
+"The first frame was not drawn: its markup could not be read at character 11, where the value of class on <view> is not quoted.
+
+The page is shown when the background has made it. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/first_frame_markup_unreadable"
+`;
+
+exports[`the main thread's catalogue > first_frame_threw: the message 1`] = `
+"The first frame was not drawn: a component threw as the page rendered it on the main thread (NativeModules is not defined).
+
+Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/env. The page is shown when the background has made it.
+https://sohedra.com/e/first_frame_threw"
+`;
+
+exports[`the main thread's catalogue > rewrite_not_page: the message 1`] = `
+"The background wrote element 7 again, and the main thread writes only the whole page again.
+
+The rest of the change was applied. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/rewrite_not_page"
+`;
+
 exports[`the main thread's catalogue > ui_method_failed: the message 1`] = `
 "Lynx could not run setValue on the element: it answered with the code 4.
 

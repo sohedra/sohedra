@@ -17,6 +17,7 @@ import type { Flattening } from "./flatten.ts";
 import { mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
 import { createLists, LIST_ONLY_INFO } from "./lists.ts";
+import type { AdoptedItems, HeldCell, ListState } from "./lists.ts";
 
 /** The engine's `closure_type` with which it reads `bind_type`. */
 const CLOSURE_CORE = 2;
@@ -48,6 +49,18 @@ export interface FailedOp {
 	error: unknown;
 }
 
+/** An element as one applier lets go of it and another takes it: hydration moves it. */
+export interface TakenElement {
+	element: LynxElement;
+	/** Its `data-*` values. */
+	dataset: Record<string, unknown> | undefined;
+	/** A list's own state, with its cells. */
+	list: ListState | undefined;
+}
+
+/** How a list's items go to their new ids: the cells Lynx holds keep their elements. */
+export type AdoptedList = AdoptedItems;
+
 /** The page's elements, as the background's ops made them. */
 export interface Applier {
 	/** Applies `ops` in order. An op that throws is skipped, and the others are applied. */
@@ -64,6 +77,19 @@ export interface Applier {
 	readonly flattening: Flattening;
 	/** The styles code set. */
 	readonly styles: CodeStyles;
+	/** The handler id of an element's event slot (`bindEvent:tap`), if it listens there. */
+	handlerOf(id: number, slot: string): number | undefined;
+	/** The cells of a list that have elements, with whether Lynx holds them. */
+	heldCells(id: number): HeldCell[];
+	/** A list's items now, and as Lynx last heard of them. */
+	listOrder(id: number): { items: number[]; committed: number[] };
+	/**
+	 * Lets go of an element without touching it: it stays where it is, and another applier takes it
+	 * (`adopt`). Its listeners must be gone (`silence`).
+	 */
+	forget(id: number): TakenElement;
+	/** Takes an element another applier let go of, under this id; a list takes its cells too. */
+	adopt(id: number, taken: TakenElement, options: { onPage: boolean; list?: AdoptedList }): void;
 	/** Removes every listener it added, the page's own too: no event reaches the background after. */
 	silence(): void;
 	/** Takes the page's elements off it and lets go of every one. */
@@ -82,6 +108,10 @@ export interface ApplierOptions {
 	openCell(id: number): void;
 	/** Reports an error the engine's call into the page threw. */
 	report(error: unknown): void;
+	/** The styles code set, shared with the applier whose elements this one adopts. */
+	styles?: CodeStyles;
+	/** The `flatten` of the elements, and those held for a UI, shared the same way. */
+	flattening?: Flattening;
 }
 
 interface Registration {
@@ -92,11 +122,12 @@ interface Registration {
 }
 
 /** Makes the applier of a page. */
-export function createApplier({ page, dispatch, openCell, report }: ApplierOptions): Applier {
+export function createApplier(options: ApplierOptions): Applier {
+	const { page, dispatch, openCell, report } = options;
 	const elements = new Map<number, LynxElement>([[ROOT_ID, page]]);
 	const pageUid = mainThread.__GetElementUniqueID(page);
-	const flattening = createFlattening();
-	const styles = createCodeStyles();
+	const flattening = options.flattening ?? createFlattening();
+	const styles = options.styles ?? createCodeStyles();
 	const lists = createLists({ pageUid, openCell, elementOf: (id) => elements.get(id), report });
 	const idByUid = new Map<number, number>([[pageUid, ROOT_ID]]);
 	const uidById = new Map<number, number>([[ROOT_ID, pageUid]]);
@@ -285,6 +316,29 @@ export function createApplier({ page, dispatch, openCell, report }: ApplierOptio
 		idOf: (element) => idByUid.get(mainThread.__GetElementUniqueID(element)),
 		flattening,
 		styles,
+		handlerOf: (id, slot) => registrations.get(id)?.get(slot)?.handler,
+		heldCells: (id) => lists.heldCells(id),
+		listOrder: (id) => lists.orderOf(id),
+		forget(id) {
+			const element = get(id);
+			const taken: TakenElement = { element, dataset: datasets.get(id), list: lists.forget(id) };
+			const uid = uidById.get(id);
+			if (uid !== undefined) idByUid.delete(uid);
+			uidById.delete(id);
+			elements.delete(id);
+			datasets.delete(id);
+			onPage.delete(id);
+			return taken;
+		},
+		adopt(id, taken, { onPage: top, list }) {
+			const uid = mainThread.__GetElementUniqueID(taken.element);
+			elements.set(id, taken.element);
+			idByUid.set(uid, id);
+			uidById.set(id, uid);
+			if (taken.dataset) datasets.set(id, taken.dataset);
+			if (top) onPage.add(id);
+			if (taken.list && list) lists.adopt(id, { state: taken.list, ...list });
+		},
 		silence() {
 			// oxlint-disable-next-line unicorn/no-useless-spread -- copied: removeListener deletes from the map
 			for (const id of [...registrations.keys()]) {

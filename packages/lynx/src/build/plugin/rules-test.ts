@@ -1,5 +1,7 @@
 // The rules of a test run: one process plays both threads, so everything compiles as for the
-// background thread, where Svelte runs, with no layers and no Lynx engine.
+// background thread, where Svelte runs, with no Lynx engine. A module of the main thread's layer
+// compiles as the main thread's; nothing of a public test run enters that layer (the binding's own
+// tests do, through ./first-frame-copies.ts).
 
 import type { ChainIdentifier, RspackChain } from "@rsbuild/core";
 
@@ -19,8 +21,9 @@ export interface TestRuleOptions extends SvelteRuleOptions {
 	development: boolean;
 }
 
-/** The only thread of a test run. */
+/** The thread of a test run's modules, and the one of a module of the main thread's layer. */
 const BACKGROUND: Thread = "background";
+const MAIN_THREAD: Thread = "main-thread";
 
 /** Set up the rules of a test run. */
 export function configureTestRules(options: TestRuleOptions): void {
@@ -28,6 +31,11 @@ export function configureTestRules(options: TestRuleOptions): void {
 	// Only the thread's constants are defined: the runtime's own flags stay unset, so a test can set
 	// them.
 	const threads = [
+		{
+			thread: MAIN_THREAD,
+			defines: { ...threadDefines(MAIN_THREAD, development) },
+			hot: false,
+		},
 		{
 			thread: BACKGROUND,
 			defines: { ...define, ...threadDefines(BACKGROUND, development) },

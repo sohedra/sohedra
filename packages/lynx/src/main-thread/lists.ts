@@ -40,7 +40,8 @@ interface Cell {
 	removed: boolean;
 }
 
-interface ListState {
+/** A list's own state: its element, its items and its cells. */
+export interface ListState {
 	element: LynxElement;
 	/** The items in their order now. */
 	items: Order;
@@ -50,6 +51,31 @@ interface ListState {
 	cellsByUid: Map<number, Cell>;
 	/** The items whose info changed since the last update. */
 	changed: Set<number>;
+}
+
+/** A cell that has its element, with whether Lynx holds it now. */
+export interface HeldCell {
+	id: number;
+	element: LynxElement;
+	uid: number;
+	attached: boolean;
+	/** Lynx asked for it and has not handed it back. */
+	bound: boolean;
+}
+
+/** A list's items under their new ids, with the cells whose elements they keep. */
+export interface AdoptedItems {
+	/** The items, in order. */
+	items: number[];
+	/** For each item, the cell whose element it keeps, or none. */
+	cells: (HeldCell | undefined)[];
+	/** The items as Lynx last heard of them, when that is not `items`. */
+	committed?: number[];
+	/**
+	 * The items' info, for a list inside a cell, whose updates this module writes: its items are
+	 * then this list's.
+	 */
+	infos?: Map<number, ListItemInfo>;
 }
 
 /** A list update the background wrote. */
@@ -89,6 +115,17 @@ export interface Lists {
 	destroy(): void;
 	/** Tells every list inside a cell whose items changed. */
 	flush(): void;
+	/** The cells of a list that have elements. */
+	heldCells(id: number): HeldCell[];
+	/** A list's items now, and as Lynx last heard of them. */
+	orderOf(id: number): { items: number[]; committed: number[] };
+	/** Lets go of a list without touching it, for other lists to take (`adopt`). */
+	forget(id: number): ListState | undefined;
+	/**
+	 * Takes a list that other lists let go of, under this id: its items are `items` now, and each
+	 * keeps the element of its cell in `cells`. Lynx calls this module's callbacks from now on.
+	 */
+	adopt(id: number, adopted: { state: ListState } & AdoptedItems): void;
 }
 
 const answerNone: ComponentAtIndex = () => -1;
@@ -310,5 +347,65 @@ export function createLists(scope: ListsScope): Lists {
 			listOf.clear();
 		},
 		flush,
+		heldCells(id) {
+			const held: HeldCell[] = [];
+			for (const cell of lists.get(id)?.cells.values() ?? []) {
+				if (!cell.element) continue;
+				const { element, uid, attached, bound } = cell;
+				held.push({ id: cell.id, element, uid, attached, bound });
+			}
+			return held;
+		},
+		orderOf(id) {
+			const list = lists.get(id);
+			return { items: list?.items.toArray() ?? [], committed: list?.committed ?? [] };
+		},
+		forget(id) {
+			const list = lists.get(id);
+			if (!list) return undefined;
+			lists.delete(id);
+			dirty.delete(list);
+			return list;
+		},
+		adopt(id, { state, items, cells, committed = items, infos: itemInfos }) {
+			const list: ListState = {
+				element: state.element,
+				items: new Order(),
+				committed,
+				cells: new Map(),
+				cellsByUid: new Map(),
+				changed: new Set(),
+			};
+			for (let index = 0; index < items.length; index++) {
+				const itemId = items[index]!;
+				list.items.insert(itemId, 0);
+				const held = cells[index];
+				const cell: Cell = held
+					? { ...held, id: itemId, removed: false }
+					: {
+							id: itemId,
+							element: undefined,
+							uid: -1,
+							attached: false,
+							bound: false,
+							removed: false,
+						};
+				list.cells.set(itemId, cell);
+				if (held) list.cellsByUid.set(held.uid, cell);
+				const info = itemInfos?.get(itemId);
+				if (itemInfos) listOf.set(itemId, id);
+				if (info) infos.set(itemId, info);
+			}
+			// Lynx heard of items that are not this list's any more: it is told at the next flush.
+			if (committed.join() !== items.join()) dirty.add(list);
+			lists.set(id, list);
+			const { componentAtIndex, componentAtIndexes, enqueueComponent } = callbacks(id);
+			mainThread.__UpdateListCallbacks(
+				state.element,
+				componentAtIndex,
+				enqueueComponent,
+				componentAtIndexes,
+			);
+		},
 	};
 }
