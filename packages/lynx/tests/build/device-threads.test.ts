@@ -1,5 +1,8 @@
-// A production build of a small page, run on threads shaped like a device's (device-threads.ts):
-// the built scripts start the page, draw it and take a tap with only what a device gives them.
+// A small page built for production and for development, run on threads shaped like a device's
+// (device-threads.ts): the built scripts start the page, draw it and take a tap with only what a
+// device gives them. A device runs a development build from the dev server, whose client needs the
+// host's native modules for its socket and DevTool; the development build here leaves that client
+// out (no hot or live reload), and keeps the binding's and Svelte's development paths.
 
 import vm from "node:vm";
 
@@ -10,14 +13,22 @@ import { buildApp, cleanBuild, scriptsOf } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
 import { startDevicePage, SYSTEM_INFO } from "./device-threads.ts";
 
-let build: AppBuild;
-let scripts: ReturnType<typeof scriptsOf>;
+const MODES = ["production", "development"] as const;
+const builds = new Map<(typeof MODES)[number], AppBuild>();
 
 beforeAll(async () => {
-	build = await buildApp("device");
-	if (build.ok) scripts = scriptsOf(build);
-}, 180_000);
-afterAll(() => cleanBuild(build));
+	for (const mode of MODES)
+		builds.set(
+			mode,
+			await buildApp("device", {
+				development: mode === "development",
+				rsbuild: { dev: { hmr: false, liveReload: false } },
+			}),
+		);
+}, 360_000);
+afterAll(() => {
+	for (const build of builds.values()) cleanBuild(build);
+});
 
 /** The first element with this class token. */
 function byClass(page: TestPage, token: string): LynxElement {
@@ -38,8 +49,15 @@ function drawn(page: TestPage) {
 	};
 }
 
-describe("a built page on threads shaped like a device's", () => {
+describe.each(MODES)("a page built for %s, on threads shaped like a device's", (mode) => {
+	let scripts: ReturnType<typeof scriptsOf>;
+	beforeAll(() => {
+		const build = builds.get(mode)!;
+		if (build.ok) scripts = scriptsOf(build);
+	});
+
 	it("builds", () => {
+		const build = builds.get(mode)!;
 		expect(build.error + build.messages).toBe("");
 		expect(build.ok).toBe(true);
 	});
@@ -98,6 +116,18 @@ describe("a built page on threads shaped like a device's", () => {
 		const { page, mainThread } = startDevicePage(scripts);
 		try {
 			expect(vm.runInContext("SystemInfo", mainThread)).toBe(SYSTEM_INFO);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("hands the main thread the element functions' answers as its own", () => {
+		const { page, mainThread } = startDevicePage(scripts);
+		try {
+			const at = page.asMainThread(() =>
+				vm.runInContext("typeof __QuerySelectorAll(__GetPageElement(), 'view', {}).at", mainThread),
+			);
+			expect(at).toBe("undefined");
 		} finally {
 			page.dispose();
 		}
