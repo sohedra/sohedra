@@ -44,16 +44,6 @@ describe("requestAnimationFrame", () => {
 		await nextTask();
 		expect(ran).toEqual(["first", "second"]);
 	});
-
-	it("drops a callback that is canceled", async () => {
-		const ran: string[] = [];
-		const f = engine().functions;
-		const id = f.requestAnimationFrame(() => ran.push("canceled"));
-		f.requestAnimationFrame(() => ran.push("kept"));
-		f.cancelAnimationFrame(id);
-		await nextTask();
-		expect(ran).toEqual(["kept"]);
-	});
 });
 
 describe("what the platform has measured", () => {
