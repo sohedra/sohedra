@@ -10,6 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
 import { PATCH_METHOD } from "../../src/wire/index.ts";
 import { lock } from "./build-app.ts";
+import { startDevicePage } from "./device-threads.ts";
 
 const PLAYGROUND = path.resolve(import.meta.dirname, "../../../../playgrounds/lynx");
 const DIST = path.join(PLAYGROUND, "dist");
@@ -65,5 +66,26 @@ describe("the playground, built with rspeedy's CLI", () => {
 		expect(script).toContain("Reverse the list");
 		expect(script).toContain("callDestroyLifetimeFun");
 		expect(script).not.toContain("__RenderPage");
+	});
+
+	it("reverses its list on a tap, on threads shaped like a device's", async () => {
+		const script = (thread: string) =>
+			fs.readFileSync(path.join(DIST, ".lynx/main", thread), "utf8");
+		const { page } = startDevicePage({
+			mainThread: script("main-thread.js"),
+			background: script("background.js"),
+		});
+		try {
+			await page.settle();
+			const buttons = page.engine
+				.all()
+				.filter((element) => page.engine.state(element).classes.split(" ").includes("button"));
+			page.engine.dispatch(buttons[1]!, { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts().slice(-3)).toEqual(["Cherry", "Banana", "Apple"]);
+		} finally {
+			page.dispose();
+		}
 	});
 });
