@@ -87,13 +87,13 @@ describe("classes and id", () => {
 		);
 	});
 
-	it("sets the id, and takes it away with null", () => {
+	it("sets the id, and empties it with null, as Lynx keeps it", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		expect((inner as Element).id).toBe("inner");
 		f.__SetID(inner, null);
 		expect((inner as Element).hasAttribute("id")).toBe(false);
-		expect(engine().state(inner).id).toBeNull();
+		expect(engine().state(inner).id).toBe("");
 	});
 });
 
