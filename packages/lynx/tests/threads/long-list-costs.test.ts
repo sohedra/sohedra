@@ -1,14 +1,18 @@
 // What drawing and starting a long list costs, counted in the steps that cost most on Lynx's
-// engines, which run without a JIT: regex matches and map iterations on the main thread's scan of a
-// list's items. A count, unlike a time, is the same on every machine. A change that counts more must
-// raise a budget here, on purpose.
+// engines, which run without a JIT: regex matches on the main thread's scan of a list's items, and
+// map and set calls and map iterations there and on the background's start. A count, unlike a time,
+// is the same on every machine. A change that counts more must raise a budget here, on purpose.
 
 import { describe, expect, it } from "@rstest/core";
 
+import { startPage } from "../../src/background/index.ts";
 import { cellInfo, parsePage } from "../../src/main-thread/frame/html.ts";
 import type { DrawnChild, DrawnNode } from "../../src/main-thread/frame/html.ts";
 import { readGlobal } from "../../src/testing/globals.ts";
+import { startTestPage } from "../../src/testing/index.ts";
+import type { BackgroundLynx } from "../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL, ROOT_ID } from "../../src/wire/index.ts";
+import LongFeed from "../fixtures/threads/LongFeed.svelte";
 import drawLongFeed from "../fixtures/threads/LongFeed.svelte?first-frame";
 
 /**
@@ -16,6 +20,19 @@ import drawLongFeed from "../fixtures/threads/LongFeed.svelte?first-frame";
  * around the list, and iterates no map's entries (each a call per entry, and an array for each).
  */
 const SCAN = { matchesPerItem: 1, matchesAround: 10, iterations: 0 };
+
+/**
+ * The budgets of the background's start to its first patch, Svelte's calls and the binding's
+ * counted together: map and set calls per row, and map iterations (a row written as a component
+ * spreads its props).
+ */
+const MOUNT = { lookupsPerRow: 285, lookupsAround: 100, iterationsPerRow: 2, iterationsAround: 10 };
+
+const MAP_AND_SET: [object, PropertyKey][] = [Map.prototype, Set.prototype].flatMap((owner) =>
+	["get", "set", "has", "add", "delete"]
+		.filter((name) => name in owner)
+		.map((name): [object, PropertyKey] => [owner, name]),
+);
 
 /** Counts the calls of each method, by its owner and name, while `run` runs. */
 function counting<T>(owners: [object, PropertyKey][], run: () => T): { result: T; calls: number } {
@@ -69,6 +86,37 @@ describe.each([1000, 5000])("a list of %i rows", (count) => {
 			expect(matches.result.cells).toHaveLength(count);
 			expect(matches.calls).toBeLessThanOrEqual(SCAN.matchesPerItem * count + SCAN.matchesAround);
 			expect(iterations.calls).toBeLessThanOrEqual(SCAN.iterations);
+		});
+
+		it("starts on the background within its budget", () => {
+			const start = (owners: [object, PropertyKey][]) => {
+				let calls = 0;
+				let sent = 0;
+				startTestPage({
+					background: () => {
+						const native = (readGlobal("lynx") as BackgroundLynx).getNativeApp();
+						const send = native.callLepusMethod.bind(native);
+						native.callLepusMethod = (name, params, callback) => {
+							sent++;
+							send(name, params, callback);
+						};
+						calls = counting(owners, () => {
+							startPage(LongFeed, { props: () => ({ count, shape }) });
+						}).calls;
+					},
+				});
+				expect(sent).toBe(1);
+				return calls;
+			};
+			const lookups = start(MAP_AND_SET);
+			const iterations = start([
+				[Map.prototype, Symbol.iterator],
+				[Map.prototype, "entries"],
+			]);
+			expect(lookups).toBeLessThanOrEqual(MOUNT.lookupsPerRow * count + MOUNT.lookupsAround);
+			expect(iterations).toBeLessThanOrEqual(
+				MOUNT.iterationsPerRow * count + MOUNT.iterationsAround,
+			);
 		});
 	});
 });
