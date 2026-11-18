@@ -6,9 +6,10 @@
 // false. Android's LynxFlattenUI has no `takeScreenshot`, which answers 3 there; the fake leaves
 // that to the test's responder, as it models no platform.
 
+import { resolveAtFlush } from "./custom-properties.ts";
 import { isLayoutOnly } from "./layout-only.ts";
 import { argumentError, stateOf } from "./state.ts";
-import type { EngineState } from "./state.ts";
+import type { ElementState, EngineState } from "./state.ts";
 import { descendantsOf } from "./tree.ts";
 import type { InvokeResult, LynxElement } from "./types.ts";
 
@@ -71,6 +72,7 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 		__FlushElementTree(_page, options) {
 			engine.log.flushes.push(options);
 			const inPage = engine.page ? descendantsOf(engine.page) : [];
+			const told = new Set<ElementState>();
 			for (const node of inPage) {
 				const state = engine.states.get(node);
 				if (!state) continue;
@@ -79,6 +81,7 @@ export function uiFunctions(engine: EngineState): UiFunctions {
 					classes: state.classes,
 					attrs: { ...state.attrs },
 					inlineStyles: new Map(state.inlineStyles),
+					customProperties: resolveAtFlush(engine, state, told),
 				});
 				for (const key of state.filedEvents) {
 					if (!key.startsWith(GLOBAL_BIND)) continue;

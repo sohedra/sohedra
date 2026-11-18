@@ -89,6 +89,14 @@ export interface ElementState {
 	dataset: Record<string, unknown>;
 	/** Inline styles, in the order they were added: the set text's and `__AddInlineStyle`'s alike. */
 	inlineStyles: Map<string, string>;
+	/** Its inline custom properties, as the engine last read them. */
+	variables: Map<string, string>;
+	/** The style text set and not read yet: the engine reads it at the flush, or before a style is added. */
+	styleText: string | undefined;
+	/** Whether its inline style changed since the last flush. */
+	restyled: boolean;
+	/** Whether, since the last flush, a change of its custom properties was recorded for its descendants. */
+	variablesChanged: boolean;
 	listeners: RegisteredListener[];
 	/** The main-thread functions bound to its events (`__AddEvent`), one per event name and type. */
 	mainThreadEvents: BoundFunction[];
@@ -198,6 +206,8 @@ export interface ShownElement {
 	readonly classes: string;
 	readonly attrs: Readonly<Record<string, unknown>>;
 	readonly inlineStyles: ReadonlyMap<string, string>;
+	/** The custom properties it resolved, its own and those it inherits. */
+	readonly customProperties: ReadonlyMap<string, string>;
 }
 
 /**
