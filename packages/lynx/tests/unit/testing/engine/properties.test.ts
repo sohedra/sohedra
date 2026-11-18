@@ -23,12 +23,13 @@ describe("attributes", () => {
 		expect(f.__GetAttributeNames(inner)).toEqual(["scroll-y", "label", "options"]);
 	});
 
-	it("takes an attribute away with null or undefined, and answers undefined for one that is not there", () => {
+	it("takes an attribute away with null or undefined, and answers null for one that is not there", () => {
 		const { inner } = smallPage(engine());
 		const f = engine().functions;
 		f.__SetAttribute(inner, "label", "Save");
 		f.__SetAttribute(inner, "label", null);
-		expect(f.__GetAttributeByName(inner, "label")).toBeUndefined();
+		expect(f.__GetAttributeByName(inner, "label")).toBeNull();
+		expect(f.__GetAttributeByName(inner, "never")).toBeNull();
 		expect((inner as Element).hasAttribute("label")).toBe(false);
 		f.__SetAttribute(inner, "other", "x");
 		f.__SetAttribute(inner, "other", undefined);
@@ -254,7 +255,7 @@ describe("queries", () => {
 		expect(f.__QuerySelector(page, "[label^=Sa]", {})).toBe(inner);
 		expect(f.__QuerySelector(page, "[label$=ve]", {})).toBe(inner);
 		expect(f.__QuerySelector(page, "[label*=av]", {})).toBe(inner);
-		expect(f.__QuerySelector(page, "[id=inner]", {})).toBeUndefined();
+		expect(f.__QuerySelector(page, "[id=inner]", {})).toBeNull();
 	});
 
 	it("throws for a selector Lynx does not take, where Lynx finds nothing", () => {
@@ -278,9 +279,9 @@ describe("queries", () => {
 		expect(() => f.__QuerySelector(page, "_view", {})).toThrow("Lynx's selectors do not take");
 	});
 
-	it("answers undefined for no match, as it does for an attribute that is not there", () => {
+	it("answers null for no match, as it does for an attribute that is not there", () => {
 		const { page } = smallPage(engine());
-		expect(engine().functions.__QuerySelector(page, ".nothing", {})).toBeUndefined();
+		expect(engine().functions.__QuerySelector(page, ".nothing", {})).toBeNull();
 	});
 
 	it("takes an options object, as the engine requires", () => {

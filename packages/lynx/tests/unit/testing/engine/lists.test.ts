@@ -117,7 +117,7 @@ describe("a list", () => {
 		engine().functions.__SetAttribute(element, "update-list-info", update);
 		expect(handle.updates).toEqual([items(6), update]);
 		expect(seen).toEqual([update]);
-		expect(engine().functions.__GetAttributeByName(element, "update-list-info")).toBeUndefined();
+		expect(engine().functions.__GetAttributeByName(element, "update-list-info")).toBeNull();
 	});
 
 	it("takes new callbacks, and calls those from then on", () => {

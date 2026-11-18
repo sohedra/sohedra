@@ -1,13 +1,13 @@
 // What the binding counts on Lynx's engine to do, written once as cases that a runner applies to a
-// target: the engine fake here, a device later. A case uses only what a page's main thread has
+// target: the engine fake here, and a device. A case uses only what a page's main thread has
 // (Lynx's element functions, `lynx.getEngine()`, the global `runWorklet`) and what a device can be
 // made to do (tap, pan, show a list's cell, update the page's data); it returns a plain
 // observation, and the runner compares it with the case's `expected`. Nothing here may need what
 // only the fake has, nor a built-in a device's main thread lacks, such as `toSorted` or `at`.
 //
-// Behaviors with no device probe yet: the tree's own functions; `__SetInlineStyles` wiping the
-// styles added one by one; one main-thread function per event name and type; the lifecycle events.
-// The stop bits have a weak one: one probe page returns `stopPropagation`, none the other bit.
+// Every case has run on Lynx 4.2 on iOS and Android, in Lynx Explorer, with real taps and pans;
+// where the device answered otherwise than Lynx's source had suggested (a query with no match, a
+// missing attribute, a flattened view's UI methods), the case expects what the device answered.
 
 import type { ElementFunctions, LifecycleProxy, LynxElement } from "../../../src/testing/index.ts";
 
@@ -106,7 +106,7 @@ export const BEHAVIORS: Behavior[] = [
 			]);
 			return {
 				children: f.__QuerySelectorAll(box, "#box > view", {}).map((child) => labels.get(child)),
-				removedFound: f.__QuerySelector(f.__GetPageElement()!, "#a", {}) !== undefined,
+				removedFound: f.__QuerySelector(f.__GetPageElement()!, "#a", {}) !== null,
 			};
 		},
 		expected: { children: ["b", "c"], removedFound: false },
@@ -126,23 +126,26 @@ export const BEHAVIORS: Behavior[] = [
 		expected: { before: 6, after: 0 },
 	},
 	{
-		name: "a plain view is flattened and has no UI of its own; flatten=false keeps one",
-		source: "core/renderer/dom/element.cc (Element::TendToFlatten, CheckFlattenRelatedProp)",
+		name: "a plain view answers a UI method with code 0 and its box, flattened or not",
+		source:
+			"core/renderer/template_assembler.cc (LepusInvokeUIMethod), which the platform answers from the element's UI; a flattened view keeps one (Android: LynxFlattenUI)",
 		async run(target) {
 			const f = target.functions;
 			const plain = view(target, "plain");
 			const kept = view(target, "kept");
 			f.__SetAttribute(kept, "flatten", false);
 			f.__FlushElementTree();
+			const answer = await invoke(target, plain, "boundingClientRect");
 			return {
-				plain: (await invoke(target, plain, "boundingClientRect")).code,
+				plain: answer.code,
+				plainHasBox: (answer.data as Rect).width > 0 && (answer.data as Rect).height > 0,
 				kept: (await invoke(target, kept, "boundingClientRect")).code,
 			};
 		},
-		expected: { plain: 6, kept: 0 },
+		expected: { plain: 0, plainHasBox: true, kept: 0 },
 	},
 	{
-		name: "a view that stops being flattened answers at 0, 0 until the next flush",
+		name: "a view that stops being flattened answers at its place before the next flush",
 		source: "core/renderer/dom/element.cc (Element::CheckFlattenRelatedProp)",
 		async run(target) {
 			const f = target.functions;
@@ -153,12 +156,11 @@ export const BEHAVIORS: Behavior[] = [
 			f.__FlushElementTree();
 			const after = (await invoke(target, element, "boundingClientRect")).data as Rect;
 			return {
-				before: { left: before.left, top: before.top },
-				sameSize: before.width === after.width && before.height === after.height,
-				placedAfter: after.left !== 0 || after.top !== 0,
+				placedBefore: before.left !== 0 || before.top !== 0,
+				sameAfter: JSON.stringify(before) === JSON.stringify(after),
 			};
 		},
-		expected: { before: { left: 0, top: 0 }, sameSize: true, placedAfter: true },
+		expected: { placedBefore: true, sameAfter: true },
 	},
 	{
 		name: "__SetInlineStyles wipes the styles added one by one",
@@ -472,7 +474,7 @@ export const BEHAVIORS: Behavior[] = [
 		expected: ["fade"],
 	},
 	{
-		name: "attributes read back as they were set, and a missing one is undefined",
+		name: "attributes read back as they were set, and a missing one is null",
 		source:
 			"core/runtime/lepus/bindings/renderer_functions.cc (FiberGetAttributeByName, FiberGetAttributeNames)",
 		async run(target) {
@@ -485,11 +487,18 @@ export const BEHAVIORS: Behavior[] = [
 			return {
 				options: f.__GetAttributeByName(element, "options"),
 				count: f.__GetAttributeByName(element, "count"),
-				missing: f.__GetAttributeByName(element, "gone") === undefined,
+				gone: f.__GetAttributeByName(element, "gone") === null,
+				neverSet: f.__GetAttributeByName(element, "never") === null,
 				names: [...f.__GetAttributeNames(element)].sort(),
 			};
 		},
-		expected: { options: { a: [1] }, count: 3, missing: true, names: ["count", "options"] },
+		expected: {
+			options: { a: [1] },
+			count: 3,
+			gone: true,
+			neverSet: true,
+			names: ["count", "options"],
+		},
 	},
 	{
 		name: "the engine tells the main thread of a data update through lynx.getEngine()",
