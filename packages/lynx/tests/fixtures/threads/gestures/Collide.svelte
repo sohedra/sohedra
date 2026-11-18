@@ -4,6 +4,7 @@
 	a third element's tap waits for.
 -->
 <script lang="ts">
+	import { waitFor } from "@sohedra/lynx/experimental";
 	import { PanGesture, TapGesture } from "@sohedra/lynx/gesture";
 	import type { GestureKind } from "@sohedra/lynx/gesture";
 
@@ -14,7 +15,7 @@
 	let tap = $state.raw<GestureKind>(new TapGesture());
 	const p = new PanGesture({ minDistance: 5 });
 	const q = new PanGesture({ minDistance: 6 });
-	const t = new TapGesture({ waitFor: [p] });
+	const t = waitFor(new TapGesture(), [p]);
 	api["flip"] = () => (flag = !flag);
 	api["rebuildTap"] = () => (tap = new TapGesture({ maxDuration: 300 }));
 	api["swap"] = () => (swapped = !swapped);

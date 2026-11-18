@@ -3,6 +3,7 @@
 // list, the host's data and a reload.
 
 import * as env from "@sohedra/lynx/env";
+import * as experimental from "@sohedra/lynx/experimental";
 import * as gesture from "@sohedra/lynx/gesture";
 import fc from "fast-check";
 import type { Component } from "svelte";
@@ -182,6 +183,7 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		"@sohedra/lynx": root,
 		"@sohedra/lynx/env": backgroundEnv,
 		"@sohedra/lynx/gesture": gesture,
+		"@sohedra/lynx/experimental": experimental,
 		"@sohedra/lynx/internal/main-thread-functions": functions,
 		"svelte/internal/disclose-version": {},
 		[IDS]: recorder(ids.background),

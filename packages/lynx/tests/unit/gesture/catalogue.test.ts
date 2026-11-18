@@ -8,10 +8,10 @@ import type { GestureCode, GestureDetails } from "../../../src/gesture/catalogue
 
 const SAMPLES: { [Code in GestureCode]: GestureDetails[Code] } = {
 	gesture_callback_not_main_thread: { gesture: "PanGesture", name: "onUpdate" },
-	gesture_relation_not_gesture: { gesture: "PanGesture", name: "waitFor" },
-	gesture_relation_not_a_list: { gesture: "PanGesture", name: "waitFor" },
+	gesture_relation_not_gesture: { gesture: "PanGesture", name: "simultaneousWith" },
+	gesture_relation_not_a_list: { gesture: "PanGesture", name: "simultaneousWith" },
 	gesture_member_not_gesture: { composition: "RaceGesture" },
-	continue_with_not_gestures: { given: "member" },
+	relation_call_not_gestures: { call: "waitFor", given: "member" },
 };
 
 const CODES = Object.keys(GESTURE_CATALOGUE) as GestureCode[];

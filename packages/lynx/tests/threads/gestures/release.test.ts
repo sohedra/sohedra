@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { readGlobal } from "../../../src/testing/globals.ts";
 import GestureRows from "../../fixtures/threads/gestures/GestureRows.svelte";
 import drawGestureRows from "../../fixtures/threads/gestures/GestureRows.svelte?first-frame";
 import { startFunctionsPage } from "../functions/pages.ts";
@@ -100,6 +101,45 @@ describe("a row's gesture", () => {
 		expect(page.engine.gestureCalls.filter((call) => call.op === "remove")).toEqual([]);
 		await through(0, 31);
 		expectNoStrayDetectors(page, "scrolled away");
+		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("rows with gestures released and made again many times", () => {
+	it("leave the page's tables as they were after the first round", async () => {
+		const { page, through, made } = await rows();
+		const round = async () => {
+			await through(0, 37);
+			await through(37, 0);
+			return { ...page.runtime.page.functions.sizes(), live: liveDetectors(page), made: made() };
+		};
+		const first = await round();
+		for (let index = 0; index < 6; index++)
+			expect(await round(), `round ${index + 2}`).toEqual(first);
+		expect(first.detectors).toBe(first.made);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("leave nothing in the callbacks the engine had: a removed detector's entry runs nothing", async () => {
+		const { page, through } = await rows();
+		const row = page.byClass("row-1");
+		const [detector] = page.engine.detectors(row);
+		const entry = detector!.callbacks[0]!.callback as {
+			manager?: unknown;
+			fn: { _wkltId: string };
+		};
+		expect(entry.manager).toBeDefined();
+		await through(0, 37);
+		// Row 1 was released: its detector's entry let go of its function and of the state manager,
+		// which holds the element.
+		expect(page.engine.detectors(row)).toEqual([]);
+		expect(entry.manager).toBeUndefined();
+		const run = readGlobal("runWorklet") as (
+			value: unknown,
+			params: unknown[],
+			options: unknown,
+		) => unknown;
+		expect(page.asMainThread(() => run(entry, [{}, {}], { source: 2 }))).toBeUndefined();
 		expect(page.errors).toEqual([]);
 	});
 });

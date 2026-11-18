@@ -2,7 +2,7 @@
 // classes make one, and how it crosses stays hidden. The two calls of the state manager no device
 // has shown working are reached through the experimental type.
 
-import { ExclusiveGesture, LongPressGesture } from "@sohedra/lynx/experimental";
+import { ExclusiveGesture, LongPressGesture, waitFor } from "@sohedra/lynx/experimental";
 import type { ExperimentalStateManager } from "@sohedra/lynx/experimental";
 import { DefaultScrollGesture, PanGesture, TapGesture } from "@sohedra/lynx/gesture";
 import type { GestureKind, PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
@@ -18,12 +18,14 @@ const onUpdate = (event: PanGestureChangeEvent, state: StateManager): void => {
 };
 
 const scroll = new DefaultScrollGesture({ tapSlop: 2 });
-const pan: GestureKind = new PanGesture({ minDistance: 4, onUpdate, waitFor: [scroll] });
+const pan: PanGesture = waitFor(new PanGesture({ minDistance: 4, onUpdate }), [scroll]);
 const composed: GestureKind = new ExclusiveGesture(pan, new TapGesture(), new LongPressGesture());
 void composed;
 
 // @ts-expect-error the pan reads no other distance.
 void new PanGesture({ activeOffsetX: 10 });
+// @ts-expect-error `waitFor` is no option of the stable entry: it is `waitFor()` of the experimental one.
+void new PanGesture({ waitFor: [scroll] });
 // @ts-expect-error the engine reads no `enabled`.
 void new TapGesture({ enabled: false });
 // @ts-expect-error a plain object is not a gesture.

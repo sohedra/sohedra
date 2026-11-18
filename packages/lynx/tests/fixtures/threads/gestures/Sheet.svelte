@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground } from "@sohedra/lynx";
+	import { waitFor } from "@sohedra/lynx/experimental";
 	import { PanGesture } from "@sohedra/lynx/gesture";
 	import type { GestureKind, PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
 	import { SvelteSet } from "svelte/reactivity";
@@ -34,7 +35,7 @@
 		event.currentTarget.setAttribute("slid", event.params.x);
 	}
 
-	const swipe = $derived(new PanGesture({ minDistance: 4, waitFor: [...scrolls], onUpdate }));
+	const swipe = $derived(waitFor(new PanGesture({ minDistance: 4, onUpdate }), [...scrolls]));
 	const sheetProps = $derived({ "main-thread:gesture": swipe });
 	const sliderProps = { "main-thread:gesture": new PanGesture({ onUpdate: onSlide }) };
 	api["snap"] = (next: string) => (snap = next);
