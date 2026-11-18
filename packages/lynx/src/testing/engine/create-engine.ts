@@ -130,11 +130,6 @@ export interface Engine {
 	cancelAnimation(element: LynxElement, name: string): boolean;
 	/** Decides what the page's UI methods get back. The default answers success with no data. */
 	respondWith(responder: Responder): void;
-	/**
-	 * Flattens plain views as Lynx does, which is the default (see `isFlattened`); `false` gives
-	 * every view a view of its own, for a test that is not about flattening.
-	 */
-	flattenViews(on?: boolean): void;
 	/** The style sheet `__LoadStyleSheet` finds for a bundle. */
 	provideStyleSheet(bundleName: string, sheet: unknown): void;
 	/** The style sheets the page adopted, in order. */
@@ -174,9 +169,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		states: new WeakMap(),
 		made: new Map(),
 		unflushed: new Set(),
-		flattenedAtFlush: new Set(),
 		globalPhase: new Map(),
-		flattening: true,
 		respond: () => ({ code: 0 }),
 		schedule: options.schedule ?? nextMacrotask,
 		enter: options.enter ?? (() => undefined),
@@ -268,7 +261,6 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			engine.page = undefined;
 			engine.made.clear();
 			engine.unflushed.clear();
-			engine.flattenedAtFlush.clear();
 			engine.globalPhase.clear();
 		},
 		fire: dispatcher.fire,
@@ -299,9 +291,6 @@ export function createEngine(options: EngineOptions = {}): Engine {
 			),
 		respondWith(responder) {
 			engine.respond = responder;
-		},
-		flattenViews(on = true) {
-			engine.flattening = on;
 		},
 		provideStyleSheet: styleSheets.sheets.provide,
 		adoptedStyleSheets: styleSheets.sheets.adopted,

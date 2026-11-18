@@ -20,6 +20,7 @@ import type { LynxElement } from "./types.ts";
 /** The functions that set and read what an element carries. */
 export interface PropertyFunctions {
 	__SetAttribute(element: LynxElement, key: string, value: unknown): void;
+	/** `null` for an attribute the element does not have, as Lynx 4.2 answers on iOS and Android. */
 	__GetAttributeByName(element: LynxElement, name: string): unknown;
 	__GetAttributeNames(element: LynxElement): string[];
 	__SetClasses(element: LynxElement, classes: string): void;
@@ -39,7 +40,7 @@ export interface PropertyFunctions {
 		element: LynxElement,
 		selector: string,
 		options: Record<string, unknown>,
-	): LynxElement | undefined;
+	): LynxElement | null;
 	__QuerySelectorAll(
 		element: LynxElement,
 		selector: string,
@@ -97,7 +98,7 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 		__GetAttributeByName(element, name) {
 			const state = stateOf(engine, { value: element, fn: "__GetAttributeByName", index: 0 });
 			checkName("__GetAttributeByName", 1, name);
-			return state.attrs[name];
+			return state.attrs[name] ?? null;
 		},
 		__GetAttributeNames: (element) =>
 			Object.keys(stateOf(engine, { value: element, fn: "__GetAttributeNames", index: 0 }).attrs),
@@ -176,8 +177,9 @@ export function propertyFunctions(engine: EngineState): PropertyFunctions {
 				throw argumentError({ fn: "__GetComputedStyleByKey", index: 1, expected: "text" });
 			return state.inlineStyles.get(key) ?? "";
 		},
+		// No match answers null, as Lynx 4.2 answers on iOS and Android.
 		__QuerySelector: (element, selector, settings) =>
-			search({ name: "__QuerySelector", element, selector, settings, first: true })[0],
+			search({ name: "__QuerySelector", element, selector, settings, first: true })[0] ?? null,
 		__QuerySelectorAll: (element, selector, settings) =>
 			search({ name: "__QuerySelectorAll", element, selector, settings, first: false }),
 	};

@@ -203,17 +203,10 @@ export interface EngineState {
 	 */
 	readonly unflushed: Set<ElementState>;
 	/**
-	 * The elements that were flattened at the last flush: until the next one, the engine has made
-	 * no view for them, whatever has changed since.
-	 */
-	readonly flattenedAtFlush: Set<ElementState>;
-	/**
 	 * The elements in the global phase, with the event names they hear there: an element enters at
 	 * the flush that finds its `global-bindEvent` filed, and leaves when it is destroyed.
 	 */
 	readonly globalPhase: Map<ElementState, Set<string>>;
-	/** Whether a plain `<view>` is flattened: on, as on a device, unless a test turns it off. */
-	flattening: boolean;
 	respond: Responder;
 	/** Runs `deliver` when the engine's answer comes back from another thread. */
 	readonly schedule: (deliver: () => void) => void;
