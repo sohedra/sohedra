@@ -6,7 +6,8 @@
 // What a page holds:
 //
 //   - elements: `<view>`, `<text>` (inline `<text>` and texts inside it), `<image>`, `<list>` with
-//     `<list-item>`s, one list inside a list's item;
+//     `<list-item>`s, one list inside a list's item, and a list long enough that a scroll releases
+//     rows, one of which may not be recyclable;
 //   - static and dynamic attributes, classes (text and object), styles (text and `style:`),
 //     `data-*` (text, number and object), `id`, an attribute of Lynx's, and a `tap` handler that
 //     changes the state;

@@ -6,6 +6,12 @@ import type { PageSources } from "./compile.ts";
 import type { ComponentModel, PageModel } from "./grammar.ts";
 import type { ListChild, MarkupNode } from "./markup.ts";
 
+/**
+ * The rows of a long list, before the state adds a few: more than Lynx holds on a screen and the
+ * screen of cells the main thread keeps past those.
+ */
+const ROWS = 22;
+
 function opening(tag: string, attributes: readonly string[]): string {
 	return attributes.length === 0 ? `<${tag}>` : `<${tag} ${attributes.join(" ")}>`;
 }
@@ -16,6 +22,15 @@ function writer(gap: string): (nodes: readonly MarkupNode[]) => string {
 		if (child.kind === "item") {
 			const item = opening("list-item", [`item-key="${child.key}"`, ...child.attributes]);
 			return `${item}${markup(child.body)}</list-item>`;
+		}
+		if (child.kind === "rows") {
+			const rows = `Array.from({ length: ${ROWS} + st.n0 * 2 }, (_, n) => "r" + n)`;
+			const item = opening("list-item", [
+				`item-key={${child.item}}`,
+				...(child.fixed ? [`recyclable={${child.item} !== "r1"}`] : []),
+				...child.attributes,
+			]);
+			return `{#each ${rows} as ${child.item} (${child.item})}${item}${markup(child.body)}</list-item>{/each}`;
 		}
 		const key = child.keyed ? ` (${child.item})` : "";
 		const item = opening("list-item", [

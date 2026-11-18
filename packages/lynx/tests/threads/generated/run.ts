@@ -1,6 +1,6 @@
 // Runs a generated page on both threads of a test page, and what happens to it: the state changed
-// on the background, taps, Lynx asking for list cells and handing them back, the host's data and a
-// reload.
+// on the background, taps, Lynx asking for list cells and handing them back, a scroll through a
+// list, the host's data and a reload.
 
 import * as env from "@sohedra/lynx/env";
 import fc from "fast-check";
@@ -10,6 +10,7 @@ import renderer from "../../../src/background/renderer/entry.ts";
 import * as internals from "../../../src/svelte/runtime/client-internals.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
+import { recyclable, SCREEN } from "../scroll.ts";
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
 import type { CompiledBoth } from "./compile.ts";
@@ -24,6 +25,8 @@ export type Step =
 	| { kind: "tap"; pick: number }
 	| { kind: "show"; list: number; index: number }
 	| { kind: "hide"; list: number; cell: number }
+	/** Lynx shows a screen of items from `to` on, and hands back the cells it held outside it. */
+	| { kind: "scroll"; list: number; to: number }
 	| { kind: "update"; data: PageState }
 	| { kind: "reload"; data: PageState };
 
@@ -49,6 +52,12 @@ export const step: fc.Arbitrary<Step> = fc.oneof(
 		arbitrary: fc
 			.record({ list: pick, cell: pick })
 			.map(({ list, cell }): Step => ({ kind: "hide", list, cell })),
+	},
+	{
+		weight: 2,
+		arbitrary: fc
+			.record({ list: pick, to: pick })
+			.map(({ list, to }): Step => ({ kind: "scroll", list, to })),
 	},
 	{ weight: 1, arbitrary: pageState.map((data): Step => ({ kind: "update", data })) },
 	{ weight: 1, arbitrary: pageState.map((data): Step => ({ kind: "reload", data })) },
@@ -128,6 +137,10 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 	return { page, handles };
 }
 
+/** The key of a cell's item. */
+const keyOf = (page: SveltePage, cell: LynxElement): string =>
+	String(page.engine.state(cell).attrs["item-key"]);
+
 /**
  * The cells of a list that show one of its items now. The engine fake keeps the cell of an item
  * that was taken out, which Lynx would hand back and never ask about again.
@@ -135,9 +148,22 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 function liveCells(page: SveltePage, list: LynxElement): LynxElement[] {
 	const keys = new Set(listKeys(page.engine, list));
 	// Boundary: a list's children in the engine are the cells Lynx holds.
-	return ([...list.childNodes] as LynxElement[]).filter((cell) =>
-		keys.has(String(page.engine.state(cell).attrs["item-key"])),
-	);
+	return ([...list.childNodes] as LynxElement[]).filter((cell) => keys.has(keyOf(page, cell)));
+}
+
+/** The live cells Lynx may hand back: those of recyclable items. */
+function recyclableCells(page: SveltePage, list: LynxElement): LynxElement[] {
+	return liveCells(page, list).filter((cell) => recyclable(page.engine, list, keyOf(page, cell)));
+}
+
+/** Lynx shows a screen of the list's items from `first` on, and hands back the other cells. */
+function scrollTo(page: SveltePage, list: LynxElement, first: number): void {
+	const handle = page.engine.list(list);
+	const count = page.engine.state(list).list!.items;
+	const shown = new Set<LynxElement>();
+	for (let index = first; index < Math.min(count, first + SCREEN); index++)
+		shown.add(handle.show(index));
+	for (const cell of recyclableCells(page, list)) if (!shown.has(cell)) handle.hide(cell);
 }
 
 /** The page's lists, in document order, those in the cells Lynx holds included. */
@@ -192,8 +218,16 @@ export function apply(running: GeneratedPage, done: Step): void {
 			const found = lists(page);
 			if (found.length === 0) return;
 			const element = found[done.list % found.length]!;
-			const cells = liveCells(page, element);
+			const cells = recyclableCells(page, element);
 			if (cells.length > 0) page.engine.list(element).hide(cells[done.cell % cells.length]!);
+			return;
+		}
+		case "scroll": {
+			const found = lists(page);
+			if (found.length === 0) return;
+			const element = found[done.list % found.length]!;
+			const count = page.engine.state(element).list!.items;
+			if (count > 0) scrollTo(page, element, done.to % count);
 			return;
 		}
 		case "update":

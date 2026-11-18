@@ -33,7 +33,11 @@ export type MarkupNode =
 	| { kind: "component"; name: string; label: string; cssVariable: boolean }
 	| { kind: "render"; snippet: string; argument: string };
 
-/** A child of a `<list>`: one `<list-item>`, or an `{#each}` of them. */
+/**
+ * A child of a `<list>`: one `<list-item>`, an `{#each}` of them, or an `{#each}` of enough rows
+ * for a scroll to hand back more than the main thread keeps (`rows`), the second of which may be
+ * held for good (`fixed`).
+ */
 export type ListChild =
 	| { kind: "item"; key: string; attributes: string[]; body: MarkupNode[] }
 	| {
@@ -44,7 +48,8 @@ export type ListChild =
 			prefix: string;
 			attributes: string[];
 			body: MarkupNode[];
-	  };
+	  }
+	| { kind: "rows"; item: string; fixed: boolean; attributes: string[]; body: MarkupNode[] };
 
 /** What an expression may name where it is written. */
 export interface Scope {
@@ -201,14 +206,28 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			body: nodes("block", eachScope, size - 1),
 		})
 		.map((each): ListChild => ({ kind: "items", item, ...each }));
+	// Only in a list of the page, whose rows are released, and small, with no list in them: a
+	// scroll shows them many times over.
+	const rows = fc
+		.record({
+			fixed: fc.boolean(),
+			attributes: attributes(eachScope, "view"),
+			body: nodes("block", nested(eachScope, { lists: 2 }), Math.min(1, size - 1)),
+		})
+		.map((each): ListChild => ({ kind: "rows", item, ...each }));
+	const kinds =
+		scope.lists === 0
+			? fc.oneof(listItem, eachItems, { weight: 2, arbitrary: rows })
+			: fc.oneof(listItem, eachItems);
 	return fc
 		.record({
 			attributes: attributes(scope, "view"),
-			items: fc.uniqueArray(fc.oneof(listItem, eachItems), {
+			items: fc.uniqueArray(kinds, {
 				minLength: 1,
 				maxLength: 2,
 				// Keys stay unique in the list: one static item per key, one `{#each}` per prefix.
-				selector: (child) => (child.kind === "item" ? child.key : child.prefix),
+				selector: (child) =>
+					child.kind === "item" ? child.key : child.kind === "items" ? child.prefix : "r",
 			}),
 		})
 		.map(({ attributes: written, items: children }): MarkupNode => ({
