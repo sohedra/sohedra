@@ -1,6 +1,7 @@
 // What the main thread's engine lacks, filled in as its runtime starts, before the page's modules
-// load. Each fill is made only where the engine has none, and only for what Svelte's runtime reads:
-// an app gets no other fill, of the language or of the web's APIs, from the binding.
+// load. Each fill is made only where the engine has none, and only for what Svelte's runtime reads
+// or the other thread has: an app gets no other fill, of the language or of the web's APIs, from the
+// binding.
 
 import EventTargetFill from "@ungap/event-target";
 import structuredCloneFill from "@ungap/structured-clone";
@@ -39,7 +40,7 @@ function fillSystemInfo({ scope, lynx }: FillTargets): void {
  * `instanceof EventTarget` as it copies state with `$state.snapshot`
  * (svelte/src/internal/shared/clone.js). The background has its own fill.
  *
- * @workaround main-thread-event-target kind=lynx-gap delete-when="Lynx's threads have a global EventTarget"
+ * @workaround main-thread-event-target kind=lynx-gap delete-when="Lynx's threads have a global EventTarget, or Svelte's clone.js no longer reads it unguarded"
  */
 function fillEventTarget(scope: Record<string, unknown>): void {
 	if (typeof scope["EventTarget"] !== "function") scope["EventTarget"] = EventTargetFill;
@@ -50,11 +51,22 @@ function fillEventTarget(scope: Record<string, unknown>): void {
  * a `Map` or a `Set` (a `Date`, a number) through `structuredClone`
  * (svelte/src/internal/shared/clone.js).
  *
- * @workaround main-thread-structured-clone kind=lynx-gap delete-when="Lynx's threads have a global structuredClone"
+ * @workaround main-thread-structured-clone kind=lynx-gap delete-when="Lynx's threads have a global structuredClone, or Svelte's clone.js no longer calls it unguarded"
  */
 function fillStructuredClone(scope: Record<string, unknown>): void {
-	if (typeof scope["structuredClone"] !== "function")
-		scope["structuredClone"] = structuredCloneFill;
+	if (typeof scope["structuredClone"] !== "function") scope["structuredClone"] = cloneStructured;
+}
+
+/**
+ * `@ungap/structured-clone`, with a primitive returned as it is, as the web's `structuredClone`
+ * returns it: Svelte copies every number and string of state with it, and `@ungap` serializes each
+ * one whole. A symbol or a function still reaches `@ungap`, which refuses it.
+ */
+function cloneStructured<T>(value: T, options?: Parameters<typeof structuredCloneFill>[1]): T {
+	const type = typeof value;
+	return (type === "object" && value !== null) || type === "function" || type === "symbol"
+		? structuredCloneFill(value, options)
+		: value;
 }
 
 /**

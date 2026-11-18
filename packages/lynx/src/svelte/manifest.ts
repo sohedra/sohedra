@@ -390,7 +390,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/shared/clone.js",
 		anchor: "if (value instanceof EventTarget) {",
 		reliesOn:
-			"only copying state (`$state.snapshot`, `$inspect`, `{@debug}`) and walking an action's object read the global `EventTarget`, which the binding fills on both threads",
+			"only copying state (`$state.snapshot`, `$inspect`, `{@debug}`) and walking an action's object read the global `EventTarget`, unguarded, which the binding fills on both threads",
 		test: SOURCE,
 	},
 	{
@@ -399,7 +399,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/shared/clone.js",
 		anchor: "structuredClone(value)",
 		reliesOn:
-			"only copying state calls the global `structuredClone`, for each value that is not an array, a plain object, a `Map` or a `Set`, which the binding fills on both threads",
+			"only copying state calls the global `structuredClone`, unguarded, for each value that is not an array, a plain object, a `Map` or a `Set`, which the binding fills on both threads",
 		test: SOURCE,
 	},
 	// Svelte's modules that read the window or the DOM when they load
