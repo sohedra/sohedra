@@ -32,7 +32,8 @@ import type {
 import { createApplier } from "./apply.ts";
 import type { Applier } from "./apply.ts";
 import { mainThreadError } from "./catalogue.ts";
-import { DEV, mainThread, setGlobalFunction } from "./globals.ts";
+import { fillEngineGaps } from "./engine-gaps.ts";
+import { DEV, globalScope, mainThread, setGlobalFunction } from "./globals.ts";
 import type { EngineMessage, InvokeResult, LynxElement } from "./globals.ts";
 
 /** Lynx's error code of an error on the main thread (`LYNX_ERROR_CODE_LEPUS`). */
@@ -56,9 +57,13 @@ const argsOf = (event: EngineMessage): unknown[] =>
 const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null;
 
-/** Starts the main thread's runtime: it listens to the engine and takes the background's patches. */
+/**
+ * Starts the main thread's runtime: it fills in what the engine lacks, listens to the engine and
+ * takes the background's patches.
+ */
 export function startMainThread(): void {
 	const { lynx } = mainThread;
+	fillEngineGaps(globalScope, lynx);
 	const engine = lynx.getEngine();
 	const native = lynx.getNative();
 	/** The page the main thread shows: bumped when the page reloads and when it ends. */

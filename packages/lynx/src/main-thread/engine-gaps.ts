@@ -1,5 +1,5 @@
-// What the main thread's engine lacks, filled in before the page's modules load (entry.ts). Each
-// fill is made only where the engine has none.
+// What the main thread's engine lacks, filled in as its runtime starts, before the page's modules
+// load. Each fill is made only where the engine has none.
 
 /**
  * Fills in what the main thread's engine lacks, leaving what it has: the global `SystemInfo`, which
