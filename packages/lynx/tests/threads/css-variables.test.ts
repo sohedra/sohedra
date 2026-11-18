@@ -4,8 +4,10 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import type { ElementNode } from "../../src/background/renderer/element.ts";
 import type { LynxElement } from "../../src/testing/index.ts";
 import CssVariables from "../fixtures/threads/CssVariables.svelte";
+import CssWrapperCall from "../fixtures/threads/CssWrapperCall.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 async function cssVariables() {
@@ -36,6 +38,25 @@ describe("<Child --x={…}>", () => {
 		expect(tagOf(atRoot)).toBe("view");
 		const inside = page.engine.all(atRoot).map((element) => page.engine.state(element).classes);
 		expect(inside).toContain("child-root");
+	});
+
+	it("gives the holder, which Lynx leaves layout-only, a UI for a UI method", async () => {
+		const handles: Record<string, unknown> = {};
+		const page = startSveltePage(CssWrapperCall, { props: () => ({ handles }) });
+		await page.settle();
+		const element = page.byClass("host").firstChild as LynxElement;
+		const codes: number[] = [];
+		page.engine.functions.__InvokeUIMethod(element, "boundingClientRect", {}, (result) =>
+			codes.push(result.code),
+		);
+		await page.settle();
+		expect(codes).toEqual([6]);
+		const wrapper = (handles["host"] as ElementNode).lastChild as ElementNode;
+		const answer = page.asBackground(() => wrapper.invoke("boundingClientRect"));
+		answer.catch(() => {});
+		await page.settle();
+		await expect(answer).resolves.toBeNull();
+		expect(page.engine.state(element).attrs["flatten"]).toBe(false);
 	});
 
 	it("follows the values the properties are given", async () => {
