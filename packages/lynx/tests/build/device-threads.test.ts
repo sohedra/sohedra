@@ -1,12 +1,14 @@
 // A production build of a small page, run on threads shaped like a device's (device-threads.ts):
 // the built scripts start the page, draw it and take a tap with only what a device gives them.
 
+import vm from "node:vm";
+
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
 import type { LynxElement, TestPage } from "../../src/testing/index.ts";
 import { buildApp, cleanBuild, scriptsOf } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
-import { startDevicePage } from "./device-threads.ts";
+import { startDevicePage, SYSTEM_INFO } from "./device-threads.ts";
 
 let build: AppBuild;
 let scripts: ReturnType<typeof scriptsOf>;
@@ -69,6 +71,33 @@ describe("a built page on threads shaped like a device's", () => {
 				padding: "8px",
 				opacity: "0.5",
 			});
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("fills in the background's global timers and queueMicrotask from lynx", async () => {
+		const { page, background } = startDevicePage(scripts);
+		try {
+			const kinds = vm.runInContext(
+				"[setTimeout, clearTimeout, setInterval, clearInterval, queueMicrotask].map((fn) => typeof fn)",
+				background,
+			);
+			expect(kinds).toEqual(["function", "function", "function", "function", "function"]);
+			const later: Promise<string> = vm.runInContext(
+				"new Promise((resolve) => setTimeout(() => resolve('later'), 1))",
+				background,
+			);
+			expect(await later).toBe("later");
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("fills in the main thread's global SystemInfo from lynx", () => {
+		const { page, mainThread } = startDevicePage(scripts);
+		try {
+			expect(vm.runInContext("SystemInfo", mainThread)).toBe(SYSTEM_INFO);
 		} finally {
 			page.dispose();
 		}

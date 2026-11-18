@@ -97,7 +97,7 @@ function mainThreadRealm(): vm.Context {
 }
 
 /** What lynx-core's `require` passes the factory after `require`, `module` and `exports`. */
-function wrapperArguments(lynx: BackgroundLynx & { Promise: unknown }): unknown[] {
+function wrapperArguments(lynx: BackgroundLynx): unknown[] {
 	const given: Record<string, unknown> = {
 		setTimeout,
 		setInterval,
@@ -120,8 +120,15 @@ function runBackground(script: string, lynx: BackgroundLynx): vm.Context {
 	// Boundary: the script leaves its factory's holder on the global object.
 	const holder = context["__bundle__holder"] as { init(inject: { tt: unknown }): unknown };
 	const factories = new Map<string, (...args: unknown[]) => void>();
-	// lynx-core's `lynx` has the engine's `Promise`, which the wrapper takes as the script's own.
-	const deviceLynx = Object.assign(lynx, { Promise: vm.runInContext("Promise", context) });
+	// lynx-core's `lynx` also has the timers, and the engine's `Promise`, which the wrapper takes as
+	// the script's own (lynx-core's lynx.ts).
+	const deviceLynx = Object.assign(lynx, {
+		Promise: vm.runInContext("Promise", context),
+		setTimeout,
+		clearTimeout,
+		setInterval,
+		clearInterval,
+	});
 	const tt = {
 		define(path: string, factory: (...args: unknown[]) => void) {
 			factories.set(path, factory);
