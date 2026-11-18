@@ -29,6 +29,11 @@ export type Step =
 	| { kind: "scroll"; list: number; to: number }
 	/** A scroll, then a change of the state once the threads settle, with no list read between. */
 	| { kind: "scroll-then-set"; list: number; to: number; key: keyof PageState; value: unknown }
+	/**
+	 * Lynx asks for a cell, and the state changes before the threads settle: a deferred row changes
+	 * while the request for it is on its way.
+	 */
+	| { kind: "show-then-set"; list: number; index: number; key: keyof PageState; value: unknown }
 	| { kind: "update"; data: PageState }
 	| { kind: "reload"; data: PageState };
 
@@ -46,6 +51,12 @@ export const step: fc.Arbitrary<Step> = fc.oneof(
 		arbitrary: fc
 			.record({ list: pick, to: pick, set: setStep })
 			.map(({ list, to, set }): Step => ({ ...set, kind: "scroll-then-set", list, to })),
+	},
+	{
+		weight: 2,
+		arbitrary: fc
+			.record({ list: pick, index: pick, set: setStep })
+			.map(({ list, index, set }): Step => ({ ...set, kind: "show-then-set", list, index })),
 	},
 	{ weight: 4, arbitrary: setStep },
 	{ weight: 3, arbitrary: pick.map((n): Step => ({ kind: "tap", pick: n })) },
@@ -73,7 +84,8 @@ export const step: fc.Arbitrary<Step> = fc.oneof(
 
 /** What happens before the background's first patch reaches the main thread: no state yet. */
 export const earlyStep: fc.Arbitrary<Step> = step.filter(
-	(early) => early.kind !== "set" && early.kind !== "scroll-then-set",
+	(early) =>
+		early.kind !== "set" && early.kind !== "scroll-then-set" && early.kind !== "show-then-set",
 );
 
 /** A running generated page, and the state its root component shares with the test. */
@@ -259,12 +271,15 @@ export function apply(running: GeneratedPage, done: Step): void {
 			if (found.length > 0) page.engine.dispatch(found[done.pick % found.length]!, { type: "tap" });
 			return;
 		}
-		case "show": {
+		case "show":
+		case "show-then-set": {
 			const found = lists(page);
 			if (found.length === 0) return;
 			const list = page.engine.list(found[done.list % found.length]!);
 			const count = page.engine.state(found[done.list % found.length]!).list!.items;
 			if (count > 0) list.ask(done.index % count);
+			if (done.kind === "show-then-set")
+				apply(running, { kind: "set", key: done.key, value: done.value });
 			return;
 		}
 		case "hide": {

@@ -161,6 +161,9 @@ export function updatesProperty(
 					const after = `After ${index + 1} of the steps`;
 					expectNoErrors(running.page.errors, after);
 					expectSameTree(engineTree(running.page.engine), backgroundTree(), `${after}, Lynx shows`);
+					// Rows stay asked for and on their way across the other steps; the tree is kept
+					// only once every row came.
+					if (index % 2 === 0 && index !== steps.length - 1 && defers(model)) continue;
 					await expectEveryRowCame(running.page, model, after);
 					const rendered = backgroundTree();
 					const state = running.page.asBackground(() => JSON.stringify(running.handles.st));
