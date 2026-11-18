@@ -1,0 +1,486 @@
+{
+	"$schema": "../../node_modules/oxlint/configuration_schema.json",
+	// The root's rules, then this package's. oxlint reads every glob here, and the root's too,
+	// relative to this folder.
+	"extends": ["../../.oxlintrc.jsonc"],
+	"overrides": [
+		{
+			"files": ["src/**"],
+			"rules": {
+				"no-console": "error",
+			},
+		},
+		{
+			// Type tests check types at compile time and have nothing to assert at runtime
+			"files": ["tests/types/**"],
+			"rules": {
+				"vitest/expect-expect": "off",
+			},
+		},
+		{
+			// A thread's globals are reached through the typed `globals.ts` of its folder: any other
+			// global is undefined here (Node's only in the Node programs), and so is `globalThis`.
+			"files": ["src/**"],
+			"rules": {
+				"no-undef": "error",
+				"no-restricted-globals": [
+					"error",
+					{ "name": "globalThis", "message": "Reach globals through this folder's globals.ts." },
+				],
+			},
+		},
+		{
+			"files": ["src/build/**", "src/svelte/build/**", "src/testing/**"],
+			"env": { "node": true },
+		},
+		{
+			"files": ["src/**/globals.ts"],
+			"rules": { "no-restricted-globals": "off" },
+		},
+
+		// Which folder of the binding may import which (the table in this package's AGENTS.md).
+		// Each folder's own `index.ts` is its only face to the others, named as that file: not as the
+		// folder, and not by a path with a detour (`./../x`). Svelte's internals are touched only in
+		// src/svelte/. A `!` pattern lets its paths past every pattern of the rule, so each allowed
+		// face is written once per depth (up to three folders deep), never with `**`.
+		// May import: Nothing of the binding
+		{
+			"files": ["src/wire/**"],
+			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire",
+									"../**/wire/**",
+									"../build",
+									"../build/**",
+									"../../build",
+									"../../build/**",
+									"../../../build",
+									"../../../build/**",
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+									"../**/first-frame",
+									"../**/first-frame/**",
+									"../**/svelte/build",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime",
+									"../**/svelte/runtime/**",
+									"../**/testing",
+									"../**/svelte/manifest.ts",
+									"../**/testing/**",
+									"../**/gesture",
+									"../**/gesture/**",
+									"../**/host",
+									"../**/host/**",
+									"../**/env",
+									"../**/env/**",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: wire/
+		{
+			"files": ["src/svelte/runtime/**"],
+			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire",
+									"../**/wire/**",
+									"../build",
+									"../build/**",
+									"../../build",
+									"../../build/**",
+									"../../../build",
+									"../../../build/**",
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+									"../**/first-frame",
+									"../**/first-frame/**",
+									"../**/svelte/build",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime",
+									"../**/svelte/runtime/**",
+									"../**/testing",
+									"../**/svelte/manifest.ts",
+									"../**/testing/**",
+									"../**/gesture",
+									"../**/gesture/**",
+									"../**/host",
+									"../**/host/**",
+									"../**/env",
+									"../**/env/**",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: Nothing of the binding
+		{
+			"files": ["src/svelte/build/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire",
+									"../**/wire/**",
+									"../build",
+									"../build/**",
+									"../../build",
+									"../../build/**",
+									"../../../build",
+									"../../../build/**",
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+									"../**/first-frame",
+									"../**/first-frame/**",
+									"../**/svelte/build",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime",
+									"../**/svelte/runtime/**",
+									"../**/testing",
+									"../**/svelte/manifest.ts",
+									"../**/testing/**",
+									"../**/gesture",
+									"../**/gesture/**",
+									"../**/host",
+									"../**/host/**",
+									"../**/env",
+									"../**/env/**",
+									"../runtime",
+									"../runtime/**",
+									"../../runtime",
+									"../../runtime/**",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: wire/
+		{
+			"files": [
+				"src/main-thread/**",
+				"src/first-frame/**",
+				"src/gesture/**",
+				"src/host/**",
+				"src/env/**",
+			],
+			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire",
+									"../**/wire/**",
+									"../build",
+									"../build/**",
+									"../../build",
+									"../../build/**",
+									"../../../build",
+									"../../../build/**",
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+									"../**/first-frame",
+									"../**/first-frame/**",
+									"../**/svelte/build",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime",
+									"../**/svelte/runtime/**",
+									"../**/testing",
+									"../**/svelte/manifest.ts",
+									"../**/testing/**",
+									"../**/gesture",
+									"../**/gesture/**",
+									"../**/host",
+									"../**/host/**",
+									"../**/env",
+									"../**/env/**",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: wire/ and svelte/build/
+		{
+			"files": ["src/build/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire",
+									"../**/wire/**",
+									"../build",
+									"../build/**",
+									"../../build",
+									"../../build/**",
+									"../../../build",
+									"../../../build/**",
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+									"../**/first-frame",
+									"../**/first-frame/**",
+									"../**/svelte/build",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime",
+									"../**/svelte/runtime/**",
+									"../**/testing",
+									"../**/svelte/manifest.ts",
+									"../**/testing/**",
+									"../**/gesture",
+									"../**/gesture/**",
+									"../**/host",
+									"../**/host/**",
+									"../**/env",
+									"../**/env/**",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+									"!../svelte/build/index.ts",
+									"!../../svelte/build/index.ts",
+									"!../../../svelte/build/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: wire/ and svelte/runtime/
+		{
+			"files": ["src/background/**"],
+			"rules": {
+				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
+				"import/no-nodejs-modules": "error",
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire",
+									"../**/wire/**",
+									"../build",
+									"../build/**",
+									"../../build",
+									"../../build/**",
+									"../../../build",
+									"../../../build/**",
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+									"../**/first-frame",
+									"../**/first-frame/**",
+									"../**/svelte/build",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime",
+									"../**/svelte/runtime/**",
+									"../**/testing",
+									"../**/svelte/manifest.ts",
+									"../**/testing/**",
+									"../**/gesture",
+									"../**/gesture/**",
+									"../**/host",
+									"../**/host/**",
+									"../**/env",
+									"../**/env/**",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+									"!../svelte/runtime/index.ts",
+									"!../../svelte/runtime/index.ts",
+									"!../../../svelte/runtime/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// May import: every program but build/
+		{
+			"files": ["src/testing/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/wire",
+									"../**/wire/**",
+									"../build",
+									"../build/**",
+									"../../build",
+									"../../build/**",
+									"../../../build",
+									"../../../build/**",
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+									"../**/first-frame",
+									"../**/first-frame/**",
+									"../**/svelte/build",
+									"../**/svelte/build/**",
+									"../**/svelte/runtime",
+									"../**/svelte/runtime/**",
+									"../**/testing",
+									"../**/svelte/manifest.ts",
+									"../**/testing/**",
+									"../**/gesture",
+									"../**/gesture/**",
+									"../**/host",
+									"../**/host/**",
+									"../**/env",
+									"../**/env/**",
+									"!../wire/index.ts",
+									"!../../wire/index.ts",
+									"!../../../wire/index.ts",
+									"!../background/index.ts",
+									"!../../background/index.ts",
+									"!../../../background/index.ts",
+									"!../main-thread/index.ts",
+									"!../../main-thread/index.ts",
+									"!../../../main-thread/index.ts",
+									"!../first-frame/index.ts",
+									"!../../first-frame/index.ts",
+									"!../../../first-frame/index.ts",
+									"!../svelte/runtime/index.ts",
+									"!../../svelte/runtime/index.ts",
+									"!../../../svelte/runtime/index.ts",
+								],
+								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
+							},
+							{
+								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
+								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
+							},
+							{
+								"group": [
+									"svelte/internal",
+									"svelte/internal/**",
+									"svelte/compiler",
+									"svelte/src/**",
+								],
+								"message": "Svelte's internals are touched only in src/svelte/.",
+							},
+						],
+					},
+				],
+			},
+		},
+	],
+}

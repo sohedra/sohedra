@@ -1,5 +1,5 @@
-// Runs the repository's own lint config on a few files written to a temporary folder at the same
-// paths, so that the config's per-folder rules apply to them.
+// Runs the repository's own lint configs, the root's and this package's, on a few files written to a
+// temporary folder at the same paths, so that the package's per-folder rules apply to them.
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -9,6 +9,7 @@ import path from "node:path";
 import ts from "typescript";
 
 const ROOT = path.resolve(import.meta.dirname, "../../../../..");
+const PACKAGE = "packages/lynx";
 
 /** One reported problem: the file, and the rule that reported it. */
 export interface Problem {
@@ -28,14 +29,20 @@ export function lint(files: Record<string, string>): Problem[] {
 			options?: Record<string, unknown>;
 		};
 		config.options = { ...config.options, typeAware: false };
-		fs.writeFileSync(path.join(folder, ".oxlintrc.json"), JSON.stringify(config));
+		fs.writeFileSync(path.join(folder, ".oxlintrc.jsonc"), JSON.stringify(config));
+		// The package's own config, at its place, so its globs read from the same folder.
+		fs.mkdirSync(path.join(folder, PACKAGE), { recursive: true });
+		fs.copyFileSync(
+			path.join(ROOT, PACKAGE, ".oxlintrc.jsonc"),
+			path.join(folder, PACKAGE, ".oxlintrc.jsonc"),
+		);
 		for (const [file, source] of Object.entries(files)) {
 			fs.mkdirSync(path.dirname(path.join(folder, file)), { recursive: true });
 			fs.writeFileSync(path.join(folder, file), source);
 		}
 		const result = spawnSync(
 			path.join(ROOT, "node_modules/.bin/oxlint"),
-			["-c", ".oxlintrc.json", "--format", "json", "--no-error-on-unmatched-pattern", "."],
+			["--format", "json", "--no-error-on-unmatched-pattern", "."],
 			{ cwd: folder, encoding: "utf8" },
 		);
 		const report = JSON.parse(result.stdout) as {

@@ -3,7 +3,7 @@
 
 import { execFileSync } from "node:child_process";
 import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 
 import { parse } from "yaml";
 
@@ -228,6 +228,22 @@ for (const file of allFiles.filter((name) => name.endsWith("/tests/coverage-base
 	} catch (error) {
 		// Boundary: a thrown value is `unknown`; these are `Error`s from the readers.
 		problems.push((error as Error).message);
+	}
+}
+
+// 10. A package's lint config extends the root's: oxlint gives a nested config none of the root's
+// rules unless it says so.
+for (const file of allFiles.filter(
+	(name) => name.endsWith(".oxlintrc.jsonc") && name !== ".oxlintrc.jsonc",
+)) {
+	const list = /"extends"\s*:\s*\[([^\]]*)\]/.exec(readFileSync(file, "utf8"))?.[1] ?? "";
+	const extended = [...list.matchAll(/"([^"]+)"/g)].map((match) =>
+		relative(".", join(dirname(file), match[1]!)),
+	);
+	if (!extended.includes(".oxlintrc.jsonc")) {
+		problems.push(
+			`${file} doesn't extend the root's lint config. Add "extends": ["${relative(dirname(file), ".oxlintrc.jsonc")}"].`,
+		);
 	}
 }
 
