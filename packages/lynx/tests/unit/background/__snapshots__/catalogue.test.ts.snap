@@ -94,7 +94,7 @@ exports[`the background's catalogue > main_thread_gesture_not_a_gesture: the mes
 "The <view>'s main-thread:gesture is a function, not a gesture, so the main thread sets no gesture on it.
 src/Sheet.svelte:14:2
 
-Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture; several gestures on one element go in one composition.
+Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture. Several gestures on one element go in one composition, such as RaceGesture from @sohedra/lynx/experimental.
 https://sohedra.com/e/main_thread_gesture_not_a_gesture"
 `;
 

@@ -6,6 +6,8 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import Collide from "../../fixtures/threads/gestures/Collide.svelte";
+import drawCollide from "../../fixtures/threads/gestures/Collide.svelte?first-frame";
 import Later from "../../fixtures/threads/gestures/Later.svelte";
 import drawLater from "../../fixtures/threads/gestures/Later.svelte?first-frame";
 import Shared from "../../fixtures/threads/gestures/Shared.svelte";
@@ -103,5 +105,42 @@ describe("a gesture's id", () => {
 		await page.settle();
 		expect(callsOf(page, toggled)).toEqual([`set ${id}`, `remove ${id}`, `set ${id}`]);
 		expectNoStrayDetectors(page, "after the gesture came back");
+	});
+
+	it("stays with its element when its gesture moves to an element made in the same patch", async () => {
+		const api: Record<string, () => void> = {};
+		const page = startFunctionsPage(Collide, { draw: drawCollide, props: { api } });
+		await page.settle();
+		const b = page.byClass("b");
+		const id = only(page, "b").id;
+		page.asBackground(() => api["flip"]!());
+		await page.settle();
+		// The pan moved to the new element, which gets a new id; the old element keeps its own.
+		expect(only(page, "b")).toMatchObject({ id, type: 3 });
+		expect(only(page, "a").id).not.toBe(id);
+		page.asBackground(() => api["rebuildTap"]!());
+		await page.settle();
+		expect(callsOf(page, b).slice(-1)).toEqual([`set ${id}`]);
+		expect(only(page, "b").id).toBe(id);
+		expectNoStrayDetectors(page, "after the flip");
+		expect(page.errors).toEqual([]);
+	});
+
+	it("stays with each element when two elements swap their gestures, and what names one follows it", async () => {
+		const api: Record<string, () => void> = {};
+		const page = startFunctionsPage(Collide, { draw: drawCollide, props: { api } });
+		await page.settle();
+		const [x, y] = [only(page, "x").id, only(page, "y").id];
+		expect(only(page, "t").relations).toMatchObject({ waitFor: [x] });
+		page.asBackground(() => api["swap"]!());
+		await page.settle();
+		expect([only(page, "x").id, only(page, "y").id]).toEqual([x, y]);
+		expect(only(page, "t").relations).toMatchObject({ waitFor: [y] });
+		page.asBackground(() => api["swap"]!());
+		await page.settle();
+		expect([only(page, "x").id, only(page, "y").id]).toEqual([x, y]);
+		expect(only(page, "t").relations).toMatchObject({ waitFor: [x] });
+		expectNoStrayDetectors(page, "after the swaps");
+		expect(page.errors).toEqual([]);
 	});
 });

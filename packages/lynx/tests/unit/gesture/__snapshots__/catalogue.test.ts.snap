@@ -1,7 +1,7 @@
 // Rstest Snapshot v1
 
 exports[`the gestures' catalogue > continue_with_not_gestures: the message 1`] = `
-"continueWith was given a value that is not a gesture, so the gesture cannot hand the touch on to it.
+"The list given to continueWith holds a value that is not a gesture, so the touch cannot go to it.
 
 Give it a gesture, then a list of the gestures that take over: continueWith(pan, [fling]).
 https://sohedra.com/e/continue_with_not_gestures"

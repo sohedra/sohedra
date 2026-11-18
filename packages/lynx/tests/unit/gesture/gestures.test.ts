@@ -106,14 +106,24 @@ describe("a gesture", () => {
 				message: expect.stringMatching(/^A RaceGesture was given a value that is not a gesture/),
 			}),
 		);
+		// Each names the argument that is wrong.
 		expect(() => continueWith(fake, [])).toThrow(
-			expect.objectContaining({ code: "continue_with_not_gestures" }),
+			expect.objectContaining({
+				code: "continue_with_not_gestures",
+				message: expect.stringMatching(/^The gesture given to continueWith is not a gesture/),
+			}),
 		);
 		expect(() => continueWith(new PanGesture(), [fake])).toThrow(
-			expect.objectContaining({ code: "continue_with_not_gestures" }),
+			expect.objectContaining({
+				code: "continue_with_not_gestures",
+				message: expect.stringMatching(/^The list given to continueWith holds a value that/),
+			}),
 		);
 		expect(() => continueWith(new PanGesture(), new FlingGesture() as never)).toThrow(
-			expect.objectContaining({ code: "continue_with_not_gestures" }),
+			expect.objectContaining({
+				code: "continue_with_not_gestures",
+				message: expect.stringMatching(/^The gestures given to continueWith are not in a list/),
+			}),
 		);
 	});
 

@@ -1,5 +1,5 @@
 // A value under `main-thread:gesture` that is no gesture sets nothing, and a development build
-// says so once per place, naming what it is.
+// says so once per place, naming what it is; `false` is a gesture turned off, and says nothing.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -11,7 +11,7 @@ describe("a value that is no gesture", () => {
 	it("sets no detector and no view of its own, and a development build names it", async () => {
 		const page = startFunctionsPage(NotGestures, { draw: drawNotGestures });
 		await page.settle();
-		for (const token of ["object", "list", "plain"]) {
+		for (const token of ["object", "list", "plain", "off"]) {
 			expect(page.engine.detectors(page.byClass(token)), token).toEqual([]);
 			expect(page.engine.state(page.byClass(token)).attrs, token).toEqual({});
 		}
