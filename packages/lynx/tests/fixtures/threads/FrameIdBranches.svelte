@@ -11,6 +11,7 @@
 </script>
 
 {#snippet piece()}{#if main}<FrameLabeled />{:else}<FrameLabeled />{/if}{/snippet}
+{#snippet labeled()}<FrameLabeled />{/snippet}
 
 <!-- Each part in its own view, so that hydration matches the elements of one part at a time. -->
 <view class="part"
@@ -25,4 +26,7 @@
 >
 <view class="part"
 	>{#if env.background}{#if open}<FrameLabeled />{/if}{/if}{@render piece()}<FrameLabeled /></view
+>
+<view class="part"
+	>{#if background}{@render labeled()}{/if}<FrameLabeled /></view
 >

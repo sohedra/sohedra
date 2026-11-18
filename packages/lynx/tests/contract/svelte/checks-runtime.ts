@@ -1,6 +1,7 @@
 // Rows that rest on what Svelte's runtime exports and does under a custom renderer.
 
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { expect } from "@rstest/core";
 
@@ -128,6 +129,23 @@ export const checks: Checks = {
 		]) {
 			expect(typeof client[name], name).toBe("function");
 		}
+	},
+
+	"block-first-branch-sync": async () => {
+		const file = path.join(import.meta.dirname, "branch-probe.ts");
+		// Boundary: the probe is loaded by Node, so its export type is declared here.
+		const probe = (await importNative(file)) as unknown as { seen: boolean[] };
+		probe.seen.length = 0;
+		// Blocks draw their first branch inside the call that makes them, nested as deep as they go:
+		// each leaf is drawn while `Marked`'s call runs.
+		await mountComponent(
+			`<script>import { Marked, inMark } from "${pathToFileURL(file).href}"; let shown = $state(true);</script>` +
+				"{#snippet body()}{#if shown}{#each [1, 2] as item (item)}{#key item}<svelte:boundary>" +
+				"{#if shown}<view name={inMark()}></view>{/if}" +
+				"</svelte:boundary>{/key}{/each}{/if}{/snippet}" +
+				"<Marked render={body} />",
+		);
+		expect(probe.seen).toEqual([true, true]);
 	},
 
 	"mount-renderer-option": async () => {

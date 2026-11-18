@@ -613,6 +613,30 @@ Update @lynx-js/rspeedy (or @lynx-js/rsbuild-plugin) so that its template plugin
 https://sohedra.com/e/template_plugin_versions"
 `;
 
+exports[`the build's catalogue > thread_branch_name_taken: the message 1`] = `
+"The name SohedraLynxThreadBranch is one the build adds to this component, to draw a part only one thread renders, and the component declares it too.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Rename your SohedraLynxThreadBranch.
+https://sohedra.com/e/thread_branch_name_taken"
+`;
+
+exports[`the build's catalogue > thread_branch_test: the message 1`] = `
+"\`{#if background && user}\` holds a component that one thread can render without the other, so the \`$props.id()\` of the components after it may differ between the first frame and the background.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Give the part only one thread renders a block of its own whose test is the flag alone, \`{#if background}\`, \`{#if mainThread}\` or \`{#if BROWSER}\`, and put the rest of the test inside it.
+https://sohedra.com/e/thread_branch_test"
+`;
+
 exports[`the build's catalogue > transition_directive: the message 1`] = `
 "\`transition:\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3

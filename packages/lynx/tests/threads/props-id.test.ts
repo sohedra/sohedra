@@ -6,8 +6,12 @@
 import { describe, expect, it } from "@rstest/core";
 
 import type { LynxElement } from "../../src/testing/index.ts";
+import FrameIdBound from "../fixtures/threads/FrameIdBound.svelte";
+import drawFrameIdBound from "../fixtures/threads/FrameIdBound.svelte?first-frame";
 import FrameIdBranches from "../fixtures/threads/FrameIdBranches.svelte";
 import drawFrameIdBranches from "../fixtures/threads/FrameIdBranches.svelte?first-frame";
+import FrameIdJoined from "../fixtures/threads/FrameIdJoined.svelte";
+import drawFrameIdJoined from "../fixtures/threads/FrameIdJoined.svelte?first-frame";
 import FrameIdPlain from "../fixtures/threads/FrameIdPlain.svelte";
 import drawFrameIdPlain from "../fixtures/threads/FrameIdPlain.svelte?first-frame";
 import FrameIdRuns from "../fixtures/threads/FrameIdRuns.svelte";
@@ -16,6 +20,8 @@ import FrameIdShift from "../fixtures/threads/FrameIdShift.svelte";
 import drawFrameIdShift from "../fixtures/threads/FrameIdShift.svelte?first-frame";
 import FrameIdUnrecognized from "../fixtures/threads/FrameIdUnrecognized.svelte";
 import drawFrameIdUnrecognized from "../fixtures/threads/FrameIdUnrecognized.svelte?first-frame";
+import SharedPanel from "../fixtures/threads/shared/SharedPanel.svelte";
+import drawSharedPanel from "../fixtures/threads/shared/SharedPanel.svelte?first-frame";
 import { startSveltePage } from "./svelte-page.ts";
 import type { SveltePage } from "./svelte-page.ts";
 
@@ -52,6 +58,7 @@ describe("$props.id() in a branch only one thread renders", () => {
 			"lynx-s3",
 			"lynx-m3",
 			"lynx-s4",
+			"lynx-s5",
 		]);
 		const drawn = pageIds(page);
 		await page.settle();
@@ -67,6 +74,8 @@ describe("$props.id() in a branch only one thread renders", () => {
 			"lynx-s3",
 			"lynx-b4",
 			"lynx-s4",
+			"lynx-b5",
+			"lynx-s5",
 		]);
 		// The first frame's own elements are the page's, with the ids they were drawn with.
 		for (const [element, id] of drawn) {
@@ -85,8 +94,8 @@ describe("$props.id() in a branch only one thread renders", () => {
 		page.asBackground(() => handles.open!(true));
 		await page.settle();
 		const all = ids(page);
-		expect(all).toHaveLength(9);
-		expect(new Set(all).size).toBe(9);
+		expect(all).toHaveLength(11);
+		expect(new Set(all).size).toBe(11);
 		expect(page.errors).toEqual([]);
 	});
 });
@@ -137,6 +146,31 @@ describe("$props.id() after a branch only the background renders", () => {
 	});
 });
 
+describe("$props.id() after other tests only one thread passes", () => {
+	it("is the first frame's id after {#if BROWSER} from esm-env, in a shared package's component", async () => {
+		const page = startSveltePage(SharedPanel, { firstFrame: { draw: drawSharedPanel } });
+		const fields = (): string[] =>
+			page.engine
+				.all()
+				.filter((element) => page.engine.state(element).classes === "shared-field")
+				.map((element) => page.engine.state(element).id ?? "");
+		expect(fields()).toEqual(["lynx-m1", "lynx-s1"]);
+		await page.settle();
+		expect(fields()).toEqual(["lynx-b1", "lynx-s1"]);
+		expect(wroteIds(page)).toBe(false);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("is the first frame's id after {#if background && ready}", async () => {
+		const page = startSveltePage(FrameIdJoined, { firstFrame: { draw: drawFrameIdJoined } });
+		expect(ids(page)).toEqual(["lynx-s1"]);
+		await page.settle();
+		expect(ids(page)).toEqual(["lynx-b1", "lynx-s1"]);
+		expect(wroteIds(page)).toBe(false);
+		expect(page.errors).toEqual([]);
+	});
+});
+
 describe("$props.id() on a page with no branch only one thread renders", () => {
 	it("is as it was: lynx-s1, lynx-s2… on both threads", async () => {
 		const page = startSveltePage(FrameIdPlain, { firstFrame: { draw: drawFrameIdPlain } });
@@ -148,6 +182,27 @@ describe("$props.id() on a page with no branch only one thread renders", () => {
 });
 
 describe("ids that differ between the threads", () => {
+	it("follow a component binding whose child sets the value as it starts: a known gap", async () => {
+		// Svelte's server renders the page again until such a binding settles, and the second pass
+		// counts its ids on from the first. The background renders once, so the frame's are written
+		// over. This pins it until the first frame counts each pass from the same start.
+		const page = startSveltePage(FrameIdBound, { firstFrame: { draw: drawFrameIdBound } });
+		const labelled = (): string[] =>
+			page.engine
+				.all()
+				.filter((element) => page.engine.state(element).classes === "labelled")
+				.map((element) => page.engine.state(element).id ?? "");
+		expect(labelled()).toEqual(["lynx-s3", "lynx-s4"]);
+		await page.settle();
+		expect(labelled()).toEqual(["lynx-s1", "lynx-s2"]);
+		expect(page.errors).toEqual([]);
+		expect(wroteIds(page)).toBe(true);
+		expect(page.warnings.map((warning) => (warning as Error).message)).toEqual([
+			expect.stringContaining("a component binding whose child changes the bound value"),
+			expect.stringContaining("a component binding whose child changes the bound value"),
+		]);
+	});
+
 	const messages = (reports: unknown[]): string[] =>
 		reports.map((report) => (report instanceof Error ? report.message : String(report)));
 
