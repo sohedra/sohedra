@@ -4,9 +4,11 @@
 // out, `true` reaches the engine as the boolean; `attr=""` and `attr={''}` stay empty strings.
 //
 // Only elements (`RegularElement`): a component's bare prop is already `true` in Svelte, and
-// `<svelte:element>` and the like are left alone.
+// `<svelte:element>` and the like are left alone. A `<list-item>`'s `defer` is never Lynx's: the
+// pass of deferred rows writes it (./deferred-rows.ts).
 
 import { attributesOf, nodes } from "../../svelte/build/index.ts";
+import { DEFER } from "../../wire/index.ts";
 import type { Pass } from "./pass.ts";
 
 /**
@@ -19,6 +21,7 @@ export const bareAttributes: Pass = ({ ast }) => {
 	for (const record of nodes(ast.fragment)) {
 		if (record.type !== "RegularElement") continue;
 		for (const attribute of attributesOf(record)) {
+			if (record.name === "list-item" && attribute.name === DEFER) continue;
 			if (attribute.type === "Attribute" && attribute.value === true) {
 				const end = attribute.end!;
 				edits.push({ start: end, end, text: "={true}" });

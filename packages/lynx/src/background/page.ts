@@ -12,7 +12,14 @@
 import { flushSync, mount, unmount } from "svelte";
 import type { Component } from "svelte";
 
-import { listenThrough, pushRenderer, startPropsIds } from "../svelte/runtime/index.ts";
+import {
+	endFirstScreens,
+	listenThrough,
+	pushRenderer,
+	SCROLL_INDEX_CAP,
+	startFirstScreens,
+	startPropsIds,
+} from "../svelte/runtime/index.ts";
 import { ROOT_ID } from "../wire/index.ts";
 import type {
 	HideMessage,
@@ -21,6 +28,7 @@ import type {
 	SentTarget,
 	ShowMessage,
 } from "../wire/index.ts";
+import { backgroundError } from "./catalogue.ts";
 import { openChannel } from "./channel.ts";
 import { background } from "./globals.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
@@ -29,7 +37,7 @@ import type { Handler } from "./renderer/handlers.ts";
 import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
 import type { ElementNode } from "./renderer/renderer.ts";
 import { rowOf, waitsToBeAsked } from "./renderer/rows.ts";
-import { reportError } from "./report.ts";
+import { reportError, warnOnce } from "./report.ts";
 
 /** How the page starts. */
 export interface StartPageOptions<Props extends Record<string, unknown>> {
@@ -165,15 +173,27 @@ export function startPage<Props extends Record<string, unknown>>(
 	});
 
 	/**
-	 * Mounts the app. At the page's start, what it rendered before its effects ran is marked: the main
-	 * thread hydrates its first frame from it.
+	 * Mounts the app. At the page's start, its lists render their first screens, as the first frame
+	 * drew them, and what it rendered before its effects ran is marked: the main thread hydrates its
+	 * first frame from it.
 	 */
 	function render(starting: boolean): void {
 		// Boundary: an app without `props` has a root component that takes none.
 		const props = options.props?.(lynx.__initData) ?? ({} as Props);
 		// The ids of `$props.id()` are the first frame's: a reload draws no frame, and starts them too.
 		startPropsIds();
-		instance = mount(App, { target: root!, anchor: anchor!, renderer: pageRenderer, props });
+		if (starting) startFirstScreens();
+		try {
+			instance = mount(App, { target: root!, anchor: anchor!, renderer: pageRenderer, props });
+		} finally {
+			for (const { index, where } of endFirstScreens())
+				warnOnce(`initial_scroll_index_past_first_screen:${where ?? index}`, () =>
+					backgroundError({
+						code: "initial_scroll_index_past_first_screen",
+						details: { index, cap: SCROLL_INDEX_CAP, where },
+					}),
+				);
+		}
 		if (starting) channel.markRendered();
 		flushSync();
 	}

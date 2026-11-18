@@ -12,13 +12,15 @@
 //   - a component given `--x` props is wrapped in a `<view>`, as on the background.
 //
 // And `$props.id()` inside a branch only one thread renders takes the branch's own id, as on the
-// background (./thread-branches.ts).
+// background (./thread-branches.ts); and the lists count their first screens (./first-screen.ts).
 
 // @ts-expect-error -- Svelte publishes no types for its internal modules; the casts below give these ones'.
 import * as server from "svelte/internal/server";
 
 import { escapeJsonText } from "../../wire/index.ts";
 import { CSS_PROPS_HOLDERS } from "./css-props.ts";
+import { FirstScreens, listAttributes } from "./first-screen.ts";
+import type { ListAttributes } from "./first-screen.ts";
 import { branchId, newBranchCounts } from "./thread-branches.ts";
 import type { BranchCounts } from "./thread-branches.ts";
 
@@ -160,4 +162,46 @@ export function props_id(renderer: RenderingRenderer): string {
 		branchCounts.set(renderer.global, counts);
 	}
 	return branchId(counts) ?? svelte.props_id(renderer);
+}
+
+/**
+ * The first frame's count of its lists' first screens. A render that throws leaves its lists open
+ * beneath the next render's, whose lists count above them.
+ */
+const screens = new FirstScreens();
+
+/** Whether the deferred row the server wrote last waits for the background. */
+let waits = false;
+
+/** A list starts: called in its opening tag, as an attribute that is never written. */
+export function firstScreenList(read?: () => ListAttributes): undefined {
+	screens.open(listAttributes(read));
+	return undefined;
+}
+
+/** The list that started last ends. */
+export function firstScreenEnd(): undefined {
+	screens.close();
+	return undefined;
+}
+
+/** Counts a row with no state of its own, as an attribute that is never written. */
+export function firstScreenRow(fullSpan?: unknown): undefined {
+	screens.row(fullSpan);
+	return undefined;
+}
+
+/**
+ * Counts a deferred row, as its `defer` is written: the value it is written with, none when the
+ * first frame draws the row whole. Its contents, written next, read the answer (`firstScreenWaits`).
+ */
+export function firstScreenDefer(option: unknown, fullSpan?: unknown): unknown {
+	const drawn = screens.row(fullSpan);
+	waits = !drawn && Boolean(option);
+	return drawn ? undefined : option;
+}
+
+/** Whether the deferred row written last waits: its contents are drawn when it does not. */
+export function firstScreenWaits(): boolean {
+	return waits;
 }

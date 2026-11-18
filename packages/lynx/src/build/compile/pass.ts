@@ -25,6 +25,8 @@ export interface PassContext {
 	internals?: string | undefined;
 	/** The module of the custom renderer, which background components import. */
 	renderer?: string | undefined;
+	/** The app's folder, which the places a thread's runtime reports are made relative to. */
+	root?: string | undefined;
 	/** The warnings the passes add. */
 	warnings: BuildWarning[];
 }

@@ -120,6 +120,29 @@ const holdsCaller = (fragment: AnyNode | undefined): boolean =>
 	[...nodes(fragmentNodes(fragment))].some((node) => CALLERS.has(node.type as string));
 
 /**
+ * The fragments of the `{#if}` branches only one thread renders, as recognized here: a flag's or
+ * its negation's two branches, and the consequent of a flag joined to more by `&&`.
+ */
+export function oneThreadFragments(ast: Parameters<Pass>[0]["ast"]): Set<AnyNode> {
+	const fragments = new Set<AnyNode>();
+	const names = flagNames(ast);
+	if (names.flags.size === 0 && names.namespaces.size === 0) return fragments;
+	const add = (fragment: AnyNode | undefined): void => {
+		if (fragment !== undefined) fragments.add(fragment);
+	};
+	for (const block of nodes(ast.fragment)) {
+		if (block.type !== "IfBlock") continue;
+		const test = field(block, "test")!;
+		if (flagTest(test, names) !== undefined) {
+			add(field(block, "consequent"));
+			add(field(block, "alternate"));
+		} else if (conjuncts(test).some((part) => flagTest(part, names) !== undefined))
+			add(field(block, "consequent"));
+	}
+	return fragments;
+}
+
+/**
  * Wraps the branches of `{#if}` blocks that only one thread renders in `ThreadBranch`, and warns at
  * an `{#if}` that reads a flag around a component in a way it cannot wrap.
  */

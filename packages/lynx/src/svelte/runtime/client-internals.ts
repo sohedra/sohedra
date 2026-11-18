@@ -1,8 +1,10 @@
 // What the background's compiled components import as Svelte's client runtime: the build points
 // `svelte/internal/client` here. Svelte's own, except `$props.id()`, and with the wrapper of a
-// branch only one thread renders.
+// branch only one thread renders and the count of a list's first screen.
 
 import { PROPS_ID_PREFIX } from "../../wire/index.ts";
+import { listAttributes, startingScreens } from "./first-screen.ts";
+import type { ListAttributes } from "./first-screen.ts";
 import { svelteSlot } from "./globals.ts";
 import { branchId, newBranchCounts } from "./thread-branches.ts";
 
@@ -40,4 +42,22 @@ export function startPropsIds(): void {
 	const slot = svelteSlot();
 	base = slot.uid ??= 1;
 	branches = newBranchCounts();
+}
+
+/** The background's count of a list's first screen, while the page starts (./first-screen.ts). */
+export function firstScreenList(read?: () => ListAttributes, where?: string): undefined {
+	startingScreens()?.open(listAttributes(read), where);
+	return undefined;
+}
+
+/** The list whose rows the background counts ends. */
+export function firstScreenEnd(): undefined {
+	startingScreens()?.close();
+	return undefined;
+}
+
+/** Counts a row with no state of its own (a deferred row counts as it renders: `deferredRow`). */
+export function firstScreenRow(fullSpan?: unknown): undefined {
+	startingScreens()?.row(fullSpan);
+	return undefined;
 }
