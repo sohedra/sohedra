@@ -12,6 +12,12 @@ import FirstScreen from "../fixtures/threads/FirstScreen.svelte";
 import drawFirstScreen from "../fixtures/threads/FirstScreen.svelte?first-frame";
 import FirstScreenNested from "../fixtures/threads/FirstScreenNested.svelte";
 import drawFirstScreenNested from "../fixtures/threads/FirstScreenNested.svelte?first-frame";
+import FirstScreenPlainScrolled from "../fixtures/threads/FirstScreenPlainScrolled.svelte";
+import drawFirstScreenPlainScrolled from "../fixtures/threads/FirstScreenPlainScrolled.svelte?first-frame";
+import FirstScreenSnippet from "../fixtures/threads/FirstScreenSnippet.svelte";
+import drawFirstScreenSnippet from "../fixtures/threads/FirstScreenSnippet.svelte?first-frame";
+import FirstScreenTwoLists from "../fixtures/threads/FirstScreenTwoLists.svelte";
+import drawFirstScreenTwoLists from "../fixtures/threads/FirstScreenTwoLists.svelte?first-frame";
 import { expectInSyncOnceAsked, range } from "./released-rows.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
@@ -26,7 +32,7 @@ interface Props {
 	fullSpan?: boolean;
 	span?: number;
 	preload?: number;
-	initial?: number;
+	initial?: number | string;
 	scrollIndex?: number;
 }
 
@@ -63,13 +69,26 @@ function startFirstScreen(props: Props = {}, { ask = true } = {}) {
 	return { page, handles, list, all, whole, atStart, feed: handles["feed"] as Feed };
 }
 
-/** The page hydrated with nothing reported and nothing written again, and stays in sync. */
-async function expectHydrated(page: SveltePage) {
+/**
+ * The page hydrated with nothing reported and nothing written again, kept every element of its
+ * first frame (hydration makes a block that differs again in place, silently), and stays in sync.
+ */
+async function expectHydrated(page: SveltePage, { warnings = [] as unknown[] } = {}) {
+	const drawn = page.engine.all();
 	await page.settle();
 	expect(page.messages.filter((message) => message.t === "rewrite")).toEqual([]);
 	expect(page.errors).toEqual([]);
-	expect(page.warnings).toEqual([]);
+	expect(page.warnings).toEqual(warnings);
+	const kept = new Set(page.engine.all());
+	expect(drawn.filter((element) => !kept.has(element))).toEqual([]);
 	await expectInSyncOnceAsked("after hydration", page);
+}
+
+/** The keys of a list's rows Lynx gets at once, asking for each as it may before hydration. */
+function wholeRows(page: SveltePage, token: string): string[] {
+	const list = page.engine.list(page.byClass(token));
+	const all = list.updates.at(-1)!.insertAction.map((item) => String(item["item-key"]));
+	return all.filter((_, index) => list.ask(index) !== undefined);
 }
 
 /** The ids of the rows the main thread asked the background for. */
@@ -126,6 +145,24 @@ describe("a deferred list's first screen", () => {
 		await expectHydrated(page);
 	});
 
+	it("reads initial-item-count written as text, and warns of a value that is not a count", async () => {
+		const text = startFirstScreen({ initial: "3" });
+		expect(text.whole).toEqual(keys(1, 3));
+		await expectHydrated(text.page);
+		const wrong = startFirstScreen({ initial: "three" });
+		expect(wrong.whole).toEqual(keys(1, 10));
+		await expectHydrated(wrong.page, {
+			warnings: [
+				expect.objectContaining({
+					code: "initial_item_count_not_a_count",
+					message: expect.stringMatching(
+						/^A <list>'s initial-item-count is "three".*\n.*FirstScreen\.svelte:\d+:0/,
+					),
+				}),
+			],
+		});
+	});
+
 	it("holds initial-item-count rows when the list says", async () => {
 		const three = startFirstScreen({ initial: 3, preload: 5 });
 		expect(three.whole).toEqual(keys(1, 3));
@@ -155,11 +192,36 @@ describe("a deferred list's first screen", () => {
 			expect.objectContaining({
 				code: "initial_scroll_index_past_first_screen",
 				message: expect.stringMatching(
-					/^A <list> starts at initial-scroll-index 150, more than 100 rows down.*\n.*FirstScreen\.svelte:\d+:\d+/,
+					/^A <list> starts at initial-scroll-index 150, more than 100 rows down.*\n.*FirstScreen\.svelte:\d+:0/,
 				),
 			}),
 		]);
 		expect(page.errors).toEqual([]);
+	});
+
+	it("does not warn of a list with no deferred row that starts past the cap", async () => {
+		const page = startSveltePage(FirstScreenPlainScrolled, {
+			firstFrame: { draw: drawFirstScreenPlainScrolled },
+		});
+		expect(wholeRows(page, "list")).toHaveLength(200);
+		await expectHydrated(page);
+	});
+
+	it("is counted where a list component renders its rows from a snippet written outside it", async () => {
+		const page = startSveltePage(FirstScreenSnippet, {
+			firstFrame: { draw: drawFirstScreenSnippet },
+		});
+		expect(wholeRows(page, "list")).toEqual(keys(1, 10, "s"));
+		await expectHydrated(page);
+	});
+
+	it("is counted for each of two lists of a row component whose root is the deferred row", async () => {
+		const page = startSveltePage(FirstScreenTwoLists, {
+			firstFrame: { draw: drawFirstScreenTwoLists },
+		});
+		expect(wholeRows(page, "first")).toEqual(keys(1, 10, "a"));
+		expect(wholeRows(page, "second")).toEqual(keys(1, 10, "b"));
+		await expectHydrated(page);
 	});
 
 	it("leaves a list with no deferred row as it was: every row drawn whole", async () => {

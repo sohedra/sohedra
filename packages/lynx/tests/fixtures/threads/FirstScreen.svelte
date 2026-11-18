@@ -28,7 +28,7 @@
 		fullSpan?: boolean;
 		span?: number;
 		preload?: number;
-		initial?: number;
+		initial?: number | string;
 		scrollIndex?: number;
 	} = $props();
 	const rows = (from: number, length: number) =>

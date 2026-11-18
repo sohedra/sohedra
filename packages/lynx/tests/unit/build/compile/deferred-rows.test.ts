@@ -153,7 +153,8 @@ describe("a list's first screen", () => {
 
 	it("names the list's place on the background in a development build, for its warning", async () => {
 		const { code } = await background(list("", deferred), { development: true });
-		expect(code).toMatch(/__sohedraLynxList\(undefined, "src\/Component\.svelte:2:1"\)/);
+		// Its column counts from 0, as the places of Svelte's development build do.
+		expect(code).toMatch(/__sohedraLynxList\(undefined, "src\/Component\.svelte:2:0"\)/);
 	});
 
 	it("counts a row with no defer in a list with a deferred row: a header, a footer", async () => {
@@ -187,13 +188,40 @@ describe("a list's first screen", () => {
 		expect(drawn.code).toContain("if (!true) {");
 	});
 
-	it("counts no row of a list with no deferred row, which only opens and closes", async () => {
-		const plain = "{#each rows as row (row)}<list-item><text>{row}</text></list-item>{/each}";
-		const { code } = await background(list("", plain));
-		expect(code).not.toContain("__sohedraLynxCount");
-		expect(code).toContain("__sohedraLynxList()");
-		const drawn = await mainThread(list("", plain));
-		expect(drawn.code).not.toContain("__sohedraLynxCount");
+	it("leaves a list that cannot hold a deferred row as it is written, on both threads", async () => {
+		const plain = "{#each rows as row (row)}<list-item><Label {row} /></list-item>{/each}";
+		const source = `<script>import Label from "./Label.svelte"; let rows = $state([1]);</script>\n<list>${plain}</list>`;
+		const { code } = await background(source);
+		expect(code).not.toContain("__sohedraLynx");
+		const drawn = await mainThread(source);
+		expect(drawn.code).not.toContain("__sohedraLynx");
+		// No script is added either: an element keeps the place Svelte's development build gives it.
+		const located = await background(
+			'<script>let x = 1;</script>\n<list class="l"><list-item item-key="h"><text>h</text></list-item><view></view></list>',
+			{ development: true },
+		);
+		expect(located.code).toContain("[[2, 0, [[2, 16, [[2, 40]]], [2, 66]]]]");
+		const bare = await background(
+			'<list class="l"><list-item item-key="h"><text>h</text></list-item></list>',
+			{ development: true },
+		);
+		expect(bare.code).not.toContain("<script");
+		expect(bare.code).toContain("[[1, 0, [[1, 16, [[1, 40]]]]]]");
+	});
+
+	it("counts a list whose rows may come from a component, a snippet or a slot", async () => {
+		for (const rows of [
+			"{#each rows as row (row)}<Row {row} />{/each}",
+			"{#each rows as row (row)}{@render item(row)}{/each}",
+			"<slot />",
+		]) {
+			const source = `<script>import Row from "./Row.svelte"; let { item } = $props(); let rows = $state([1]);</script>\n<list>${rows}</list>`;
+			const { code } = await background(source);
+			expect(code, rows).toContain("__sohedraLynxList()");
+			expect(code, rows).toContain("__sohedraLynxListEnd()");
+			const drawn = await mainThread(source);
+			expect(drawn.code, rows).toContain("__sohedraLynxListEnd()");
+		}
 	});
 
 	it("imports its helpers on one line, so the elements keep the lines they are written on", async () => {

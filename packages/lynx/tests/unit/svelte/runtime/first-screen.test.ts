@@ -44,11 +44,28 @@ describe("a list's first screen", () => {
 		expect(count(drawn({ "span-count": 2.7 }, 40))).toBe(20);
 	});
 
-	it("is initial-item-count rows when the list says, none at 0", () => {
+	it("is initial-item-count rows when the list says, none at 0, also written as text", () => {
 		expect(count(drawn({ "initial-item-count": 3, "preload-buffer-count": 5 }, 40))).toBe(3);
 		expect(count(drawn({ "initial-item-count": 0 }, 40))).toBe(0);
-		expect(count(drawn({ "initial-item-count": -1 }, 40))).toBe(0);
-		expect(count(drawn({ "initial-item-count": "3" }, 40))).toBe(10);
+		expect(count(drawn({ "initial-item-count": "3" }, 40))).toBe(3);
+		expect(count(drawn({ "initial-item-count": "012" }, 40))).toBe(12);
+		expect(count(drawn({ "initial-item-count": null }, 40))).toBe(10);
+	});
+
+	it("is the default for an initial-item-count that is not a count, and says so", () => {
+		for (const value of [-1, 2.5, "three", " 3", "-1", true, Number.NaN]) {
+			const screens = new FirstScreens();
+			screens.open({ "initial-item-count": value }, "src/Feed.svelte:3:0");
+			const rows = Array.from({ length: 40 }, () => screens.row(false));
+			expect(count(rows), String(value)).toBe(10);
+			expect(screens.notes).toEqual([
+				{
+					code: "initial_item_count_not_a_count",
+					value: typeof value === "string" ? JSON.stringify(value) : String(value),
+					where: "src/Feed.svelte:3:0",
+				},
+			]);
+		}
 	});
 
 	it("counts a full-span row as a whole line of span-count rows", () => {
@@ -66,10 +83,23 @@ describe("a list's first screen", () => {
 
 	it("is only the first screen past the cap, and says so once", () => {
 		const screens = new FirstScreens();
-		screens.open({ "initial-scroll-index": SCROLL_INDEX_CAP + 1 }, "src/Feed.svelte:3:1");
+		screens.open({ "initial-scroll-index": SCROLL_INDEX_CAP + 1 }, "src/Feed.svelte:3:0");
 		const rows = Array.from({ length: 200 }, () => screens.row(false));
 		expect(count(rows)).toBe(10);
-		expect(screens.cut).toEqual([{ index: SCROLL_INDEX_CAP + 1, where: "src/Feed.svelte:3:1" }]);
+		expect(screens.notes).toEqual([
+			{
+				code: "initial_scroll_index_past_first_screen",
+				index: SCROLL_INDEX_CAP + 1,
+				where: "src/Feed.svelte:3:0",
+			},
+		]);
+	});
+
+	it("says nothing of a list that counts no row: one with no deferred row", () => {
+		const screens = new FirstScreens();
+		screens.open({ "initial-scroll-index": 150, "initial-item-count": "three" });
+		screens.close();
+		expect(screens.notes).toEqual([]);
 	});
 
 	it("is counted by the list open innermost, each list its own", () => {
@@ -105,7 +135,10 @@ describe("the background's count", () => {
 		expect(startingScreens()).toBeUndefined();
 		startFirstScreens();
 		startingScreens()!.open({ "initial-scroll-index": 500 });
-		expect(endFirstScreens()).toEqual([{ index: 500, where: undefined }]);
+		startingScreens()!.row(false);
+		expect(endFirstScreens()).toEqual([
+			{ code: "initial_scroll_index_past_first_screen", index: 500, where: undefined },
+		]);
 		expect(startingScreens()).toBeUndefined();
 		expect(endFirstScreens()).toEqual([]);
 	});
