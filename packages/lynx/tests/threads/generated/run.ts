@@ -81,13 +81,20 @@ export interface GeneratedPage {
 	readonly page: SveltePage;
 	/** The root component's state, on the background. */
 	readonly handles: { st?: Record<string, unknown> };
-	/** The `$props.id()` of each component, `Name id`, in the order each thread made them. */
+	/**
+	 * The `$props.id()` of each component, in the order each thread made them, as `Name id`, and
+	 * `Name id one-thread` for one the grammar put where only one thread renders.
+	 */
 	readonly ids: { readonly frame: string[]; readonly background: string[] };
 }
 
+/** The test module a generated component records its id with. */
+type Recorder = { recordId: (component: string, id: string, oneThread: boolean) => void };
+
 /** A module that records each id of `$props.id()` in `into`. */
-const recorder = (into: string[]): { recordId: (component: string, id: string) => void } => ({
-	recordId: (component, id) => void into.push(`${component} ${id}`),
+const recorder = (into: string[]): Recorder => ({
+	recordId: (component, id, oneThread) =>
+		void into.push(`${component} ${id}${oneThread ? " one-thread" : ""}`),
 });
 
 /** How a generated page starts. */

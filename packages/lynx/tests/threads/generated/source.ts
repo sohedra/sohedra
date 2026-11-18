@@ -5,6 +5,7 @@
 import type { PageSources } from "./compile.ts";
 import { IDS } from "./evaluate.ts";
 import type { ComponentModel, PageModel } from "./grammar.ts";
+import { THREAD_TESTS } from "./markup.ts";
 import type { ListChild, MarkupNode } from "./markup.ts";
 
 /**
@@ -20,12 +21,20 @@ function opening(tag: string, attributes: readonly string[]): string {
 	return attributes.length === 0 ? `<${tag}>` : `<${tag} ${attributes.join(" ")}>`;
 }
 
-/** Writes markup with `gap` between nodes. */
-function writer(gap: string): (nodes: readonly MarkupNode[]) => string {
-	function listChild(child: ListChild): string {
+/** Whether an `{#if}` with this test has branches that only one thread renders. */
+const isThreadTest = (condition: string): boolean =>
+	(THREAD_TESTS as readonly string[]).includes(condition);
+
+/**
+ * Writes markup with `gap` between nodes. A component and a snippet are told, as `oneThread`,
+ * whether they render where only one thread does: in a branch of a thread test here, or where
+ * `outer`, the expression of the markup around, says they do.
+ */
+function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => string {
+	function listChild(child: ListChild, outer: string): string {
 		if (child.kind === "item") {
 			const item = opening("list-item", [`item-key="${child.key}"`, ...child.attributes]);
-			return `${item}${markup(child.body)}</list-item>`;
+			return `${item}${markup(child.body, outer)}</list-item>`;
 		}
 		if (child.kind === "rows") {
 			const rows = `Array.from({ length: ${ROWS} + st.n0 * 2 }, (_, n) => "r" + n)`;
@@ -34,50 +43,51 @@ function writer(gap: string): (nodes: readonly MarkupNode[]) => string {
 				...(child.fixed ? [`recyclable={${child.item} !== "r1"}`] : []),
 				...child.attributes,
 			]);
-			return `{#each ${rows} as ${child.item} (${child.item})}${item}${markup(child.body)}</list-item>{/each}`;
+			return `{#each ${rows} as ${child.item} (${child.item})}${item}${markup(child.body, outer)}</list-item>{/each}`;
 		}
 		const key = child.keyed ? ` (${child.item})` : "";
 		const item = opening("list-item", [
 			`item-key={"${child.prefix}-" + ${child.item}}`,
 			...child.attributes,
 		]);
-		return `{#each ${child.array} as ${child.item}${key}}${item}${markup(child.body)}</list-item>{/each}`;
+		return `{#each ${child.array} as ${child.item}${key}}${item}${markup(child.body, outer)}</list-item>{/each}`;
 	}
 
-	function markupNode(node: MarkupNode): string {
+	function markupNode(node: MarkupNode, outer: string): string {
 		switch (node.kind) {
 			case "element":
 				return node.tag === "image"
 					? `${opening("image", node.attributes).slice(0, -1)} />`
-					: `${opening(node.tag, node.attributes)}${markup(node.children)}</${node.tag}>`;
+					: `${opening(node.tag, node.attributes)}${markup(node.children, outer)}</${node.tag}>`;
 			case "list":
-				return `${opening("list", node.attributes)}${node.items.map(listChild).join(gap)}</list>`;
+				return `${opening("list", node.attributes)}${node.items.map((child) => listChild(child, outer)).join(gap)}</list>`;
 			case "text":
 				return node.source;
 			case "if": {
-				const otherwise = node.otherwise ? `{:else}${markup(node.otherwise)}` : "";
-				return `{#if ${node.condition}}${markup(node.consequent)}${otherwise}{/if}`;
+				const inside = isThreadTest(node.condition) ? "true" : outer;
+				const otherwise = node.otherwise ? `{:else}${markup(node.otherwise, inside)}` : "";
+				return `{#if ${node.condition}}${markup(node.consequent, inside)}${otherwise}{/if}`;
 			}
 			case "each": {
 				const key = node.keyed ? ` (${node.item})` : "";
-				const otherwise = node.otherwise ? `{:else}${markup(node.otherwise)}` : "";
-				return `{#each ${node.array} as ${node.item}${key}}${markup(node.body)}${otherwise}{/each}`;
+				const otherwise = node.otherwise ? `{:else}${markup(node.otherwise, outer)}` : "";
+				return `{#each ${node.array} as ${node.item}${key}}${markup(node.body, outer)}${otherwise}{/each}`;
 			}
 			case "key":
-				return `{#key ${node.expression}}${markup(node.body)}{/key}`;
+				return `{#key ${node.expression}}${markup(node.body, outer)}{/key}`;
 			case "dynamic":
-				return `${opening("svelte:element", ["this={st.t0}", ...node.attributes])}${markup(node.children)}</svelte:element>`;
+				return `${opening("svelte:element", ["this={st.t0}", ...node.attributes])}${markup(node.children, outer)}</svelte:element>`;
 			case "component": {
 				const css = node.cssVariable ? ' --x="red"' : "";
-				return `<${node.name} {st} label={${node.label}}${css} />`;
+				return `<${node.name} {st} label={${node.label}} oneThread={${outer}}${css} />`;
 			}
 			case "render":
-				return `{@render ${node.snippet}(${node.argument})}`;
+				return `{@render ${node.snippet}(${node.argument}, ${outer})}`;
 		}
 	}
 
-	function markup(nodes: readonly MarkupNode[]): string {
-		return nodes.map(markupNode).join(gap);
+	function markup(nodes: readonly MarkupNode[], outer: string): string {
+		return nodes.map((node) => markupNode(node, outer)).join(gap);
 	}
 
 	return markup;
@@ -97,16 +107,20 @@ export function componentSource(
 		...imports,
 		options.isRoot
 			? "let { data, handles } = $props();\nconst st = $state(data);\nif (handles) handles.st = st;"
-			: "let { st, label } = $props();",
+			: "let { st, label, oneThread } = $props();",
 	];
+	if (options.isRoot) script.push("const oneThread = false;");
 	if (component.uid)
-		script.push(`const uid = $props.id();\nrecordId(${JSON.stringify(component.name)}, uid);`);
+		script.push(
+			`const uid = $props.id();\nrecordId(${JSON.stringify(component.name)}, uid, oneThread);`,
+		);
 	// The flags are used only where a page has `{#if background}` or its kin: kept either way.
 	script.push("void background, mainThread;");
 	const snippets = component.snippets
-		.map((snippet) => `{#snippet ${snippet.name}(p)}${markup(snippet.body)}{/snippet}`)
+		.map((snippet) => `{#snippet ${snippet.name}(p, t)}${markup(snippet.body, "t")}{/snippet}`)
 		.join("");
-	return `<script>\n${script.join("\n")}\n</script>\n\n${snippets}${markup(component.body)}\n`;
+	const body = markup(component.body, "oneThread");
+	return `<script>\n${script.join("\n")}\n</script>\n\n${snippets}${body}\n`;
 }
 
 function* namesIn(nodes: readonly MarkupNode[]): Generator<string> {

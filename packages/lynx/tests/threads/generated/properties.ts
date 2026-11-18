@@ -70,8 +70,9 @@ export const firstFrameProperty: fc.IAsyncPropertyWithHooks<[PageModel, boolean]
 		});
 	});
 
-/** The ids of `$props.id()` that are the page's own, as `Name id`: `lynx-s1`… */
-const pageIds = (ids: readonly string[]): string[] => ids.filter((id) => / lynx-s\d+$/.test(id));
+/** The ids of `$props.id()` of the components that render on both threads, whatever their letter. */
+const pageIds = (ids: readonly string[]): string[] =>
+	ids.filter((id) => !id.endsWith(" one-thread"));
 
 /**
  * The background gives each component the `$props.id()` the first frame gave it, but in a branch
@@ -86,7 +87,7 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 	async (model, early) => {
 		await about(pageSources(model), { ...described(model), early }, async () => {
 			const { running } = await start(model, { firstFrame: true });
-			// The page's own ids, those of no branch only one thread renders, are the first frame's.
+			// Each component the grammar put where both threads render has the first frame's id.
 			expect(pageIds(running.ids.background), "The background's ids of $props.id()").toEqual(
 				pageIds(running.ids.frame),
 			);
