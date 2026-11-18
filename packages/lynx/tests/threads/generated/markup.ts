@@ -36,7 +36,8 @@ export type MarkupNode =
 /**
  * A child of a `<list>`: one `<list-item>`, an `{#each}` of them, or an `{#each}` of enough rows
  * for a scroll to hand back more than the main thread keeps (`rows`), the second of which may be
- * held for good (`fixed`).
+ * held for good (`fixed`), and which may be deferred (`defer`, with `unmountRecycled` or not): the
+ * list is then Lynx's async list.
  */
 export type ListChild =
 	| { kind: "item"; key: string; attributes: string[]; body: MarkupNode[] }
@@ -49,7 +50,14 @@ export type ListChild =
 			attributes: string[];
 			body: MarkupNode[];
 	  }
-	| { kind: "rows"; item: string; fixed: boolean; attributes: string[]; body: MarkupNode[] };
+	| {
+			kind: "rows";
+			item: string;
+			fixed: boolean;
+			attributes: string[];
+			body: MarkupNode[];
+			defer?: "plain" | "unmount" | undefined;
+	  };
 
 /** The most lists around one another: a list holds at most one more, in an item. */
 export const MOST_LISTS = 2;
@@ -210,6 +218,11 @@ function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild>
 	return fc
 		.record({
 			fixed: fc.boolean(),
+			defer: fc.oneof(
+				{ weight: 2, arbitrary: fc.constant(undefined) },
+				fc.constant("plain" as const),
+				fc.constant("unmount" as const),
+			),
 			attributes: attributes(scope, "view"),
 			body: nodes("block", nested(scope, { lists: MOST_LISTS }), Math.min(1, size - 1)),
 		})

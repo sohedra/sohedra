@@ -41,6 +41,8 @@ function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => s
 			const item = opening("list-item", [
 				`item-key={${child.item}}`,
 				...(child.fixed ? [`recyclable={${child.item} !== "r1"}`] : []),
+				...(child.defer === "plain" ? ["defer"] : []),
+				...(child.defer === "unmount" ? ["defer={{ unmountRecycled: true }}"] : []),
 				...child.attributes,
 			]);
 			return `{#each ${rows} as ${child.item} (${child.item})}${item}${markup(child.body, outer)}</list-item>{/each}`;
@@ -59,8 +61,13 @@ function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => s
 				return node.tag === "image"
 					? `${opening("image", node.attributes).slice(0, -1)} />`
 					: `${opening(node.tag, node.attributes)}${markup(node.children, outer)}</${node.tag}>`;
-			case "list":
-				return `${opening("list", node.attributes)}${node.items.map((child) => listChild(child, outer)).join(gap)}</list>`;
+			case "list": {
+				const deferred = node.items.some((child) => child.kind === "rows" && child.defer);
+				const attributes = deferred
+					? ['custom-list-name="list-container"', ...node.attributes]
+					: node.attributes;
+				return `${opening("list", attributes)}${node.items.map((child) => listChild(child, outer)).join(gap)}</list>`;
+			}
 			case "text":
 				return node.source;
 			case "if": {

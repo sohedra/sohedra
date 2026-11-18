@@ -2,11 +2,14 @@
 // renderer (what Svelte rendered), so the two compare line by line. Both are read the same way:
 // an element's tag, its classes, id, styles, dataset, other attributes and bound events; the texts
 // of a text element joined into runs, empty ones dropped; a list as its cells, each one asked of
-// Lynx in turn (`show`) on the engine, and each `<list-item>` on the background. Anchors, fragments
-// and the order attributes were set in are not part of what a page shows.
+// Lynx in turn on the engine, and each `<list-item>` on the background. A deferred row that waits
+// for the background reads as `(waits)` on both: Lynx's request for it is answered later, and the
+// background has not rendered it. Anchors, fragments and the order attributes were set in are not
+// part of what a page shows.
 
 import type { TreeNode } from "../../../src/background/renderer/node.ts";
 import { pageRenderer } from "../../../src/background/renderer/page-renderer.ts";
+import { rowOf } from "../../../src/background/renderer/rows.ts";
 import { attrValue, textOf } from "../../../src/background/renderer/values.ts";
 import { LIST_ONLY_INFO } from "../../../src/main-thread/lists.ts";
 import { parseStyleText } from "../../../src/testing/engine/dom.ts";
@@ -140,8 +143,11 @@ function engineElement(
 			return lines;
 		}
 		const handle = engine.list(element);
-		for (let index = 0; index < state.list.items; index++)
-			lines.push(...engineElement(engine, handle.show(index), depth + 1, reading));
+		for (let index = 0; index < state.list.items; index++) {
+			const cell = handle.ask(index);
+			if (cell) lines.push(...engineElement(engine, cell, depth + 1, reading));
+			else lines.push(`${"  ".repeat(depth + 1)}(waits)`);
+		}
 		return lines;
 	}
 	const inText = TEXT_CONTAINERS.has(state.tag);
@@ -212,7 +218,10 @@ function backgroundElement(node: TreeNode, depth: number, reading: Reading): str
 			lines.push(`${"  ".repeat(depth + 1)}keys ${JSON.stringify(keys)}`);
 			return lines;
 		}
-		for (const item of items) lines.push(...backgroundElement(item, depth + 1, reading));
+		for (const item of items) {
+			if (rowOf(item)?.shown === false) lines.push(`${"  ".repeat(depth + 1)}(waits)`);
+			else lines.push(...backgroundElement(item, depth + 1, reading));
+		}
 		return lines;
 	}
 	const inText = TEXT_CONTAINERS.has(read.tag);

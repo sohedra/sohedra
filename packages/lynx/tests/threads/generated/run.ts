@@ -6,7 +6,7 @@ import * as env from "@sohedra/lynx/env";
 import fc from "fast-check";
 import type { Component } from "svelte";
 
-import renderer from "../../../src/background/renderer/entry.ts";
+import renderer, { deferredRow } from "../../../src/background/renderer/entry.ts";
 import * as internals from "../../../src/svelte/runtime/client-internals.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
@@ -146,7 +146,7 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 	// Boundary: the generated root component takes `data` and `handles`.
 	const App = evaluatePage(compiled.background, {
 		[INTERNALS]: internals,
-		[RENDERER]: { default: renderer },
+		[RENDERER]: { default: renderer, deferredRow },
 		"@sohedra/lynx/env": backgroundEnv,
 		"svelte/internal/disclose-version": {},
 		[IDS]: recorder(ids.background),
@@ -210,8 +210,11 @@ function scrollTo(page: SveltePage, list: LynxElement, first: number): void {
 	const count = page.engine.state(list).list!.items;
 	for (let top = 0; top <= first; top++) {
 		const shown = new Set<LynxElement>();
-		for (let index = top; index < Math.min(count, top + SCREEN); index++)
-			shown.add(handle.show(index));
+		for (let index = top; index < Math.min(count, top + SCREEN); index++) {
+			// A deferred row comes later; Lynx holds it once it comes.
+			const cell = handle.ask(index);
+			if (cell) shown.add(cell);
+		}
 		for (const cell of recyclableCells(page, list)) if (!shown.has(cell)) handle.hide(cell);
 	}
 }
@@ -261,7 +264,7 @@ export function apply(running: GeneratedPage, done: Step): void {
 			if (found.length === 0) return;
 			const list = page.engine.list(found[done.list % found.length]!);
 			const count = page.engine.state(found[done.list % found.length]!).list!.items;
-			if (count > 0) list.show(done.index % count);
+			if (count > 0) list.ask(done.index % count);
 			return;
 		}
 		case "hide": {
@@ -297,6 +300,22 @@ export async function run(running: GeneratedPage, done: Step): Promise<void> {
 	if (done.kind !== "scroll-then-set") return;
 	await running.page.settle();
 	apply(running, { kind: "set", key: done.key, value: done.value });
+}
+
+/**
+ * Lynx asks for every row of every list until none waits for the background, and the threads
+ * settle: each deferred row has come. A page with no deferred row only settles.
+ */
+export async function askEveryRow(page: SveltePage): Promise<void> {
+	for (let round = 0; round < 4; round++) {
+		let waiting = 0;
+		for (const list of lists(page)) {
+			const count = page.engine.state(list).list!.items;
+			for (let index = 0; index < count; index++) if (!page.engine.list(list).ask(index)) waiting++;
+		}
+		await page.settle();
+		if (waiting === 0) return;
+	}
 }
 
 /** Whether a patch asked the main thread to make the page again. */
