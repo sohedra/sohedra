@@ -6,7 +6,9 @@
 //     background to write the page again when it cannot;
 //   - applies each patch the background sends (`callLepusMethod(PATCH_METHOD)`) and flushes the
 //     tree once for it;
-//   - keeps each list cell's ops as they came until the list shows the cell;
+//   - keeps each list cell's ops as they came until the list shows the cell, and asks the
+//     background to write again the cells Lynx handed back past a screen of them, and those whose
+//     kept text piled up;
 //   - answers the calls a patch carries (./calls.ts);
 //   - sends the elements' events to the background;
 //   - starts the page over when it reloads, and lets go of it when its life ends.
@@ -49,6 +51,18 @@ import { isRecord, toSentEvent } from "./sent-event.ts";
 
 /** Lynx's error code of an error on the main thread (`LYNX_ERROR_CODE_LEPUS`). */
 const MAIN_THREAD_ERROR = 1101;
+
+/**
+ * Whether the pieces of a cell's kept text after the first add up to more than the first: the
+ * cell is then written again as one piece. So the text kept for a cell never shown stays within
+ * about twice what the cell is, and each byte is sent again about once.
+ */
+function piledUp(parts: readonly string[]): boolean {
+	if (parts.length < 2) return false;
+	let rest = 0;
+	for (let index = 1; index < parts.length; index++) rest += parts[index]!.length;
+	return rest > parts[0]!.length;
+}
 
 /** Reports an error into Lynx, with Lynx's code for the main thread. Never throws. */
 function reportIntoLynx(error: Error): void {
@@ -132,11 +146,34 @@ export function startMainThread(): void {
 		for (const part of parts) apply(decodeCell(part));
 	}
 
+	let rewritesDue = false;
+
+	/** Asks the background to write again the cells the page's lists name, in one message. */
+	function askForRewrites(): void {
+		rewritesDue = false;
+		// A page written again, or gone, has none of its cells to let go of.
+		if (state.destroyed || state.rewriting || !state.applier) return;
+		try {
+			const nodes = state.applier.takeRewrites();
+			if (nodes.length > 0) send({ t: "rewrite", nodes });
+		} catch (error) {
+			report(error);
+		}
+	}
+
+	/** On a later task: never inside Lynx's call of a list, and once for many cells. */
+	function scheduleRewrites(): void {
+		if (rewritesDue) return;
+		rewritesDue = true;
+		lynx.setTimeout(askForRewrites, 0);
+	}
+
 	function newApplier(on: LynxElement): Applier {
 		return createApplier({
 			page: on,
 			dispatch: onElementEvent,
 			openCell,
+			scheduleRewrites,
 			report,
 			styles: state.styles,
 			flattening: state.flattening,
@@ -181,14 +218,20 @@ export function startMainThread(): void {
 					apply(item[1]);
 					break;
 				case "cell": {
-					// A cell the list shows already takes it now; else it is kept as text until it does.
-					if (state.applier!.element(item[1])) {
-						apply(decodeCell(item[2]));
+					const [, id, text] = item;
+					if (item[3] === true) {
+						if (state.applier!.replaceCell(id, text)) state.cells.set(id, [text]);
 						break;
 					}
-					let parts = state.cells.get(item[1]);
-					if (!parts) state.cells.set(item[1], (parts = []));
-					parts.push(item[2]);
+					// A cell the list shows already takes it now; else it is kept as text until it does.
+					if (state.applier!.element(id)) {
+						apply(decodeCell(text));
+						break;
+					}
+					let parts = state.cells.get(id);
+					if (!parts) state.cells.set(id, (parts = []));
+					parts.push(text);
+					if (piledUp(parts)) state.applier!.askCell(id);
 					break;
 				}
 				case "call":

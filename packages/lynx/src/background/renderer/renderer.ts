@@ -61,6 +61,12 @@ export interface LynxRenderer extends SvelteRenderer {
 	 * it has: the main thread makes the page again from them.
 	 */
 	writePage(): void;
+	/**
+	 * Writes the ops of a list cell of the page again, the same way: its element, what is in it, and
+	 * no insert into its list, which knows the cell. False, with nothing written, when `id` is not
+	 * such a cell now.
+	 */
+	writeCell(id: number): boolean;
 }
 
 /** What the renderer writes into and keeps. */
@@ -377,6 +383,13 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 				realize(child, root, true);
 				for (const real of topReals(child)) queue.push([OpCode.Insert, ROOT_ID, real.lynxId, 0]);
 			}
+		},
+		writeCell(id) {
+			const node = elementsById.get(id);
+			const container = node && realContainer(node.parent);
+			if (!node || !container || cellUnder(container, node) !== id) return false;
+			realize(node, container, true);
+			return true;
 		},
 
 		createFragment: () => new TreeNode("fragment"),

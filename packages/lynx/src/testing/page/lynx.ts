@@ -67,6 +67,11 @@ export interface MainThreadLynx extends SharedLynx {
 	getEngine(): LifecycleProxy;
 	/** The native side's events: the page's end. */
 	getNative(): LifecycleProxy;
+	/**
+	 * Runs `callback` on the main thread on a later task, which `settle()` waits for. The delay is
+	 * not waited out: only the order is kept.
+	 */
+	setTimeout(callback: () => void, delay?: number): void;
 }
 
 /** The background's `lynx`. */
@@ -230,6 +235,12 @@ export function createLynx(options: {
 			getJSContext: () => jsContext,
 			getEngine: () => lifecycle.engine,
 			getNative: () => lifecycle.native,
+			setTimeout(callback) {
+				bridge.send(() => {
+					enter("main-thread");
+					callback();
+				});
+			},
 		},
 		background: {
 			...shared(),

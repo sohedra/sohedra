@@ -105,11 +105,14 @@ export function startPage<Props extends Record<string, unknown>>(
 		});
 	}
 
-	/** The main thread asks for the page again: its first frame could not be hydrated. */
+	/**
+	 * The main thread asks for the page again, when its first frame could not be hydrated, or for
+	 * list cells, to let go of their elements or of their piled-up text.
+	 */
 	function rewrite({ nodes, mismatch }: RewriteMessage): void {
 		if (mismatch) reportError(mismatchError(mismatch, pageRenderer.nodeById(mismatch.node)));
-		// The page's root is the one subtree asked for yet.
 		if (nodes.includes(ROOT_ID)) channel.rewritePage(() => pageRenderer.writePage());
+		else channel.rewriteCells(nodes, (id) => pageRenderer.writeCell(id));
 	}
 
 	const channel = openChannel({

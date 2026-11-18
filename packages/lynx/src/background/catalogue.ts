@@ -76,9 +76,9 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 	},
 	element_not_shown: {
 		message: ({ method, tag }) =>
-			`The <${tag}> is in a list row Lynx has not shown yet, so its ${method} cannot run: Lynx makes a row's elements only when it shows the row.`,
+			`The <${tag}> is in a list row Lynx is not showing, so its ${method} cannot run: Lynx makes a row's elements only while it shows the row.`,
 		fix: ({ method }) =>
-			`Call ${method} once Lynx shows the row, for example from the row's layoutchange event.`,
+			`Call ${method} while Lynx shows the row, for example from the row's layoutchange event.`,
 		docs: "element_not_shown",
 	},
 	animation_canceled: {

@@ -60,10 +60,11 @@ export interface ReleaseMessage {
 }
 
 /**
- * The main thread asks the background to write the page again, with the ids it has: `nodes` is the
- * page's root (`ROOT_ID`), the one subtree written again yet. It answers with a patch that starts
- * with a rewrite item. The main thread asks after a hydration it refused or could not finish;
- * `mismatch` then says why, with the values that differ in development builds only.
+ * The main thread asks the background to write subtrees again, with the ids they have. `nodes` is
+ * the page's root (`ROOT_ID`) alone, after a hydration it refused or could not finish, answered
+ * with a rewrite item; or list cells Lynx handed back or whose kept text piled up, each answered
+ * with a marked cell item, and an id that is no longer a cell with nothing. `mismatch` says why a
+ * hydration was refused, with the values that differ in development builds only.
  */
 export interface RewriteMessage {
 	t: "rewrite";
