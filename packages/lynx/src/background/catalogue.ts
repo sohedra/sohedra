@@ -45,6 +45,8 @@ export interface BackgroundDetails {
 		cap: number;
 		where?: string | undefined;
 	};
+	/** `value` is the list's `initial-item-count`, as written; `where` the list's `file:line:col`. */
+	initial_item_count_not_a_count: { value: string; where?: string | undefined };
 }
 
 /** What a code of the background names. */
@@ -136,6 +138,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: ({ cap }) =>
 			`Start the list at most ${cap} rows down, or take defer off the rows it starts at.`,
 		docs: "initial_scroll_index_past_first_screen",
+	},
+	initial_item_count_not_a_count: {
+		message: ({ value }) =>
+			`A <list>'s initial-item-count is ${value}, which is not a number of rows, so its first frame draws as many rows as it would without it.`,
+		fix: () =>
+			'Give initial-item-count a whole number of rows, 0 or more: initial-item-count={5} or initial-item-count="5".',
+		docs: "initial_item_count_not_a_count",
 	},
 };
 

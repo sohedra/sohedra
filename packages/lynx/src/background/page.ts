@@ -186,12 +186,11 @@ export function startPage<Props extends Record<string, unknown>>(
 		try {
 			instance = mount(App, { target: root!, anchor: anchor!, renderer: pageRenderer, props });
 		} finally {
-			for (const { index, where } of endFirstScreens())
-				warnOnce(`initial_scroll_index_past_first_screen:${where ?? index}`, () =>
-					backgroundError({
-						code: "initial_scroll_index_past_first_screen",
-						details: { index, cap: SCROLL_INDEX_CAP, where },
-					}),
+			for (const note of endFirstScreens())
+				warnOnce(`${note.code}:${note.where ?? ""}`, () =>
+					note.code === "initial_scroll_index_past_first_screen"
+						? backgroundError({ code: note.code, details: { ...note, cap: SCROLL_INDEX_CAP } })
+						: backgroundError({ code: note.code, details: note }),
 				);
 		}
 		if (starting) channel.markRendered();

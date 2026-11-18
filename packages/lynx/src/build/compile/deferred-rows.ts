@@ -14,10 +14,12 @@
 // is wrapped in `{#if true}`. The first frame draws a deferred row empty, and writes its `defer`,
 // which the main thread reads there; a row of the first screen it draws whole, with no `defer`.
 //
-// The first screen (`src/svelte/runtime/first-screen.ts`): each `<list>` opens its count before its
-// rows and closes it after them, and each row that waits asks for its place where both threads
-// reach it in the same order: the background in the `{#if}` on its state, which reads `ready`
-// first; the first frame in its `defer`, whose value the row's `{#if}` then reads back. A row with
+// The first screen (`src/svelte/runtime/first-screen.ts`): each `<list>` that may hold a deferred row
+// (one written among its rows, or a component, a snippet or a slot there that may render one) opens
+// its count before its rows and closes it after them, and each row that waits asks for its place
+// where both threads reach it in the same order: the background in the `{#if}` on its state, which
+// reads `ready` first; the first frame in its `defer`, whose value the row's `{#if}` then reads
+// back. Any other list is left as it is written. A row with
 // no `defer` in a list written here with a deferred row counts too, in a block before it on the
 // background and an attribute the first frame never writes, so a header or a footer takes its place.
 // A row in a branch only one thread renders (`{#if background}`) counts on neither.
@@ -35,6 +37,7 @@ import type { AnyNode } from "../../svelte/build/index.ts";
 import { DEFER, DEFERRED_ROW, RENDERER_ENTRY } from "../../wire/index.ts";
 import { buildWarning, placeAt } from "../diagnostics/messages.ts";
 import type { Edit } from "../source-map/edits.ts";
+import { position } from "../source-map/maps.ts";
 import { stringLiteral } from "../string-literal.ts";
 import type { Pass, PassContext } from "./pass.ts";
 import { oneThreadFragments } from "./thread-branches.ts";
@@ -97,8 +100,19 @@ const isElement = (node: AnyNode, tag: string): boolean =>
 interface Placed {
 	node: AnyNode;
 	list: AnyNode | undefined;
+	/** Inside a `<list-item>` of that list, not among its rows. */
+	inRow: boolean;
 	oneThread: boolean;
 }
+
+/** What may render rows from elsewhere where a list's rows are. */
+const ROW_SOURCES = new Set([
+	"Component",
+	"SvelteComponent",
+	"SvelteSelf",
+	"RenderTag",
+	"SlotElement",
+]);
 
 /** Every node of `node`'s tree, where it is: the walk of `nodes`. */
 function* placedNodes(
@@ -114,8 +128,10 @@ function* placedNodes(
 	// Boundary: the AST's nodes are read by shape, as `nodes` reads them.
 	const record = node as AnyNode;
 	yield { node: record, ...around };
+	const list = isElement(record, LIST);
 	const inner = {
-		list: isElement(record, LIST) ? record : around.list,
+		list: list ? record : around.list,
+		inRow: !list && (around.inRow || isElement(record, TAG)),
 		oneThread: around.oneThread || oneThreadFragments.has(record),
 	};
 	for (const key of Object.keys(record)) {
@@ -239,11 +255,22 @@ export const deferredRows: Pass = (context) => {
 	// The first screen's helpers come from the thread's runtime: a build that gives none counts none.
 	const screens = internals !== undefined;
 	const placed = [
-		...placedNodes(ast.fragment, { list: undefined, oneThread: false }, oneThreadFragments(ast)),
+		...placedNodes(
+			ast.fragment,
+			{ list: undefined, inRow: false, oneThread: false },
+			oneThreadFragments(ast),
+		),
 	];
+	// The lists with a deferred row written among their rows, whose other rows count too; and those
+	// whose rows may be deferred rows written elsewhere. The others are left as they are written.
 	const withDeferred = new Set<AnyNode>();
-	for (const { node, list } of placed)
-		if (list && isElement(node, TAG) && attributeNamed(node, DEFER)) withDeferred.add(list);
+	const counting = new Set<AnyNode>();
+	for (const { node, list, inRow } of placed) {
+		if (!list) continue;
+		if (isElement(node, TAG) && attributeNamed(node, DEFER)) withDeferred.add(list);
+		else if (!inRow && ROW_SOURCES.has(String(node.type))) counting.add(list);
+	}
+	for (const list of withDeferred) counting.add(list);
 
 	// A list opens first and closes last where another edit is at the same place.
 	const opening: Edit[] = [];
@@ -258,17 +285,13 @@ export const deferredRows: Pass = (context) => {
 
 	function openList(list: AnyNode): void {
 		const children = childrenOf(list);
-		if (!screens || children.length === 0) return;
+		if (!screens || children.length === 0 || !counting.has(list)) return;
 		const read = listAttributesText(source, list) ?? "";
+		// Counted from 0, as the places of Svelte's development build are.
+		const [line, column] = position(source, list.start!);
+		const file = path.relative(context.root ?? "", filename);
 		const where =
-			background && development
-				? stringLiteral(
-						placeAt(
-							{ file: path.relative(context.root ?? "", filename), text: source },
-							list.start!,
-						).where,
-					)
-				: undefined;
+			background && development ? stringLiteral(`${file}:${line + 1}:${column}`) : undefined;
 		const args = where === undefined ? read : `${read || "undefined"}, ${where}`;
 		if (background)
 			opening.push({
