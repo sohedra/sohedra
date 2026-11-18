@@ -247,6 +247,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: COMPILER,
 	},
 	{
+		id: "block-first-branch-sync",
+		program: "runtime",
+		file: "src/internal/client/dom/blocks/branches.js",
+		anchor: "branch(() => fn(this.anchor))",
+		reliesOn:
+			"a client block (`{#if}`, `{#each}`, `{#key}`, `<svelte:boundary>`) draws its first branch inside the call that makes it, as deep as blocks nest: so every component a branch only one thread renders holds starts while `ThreadBranch` marks the branch",
+		test: RUNTIME,
+	},
+	{
 		id: "server-render-global",
 		program: "runtime",
 		file: "src/internal/server/renderer.js",

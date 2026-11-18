@@ -14,7 +14,9 @@
 // side has and the other lacks, or an attribute that differs; and a list whose keys differ.
 // Outside a block, an attribute that differs only in `$props.id()`'s ids is written over the first
 // frame's, and kept for a development build's warning: the ids agree unless a component only one
-// thread renders is in a branch whose test the build does not recognize as one.
+// thread renders is in a branch whose test the build does not recognize as one, or a component
+// binding renders the first frame twice. Inside a block, an id that differs is written over with
+// no warning, as any attribute there is.
 
 import { MAIN_THREAD_PREFIX, PROPS_ID } from "../../wire/index.ts";
 import type { AttrValue, HydrationMismatch, PropsIdDifference } from "../../wire/index.ts";

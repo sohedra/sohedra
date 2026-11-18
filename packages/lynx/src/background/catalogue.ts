@@ -112,7 +112,7 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		message: ({ tag, name, expected, got }) =>
 			`The <${tag}>'s ${name} is "${got}" in the first frame and "${expected}" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.`,
 		fix: () =>
-			"Render a component that only one thread renders inside {#if background} or {#if mainThread} from @sohedra/lynx/env, with nothing else in the condition, so that the ids after it stay the same on both threads.",
+			"Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/env, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.",
 		docs: "props_id_mismatch",
 	},
 };

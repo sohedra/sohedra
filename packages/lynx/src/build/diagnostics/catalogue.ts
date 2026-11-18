@@ -45,6 +45,10 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	event_attribute_renamed: { attribute: string; replacement: string; spelling: string };
 	global_event_attribute: { attribute: string; event: string };
 	list_item_without_key: Plain;
+	/** `test` is the `{#if}`'s test, as written. */
+	thread_branch_test: { test: string };
+	/** `name` is the name the component declares that the build adds too. */
+	thread_branch_name_taken: { name: string };
 }
 
 /** What a code names: a message the build throws, or one it only warns with. */
@@ -201,5 +205,18 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		message: () => "A `<list-item>` has no key, and Lynx's list needs one to track its cells.",
 		fix: () => "Write it directly inside a keyed `{#each}`, or give it an `item-key`.",
 		docs: "list_item_without_key",
+	},
+	thread_branch_test: {
+		message: ({ test }) =>
+			`\`{#if ${test}}\` holds a component that one thread can render without the other, so the \`$props.id()\` of the components after it may differ between the first frame and the background.`,
+		fix: () =>
+			"Give the part only one thread renders a block of its own whose test is the flag alone, `{#if background}`, `{#if mainThread}` or `{#if BROWSER}`, and put the rest of the test inside it.",
+		docs: "thread_branch_test",
+	},
+	thread_branch_name_taken: {
+		message: ({ name }) =>
+			`The name ${name} is one the build adds to this component, to draw a part only one thread renders, and the component declares it too.`,
+		fix: ({ name }) => `Rename your ${name}.`,
+		docs: "thread_branch_name_taken",
 	},
 };
