@@ -110,11 +110,25 @@ describe("captured values of a component", () => {
 		expect(code).toMatch(/_c: \{\s*threshold: threshold\(\)/);
 	});
 
-	it("read captured $state objects through a snapshot, so changes inside them count", async () => {
+	it("read captured $state through the binding's copy, so changes inside it count", async () => {
 		const { code } = await component(source, { thread: "background" });
-		expect(code).toContain("items: $.snapshot(items)");
-		expect(code).toContain("a: $.snapshot(cfg?.a)");
-		expect(code).not.toContain("$.snapshot(threshold");
+		expect(code).toMatch(
+			/import \{ copyCapture as __copyCapture_\w+ \} from "@sohedra\/lynx\/internal\/main-thread-functions"/,
+		);
+		expect(code).toMatch(/items: __copyCapture_\w+\(items\)/);
+		expect(code).toMatch(/a: __copyCapture_\w+\(cfg\?\.a\)/);
+		expect(code).not.toMatch(/__copyCapture_\w+\(threshold/);
+		expect(code).not.toContain("snapshot");
+	});
+
+	it("tell the copy what each capture is called and where its function is, in development", async () => {
+		const { code } = await component(source, { thread: "background", development: true });
+		expect(code).toMatch(
+			/items: __copyCapture_\w+\(items, \{\s*name: "items",\s*where: "src\/Component\.svelte:5:3"\s*\}\)/,
+		);
+		expect(code).toMatch(
+			/a: __copyCapture_\w+\(cfg\?\.a, \{\s*name: "cfg\.a",\s*where: "src\/Component\.svelte:5:3"\s*\}\)/,
+		);
 	});
 
 	it("leave functions without captures, and the first frame, as they are", async () => {
