@@ -51,18 +51,33 @@ export type ListChild =
 	  }
 	| { kind: "rows"; item: string; fixed: boolean; attributes: string[]; body: MarkupNode[] };
 
+/** The most lists around one another: a list holds at most one more, in an item. */
+export const MOST_LISTS = 2;
+
+/**
+ * A component or snippet, with its context and the lists its markup counts around it. It renders
+ * only where that many lists or fewer are, so what its markup holds keeps the rules on lists
+ * wherever it renders: a long list only at the page level, none in a long list's row.
+ */
+export interface Renderable {
+	readonly name: string;
+	readonly context: Context;
+	/** At most `MOST_LISTS`: one that counts as many holds no list. */
+	readonly lists: number;
+}
+
 /** What an expression may name where it is written. */
 export interface Scope {
 	/** Expressions of a text. */
 	readonly texts: readonly string[];
 	/** How many `{#each}` are around: the next item's name. */
 	readonly depth: number;
-	/** How many lists are around: a list holds at most one more. */
+	/** How many lists are around, or count as around: at most `MOST_LISTS`. */
 	readonly lists: number;
-	/** The components this one may use, with their context. */
-	readonly components: readonly { name: string; context: Context }[];
-	/** The snippets this component has, with their context; none inside a snippet. */
-	readonly snippets: readonly { name: string; context: Context }[];
+	/** The components this one may use. */
+	readonly components: readonly Renderable[];
+	/** The snippets this component has; none inside a snippet. */
+	readonly snippets: readonly Renderable[];
 	/** Whether `uid` (`$props.id()`) is defined. */
 	readonly uid: boolean;
 }
@@ -196,7 +211,7 @@ function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild>
 		.record({
 			fixed: fc.boolean(),
 			attributes: attributes(scope, "view"),
-			body: nodes("block", nested(scope, { lists: 2 }), Math.min(1, size - 1)),
+			body: nodes("block", nested(scope, { lists: MOST_LISTS }), Math.min(1, size - 1)),
 		})
 		.map((each): ListChild => ({ kind: "rows", item, ...each }));
 }
@@ -259,6 +274,13 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 		}));
 }
 
+/** What of `renderables` may render here: in `context`, with no more lists around than it counts. */
+const renderableHere = (
+	renderables: readonly Renderable[],
+	context: Context,
+	scope: Scope,
+): Renderable[] => renderables.filter((one) => one.context === context && one.lists >= scope.lists);
+
 function node(context: Context, scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 	const { item, scope: eachScope } = withItem(scope);
 	const options: fc.WeightedArbitrary<MarkupNode>[] = [
@@ -313,7 +335,7 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 				.map(({ expression, body }): MarkupNode => ({ kind: "key", expression, body })),
 		},
 	];
-	const components = scope.components.filter((component) => component.context === context);
+	const components = renderableHere(scope.components, context, scope);
 	if (components.length > 0) {
 		options.push({
 			weight: 2,
@@ -332,7 +354,7 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 				})),
 		});
 	}
-	const snippets = scope.snippets.filter((snippet) => snippet.context === context);
+	const snippets = renderableHere(scope.snippets, context, scope);
 	if (snippets.length > 0) {
 		options.push({
 			weight: 1,
@@ -369,7 +391,7 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 					})),
 			},
 		);
-		if (scope.lists < 2) options.push({ weight: 2, arbitrary: list(scope, size) });
+		if (scope.lists < MOST_LISTS) options.push({ weight: 2, arbitrary: list(scope, size) });
 	}
 	return fc.oneof({ depthSize: "small" }, ...options);
 }
