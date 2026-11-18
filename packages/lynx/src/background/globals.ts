@@ -33,9 +33,6 @@ export interface BackgroundGlobals {
 		reportError(error: unknown, options?: { level?: "error" | "warning" }): void;
 		queueMicrotask(callback: () => void): void;
 		setTimeout(callback: () => void, delay?: number): number;
-		clearTimeout(id: number): void;
-		setInterval(callback: () => void, delay?: number): number;
-		clearInterval(id: number): void;
 		getNativeApp(): NativeApp;
 		getCoreContext(): CoreContext;
 		getApp(): App;

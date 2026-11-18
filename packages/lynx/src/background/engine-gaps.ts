@@ -14,13 +14,9 @@ export interface FillTargets {
 	globals: BackgroundGlobals;
 }
 
-/** lynx-core's timers on `lynx` (lynx-core's lynx.ts). */
-const TIMERS = ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] as const;
-
 /** Fills in what the background's engine lacks, leaving what it has. */
 export function fillEngineGaps(targets: FillTargets): void {
 	fillQueueMicrotask(targets);
-	fillTimers(targets);
 	fillReplaceAll(targets.strings);
 }
 
@@ -35,20 +31,6 @@ export function fillEngineGaps(targets: FillTargets): void {
 function fillQueueMicrotask({ scope, globals }: FillTargets): void {
 	if (typeof scope["queueMicrotask"] === "function") return;
 	scope["queueMicrotask"] = (callback: () => void) => globals.lynx.queueMicrotask(callback);
-}
-
-/**
- * The background's timers are parameters of the bundle's wrapper, not globals: code that reads one
- * off the global object gets lynx-core's.
- *
- * @workaround background-global-timers kind=lynx-gap delete-when="Lynx's background thread has the timers on its global object"
- */
-function fillTimers({ scope, globals }: FillTargets): void {
-	for (const name of TIMERS) {
-		if (typeof scope[name] === "function") continue;
-		scope[name] = (...args: unknown[]): unknown =>
-			Reflect.apply(globals.lynx[name], globals.lynx, args);
-	}
 }
 
 /**
