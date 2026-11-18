@@ -260,6 +260,9 @@ export const checks: Checks = {
 			"src/internal/client/runtime.js",
 			"src/internal/shared/clone.js",
 		]);
+		// Unguarded: once Svelte checks for the global first, the fills can go.
+		for (const file of ["src/internal/client/runtime.js", "src/internal/shared/clone.js"])
+			expect(readSvelte(file)).not.toMatch(/typeof (globalThis\.)?EventTarget\b/);
 	},
 
 	"runtime-reads-structured-clone": () => {
@@ -268,6 +271,9 @@ export const checks: Checks = {
 		expect(occurrences(readSvelte("src/internal/shared/clone.js"), "structuredClone(value)")).toBe(
 			2,
 		);
+		// Unguarded: once Svelte checks for the global first, the fills can go.
+		for (const file of ["src/internal/client/runtime.js", "src/internal/shared/clone.js"])
+			expect(readSvelte(file)).not.toMatch(/typeof (globalThis\.)?structuredClone\b/);
 	},
 
 	"disclose-version-window-guard": () => {

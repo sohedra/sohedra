@@ -14,6 +14,7 @@ import { startDevicePage } from "./device-threads.ts";
 
 const MODES = ["production", "development"] as const;
 const builds = new Map<(typeof MODES)[number], AppBuild>();
+let actionBuild: AppBuild;
 
 beforeAll(async () => {
 	for (const mode of MODES)
@@ -24,9 +25,11 @@ beforeAll(async () => {
 				rsbuild: { dev: { hmr: false, liveReload: false } },
 			}),
 		);
-}, 360_000);
+	actionBuild = await buildApp("snapshot", { entry: "./action.ts" });
+}, 480_000);
 afterAll(() => {
 	for (const build of builds.values()) cleanBuild(build);
+	cleanBuild(actionBuild);
 });
 afterEach(() => {
 	rs.restoreAllMocks();
@@ -64,6 +67,27 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 			const kinds = "[typeof EventTarget, typeof structuredClone]";
 			expect(vm.runInContext(kinds, mainThread)).toEqual(["function", "function"]);
 			expect(vm.runInContext(kinds, background)).toEqual(["function", "function"]);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("copies a primitive as it is, and refuses a symbol and a function as @ungap/structured-clone does", async () => {
+		const { page, mainThread, background } = await start();
+		try {
+			const probe = `[
+				[undefined, null, true, 0, -0, NaN, 10n, "text"].every((value) => Object.is(structuredClone(value), value)),
+				[Symbol("unique"), () => {}].map((value) => {
+					try {
+						structuredClone(value);
+					} catch (error) {
+						return error instanceof TypeError && error.message;
+					}
+				}),
+			]`;
+			const answer = [true, ["unable to serialize symbol", "unable to serialize function"]];
+			expect(vm.runInContext(probe, mainThread)).toEqual(answer);
+			expect(vm.runInContext(probe, background)).toEqual(answer);
 		} finally {
 			page.dispose();
 		}
@@ -118,6 +142,22 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 					],
 				},
 			]);
+		} finally {
+			page.dispose();
+		}
+	});
+});
+
+describe("a page whose only read of EventTarget is an action's object, on threads shaped like a device's", () => {
+	it("calls the action's update", async () => {
+		expect(actionBuild.error + actionBuild.messages).toBe("");
+		const { page } = startDevicePage(scriptsOf(actionBuild));
+		try {
+			await page.settle();
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts()).toEqual(["Updated with 1"]);
 		} finally {
 			page.dispose();
 		}
