@@ -1,5 +1,6 @@
 // UI methods and the flush: no UI before the tree is flushed, none for a layout-only view, and a
-// view with an attribute answers whether Lynx flattens it or not.
+// view with an attribute answers whether Lynx flattens it or not. The layout-only shapes are those
+// Lynx 4.2 answered on iOS and Android.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -171,7 +172,28 @@ describe("a layout-only view", () => {
 	});
 
 	it.each([
+		[
+			"a custom property in the style text",
+			(view: LynxElement) => engine().functions.__SetInlineStyles(view, "width: 10px; --x: red"),
+		],
+		[
+			"a custom property added one by one",
+			(view: LynxElement) => engine().functions.__AddInlineStyle(view, "--x", "red"),
+		],
+		[
+			"a custom property set as an object",
+			(view: LynxElement) => engine().functions.__SetInlineStyles(view, { "--x": "red" }),
+		],
+	])("still has none with %s, as on Lynx 4.2", async (_name, give) => {
+		const { page, view } = layoutOnly();
+		give(view);
+		engine().functions.__FlushElementTree(page);
+		expect(await invoke(view)).toEqual([{ code: 6 }]);
+	});
+
+	it.each([
 		["an id", (view: LynxElement) => engine().functions.__SetID(view, "box")],
+		["an id of none", (view: LynxElement) => engine().functions.__SetID(view, null)],
 		[
 			"a listener",
 			(view: LynxElement) => engine().functions.__AddEventListener(view, "tap", () => {}, {}),
@@ -209,6 +231,45 @@ describe("a layout-only view", () => {
 		give(view);
 		engine().functions.__FlushElementTree(page);
 		expect(await invoke(view)).toEqual([{ code: 0 }]);
+	});
+
+	it("has one straight in a scroll view, and keeps it there; further down it has none", async () => {
+		const { page } = smallPage(engine());
+		const f = engine().functions;
+		const scroller = f.__CreateScrollView(0);
+		f.__AppendElement(page, scroller);
+		const [child, grandchild] = [f.__CreateView(0), f.__CreateView(0)];
+		f.__AppendElement(scroller, child);
+		f.__AppendElement(child, grandchild);
+		f.__FlushElementTree(page);
+		expect([...(await invoke(child)), ...(await invoke(grandchild))]).toEqual([
+			{ code: 0 },
+			{ code: 6 },
+		]);
+	});
+
+	it("keeps the UI a scroll view gave it once it is taken out, flushed there or not", async () => {
+		const { page, outer } = smallPage(engine());
+		const f = engine().functions;
+		const scroller = f.__CreateScrollView(0);
+		f.__AppendElement(page, scroller);
+		const view = f.__CreateView(0);
+		f.__AppendElement(scroller, view);
+		f.__RemoveElement(scroller, view);
+		f.__AppendElement(outer, view);
+		f.__FlushElementTree(page);
+		expect(await invoke(view)).toEqual([{ code: 0 }]);
+	});
+
+	it("has none in an element tagged scroll-view that __CreateScrollView did not make", async () => {
+		const { page } = smallPage(engine());
+		const f = engine().functions;
+		const scroller = f.__CreateElement("scroll-view", 0);
+		f.__AppendElement(page, scroller);
+		const view = f.__CreateView(0);
+		f.__AppendElement(scroller, view);
+		f.__FlushElementTree(page);
+		expect(await invoke(view)).toEqual([{ code: 6 }]);
 	});
 
 	it("is a view only: an element of another tag has a UI", async () => {

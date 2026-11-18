@@ -168,7 +168,6 @@ export const BEHAVIORS: Behavior[] = [
 		name: "a view with no attribute, id or event, and only layout styles, has no UI (code 6) until the flush after it gains an attribute",
 		source:
 			"core/renderer/dom/element_container.cc (ElementContainer::CreatePaintingNode returns for a layout-only element); core/renderer/dom/fiber/fiber_element.cc (Element::CanBeLayoutOnly, MarkHasLayoutOnlyPropsIfNecessary)",
-		sourceOnly: true,
 		async run(target) {
 			const f = target.functions;
 			const element = f.__CreateView(0);
@@ -183,6 +182,57 @@ export const BEHAVIORS: Behavior[] = [
 			return { flushed, given, flushedAgain };
 		},
 		expected: { flushed: 6, given: 6, flushedAgain: 0 },
+	},
+	{
+		name: "a class, an empty dataset or a custom property leaves a view with no UI; an id of none, or a scroll view as its parent, gives it one",
+		source:
+			"core/renderer/dom/fiber/fiber_element.cc (Element::ParseRawInlineStyles keeps a custom property out of the styles); core/runtime/lepus/bindings/renderer_functions.cc (FiberSetID writes an empty id for none); core/renderer/dom/fiber/scroll_element.cc (ScrollElement::OnNodeAdded)",
+		async run(target) {
+			const f = target.functions;
+			const page = f.__GetPageElement()!;
+			const scroller = f.__CreateScrollView(0);
+			f.__SetInlineStyles(scroller, "width: 100px; height: 100px");
+			f.__AppendElement(page, scroller);
+			const inner = f.__CreateView(0);
+			f.__SetInlineStyles(inner, "width: 100px; height: 40px");
+			f.__AppendElement(scroller, inner);
+			const shapes: [string, LynxElement, (element: LynxElement) => void][] = [
+				["unmatchedClass", page, (element) => f.__SetClasses(element, "no-such-class")],
+				["emptyDataset", page, (element) => f.__SetDataset(element, {})],
+				[
+					"customPropertyInText",
+					page,
+					(element) => f.__SetInlineStyles(element, "width: 100px; height: 20px; --x: red"),
+				],
+				["customPropertyAdded", page, (element) => f.__AddInlineStyle(element, "--x", "red")],
+				["customPropertyObject", page, (element) => f.__SetInlineStyles(element, { "--x": "red" })],
+				["idSetToNone", page, (element) => f.__SetID(element, null)],
+				["inScrollView", scroller, () => {}],
+				["inViewInScrollView", inner, () => {}],
+			];
+			const made = shapes.map(([name, parent, shape]) => {
+				const element = f.__CreateView(0);
+				f.__SetInlineStyles(element, "width: 100px; height: 20px");
+				shape(element);
+				f.__AppendElement(parent, element);
+				return [name, element] as const;
+			});
+			f.__FlushElementTree();
+			const codes: Record<string, number> = {};
+			for (const [name, element] of made)
+				codes[name] = (await invoke(target, element, "boundingClientRect")).code;
+			return codes;
+		},
+		expected: {
+			unmatchedClass: 6,
+			emptyDataset: 6,
+			customPropertyInText: 6,
+			customPropertyAdded: 6,
+			customPropertyObject: 6,
+			idSetToNone: 0,
+			inScrollView: 0,
+			inViewInScrollView: 6,
+		},
 	},
 	{
 		name: "__SetInlineStyles wipes the styles added one by one",
