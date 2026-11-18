@@ -14,9 +14,10 @@
 //   - static and dynamic attributes, classes (text and object), styles (text and `style:`),
 //     `data-*` (text, number and object), `id`, an attribute of Lynx's, and a `tap` handler that
 //     changes the state;
-//   - `{#if}` with `{:else}`, `{#if background}` from `@sohedra/lynx/env`, `{#each}` keyed and
-//     unkeyed, `{#key}`, `<svelte:element>`, child components with props and a `--x` prop,
-//     snippets with `{@render}`, and `$props.id()`;
+//   - `{#if}` with `{:else}`, `{#if background}` and its kin from `@sohedra/lynx/env`, `{#each}`
+//     keyed and unkeyed, `{#key}`, `<svelte:element>`, child components with props and a `--x`
+//     prop, snippets with `{@render}`, and `$props.id()`, also in a component that a branch only
+//     one thread renders holds, and after it;
 //   - texts that are empty, spaces, `<`, `&`, a line separator, quotes and non-ASCII;
 //   - attributes set and taken away again, and `{#each}` with `{:else}`.
 //

@@ -7,7 +7,7 @@ import { compilePage } from "./compile.ts";
 import type { CompiledBoth } from "./compile.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
-import { apply, earlyStep, rewrote, run, startGenerated, step } from "./run.ts";
+import { apply, earlyStep, rewrote, run, startGenerated, step, wroteIds } from "./run.ts";
 import type { GeneratedPage, StartOptions, Step } from "./run.ts";
 import { about } from "./settings.ts";
 import { pageSources } from "./source.ts";
@@ -71,9 +71,10 @@ export const firstFrameProperty: fc.IAsyncPropertyWithHooks<[PageModel, boolean]
 	});
 
 /**
- * The background's first patch hydrates the first frame with no mismatch reported and no page
- * written again, and Lynx then shows what the background rendered. Before that patch, Lynx may
- * ask for cells and hand them back, the user may tap, and the host may update the data or reload.
+ * The background's first patch hydrates the first frame with no mismatch reported, no page written
+ * again and no id of `$props.id()` written over, and Lynx then shows what the background rendered.
+ * Before that patch, Lynx may ask for cells and hand them back, the user may tap, and the host may
+ * update the data or reload.
  */
 export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> = fc.asyncProperty(
 	pageModel,
@@ -85,14 +86,18 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 			await running.page.settle();
 			expectNoErrors(running.page.errors, "At hydration");
 			expect(rewrote(running.page), "The page was written again").toBe(false);
+			expect(wroteIds(running.page), "Hydration wrote ids of $props.id() over").toBe(false);
 			expectSameTree(engineTree(running.page.engine), backgroundTree());
 		});
 	},
 );
 
-/** The ids of `$props.id()` count on across a page's renders: a fresh page counts from the first. */
+/**
+ * The ids of `$props.id()` count on across a page's renders, and a component a branch only one
+ * thread renders makes later takes the page's: a fresh page counts from the first.
+ */
 const withoutIds = (tree: string[]): string[] =>
-	tree.map((line) => line.replace(/lynx-s\d+/g, "lynx-s#"));
+	tree.map((line) => line.replace(/lynx-[sbm]\d+/g, "lynx-#"));
 
 /**
  * After each change of the state on the background, tap, cell Lynx asks for or hands back, data

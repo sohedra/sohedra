@@ -88,7 +88,7 @@ export function componentSource(
 	options: { isRoot: boolean; indented: boolean },
 ): string {
 	const markup = writer(options.indented ? "\n\t" : "");
-	const imports = ['import { background } from "@sohedra/lynx/env";'];
+	const imports = ['import { background, mainThread } from "@sohedra/lynx/env";'];
 	for (const name of new Set(usedComponents(component)))
 		imports.push(`import ${name} from "./${name}.svelte";`);
 	const script = [
@@ -98,8 +98,8 @@ export function componentSource(
 			: "let { st, label } = $props();",
 	];
 	if (component.uid) script.push("const uid = $props.id();");
-	// `background` is used only where a page has `{#if background}`: kept either way.
-	script.push("void background;");
+	// The flags are used only where a page has `{#if background}` or its kin: kept either way.
+	script.push("void background, mainThread;");
 	const snippets = component.snippets
 		.map((snippet) => `{#snippet ${snippet.name}(p)}${markup(snippet.body)}{/snippet}`)
 		.join("");

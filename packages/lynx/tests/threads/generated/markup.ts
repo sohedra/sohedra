@@ -82,14 +82,16 @@ export interface Scope {
 	readonly uid: boolean;
 }
 
-const BOOLEANS = [
-	"st.b0",
-	"!st.b1",
-	"st.n0 === 1",
-	'st.s0 === ""',
-	"st.a0.length > 1",
-	"background",
-] as const;
+const BOOLEANS = ["st.b0", "!st.b1", "st.n0 === 1", 'st.s0 === ""', "st.a0.length > 1"] as const;
+
+/** The tests of `@sohedra/lynx/env` whose branch only one thread renders, as the build knows them. */
+export const THREAD_TESTS = ["background", "!background", "mainThread", "!mainThread"] as const;
+
+/** An `{#if}`'s test: the state's, or one in six a branch only one thread renders. */
+const ifTest: fc.Arbitrary<string> = fc.oneof(
+	{ weight: 5, arbitrary: fc.constantFrom(...BOOLEANS) },
+	{ weight: 1, arbitrary: fc.constantFrom(...THREAD_TESTS) },
+);
 
 /** What a tap does to the state. */
 const CHANGES = [
@@ -115,9 +117,7 @@ function attribute(scope: Scope, tag: string): fc.Arbitrary<string> {
 	const options: fc.Arbitrary<string>[] = [
 		fc.constantFrom('class="c1"', 'class="c1 c2"', 'style="color: red"', 'data-k="v"'),
 		textExpression(scope).map((expression) => `class={${expression}}`),
-		fc
-			.constantFrom(...BOOLEANS.filter((b) => b !== "background"))
-			.map((condition) => `class={{ on: ${condition}, off: !(${condition}) }}`),
+		fc.constantFrom(...BOOLEANS).map((test) => `class={{ on: ${test}, off: !(${test}) }}`),
 		fc.constant('style={"width: " + st.n0 * 10 + "px"}'),
 		fc.constant('style:color={st.b0 ? "red" : "blue"}'),
 		textExpression(scope).map((expression) => `data-v={${expression}}`),
@@ -274,6 +274,27 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 		}));
 }
 
+/** A use of one of `components`, with a label and maybe a `--x` prop. */
+function component(
+	components: readonly Renderable[],
+	context: Context,
+	scope: Scope,
+): fc.Arbitrary<MarkupNode> {
+	return fc
+		.record({
+			name: fc.constantFrom(...components.map((one) => one.name)),
+			label: textExpression(scope),
+			cssVariable: fc.boolean(),
+		})
+		.map(({ name, label, cssVariable }): MarkupNode => ({
+			kind: "component",
+			name,
+			label,
+			// A `--x` prop wraps the component in an element: not inside a `<text>`.
+			cssVariable: cssVariable && context === "block",
+		}));
+}
+
 /** Those of `renderables` that may render here: in `context`, with no more lists around. */
 const renderableHere = (
 	renderables: readonly Renderable[],
@@ -288,7 +309,7 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 			weight: 2,
 			arbitrary: fc
 				.record({
-					condition: fc.constantFrom(...BOOLEANS),
+					condition: ifTest,
 					consequent: nodes(context, scope, size - 1),
 					otherwise: fc.option(nodes(context, scope, size - 1), { nil: undefined }),
 				})
@@ -337,22 +358,29 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 	];
 	const components = renderableHere(scope.components, context, scope);
 	if (components.length > 0) {
-		options.push({
-			weight: 2,
-			arbitrary: fc
-				.record({
-					name: fc.constantFrom(...components.map((component) => component.name)),
-					label: textExpression(scope),
-					cssVariable: fc.boolean(),
-				})
-				.map(({ name, label, cssVariable }): MarkupNode => ({
-					kind: "component",
-					name,
-					label,
-					// A `--x` prop wraps the component in an element: not inside a `<text>`.
-					cssVariable: cssVariable && context === "block",
-				})),
-		});
+		const used = component(components, context, scope);
+		options.push(
+			{ weight: 2, arbitrary: used },
+			{
+				// A component only one thread renders, whose `$props.id()` the ids after it must not feel.
+				weight: 1,
+				arbitrary: fc
+					.record({
+						condition: fc.constantFrom(...THREAD_TESTS),
+						consequent: used.map((one) => [one]),
+						otherwise: fc.option(
+							used.map((one) => [one]),
+							{ nil: undefined },
+						),
+					})
+					.map(({ condition, consequent, otherwise }): MarkupNode => ({
+						kind: "if",
+						condition,
+						consequent,
+						otherwise,
+					})),
+			},
+		);
 	}
 	const snippets = renderableHere(scope.snippets, context, scope);
 	if (snippets.length > 0) {

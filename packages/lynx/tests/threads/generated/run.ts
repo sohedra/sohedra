@@ -90,8 +90,8 @@ export interface StartOptions {
 	/** Draw the first frame from the data, as a built page whose script draws it. */
 	firstFrame: boolean;
 	/**
-	 * What `background` from `@sohedra/lynx/env` is on the background: `false` renders there what
-	 * the first frame renders, as a reference for it.
+	 * What `background` from `@sohedra/lynx/env` is on the background: `false` (and `mainThread`
+	 * `true`) renders there what the first frame renders, as a reference for it.
 	 */
 	background?: boolean;
 	/** The keys of the data that come from the template; the host gives the rest. */
@@ -126,7 +126,8 @@ const rootData = (initData: Record<string, unknown>): Record<string, unknown> =>
 export function startGenerated(options: StartOptions): GeneratedPage {
 	const { compiled, data, firstFrame } = options;
 	const handles: { st?: Record<string, unknown> } = {};
-	const backgroundEnv = options.background === false ? { ...env, background: false } : env;
+	const backgroundEnv =
+		options.background === false ? { ...env, background: false, mainThread: true } : env;
 	// Boundary: the generated root component takes `data` and `handles`.
 	const App = evaluatePage(compiled.background, {
 		[INTERNALS]: internals,
@@ -281,4 +282,9 @@ export async function run(running: GeneratedPage, done: Step): Promise<void> {
 /** Whether a patch asked the main thread to make the page again. */
 export function rewrote(page: SveltePage): boolean {
 	return page.patches.some((patch) => patch.items.some((item) => item[0] === "rewrite"));
+}
+
+/** Whether the main thread wrote ids of `$props.id()` over the first frame's, and said so. */
+export function wroteIds(page: SveltePage): boolean {
+	return page.messages.some((message) => message.t === "props-ids");
 }
