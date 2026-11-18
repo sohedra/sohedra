@@ -138,7 +138,7 @@ describe("the value of an input that has no element yet", () => {
 		renderer.insert(root, input, null);
 		expect(ops()).toContainEqual([OpCode.SetAttr, expect.any(Number), "default-value", "b"]);
 		renderer.setAttribute(input, "value", "c");
-		// It answers no `input` event: the field's first, 0.
-		expect(calls).toEqual([[expect.any(Number), ["invoke", "setValue", { value: "c" }, 0]]]);
+		// A change from code answers no typing: it is written whatever the field had since.
+		expect(calls).toEqual([[expect.any(Number), ["invoke", "setValue", { value: "c" }]]]);
 	});
 });

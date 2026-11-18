@@ -111,6 +111,21 @@ describe("a setter's answer to typing", () => {
 		expect(writes("field").at(-1)).toEqual({ value: "HXELLO", cursor: 2 });
 	});
 
+	it("lets a change from code win over a key typed while it was on its way", async () => {
+		const { page, fire, written, echo } = await input();
+		// The tap reaches the background first, which clears the field before it hears the key.
+		page.engine.dispatch(page.byClass("clear"), { type: "tap" });
+		fire("hellox");
+		await page.settle();
+		expect(written("field")).toEqual([""]);
+		// Lynx answers the write with an input event of the written value (Android), which the fake
+		// does not send on its own.
+		fire("");
+		await page.settle();
+		expect(written("field")).toEqual([""]);
+		expect(echo()).toBe("");
+	});
+
 	it("writes no caret for a change from code", async () => {
 		const { tap, writes } = await input();
 		await tap("clear");
