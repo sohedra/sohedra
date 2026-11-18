@@ -91,8 +91,9 @@ function describe(value: unknown): string | undefined {
 	if (typeof value === "bigint") return "a bigint";
 	if (typeof value === "number" && !Number.isFinite(value)) return `the number ${value}`;
 	if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined;
+	// A plain object of any realm: each thread is a realm of its own on a device.
 	const prototype: unknown = Object.getPrototypeOf(value);
-	if (prototype === Object.prototype || prototype === null) return undefined;
+	if (prototype === null || Object.getPrototypeOf(prototype) === null) return undefined;
 	return `an instance of ${value.constructor.name}`;
 }
 
