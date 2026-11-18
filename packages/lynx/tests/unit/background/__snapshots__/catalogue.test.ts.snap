@@ -43,6 +43,14 @@ Check that the element is still on the page when its value changes, and that it 
 https://sohedra.com/e/input_value_not_written"
 `;
 
+exports[`the background's catalogue > list_item_defer_needs_async_list: the message 1`] = `
+"A <list-item defer> is in a <list> that is not Lynx's async list, so its row cannot wait for Lynx to ask for it, and renders now.
+src/Feed.svelte:9:3
+
+Give the list custom-list-name="list-container", the list that waits for a row Lynx asked for. Or remove defer.
+https://sohedra.com/e/list_item_defer_needs_async_list"
+`;
+
 exports[`the background's catalogue > list_item_key_object: the message 1`] = `
 "A <list-item> has an object as its item-key, and Lynx reads an item-key as text.
 src/Feed.svelte:12:2

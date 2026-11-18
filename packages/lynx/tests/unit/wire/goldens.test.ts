@@ -103,6 +103,11 @@ const PATCHES: [name: string, page: number, items: PatchItem[]][] = [
 		],
 	],
 	["list rows written again", 0, [["cell", 30, encodeCell(row(30, "c")), true]]],
+	[
+		"a deferred row written again, whose contents go with its elements",
+		0,
+		[["cell", 30, encodeCell(row(30, "c")), "unmount"]],
+	],
 ];
 
 const MESSAGES: [name: string, message: ToBackground][] = [
@@ -137,6 +142,8 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 		},
 	],
 	["list rows asked for again", { t: "rewrite", nodes: [30, 40] }],
+	["deferred rows Lynx asked for", { t: "show", nodes: [30, 40] }],
+	["deferred rows let go of, text and all", { t: "hide", nodes: [30] }],
 	[
 		"ids of $props.id() written over the first frame's, in a development build",
 		{

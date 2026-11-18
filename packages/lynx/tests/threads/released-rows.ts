@@ -83,6 +83,26 @@ export function expectInSync(what: string, page: SveltePage): void {
 	expectSameTree(engineTree(page.engine), backgroundTree(), what);
 }
 
+/**
+ * Lynx asks for every row of every list, the threads settle, and then Lynx shows what the
+ * background rendered: a deferred row comes once it is asked for.
+ */
+export async function expectInSyncOnceAsked(what: string, page: SveltePage): Promise<void> {
+	// A list inside a row is there once its row came: ask again until every row came.
+	for (let round = 0; round < 4; round++) {
+		let waiting = 0;
+		for (const element of page.engine.all()) {
+			const list = page.engine.state(element).list;
+			if (!list) continue;
+			for (let index = 0; index < list.items; index++)
+				if (!page.engine.list(element).ask(index)) waiting++;
+		}
+		await page.settle();
+		if (waiting === 0) break;
+	}
+	expectInSync(what, page);
+}
+
 /** The cell items that write a row again. */
 export const rewrittenCells = (page: SveltePage): CellItem[] =>
 	page.patches

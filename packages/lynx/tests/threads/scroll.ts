@@ -1,7 +1,8 @@
 // A `<list>` scrolled as Lynx scrolls it on a device: it holds the cells of one screen of items and
 // `preload-buffer-count` more on each side, asks for a cell that comes into that window and hands
 // back one that leaves it, except the cell of an item that is not recyclable
-// (core/renderer/ui_component/list/list_children_helper.cc, list_layout_manager.cc).
+// (core/renderer/ui_component/list/list_children_helper.cc, list_layout_manager.cc). On the async
+// list, a cell the page answers later is held once it comes.
 
 import type { Engine, LynxElement } from "../../src/testing/index.ts";
 import { listKeys } from "./generated/trees.ts";
@@ -26,6 +27,8 @@ export interface Scroller {
 	to(first: number): void;
 	/** The cells Lynx holds now, by their item's key. */
 	readonly bound: ReadonlyMap<string, LynxElement>;
+	/** The requests of the cells Lynx asked for that have not come yet, by their item's key. */
+	readonly pending: ReadonlyMap<string, number>;
 }
 
 /** Scrolls `list` with `screen` items on screen and `preload` more held on each side. */
@@ -35,20 +38,33 @@ export function scroller(
 	{ screen = SCREEN, preload = 0 }: { screen?: number; preload?: number } = {},
 ): Scroller {
 	const bound = new Map<string, LynxElement>();
+	const pending = new Map<string, number>();
 	return {
 		bound,
+		pending,
 		to(first) {
+			const handle = engine.list(list);
+			for (const [key, operation] of pending) {
+				const cell = handle.given(operation);
+				if (!cell) continue;
+				pending.delete(key);
+				bound.set(key, cell);
+			}
 			const keys = listKeys(engine, list);
 			const from = Math.max(0, first - preload);
 			const window = keys.slice(from, first + screen + preload);
 			const shown = new Set(window);
 			for (const [key, cell] of bound) {
 				if (shown.has(key) || !recyclable(engine, list, key)) continue;
-				engine.list(list).hide(cell);
+				handle.hide(cell);
 				bound.delete(key);
 			}
+			for (const key of pending.keys()) if (!shown.has(key)) pending.delete(key);
 			for (const [offset, key] of window.entries()) {
-				if (!bound.has(key)) bound.set(key, engine.list(list).show(from + offset));
+				if (bound.has(key) || pending.has(key)) continue;
+				const cell = handle.ask(from + offset);
+				if (cell) bound.set(key, cell);
+				else pending.set(key, handle.operation);
 			}
 		},
 	};

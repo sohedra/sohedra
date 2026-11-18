@@ -181,3 +181,50 @@ describe("a list", () => {
 		expect(() => engine().functions.__SetAttribute(inner, "update-list-info", {})).not.toThrow();
 	});
 });
+
+describe("Lynx's async list", () => {
+	/** A list that answers each request later, with a flush that names it. */
+	function asyncList(container: boolean) {
+		const { outer } = smallPage(engine());
+		const f = engine().functions;
+		const later: (() => void)[] = [];
+		const element = f.__CreateList(
+			0,
+			(_list, listId, _index, operationId) => {
+				const cell = f.__CreateElement("list-item", 0);
+				later.push(() => {
+					f.__AppendElement(element, cell);
+					f.__FlushElementTree(cell, {
+						operationID: operationId,
+						elementID: f.__GetElementUniqueID(cell),
+						listID: listId,
+					});
+				});
+				return Promise.resolve(f.__GetElementUniqueID(cell));
+			},
+			() => {},
+		);
+		if (container) f.__SetAttribute(element, "custom-list-name", "list-container");
+		f.__AppendElement(outer, element);
+		f.__SetAttribute(element, "update-list-info", items(3));
+		return { element, later };
+	}
+
+	it("takes a cell flushed later with the request's operation id", () => {
+		const { element, later } = asyncList(true);
+		const handle = engine().list(element);
+		expect(handle.ask(1)).toBeUndefined();
+		const operation = handle.operation;
+		expect(() => handle.show(1)).toThrow(/comes later, with a flush of its request/);
+		later[0]!();
+		expect(handle.given(operation)).toBeDefined();
+		expect(handle.given(operation)).toBe(element.childNodes[0]);
+	});
+
+	it("is only the list named list-container: another reads an answer that is not a number as none", () => {
+		const { element } = asyncList(false);
+		expect(() => engine().list(element).ask(0)).toThrow(
+			/no cell for the unique id \[object Promise\]/,
+		);
+	});
+});
