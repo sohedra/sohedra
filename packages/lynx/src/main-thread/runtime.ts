@@ -6,17 +6,14 @@
 //     background to write the page again when it cannot;
 //   - applies each patch the background sends (`callLepusMethod(PATCH_METHOD)`) and flushes the
 //     tree once for it;
-//   - keeps each list cell's ops as they came until the list shows the cell, and asks the
-//     background to write again the cells Lynx handed back past a screen of them, and those whose
-//     kept text piled up;
+//   - keeps each list cell's ops as text until the list shows the cell, and asks the background
+//     to write cells again (./cells.ts);
 //   - answers the calls a patch carries (./calls.ts);
 //   - sends the elements' events to the background;
 //   - starts the page over when it reloads, and lets go of it when its life ends.
 
 import {
 	checkMessage,
-	FIRST_FRAME_GLOBAL,
-	decodeCell,
 	decodeError,
 	decodePatch,
 	describeOp,
@@ -40,10 +37,10 @@ import { createApplier } from "./apply.ts";
 import type { Applier } from "./apply.ts";
 import { createCalls } from "./calls.ts";
 import { mainThreadError } from "./catalogue.ts";
+import { createCells } from "./cells.ts";
 import { fillEngineGaps } from "./engine-gaps.ts";
-import { drawFrame } from "./frame/draw.ts";
-import { UnreadableMarkup } from "./frame/html.ts";
-import { DEV, globalScope, mainThread, readGlobal, setGlobalFunction } from "./globals.ts";
+import { drawRecordedFrame } from "./frame/recorded.ts";
+import { DEV, globalScope, mainThread, setGlobalFunction } from "./globals.ts";
 import type { EngineMessage, LynxElement } from "./globals.ts";
 import { hydrate, replayEarly, sentMismatch } from "./hydrate/hydrate.ts";
 import { clearPrevious, createMainThreadPage } from "./page.ts";
@@ -51,18 +48,6 @@ import { isRecord, toSentEvent } from "./sent-event.ts";
 
 /** Lynx's error code of an error on the main thread (`LYNX_ERROR_CODE_LEPUS`). */
 const MAIN_THREAD_ERROR = 1101;
-
-/**
- * Whether the pieces of a cell's kept text after the first add up to more than the first: the
- * cell is then written again as one piece. So the text kept for a cell never shown stays within
- * about twice what the cell is, and each byte is sent again about once.
- */
-function piledUp(parts: readonly string[]): boolean {
-	if (parts.length < 2) return false;
-	let rest = 0;
-	for (let index = 1; index < parts.length; index++) rest += parts[index]!.length;
-	return rest > parts[0]!.length;
-}
 
 /** Reports an error into Lynx, with Lynx's code for the main thread. Never throws. */
 function reportIntoLynx(error: Error): void {
@@ -138,42 +123,20 @@ export function startMainThread(): void {
 		},
 	});
 
-	/** The list shows a cell: makes it from what was kept. */
-	function openCell(id: number): void {
-		const parts = state.cells.get(id);
-		if (!parts) return;
-		state.cells.delete(id);
-		for (const part of parts) apply(decodeCell(part));
-	}
-
-	let rewritesDue = false;
-
-	/** Asks the background to write again the cells the page's lists name, in one message. */
-	function askForRewrites(): void {
-		rewritesDue = false;
-		// A page written again, or gone, has none of its cells to let go of.
-		if (state.destroyed || state.rewriting || !state.applier) return;
-		try {
-			const nodes = state.applier.takeRewrites();
-			if (nodes.length > 0) send({ t: "rewrite", nodes });
-		} catch (error) {
-			report(error);
-		}
-	}
-
-	/** On a later task: never inside Lynx's call of a list, and once for many cells. */
-	function scheduleRewrites(): void {
-		if (rewritesDue) return;
-		rewritesDue = true;
-		lynx.setTimeout(askForRewrites, 0);
-	}
+	const cells = createCells({
+		page: state,
+		apply,
+		send: (message) => send(message),
+		report,
+		later: (callback) => lynx.setTimeout(callback, 0),
+	});
 
 	function newApplier(on: LynxElement): Applier {
 		return createApplier({
 			page: on,
 			dispatch: onElementEvent,
-			openCell,
-			scheduleRewrites,
+			openCell: cells.open,
+			scheduleRewrites: cells.schedule,
 			report,
 			styles: state.styles,
 			flattening: state.flattening,
@@ -217,23 +180,9 @@ export function startMainThread(): void {
 				case "ops":
 					apply(item[1]);
 					break;
-				case "cell": {
-					const [, id, text] = item;
-					if (item[3] === true) {
-						if (state.applier!.replaceCell(id, text)) state.cells.set(id, [text]);
-						break;
-					}
-					// A cell the list shows already takes it now; else it is kept as text until it does.
-					if (state.applier!.element(id)) {
-						apply(decodeCell(text));
-						break;
-					}
-					let parts = state.cells.get(id);
-					if (!parts) state.cells.set(id, (parts = []));
-					parts.push(text);
-					if (piledUp(parts)) state.applier!.askCell(id);
+				case "cell":
+					cells.take(item);
 					break;
-				}
 				case "call":
 					calls.run(item, stamp);
 					break;
@@ -340,49 +289,17 @@ export function startMainThread(): void {
 		}
 	}
 
-	/** Draws the first frame from the page's data, when the page's script recorded how. */
-	function drawFirstFrame(page: LynxElement, data: unknown): void {
-		const markup = readGlobal(FIRST_FRAME_GLOBAL);
-		if (typeof markup !== "function") return;
-		// The background's first patch makes the page when the frame cannot be drawn.
-		let html: string | null;
+	function onRenderPage(event: EngineMessage): void {
 		try {
-			// Boundary: the page's script records a function of the page's data (src/first-frame/).
-			html = (markup as (data: Record<string, unknown>) => string | null)(
-				isRecord(data) ? data : {},
-			);
-		} catch (error) {
-			const reason = error instanceof Error ? error.message : String(error);
-			const thrown = mainThreadError({ code: "first_frame_threw", details: { reason } });
-			report(Object.assign(thrown, { cause: error }));
-			return;
-		}
-		if (html === null) return;
-		try {
-			state.frame = drawFrame({
+			const page = (state.element = mainThread.__CreatePage("0", 0));
+			state.frame = drawRecordedFrame({
 				page,
-				html,
+				data: argsOf(event)[0],
 				report,
 				styles: state.styles,
 				flattening: state.flattening,
 			});
-			state.applier = state.frame.applier;
-		} catch (error) {
-			report(
-				error instanceof UnreadableMarkup
-					? mainThreadError({
-							code: "first_frame_markup_unreadable",
-							details: { reason: error.message, at: error.at },
-						})
-					: error,
-			);
-		}
-	}
-
-	function onRenderPage(event: EngineMessage): void {
-		try {
-			const page = (state.element = mainThread.__CreatePage("0", 0));
-			drawFirstFrame(page, argsOf(event)[0]);
+			if (state.frame) state.applier = state.frame.applier;
 			state.applier ??= newApplier(page);
 			// No flush: the engine flushes the tree after the render.
 			for (const params of state.early.splice(0)) applyPatch(params);
