@@ -90,6 +90,14 @@ Write main-thread:ontap instead.
 https://sohedra.com/e/main_thread_event_spelling_removed"
 `;
 
+exports[`the background's catalogue > main_thread_gesture_not_a_gesture: the message 1`] = `
+"The <view>'s main-thread:gesture is a function, not a gesture, so the main thread sets no gesture on it.
+src/Sheet.svelte:14:2
+
+Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture; several gestures on one element go in one composition.
+https://sohedra.com/e/main_thread_gesture_not_a_gesture"
+`;
+
 exports[`the background's catalogue > main_thread_ref_read_on_background: the message 1`] = `
 "The current value of a main-thread ref was read on the background, where it is only the ref's initial value: the ref's value lives on the main thread.
 

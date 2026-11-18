@@ -46,9 +46,9 @@ describe("relations", () => {
 				.filter((call) => call.element === page.byClass(token))
 				.map((call) => `${call.op} ${call.id}`);
 		// The pans' distance changed: each is set again. The tap's relation names the same id: it stays.
-		expect(after("outer")).toEqual([`remove ${outer}`, `set ${outer}`]);
-		expect(after("shared")).toEqual([`remove ${outer}`, `set ${outer}`]);
-		expect(after("sheet")).toEqual([`remove ${sheet}`, `set ${sheet}`]);
+		expect(after("outer")).toEqual([`set ${outer}`]);
+		expect(after("shared")).toEqual([`set ${outer}`]);
+		expect(after("sheet")).toEqual([`set ${sheet}`]);
 		expect(after("inner")).toEqual([]);
 		expect(only(page, "inner")).toMatchObject({ id: inner, relations: { waitFor: [outer] } });
 		expect(only(page, "shared").id).toBe(outer);
@@ -78,6 +78,16 @@ describe("relations", () => {
 			simultaneous: [],
 			continueWith: [],
 		});
+	});
+
+	it("run a gesture with others named by simultaneousWith, on another element", async () => {
+		const { page } = await relations();
+		expect(only(page, "right").relations).toEqual({
+			waitFor: [],
+			simultaneous: [only(page, "left").id],
+			continueWith: [],
+		});
+		expect(only(page, "left").relations).toMatchObject({ simultaneous: [] });
 	});
 
 	it("of a composition make each member wait for those before it", async () => {

@@ -84,12 +84,37 @@ describe("a gesture", () => {
 		expect(() => new TapGesture({ onEnd: () => {} })).toThrow(/The onEnd given to a TapGesture/);
 	});
 
-	it("refuses a relation that is not a gesture", () => {
+	it("refuses a relation that is not a gesture, or not a list, through its catalogue", () => {
 		const fake = { id: 1 } as unknown as GestureKind;
 		expect(() => new PanGesture({ waitFor: [fake] })).toThrow(
 			expect.objectContaining({ code: "gesture_relation_not_gesture" }),
 		);
-		expect(() => new RaceGesture(fake)).toThrow(/The gestures of a RaceGesture/);
+		const scroll = new DefaultScrollGesture();
+		expect(() => new PanGesture({ waitFor: scroll as unknown as GestureKind[] })).toThrow(
+			expect.objectContaining({ code: "gesture_relation_not_a_list" }),
+		);
+		expect(() => new TapGesture({ simultaneousWith: scroll as never })).toThrow(
+			/^The simultaneousWith of a TapGesture is not a list of gestures\./,
+		);
+	});
+
+	it("refuses a composition's member or continueWith's gestures that are not gestures", () => {
+		const fake = { id: 1 } as unknown as GestureKind;
+		expect(() => new RaceGesture(new PanGesture(), fake)).toThrow(
+			expect.objectContaining({
+				code: "gesture_member_not_gesture",
+				message: expect.stringMatching(/^A RaceGesture was given a value that is not a gesture/),
+			}),
+		);
+		expect(() => continueWith(fake, [])).toThrow(
+			expect.objectContaining({ code: "continue_with_not_gestures" }),
+		);
+		expect(() => continueWith(new PanGesture(), [fake])).toThrow(
+			expect.objectContaining({ code: "continue_with_not_gestures" }),
+		);
+		expect(() => continueWith(new PanGesture(), new FlingGesture() as never)).toThrow(
+			expect.objectContaining({ code: "continue_with_not_gestures" }),
+		);
 	});
 
 	it("names in its relations the plain gestures it is given, each once, never itself", () => {

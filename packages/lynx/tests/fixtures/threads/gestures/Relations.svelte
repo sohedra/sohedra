@@ -3,7 +3,7 @@
 	set before the gesture it names; `shared` has the same pan as `outer`. A sheet's pan waits for
 	the scrolling of the scroll-view inside it, which is set after it. Both pans are built again when
 	`distance` changes, `$derived` as an app writes them; `api` also takes `shared` away. `three` is
-	a composition whose members each wait for those before them.
+	a composition whose members each wait for those before them; `right` may run with `left`.
 -->
 <script lang="ts">
 	import { ExclusiveGesture, LongPressGesture } from "@sohedra/lynx/experimental";
@@ -17,6 +17,8 @@
 	const scroll = new DefaultScrollGesture();
 	const sheet = $derived(new PanGesture({ minDistance: distance, waitFor: [scroll] }));
 	const three = new ExclusiveGesture(new PanGesture(), new TapGesture(), new LongPressGesture());
+	const left = new PanGesture();
+	const right = new PanGesture({ simultaneousWith: [left] });
 	api["far"] = () => (distance += 1);
 	api["toggle"] = () => (shown = !shown);
 </script>
@@ -28,3 +30,5 @@
 	<scroll-view class="scroll" scroll-y main-thread:gesture={scroll}></scroll-view>
 </view>
 <view class="three" main-thread:gesture={three}></view>
+<view class="left" main-thread:gesture={left}></view>
+<view class="right" main-thread:gesture={right}></view>

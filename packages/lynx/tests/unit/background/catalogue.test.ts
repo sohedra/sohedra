@@ -43,6 +43,11 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		tag: "view",
 		where: "src/Sheet.svelte:14:2",
 	},
+	main_thread_gesture_not_a_gesture: {
+		value: "a function",
+		tag: "view",
+		where: "src/Sheet.svelte:14:2",
+	},
 	main_thread_event_spelling_removed: {
 		name: "main-thread:bindtap",
 		replacement: "main-thread:ontap",

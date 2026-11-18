@@ -1,10 +1,31 @@
 // Rstest Snapshot v1
 
+exports[`the gestures' catalogue > continue_with_not_gestures: the message 1`] = `
+"continueWith was given a value that is not a gesture, so the gesture cannot hand the touch on to it.
+
+Give it a gesture, then a list of the gestures that take over: continueWith(pan, [fling]).
+https://sohedra.com/e/continue_with_not_gestures"
+`;
+
 exports[`the gestures' catalogue > gesture_callback_not_main_thread: the message 1`] = `
 "The onUpdate given to a PanGesture is not a main-thread function, so the gesture could not run it.
 
 Start the function's body with the 'main thread' directive: a gesture's callbacks run on the main thread.
 https://sohedra.com/e/gesture_callback_not_main_thread"
+`;
+
+exports[`the gestures' catalogue > gesture_member_not_gesture: the message 1`] = `
+"A RaceGesture was given a value that is not a gesture, so it cannot hold it.
+
+Give it the gestures themselves, as made with new: new RaceGesture(pan, tap).
+https://sohedra.com/e/gesture_member_not_gesture"
+`;
+
+exports[`the gestures' catalogue > gesture_relation_not_a_list: the message 1`] = `
+"The waitFor of a PanGesture is not a list of gestures.
+
+Give waitFor a list, also for one gesture: waitFor: [scroll].
+https://sohedra.com/e/gesture_relation_not_a_list"
 `;
 
 exports[`the gestures' catalogue > gesture_relation_not_gesture: the message 1`] = `

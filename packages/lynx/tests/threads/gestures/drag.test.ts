@@ -87,7 +87,8 @@ describe("a pan built again", () => {
 		page.engine.fireGesture(dragged, { id, callback: "onBegin" });
 		page.asBackground(() => api["distance"]!(8));
 		await page.settle();
-		expect(calls(page, "dragged")).toEqual([`set ${id}`, `remove ${id}`, `set ${id}`]);
+		// Set again under its id, which replaces the detector: the drag ends.
+		expect(calls(page, "dragged")).toEqual([`set ${id}`, `set ${id}`]);
 		const [detector] = page.engine.detectors(dragged);
 		expect(detector).toMatchObject({ id, config: { minDistance: 8 } });
 		expect(detector!.state).toBeUndefined();
@@ -103,18 +104,14 @@ describe("a pan built again", () => {
 		page.asBackground(() => api["hide"]!());
 		await page.settle();
 		expect(page.engine.detectors(dragged)).toEqual([]);
-		expect(calls(page, "dragged")).toEqual([
-			`set ${id}`,
-			`remove ${id}`,
-			`set ${id}`,
-			`remove ${id}`,
-		]);
+		expect(calls(page, "dragged")).toEqual([`set ${id}`, `set ${id}`, `remove ${id}`]);
 		// The element keeps the view of its own it was given.
 		expect(page.engine.state(dragged).attrs).toEqual({ flatten: false });
 		expect(page.runtime.page.functions.sizes()).toMatchObject({ detectors: 0, gestureIds: 0 });
 		page.asBackground(() => api["show"]!());
 		await page.settle();
-		expect(page.engine.detectors(dragged)).toHaveLength(1);
+		// Given back, it has its element's id again.
+		expect(page.engine.detectors(dragged)).toMatchObject([{ id, type: 3 }]);
 		expect(page.errors).toEqual([]);
 	});
 });
