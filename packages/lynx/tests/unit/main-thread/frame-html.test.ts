@@ -191,6 +191,13 @@ describe("the first frame's parser", () => {
 		["a closing tag with no element", "</view>", 0, "a closing tag has no element"],
 		["an element not closed", "<view><text>", 12, "the element <text> is not closed"],
 		["a list not closed", "<list><list-item></list-item>", 6, "a <list> is not closed"],
+		[
+			"a row's end with no row open",
+			"<list><!----></list-item></list>",
+			13,
+			"a </list-item> closes no <list-item>",
+		],
+		["a comment in a list not closed", "<list><!-- </list>", 6, "a comment is not closed"],
 	])("throws for %s, and says where", (_, html, at, reason) => {
 		let thrown: unknown;
 		try {
