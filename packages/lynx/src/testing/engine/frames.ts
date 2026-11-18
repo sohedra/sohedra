@@ -24,17 +24,20 @@ export interface FrameQueue {
 	readonly callbacks: Map<number, (time: number) => void>;
 	nextId: number;
 	coming: boolean;
+	/** The platform draws no frame: the callbacks wait. */
+	held: boolean;
 }
 
 /** Makes an empty frame queue. */
 export function frameQueue(): FrameQueue {
-	return { callbacks: new Map(), nextId: 1, coming: false };
+	return { callbacks: new Map(), nextId: 1, coming: false, held: false };
 }
 
 /** One frame: the callbacks asked for before it, then the platform measures the page. */
 function runFrame(engine: EngineState): void {
 	const frames = engine.frames;
 	frames.coming = false;
+	if (frames.held) return;
 	const due = [...frames.callbacks.values()];
 	frames.callbacks.clear();
 	if (due.length > 0) engine.enter();
@@ -56,7 +59,7 @@ function runFrame(engine: EngineState): void {
 
 /** Asks for the next frame, if none is coming: a flush and a frame callback do. */
 export function requestFrame(engine: EngineState): void {
-	if (engine.frames.coming) return;
+	if (engine.frames.coming || engine.frames.held) return;
 	engine.frames.coming = true;
 	engine.schedule(() => runFrame(engine));
 }
@@ -72,5 +75,19 @@ export function frameFunctions(engine: EngineState): FrameFunctions {
 			requestFrame(engine);
 			return id;
 		},
+	};
+}
+
+/**
+ * Stops the platform's frames until the returned function is called, as when the app is in the
+ * background and the system sends no display frames: what the page asked for runs at the first
+ * frame after.
+ */
+export function holdFrames(engine: EngineState): () => void {
+	engine.frames.held = true;
+	return () => {
+		if (!engine.frames.held) return;
+		engine.frames.held = false;
+		requestFrame(engine);
 	};
 }

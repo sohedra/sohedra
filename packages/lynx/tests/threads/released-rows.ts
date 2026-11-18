@@ -66,7 +66,10 @@ export function holdTimers(page: SveltePage): HeldTimers {
 	const lynx = page.lynx.mainThread;
 	const schedule = lynx.setTimeout.bind(lynx);
 	const held: (() => void)[] = [];
-	lynx.setTimeout = (callback) => void held.push(callback);
+	lynx.setTimeout = (callback) => {
+		held.push(callback);
+		return { canceled: false };
+	};
 	return {
 		held,
 		run() {

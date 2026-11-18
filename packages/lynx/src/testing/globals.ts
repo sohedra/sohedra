@@ -5,6 +5,8 @@
 interface EnvironmentGlobals {
 	document?: Document;
 	setImmediate: (callback: () => void) => unknown;
+	setTimeout: (callback: () => void, delay: number) => unknown;
+	clearTimeout: (timer: unknown) => void;
 }
 
 // Boundary: the test environment's globals have no types of their own; this is the one place
@@ -17,6 +19,15 @@ const environment: EnvironmentGlobals = globalThis as unknown as EnvironmentGlob
  */
 export const nextMacrotask: (callback: () => void) => void =
 	environment.setImmediate.bind(globalThis);
+
+/**
+ * Runs `callback` once `delay` milliseconds have passed in the process's time, and returns how to
+ * stop it. It reads the process's timer when called: a test that fakes timers decides when it runs.
+ */
+export function afterDelay(callback: () => void, delay: number): () => void {
+	const timer = environment.setTimeout(callback, delay);
+	return () => environment.clearTimeout(timer);
+}
 
 /** The document the page's elements live in; throws when the test environment has none. */
 export function testDocument(): Document {

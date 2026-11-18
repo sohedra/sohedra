@@ -4,7 +4,7 @@
 // crosses the page's bridge as a copy, made when it is sent, as a device converts it.
 
 import type { Lifecycle, LifecycleProxy } from "../engine/lifecycle.ts";
-import { queueMicrotaskAs, readGlobal } from "../globals.ts";
+import { afterDelay, queueMicrotaskAs, readGlobal } from "../globals.ts";
 import type { Bridge } from "./bridge.ts";
 
 /** A thread of the page. */
@@ -68,10 +68,18 @@ export interface MainThreadLynx extends SharedLynx {
 	/** The native side's events: the page's end. */
 	getNative(): LifecycleProxy;
 	/**
-	 * Runs `callback` on the main thread on a later task, which `settle()` waits for. The delay is
-	 * not waited out: only the order is kept.
+	 * Runs `callback` on the main thread on a later task, which `settle()` waits for. A `delay` is
+	 * waited out in the process's time first, which `settle()` does not wait for: on a device the
+	 * threads go on meanwhile.
 	 */
-	setTimeout(callback: () => void, delay?: number): void;
+	setTimeout(callback: () => void, delay?: number): MainThreadTimer;
+	/** Cancels a timer, if it has not run. */
+	clearTimeout(timer: unknown): void;
+}
+
+/** A timer of the main thread's `setTimeout`. */
+export interface MainThreadTimer {
+	canceled: boolean;
 }
 
 /** The background's `lynx`. */
@@ -159,6 +167,8 @@ export function createLynx(options: {
 	const { bridge, lifecycle, errors, warnings, app, enter } = options;
 	const mainThread = createSide();
 	const background = createSide();
+	/** The main thread's timers that have not run, and how to stop one that waits out a delay. */
+	const timers = new Map<MainThreadTimer, (() => void) | undefined>();
 
 	/** The context through which one thread sends to `to`; `origin` names the sender. */
 	function context(own: {
@@ -235,11 +245,26 @@ export function createLynx(options: {
 			getJSContext: () => jsContext,
 			getEngine: () => lifecycle.engine,
 			getNative: () => lifecycle.native,
-			setTimeout(callback) {
-				bridge.send(() => {
-					enter("main-thread");
-					callback();
-				});
+			setTimeout(callback, delay = 0) {
+				const timer: MainThreadTimer = { canceled: false };
+				const run = (): void =>
+					bridge.send(() => {
+						timers.delete(timer);
+						if (timer.canceled) return;
+						enter("main-thread");
+						callback();
+					});
+				timers.set(timer, delay > 0 ? afterDelay(run, delay) : undefined);
+				if (delay <= 0) run();
+				return timer;
+			},
+			clearTimeout(timer) {
+				if (!timers.has(timer as MainThreadTimer)) return;
+				// Boundary: a timer this `setTimeout` returned, which the map holds.
+				const own = timer as MainThreadTimer;
+				own.canceled = true;
+				timers.get(own)?.();
+				timers.delete(own);
 			},
 		},
 		background: {
