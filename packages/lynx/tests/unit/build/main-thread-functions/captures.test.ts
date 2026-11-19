@@ -408,8 +408,9 @@ describe("what a main-thread function captures", () => {
 		expect(mainThread).toMatch(
 			/let onScroll = \{\s*_c: \{\s*\$count: [\s\S]*?,\s*items,\s*cfg: \{ a: cfg\?\.a \},\s*threshold\s*\}/,
 		);
-		expect(registrationsOf(mainThread)).toContain(
-			'function (event: { detail: { scrollTop: number } }) {\nlet { $count, items, cfg, threshold } = this["_c"];',
+		// Copied without its types: the main thread reads it as JavaScript.
+		expect(registrationsOf(mainThread)).toMatch(
+			/function \(event\s*\) \{\nlet \{ \$count, items, cfg, threshold \} = this\["_c"\];/,
 		);
 	});
 });
