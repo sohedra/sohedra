@@ -78,9 +78,11 @@ import type { PluginSvelteLynxOptions } from "./options.ts";
 const LYNX_CONFIG = Symbol.for("@lynx-js/rsbuild-plugin:config");
 const LYNX_TEMPLATE_PLUGIN = Symbol.for("LynxTemplatePlugin");
 
+// The parser's syntax follows each file's extension (Rsbuild's `detectSyntax`): JavaScript that
+// TypeScript reads otherwise (`a < b > (c)` is a call there) keeps its meaning.
 const SWC_DEFAULTS = {
 	jsc: {
-		parser: { syntax: "typescript", tsx: false, decorators: true },
+		parser: { decorators: true },
 		transform: { useDefineForClassFields: false, optimizer: { simplify: true } },
 	},
 } as const;

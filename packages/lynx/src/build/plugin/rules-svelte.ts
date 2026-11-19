@@ -97,8 +97,11 @@ function useSvelteLoaders(
 		.use("strip-ts")
 		.loader("builtin:swc-loader")
 		.options({
+			// By the file's extension: a `.svelte.js` module is JavaScript, which TypeScript reads
+			// otherwise (`a < b > (c)` is a call there).
+			detectSyntax: "auto",
 			jsc: {
-				parser: { syntax: "typescript", tsx: false, decorators: true },
+				parser: { decorators: true },
 				target: "esnext",
 				// Keep `x = $state(0)` as a class field for the Svelte compiler.
 				transform: { useDefineForClassFields: true },
