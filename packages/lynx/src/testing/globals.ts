@@ -14,6 +14,13 @@ interface EnvironmentGlobals {
 const environment: EnvironmentGlobals = globalThis as unknown as EnvironmentGlobals;
 
 /**
+ * The process's own microtask queue, as it was when this module loaded: a thread's global
+ * `queueMicrotask` is that thread's, and the main thread's is the page's own or none.
+ */
+export const processQueueMicrotask: (callback: () => void) => void =
+	globalThis.queueMicrotask.bind(globalThis);
+
+/**
  * Delivers `callback` on a later macrotask. The function is the one the process had when this
  * module loaded: a test that fakes timers must not stop the threads.
  */
@@ -89,7 +96,7 @@ export function removeGlobals(names: readonly string[]): void {
  * it finds its own.
  */
 export function queueMicrotaskAs(enter: () => () => void, callback: () => void): void {
-	queueMicrotask(() => {
+	processQueueMicrotask(() => {
 		const leave = enter();
 		try {
 			callback();
