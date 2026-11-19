@@ -12,7 +12,8 @@ import { mountComponent, serverComponents, treeRenderer } from "./runtime-fixtur
 import { SVELTE_ROOT, importNative, importSvelte } from "./svelte-package.ts";
 
 interface RendererState {
-	push_renderer(renderer: object | null): () => void;
+	push_renderer(renderer: object | null): object | null;
+	pop_renderer(previous: object | null): void;
 }
 
 const MARKUP = '<view id="a"><text>hello</text></view>';
@@ -71,13 +72,21 @@ export const checks: Checks = {
 			"src/internal/client/custom-renderer/state.js",
 		)) as unknown as RendererState;
 		expect(typeof state.push_renderer).toBe("function");
+		expect(typeof state.pop_renderer).toBe("function");
 		// Compiled components make their renderer current while they build, and restore the one before.
 		const code = compileClient(MARKUP);
 		expect(code).toMatch(/import \$renderer from '[^']+';/);
-		expect(code).toContain("var $$pop_renderer = $.push_renderer($renderer);");
-		expect(code).toContain("$$pop_renderer();");
+		expect(code).toContain("var $$previous_renderer = $.push_renderer($renderer);");
+		expect(code).toContain("$.pop_renderer($$previous_renderer);");
 		const internal = await importSvelte("src/internal/client/index.js");
 		expect(typeof internal["push_renderer"]).toBe("function");
+		expect(typeof internal["pop_renderer"]).toBe("function");
+		// `push_renderer` gives back the renderer it replaced, which `pop_renderer` makes current again.
+		const kept = {};
+		const previous = state.push_renderer(kept);
+		expect(state.push_renderer(null)).toBe(kept);
+		state.pop_renderer(kept);
+		state.pop_renderer(previous);
 	},
 
 	"events-read-current-renderer": async () => {
@@ -102,15 +111,14 @@ export const checks: Checks = {
 		// A target with no listener methods: the DOM's path would fail on it.
 		const target = {};
 		const heard: unknown[] = [];
-		const popKept = state.push_renderer(renderer("kept"));
+		const beforeKept = state.push_renderer(renderer("kept"));
 		try {
 			// An effect's renderer, then the one it found again once the effect ends.
-			const popEffect = state.push_renderer(renderer("effect"));
-			popEffect();
+			state.pop_renderer(state.push_renderer(renderer("effect")));
 			const off = on(target, "tap", (event) => heard.push(event));
 			off();
 		} finally {
-			popKept();
+			state.pop_renderer(beforeKept);
 		}
 		expect(listening.map(([name, type]) => [name, type])).toEqual([
 			["kept", "tap"],
@@ -274,6 +282,23 @@ export const checks: Checks = {
 				"<Marked render={body} />",
 		);
 		expect(probe.seen).toEqual([true, true]);
+	},
+
+	"component-crossing-check": async () => {
+		// A component checks first whether its renderer is the current one.
+		expect(compileClient(MARKUP)).toMatch(
+			/^\tif \(\$\.is_crossing\(\$renderer\)\) return \$\.cross\(\$renderer, /m,
+		);
+		// Under its own renderer, as `mount` makes it, it draws with it.
+		const { file, target } = await mountComponent(MARKUP);
+		expect(target.children.map((node) => node.name)).toContain("view");
+		// Anywhere else it crosses, which a renderer with neither `embed` nor `host` cannot do.
+		// Boundary: the compiled module is loaded by Node, so its type is declared here.
+		const component = (await importNative(file))["default"] as (
+			anchor: object,
+			props: object,
+		) => void;
+		expect(() => component({}, {})).toThrow(/renderer_cannot_cross/);
 	},
 
 	"mount-renderer-option": async () => {

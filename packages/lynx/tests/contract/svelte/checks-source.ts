@@ -65,7 +65,7 @@ export const checks: Checks = {
 		expect(filesWith("src", "set_renderer(null)")).toEqual([
 			"src/internal/client/reactivity/async.js",
 		]);
-		expect(filesWith("src", "unset_context(")).toEqual([
+		expect(filesWith("src", "unset_context")).toEqual([
 			"src/internal/client/dom/blocks/await.js",
 			"src/internal/client/reactivity/async.js",
 			"src/internal/client/reactivity/deriveds.js",

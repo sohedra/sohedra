@@ -28,7 +28,6 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	svelte_document: { feature: "`<svelte:document>`" },
 	svelte_body: { feature: "`<svelte:body>`" },
 	svelte_head: { feature: "`<svelte:head>`" },
-	boundary_needs_async: {},
 	main_thread_function_method: { kind: "class" },
 	main_thread_function_this: { keyword: "this" },
 	main_thread_function_generator: {},

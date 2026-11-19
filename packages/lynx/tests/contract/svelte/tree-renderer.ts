@@ -44,10 +44,10 @@ interface Nodes {
 const renderer: Parameters<typeof createRenderer<Nodes>>[0] = createRenderer<Nodes>({
 	createFragment: () => make("fragment"),
 	createElement: (name: string) => make("element", { name }),
-	createTextNode: (data: string) => make("text", { data }),
+	createText: (data: string) => make("text", { data }),
 	createComment: (data: string) => make("comment", { data }),
-	nodeType: (node: TreeNode) => node.type,
-	getNodeValue: (node: TreeNode) => node.data ?? null,
+	getNodeType: (node: TreeNode) => node.type,
+	getText: (node: TreeNode) => node.data ?? null,
 	getAttribute: (element: TreeNode, name: string) =>
 		name in element.attributes ? String(element.attributes[name]) : null,
 	setAttribute: (element: TreeNode, name: string, value: unknown) => {

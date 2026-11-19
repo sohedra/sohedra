@@ -1,6 +1,5 @@
 // CSS custom properties given to a component (`<Child --tone="green" />`): Svelte wraps the
-// component in an element that holds the properties, and reads the wrapper's `lastChild` to place
-// the component in it.
+// component in an element that holds the properties.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -51,7 +50,7 @@ describe("<Child --x={…}>", () => {
 		);
 		await page.settle();
 		expect(codes).toEqual([6]);
-		const wrapper = (handles["host"] as ElementNode).lastChild as ElementNode;
+		const wrapper = (handles["host"] as ElementNode).last as ElementNode;
 		const answer = page.asBackground(() => wrapper.invoke("boundingClientRect"));
 		answer.catch(() => {});
 		await page.settle();

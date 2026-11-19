@@ -136,7 +136,7 @@ describe("a list's first screen", () => {
 		const { code } = await background(
 			list('span-count={2} preload-buffer-count={preload} initial-item-count="3"', deferred),
 		);
-		expect(code).toContain('"span-count": 2,\n\t\t\t"preload-buffer-count": preload,');
+		expect(code).toMatch(/"span-count": 2,\s*"preload-buffer-count": preload,/);
 		expect(code).toContain('"initial-item-count": "3"');
 		expect(code).toContain("__sohedraLynxListEnd()");
 		expect(code.indexOf("__sohedraLynxList(")).toBeLessThan(code.indexOf("$.each("));

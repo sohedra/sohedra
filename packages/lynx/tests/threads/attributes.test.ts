@@ -4,7 +4,9 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { OpCode } from "../../src/wire/index.ts";
 import Attributes from "../fixtures/threads/Attributes.svelte";
+import UnchangedStyles from "../fixtures/threads/UnchangedStyles.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 async function attributes() {
@@ -60,6 +62,25 @@ describe("attribute values", () => {
 		page.engine.dispatch(page.byClass("toggle"), { type: "tap" });
 		await page.settle();
 		expect(attrs("toggle")["title"]).toBe("on");
+		expect(page.errors).toEqual([]);
+	});
+});
+
+describe("a class and a style", () => {
+	it("are not sent again when a change elsewhere in their template leaves them as they were", async () => {
+		const page = startSveltePage(UnchangedStyles);
+		const lastOps = () =>
+			page.patches.at(-1)!.items.flatMap((item) => (item[0] === "ops" ? item[1] : []));
+		await page.settle();
+		page.engine.dispatch(page.byClass("tapped"), { type: "tap" });
+		await page.settle();
+		expect(lastOps()).toEqual([[OpCode.SetText, expect.any(Number), "1"]]);
+		page.engine.dispatch(page.byClass("restyle"), { type: "tap" });
+		await page.settle();
+		expect(lastOps()).toEqual([
+			[OpCode.SetAttr, expect.any(Number), "class", "tapped loud"],
+			[OpCode.SetAttr, expect.any(Number), "style", "color: blue;"],
+		]);
 		expect(page.errors).toEqual([]);
 	});
 });

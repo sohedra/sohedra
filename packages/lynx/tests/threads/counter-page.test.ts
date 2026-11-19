@@ -38,6 +38,15 @@ describe("a counter page", () => {
 			expect(typeof page.app[hook], hook).toBe("function");
 	});
 
+	it("does nothing in the engine's hooks a Svelte page has no use for", async () => {
+		const page = await counter();
+		for (const hook of ["OnLifecycleEvent", "publicComponentEvent", "processCardConfig"]) {
+			// Boundary: the app's hooks are functions the engine calls with what it has.
+			expect((page.app[hook] as (...args: unknown[]) => unknown)({}), hook).toBeUndefined();
+		}
+		expect(page.errors).toEqual([]);
+	});
+
 	it("renders the first screen with one patch, raw text only under text", async () => {
 		const page = await counter();
 		expect(page.engine.texts()).toEqual(["Taps: 0 (even)", "Tap me"]);

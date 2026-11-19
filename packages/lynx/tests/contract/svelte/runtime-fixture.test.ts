@@ -17,6 +17,7 @@ describe("the compiled components of a run", () => {
 		const other = spawnSync(
 			process.execPath,
 			[
+				"--conditions=svelte-custom-renderer",
 				"--input-type=module",
 				"--eval",
 				`import { mountComponent, removeFixtures } from ${JSON.stringify(FIXTURE_MODULE)};

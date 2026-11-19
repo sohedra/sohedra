@@ -10,7 +10,8 @@ interface Hydration {
 }
 
 interface RendererState {
-	push_renderer(renderer: object | null): () => void;
+	push_renderer(renderer: object | null): object | null;
+	pop_renderer(previous: object | null): void;
 }
 
 /**
@@ -28,11 +29,11 @@ export async function hydratingAround(svelteRoot: string, renderer: object): Pro
 	hydration.set_hydrating(true);
 	try {
 		const steps: boolean[] = [];
-		const restore = state.push_renderer(renderer);
+		const previous = state.push_renderer(renderer);
 		steps.push(hydration.hydrating);
-		restore();
+		state.pop_renderer(previous);
 		steps.push(hydration.hydrating);
-		state.push_renderer(null)();
+		state.pop_renderer(state.push_renderer(null));
 		steps.push(hydration.hydrating);
 		return steps;
 	} finally {
