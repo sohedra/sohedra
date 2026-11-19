@@ -33,7 +33,16 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/compiler/validate-options.js",
 		anchor: "customRenderer: validator(",
 		reliesOn:
-			"`experimental.customRenderer`, `fragments: 'tree'` and `css: 'external'` are compile options, and a component compiles to a template built with `$.from_tree`",
+			"`experimental.customRenderer`, `fragments: 'tree'` and `css: 'external'` are compile options, and a component compiles to a template built with `$.from_tree`; the renderer is named by its package's specifier, since Svelte refuses a relative path",
+		test: COMPILER,
+	},
+	{
+		id: "custom-renderer-flag-import",
+		program: "build",
+		file: "package.json",
+		anchor: '"./internal/flags/custom-renderer"',
+		reliesOn:
+			"a component compiled for a custom renderer imports `svelte/internal/flags/custom-renderer`, which turns Svelte's renderer code on as it loads under the `browser` or `svelte-custom-renderer` condition and throws without either: the background resolves with `browser`, and Node runs the contract tests with the other",
 		test: COMPILER,
 	},
 	{
@@ -124,7 +133,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/compiler/errors.js",
 		anchor: "export function incompatible_with_custom_renderer",
 		reliesOn:
-			'each banned feature fails with `incompatible_with_custom_renderer` and a first line of the form "`feature` is not compatible with `customRenderer`", which the binding extends with what exists instead',
+			'each banned feature fails with `incompatible_with_custom_renderer` and a first line of the form "`feature` is not compatible with `customRenderer`", which the binding extends with what exists instead; the `css: \'injected\'` compile option is ignored, so only `<svelte:options css="injected">` fails',
 		test: COMPILER,
 	},
 	{
@@ -133,16 +142,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/compiler/phases/2-analyze/index.js",
 		anchor: "incompatible_with_custom_renderer",
 		reliesOn:
-			"`{@attach}`, `use:`, `class:`, `style:`, spreads, `<svelte:element>`, `{#await}`, `{#key}` and `<svelte:boundary onerror>` compile under a custom renderer",
-		test: COMPILER,
-	},
-	{
-		id: "boundary-needs-async",
-		program: "build",
-		file: "src/compiler/phases/3-transform/client/visitors/SvelteBoundary.js",
-		anchor: "snippet_fn.body.body.unshift(",
-		reliesOn:
-			"a `<svelte:boundary>` with a `failed` or `pending` snippet crashes the compiler (`reading 'body'`) unless `experimental.async` is on; the binding turns the crash into a clear error, and this row tells us when Svelte fixes it",
+			"`{@attach}`, `use:`, `class:`, `style:`, spreads, `<svelte:element>`, `{#await}`, `{#key}`, `<svelte:boundary onerror>` and a boundary's `failed` and `pending` snippets compile under a custom renderer",
 		test: COMPILER,
 	},
 	// Text the build rewrites or reads
@@ -252,7 +252,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/compiler/phases/3-transform/client/transform-client.js",
 		anchor: "component_block.body.unshift(b.const(analysis.props_id, b.call('$.props_id')));",
 		reliesOn:
-			"a component in markup compiles to a call of its function with its anchor (client) or `$$renderer` (server) and its props, a snippet passed as a prop is a function of that one argument that renders there when called, and a component calls `$.props_id()` first: so `ThreadBranch`, a plain function, draws its branch at once, and the components in it take their ids while it does",
+			"a component in markup compiles to a call of its function with its anchor (client) or `$$renderer` (server) and its props, a snippet passed as a prop is a function of that one argument that renders there when called, and a component calls `$.props_id()` first once its renderer is current: so `ThreadBranch`, a plain function, draws its branch at once, and the components in it take their ids while it does",
 		test: COMPILER,
 	},
 	{
@@ -296,9 +296,18 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		id: "push-renderer",
 		program: "runtime",
 		file: "src/internal/client/custom-renderer/state.js",
-		anchor: "export function push_renderer",
+		anchor: "export function pop_renderer(previous)",
 		reliesOn:
-			"`svelte/internal/client` exports `push_renderer`, and a compiled component imports its renderer as a default export and makes it current for the time it builds",
+			"`svelte/internal/client` exports `push_renderer`, which makes a renderer current and returns the one before, and `pop_renderer`, which takes that one back; a compiled component imports its renderer as a default export and makes it current for the time it builds",
+		test: RUNTIME,
+	},
+	{
+		id: "component-crossing-check",
+		program: "runtime",
+		file: "src/internal/client/custom-renderer/cross.js",
+		anchor: "export function is_crossing(renderer)",
+		reliesOn:
+			"a compiled component whose renderer is not the current one crosses into it, which needs the renderer's `embed` or the current one's `host`, and throws without them: the page's renderer has neither, so it must be current wherever a component starts, as `mount` and the components it builds make it",
 		test: RUNTIME,
 	},
 	{
@@ -324,9 +333,9 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		id: "css-props-holder",
 		program: "runtime",
 		file: "src/compiler/phases/3-transform/client/visitors/shared/component.js",
-		anchor: "b.stmt(fn(b.member(anchor, 'lastChild'))),",
+		anchor: "context.state.template.push_element('svelte-css-wrapper', node.start, false);",
 		reliesOn:
-			"a component given `--x` props is wrapped in an element tagged `svelte-css-wrapper` or `g` (`CSS_PROPS_HOLDERS`), and placed at the wrapper's `lastChild`, which Svelte reads before the wrapper is on the page: the renderer makes the wrapper a `<view>` then",
+			"a component given `--x` props is wrapped in an element tagged `svelte-css-wrapper` or `g` (`CSS_PROPS_HOLDERS`), with the component inside it: the renderer creates the wrapper as a `<view>`",
 		test: COMPILER,
 	},
 	{
@@ -344,16 +353,16 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/client/reactivity/async.js",
 		anchor: "set_renderer(null);",
 		reliesOn:
-			"only `unset_context` clears the current renderer, and only an `{#await}` block, async deriveds and an async component's `await` call it: a renderer made current outside effects does not last, so `on()` makes its own current",
+			"only `unset_context` clears the current renderer, and only an `{#await}` block, async deriveds and an async component's `await` use it: a renderer made current outside effects does not last, so `on()` makes its own current",
 		test: SOURCE,
 	},
 	{
 		id: "mount-renderer-option",
 		program: "runtime",
 		file: "src/internal/client/render.js",
-		anchor: "if (options.renderer) {",
+		anchor: "if (custom_renderers_flag && options.renderer) {",
 		reliesOn:
-			"`mount` takes the renderer as an option, and without it sets up DOM event delegation, which Lynx has no document for",
+			"`mount` takes the renderer as an option once a compiled component's import has turned renderer code on, and without it sets up DOM event delegation, which Lynx has no document for",
 		test: RUNTIME,
 	},
 	{
@@ -387,7 +396,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		id: "hydration-off-under-renderer",
 		program: "runtime",
 		file: "src/internal/client/custom-renderer/state.js",
-		anchor: "should_disable_hydration",
+		anchor: "suspended_hydration_at",
 		reliesOn:
 			"making a renderer current turns Svelte's own hydration off only while it is on, and the way back turns it on again: the background never runs Svelte's `hydrate` (the first frame is adopted on the main thread, and the entry mounts), so the renderer made current around effects, handlers and `on()` never meets it",
 		test: RUNTIME,

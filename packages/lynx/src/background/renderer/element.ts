@@ -2,7 +2,6 @@
 // tree questions of the DOM, their attributes and their listeners, answered from the renderer's
 // tree, and the methods that reach the Lynx element on the main thread.
 
-import { CSS_PROPS_HOLDERS } from "../../svelte/runtime/index.ts";
 import { listenerEvent } from "../../wire/index.ts";
 import type { LynxEventType } from "../../wire/index.ts";
 import { startAnimation } from "./animation.ts";
@@ -48,12 +47,6 @@ export interface ElementNode extends TreeNode {
 	removeEventListener(type: string, handler: Handler, options?: { capture?: boolean }): void;
 	/** Runs this element's own listeners of `event.type`, with no propagation. */
 	dispatchEvent(event: { type: string }): boolean;
-	/**
-	 * The last child, as in the DOM. Svelte reads it on the element that holds a component's
-	 * `--x` properties, before it is on the page: Lynx has no such element, so it becomes a `view`,
-	 * which is a real box in the layout (Lynx has no `display: contents`).
-	 */
-	readonly lastChild: TreeNode | null;
 	/**
 	 * Calls Lynx's UI method `method` of the element (`boundingClientRect`, `scrollTo`…) and
 	 * resolves with its answer. It runs once the platform has laid out the update it came with, so
@@ -187,12 +180,6 @@ export function elementClass(scope: ElementScope): ElementClass {
 			if (id !== undefined)
 				scope.handlers.dispatch(id, { target: this, ...event, currentTarget: this });
 			return true;
-		}
-
-		get lastChild(): TreeNode | null {
-			// Only here, before the node has a Lynx element: no other element pays for it.
-			if (this.lynxId === 0 && CSS_PROPS_HOLDERS.has(this.tag!)) this.tag = "view";
-			return this.last;
 		}
 
 		invoke(method: string, params: Record<string, unknown> = {}): Promise<unknown> {

@@ -3,12 +3,13 @@
 // `<list-item defer>` also imports the state of its deferred rows from here.
 
 import { createRenderer } from "svelte/renderer";
+import type { Renderer } from "svelte/renderer";
 
 import { pageRenderer } from "./page-renderer.ts";
-import type { LynxRenderer } from "./renderer.ts";
+import type { LynxNodes } from "./renderer.ts";
 
 export { deferredRow } from "./rows.ts";
 
-const renderer: LynxRenderer = createRenderer(pageRenderer);
+const renderer: Renderer<LynxNodes> = createRenderer<LynxNodes>(pageRenderer);
 
 export default renderer;

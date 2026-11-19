@@ -6,9 +6,9 @@
 // with a list cell is the splitter's to decide (../split.ts); the renderer records each node's
 // cell, so that a node that moves out of a cell is made again in its new place.
 
-import type { createRenderer } from "svelte/renderer";
+import type { Renderer } from "svelte/renderer";
 
-import { sourceLocation } from "../../svelte/runtime/index.ts";
+import { CSS_PROPS_HOLDERS, sourceLocation } from "../../svelte/runtime/index.ts";
 import {
 	DEFER,
 	DEFERRED_ROW,
@@ -42,18 +42,16 @@ import { attrValue, isFunction, isRecord, textOf } from "./values.ts";
 export type { ElementNode } from "./element.ts";
 export type { RendererHost } from "./host.ts";
 
-interface Nodes {
+/** The renderer's nodes, as Svelte's renderer type takes them: one class for every kind. */
+export interface LynxNodes {
 	fragment: TreeNode;
 	element: TreeNode;
 	text: TreeNode;
 	comment: TreeNode;
 }
 
-/** Svelte's renderer interface, which `svelte/renderer` exports no name for. */
-type SvelteRenderer = Parameters<typeof createRenderer<Nodes>>[0];
-
 /** The renderer, with what the page asks of it. */
-export interface LynxRenderer extends SvelteRenderer {
+export interface LynxRenderer extends Renderer<LynxNodes> {
 	/**
 	 * The page's root: one element node for the renderer's life, which the main thread binds to
 	 * Lynx's page element while a page runs.
@@ -111,6 +109,17 @@ const REF_ATTRIBUTE = `${MAIN_THREAD_PREFIX}ref`;
  */
 function takesRef(value: unknown): boolean {
 	return value === false || isRefHandle(value) || isMainThreadFunction(value) || isFunction(value);
+}
+
+/**
+ * Whether `value` is the `class` or `style` text `element` holds already. Svelte sets each whole
+ * whenever its template effect runs, also when something else in the template changed, and each
+ * would be one more op to the main thread and a restyle there.
+ *
+ * @workaround unchanged-class-and-style kind=svelte-internal delete-when="Svelte sets class and style through a custom renderer only when their text changes"
+ */
+function unchangedClassOrStyle(element: TreeNode, key: string, value: unknown): boolean {
+	return (key === "class" || key === "style") && element.attrs?.get(key) === value;
 }
 
 /** What a value is, as a message says it. */
@@ -339,22 +348,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 	}
 
 	function setText(node: TreeNode, text: string): void {
-		if (node.kind === "element") {
-			// `textContent`: one text node replaces the children.
-			for (let child = node.first; child;) {
-				const next = child.next;
-				remove(child);
-				child = next;
-			}
-			if (text !== "") {
-				const child = new TreeNode("text");
-				child.data = text;
-				insert(node, child, null);
-			}
-			return;
-		}
 		node.data = text;
-		if (node.kind === "text" && node.lynxId !== 0) queue.push([OpCode.SetText, node.lynxId, text]);
+		if (node.lynxId !== 0) queue.push([OpCode.SetText, node.lynxId, text]);
 	}
 
 	function setEvent(element: TreeNode, event: ListenerChange): void {
@@ -447,6 +442,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		}
 		// The row's state reads `defer` where it is written; Lynx has no such attribute.
 		if (key === DEFER && element.tag === "list-item") return;
+		if (unchangedClassOrStyle(element, key, value)) return;
 		if (key === "value" && (element.tag === "input" || element.tag === "textarea")) {
 			setInputValue(inputHost, element, value);
 			return;
@@ -528,8 +524,9 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		},
 
 		createFragment: () => new TreeNode("fragment"),
-		createElement: (name) => new Element(name),
-		createTextNode(data) {
+		// The element that holds a component's `--x` properties is a `view` (see CSS_PROPS_HOLDERS).
+		createElement: (name) => new Element(CSS_PROPS_HOLDERS.has(name) ? "view" : name),
+		createText(data) {
 			const node = new TreeNode("text");
 			node.data = data;
 			return node;
@@ -539,8 +536,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			node.data = data;
 			return node;
 		},
-		nodeType: (node) => node.kind,
-		getNodeValue: (node) => (node.kind === "text" || node.kind === "comment" ? node.data : null),
+		getNodeType: (node) => node.kind,
+		getText: (node) => node.data,
 		getAttribute(element, name) {
 			const value = element.attrs?.get(name);
 			return value == null || isFunction(value) ? null : textOf(value);
