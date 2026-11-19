@@ -101,7 +101,9 @@ export interface LynxElementAttributes<Tag extends string = string> {
 	/**
 	 * The element, for main-thread code: a `mainThreadRef()`, whose `current` main-thread functions
 	 * read, or a main-thread function, called with the element once it is on the page. What the
-	 * function returns, if a function, runs when the element goes or the value changes.
+	 * function returns, if a function, runs when the element goes or the value changes, as an
+	 * attachment's cleanup does. Unlike ReactLynx's, which follows React's callback refs, the
+	 * function is never called again with `null`. Any other value is an error.
 	 */
 	"main-thread:ref"?:
 		// oxlint-disable-next-line typescript/no-explicit-any -- a ref of any element type

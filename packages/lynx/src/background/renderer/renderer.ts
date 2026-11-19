@@ -13,6 +13,8 @@ import {
 	DEFER,
 	DEFERRED_ROW,
 	isGesture,
+	isMainThreadFunction,
+	isRefHandle,
 	MAIN_THREAD_PREFIX,
 	OpCode,
 	removedEventSpelling,
@@ -22,7 +24,7 @@ import {
 import type { LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import { background, DEV } from "../globals.ts";
-import { reportOnce, warnOnce } from "../report.ts";
+import { reportError, reportOnce, warnOnce } from "../report.ts";
 import { elementClass, svelteListener } from "./element.ts";
 import type { ElementNode, ListenerChange } from "./element.ts";
 import type { HandlerRegistry } from "./handlers.ts";
@@ -101,6 +103,15 @@ const LAYOUT_SLOT = "bindEvent:layoutchange";
 
 /** The attribute that takes a gesture. */
 const GESTURE_ATTRIBUTE = `${MAIN_THREAD_PREFIX}gesture`;
+const REF_ATTRIBUTE = `${MAIN_THREAD_PREFIX}ref`;
+
+/**
+ * Whether `value` is what `main-thread:ref` takes: a ref, a main-thread function, or nothing
+ * (`false` too, as in `main-thread:ref={on && ref}`). A plain function is the development check's.
+ */
+function takesRef(value: unknown): boolean {
+	return value === false || isRefHandle(value) || isMainThreadFunction(value) || isFunction(value);
+}
 
 /** What a value is, as a message says it. */
 function kindOf(value: unknown): string {
@@ -443,6 +454,20 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (value == null) {
 			if (!element.attrs?.delete(key)) return;
 			if (element.lynxId !== 0) queue.push([OpCode.SetAttr, element.lynxId, key, null]);
+			return;
+		}
+		// In every build, as ReactLynx's: the main thread would bind nothing and say nothing.
+		if (key === REF_ATTRIBUTE && !takesRef(value)) {
+			reportError(
+				backgroundError({
+					code: "main_thread_ref_not_a_ref",
+					details: {
+						value: kindOf(value),
+						tag: element.tag ?? "element",
+						where: DEV ? sourceLocation(element) : undefined,
+					},
+				}),
+			);
 			return;
 		}
 		if (DEV && key.startsWith(MAIN_THREAD_PREFIX)) checkMainThreadAttribute(element, key, value);
