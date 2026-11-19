@@ -27,6 +27,8 @@ export interface BuildAppOptions {
 	rsbuild?: RsbuildConfig;
 	/** The entry file in the app's folder. */
 	entry?: string;
+	/** The entries by name, in place of `entry`; the tests read the first unless they name one. */
+	entries?: Record<string, string>;
 	/** A development build. */
 	development?: boolean;
 	/**
@@ -150,13 +152,9 @@ export async function buildApp(app: string, options: BuildAppOptions = {}): Prom
 			options.outside || options.files || options.packages || options.svelte
 				? copyOutside(app, dist, options)
 				: appFolder(app);
-		const build = await buildInto({
-			cwd,
-			dist,
-			entries: { main: options.entry ?? "./index.ts" },
-			options,
-		});
-		return { entry: "main", ...build };
+		const entries = options.entries ?? { main: options.entry ?? "./index.ts" };
+		const build = await buildInto({ cwd, dist, entries, options });
+		return { entry: Object.keys(entries)[0]!, ...build };
 	} finally {
 		release();
 	}
@@ -170,7 +168,7 @@ export interface BuildInto {
 	dist: string;
 	/** The entries, by name. */
 	entries: Record<string, string>;
-	options: Omit<BuildAppOptions, "entry">;
+	options: Omit<BuildAppOptions, "entry" | "entries">;
 }
 
 /** Build `entries` of the app in `cwd` into `dist`, in this process, and say how it went. */
