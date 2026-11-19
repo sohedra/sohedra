@@ -311,17 +311,25 @@ function inHandedBack(element: LynxElement): boolean {
 
 /**
  * Elements with a tap handler bound, on the background or the main thread, in document order, but
- * those in cells Lynx handed back.
+ * those in cells Lynx handed back. Before hydration (`early`), only those both threads render: one
+ * only the first frame drew says so (`data-one-thread`, ./source.ts).
  */
-function tappable(page: SveltePage): LynxElement[] {
+function tappable(page: SveltePage, early: boolean): LynxElement[] {
 	return page.engine.all().filter((element) => {
 		if (inHandedBack(element)) return false;
 		const state = page.engine.state(element);
+		if (early && state.dataset["one-thread"] !== undefined) return false;
 		return (
 			state.handlers.some((handler) => handler.eventName === "tap") ||
 			state.mainThreadEvents.some((bound) => bound.eventName === "tap")
 		);
 	});
+}
+
+/** Taps the element `pick` picks among those `tappable` finds, if any. */
+function tap(page: SveltePage, pick: number, early: boolean): void {
+	const found = tappable(page, early);
+	if (found.length > 0) page.engine.dispatch(found[pick % found.length]!, { type: "tap" });
 }
 
 /** Does `step` to the page. Nothing happens when what it picks is not there. */
@@ -333,11 +341,9 @@ export function apply(running: GeneratedPage, done: Step): void {
 				if (handles.st) handles.st[done.key] = copy(done.value);
 			});
 			return;
-		case "tap": {
-			const found = tappable(page);
-			if (found.length > 0) page.engine.dispatch(found[done.pick % found.length]!, { type: "tap" });
+		case "tap":
+			tap(page, done.pick, false);
 			return;
-		}
 		case "show":
 		case "show-then-set": {
 			const found = lists(page);
@@ -378,6 +384,17 @@ export function apply(running: GeneratedPage, done: Step): void {
 			running.layer = undefined;
 			page.reload({ host: copy(done.data) });
 			return;
+	}
+}
+
+/**
+ * Does `steps` to a page whose first frame the background has not taken over yet: a tap picks only
+ * among what both threads render.
+ */
+export function applyEarly(running: GeneratedPage, steps: readonly Step[]): void {
+	for (const done of steps) {
+		if (done.kind === "tap") tap(running.page, done.pick, true);
+		else apply(running, done);
 	}
 }
 
