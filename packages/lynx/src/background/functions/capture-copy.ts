@@ -31,6 +31,8 @@ export interface CaptureSource {
 interface Walk {
 	/** The copies of the arrays and plain objects copied so far, as the snapshot keeps them. */
 	seen: Map<object, unknown>;
+	/** The values whose copies are being made: one met again inside its own copy holds itself. */
+	inside: Set<object>;
 	source: CaptureSource | undefined;
 }
 
@@ -65,7 +67,7 @@ export interface Bound {
  */
 export function copyCapture(value: unknown, source?: CaptureSource): unknown {
 	try {
-		return copy(value, { seen: new Map(), source }, 0, undefined);
+		return copy(value, { seen: new Map(), inside: new Set(), source }, 0, undefined);
 	} catch (error) {
 		return unsent(error);
 	}
@@ -112,10 +114,20 @@ function captureError(report: CaptureReport): BackgroundError {
 	return error;
 }
 
+/**
+ * The copy already made of `value`, as `seen` keeps it. One met inside its own copy holds itself:
+ * the snapshot would give a copy that holds itself, which cannot be sent.
+ */
+function made(value: object, seen: Map<object, unknown>, walk: Walk): unknown {
+	const known = seen.get(value);
+	if (known !== undefined && walk.inside.has(value)) throw tooDeep(walk);
+	return known;
+}
+
 /** `value` as `$state.snapshot` copies it; `original` is what `value` came from by its `toJSON`. */
 function copy(value: unknown, walk: Walk, depth: number, original: object | undefined): unknown {
 	if (typeof value !== "object" || value === null) return value;
-	const known = walk.seen.get(value);
+	const known = made(value, walk.seen, walk);
 	if (known !== undefined) return known;
 	if (depth >= MAX_DEPTH) throw tooDeep(walk);
 	if (value instanceof Map) return new Map(value);
@@ -125,21 +137,21 @@ function copy(value: unknown, walk: Walk, depth: number, original: object | unde
 		// The length first: a hole stays a hole.
 		const out: unknown[] = [];
 		out.length = items.length;
-		walk.seen.set(value, out);
-		if (original !== undefined) walk.seen.set(original, out);
+		enter(value, out, walk, original);
 		for (let index = 0; index < items.length; index++) {
 			const item = items[index];
 			if (index in items) out[index] = copy(item, walk, depth + 1, undefined);
 		}
+		leave(value, walk, original);
 		return out;
 	}
 	if (Object.getPrototypeOf(value) === Object.prototype) {
 		// Boundary: a plain object, read by its own keys.
 		const record = value as Record<string, unknown>;
 		const out: Record<string, unknown> = {};
-		walk.seen.set(value, out);
-		if (original !== undefined) walk.seen.set(original, out);
+		enter(value, out, walk, original);
 		for (const key of Object.keys(record)) out[key] = copy(record[key], walk, depth + 1, undefined);
+		leave(value, walk, original);
 		return out;
 	}
 	if (value instanceof Date) return new Date(value.getTime());
@@ -148,6 +160,21 @@ function copy(value: unknown, walk: Walk, depth: number, original: object | unde
 	if (typeof toJSON === "function") return copy(toJSON.call(value), walk, depth + 1, value);
 	const cloned = clone(value, new Map(), walk, depth);
 	return cloned === REFUSED ? value : cloned;
+}
+
+/** Keeps `out` as the copy of `value` and of its `original`, which are being copied until `leave`. */
+function enter(value: object, out: unknown, walk: Walk, original: object | undefined): void {
+	walk.seen.set(value, out);
+	walk.inside.add(value);
+	if (original === undefined) return;
+	walk.seen.set(original, out);
+	walk.inside.add(original);
+}
+
+/** `value` and its `original` are copied. */
+function leave(value: object, walk: Walk, original: object | undefined): void {
+	walk.inside.delete(value);
+	if (original !== undefined) walk.inside.delete(original);
 }
 
 /** The error for a value that holds itself or is too deep. */
@@ -184,7 +211,7 @@ const ERRORS = new Map<string, ErrorConstructor>([
 function clone(value: unknown, seen: Map<object, unknown>, walk: Walk, depth: number): unknown {
 	if (typeof value === "function" || typeof value === "symbol") return REFUSED;
 	if (typeof value !== "object" || value === null) return value;
-	const known = seen.get(value);
+	const known = made(value, seen, walk);
 	if (known !== undefined) return known;
 	if (depth >= MAX_DEPTH) throw tooDeep(walk);
 	const prototype: unknown = Object.getPrototypeOf(value);
@@ -210,22 +237,26 @@ function clone(value: unknown, seen: Map<object, unknown>, walk: Walk, depth: nu
 	if (value instanceof Map) {
 		const out = new Map<unknown, unknown>();
 		seen.set(value, out);
+		walk.inside.add(value);
 		for (const [key, item] of Map.prototype.entries.call(value)) {
 			const keyCopy = clone(key, seen, walk, depth + 1);
 			const itemCopy = clone(item, seen, walk, depth + 1);
-			if (keyCopy === REFUSED || itemCopy === REFUSED) return REFUSED;
+			if (keyCopy === REFUSED || itemCopy === REFUSED) return refused(value, walk);
 			out.set(keyCopy, itemCopy);
 		}
+		walk.inside.delete(value);
 		return out;
 	}
 	if (value instanceof Set) {
 		const out = new Set<unknown>();
 		seen.set(value, out);
+		walk.inside.add(value);
 		for (const item of Set.prototype.values.call(value)) {
 			const itemCopy = clone(item, seen, walk, depth + 1);
-			if (itemCopy === REFUSED) return REFUSED;
+			if (itemCopy === REFUSED) return refused(value, walk);
 			out.add(itemCopy);
 		}
+		walk.inside.delete(value);
 		return out;
 	}
 	// An array of a subclass, or any other object: its own enumerable data.
@@ -239,12 +270,20 @@ function clone(value: unknown, seen: Map<object, unknown>, walk: Walk, depth: nu
 		out = items as unknown as Record<string, unknown>;
 	}
 	seen.set(value, out);
+	walk.inside.add(value);
 	for (const key of Object.keys(record)) {
 		const item = clone(record[key], seen, walk, depth + 1);
-		if (item === REFUSED) return REFUSED;
+		if (item === REFUSED) return refused(value, walk);
 		out[key] = item;
 	}
+	walk.inside.delete(value);
 	return out;
+}
+
+/** `REFUSED`, for `value`, which is no longer being copied. */
+function refused(value: object, walk: Walk): object {
+	walk.inside.delete(value);
+	return REFUSED;
 }
 
 /**
