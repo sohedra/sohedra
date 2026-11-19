@@ -3,13 +3,14 @@
 // fields (`useDefineForClassFields: true`), so the compiler still sees `count = $state(0)` in a
 // class body.
 
-import type { ModuleCompileOptions } from "../../svelte/build/index.ts";
-import { svelteCompiler } from "../../svelte/build/index.ts";
+import type { AnyNode, ModuleCompileOptions } from "../../svelte/build/index.ts";
+import { scriptParser, svelteCompiler } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
 import type { BuildWarning } from "../diagnostics/messages.ts";
 import { compileError, compileWarnings } from "../diagnostics/svelte-errors.ts";
 import { compose } from "../source-map/maps.ts";
 import type { InputMap, SourceMap } from "../source-map/maps.ts";
+import { importedValueReads } from "./value-reads.ts";
 
 /** What compiling a rune module reads. */
 export interface ModuleOptions {
@@ -33,6 +34,26 @@ export interface CompiledModule {
 	warnings: BuildWarning[];
 }
 
+/**
+ * What follows the main thread's copy: every name the module imports and reads as a value, read in
+ * a block that never runs. Svelte's server compiler drops an `$effect`'s body, and a package that
+ * says it has no side effects is left out of a production build when nothing reads its exports,
+ * and with it the main-thread functions it registers as it loads (effect-imports.ts does the same
+ * for a component). The block is a statement of the module, not a function nothing calls: the
+ * bundler counts no read inside a declaration the module never uses. Its condition is a global no
+ * one sets, so no import is read as the module loads.
+ *
+ * @workaround rune-module-imports-kept-for-first-frame kind=svelte-internal delete-when="Svelte's server compiler keeps the body of an $effect in a module, or the build follows imports another way"
+ */
+function keptImports(source: string, root: string): string {
+	// Boundary: the parser gives an ESTree program, read by shape. The source has no types left.
+	const program = scriptParser(root)(source, false) as AnyNode;
+	const names = importedValueReads([program], [program]);
+	return names.length === 0
+		? ""
+		: `\nif (typeof __svelteLynxKeptImports !== "undefined") { ${names.map((name) => `${name};`).join(" ")} }\n`;
+}
+
 /** Compile the module in `source`. A compile error is thrown as the build's message. */
 export function compileRuneModule(source: string, options: ModuleOptions): CompiledModule {
 	const { filename, thread } = options;
@@ -54,7 +75,10 @@ export function compileRuneModule(source: string, options: ModuleOptions): Compi
 	// Boundary: Svelte's map is a source map, typed loosely.
 	const map = result.js.map as SourceMap;
 	return {
-		code: result.js.code,
+		code:
+			thread === "main-thread"
+				? result.js.code + keptImports(source, options.root)
+				: result.js.code,
 		map: options.sourceMap ? compose(map, options.inputMap) : undefined,
 		// The background's compile reports them; the main thread's copy has the same.
 		warnings: thread === "main-thread" ? [] : compileWarnings(result.warnings, text),

@@ -20,6 +20,7 @@ import { eventSpellings } from "./event-spellings.ts";
 import { firstFrameEvents } from "./first-frame-events.ts";
 import { listItemKeys } from "./list-item-keys.ts";
 import type { Pass, PassContext } from "./pass.ts";
+import { copiedTypeScript, nodeTypeStripper, stripMainThreadTypes } from "./strip-types.ts";
 import { svelteOptions } from "./svelte-options.ts";
 import { threadBranches } from "./thread-branches.ts";
 
@@ -80,12 +81,26 @@ export function prepare(options: PrepareOptions): Prepared {
 	const name = path.basename(filename);
 	const edited = applyEdits(source, edits);
 	const pieces: Piece[] = functions?.registrations ?? [];
+	// The main-thread functions follow Svelte's JavaScript, read as JavaScript: copied without their
+	// types, where they have any.
+	const { ast } = options;
+	let registrations = pieceText(source, pieces);
+	if (pieces.length > 0) {
+		const copies = pieces.flatMap((piece) => ("copy" in piece ? [piece.copy] : []));
+		const copied = copiedTypeScript([ast.instance, ast.module, ast.fragment], copies);
+		if (copied.typed)
+			registrations = stripMainThreadTypes(registrations, {
+				strip: nodeTypeStripper(),
+				source: { file: filename, text: source },
+				unsupported: copied.unsupported,
+			});
+	}
 	return {
 		code: edited.code,
 		map: sourceMap ? edited.map(name) : undefined,
 		locate: edited.locate,
 		registrations: {
-			code: pieceText(source, pieces),
+			code: registrations,
 			map: sourceMap && pieces.length > 0 ? pieceMap({ source, pieces, name }) : undefined,
 		},
 		functionIds: functions?.ids ?? [],

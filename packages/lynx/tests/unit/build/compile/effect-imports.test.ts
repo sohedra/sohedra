@@ -15,17 +15,17 @@ const effects = `<script>
 <view></view>`;
 
 describe("the effects' imports on the main thread", () => {
-	it("are kept in a function that never runs, for each kind of effect", async () => {
+	it("are kept in a block that never runs, for each kind of effect", async () => {
 		const { code } = await component(effects, { thread: "main-thread" });
 		expect(code).toMatch(
-			/function __svelteLynxEffectImports\(\) \{\s*import\("\.\/A\.svelte"\);\s*import\("\.\/B\.svelte"\);\s*import\("\.\/C\.svelte"\);\s*\}/,
+			/typeof __svelteLynxKeptImports !== ["']undefined["']\) \{\s*import\("\.\/A\.svelte"\);\s*import\("\.\/B\.svelte"\);\s*import\("\.\/C\.svelte"\);\s*\}/,
 		);
 	});
 
 	it("leave out an import that is not in an effect, which Svelte keeps, and one that is not a string", async () => {
 		const { code } = await component(effects, { thread: "main-thread" });
 		expect(code.match(/import\("\.\/E\.svelte"\)/g)).toHaveLength(1);
-		expect(code).not.toMatch(/__svelteLynxEffectImports[^}]*(import\(n\)|`\.\/d`)/);
+		expect(code).not.toMatch(/__svelteLynxKeptImports[^}]*(import\(n\)|`\.\/d`)/);
 	});
 
 	it("are written once for an import that two effects share", async () => {
@@ -39,12 +39,12 @@ describe("the effects' imports on the main thread", () => {
 			"<script>$effect(() => console.log(1));</script><view></view>",
 			{ thread: "main-thread" },
 		);
-		expect(code).not.toContain("__svelteLynxEffectImports");
+		expect(code).not.toContain("__svelteLynxKeptImports");
 	});
 
 	it("are not added on the background, where the effect runs", async () => {
 		const { code } = await component(effects, { thread: "background" });
-		expect(code).not.toContain("__svelteLynxEffectImports");
+		expect(code).not.toContain("__svelteLynxKeptImports");
 		expect(code).toContain('import("./A.svelte")');
 	});
 
@@ -52,5 +52,104 @@ describe("the effects' imports on the main thread", () => {
 		const source = `<script>$effect(() => { import("./a<b>\u2028.ts"); });</script><view></view>`;
 		const { code } = await component(source, { thread: "main-thread" });
 		expect(code).toContain('import("./a\\u003cb\\u003e\\u2028.ts")');
+	});
+});
+
+// A package that says it has no side effects is left out of a production build where nothing reads
+// its exports, and with it the main-thread functions it registers as it loads. Svelte's server copy
+// drops code (an effect, an action, an attachment, a boundary's children while it is pending), so
+// the main thread's copy reads, in a block that never runs, every name the component imports and
+// reads as a value.
+const dropped = `<script lang="ts">
+	import { triple } from "lib-effect";
+	import { act } from "lib-action";
+	import { attach } from "lib-attach";
+	import { shown } from "lib-shown";
+	import { waited } from "lib-boundary";
+	import type { Kind } from "lib-type";
+	import { type Other, other } from "lib-other";
+	import { Shape, Sized, Listed, Made, Keyed } from "./shapes.ts";
+	const kind: Kind | Other = "a";
+	const size = (shape: Shape): number => shape.size;
+	$effect(() => {
+		const shape = { size: 2 } as Shape;
+		const sized: Sized = { size: 3 };
+		const listed = [] satisfies Listed[];
+		const made = new Map<string, Made>();
+		const keyed = { Keyed: 1, value: kind };
+		triple(size(shape) + sized.size + listed.length + made.size + keyed.Keyed + made.Keyed);
+	});
+</script>
+<view use:act {@attach attach}><text>{shown}{other}</text></view>
+<svelte:boundary>
+	<text>{await waited()}</text>
+	{#snippet pending()}<text>waiting</text>{/snippet}
+</svelte:boundary>`;
+
+/** The body of the block that never runs, in a copy's code. */
+const keeper = (code: string): string =>
+	/typeof __svelteLynxKeptImports !== ["']undefined["']\) \{([^}]*)\}/.exec(code)?.[1] ?? "";
+
+/** Compiled for the main thread, with the boundary's `await` allowed. */
+const mainThread = (source: string) =>
+	component(source, {
+		thread: "main-thread",
+		compilerOptions: { experimental: { async: true } },
+	});
+
+describe("the names a component imports, on the main thread", () => {
+	it("are read in the block that never runs: an effect's, an action's, an attachment's, a boundary's", async () => {
+		const { code } = await mainThread(dropped);
+		for (const name of ["triple", "act", "attach", "waited"])
+			expect(keeper(code)).toMatch(new RegExp(`\\b${name}\\b`));
+	});
+
+	it("are read there when the server copy reads them too", async () => {
+		const { code } = await mainThread(dropped);
+		for (const name of ["shown", "other"])
+			expect(keeper(code)).toMatch(new RegExp(`\\b${name}\\b`));
+	});
+
+	it("leave out a type: imported as one, or only read as one (`as`, `:`, `satisfies`, an argument), or as a property's name", async () => {
+		const { code } = await mainThread(dropped);
+		for (const name of ["Kind", "Other", "Shape", "Sized", "Listed", "Made", "Keyed"])
+			expect(keeper(code)).not.toMatch(new RegExp(`\\b${name}\\b`));
+	});
+
+	it("are read from a component whose only script is its module script", async () => {
+		const source = `<script module>\n\timport { triple } from "lib-effect";\n\texport const later = () => triple(2);\n</script>\n<view></view>`;
+		const { code } = await mainThread(source);
+		expect(keeper(code)).toMatch(/\btriple\b/);
+	});
+
+	it("read a value where a script reads it, and nothing a re-export, a label or a name only names", async () => {
+		const source = `<script module>
+	import { exported, reexported, labeled, computed, keyed, method, meta, tooltip } from "lib";
+	export { exported };
+	export { reexported } from "lib";
+	labeled: for (;;) break labeled;
+	const table = { [computed]: 1, keyed: 2, method() {} };
+	class Box { method() {} [keyed] = 1; }
+	console.log(table, Box, import.meta.url);
+</script>
+<view use:tooltip.show></view>`;
+		const { code } = await mainThread(source);
+		const kept = keeper(code);
+		for (const name of ["exported", "computed", "keyed", "tooltip"])
+			expect(kept).toMatch(new RegExp(`\\b${name}\\b`));
+		for (const name of ["reexported", "labeled", "method", "meta"])
+			expect(kept).not.toMatch(new RegExp(`\\b${name}\\b`));
+	});
+
+	it("leave out a type a module script re-exports, in either spelling", async () => {
+		const source = `<script lang="ts" module>
+	import { Shape, Sized, used } from "./shapes.ts";
+	export type { Shape };
+	export { type Sized, used };
+</script>
+<view></view>`;
+		const kept = keeper((await mainThread(source)).code);
+		expect(kept).toMatch(/\bused\b/);
+		for (const name of ["Shape", "Sized"]) expect(kept).not.toMatch(new RegExp(`\\b${name}\\b`));
 	});
 });

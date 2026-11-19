@@ -20,6 +20,8 @@
 // data the engine fake passes to a thread's listeners, and the data of the app's hooks, which keep
 // this process's built-ins.
 
+import fs from "node:fs";
+import path from "node:path";
 import vm from "node:vm";
 
 import { RuntimeWrapperWebpackPlugin } from "@lynx-js/runtime-wrapper-webpack-plugin";
@@ -29,6 +31,8 @@ import { readGlobal } from "../../src/testing/globals.ts";
 import { createEngine, startTestPage } from "../../src/testing/index.ts";
 import type { BackgroundLynx, TestBundle, TestPage } from "../../src/testing/index.ts";
 import { LAZY_BUNDLE_METHOD, PATCH_METHOD, RUN_FUNCTION } from "../../src/wire/index.ts";
+import { readTemplate } from "./build-app.ts";
+import type { AppBuild } from "./build-app.ts";
 
 /** The built-ins seen missing on a device, on both threads, by the object that would hold them. */
 const SEEN_MISSING: Readonly<Record<string, readonly string[]>> = {
@@ -223,24 +227,77 @@ interface BackgroundRealm {
 	run(holder: ScriptHolder): unknown;
 }
 
-/** Loads the background's script as lynx-core does, with `lynx` given to it alone. */
-function runBackground(script: string, lynx: BackgroundLynx, given: Given): BackgroundRealm {
-	const { context, adopt } = realm({ bundleSupportLoadScript: true }, given);
+/**
+ * Loads the background's script as lynx-core does, with `lynx` given to it alone. `modules` are
+ * the scripts it may load by path, with `lynx.requireModule` and `lynx.requireModuleAsync`.
+ */
+function runBackground(
+	script: string,
+	lynx: BackgroundLynx,
+	options: { given: Given; modules: Readonly<Record<string, string>> },
+): BackgroundRealm {
+	// The globals lynx-core seeds a page's realm with, which the page's scripts read
+	// (lynx-core's common/nativeGlobal.ts, `seedPageGlobal`).
+	const { context, adopt } = realm(
+		{
+			bundleSupportLoadScript: true,
+			globDynamicComponentEntry: "__Card__",
+			globComponentRegistPath: "",
+		},
+		options.given,
+	);
 	// The data the page was opened with, as lynx-core hands it to the page's script.
 	const app = lynx.getApp();
 	app._params = adopt(app._params) as typeof app._params;
-	vm.runInContext(script, context, { filename: "background.js" });
-	// Boundary: the script leaves its factory's holder on the global object.
-	const holder = context["__bundle__holder"] as ScriptHolder;
 	const factories = new Map<string, (...args: unknown[]) => void>();
+	// lynx-core keeps one cache for each (lynx-core's lynx/lynx.ts, `requireModule.cache` and
+	// `requireModuleAsync.cache`).
+	const required = new Map<string, unknown>();
+	const requiredAsync = new Map<string, unknown>();
+	/**
+	 * Runs a script as lynx-core loads one, and answers what its holder's `init` returns: the holder
+	 * the script returns (`/app-service.js`), or else the one it leaves on the global object.
+	 */
+	const evaluate = (source: string, path: string): unknown => {
+		const value = vm.runInContext(source, context, { filename: path }) as Partial<ScriptHolder>;
+		// Boundary: the script leaves its factory's holder on the global object.
+		return run(
+			value?.init ? (value as ScriptHolder) : (context["__bundle__holder"] as ScriptHolder),
+		);
+	};
+	const load = (path: string): unknown => {
+		const source = options.modules[path];
+		if (source === undefined)
+			throw new Error(`The page's script loaded ${path}, which the build did not write.`);
+		return evaluate(source, path);
+	};
 	// lynx-core's `lynx` also has the timers, and the engine's `Promise`, which the wrapper takes as
-	// the script's own (lynx-core's lynx.ts).
+	// the script's own (lynx-core's lynx.ts); and loads a script by path, once (its `requireModule`,
+	// `requireModuleAsync`).
 	const deviceLynx = Object.assign(lynx, {
 		Promise: vm.runInContext("Promise", context),
 		setTimeout,
 		clearTimeout,
 		setInterval,
 		clearInterval,
+		requireModule(path: string): unknown {
+			if (!required.has(path)) required.set(path, load(path));
+			return required.get(path);
+		},
+		requireModuleAsync(path: string, callback: (error: unknown, exports?: unknown) => void): void {
+			// Later, as a file loads; within the turn, which a test page's `settle()` waits for.
+			void Promise.resolve().then(() => {
+				let exports: unknown;
+				try {
+					if (!requiredAsync.has(path)) requiredAsync.set(path, load(path));
+					exports = requiredAsync.get(path);
+				} catch (error) {
+					callback(error);
+					return;
+				}
+				callback(null, exports);
+			});
+		},
 	});
 	const tt = {
 		define(path: string, factory: (...args: unknown[]) => void) {
@@ -257,7 +314,7 @@ function runBackground(script: string, lynx: BackgroundLynx, given: Given): Back
 	};
 	// lynx-core runs a script's factory with its `tt` (lynx-core's app.ts, `_$executeInit`).
 	const run = (loaded: ScriptHolder): unknown => loaded.init({ tt });
-	run(holder);
+	evaluate(script, "background.js");
 	return { context, run };
 }
 
@@ -269,6 +326,26 @@ export interface DeviceBundle {
 	mainThread?: string;
 	/** The bundle's style sheet, as the engine keeps it. */
 	styles?: string;
+}
+
+/** A build's lazy bundles, each at the URL a page at `http://localhost:3000/` asks for. */
+export function lazyBundlesOf(build: AppBuild): Record<string, DeviceBundle> {
+	const bundles: Record<string, DeviceBundle> = {};
+	for (const file of fs.readdirSync(path.join(build.dist, "out", "lazy-bundle"))) {
+		const component = file.slice(0, file.indexOf(".svelte.") + ".svelte".length);
+		const sections = readTemplate(build, `lazy-bundle/${component}`)["customSections"] as Record<
+			string,
+			{ content: unknown }
+		>;
+		const main = sections["main-thread"];
+		const css = sections["CSS"];
+		bundles[`http://localhost:3000/lazy-bundle/${file}`] = {
+			background: sections["background"]!.content as string,
+			...(main && { mainThread: main.content as string }),
+			...(css && { styles: JSON.stringify(css.content) }),
+		};
+	}
+	return bundles;
 }
 
 /** A page whose threads run the built scripts, each in its realm. */
@@ -286,6 +363,11 @@ export interface DevicePageOptions {
 	url?: string;
 	/** Lazy bundles the page may load, by address. */
 	bundles?: Record<string, DeviceBundle>;
+	/**
+	 * Scripts the background may load by path: the template's manifest (with `/app-service.js`, the
+	 * page's background script when its chunks are split), and the chunks written as files.
+	 */
+	modules?: Record<string, string>;
 }
 
 /** Starts a page from a build's scripts, on threads shaped like a device's. */
@@ -326,7 +408,10 @@ export function startDevicePage(
 			const lynx = readGlobal("lynx") as BackgroundLynx;
 			// lynx-core reports a script that throws as it loads ("loadCard failed").
 			try {
-				background = runBackground(scripts.background, lynx, globals);
+				background = runBackground(scripts.background, lynx, {
+					given: globals,
+					modules: options.modules ?? {},
+				});
 			} catch (error) {
 				lynx.reportError(error);
 			}

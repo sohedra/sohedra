@@ -12,9 +12,12 @@ import type { ErrorContext } from "../../../src/background/root-entry.ts";
 import { installGlobals } from "../../../src/testing/globals.ts";
 import type { MainThreadLynx } from "../../../src/testing/index.ts";
 import { encodeError, encodeToBackground } from "../../../src/wire/index.ts";
+import RefNotRef from "../../fixtures/library/RefNotRef.svelte";
 import Errors from "../../fixtures/threads/errors/Errors.svelte";
 import drawErrors from "../../fixtures/threads/errors/Errors.svelte?first-frame";
+import MainThreadMistakes from "../../fixtures/threads/errors/MainThreadMistakes.svelte";
 import Parent from "../../fixtures/threads/errors/Parent.svelte";
+import RefText from "../../fixtures/threads/errors/RefText.svelte";
 import Fails from "../../fixtures/threads/Fails.svelte";
 import ReportsOnMainThread from "../../fixtures/threads/page/ReportsOnMainThread.svelte";
 import drawReportsOnMainThread from "../../fixtures/threads/page/ReportsOnMainThread.svelte?first-frame";
@@ -190,6 +193,57 @@ describe("onError on the background", () => {
 			for (const runner of runners) process.on("unhandledRejection", runner);
 		}
 		expect(messages(rejected)).toEqual(["nobody handled it"]);
+	});
+
+	it("hears a main-thread:ref that is not a ref, with its element's component", async () => {
+		const heard: Heard = [];
+		const page = startSveltePage(RefNotRef, {
+			props: { kind: "text" },
+			onError: (error, context) => void heard.push([error, context]),
+		});
+		await page.settle();
+		expect(heard.map(([, context]) => context)).toEqual([
+			{ thread: "background", component: "RefNotRef.svelte", code: "main_thread_ref_not_a_ref" },
+		]);
+	});
+
+	it("hears a main-thread:ref written as plain text, with its component and its place", async () => {
+		const heard: Heard = [];
+		const page = startSveltePage(RefText, {
+			onError: (error, context) => void heard.push([error, context]),
+		});
+		await page.settle();
+		expect(heard.map(([, context]) => context)).toEqual([
+			{ thread: "background", component: "RefText.svelte", code: "main_thread_ref_not_a_ref" },
+		]);
+		expect(heard[0]![0].message).toContain('is the string "not a ref"');
+		expect(heard[0]![0].message).toMatch(/RefText\.svelte:3:\d+/);
+	});
+
+	it("hears the checks of main-thread attributes, each with its component", async () => {
+		const heard: Heard = [];
+		const page = startSveltePage(MainThreadMistakes, {
+			onError: (error, context) => void heard.push([error, context]),
+		});
+		await page.settle();
+		const contexts = heard.map(([, context]) => context);
+		expect(contexts.toSorted((x, y) => String(x.code).localeCompare(String(y.code)))).toEqual([
+			{
+				thread: "background",
+				component: "MainThreadMistakes.svelte",
+				code: "main_thread_gesture_not_a_gesture",
+			},
+			{
+				thread: "background",
+				component: "MainThreadMistakes.svelte",
+				code: "plain_function_under_main_thread",
+			},
+		]);
+		const gesture = heard.find(
+			([, context]) => context.code === "main_thread_gesture_not_a_gesture",
+		);
+		expect(gesture![0].message).toMatch(/is the string "pan", not a gesture/);
+		expect(gesture![0].message).toMatch(/MainThreadMistakes\.svelte:3:\d+/);
 	});
 
 	it("hears every repeat, while Lynx gets the 1st and the 10th, with the count", async () => {

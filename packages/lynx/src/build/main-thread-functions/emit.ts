@@ -6,7 +6,8 @@
 // and on the main thread the function's body is also registered under that id. The runtime runs
 // the body with the object as `this`, so the body starts by unpacking `this._c`. All of it is
 // written as edits against the text as written, so the body is copied as it was, types included:
-// whatever compiles the file next removes them.
+// a plain module's types go where SWC reads the file by its extension, and a component's are taken
+// out of its copied functions before they follow Svelte's output (compile/strip-types.ts).
 
 import {
 	FIRST_FRAME_HANDLE,

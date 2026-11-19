@@ -52,6 +52,8 @@ const config: RstestConfig = defineConfig({
 			name: "node",
 			testEnvironment: "node",
 			include: ["tests/**/*.test.ts"],
+			// The run's folder of the builds the build tests share.
+			globalSetup: ["tests/build/global-setup.ts"],
 			// The Vitest preset's suite runs under Vitest (tests/build/vitest-run.test.ts).
 			exclude: [...onTheTestTree.map((folder) => `${folder}/*.test.ts`), "tests/vitest/**"],
 		},

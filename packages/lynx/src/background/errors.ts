@@ -12,8 +12,9 @@ export interface ErrorContext {
 	thread: Thread;
 	/**
 	 * The component it came from, as its file's name (`Card.svelte`), when a development build says:
-	 * Svelte's own lines under the message of an error that left an effect, or the element whose
-	 * handler or main-thread function threw. A production build has none.
+	 * Svelte's own lines under the message of an error that left an effect, the element whose
+	 * handler or main-thread function threw, or the element whose `main-thread:` attribute is
+	 * refused. A production build has none.
 	 */
 	component: string | undefined;
 	/** The binding's stable code (`hydration_mismatch`), when the binding wrote the error. */
