@@ -140,6 +140,7 @@
 		"fast-check": "^4.10.2",
 		"jsdom": "^31.0.1",
 		"oxfmt": "^0.78.0",
+		"publint": "^0.3.25",
 		"svelte": "https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea",
 		"svelte-check": "^4.7.8",
 		"svelte2tsx": "^0.7.63",
