@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { startPage } from "../../src/background/index.ts";
+import { mountPage } from "../../src/background/index.ts";
 import { startMainThread } from "../../src/main-thread/index.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import Counter from "../fixtures/threads/Counter.svelte";
@@ -54,7 +54,7 @@ describe("new data for the page", () => {
 		const page = startTestPage({
 			initData: { theme: "dark" },
 			mainThread: () => startMainThread(),
-			background: () => startPage(Counter),
+			background: () => mountPage(Counter),
 		});
 		await page.settle();
 		expect(page.engine.flushes.filter(flagged)).toHaveLength(0);

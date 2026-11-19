@@ -16,6 +16,7 @@ import {
 	run,
 	startGenerated,
 	step,
+	withoutLayer,
 	wroteIds,
 } from "./run.ts";
 import type { GeneratedPage, StartOptions, Step } from "./run.ts";
@@ -168,7 +169,7 @@ export function updatesProperty(
 					// only once every row came.
 					if (index % 2 === 0 && index !== steps.length - 1 && defers(model)) continue;
 					await expectEveryRowCame(running.page, model, after);
-					const rendered = backgroundTree();
+					const rendered = withoutLayer(backgroundTree());
 					const state = running.page.asBackground(() => JSON.stringify(running.handles.st));
 					renders.set(state, [...(renders.get(state) ?? []), { after: index + 1, tree: rendered }]);
 				}

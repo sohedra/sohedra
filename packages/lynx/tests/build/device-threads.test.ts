@@ -179,3 +179,14 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 });
+
+describe("a page built for production that copies nothing", () => {
+	it("carries none of createStaticCopy's code on either thread", () => {
+		const build = builds.get("production")!;
+		expect(build.ok).toBe(true);
+		const scripts = scriptsOf(build);
+		// A name only the copy's code reads, which minifying keeps.
+		expect(scripts.background).not.toContain("keepIds");
+		expect(scripts.mainThread).not.toContain("keepIds");
+	});
+});

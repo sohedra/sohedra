@@ -54,6 +54,10 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		tag: "view",
 		where: "src/Sheet.svelte:14:2",
 	},
+	mount_without_page: {},
+	static_copy_not_on_page: { what: "source[1]" },
+	static_copy_container_not_empty: { tag: "view" },
+	static_copy_list: {},
 };
 
 // Boundary: the keys of the catalogue are its codes.

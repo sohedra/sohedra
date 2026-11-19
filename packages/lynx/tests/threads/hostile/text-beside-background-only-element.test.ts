@@ -10,13 +10,9 @@ import drawFrameBadgeBefore from "../../fixtures/threads/FrameBadgeBefore.svelte
 import FrameBadgeMid from "../../fixtures/threads/FrameBadgeMid.svelte";
 import drawFrameBadgeMid from "../../fixtures/threads/FrameBadgeMid.svelte?first-frame";
 import { startSveltePage } from "../svelte-page.ts";
+import type { FirstFrameCopy } from "../svelte-page.ts";
 
-const SHAPES: [
-	string,
-	Component<Record<string, unknown>>,
-	(props?: Record<string, unknown>) => void,
-	string,
-][] = [
+const SHAPES: [string, Component<Record<string, unknown>>, FirstFrameCopy, string][] = [
 	["before a text", FrameBadgeBefore, drawFrameBadgeBefore, "Blabel"],
 	["before a text and an element", FrameBadgeMid, drawFrameBadgeMid, "BAx"],
 ];

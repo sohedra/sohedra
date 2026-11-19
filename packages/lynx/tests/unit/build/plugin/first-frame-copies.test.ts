@@ -49,15 +49,15 @@ describe("first-frame copies", { timeout: 30_000 }, () => {
 		expect(rules.some((rule) => queryOf(rule).includes("first-frame"))).toBe(false);
 	});
 
-	it("are a module that imports the component and records its first frame", () => {
+	it("are a module that imports the component and records its first frame with mountPage", () => {
 		const context = {
-			getOptions: () => ({ startPage: "/binding/first-frame/page.ts" }),
+			getOptions: () => ({ entry: "/binding/first-frame/root-entry.ts" }),
 			resourcePath: "/app/src/Card.svelte",
 		};
 		// Boundary: the loader reads only these two fields of its context.
 		const code = firstFrameCopyLoader.call(context as never);
 		expect(code).toContain('import Component from "./Card.svelte";');
-		expect(code).toContain('import { startPage } from "/binding/first-frame/page.ts";');
-		expect(code).toContain("startPage(Component, { props: () => props });");
+		expect(code).toContain('import { mountPage } from "/binding/first-frame/root-entry.ts";');
+		expect(code).toContain("mountPage(Component, { props, context });");
 	});
 });

@@ -6,7 +6,8 @@
 
 import type { Component } from "svelte";
 
-import { startPage } from "../../src/background/index.ts";
+import { mountPage } from "../../src/background/index.ts";
+import type { MountPageOptions } from "../../src/background/index.ts";
 import { startMainThread } from "../../src/main-thread/index.ts";
 import type { MainThreadRuntime } from "../../src/main-thread/index.ts";
 import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
@@ -40,20 +41,36 @@ export interface SveltePageOptions {
 	initData?: Record<string, unknown>;
 	/** The template's own data, under the host's. */
 	templateData?: Record<string, unknown>;
-	props?: (initData: Record<string, unknown>) => Record<string, unknown>;
+	/** The host's global props. */
+	globalProps?: Record<string, unknown>;
+	/** The root component's props on the background, as `mountPage` takes them. */
+	props?: MountPageOptions<Record<string, unknown>>["props"];
+	/** The context the background mounts the root component with. */
+	context?: Map<unknown, unknown>;
 	/**
 	 * The first frame: the markup Svelte's server would write, from the page's data, or a
-	 * component's first-frame copy (`./App.svelte?first-frame`) with the props it draws with.
+	 * component's first-frame copy (`./App.svelte?first-frame`) with the props and the context it
+	 * draws with, as the main thread's `mountPage` takes them.
 	 */
 	firstFrame?:
 		| ((initData: Record<string, unknown>) => string | null)
-		| { draw: (props?: Record<string, unknown>) => void; props?: Record<string, unknown> };
+		| {
+				draw: FirstFrameCopy;
+				props?: MountPageOptions<Record<string, unknown>>["props"];
+				context?: Map<unknown, unknown>;
+		  };
 }
+
+/** A component's first-frame copy: it records how the main thread draws the component's frame. */
+export type FirstFrameCopy = (
+	props?: MountPageOptions<Record<string, unknown>>["props"],
+	context?: Map<unknown, unknown>,
+) => void;
 
 /** Records how the main thread draws the first frame, as the page's own script does. */
 function recordFirstFrame(firstFrame: SveltePageOptions["firstFrame"]): void {
 	if (typeof firstFrame === "function") installGlobals({ [FIRST_FRAME_GLOBAL]: firstFrame });
-	else firstFrame?.draw(firstFrame.props);
+	else firstFrame?.draw(firstFrame.props, firstFrame.context);
 }
 
 /** Starts `App` as a page on both threads. */
@@ -68,6 +85,7 @@ export function startSveltePage(
 	const page = startTestPage({
 		...(options.initData && { initData: options.initData }),
 		...(options.templateData && { templateData: options.templateData }),
+		...(options.globalProps && { globalProps: options.globalProps }),
 		mainThread: () => {
 			const context = (readGlobal("lynx") as MainThreadLynx).getJSContext();
 			const send = context.dispatchEvent.bind(context);
@@ -87,7 +105,10 @@ export function startSveltePage(
 				patches.push(decodePatch(params as PatchParams));
 				send(name, params, callback);
 			};
-			startPage(App, options.props ? { props: options.props } : {});
+			mountPage(App, {
+				...(options.props && { props: options.props }),
+				...(options.context && { context: options.context }),
+			});
 		},
 	});
 	return Object.assign(page, {

@@ -112,6 +112,13 @@ Set it inside a main-thread function, and call that from the background with run
 https://sohedra.com/e/main_thread_ref_set_on_background"
 `;
 
+exports[`the background's catalogue > mount_without_page: the message 1`] = `
+"A call of mount ran with no page running: before mountPage started the page, or after the page closed.
+
+Call mount once mountPage has started the page: from $effect, an attachment or an event handler.
+https://sohedra.com/e/mount_without_page"
+`;
+
 exports[`the background's catalogue > not_a_main_thread_function: the message 1`] = `
 "The value given to runOnMainThread, measure, is not a main-thread function, so nothing runs on the main thread.
 
@@ -147,6 +154,27 @@ exports[`the background's catalogue > run_on_background_outside_main_thread: the
 
 On the background, call the function itself. Use runOnBackground inside a function whose body starts with 'main thread'.
 https://sohedra.com/e/run_on_background_outside_main_thread"
+`;
+
+exports[`the background's catalogue > static_copy_container_not_empty: the message 1`] = `
+"The <view> given to createStaticCopy as the container holds something that is not a copy.
+
+Give the copies an element of their own that Svelte renders with no children: Svelte never looks inside it.
+https://sohedra.com/e/static_copy_container_not_empty"
+`;
+
+exports[`the background's catalogue > static_copy_list: the message 1`] = `
+"The source given to createStaticCopy holds a <list>, and a <list> cannot be copied.
+
+Copy the elements around the list, or the contents of its rows, instead.
+https://sohedra.com/e/static_copy_list"
+`;
+
+exports[`the background's catalogue > static_copy_not_on_page: the message 1`] = `
+"The source[1] given to createStaticCopy is not an element on the page.
+
+Pass an element Svelte rendered while it is on the page, such as the node an attachment gets.
+https://sohedra.com/e/static_copy_not_on_page"
 `;
 
 exports[`the background's catalogue > text_outside_text: the message 1`] = `

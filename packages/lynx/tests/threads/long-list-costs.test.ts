@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { startPage } from "../../src/background/index.ts";
+import { mountPage } from "../../src/background/index.ts";
 import { cellInfo, parsePage } from "../../src/main-thread/frame/html.ts";
 import type { DrawnChild, DrawnNode } from "../../src/main-thread/frame/html.ts";
 import { readGlobal } from "../../src/testing/globals.ts";
@@ -109,7 +109,7 @@ describe.each([1000, 5000])("a list of %i rows", (count) => {
 							send(name, params, callback);
 						};
 						calls = counting(owners, () => {
-							startPage(LongFeed, { props: () => ({ count, shape }) });
+							mountPage(LongFeed, { props: () => ({ count, shape }) });
 						}).calls;
 					},
 				});
