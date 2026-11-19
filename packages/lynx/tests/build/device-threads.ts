@@ -250,10 +250,10 @@ function runBackground(script: string, lynx: BackgroundLynx): BackgroundRealm {
 export interface DeviceBundle {
 	/** The background section: a script lynx-core loads as it loads the page's. */
 	background: string;
-	/** The main-thread section: a function of the bundle's entry, as text. */
-	mainThread: string;
+	/** The main-thread section: a function of the bundle's entry, as text; none when it is empty. */
+	mainThread?: string;
 	/** The bundle's style sheet, as the engine keeps it. */
-	styles: string;
+	styles?: string;
 }
 
 /** A page whose threads run the built scripts, each in its realm. */
@@ -281,9 +281,11 @@ export function startDevicePage(
 						filename: `${url}/background.js`,
 					}) as ScriptHolder,
 				),
-			mainThread: () =>
-				vm.runInContext(bundle.mainThread, mainThread!, { filename: `${url}/main-thread.js` }),
-			styles: bundle.styles,
+			...(bundle.mainThread !== undefined && {
+				mainThread: () =>
+					vm.runInContext(bundle.mainThread!, mainThread!, { filename: `${url}/main-thread.js` }),
+			}),
+			...(bundle.styles !== undefined && { styles: bundle.styles }),
 		};
 	const page = startTestPage({
 		document: window.document,

@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { installLazyBundles } from "../../src/background/lazy-bundle.ts";
 import type { TestBundle } from "../../src/testing/index.ts";
 import Counter from "../fixtures/threads/Counter.svelte";
 import { startSveltePage } from "./svelte-page.ts";
@@ -16,8 +17,11 @@ let count = 0;
 /** A bundle URL no other test used: the main thread takes a bundle once for the view's life. */
 const fresh = (): string => `http://localhost:3002/lazy-bundle/Heavy.${++count}.bundle`;
 
+/** A page serving `bundle` at `url`, with the background's loader the start-up module installs. */
 function withBundle(url: string, bundle: TestBundle) {
-	return startSveltePage(Counter, { url: PAGE, bundles: { [url]: bundle } });
+	const page = startSveltePage(Counter, { url: PAGE, bundles: { [url]: bundle } });
+	page.asBackground(installLazyBundles);
+	return page;
 }
 
 /** `import()` on the background: the chunk loader's call of `lynx.loadLazyBundle`. */

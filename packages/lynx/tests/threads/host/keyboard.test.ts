@@ -50,6 +50,17 @@ describe("keyboard", () => {
 		expect(await send(page, "off", 0, 0)).toBe("closed 0");
 	});
 
+	it("is closed with no height when Android measures a closed keyboard to a view above the window's bottom", async () => {
+		const page = await shown();
+		await send(page, "on", 291, 291);
+		expect(await send(page, "off", 48, 48)).toBe("closed 0");
+	});
+
+	it("is open with no height when the event gives none", async () => {
+		const page = await shown();
+		expect(await send(page, "on")).toBe("open 0");
+	});
+
 	it("reads as closed when first read while the keyboard is open, until it changes", async () => {
 		const page = startSveltePage(KeyboardProbe);
 		await page.settle();

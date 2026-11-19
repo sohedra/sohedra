@@ -94,6 +94,20 @@ describe("takeLazyBundle", () => {
 		expect(steps).toEqual([`wait ${url} 5`, `styles CSS ${url}#cached`, "adopt sheet"]);
 	});
 
+	it("adopts nothing for a bundle with no styles", () => {
+		const { steps } = fakeMainThread();
+		for (const none of [undefined, null]) {
+			installGlobals({
+				__LoadStyleSheet: () => none,
+				__AdoptStyleSheet: () => void steps.push("adopt"),
+			});
+			const errors: unknown[] = [];
+			takeLazyBundle({ url: fresh("Plain") }, (error) => errors.push(error));
+			expect(errors).toEqual([]);
+		}
+		expect(steps).not.toContain("adopt");
+	});
+
 	it("reports what the main-thread section throws", () => {
 		const { lynx } = fakeMainThread();
 		const failure = new Error("the section threw");
@@ -105,7 +119,7 @@ describe("takeLazyBundle", () => {
 		expect(errors).toEqual([failure]);
 	});
 
-	it("reports a bundle the main thread does not get, and tries again at the next import", () => {
+	it("reports a bundle the main thread does not get, and does not count it as taken", () => {
 		const { steps, lynx } = fakeMainThread();
 		const fetch = lynx.fetchBundle;
 		lynx.fetchBundle = () => ({ wait: () => ({ url: "", code: 1601 }) });

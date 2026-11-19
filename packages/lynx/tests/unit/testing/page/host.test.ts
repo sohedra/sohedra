@@ -47,7 +47,7 @@ describe("the host's events", () => {
 		expect(() => emitter.removeListener("cartchanged", "x" as never)).toThrow(/Function/);
 	});
 
-	it("start Android's keyboard detection at each listener of the keyboard, and stop it at each removal", () => {
+	it("send switchKeyBoardDetect(true) at each listener of the keyboard, and false at each removal", () => {
 		const page = startTestPage();
 		const emitter = page.lynx.background.getJSModule("GlobalEventEmitter");
 		const hear = () => {};

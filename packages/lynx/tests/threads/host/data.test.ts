@@ -5,6 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { globalProps, initData, systemInfo } from "../../../src/background/host-entry.ts";
 import HostData from "../../fixtures/threads/host/HostData.svelte";
+import { watchTitle } from "../../fixtures/threads/host/watch.svelte.ts";
 import { startSveltePage } from "../svelte-page.ts";
 
 const flagged = (options: unknown): boolean =>
@@ -38,6 +39,35 @@ describe("initData", () => {
 		expect(page.patches.at(-1)!.dataUpdated).toBe(true);
 		expect(page.engine.flushes.slice(flushes).filter(flagged)).toHaveLength(1);
 		expect(page.errors).toEqual([]);
+	});
+
+	it("sends what changed with the data before the host's update returns, in one patch", async () => {
+		const page = hostData();
+		await page.settle();
+		const patches = page.patches.length;
+		// The engine's call of the app's hook, as the background runs it.
+		page.asBackground(() =>
+			(page.app["updateCardData"] as (data: unknown, update: unknown) => void)(
+				{ title: "Archive" },
+				{ type: 0 },
+			),
+		);
+		expect(page.patches.slice(patches)).toEqual([
+			expect.objectContaining({ dataUpdated: true, items: [expect.anything()] }),
+		]);
+		await page.settle();
+		expect(page.engine.text(page.byClass("title"))).toBe("Archive");
+	});
+
+	it("runs a reader outside the page's components again at a reload", async () => {
+		const page = hostData();
+		await page.settle();
+		const log: unknown[] = [];
+		const stop = page.asBackground(() => watchTitle(log));
+		page.reload({ title: "Reloaded" });
+		await page.settle();
+		expect(log).toEqual(["Inbox", "Reloaded"]);
+		stop();
 	});
 
 	it("starts from none at an update that resets the data", async () => {

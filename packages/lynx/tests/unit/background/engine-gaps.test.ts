@@ -5,6 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { fillEngineGaps } from "../../../src/background/engine-gaps.ts";
 import type { BackgroundGlobals } from "../../../src/background/globals.ts";
+import { installGlobals } from "../../../src/testing/globals.ts";
 
 /** A device's background: `lynx` alone has the timers and the microtask queue. */
 function device() {
@@ -115,11 +116,20 @@ describe("on a background that has them", () => {
 });
 
 describe("the background's start", () => {
-	it("fills the thread's own global object, and leaves what this one has", async () => {
-		const own = [globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll];
-		await import("../../../src/background/start-up.ts");
-		expect([globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll]).toEqual(
-			own,
-		);
+	it("fills the thread's own global object, leaves what this one has, and installs the lazy-bundle loader", async () => {
+		const lynx: { loadLazyBundle?: unknown } = {};
+		const restore = installGlobals({ lynx });
+		try {
+			const own = [globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll];
+			await import("../../../src/background/start-up.ts");
+			expect([
+				globalThis.queueMicrotask,
+				globalThis.setTimeout,
+				String.prototype.replaceAll,
+			]).toEqual(own);
+			expect(typeof lynx.loadLazyBundle).toBe("function");
+		} finally {
+			restore();
+		}
 	});
 });

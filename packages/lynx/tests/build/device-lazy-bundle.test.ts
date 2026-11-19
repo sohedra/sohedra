@@ -1,7 +1,8 @@
 // A lazy bundle across both threads of a built page, on threads shaped like a device's
 // (device-threads.ts): a tap imports a component that is a bundle of its own; the background runs
 // its background section, the main thread its main-thread section and its styles, and the
-// component shows, with its main-thread function there.
+// component shows, with its main-thread function there. A module-level `import()`, before the page
+// starts, loads too.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -24,20 +25,24 @@ beforeAll(async () => {
 }, 180_000);
 afterAll(() => cleanBuild(build));
 
-/** The built lazy bundle, at the URL the page's chunk loader asks for. */
-function lazyBundle(): Record<string, DeviceBundle> {
-	const [file] = fs.readdirSync(path.join(build.dist, "out", "lazy-bundle"));
-	const sections = readTemplate(build, "lazy-bundle/Heavy.svelte")["customSections"] as Record<
-		string,
-		{ content: unknown }
-	>;
-	return {
-		[`http://localhost:3000/lazy-bundle/${file!}`]: {
+/** The built lazy bundles, each at the URL the page's chunk loader asks for. */
+function lazyBundles(): Record<string, DeviceBundle> {
+	const bundles: Record<string, DeviceBundle> = {};
+	for (const file of fs.readdirSync(path.join(build.dist, "out", "lazy-bundle"))) {
+		const component = file.slice(0, file.indexOf(".svelte.") + ".svelte".length);
+		const sections = readTemplate(build, `lazy-bundle/${component}`)["customSections"] as Record<
+			string,
+			{ content: unknown }
+		>;
+		const main = sections["main-thread"];
+		const css = sections["CSS"];
+		bundles[`http://localhost:3000/lazy-bundle/${file}`] = {
 			background: sections["background"]!.content as string,
-			mainThread: sections["main-thread"]!.content as string,
-			styles: JSON.stringify(sections["CSS"]!.content),
-		},
-	};
+			...(main && { mainThread: main.content as string }),
+			...(css && { styles: JSON.stringify(css.content) }),
+		};
+	}
+	return bundles;
 }
 
 function byClass(page: TestPage, token: string): LynxElement | undefined {
@@ -52,9 +57,20 @@ describe("a lazy bundle on threads shaped like a device's", () => {
 		expect(build.ok).toBe(true);
 	});
 
+	it("loads a module-level import() as the page starts, before mountPage ran", async () => {
+		const { page } = startDevicePage(scriptsOf(build), { url: PAGE, bundles: lazyBundles() });
+		try {
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts()).toEqual(["load", "early"]);
+		} finally {
+			page.dispose();
+		}
+	});
+
 	it("loads on both threads at a tap: the component shows with its styles and main-thread function", async () => {
-		const bundles = lazyBundle();
-		const [url] = Object.keys(bundles);
+		const bundles = lazyBundles();
+		const heavy = Object.keys(bundles).find((url) => url.includes("/Heavy.svelte."))!;
 		const { page, mainThread } = startDevicePage(scriptsOf(build), { url: PAGE, bundles });
 		try {
 			await page.settle();
@@ -62,9 +78,9 @@ describe("a lazy bundle on threads shaped like a device's", () => {
 			page.engine.dispatch(byClass(page, "load")!, { type: "tap" });
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
-			expect(page.engine.texts()).toEqual(["load", "heavy"]);
+			expect(page.engine.texts()).toEqual(["load", "heavy", "early"]);
 			expect(byClass(page, "heavy")).toBeDefined();
-			expect(page.engine.adoptedStyleSheets).toEqual([bundles[url!]!.styles]);
+			expect(page.engine.adoptedStyleSheets).toContain(bundles[heavy]!.styles);
 			const bodies = vm.runInContext(
 				`Object.keys(${FUNCTIONS_GLOBAL}.bodies)`,
 				mainThread,

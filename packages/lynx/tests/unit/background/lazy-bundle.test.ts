@@ -25,6 +25,9 @@ describe("resolveUrl", () => {
 		);
 		expect(resolveUrl("//cdn.example/a.bundle", PAGE)).toBe("http://cdn.example/a.bundle");
 		expect(resolveUrl("/a.bundle", "http://host")).toBe("http://host/a.bundle");
+		expect(resolveUrl("a.bundle", "https://cdn.example/app/main.bundle?from=/x/y#z/w")).toBe(
+			"https://cdn.example/app/a.bundle",
+		);
 	});
 
 	it("leaves a full URL, and anything without a full base, as it is", () => {

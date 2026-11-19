@@ -53,8 +53,8 @@ describe("the host's events", () => {
 		page.emitHostEvent("keyboardstatuschanged", ["on", 300]);
 		await page.settle();
 		expect(heard).toEqual(["one", "two"]);
-		// lynx-core stops Android's keyboard detection at any removal of a listener of this event:
-		// the emitter keeps the page's one while a listener is left.
+		// The emitter keeps the page's one listener while one of the page's is left: lynx-core
+		// hears of no removal until the last.
 		offOne();
 		expect(page.hostEvents.keyboardDetection).toEqual([true]);
 		offTwo();
@@ -111,6 +111,23 @@ describe("the host's events", () => {
 		await page.settle();
 		expect(heard).toEqual(["after"]);
 		expect(page.errors).toEqual([failure]);
+	});
+
+	it("runs every listener of an event though one removes itself as it runs", async () => {
+		const page = startSveltePage(Counter);
+		await page.settle();
+		const heard: string[] = [];
+		page.asBackground(() => {
+			const off = on(host, "cartchanged", () => {
+				heard.push("once");
+				off();
+			});
+			on(host, "cartchanged", () => heard.push("always"));
+		});
+		page.emitHostEvent("cartchanged", []);
+		page.emitHostEvent("cartchanged", []);
+		await page.settle();
+		expect(heard).toEqual(["once", "always", "always"]);
 	});
 
 	it("stops a listener of an effect when the effect runs again, and listens to the new name", async () => {
