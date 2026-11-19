@@ -351,8 +351,6 @@ export function apply(running: GeneratedPage, done: Step): void {
 			const element = found[done.list % found.length]!;
 			const count = page.engine.state(element).list!.items;
 			if (count > 0) ask(page, element, done.index % count);
-			if (done.kind === "show-then-set")
-				apply(running, { kind: "set", key: done.key, value: done.value });
 			return;
 		}
 		case "hide": {
@@ -400,13 +398,16 @@ export async function runEarly(running: GeneratedPage, steps: readonly Step[]): 
 }
 
 /**
- * Does `step` to the page, and for a scroll then a change, the change once the threads settled: the
- * rows the scroll let go of are released by then, and change while they have no elements.
+ * Does `step` to the page. For a scroll then a change, the change comes once the threads settled:
+ * the rows the scroll let go of are released by then, and change while they have no elements. For
+ * a request then a change, it comes once the main thread's task ends, with the request still on its
+ * way.
  */
 export async function run(running: GeneratedPage, done: Step): Promise<void> {
 	apply(running, done);
-	if (done.kind !== "scroll-then-set") return;
-	await running.page.settle();
+	if (done.kind === "scroll-then-set") await running.page.settle();
+	else if (done.kind === "show-then-set") await endTask();
+	else return;
 	apply(running, { kind: "set", key: done.key, value: done.value });
 }
 
