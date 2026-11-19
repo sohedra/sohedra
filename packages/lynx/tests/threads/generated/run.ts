@@ -12,7 +12,7 @@ import * as functions from "../../../src/background/functions-entry.ts";
 import renderer, { deferredRow } from "../../../src/background/renderer/entry.ts";
 import * as root from "../../../src/background/root-entry.ts";
 import * as internals from "../../../src/svelte/runtime/client-internals.ts";
-import { readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
+import { endTask, readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
@@ -386,17 +386,6 @@ export function apply(running: GeneratedPage, done: Step): void {
 			return;
 	}
 }
-
-const { nextTick } = readGlobal("process") as { nextTick(callback: () => void): void };
-
-/**
- * Ends the task a step ran in: the promise reactions it left run, and nothing crosses between the
- * threads yet. On a device a thread ends its task before it runs anything else; here a step that
- * runs the other thread's code at once would leave those reactions the other thread's globals (a
- * tap's handler changes its element, and the main thread's flush at the task's end then finds no
- * `__FlushElementTree`). Node runs a tick once the reactions due have run.
- */
-const endTask = (): Promise<void> => new Promise((resolve) => nextTick(resolve));
 
 /**
  * Does `steps` to a page whose first frame the background has not taken over yet, each in a task of
