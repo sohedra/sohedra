@@ -34,6 +34,8 @@ export interface BuildAppOptions {
 	 * has no dependency of its own on `@sohedra/lynx`, which no folder above it brings either.
 	 */
 	outside?: boolean;
+	/** The package linked into the app's `node_modules` as `svelte`, by its name here. Implies `outside`. */
+	svelte?: string;
 	/** Packages of `tests/fixtures/build/packages` put into the app's `node_modules`. Implies `outside`. */
 	packages?: string[];
 	/** Who runs the build: `rstest` makes it a test run, without the Lynx engine. */
@@ -123,7 +125,9 @@ function copyOutside(app: string, under: string, options: BuildAppOptions): stri
 	fs.cpSync(appFolder(app), folder, { recursive: true });
 	const modules = path.join(folder, "node_modules");
 	fs.mkdirSync(modules);
-	const svelte = path.dirname(createRequire(import.meta.url).resolve("svelte/package.json"));
+	const svelte = path.dirname(
+		createRequire(import.meta.url).resolve(`${options.svelte ?? "svelte"}/package.json`),
+	);
 	fs.symlinkSync(svelte, path.join(modules, "svelte"), "dir");
 	for (const name of options.packages ?? []) {
 		const target = path.join(modules, name);
@@ -143,7 +147,7 @@ export async function buildApp(app: string, options: BuildAppOptions = {}): Prom
 	try {
 		const dist = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-lynx-dist-"));
 		const cwd =
-			options.outside || options.files || options.packages
+			options.outside || options.files || options.packages || options.svelte
 				? copyOutside(app, dist, options)
 				: appFolder(app);
 		const build = await buildInto({
