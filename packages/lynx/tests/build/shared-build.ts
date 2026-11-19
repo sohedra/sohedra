@@ -2,6 +2,11 @@
 // apps, an entry each, in place of a build per test file. The first test file to ask for one builds
 // it, while it holds the build lock; the others read what it left. A run's builds live in the
 // folder its global setup makes (global-setup.ts), and go with it.
+//
+// A shared build's messages are the whole build's: a warning from any fixture fails each test that
+// checks its own entry builds without one, under that test's name. Sizes are not measured here
+// (size-budgets.test.ts builds its own entries): a module that several entries use stays a module
+// of its own, where one entry's build would concatenate it.
 
 import fs from "node:fs";
 import os from "node:os";
@@ -23,8 +28,6 @@ interface Entries {
 		| "snapshot"
 		| "snapshot-action"
 		| "device"
-		| "minimal"
-		| "minimal-runtime"
 		| "syntax";
 	development: "snapshot" | "device";
 }
@@ -41,8 +44,6 @@ const ENTRIES: { [Mode in SharedMode]: Record<Entries[Mode], string> } = {
 		snapshot: "./snapshot/index.ts",
 		"snapshot-action": "./snapshot/action.ts",
 		device: "./device/index.ts",
-		minimal: "./minimal/index.ts",
-		"minimal-runtime": "./minimal/runtime.ts",
 		syntax: "./syntax/index.ts",
 	},
 	development: {
@@ -61,11 +62,15 @@ const OPTIONS: Record<SharedMode, Omit<BuildAppOptions, "entry">> = {
 	},
 };
 
-/** The run's folder of shared builds: the global setup's, or one for this process. */
+/** The run's folder of shared builds: the global setup's, or one for this process, gone at its exit. */
 function runFolder(): string {
-	return (process.env[SHARED_BUILDS] ??= fs.mkdtempSync(
-		path.join(os.tmpdir(), "sohedra-lynx-builds-"),
-	));
+	let folder = process.env[SHARED_BUILDS];
+	if (folder === undefined) {
+		const own = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-lynx-builds-"));
+		process.once("exit", () => fs.rmSync(own, { recursive: true, force: true }));
+		folder = process.env[SHARED_BUILDS] = own;
+	}
+	return folder;
 }
 
 const builds = new Map<SharedMode, Promise<Omit<AppBuild, "entry">>>();
@@ -77,6 +82,8 @@ async function buildOnce(mode: SharedMode): Promise<Omit<AppBuild, "entry">> {
 	try {
 		if (fs.existsSync(record))
 			return JSON.parse(fs.readFileSync(record, "utf8")) as Omit<AppBuild, "entry">;
+		// A build that stopped before its record leaves no output for this one to build over.
+		fs.rmSync(dist, { recursive: true, force: true });
 		fs.mkdirSync(dist, { recursive: true });
 		const build = await buildInto({
 			cwd: appFolder("."),
