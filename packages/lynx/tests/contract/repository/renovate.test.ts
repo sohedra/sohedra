@@ -40,9 +40,8 @@ describe("Renovate's peer list", () => {
 	it("names a peer it is missing, and one that is no longer a peer", () => {
 		const [problem, ...rest] = checkRenovate(repository(["jsdom", "vitest"], { vite: "^8.3.8" }));
 		expect(rest).toEqual([]);
-		expect(problem).toContain("vite");
-		expect(problem).toContain("jsdom");
-		expect(problem).toContain("vitest");
+		expect(problem).toContain("missing: vite;");
+		expect(problem).toContain("not peers: jsdom, vitest)");
 	});
 
 	it("holds in this repository", () => {

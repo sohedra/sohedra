@@ -7,7 +7,7 @@ describe("a peer range", () => {
 		for (const range of ["^31.0.1", "^0.12.6", "^0.0.53"]) expect(isPeerRange(range)).toBe(true);
 	});
 
-	it("may be widened by Renovate to later majors, or later minors for 0.x", () => {
+	it("may be widened by hand to later majors, or later minors for 0.x", () => {
 		for (const range of [
 			"^31.0.1 || ^32.0.0",
 			"^30.1.3 || ^31.0.0 || ^32.0.0",
