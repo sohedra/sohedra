@@ -97,6 +97,12 @@ export const PLUGIN_OPTIONS: unique symbol = Symbol.for("@sohedra/lynx:plugin-op
 /**
  * The Rsbuild plugin that builds a Svelte app for Lynx, on top of Lynx's own build plugins. Throws
  * when an option is unknown or has a wrong value: one error lists every mistake.
+ *
+ * The background's script may be split into chunks (`splitChunks`, `performance.chunkSplit`); the
+ * main thread's never is. The chunks go into the bundle (`output.inlineScripts`, on by default) or
+ * are files of their own, and Lynx loads them by `output.assetPrefix`. Inlined chunks need a path
+ * prefix, such as the default `/`; chunks as files need a full address
+ * (`https://example.com/app/`). Otherwise the background never starts in a production build.
  */
 export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): RsbuildPlugin {
 	checkPluginOptions(options);

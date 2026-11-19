@@ -3,7 +3,7 @@
 Svelte on Lynx: runs Svelte's custom renderer on Lynx's background thread and draws with Lynx's
 elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
 
-- Read `CONTRIBUTING.md` § Code first: code shape, folders and imports, errors, workarounds, tests.
+- Read `CONTRIBUTING.md` § Code first: shape, folders, errors, workarounds, tests.
 - Each folder of `src/` is a program, and imports another only through its `index.ts`.
   `.oxlintrc.jsonc` enforces this table; `tests/contract/lint/` pins it:
 
@@ -31,10 +31,10 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
 - **The plugin** (`src/build/plugin/`): a bundler layer per thread (a test run: the first-frame
   copies' main-thread layer only). Two loaders see every module, `node_modules` too: each returns at
   once without its marker.
-- **`sideEffects`**: a file of `src/` that acts on load (registers on a global, adds a listener) is
-  listed in `package.json`, source and built. Only production drops an unlisted one.
+- **`sideEffects`**: a `src/` file acting on load (registers a global, adds a listener) is in
+  `package.json`, source and built, or production drops it. Fixtures: `apps/package.json`.
 - **Build tests** (`tests/build/`) share a production and a development build of
-  `tests/fixtures/build/apps/` per run (`sharedBuild`); `buildApp` builds with a test's own options,
-  `cliBuild` with a CLI. Raise a size budget only on purpose. `tests/fixtures/` is not type-checked.
-- Only a bare `pnpm test` checks `tests/coverage-baseline.json`. The engine fake cites Lynx's source
-  per behavior, and throws where unverified. `GENERATED_RUNS=500` tries more pages.
+  `tests/fixtures/build/apps/` per run (`sharedBuild`); `buildApp` takes a test's own options,
+  `cliBuild` a CLI. Fixtures are not type-checked; `stubs/` stand in for unwritten runtime.
+- Only a bare `pnpm test` checks `tests/coverage-baseline.json`. The engine fake cites Lynx per
+  behavior, and throws where unverified. `GENERATED_RUNS=500` tries more pages.
