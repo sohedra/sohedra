@@ -2,3 +2,7 @@
 export interface Shape {
 	size: number;
 }
+
+export interface Sized {
+	size: number;
+}

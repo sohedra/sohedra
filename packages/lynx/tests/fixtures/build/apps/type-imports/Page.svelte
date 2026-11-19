@@ -1,3 +1,10 @@
+<script lang="ts" module>
+	// A type a module script re-exports, in both spellings.
+	import { Shape as Exported, Sized } from "./shape.ts";
+	export type { Exported };
+	export { type Sized };
+</script>
+
 <script lang="ts">
 	// A type imported without `type`, as TypeScript without `verbatimModuleSyntax` allows, and read
 	// only as a type in an effect.

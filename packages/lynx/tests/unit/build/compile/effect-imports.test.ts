@@ -140,4 +140,16 @@ describe("the names a component imports, on the main thread", () => {
 		for (const name of ["reexported", "labeled", "method", "meta"])
 			expect(kept).not.toMatch(new RegExp(`\\b${name}\\b`));
 	});
+
+	it("leave out a type a module script re-exports, in either spelling", async () => {
+		const source = `<script lang="ts" module>
+	import { Shape, Sized, used } from "./shapes.ts";
+	export type { Shape };
+	export { type Sized, used };
+</script>
+<view></view>`;
+		const kept = keeper((await mainThread(source)).code);
+		expect(kept).toMatch(/\bused\b/);
+		for (const name of ["Shape", "Sized"]) expect(kept).not.toMatch(new RegExp(`\\b${name}\\b`));
+	});
 });

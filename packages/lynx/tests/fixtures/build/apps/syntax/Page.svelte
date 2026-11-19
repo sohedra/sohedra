@@ -3,6 +3,7 @@
 	// compares in JavaScript, and is a call of `a` (with a type argument) in TypeScript.
 	import { compared as fromRuneModule } from "./compare.svelte.js";
 	import { compared as fromModule } from "./plain.js";
+	import TsPart from "./TsPart.svelte";
 
 	const a = 1;
 	const b = 2;
@@ -23,3 +24,4 @@
 <text>component {compared.join(" ")}</text>
 <text>rune module {fromRuneModule.join(" ")}</text>
 <text>module {fromModule.join(" ")}</text>
+<TsPart />
