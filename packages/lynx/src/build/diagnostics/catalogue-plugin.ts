@@ -16,6 +16,14 @@ export interface PluginDetails {
 	iife_ignored: { value: string };
 	main_thread_asset_missing: { file: string };
 	rsbuild_swc_missing: Record<string, never>;
+	/** `packages` are the missing ones, as a list for the install command; `preset` the one run. */
+	test_peers_missing: { packages: string[]; preset: string; root: string };
+}
+
+/** Names as a sentence lists them: `a`, `a and b`, `a, b and c`. */
+function listOf(names: readonly string[]): string {
+	if (!Array.isArray(names)) return String(names);
+	return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 }
 
 const SVELTE_BUILD = "the Svelte build with custom renderers (sveltejs/svelte#18042)";
@@ -89,5 +97,11 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 		fix: () =>
 			"Do not remove the SWC loader from Rsbuild's `tools.bundlerChain`, and do not turn it off with `tools.swc: false`.",
 		docs: "rsbuild_swc_missing",
+	},
+	test_peers_missing: {
+		message: ({ packages, preset, root }) =>
+			`\`${preset}\` runs the tests with ${listOf(packages)}, which ${packages.length === 1 ? "is" : "are"} not installed in ${root}.`,
+		fix: ({ packages }) => `Add ${listOf(packages)} to the app's devDependencies.`,
+		docs: "test_peers_missing",
 	},
 };
