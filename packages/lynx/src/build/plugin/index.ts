@@ -27,7 +27,7 @@
 // ES2019). The background layer keeps the default env.
 
 import type { LynxTemplatePlugin as TemplatePlugin } from "@lynx-js/template-webpack-plugin";
-import type { RsbuildPlugin, RsbuildPluginAPI } from "@rsbuild/core";
+import type { RsbuildPlugin, RsbuildPluginAPI, ToolsConfig } from "@rsbuild/core";
 
 import { PACKAGE_NAME } from "../../wire/index.ts";
 import { buildError } from "../diagnostics/messages.ts";
@@ -85,7 +85,8 @@ const SWC_DEFAULTS = {
 		parser: { decorators: true },
 		transform: { useDefineForClassFields: false, optimizer: { simplify: true } },
 	},
-} as const;
+	// Boundary: SWC's type of the parser asks for the syntax, which `detectSyntax` picks per file.
+} as ToolsConfig["swc"];
 
 /**
  * The registry key under which the plugin keeps the options it was given, for the Vitest preset to
