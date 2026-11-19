@@ -3,6 +3,9 @@
 	// The root's rules, then this package's. oxlint reads every glob here, and the root's too,
 	// relative to this folder.
 	"extends": ["../../.oxlintrc.jsonc"],
+	// The app the type tests check against the package as published: its tsconfig.json extends the
+	// package's base by name, which resolves only once the package is installed (consumer.test.ts).
+	"ignorePatterns": ["tests/fixtures/types/app/**"],
 	"overrides": [
 		{
 			"files": ["src/**"],
