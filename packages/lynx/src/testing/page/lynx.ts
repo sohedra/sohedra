@@ -194,6 +194,12 @@ export function createLynx(options: {
 	/** What Lynx says about the device. */
 	systemInfo: Record<string, unknown>;
 	/**
+	 * Whether the engine has freed the background's runtime: it does as soon as the page's
+	 * `callDestroyLifetimeFun` returns (Android, Lynx 4.2), so nothing the background queued runs
+	 * and nothing it reports reaches Lynx after it.
+	 */
+	freed: () => boolean;
+	/**
 	 * Puts a thread's `lynx` in place: it runs before that thread's code does. Returns the thread
 	 * whose globals were in place before, if any.
 	 */
@@ -311,18 +317,26 @@ export function createLynx(options: {
 		},
 		background: {
 			...shared(),
+			reportError: (error, reportOptions) => {
+				if (!options.freed()) shared().reportError(error, reportOptions);
+			},
 			getCoreContext: () => coreContext,
 			getNativeApp: () => nativeApp,
 			getApp: () => app,
 			// A main-thread promise's reaction queued before this one ran finds the main thread's
 			// globals after it, as it would on its own thread.
 			queueMicrotask: (callback) =>
-				queueMicrotaskAs(() => {
-					const before = enter("background");
-					return () => {
-						if (before) enter(before);
-					};
-				}, callback),
+				queueMicrotaskAs(
+					() => {
+						const before = enter("background");
+						return () => {
+							if (before) enter(before);
+						};
+					},
+					() => {
+						if (!options.freed()) callback();
+					},
+				),
 			getJSModule: options.getJSModule,
 			fetchBundle: (url) => {
 				const answer = bundles.answer(url);

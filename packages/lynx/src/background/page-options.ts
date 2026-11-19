@@ -24,12 +24,14 @@ export interface MountPageOptions<Props extends Bag> {
 	context?: Map<any, any>;
 	/**
 	 * Hears each error the binding reports into Lynx, once, on either thread: what a component, an
-	 * effect, an event handler, a host listener, a teardown (the page's last ones included) or a
-	 * main-thread function throws, what fails as the page starts, hydrates or changes, and what the
-	 * app reports with `reportError`. Its context says the thread, the component when a development
-	 * build knows it, and the binding's code when the binding wrote the error. A crash reporter
-	 * plugs in here. It hears every error in every build: a development build only folds the
-	 * repeats of one error in LogBox.
+	 * effect, an event handler, a host listener, a teardown at a reload or a main-thread function
+	 * throws, what fails as the page starts, hydrates or changes, and what the app reports with
+	 * `reportError`. A teardown that throws as the page is destroyed is lost: Svelte reports it a
+	 * microtask later, and the engine frees the background's runtime first, as Lynx on Android
+	 * does; neither Lynx nor `onError` gets it. Its context says the thread, the component when a
+	 * development build knows it, and the binding's code when the binding wrote the error. A crash
+	 * reporter plugs in here. It hears every error in every build: a development build only folds
+	 * the repeats of one error in LogBox.
 	 *
 	 * What Lynx catches itself, a timer's callback or a rejection nobody handled, goes to the host
 	 * and LogBox, not here: Lynx offers no hook for it. What `onError` throws is reported into Lynx,

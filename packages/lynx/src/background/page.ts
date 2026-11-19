@@ -295,12 +295,11 @@ export function mountPage<Props extends Bag>(
 	 * teardown's error in the promise `unmount` returns, where it is reported. A layer the app's own
 	 * teardown unmounts is gone by then.
 	 */
-	function teardown(): Promise<void> | undefined {
+	function teardown(): void {
 		const mounted = instance;
 		instance = undefined;
-		const done = mounted ? unmount(mounted).catch(reportError) : undefined;
+		if (mounted) unmount(mounted).catch(reportError);
 		unmountLayers();
-		return done;
 	}
 
 	function mergeData(data: unknown): void {
@@ -327,9 +326,8 @@ export function mountPage<Props extends Bag>(
 
 	function destroy(): void {
 		bumpPage();
-		let tornDown: Promise<void> | undefined;
 		runAll([
-			() => void (tornDown = teardown()),
+			teardown,
 			() => callThrough(null),
 			() => channel.close(),
 			() => pageRenderer.retire(),
@@ -338,10 +336,10 @@ export function mountPage<Props extends Bag>(
 			closeHostEvents,
 			resetKeyboard,
 			clearPageState,
+			// Not after the teardown's promise: the engine frees the runtime as this hook returns
+			// (Android, Lynx 4.2), so what Svelte gives that promise is never reported.
+			() => releaseErrorHandler(errors),
 		]);
-		// The page's `onError` hears what its teardown threw, which Svelte gives the promise
-		// `unmount` returns, then lets go.
-		void Promise.resolve(tornDown).then(() => releaseErrorHandler(errors));
 	}
 
 	/** What read the data runs again, and the patch that shows it says the data was updated. */
