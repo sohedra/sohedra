@@ -357,6 +357,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: SOURCE,
 	},
 	{
+		id: "class-and-style-set-whole",
+		program: "runtime",
+		file: "src/internal/client/dom/elements/class.js",
+		anchor: "(custom_renderers_flag && current_renderer !== null)",
+		reliesOn:
+			"under a custom renderer, Svelte sets `class` and `style` whole every time their template effect runs, also when only a text of the template changed: the renderer's `unchanged-class-and-style` workaround drops what an element holds already, and goes when this stops",
+		test: RUNTIME,
+	},
+	{
 		id: "mount-renderer-option",
 		program: "runtime",
 		file: "src/internal/client/render.js",

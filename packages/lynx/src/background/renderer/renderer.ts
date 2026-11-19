@@ -8,7 +8,7 @@
 
 import type { Renderer } from "svelte/renderer";
 
-import { CSS_PROPS_HOLDERS, sourceLocation } from "../../svelte/runtime/index.ts";
+import { isCssPropsHolder, sourceLocation } from "../../svelte/runtime/index.ts";
 import {
 	DEFER,
 	DEFERRED_ROW,
@@ -525,7 +525,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 
 		createFragment: () => new TreeNode("fragment"),
 		// The element that holds a component's `--x` properties is a `view` (see CSS_PROPS_HOLDERS).
-		createElement: (name) => new Element(CSS_PROPS_HOLDERS.has(name) ? "view" : name),
+		createElement: (name) => new Element(isCssPropsHolder(name) ? "view" : name),
 		createText(data) {
 			const node = new TreeNode("text");
 			node.data = data;

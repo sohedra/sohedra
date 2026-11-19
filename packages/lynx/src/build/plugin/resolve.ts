@@ -120,8 +120,13 @@ export function configureResolve(chain: RspackChain, isDev: boolean): void {
 	// The Lynx engine resolves with lynx/import/require/browser only. Svelte libraries publish their
 	// entry under `svelte` (what svelte-package writes), older ones in a `svelte` main field that
 	// points at their sources. Svelte itself decides dev or production through esm-env's conditions;
-	// without one it decides at run time (keeping dev code, and warning).
-	chain.resolve.conditionNames.add("svelte").add(isDev ? "development" : "production");
+	// without one it decides at run time (keeping dev code, and warning). Its custom-renderer build
+	// comes under `svelte-custom-renderer`, as its docs ask outside a browser; the main thread's rule
+	// below has its own list, without it, for Svelte's server build.
+	chain.resolve.conditionNames
+		.add("svelte-custom-renderer")
+		.add("svelte")
+		.add(isDev ? "development" : "production");
 	chain.resolve.mainFields.prepend("svelte");
 	// A rule's `resolve` is for the requests of the modules it matches: here, the modules a
 	// main-thread module imports.

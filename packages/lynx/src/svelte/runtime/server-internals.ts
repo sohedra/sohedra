@@ -18,7 +18,7 @@
 import * as server from "svelte/internal/server";
 
 import { escapeJsonText } from "../../wire/index.ts";
-import { CSS_PROPS_HOLDERS } from "./css-props.ts";
+import { isCssPropsHolder } from "./css-props.ts";
 import { FirstScreens, listAttributes } from "./first-screen.ts";
 import type { ListAttributes } from "./first-screen.ts";
 import { branchId, newBranchCounts } from "./thread-branches.ts";
@@ -137,12 +137,12 @@ export function css_props(
 	const wrapper: Renderer = {
 		push(html) {
 			const open = WRAPPER_OPEN.exec(html);
-			if (open && CSS_PROPS_HOLDERS.has(open[1]!)) {
+			if (open && isCssPropsHolder(open[1]!)) {
 				renderer.push(`<view${html.slice(open[0].length)}`);
 				return;
 			}
 			const close = /^<\/([a-z-]+)>$/.exec(html);
-			renderer.push(close && CSS_PROPS_HOLDERS.has(close[1]!) ? "</view>" : html);
+			renderer.push(close && isCssPropsHolder(close[1]!) ? "</view>" : html);
 		},
 	};
 	svelte.css_props(wrapper, isHtml, props, component, dynamic);
