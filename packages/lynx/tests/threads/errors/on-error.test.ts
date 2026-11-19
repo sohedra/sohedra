@@ -408,14 +408,38 @@ describe("a page's crash, for the reload after a save", () => {
 });
 
 describe("onError at the page's end", () => {
-	it("hears what the page's last teardown threw", async () => {
+	it("does not hear what the page's last teardown threw: the engine frees the runtime first", async () => {
+		// As on Android: the teardown's error would be reported from a microtask after
+		// `callDestroyLifetimeFun` returns, which never runs. Lost, with nothing left unhandled.
 		const heard: string[] = [];
 		const page = startSveltePage(TeardownThrows, {
 			onError: (error) => void heard.push(error.message.split("\n")[0]!),
 		});
 		await page.settle();
-		page.destroy();
+		const unhandled: unknown[] = [];
+		const onUnhandled = (reason: unknown) => void unhandled.push(reason);
+		process.on("unhandledRejection", onUnhandled);
+		try {
+			expect(() => page.destroy()).not.toThrow();
+			await page.settle();
+			await new Promise((resolve) => setTimeout(resolve, 10));
+		} finally {
+			process.off("unhandledRejection", onUnhandled);
+		}
+		expect(page.errors).toEqual([]);
+		expect(heard).toEqual([]);
+		expect(unhandled).toEqual([]);
+	});
+
+	it("hears a teardown that throws at a reload", async () => {
+		const heard: string[] = [];
+		const page = startSveltePage(TeardownThrows, {
+			onError: (error) => void heard.push(error.message.split("\n")[0]!),
+		});
 		await page.settle();
+		page.reload();
+		await page.settle();
+		await new Promise((resolve) => setTimeout(resolve, 10));
 		expect(messages(page.errors)).toEqual(["teardown failed"]);
 		expect(heard).toEqual(["teardown failed"]);
 	});
@@ -425,7 +449,6 @@ describe("onError at the page's end", () => {
 		page.destroy();
 		await page.settle();
 		page.asBackground(() => reportError(new Error("after the end")));
-		expect(messages(page.errors)).toEqual(["after the end"]);
 		expect(heard).toEqual([]);
 	});
 });

@@ -169,20 +169,24 @@ describe("the page's end", () => {
 		).toThrow(/no page running/);
 	});
 
-	it("reports an error of the app's teardown once, and leaves no unhandled rejection", async () => {
+	it("loses an error of the app's teardown, as the engine frees the runtime first, and throws nothing", async () => {
+		// Svelte hands a teardown's error to the promise `unmount` returns, whose reaction is a
+		// microtask; the engine frees the background's runtime as `callDestroyLifetimeFun` returns
+		// (Android, Lynx 4.2), so the report never runs. Nothing is thrown at the engine, and nothing
+		// is left unhandled.
 		const page = startSveltePage(TeardownThrows);
 		await page.settle();
 		const unhandled: unknown[] = [];
 		const onUnhandled = (reason: unknown) => void unhandled.push(reason);
 		process.on("unhandledRejection", onUnhandled);
 		try {
-			page.destroy();
+			expect(() => page.destroy()).not.toThrow();
 			await page.settle();
 			await new Promise((resolve) => setTimeout(resolve, 10));
 		} finally {
 			process.off("unhandledRejection", onUnhandled);
 		}
-		expect(page.errors.map(String)).toEqual(["Error: teardown failed"]);
+		expect(page.errors).toEqual([]);
 		expect(unhandled).toEqual([]);
 	});
 });
