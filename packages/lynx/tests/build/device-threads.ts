@@ -250,7 +250,10 @@ function runBackground(
 	const app = lynx.getApp();
 	app._params = adopt(app._params) as typeof app._params;
 	const factories = new Map<string, (...args: unknown[]) => void>();
+	// lynx-core keeps one cache for each (lynx-core's lynx/lynx.ts, `requireModule.cache` and
+	// `requireModuleAsync.cache`).
 	const required = new Map<string, unknown>();
+	const requiredAsync = new Map<string, unknown>();
 	/**
 	 * Runs a script as lynx-core loads one, and answers what its holder's `init` returns: the holder
 	 * the script returns (`/app-service.js`), or else the one it leaves on the global object.
@@ -286,7 +289,8 @@ function runBackground(
 			void Promise.resolve().then(() => {
 				let exports: unknown;
 				try {
-					exports = deviceLynx.requireModule(path);
+					if (!requiredAsync.has(path)) requiredAsync.set(path, load(path));
+					exports = requiredAsync.get(path);
 				} catch (error) {
 					callback(error);
 					return;
