@@ -6,3 +6,6 @@
 
 # The app the type tests check against the package as published
 /.types-consumer/
+
+# The Vitest preset's suite's report, which the Rstest suite reads
+/.vitest/
