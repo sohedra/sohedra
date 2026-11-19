@@ -4,9 +4,9 @@
 export const MIN_ENGINE_VERSION = "4.2";
 
 /**
- * The newest engine the encoder encodes for, as a whole version: `@lynx-js/tasm` 0.0.53, the
- * version pinned in `package.json`, encodes for 4.3 and 4.3.0 and refuses 4.3.1. Raise this with
- * the pin; a contract test asks the encoder.
+ * The newest engine the encoder encodes for, as a whole version: the `@lynx-js/tasm` pinned in
+ * `package.json` encodes for 4.3 and 4.3.0 and refuses 4.3.1. Raise this with the pin; a contract
+ * test asks the encoder.
  */
 export const MAX_ENGINE_VERSION = "4.3";
 
