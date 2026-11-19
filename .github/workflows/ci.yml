@@ -1,5 +1,7 @@
 # Every claim the packages make, run on every pull request and every push to main:
 #
+# - fast: lint, format and type checks, on Linux. A draft pull request runs only these
+#   (CONTRIBUTING.md § Pull requests); marking it ready runs the rest.
 # - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
 #   own Node.js (devEngines in package.json).
 # - generated: the generated pages, many more of them than a local run tries, on Linux.
@@ -15,6 +17,7 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
@@ -28,8 +31,32 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  fast:
+    name: Fast checks
+    if: github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch main
+        run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm check
+
   checks:
     name: Checks (${{ matrix.os }})
+    if: github.event.pull_request.draft != true
     strategy:
       fail-fast: false
       matrix:
@@ -64,6 +91,7 @@ jobs:
 
   generated:
     name: Generated pages
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -84,6 +112,7 @@ jobs:
 
   apps:
     name: App with ${{ matrix.manager }}, Node.js ${{ matrix.node }} (${{ matrix.versions }})
+    if: github.event.pull_request.draft != true
     strategy:
       fail-fast: false
       matrix:
