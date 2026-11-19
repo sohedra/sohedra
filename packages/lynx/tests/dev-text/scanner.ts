@@ -321,7 +321,12 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 						if (!isDev) shipped.add(text);
 						else if (!dev.has(text)) {
 							const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
-							dev.set(text, { text, file: path.relative(root, source.fileName), line });
+							dev.set(text, {
+								text,
+								// With `/` between folders on every system, as Windows' `relative()` has not.
+								file: path.relative(root, source.fileName).replaceAll("\\", "/"),
+								line,
+							});
 						}
 					}
 				}

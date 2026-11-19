@@ -78,9 +78,10 @@ export function cliApp(app: string, packages: string[] = []): string {
 	fs.cpSync(path.join(FIXTURES, "cli", app), folder, { recursive: true });
 	const modules = path.join(folder, "node_modules");
 	fs.mkdirSync(path.join(modules, "@sohedra"), { recursive: true });
-	fs.symlinkSync(ROOT, path.join(modules, "@sohedra/lynx"), "dir");
+	// Junctions on Windows, which link a folder without the privilege a symbolic link needs.
+	fs.symlinkSync(ROOT, path.join(modules, "@sohedra/lynx"), "junction");
 	const svelte = path.dirname(createRequire(import.meta.url).resolve("svelte/package.json"));
-	fs.symlinkSync(svelte, path.join(modules, "svelte"), "dir");
+	fs.symlinkSync(svelte, path.join(modules, "svelte"), "junction");
 	for (const name of packages)
 		fs.cpSync(path.join(FIXTURES, "packages", name), path.join(modules, name), {
 			recursive: true,

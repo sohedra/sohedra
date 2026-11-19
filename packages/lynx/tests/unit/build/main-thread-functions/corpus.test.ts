@@ -47,7 +47,10 @@ function inputs(dir = corpus): string[] {
 		.readdirSync(dir, { withFileTypes: true })
 		.flatMap((entry) => {
 			const file = path.join(dir, entry.name);
-			return entry.isDirectory() ? inputs(file) : [path.relative(corpus, file)];
+			// Named with `/` on every system: the names are the snapshots' keys.
+			return entry.isDirectory()
+				? inputs(file)
+				: [path.relative(corpus, file).split(path.sep).join("/")];
 		})
 		.sort();
 }

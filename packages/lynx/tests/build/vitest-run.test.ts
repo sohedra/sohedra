@@ -11,6 +11,9 @@ import { beforeAll, describe, expect, it } from "@rstest/core";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
 
+/** A test file's path from the package, with `/` between folders on every system. */
+const fromRoot = (file: string): string => path.relative(ROOT, file).split(path.sep).join("/");
+
 interface Results {
 	testResults: {
 		name: string;
@@ -49,7 +52,7 @@ describe("the Vitest preset's suite", { timeout: 300_000 }, () => {
 
 	it("passes every test, under every project", () => {
 		const tests = results.testResults.flatMap((file) =>
-			file.assertionResults.map((test) => ({ file: path.relative(ROOT, file.name), ...test })),
+			file.assertionResults.map((test) => ({ file: fromRoot(file.name), ...test })),
 		);
 		const failed = tests
 			.filter((test) => test.status !== "passed")
@@ -59,7 +62,7 @@ describe("the Vitest preset's suite", { timeout: 300_000 }, () => {
 	});
 
 	it("runs each row of the parity table", () => {
-		const files = new Set(results.testResults.map((file) => path.relative(ROOT, file.name)));
+		const files = new Set(results.testResults.map((file) => fromRoot(file.name)));
 		for (const row of ["options", "no-first-frame", "errors"])
 			expect(files.has(`tests/vitest/${row}.test.ts`), row).toBe(true);
 		expect(files.has("tests/library/counter.test.ts")).toBe(true);

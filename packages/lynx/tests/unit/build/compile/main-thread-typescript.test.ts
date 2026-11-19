@@ -3,7 +3,6 @@
 // (an `enum`, a `namespace`, a parameter property, a decorator) is refused with its place.
 
 import { spawnSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
 
 import { describe, expect, it } from "@rstest/core";
 import * as acorn from "acorn";
@@ -79,9 +78,7 @@ describe("Node's stripper", () => {
 	});
 
 	it("says nothing of its being experimental, and lets other warnings through", () => {
-		const module = pathToFileURL(
-			new URL("../../../../src/build/compile/strip-types.ts", import.meta.url).pathname,
-		).href;
+		const module = new URL("../../../../src/build/compile/strip-types.ts", import.meta.url).href;
 		const script = `
 			const { nodeTypeStripper, stripMainThreadTypes } = await import(${JSON.stringify(module)});
 			const source = { file: "A.svelte", text: "" };

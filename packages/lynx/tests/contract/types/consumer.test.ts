@@ -20,6 +20,10 @@ const PACKAGE = path.join(WORK, "node_modules/@sohedra/lynx");
 const APP = path.join(WORK, "app");
 const TYPE_TESTS = path.join(WORK, "type-tests");
 
+/** `to` from `from`, with `/` between folders on every system, as the names here are written. */
+const slashed = (from: string, to: string): string =>
+	path.relative(from, to).split(path.sep).join("/");
+
 /** The type tests that reach the source past the public entries, which a published package hides. */
 const INTERNAL_TYPE_TESTS = ["globals", "testing/test-page.ts"];
 
@@ -67,8 +71,7 @@ function pack(): void {
 	fs.cpSync(path.join(ROOT, "tests/fixtures/types/app"), APP, { recursive: true });
 	fs.cpSync(path.join(ROOT, "tests/types"), TYPE_TESTS, {
 		recursive: true,
-		filter: (from) =>
-			!INTERNAL_TYPE_TESTS.includes(path.relative(path.join(ROOT, "tests/types"), from)),
+		filter: (from) => !INTERNAL_TYPE_TESTS.includes(slashed(path.join(ROOT, "tests/types"), from)),
 	});
 }
 
@@ -83,7 +86,7 @@ function filesIn(folder: string): string[] {
 /** The diagnostics of a program, as `file:line TS1234 message` lines relative to the work folder. */
 function diagnosticsOf(typescript: typeof ts, program: ts.Program): Diagnostic[] {
 	return typescript.getPreEmitDiagnostics(program).map((diagnostic) => ({
-		file: diagnostic.file ? path.relative(WORK, diagnostic.file.fileName) : "",
+		file: diagnostic.file ? slashed(WORK, diagnostic.file.fileName) : "",
 		line: diagnostic.file
 			? diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line + 1
 			: 0,
@@ -187,12 +190,13 @@ function svelteCheck(): string[] {
 		output = (error as { stdout: string }).stdout;
 	}
 	return output
-		.split("\n")
+		.split(/\r?\n/)
 		.filter((line) => / ERROR /.test(line))
 		.map((line) => {
 			const [, file, position, message] = /ERROR "([^"]+)" (\d+):\d+ "(.*)"$/.exec(line)!;
-			// The whole message: with overloads, the first line only says none matched.
-			return `${file}:${position} ${JSON.parse(`"${message}"`).replace(/\s+/g, " ")}`;
+			// The whole message: with overloads, the first line only says none matched. Windows
+			// names the file with `\\`.
+			return `${file.replaceAll("\\", "/")}:${position} ${JSON.parse(`"${message}"`).replace(/\s+/g, " ")}`;
 		});
 }
 
