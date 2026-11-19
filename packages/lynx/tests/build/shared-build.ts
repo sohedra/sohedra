@@ -75,13 +75,23 @@ function runFolder(): string {
 
 const builds = new Map<SharedMode, Promise<Omit<AppBuild, "entry">>>();
 
+/** The build recorded at `record` by an earlier test file of the run, or `undefined` if none is. */
+function readRecord(record: string): Omit<AppBuild, "entry"> | undefined {
+	try {
+		return JSON.parse(fs.readFileSync(record, "utf8")) as Omit<AppBuild, "entry">;
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+		throw error;
+	}
+}
+
 async function buildOnce(mode: SharedMode): Promise<Omit<AppBuild, "entry">> {
 	const dist = path.join(runFolder(), mode);
 	const record = path.join(dist, "build.json");
 	const release = await lock();
 	try {
-		if (fs.existsSync(record))
-			return JSON.parse(fs.readFileSync(record, "utf8")) as Omit<AppBuild, "entry">;
+		const recorded = readRecord(record);
+		if (recorded) return recorded;
 		// A build that stopped before its record leaves no output for this one to build over.
 		fs.rmSync(dist, { recursive: true, force: true });
 		fs.mkdirSync(dist, { recursive: true });
