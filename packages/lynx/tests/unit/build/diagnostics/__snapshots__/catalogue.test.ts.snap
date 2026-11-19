@@ -8,7 +8,7 @@ exports[`the build's catalogue > animate_directive: the message 1`] = `
 2:   let a = 1;
      ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/animate_directive"
 `;
 
@@ -132,6 +132,18 @@ Use \`define.mainThread\` or \`define.background\`.
 https://sohedra.com/e/define_thread_unknown"
 `;
 
+exports[`the build's catalogue > dev_client_moved: the message 1`] = `
+"Lynx's dev client has changed: \`function reloadPage() {\` is not in node_modules/@lynx-js/webpack-dev-transport/lib/client/reloadApp.js exactly once, so build errors stay out of LogBox and a change that needs DevTool to load the page says nothing.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use the @lynx-js/webpack-dev-transport this @sohedra/lynx was built for, or update @sohedra/lynx.
+https://sohedra.com/e/dev_client_moved"
+`;
+
 exports[`the build's catalogue > encoder_not_handed_over: the message 1`] = `
 "The Lynx encoder that @sohedra/lynx carries could not be given to the template plugin: its LynxEncodePlugin has no encodePool to run the encode step in.
 /app/src/App.svelte:2:3
@@ -248,7 +260,7 @@ exports[`the build's catalogue > in_directive: the message 1`] = `
 2:   let a = 1;
      ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/in_directive"
 `;
 
@@ -380,7 +392,7 @@ exports[`the build's catalogue > out_directive: the message 1`] = `
 2:   let a = 1;
      ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/out_directive"
 `;
 
@@ -597,7 +609,7 @@ exports[`the build's catalogue > svelte_window: the message 1`] = `
 2:   let a = 1;
      ^
 
-Read the page's size from \`svelte/reactivity/window\`. Listen to the page's events with \`on(root, …)\`.
+Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`. Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_window"
 `;
 
@@ -657,7 +669,7 @@ exports[`the build's catalogue > transition_directive: the message 1`] = `
 2:   let a = 1;
      ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/transition_directive"
 `;
 

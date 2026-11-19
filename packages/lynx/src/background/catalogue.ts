@@ -102,6 +102,9 @@ export interface BackgroundDetails {
 	lazy_bundle_timed_out: { url: string; seconds: number };
 	/** `url` is the bundle's address as the build wrote it. */
 	lazy_bundle_address_not_full: { url: string };
+	/** `where` is the build's errors, as the dev server sent them. */
+	build_failed: { where: string };
+	reload_needs_devtool: Record<string, never>;
 }
 
 /** What a code of the background names. */
@@ -333,6 +336,18 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 			`The lazy bundle ${url} has no full address, and the page's own address, to resolve it against, is unknown.`,
 		fix: () => "Set output.assetPrefix to the full address the bundles are served from.",
 		docs: "lazy_bundle_address_not_full",
+	},
+	build_failed: {
+		message: () => "The app's last change did not build, so the page still runs the app as it was.",
+		fix: () => "Fix the error the terminal shows too: the page updates once the app builds.",
+		docs: "build_failed",
+	},
+	reload_needs_devtool: {
+		message: () =>
+			"A change needs the page to load again, and only Lynx's DevTool loads it from the dev server: DevTool is off.",
+		fix: () =>
+			"Reopen the page to see the change. To have the page load again by itself, turn DevTool on in the host's settings (in Lynx Explorer, its DevTool switch).",
+		docs: "reload_needs_devtool",
 	},
 };
 

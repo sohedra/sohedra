@@ -16,3 +16,29 @@ export function sourceLocation(node: object): string | undefined {
 	if (!loc || typeof loc.file !== "string") return undefined;
 	return `${loc.file}:${String(loc.line)}:${String(loc.column)}`;
 }
+
+/** The last part of a path: Svelte names a component by its file's name. */
+const fileName = (file: string): string => file.slice(file.lastIndexOf("/") + 1);
+
+/**
+ * The component whose markup made `node`, as its file's name (`Card.svelte`), in a development
+ * build; `undefined` otherwise.
+ */
+export function componentOfNode(node: object): string | undefined {
+	// Boundary: Svelte's development build adds this field to the renderer's own node objects.
+	const file = (node as { __svelte_meta?: SvelteMeta }).__svelte_meta?.loc?.file;
+	return typeof file === "string" ? fileName(file) : undefined;
+}
+
+/** A line Svelte's development build adds under the message of an error that leaves an effect. */
+const COMPONENT_LINE = /^\s+in (\S+\.svelte)$/m;
+
+/**
+ * The component an error left, from the lines Svelte's development build adds to its message
+ * (`\n\tin $effect\n\tin Card.svelte\n\tin App.svelte`): the innermost, `Card.svelte`. `undefined`
+ * in a production build, which adds none.
+ */
+export function componentInMessage(message: string): string | undefined {
+	const found = COMPONENT_LINE.exec(message)?.[1];
+	return found === undefined ? undefined : fileName(found);
+}

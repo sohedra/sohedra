@@ -3,7 +3,7 @@
 // works: a component's top-level code runs here as the first frame is drawn, and imports them all.
 
 import { firstFrameError } from "./catalogue.ts";
-import { firstFrame } from "./globals.ts";
+import { firstFrame, functionsGlobal } from "./globals.ts";
 
 /** The error of a call of `call` on the main thread. */
 const onMainThread = (call: string): Error =>
@@ -48,10 +48,16 @@ export const root: {
 	},
 };
 
-/** Reports an error into Lynx from the main thread. Never throws over the error it reports. */
+/**
+ * Reports an error into Lynx from the main thread, through its runtime: with Lynx's code for the
+ * main thread, and to the page's `onError` on the background. Before the runtime has started, into
+ * Lynx alone. Never throws over the error it reports.
+ */
 export function reportError(error: unknown): void {
 	try {
-		firstFrame.lynx.reportError(error);
+		const runtime = functionsGlobal().runtime;
+		if (runtime) runtime.reportError(error);
+		else firstFrame.lynx.reportError(error);
 	} catch {
 		// Reporting must never throw over the error.
 	}

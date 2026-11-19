@@ -21,6 +21,8 @@ export interface MainThreadDetails {
 	/** `reason` is the first line of what the page's components threw. */
 	first_frame_threw: { reason: string };
 	rewrite_not_page: { id: number };
+	/** `id` is the background's id of the row. */
+	list_row_not_written: { id: number };
 	/** `id` is the function's, which names its file and its place in it. */
 	main_thread_function_not_found: { id: string };
 	main_thread_value_too_deep: { depth: number };
@@ -105,6 +107,12 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 			`The background wrote element ${id} again, and the main thread writes only the whole page again.`,
 		fix: () => `The rest of the change was applied. ${REPORT}`,
 		docs: "rewrite_not_page",
+	},
+	list_row_not_written: {
+		message: ({ id }) =>
+			`A <list> asked for its row ${id}, which the page has not written, so the row stays empty.`,
+		fix: () => `The list's other rows are shown. ${REPORT}`,
+		docs: "list_row_not_written",
 	},
 	main_thread_function_not_found: {
 		message: ({ id }) =>

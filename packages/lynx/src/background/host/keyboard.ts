@@ -10,7 +10,10 @@ import { host } from "./events.ts";
 export interface KeyboardState {
 	/** Whether the keyboard is open. */
 	readonly open: boolean;
-	/** How much of the page the open keyboard covers, in Lynx's layout units; 0 while it is closed. */
+	/**
+	 * How much of the page the open keyboard covers, in Lynx's layout units; 0 while it is closed,
+	 * and never below 0.
+	 */
 	readonly height: number;
 }
 
@@ -21,12 +24,14 @@ const CLOSED: KeyboardState = { open: false, height: 0 };
  * `("on", height)` and `("off", 0)`, Android `("on" | "off", height, height)`. The height is Lynx's
  * number as it came while the keyboard is open, and 0 once it closes: Android measures even a
  * closed keyboard to the Lynx view's bottom, which is not 0 when something sits below the view.
+ * It is never below 0: Android sends a negative height when the Lynx view ends above the open
+ * keyboard's top, where the keyboard covers none of the page.
  *
  * @workaround keyboard-closed-height kind=lynx-gap delete-when="Lynx sends a height of 0 with every off status of keyboardstatuschanged, on Android too"
  */
 export function keyboardState(status: unknown, height: unknown): KeyboardState {
 	if (status !== "on") return CLOSED;
-	return { open: true, height: typeof height === "number" ? height : 0 };
+	return { open: true, height: typeof height === "number" && height > 0 ? height : 0 };
 }
 
 const state = signal(CLOSED);
@@ -52,8 +57,9 @@ function update(...args: unknown[]): void {
  *
  * It listens from its first read to the page's end: a keyboard already open then reads as closed
  * until it changes. The height is Lynx's, in Lynx's layout units, and is measured to two edges: on
- * iOS from the bottom of the window, on Android from the bottom of the Lynx view. They are the same
- * when the Lynx view reaches the bottom of the window. On Android it changes several times while
+ * iOS against the window, from its bottom; on Android against the Lynx view, from its bottom. They
+ * are the same when the Lynx view reaches the bottom of the window. It is never below 0: a Lynx view
+ * that ends above the keyboard is not covered. On Android it changes several times while
  * the keyboard animates. On the main thread it is always closed.
  */
 export const keyboard: { readonly current: KeyboardState } = {

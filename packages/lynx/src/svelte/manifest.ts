@@ -375,6 +375,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: RUNTIME,
 	},
 	{
+		id: "dev-error-component-lines",
+		program: "runtime",
+		file: "src/internal/client/error-handling.js",
+		anchor: "[FILENAME].split('/').pop()",
+		reliesOn:
+			"a development build adds a line `in File.svelte` for each component, innermost first, under the message of an error that leaves an effect, which names the component `onError` hears of",
+		test: SOURCE,
+	},
+	{
 		id: "hydration-off-under-renderer",
 		program: "runtime",
 		file: "src/internal/client/custom-renderer/state.js",

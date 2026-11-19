@@ -376,7 +376,12 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		setAttribute: (element, key, value) => setAttribute(element, key, value),
 		setValue(element, params, answers) {
 			if (!host || element.lynxId === 0)
-				return Promise.reject(new Error(`<${element.tag}> is not on the page.`));
+				return Promise.reject(
+					backgroundError({
+						code: "element_not_on_page",
+						details: { method: "setValue", tag: element.tag ?? "", where: sourceLocation(element) },
+					}),
+				);
 			return host.call(
 				element.lynxId,
 				answers === undefined

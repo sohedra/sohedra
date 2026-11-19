@@ -20,6 +20,7 @@
 
 import { listUpdateInfo } from "../wire/index.ts";
 import type { ListItemInfo, ListUpdateInfo } from "../wire/index.ts";
+import { mainThreadError } from "./catalogue.ts";
 import { mainThread } from "./globals.ts";
 import type { ComponentAtIndex, LynxElement } from "./globals.ts";
 import { adoptedList, heldCells, waitingCells } from "./lists/adopt.ts";
@@ -151,7 +152,8 @@ export function createLists(scope: ListsScope): Lists {
 			// The lists inside the cell hear of their items before the cell is shown.
 			flush();
 			const element = scope.elementOf(cell.id);
-			if (!element) throw new Error(`The list has no element for its cell ${cell.id}.`);
+			if (!element)
+				throw mainThreadError({ code: "list_row_not_written", details: { id: cell.id } });
 			cell.element = element;
 			cell.uid = mainThread.__GetElementUniqueID(element);
 			list.cellsByUid.set(cell.uid, cell);

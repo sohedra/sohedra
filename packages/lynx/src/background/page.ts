@@ -14,6 +14,8 @@ import { flushSync, mount, unmount } from "svelte";
 import type { Component } from "svelte";
 
 import {
+	componentInMessage,
+	componentOfNode,
 	endFirstScreens,
 	listenThrough,
 	pushRenderer,
@@ -21,18 +23,20 @@ import {
 	startFirstScreens,
 	startPropsIds,
 } from "../svelte/runtime/index.ts";
-import { encodeError, ROOT_ID } from "../wire/index.ts";
+import { decodeError, encodeError, ROOT_ID } from "../wire/index.ts";
 import type {
 	CallMessage,
+	ErrorMessage,
 	HideMessage,
 	Result,
 	RewriteMessage,
 	SentEvent,
-	SentTarget,
 	ShowMessage,
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import { openChannel } from "./channel.ts";
+import { heard, setErrorHandler, startOver } from "./errors.ts";
+import type { ErrorSource } from "./errors.ts";
 import { callThrough } from "./functions/calls.ts";
 import { background } from "./globals.ts";
 import { globalPropsChanged, initDataChanged } from "./host/data.ts";
@@ -40,34 +44,14 @@ import { closeHostEvents, openHostEvents } from "./host/events.ts";
 import { resetKeyboard } from "./host/keyboard.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
 import { closeLayers, openLayers, unmountLayers } from "./layers.ts";
+import type { Bag, MountPageOptions } from "./page-options.ts";
 import { bumpPage, clearPageState, currentPage, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { numberInput } from "./renderer/input.ts";
-import { pageHandlers, pageQueue, pageRenderer } from "./renderer/page-renderer.ts";
+import { pageHandlers, pageQueue, pageRenderer, withNodes } from "./renderer/page-renderer.ts";
 import type { ElementNode } from "./renderer/renderer.ts";
 import { rowOf, waitsToBeAsked } from "./renderer/rows.ts";
-import { reportError, warnOnce } from "./report.ts";
-
-// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
-type Bag = Record<string, any>;
-
-/** How `mountPage` mounts the page's root component. */
-export interface MountPageOptions<Props extends Bag> {
-	/**
-	 * The root component's props: an object, or a function of the page's data and the host's global
-	 * props, called at the page's start and at each reload. The first frame is drawn with the same,
-	 * so both threads draw the same page.
-	 */
-	props?:
-		| Props
-		| ((initData: Record<string, unknown>, globalProps: Record<string, unknown>) => Props);
-	/**
-	 * The contexts the root component gets, as Svelte's `mount` takes them: on the first frame and
-	 * on the background alike.
-	 */
-	// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own type of a context
-	context?: Map<any, any>;
-}
+import { clearRepeats, report, reportError, warnOnce } from "./report.ts";
 
 /** What the engine gives the app when it opens the page (lynx-core's app `_params`). */
 interface AppParams {
@@ -95,18 +79,15 @@ const isThenable = (value: unknown): value is PromiseLike<unknown> =>
 	value !== null &&
 	typeof Reflect.get(value, "then") === "function";
 
+/** The component an error came from, from what the thread knew or Svelte's development records. */
+function componentOf(error: Error, { node, component }: ErrorSource): string | undefined {
+	return (
+		component ?? componentInMessage(error.message) ?? (node ? componentOfNode(node) : undefined)
+	);
+}
+
 /** What a call that threw answers. */
 const failure = (error: unknown): Result => ({ ok: false, error: encodeError(error) });
-
-/** An event's targets as the element nodes themselves; a target with no node stays as it came. */
-function withNodes(event: SentEvent): Record<string, unknown> {
-	const node = (sent: SentTarget | undefined): unknown => {
-		if (!sent) return sent;
-		const found = sent.node === 0 ? undefined : pageRenderer.nodeById(sent.node);
-		return found ? pageRenderer.eventTarget(found, sent) : sent;
-	};
-	return { ...event, target: node(event.target), currentTarget: node(event.currentTarget) };
-}
 
 /**
  * Mounts `App` as the page of this Lynx view: the page's entry calls it once, on both threads. On
@@ -127,6 +108,8 @@ export function mountPage<Props extends Bag>(
 ): void {
 	const { lynx } = background;
 	const app = lynx.getApp();
+	setErrorHandler(options.onError, componentOf);
+	clearRepeats();
 	startGeneration();
 	openLayers();
 	openHostEvents();
@@ -140,7 +123,7 @@ export function mountPage<Props extends Bag>(
 	 * Runs handlers as Svelte runs effects, then sends their updates at once; `after` runs once
 	 * Svelte's updates are queued, before the send.
 	 */
-	function handle(run: () => void, after?: () => void): void {
+	function handle(run: () => void, after?: () => void, source?: ErrorSource): void {
 		try {
 			// With the renderer current, as Svelte runs effects: `on()` called in a handler listens
 			// through the renderer.
@@ -152,7 +135,7 @@ export function mountPage<Props extends Bag>(
 			}
 			flushSync();
 		} catch (error) {
-			reportError(error);
+			report(error, source);
 		}
 		after?.();
 		channel.flush();
@@ -206,13 +189,23 @@ export function mountPage<Props extends Bag>(
 	}
 
 	function dispatch(handler: number, event: SentEvent, input: number | undefined): void {
-		handle(() => {
-			const received = withNodes(event);
-			if (input !== undefined) numberInput(received, input);
-			if (received["type"] === "layoutchange")
-				pageRenderer.sawLayout(received["currentTarget"], received["detail"]);
-			pageHandlers.dispatch(handler, received);
-		});
+		const received = withNodes(event);
+		const target = received["currentTarget"];
+		handle(
+			() => {
+				if (input !== undefined) numberInput(received, input);
+				if (received["type"] === "layoutchange") pageRenderer.sawLayout(target, received["detail"]);
+				pageHandlers.dispatch(handler, received);
+			},
+			undefined,
+			{ node: typeof target === "object" && target !== null ? target : undefined },
+		);
+	}
+
+	/** An error the main thread reported into Lynx: the page's `onError` hears it here. */
+	function mainThreadReported({ error, place }: ErrorMessage): void {
+		const node = place?.node === undefined ? undefined : pageRenderer.nodeById(place.node);
+		heard(decodeError(error), "main-thread", { node, component: place?.component });
 	}
 
 	/**
@@ -261,6 +254,7 @@ export function mountPage<Props extends Bag>(
 		onShow: show,
 		onHide: hide,
 		onCall: callBackground,
+		onError: mainThreadReported,
 		waits: (id) => {
 			const node = pageRenderer.nodeById(id);
 			return node !== undefined && waitsToBeAsked(node);
@@ -320,6 +314,8 @@ export function mountPage<Props extends Bag>(
 
 	function reload(data: unknown): void {
 		bumpPage();
+		startOver();
+		clearRepeats();
 		mergeData(data);
 		// Before the old app goes: what reads the data outside the app runs again as the new app
 		// renders, and the new app reads it as it starts.
@@ -346,6 +342,7 @@ export function mountPage<Props extends Bag>(
 			closeHostEvents,
 			resetKeyboard,
 			clearPageState,
+			() => setErrorHandler(undefined),
 		]);
 	}
 

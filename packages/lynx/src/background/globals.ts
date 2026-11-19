@@ -74,7 +74,14 @@ export interface BackgroundGlobals {
 		loadScript(section: string, options: { bundleName: string }): unknown;
 		/** What the bundler's chunk loader calls for an `import()` the build made a lazy bundle. */
 		loadLazyBundle?: (url: string) => Promise<unknown>;
+		/**
+		 * Loads the page again from the bundle the host loaded, with `data` added to its data
+		 * (lynx-core's lynx.ts, reload; core/renderer/template_assembler.cc, ReloadFromJS).
+		 */
+		reload?(data: Record<string, unknown>, callback: () => void): void;
 	};
+	/** The host's native modules, by name; `undefined` in a host without any. */
+	readonly NativeModules: Record<string, Record<string, unknown> | undefined> | undefined;
 	/** What Lynx says about the device and itself (core/runtime/js/bindings/global.cc). */
 	SystemInfo: SystemInfo;
 	setTimeout(callback: () => void, delay: number): unknown;
@@ -88,6 +95,7 @@ declare const lynx: BackgroundGlobals["lynx"];
 // The timers are parameters of that function too; `SystemInfo` is a global.
 declare const setTimeout: BackgroundGlobals["setTimeout"];
 declare const clearTimeout: BackgroundGlobals["clearTimeout"];
+declare const NativeModules: BackgroundGlobals["NativeModules"];
 declare const SystemInfo: SystemInfo;
 
 /** The background's globals, each read when it is used. */
@@ -97,6 +105,9 @@ export const background: BackgroundGlobals = {
 	},
 	get SystemInfo() {
 		return SystemInfo;
+	},
+	get NativeModules() {
+		return typeof NativeModules === "undefined" ? undefined : NativeModules;
 	},
 	setTimeout: (callback, delay) => setTimeout(callback, delay),
 	clearTimeout: (timer) => clearTimeout(timer),

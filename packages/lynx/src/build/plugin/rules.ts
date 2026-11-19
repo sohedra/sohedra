@@ -5,6 +5,9 @@ import type { ChainIdentifier, ModifyBundlerChainUtils, RspackChain } from "@rsb
 
 import type { Thread } from "../../wire/index.ts";
 import { PACKAGE_NAME } from "../../wire/index.ts";
+import { DEV_CLIENT_FILE } from "../loaders/dev-client.ts";
+import type { DevClientLoaderOptions } from "../loaders/dev-client.ts";
+import { loaderPath, RUNTIME_FILES } from "./layers.ts";
 import { configureCssRules, keepSelectorListsApart } from "./rules-css.ts";
 import { splitScriptRule, threadsOf } from "./rules-script.ts";
 import { patchSvelteSource, splitSvelteRules } from "./rules-svelte.ts";
@@ -37,6 +40,19 @@ export function configureBuildRules(options: BuildRuleOptions): void {
 	keepSelectorListsApart(chain, CHAIN_ID);
 	splitSvelteRules({ ...options, swc, threads });
 	patchSvelteSource(chain);
+	if (development) patchDevClientSource(chain);
+}
+
+/** In a development build, the binding's calls in Lynx's dev client (loaders/dev-client.ts). */
+function patchDevClientSource(chain: RspackChain): void {
+	const options: DevClientLoaderOptions = { devClient: RUNTIME_FILES.devClient };
+	chain.module
+		.rule(`${PACKAGE_NAME}:dev-client`)
+		.test(DEV_CLIENT_FILE)
+		.enforce("pre")
+		.use("dev-client")
+		.loader(loaderPath("dev-client"))
+		.options(options);
 }
 
 /**

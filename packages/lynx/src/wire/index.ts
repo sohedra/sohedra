@@ -66,6 +66,8 @@ export type { LazyBundleParams, Thread } from "./names.ts";
 export { OpCode, ROOT_ID } from "./ops.ts";
 export type { AttrValue, Op } from "./ops.ts";
 export { checkMessage, keepsMessage, PROTOCOL_VERSION } from "./page.ts";
+export { createRepeats, withCount } from "./repeats.ts";
+export type { Repeats } from "./repeats.ts";
 export type { Receiver, Stamp, Stamped } from "./page.ts";
 export {
 	decodeCall,

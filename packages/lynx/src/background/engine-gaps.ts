@@ -6,6 +6,7 @@ import EventTargetFill from "@ungap/event-target";
 import structuredCloneFill from "@ungap/structured-clone";
 
 import type { BackgroundGlobals } from "./globals.ts";
+import { report } from "./report.ts";
 
 /** Where the fills go. */
 export interface FillTargets {
@@ -32,11 +33,22 @@ export function fillEngineGaps(targets: FillTargets): void {
  * `enableMicrotaskPromisePolyfill`; lynx-core's setup-promise.ts): a promise would only add a step
  * in between, and make a throw a rejection.
  *
- * @workaround background-queue-microtask kind=lynx-gap delete-when="Lynx's background thread has a global queueMicrotask"
+ * What a callback throws is reported, into Lynx and to the page's `onError`: Svelte runs the
+ * effects of a change made in a timer or a promise from here, and rethrows what one throws outside
+ * every boundary. Lynx would report it too, as its own internal error, which `onError` never hears.
+ *
+ * @workaround background-queue-microtask kind=lynx-gap delete-when="Lynx's background thread has a global queueMicrotask and gives the binding a hook for what its callbacks throw"
  */
 function fillQueueMicrotask({ scope, globals }: FillTargets): void {
 	if (typeof scope["queueMicrotask"] === "function") return;
-	scope["queueMicrotask"] = (callback: () => void) => globals.lynx.queueMicrotask(callback);
+	scope["queueMicrotask"] = (callback: () => void) =>
+		globals.lynx.queueMicrotask(() => {
+			try {
+				callback();
+			} catch (error) {
+				report(error);
+			}
+		});
 }
 
 /**

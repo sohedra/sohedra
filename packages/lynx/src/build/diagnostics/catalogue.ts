@@ -57,7 +57,8 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 export type BuildCode = keyof BuildDetails;
 
 const NOT_AVAILABLE = (feature: string): string => `${feature} is not available in Svelte on Lynx.`;
-const MOTION = "Drive the change from state with `Spring` or `Tween` from `svelte/motion`.";
+const MOTION =
+	"Animate the element with its `animate()` method from an attachment (`{@attach}`), or set its style from a main-thread function with `setStyleProperty()`.";
 const PAGE_EVENTS = "Listen to the page's events with `on(root, …)`.";
 
 /** Every message of the build. */
@@ -122,7 +123,8 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 	},
 	svelte_window: {
 		message: ({ feature }) => NOT_AVAILABLE(feature),
-		fix: () => `Read the page's size from \`svelte/reactivity/window\`. ${PAGE_EVENTS}`,
+		fix: () =>
+			`Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`. ${PAGE_EVENTS}`,
 		docs: "svelte_window",
 	},
 	svelte_document: {
