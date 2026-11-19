@@ -8,22 +8,22 @@ import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
 
-import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
+import { beforeAll, describe, expect, it } from "@rstest/core";
 
 import type { LynxElement, TestPage } from "../../src/testing/index.ts";
 import { FUNCTIONS_GLOBAL } from "../../src/wire/index.ts";
-import { buildApp, cleanBuild, readTemplate, scriptsOf } from "./build-app.ts";
+import { readTemplate, scriptsOf } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
 import { startDevicePage } from "./device-threads.ts";
 import type { DeviceBundle } from "./device-threads.ts";
+import { sharedBuild } from "./shared-build.ts";
 
 const PAGE = "http://localhost:3000/main.lynx.bundle";
 
 let build: AppBuild;
 beforeAll(async () => {
-	build = await buildApp("lazy", { entry: "./page.ts" });
+	build = await sharedBuild("production", "lazy-page");
 }, 180_000);
-afterAll(() => cleanBuild(build));
 
 /** The built lazy bundles, each at the URL the page's chunk loader asks for. */
 function lazyBundles(): Record<string, DeviceBundle> {
@@ -70,7 +70,7 @@ describe("a lazy bundle on threads shaped like a device's", () => {
 
 	it("loads on both threads at a tap: the component shows with its styles and main-thread function", async () => {
 		const bundles = lazyBundles();
-		const heavy = Object.keys(bundles).find((url) => url.includes("/Heavy.svelte."))!;
+		const heavy = Object.keys(bundles).find((url) => url.includes("_Heavy.svelte."))!;
 		const { page, mainThread } = startDevicePage(scriptsOf(build), { url: PAGE, bundles });
 		try {
 			await page.settle();

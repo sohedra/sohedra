@@ -5,22 +5,22 @@
 
 import { runInThisContext } from "node:vm";
 
-import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
+import { beforeAll, describe, expect, it } from "@rstest/core";
 import { JSDOM } from "jsdom";
 
 import { startTestPage } from "../../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
-import { buildApp, cleanBuild, scriptsOf } from "../build-app.ts";
+import { scriptsOf } from "../build-app.ts";
 import type { AppBuild } from "../build-app.ts";
+import { sharedBuild } from "../shared-build.ts";
 
 let build: AppBuild;
 let scripts: ReturnType<typeof scriptsOf>;
 
 beforeAll(async () => {
-	build = await buildApp("first-frame");
+	build = await sharedBuild("production", "first-frame");
 	if (build.ok) scripts = scriptsOf(build);
 }, 180_000);
-afterAll(() => cleanBuild(build));
 
 describe("a production build with a first frame", () => {
 	it("builds without a message", () => {

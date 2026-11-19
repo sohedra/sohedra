@@ -1,6 +1,6 @@
 // Builds a fixture app in this process, through Rsbuild and `pluginSvelteLynx`, and reads what the
 // build leaves. One build at a time in a checkout: a lock keeps two test files from building at
-// once, and every build test goes through here.
+// once, and every build test goes through here or through shared-build.ts.
 //
 // The parts of the runtime not in this package yet (the window's size) are aliased to the stubs in
 // tests/fixtures/build/stubs: they let the build resolve; nothing runs.
@@ -44,6 +44,8 @@ export interface BuildAppOptions {
 
 /** What a build left. */
 export interface AppBuild {
+	/** The entry the tests read: its scripts are in `out/.lynx/<entry>/`. */
+	entry: string;
 	/** Whether it built. */
 	ok: boolean;
 	/** The error's text when it did not. */
@@ -138,11 +140,42 @@ function copyOutside(app: string, under: string, options: BuildAppOptions): stri
 /** Build fixture app `app` into a folder of its own, and say how it went. */
 export async function buildApp(app: string, options: BuildAppOptions = {}): Promise<AppBuild> {
 	const release = await lock();
-	const dist = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-lynx-dist-"));
-	const cwd =
-		options.outside || options.files || options.packages
-			? copyOutside(app, dist, options)
-			: appFolder(app);
+	try {
+		const dist = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-lynx-dist-"));
+		const cwd =
+			options.outside || options.files || options.packages
+				? copyOutside(app, dist, options)
+				: appFolder(app);
+		const build = await buildInto({
+			cwd,
+			dist,
+			entries: { main: options.entry ?? "./index.ts" },
+			options,
+		});
+		return { entry: "main", ...build };
+	} finally {
+		release();
+	}
+}
+
+/** What a build is made from: run by the caller, which holds the lock. */
+export interface BuildInto {
+	/** The app's folder. */
+	cwd: string;
+	/** Where the output goes, in `out/`. */
+	dist: string;
+	/** The entries, by name. */
+	entries: Record<string, string>;
+	options: Omit<BuildAppOptions, "entry">;
+}
+
+/** Build `entries` of the app in `cwd` into `dist`, in this process, and say how it went. */
+export async function buildInto({
+	cwd,
+	dist,
+	entries,
+	options,
+}: BuildInto): Promise<Omit<AppBuild, "entry">> {
 	// `DEBUG=lynx` keeps each thread's script in `.lynx/<entry>/`, where the tests read them; and
 	// `process.env.DEBUG` in the fixtures is replaced by it.
 	const previous = process.env["DEBUG"];
@@ -155,10 +188,7 @@ export async function buildApp(app: string, options: BuildAppOptions = {}): Prom
 				mode: options.development ? "development" : "production",
 				plugins: [pluginSvelteLynx(options.plugin)],
 				...options.rsbuild,
-				source: {
-					entry: { main: options.entry ?? "./index.ts" },
-					...options.rsbuild?.source,
-				},
+				source: { entry: entries, ...options.rsbuild?.source },
 				resolve: { alias: ALIASES, ...options.rsbuild?.resolve },
 				output: {
 					distPath: { root: path.join(dist, "out") },
@@ -188,7 +218,6 @@ export async function buildApp(app: string, options: BuildAppOptions = {}): Prom
 	} finally {
 		if (previous === undefined) delete process.env["DEBUG"];
 		else process.env["DEBUG"] = previous;
-		release();
 	}
 }
 
@@ -200,7 +229,7 @@ export function cleanBuild(build: AppBuild): void {
 /** The scripts of a build's entry, as the engine kept them. */
 export function scriptsOf(
 	build: AppBuild,
-	entry = "main",
+	entry: string = build.entry,
 ): { mainThread: string; background: string } {
 	const folder = path.join(build.dist, "out", ".lynx", entry);
 	const files = fs.readdirSync(folder);
@@ -213,7 +242,7 @@ export function scriptsOf(
 
 /** The template the engine encoded, parsed. */
 // oxlint-disable-next-line typescript/no-explicit-any -- the encoded template is read by key, as the engine writes it
-export function readTemplate(build: AppBuild, entry = "main"): Record<string, any> {
+export function readTemplate(build: AppBuild, entry: string = build.entry): Record<string, any> {
 	return JSON.parse(
 		fs.readFileSync(path.join(build.dist, "out", ".lynx", entry, "tasm.json"), "utf8"),
 	);

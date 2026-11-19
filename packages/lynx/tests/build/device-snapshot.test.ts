@@ -5,32 +5,22 @@
 
 import vm from "node:vm";
 
-import { afterAll, afterEach, beforeAll, describe, expect, it, rs } from "@rstest/core";
+import { afterEach, beforeAll, describe, expect, it, rs } from "@rstest/core";
 
 import type { LynxElement, TestPage } from "../../src/testing/index.ts";
-import { buildApp, cleanBuild, scriptsOf } from "./build-app.ts";
+import { scriptsOf } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
 import { startDevicePage } from "./device-threads.ts";
+import { sharedBuild } from "./shared-build.ts";
 
 const MODES = ["production", "development"] as const;
 const builds = new Map<(typeof MODES)[number], AppBuild>();
 let actionBuild: AppBuild;
 
 beforeAll(async () => {
-	for (const mode of MODES)
-		builds.set(
-			mode,
-			await buildApp("snapshot", {
-				development: mode === "development",
-				rsbuild: { dev: { hmr: false, liveReload: false } },
-			}),
-		);
-	actionBuild = await buildApp("snapshot", { entry: "./action.ts" });
+	for (const mode of MODES) builds.set(mode, await sharedBuild(mode, "snapshot"));
+	actionBuild = await sharedBuild("production", "snapshot-action");
 }, 480_000);
-afterAll(() => {
-	for (const build of builds.values()) cleanBuild(build);
-	cleanBuild(actionBuild);
-});
 afterEach(() => {
 	rs.restoreAllMocks();
 });
