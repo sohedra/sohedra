@@ -13,7 +13,9 @@ it("refuses a plain function as main-thread:ref, saying what it takes", async ()
 });
 
 it.each([
-	["text", "the string not a ref"],
+	// Quoted: a text that is a phrase, or empty, reads apart from the message's own words.
+	["text", 'the string "not a ref"'],
+	["empty text", 'the string ""'],
 	["object", "an object"],
 	["number", "the number 3"],
 ])("refuses %s as main-thread:ref, saying what it takes", async (kind, said) => {

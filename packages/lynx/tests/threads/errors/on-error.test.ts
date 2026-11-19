@@ -12,6 +12,7 @@ import type { ErrorContext } from "../../../src/background/root-entry.ts";
 import { installGlobals } from "../../../src/testing/globals.ts";
 import type { MainThreadLynx } from "../../../src/testing/index.ts";
 import { encodeError, encodeToBackground } from "../../../src/wire/index.ts";
+import RefNotRef from "../../fixtures/library/RefNotRef.svelte";
 import Errors from "../../fixtures/threads/errors/Errors.svelte";
 import drawErrors from "../../fixtures/threads/errors/Errors.svelte?first-frame";
 import Parent from "../../fixtures/threads/errors/Parent.svelte";
@@ -190,6 +191,18 @@ describe("onError on the background", () => {
 			for (const runner of runners) process.on("unhandledRejection", runner);
 		}
 		expect(messages(rejected)).toEqual(["nobody handled it"]);
+	});
+
+	it("hears a main-thread:ref that is not a ref, with its element's component", async () => {
+		const heard: Heard = [];
+		const page = startSveltePage(RefNotRef, {
+			props: { kind: "text" },
+			onError: (error, context) => void heard.push([error, context]),
+		});
+		await page.settle();
+		expect(heard.map(([, context]) => context)).toEqual([
+			{ thread: "background", component: "RefNotRef.svelte", code: "main_thread_ref_not_a_ref" },
+		]);
 	});
 
 	it("hears every repeat, while Lynx gets the 1st and the 10th, with the count", async () => {

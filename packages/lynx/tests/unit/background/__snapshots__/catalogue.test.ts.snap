@@ -148,7 +148,7 @@ https://sohedra.com/e/main_thread_gesture_not_a_gesture"
 `;
 
 exports[`the background's catalogue > main_thread_ref_not_a_ref: the message 1`] = `
-"The <view>'s main-thread:ref is the string box, which is neither a ref nor a main-thread function, so the main thread binds nothing.
+"The <view>'s main-thread:ref is the string "box", which is neither a ref nor a main-thread function, so the main thread binds nothing.
 src/Sheet.svelte:9:2
 
 Give it a ref made with mainThreadRef() from @sohedra/lynx, or a main-thread function that takes the element.
