@@ -18,7 +18,10 @@ const IGNORED_DIRS = new Set([".git", "node_modules", ".svelte-kit", "dist", "co
 // Agent worktrees are other checkouts of this repository, checked in their own run.
 const IGNORED_PATHS = new Set([join(".claude", "worktrees")]);
 
-/** Every file under `dir`, as paths relative to the repository root, skipping build and VCS folders. */
+/**
+ * Every file under `dir`, as paths relative to the repository root with `/` between folders on every
+ * system, skipping build and VCS folders.
+ */
 function walk(dir: string): string[] {
 	if (!existsSync(dir)) {
 		return [];
@@ -32,7 +35,8 @@ function walk(dir: string): string[] {
 		if (entry.isDirectory()) {
 			files.push(...walk(path));
 		} else {
-			files.push(relative(".", path));
+			// Windows' `relative()` separates folders with `\`, which no name in the repository holds.
+			files.push(relative(".", path).replaceAll("\\", "/"));
 		}
 	}
 	return files;
