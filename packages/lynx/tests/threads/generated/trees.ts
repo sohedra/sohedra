@@ -130,6 +130,24 @@ export function listKeys(engine: Engine, list: LynxElement): string[] {
 		);
 		for (const insert of inserted)
 			keys.splice(Number(insert["position"]), 0, String(insert["item-key"]));
+		// Lynx sets an updated item's key at `from`, after the removals and insertions, when the
+		// update has a key, `from` and `to` numbers of at least 0, `from` within the keys, and a
+		// boolean `flush` (core/renderer/ui_component/list/adapter_helper.cc,
+		// UpdateFiberUpdateAction).
+		for (const changed of update.updateAction) {
+			const { from, to, flush, "item-key": key } = changed;
+			if (
+				typeof key === "string" &&
+				key !== "" &&
+				typeof from === "number" &&
+				typeof to === "number" &&
+				typeof flush === "boolean" &&
+				from >= 0 &&
+				to >= 0 &&
+				from < keys.length
+			)
+				keys[from] = key;
+		}
 	}
 	return keys;
 }

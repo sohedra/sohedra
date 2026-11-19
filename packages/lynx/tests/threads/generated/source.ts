@@ -17,8 +17,17 @@ const ROWS = 22;
 /** The most rows a long list has: `st.n0` is at most 2. */
 export const LONG_ROWS: number = ROWS + 2 * 2;
 
-function opening(tag: string, attributes: readonly string[]): string {
-	return attributes.length === 0 ? `<${tag}>` : `<${tag} ${attributes.join(" ")}>`;
+/**
+ * An element's opening tag. One with a main-thread tap handler, as an attribute or a spread, also
+ * says with `data-one-thread` whether only one thread renders it, as `outer` does: before
+ * hydration, such an element is the first frame's alone, and a call of a background function from
+ * it has no answer by design (`first_frame_call_unanswered`), so no step taps it then. The mark is
+ * part of the page: both threads render it the same way, and the trees compare it.
+ */
+function opening(tag: string, attributes: readonly string[], outer: string): string {
+	const taps = attributes.some((written) => written.includes("main-thread:ontap"));
+	const all = taps ? [...attributes, `data-one-thread={${outer} || undefined}`] : attributes;
+	return all.length === 0 ? `<${tag}>` : `<${tag} ${all.join(" ")}>`;
 }
 
 /**
@@ -72,31 +81,43 @@ function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => s
 
 	function listChild(child: ListChild, outer: string): string {
 		if (child.kind === "item") {
-			const item = opening("list-item", [
-				`item-key="${child.key}"`,
-				...deferAttribute(child.defer),
-				...(child.fullSpan ? ["full-span"] : []),
-				...child.attributes,
-			]);
+			const item = opening(
+				"list-item",
+				[
+					`item-key="${child.key}"`,
+					...deferAttribute(child.defer),
+					...(child.fullSpan ? ["full-span"] : []),
+					...child.attributes,
+				],
+				outer,
+			);
 			return `${item}${markup(child.body, outer)}</list-item>`;
 		}
 		let each: string;
 		if (child.kind === "rows") {
 			const rows = `Array.from({ length: ${ROWS} + st.n0 * 2 }, (_, n) => "r" + n)`;
-			const item = opening("list-item", [
-				`item-key={${child.item}}`,
-				...(child.fixed ? [`recyclable={${child.item} !== "r1"}`] : []),
-				...deferAttribute(child.defer),
-				...child.attributes,
-			]);
+			const item = opening(
+				"list-item",
+				[
+					`item-key={${child.item}}`,
+					...(child.fixed ? [`recyclable={${child.item} !== "r1"}`] : []),
+					...deferAttribute(child.defer),
+					...child.attributes,
+				],
+				outer,
+			);
 			each = `{#each ${rows} as ${child.item} (${child.item})}${item}${markup(child.body, outer)}</list-item>{/each}`;
 		} else {
 			const key = child.keyed ? ` (${child.item})` : "";
-			const item = opening("list-item", [
-				`item-key={"${child.prefix}-" + ${child.item}}`,
-				...deferAttribute(child.defer),
-				...child.attributes,
-			]);
+			const item = opening(
+				"list-item",
+				[
+					`item-key={"${child.prefix}-" + ${child.item}}`,
+					...deferAttribute(child.defer),
+					...child.attributes,
+				],
+				outer,
+			);
 			each = `{#each ${child.array} as ${child.item}${key}}${item}${markup(child.body, outer)}</list-item>{/each}`;
 		}
 		return child.wrapped === undefined ? each : `{#if ${child.wrapped}}${each}{/if}`;
@@ -106,14 +127,14 @@ function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => s
 		switch (node.kind) {
 			case "element":
 				return node.tag === "image"
-					? `${opening("image", node.attributes).slice(0, -1)} />`
-					: `${opening(node.tag, node.attributes)}${markup(node.children, outer)}</${node.tag}>`;
+					? `${opening("image", node.attributes, outer).slice(0, -1)} />`
+					: `${opening(node.tag, node.attributes, outer)}${markup(node.children, outer)}</${node.tag}>`;
 			case "list": {
 				const deferred = node.items.some((child) => child.defer !== undefined);
 				const attributes = deferred
 					? ['custom-list-name="list-container"', ...node.screen, ...node.attributes]
 					: node.attributes;
-				return `${opening("list", attributes)}${node.items.map((child) => listChild(child, outer)).join(gap)}</list>`;
+				return `${opening("list", attributes, outer)}${node.items.map((child) => listChild(child, outer)).join(gap)}</list>`;
 			}
 			case "text":
 				return node.source;
@@ -130,7 +151,7 @@ function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => s
 			case "key":
 				return `{#key ${node.expression}}${markup(node.body, outer)}{/key}`;
 			case "dynamic":
-				return `${opening("svelte:element", ["this={st.t0}", ...node.attributes])}${markup(node.children, outer)}</svelte:element>`;
+				return `${opening("svelte:element", ["this={st.t0}", ...node.attributes], outer)}${markup(node.children, outer)}</svelte:element>`;
 			case "component": {
 				const css = node.cssVariable ? ' --x="red"' : "";
 				return `<${node.name} {st} label={${node.label}} oneThread={${outer}}${css} />`;

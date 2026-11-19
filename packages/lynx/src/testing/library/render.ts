@@ -14,7 +14,7 @@ import { startMainThread } from "../../main-thread/index.ts";
 import type { MainThreadRuntime } from "../../main-thread/index.ts";
 import { FIRST_FRAME_COPY_KEY } from "../../wire/index.ts";
 import { testingError } from "../catalogue.ts";
-import { globalScope, readGlobal } from "../globals.ts";
+import { endTask, globalScope, readGlobal } from "../globals.ts";
 import type { BackgroundLynx } from "../page/lynx.ts";
 import { IPHONE, startTestPage } from "../page/page.ts";
 import { testProps } from "./props.ts";
@@ -71,7 +71,10 @@ export type RenderResult<
 	baseElement: HTMLElement;
 	/** The component's exports, on the background. */
 	component: Exports;
-	/** Changes the props, as a parent would; resolves once the change is on the page. */
+	/**
+	 * Changes the props, as a parent would; resolves once the change is on the page. An event the
+	 * test did not wait for finishes on its thread first.
+	 */
 	rerender(props: Partial<Props>): Promise<void>;
 	/** Ends the page, as Lynx destroys it; `cleanup` does it too. */
 	unmount(): Promise<void>;
@@ -178,6 +181,7 @@ export async function render<
 				throw testingError({ code: "no_page_rendered", details: { call: "rerender()" } });
 			if (!background)
 				throw testingError({ code: "background_not_started", details: { what: "rerender()" } });
+			await endTask();
 			page.asBackground(() => props.update(next));
 			await settle(session);
 		},

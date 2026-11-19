@@ -7,6 +7,8 @@
 import { describe, expect, it } from "@rstest/core";
 
 import { keptContexts } from "../../../src/background/functions/calls.ts";
+import Adopted from "../../fixtures/threads/functions/Adopted.svelte";
+import drawAdopted from "../../fixtures/threads/functions/Adopted.svelte?first-frame";
 import Hydrate from "../../fixtures/threads/functions/Hydrate.svelte";
 import drawHydrate from "../../fixtures/threads/functions/Hydrate.svelte?first-frame";
 import Refused from "../../fixtures/threads/functions/Refused.svelte";
@@ -186,5 +188,39 @@ describe("a first frame the background cannot hydrate", () => {
 		expectAccounted(page, "after the page was written again");
 		const kept = new Set(page.asBackground(keptContexts));
 		expect(page.runtime.page.functions.sizes().contexts.filter((id) => !kept.has(id))).toEqual([]);
+	});
+});
+
+describe("a main-thread handler on an element hydration adopts from the other branch", () => {
+	function adopting() {
+		const log: unknown[][] = [];
+		const page = startFunctionsPage(Adopted, {
+			draw: drawAdopted,
+			props: { log },
+			firstFrame: true,
+		});
+		return { page, log };
+	}
+
+	it("has its held call answered by the background's, when it is the same function", async () => {
+		const { page, log } = adopting();
+		const element = page.byClass("same");
+		page.engine.dispatch(element, { type: "tap" });
+		await page.settle();
+		expect(page.byClass("same")).toBe(element);
+		expect(log).toEqual([["same"]]);
+		expect(page.engine.state(element).attrs["refused"]).toBeUndefined();
+		expect(page.errors).toEqual([]);
+	});
+
+	it("has its held call rejected, and not answered by the other, when the functions differ", async () => {
+		const { page, log } = adopting();
+		const element = page.byClass("differs");
+		page.engine.dispatch(element, { type: "tap" });
+		await page.settle();
+		expect(page.byClass("differs")).toBe(element);
+		expect(log).toEqual([]);
+		expect(page.engine.state(element).attrs["refused"]).toBe("first_frame_call_unanswered");
+		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
 	});
 });

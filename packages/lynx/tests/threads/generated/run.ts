@@ -12,7 +12,7 @@ import * as functions from "../../../src/background/functions-entry.ts";
 import renderer, { deferredRow } from "../../../src/background/renderer/entry.ts";
 import * as root from "../../../src/background/root-entry.ts";
 import * as internals from "../../../src/svelte/runtime/client-internals.ts";
-import { readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
+import { endTask, readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
@@ -221,12 +221,24 @@ const keyOf = (page: SveltePage, cell: LynxElement): string =>
 
 /**
  * The cells of a list that show one of its items now. The engine fake keeps the cell of an item
- * that was taken out, which Lynx would hand back and never ask about again.
+ * that was taken out, which Lynx would hand back at its next layout and never ask about again: its
+ * key may be one an item kept has taken since. Until the fake models Lynx's item holders and hands
+ * those cells back, this reads the main thread's bookkeeping instead: a cell counts while an
+ * applier holds its element, of the page shown or of the one a reload replaces, which stays on
+ * screen until the new page's patch.
  */
-function liveCells(page: SveltePage, list: LynxElement): LynxElement[] {
+export function liveCells(page: SveltePage, list: LynxElement): LynxElement[] {
 	const keys = new Set(listKeys(page.engine, list));
+	const held = (cell: LynxElement): boolean =>
+		page.asMainThread(() =>
+			[page.runtime.page.applier, ...page.runtime.page.previous].some(
+				(applier) => applier?.idOf(cell) !== undefined,
+			),
+		);
 	// Boundary: a list's children in the engine are the cells Lynx holds.
-	return ([...list.childNodes] as LynxElement[]).filter((cell) => keys.has(keyOf(page, cell)));
+	return ([...list.childNodes] as LynxElement[]).filter(
+		(cell) => keys.has(keyOf(page, cell)) && held(cell),
+	);
 }
 
 /** The live cells Lynx may hand back: those of recyclable items. */
@@ -311,12 +323,14 @@ function inHandedBack(element: LynxElement): boolean {
 
 /**
  * Elements with a tap handler bound, on the background or the main thread, in document order, but
- * those in cells Lynx handed back.
+ * those in cells Lynx handed back. Before hydration (`early`), only those both threads render: one
+ * only the first frame drew says so (`data-one-thread`, ./source.ts).
  */
-function tappable(page: SveltePage): LynxElement[] {
+function tappable(page: SveltePage, early: boolean): LynxElement[] {
 	return page.engine.all().filter((element) => {
 		if (inHandedBack(element)) return false;
 		const state = page.engine.state(element);
+		if (early && state.dataset["one-thread"] !== undefined) return false;
 		return (
 			state.handlers.some((handler) => handler.eventName === "tap") ||
 			state.mainThreadEvents.some((bound) => bound.eventName === "tap")
@@ -324,8 +338,14 @@ function tappable(page: SveltePage): LynxElement[] {
 	});
 }
 
+/** Taps the element `pick` picks among those `tappable` finds, if any. */
+function tap(page: SveltePage, pick: number, early: boolean): void {
+	const found = tappable(page, early);
+	if (found.length > 0) page.engine.dispatch(found[pick % found.length]!, { type: "tap" });
+}
+
 /** Does `step` to the page. Nothing happens when what it picks is not there. */
-export function apply(running: GeneratedPage, done: Step): void {
+function apply(running: GeneratedPage, done: Step): void {
 	const { page, handles } = running;
 	switch (done.kind) {
 		case "set":
@@ -333,11 +353,9 @@ export function apply(running: GeneratedPage, done: Step): void {
 				if (handles.st) handles.st[done.key] = copy(done.value);
 			});
 			return;
-		case "tap": {
-			const found = tappable(page);
-			if (found.length > 0) page.engine.dispatch(found[done.pick % found.length]!, { type: "tap" });
+		case "tap":
+			tap(page, done.pick, false);
 			return;
-		}
 		case "show":
 		case "show-then-set": {
 			const found = lists(page);
@@ -345,8 +363,6 @@ export function apply(running: GeneratedPage, done: Step): void {
 			const element = found[done.list % found.length]!;
 			const count = page.engine.state(element).list!.items;
 			if (count > 0) ask(page, element, done.index % count);
-			if (done.kind === "show-then-set")
-				apply(running, { kind: "set", key: done.key, value: done.value });
 			return;
 		}
 		case "hide": {
@@ -382,13 +398,28 @@ export function apply(running: GeneratedPage, done: Step): void {
 }
 
 /**
- * Does `step` to the page, and for a scroll then a change, the change once the threads settled: the
- * rows the scroll let go of are released by then, and change while they have no elements.
+ * Does `steps` to a page whose first frame the background has not taken over yet, each in a task of
+ * its own: a tap picks only among what both threads render.
+ */
+export async function runEarly(running: GeneratedPage, steps: readonly Step[]): Promise<void> {
+	for (const done of steps) {
+		if (done.kind === "tap") tap(running.page, done.pick, true);
+		else apply(running, done);
+		await endTask();
+	}
+}
+
+/**
+ * Does `step` to the page. For a scroll then a change, the change comes once the threads settled:
+ * the rows the scroll let go of are released by then, and change while they have no elements. For
+ * a request then a change, it comes once the main thread's task ends, with the request still on its
+ * way.
  */
 export async function run(running: GeneratedPage, done: Step): Promise<void> {
 	apply(running, done);
-	if (done.kind !== "scroll-then-set") return;
-	await running.page.settle();
+	if (done.kind === "scroll-then-set") await running.page.settle();
+	else if (done.kind === "show-then-set") await endTask();
+	else return;
 	apply(running, { kind: "set", key: done.key, value: done.value });
 }
 

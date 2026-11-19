@@ -9,11 +9,11 @@ import { expectFunctionsAgree } from "./functions.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
 import {
-	apply,
 	askEveryRow,
 	earlyStep,
 	rewrote,
 	run,
+	runEarly,
 	startGenerated,
 	step,
 	withoutLayer,
@@ -105,8 +105,8 @@ const pageIds = (ids: readonly string[]): string[] =>
  * The background gives each component the `$props.id()` the first frame gave it, but in a branch
  * only one thread renders. Its first patch hydrates the first frame with no mismatch reported, no
  * page written again and no id written over, and Lynx then shows what the background rendered.
- * Before that patch, Lynx may ask for cells and hand them back, the user may tap, and the host may
- * update the data or reload.
+ * Before that patch, Lynx may ask for cells and hand them back, the user may tap what both threads
+ * render, and the host may update the data or reload.
  */
 export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> = fc.asyncProperty(
 	pageModel,
@@ -118,7 +118,7 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 			expect(pageIds(running.ids.background), "The background's ids of $props.id()").toEqual(
 				pageIds(running.ids.frame),
 			);
-			for (const done of early) apply(running, done);
+			await runEarly(running, early);
 			await running.page.settle();
 			expectNoErrors(running.page.errors, "At hydration");
 			expect(rewrote(running.page), "The page was written again").toBe(false);
@@ -154,7 +154,7 @@ export function updatesProperty(
 		async (model, early, steps) => {
 			await about(pageSources(model), { ...described(model), early, steps }, async () => {
 				const { compiled, running } = await start(model, { firstFrame });
-				for (const done of early) apply(running, done);
+				await runEarly(running, early);
 				await running.page.settle();
 				// What the background rendered after each step, by the state it rendered.
 				const renders = new Map<string, { after: number; tree: string[] }[]>();
