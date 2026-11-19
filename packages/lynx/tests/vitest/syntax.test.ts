@@ -7,6 +7,7 @@ import { expect, it } from "vitest";
 
 import Compare from "../fixtures/threads/Compare.svelte";
 import TsCompare from "../fixtures/threads/TsCompare.svelte";
+import TsShapes from "../fixtures/threads/TsShapes.svelte";
 
 it("reads a JavaScript component and its rune module as JavaScript, on both threads", async () => {
 	await render(Compare, { lynx: { firstFrame: true } });
@@ -18,4 +19,10 @@ it("reads a TypeScript component's output as JavaScript, and runs its main-threa
 	expect(screen.getByText("typescript true true true")).toBeTruthy();
 	await fireEvent.tap(container.querySelector(".press")!);
 	expect(screen.getByText("pressed 3")).toBeTruthy();
+});
+
+it("runs what a TypeScript main-thread function means, in the shapes that removing types can break", async () => {
+	const { container } = await render(TsShapes);
+	await fireEvent.tap(container.querySelector(".probe")!);
+	expect(screen.getByText("shapes function function 2 4 5 6 3 p")).toBeTruthy();
 });

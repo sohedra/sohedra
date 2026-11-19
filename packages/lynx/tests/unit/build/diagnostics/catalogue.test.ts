@@ -34,6 +34,11 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	main_thread_function_generator: {},
 	main_thread_function_block_name: { where: "main-thread:ontap", names: ["row", "index"] },
 	main_thread_function_used_early: { name: "onScroll", captures: ["count"] },
+	main_thread_function_typescript: {
+		feature: "an `enum`",
+		instead: "an object of its values (`const Color = { Red: 0 } as const`)",
+	},
+	typescript_stripper_missing: { version: "v20.19.0" },
 	plain_function_in_main_thread_function: { name: "save" },
 	script_syntax_error: { reason: "Unexpected token" },
 	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap", spelling: "bind" },
