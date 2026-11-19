@@ -88,6 +88,48 @@ describe("a workflow", () => {
 		expect(problemsOf(workflow({ job }))).toEqual([]);
 	});
 
+	it("pins each use of an action, not only its first", () => {
+		const job = `    timeout-minutes: 10\n    steps:\n      - uses: ${CHECKOUT}\n      - uses: ${CHECKOUT.split(" ")[0]}\n`;
+		const [problem, ...rest] = problemsOf(workflow({ job }));
+		expect(rest).toEqual([]);
+		expect(problem).toContain("actions/checkout@");
+	});
+
+	it("uses only the actions the repository allows: GitHub's own, and pnpm/setup at its pinned commit", () => {
+		const allowed = `pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0`;
+		const job = (uses: string) => `    timeout-minutes: 10\n    steps:\n      - uses: ${uses}\n`;
+		expect(problemsOf(workflow({ job: job(allowed) }))).toEqual([]);
+		for (const uses of [
+			"pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1",
+			"oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0",
+			"pnpm/setup@0123456789012345678901234567890123456789 # v3.3.0",
+		]) {
+			const [problem, ...rest] = problemsOf(workflow({ job: job(uses) }));
+			expect(rest).toEqual([]);
+			expect(problem).toContain(uses.split(" ")[0]!);
+			expect(problem).toContain("not among the actions this repository allows");
+		}
+	});
+
+	it("never writes a pull request's text or an input into a shell command", () => {
+		for (const value of [
+			"github.event.pull_request.title",
+			"github.head_ref",
+			"inputs.name",
+			" github.event.issue.body ",
+		]) {
+			const job = `    timeout-minutes: 10\n    steps:\n      - run: echo "\${{${value}}}"\n`;
+			const [problem, ...rest] = problemsOf(workflow({ job }));
+			expect(rest).toEqual([]);
+			expect(problem).toContain("env:");
+		}
+	});
+
+	it("may pass a pull request's text to a shell command through env", () => {
+		const job = `    timeout-minutes: 10\n    steps:\n      - run: echo "$TITLE"\n        env:\n          TITLE: \${{ github.event.pull_request.title }}\n`;
+		expect(problemsOf(workflow({ job }))).toEqual([]);
+	});
+
 	it("gives every job a time limit", () => {
 		const job = `    steps:\n      - uses: ${CHECKOUT}\n`;
 		const [problem, ...rest] = problemsOf(workflow({ job }));
@@ -109,16 +151,31 @@ describe("the Node.js lines a package claims", () => {
 		name: "@sohedra/x",
 		engines: { node: "^22.22.2 || ^24.15.0" },
 	});
+	/** A job whose matrix runs `nodes`, written as the YAML of a list item each. */
+	const runs = (...nodes: string[]) =>
+		`    timeout-minutes: 10\n    strategy:\n      matrix:\n        include:\n${nodes.map((node) => `          - node: ${node}\n`).join("")}    steps:\n      - uses: ${CHECKOUT}\n`;
 
-	it("pass when a job's matrix runs each of them", () => {
-		const job = `    timeout-minutes: 10\n    strategy:\n      matrix:\n        include:\n          - node: 22\n          - node: "24"\n    steps:\n      - uses: ${CHECKOUT}\n`;
+	it("pass when a job's matrix runs each line, and the oldest version claimed", () => {
+		const job = runs("22", '"24"', "22.22.2");
+		expect(problemsOf(workflow({ job }), { "packages/x/package.json": manifest })).toEqual([]);
+	});
+
+	it("count a version of a line as that line", () => {
+		const job = runs("22.22.2", "24.x");
 		expect(problemsOf(workflow({ job }), { "packages/x/package.json": manifest })).toEqual([]);
 	});
 
 	it("fail when no job runs one of them", () => {
-		const job = `    timeout-minutes: 10\n    strategy:\n      matrix:\n        node: [22]\n    steps:\n      - uses: ${CHECKOUT}\n`;
+		const job = runs("22.22.2");
 		expect(problemsOf(workflow({ job }), { "packages/x/package.json": manifest })).toEqual([
 			"packages/x/package.json claims Node.js 24 in engines.node, which no CI job runs. Add it to a job's node matrix.",
+		]);
+	});
+
+	it("fail when no job runs the oldest version claimed", () => {
+		const job = runs("22", "24");
+		expect(problemsOf(workflow({ job }), { "packages/x/package.json": manifest })).toEqual([
+			"packages/x/package.json claims Node.js 22.22.2 and later, which no CI job runs exactly. Add node: 22.22.2 to a job's matrix.",
 		]);
 	});
 });
