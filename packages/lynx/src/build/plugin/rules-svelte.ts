@@ -1,5 +1,7 @@
 // Svelte components and rune modules, and the patches to Svelte's own text.
 
+import fs from "node:fs";
+
 import type { RspackChain } from "@rsbuild/core";
 
 import {
@@ -10,6 +12,7 @@ import {
 import type { CompileOptions, PreprocessorGroup } from "../../svelte/build/index.ts";
 import { PACKAGE_NAME, RENDERER_ENTRY } from "../../wire/index.ts";
 import type { Thread } from "../../wire/index.ts";
+import { writtenInTypeScript } from "../compile/component.ts";
 import type { SvelteComponentLoaderOptions } from "../loaders/svelte-component.ts";
 import type { SvelteModuleLoaderOptions } from "../loaders/svelte-module.ts";
 import { RUNTIME_FILES, loaderPath } from "./layers.ts";
@@ -36,19 +39,40 @@ export interface SvelteRuleOptions {
  * `pending`, imports only `$effect` uses. TypeScript would drop those, and with them the
  * main-thread functions they define.
  *
- * It is read as TypeScript, which is said here because the build relies on it: on the main thread
- * a component's module ends with its main-thread functions as they were written, types included.
+ * Svelte's output is JavaScript, read as such: TypeScript reads some of it otherwise
+ * (`` a < b > `0` `` is a call there). Only a component written in TypeScript is read as
+ * TypeScript: on the main thread its module ends with its main-thread functions as written, types
+ * included.
  */
-function afterSvelte(options: SwcOptions): SwcOptions {
+function afterSvelte(options: SwcOptions, typescript: boolean): SwcOptions {
+	const { tsx: _tsx, dts: _dts, syntax: _syntax, ...parser } = options.jsc?.parser ?? {};
 	return {
 		...options,
 		detectSyntax: false,
 		jsc: {
 			...options.jsc,
-			parser: { ...options.jsc?.parser, syntax: "typescript", tsx: false },
+			parser: typescript
+				? { ...parser, syntax: "typescript", tsx: false }
+				: { ...parser, syntax: "ecmascript" },
 			transform: { ...options.jsc?.transform, verbatimModuleSyntax: true },
 		},
 	};
+}
+
+/** Whether a component's file is written in TypeScript; kept while the file is unchanged. */
+const languages = new Map<string, { mtimeMs: number; size: number; typescript: boolean }>();
+function componentInTypeScript(file: string): boolean {
+	let stats: fs.Stats;
+	try {
+		stats = fs.statSync(file);
+	} catch {
+		return false;
+	}
+	const known = languages.get(file);
+	if (known?.mtimeMs === stats.mtimeMs && known.size === stats.size) return known.typescript;
+	const typescript = writtenInTypeScript(fs.readFileSync(file, "utf8"));
+	languages.set(file, { mtimeMs: stats.mtimeMs, size: stats.size, typescript });
+	return typescript;
 }
 
 function useSvelteLoaders(
@@ -70,25 +94,31 @@ function useSvelteLoaders(
 			? { serverInternals: RUNTIME_FILES.serverInternals }
 			: { clientInternals: RUNTIME_FILES.clientInternals }),
 	};
-	// Loaders run bottom-up: Svelte compiles, then SWC lowers.
-	component
-		.use("swc")
-		.loader("builtin:swc-loader")
-		.options(swc)
-		.end()
-		.use("svelte")
-		.loader(loaderPath("svelte-component"))
-		.options(componentOptions);
+	// Loaders run bottom-up: Svelte compiles, then SWC lowers, reading the output in the language
+	// the component is written in.
+	for (const typescript of [true, false]) {
+		const branch = component.oneOf(typescript ? "typescript" : "javascript");
+		if (typescript) branch.test(componentInTypeScript);
+		branch
+			.use("swc")
+			.loader("builtin:swc-loader")
+			.options(afterSvelte(swc, typescript))
+			.end()
+			.use("svelte")
+			.loader(loaderPath("svelte-component"))
+			.options(componentOptions);
+	}
 
 	const moduleOptions: SvelteModuleLoaderOptions = {
 		thread,
 		compilerOptions: moduleCompilerOptions(compilerOptions),
 	};
+	// The rune module's types were stripped before Svelte compiled it: its output is JavaScript.
 	runeModule
 		.type("javascript/auto")
 		.use("swc")
 		.loader("builtin:swc-loader")
-		.options(swc)
+		.options(afterSvelte(swc, false))
 		.end()
 		.use("svelte")
 		.loader(loaderPath("svelte-module"))
@@ -129,7 +159,7 @@ export function splitSvelteRules(
 			threadRule(component, rules),
 			threadRule(runeModule, rules),
 			rules.thread,
-			afterSvelte(swc[rules.thread]),
+			swc[rules.thread],
 			{ ...options, hot: rules.hot },
 		);
 	}

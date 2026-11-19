@@ -168,6 +168,18 @@ function withInternals(code: string, specifier: string, internals: string): stri
 	return code.replace(new RegExp(`(['"])${escapeRegExp(specifier)}\\1`, "g"), () => quoted);
 }
 
+/** A `<script>` tag that says TypeScript: `lang="ts"` or `lang="typescript"`. */
+const TYPESCRIPT_SCRIPT = /<script\b[^>]*?\blang\s*=\s*["']?(?:ts|typescript)\b/i;
+
+/**
+ * Whether a component is written in TypeScript, by its source as written: its compiled main-thread
+ * copy then ends with its main-thread functions as written, types included. Svelte's own output is
+ * JavaScript, which TypeScript reads otherwise (`` a < b > `0` `` is a call there).
+ */
+export function writtenInTypeScript(source: string): boolean {
+	return TYPESCRIPT_SCRIPT.test(source);
+}
+
 /**
  * Compile the component in `source`. An error is thrown as the build's message: Svelte's, with
  * its place and code frame, or the build's own.

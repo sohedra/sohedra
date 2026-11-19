@@ -1,6 +1,6 @@
 // Runs in Node, when an app is built: the plugin, the compiler passes and the test presets.
 
-export { compileComponent } from "./compile/component.ts";
+export { compileComponent, writtenInTypeScript } from "./compile/component.ts";
 export type { CompiledComponent, ComponentOptions } from "./compile/component.ts";
 export { compileRuneModule } from "./compile/rune-module.ts";
 export type { CompiledModule, ModuleOptions } from "./compile/rune-module.ts";
