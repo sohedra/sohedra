@@ -9,6 +9,7 @@ import { parse } from "yaml";
 
 import { lowered, readCoverageBaseline } from "./coverage-baseline.ts";
 import { readLabels } from "./labels.ts";
+import { checkRenovate } from "./renovate.ts";
 import { checkSharedPackages } from "./shared-packages.ts";
 import { listIsCurrent, scanRepository } from "./workarounds.ts";
 import { checkWorkflows } from "./workflows.ts";
@@ -254,6 +255,9 @@ for (const file of allFiles.filter(
 
 // 11. Workflows keep AGENTS.md's rules, and CI runs every Node.js line a package claims.
 problems.push(...checkWorkflows("."));
+
+// 12. Renovate's peer rule names every peer, and each peer's dev copy is an exact version.
+problems.push(...checkRenovate("."));
 
 if (problems.length > 0) {
 	console.error(["Repository check failed:", ...problems].join("\n- "));
