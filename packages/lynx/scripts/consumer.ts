@@ -23,6 +23,8 @@ import os from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
 
+import { floorOf } from "./floor.ts";
+
 const ROOT = path.resolve(import.meta.dirname, "..");
 const APP_FIXTURE = path.join(ROOT, "tests/fixtures/consumer");
 /** Yarn, run from npm's registry: its `node-modules` linker, as the package supports. */
@@ -58,16 +60,6 @@ interface Manifest {
 	dependencies: Record<string, string>;
 	devDependencies: Record<string, string>;
 	peerDependencies: Record<string, string>;
-}
-
-/** The lowest version `range` allows, for the ranges the package writes: `^1.2.3` or `1.2.3`. */
-function floorOf(name: string, range: string): string {
-	const floor = /^\^?(\d+\.\d+\.\d+)$/.exec(range)?.[1];
-	if (floor === undefined)
-		throw new Error(
-			`${name}'s range ${range} has no floor to install. Write it as ^x.y.z, from the version tested.`,
-		);
-	return floor;
 }
 
 /** An argument as `cmd.exe` reads it: quoted, its quotes doubled. */

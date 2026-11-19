@@ -6,6 +6,8 @@ import path from "node:path";
 
 import { describe, expect, it } from "@rstest/core";
 
+import { isPeerRange } from "../../../scripts/floor.ts";
+
 const ROOT = path.resolve(import.meta.dirname, "../../..");
 
 interface Manifest {
@@ -148,9 +150,9 @@ describe("dependencies", () => {
 });
 
 describe("peerDependencies", () => {
-	it("run from the version tested to the end of its major (for 0.x, its minor), Svelte's build aside", () => {
+	it("run from the version tested to the end of its major (for 0.x, its minor), or of a later one after a widening, Svelte's build aside", () => {
 		const peers = Object.entries(manifest.peerDependencies).filter(([name]) => name !== "svelte");
-		expect(peers.filter(([, range]) => !/^\^\d+\.\d+\.\d+$/.test(range))).toEqual([]);
+		expect(peers.filter(([, range]) => !isPeerRange(range))).toEqual([]);
 	});
 });
 
