@@ -131,6 +131,13 @@ describe("a static copy", () => {
 		expect(kinds(root.first!)).toEqual(["text"]);
 	});
 
+	it("leaves out text outside a <text>, which has no element", async () => {
+		const { handles, act } = await source();
+		expect(kinds(handles["loose"]!)).toEqual(["text", "element"]);
+		const copy = await act(() => createStaticCopy(handles["loose"]!, handles["holder"]!));
+		expect(kinds(copy.nodes[0]!)).toEqual(["element"]);
+	});
+
 	it("leaves out id unless keepIds is true", async () => {
 		const { page, handles, act, state, children } = await source();
 		const [plain, kept] = await act(() => [

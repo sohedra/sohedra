@@ -58,6 +58,7 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	static_copy_not_on_page: { what: "source[1]" },
 	static_copy_container_not_empty: { tag: "view" },
 	static_copy_list: {},
+	static_copy_page_root: {},
 };
 
 // Boundary: the keys of the catalogue are its codes.

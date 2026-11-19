@@ -8,12 +8,12 @@ each does there. -->
 	let { probe = false }: { probe?: boolean } = $props();
 	const listener = () => {};
 
+	/** What `call` returned, or the first line of what it threw. */
 	function attempt(call: () => unknown): string {
 		try {
-			call();
-			return "returned";
+			return String(call());
 		} catch (error) {
-			return (error as { code?: string }).code ?? String(error);
+			return String((error as Error).message).split("\n")[0]!;
 		}
 	}
 
@@ -24,6 +24,8 @@ each does there. -->
 				attempt(() => createStaticCopy(root as never, root as never)),
 				attempt(() => root.addEventListener("tap", listener)),
 				attempt(() => root.removeEventListener("tap", listener)),
+				attempt(() => root.isConnected),
+				attempt(() => root.contains(null)),
 			]
 		: [];
 </script>

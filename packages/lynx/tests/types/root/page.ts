@@ -7,6 +7,12 @@ import type { Component } from "svelte";
 
 declare const App: Component<{ title: string }>;
 declare const Plain: Component;
+// Props as Svelte's docs write them, and as svelte-check types a root component: an interface,
+// which has no index signature.
+interface InboxProps {
+	title: string;
+}
+declare const Inbox: Component<InboxProps>;
 
 mountPage(App, { props: { title: "Inbox" } });
 mountPage(App, {
@@ -14,11 +20,15 @@ mountPage(App, {
 });
 mountPage(App, { props: { title: "Inbox" }, context: new Map([["theme", "dark"]]) });
 mountPage(Plain);
+mountPage(Inbox, { props: { title: "Inbox" } });
+mountPage(Inbox, { props: (data) => ({ title: String(data["title"]) }) });
 const options: MountPageOptions<{ title: string }> = { props: { title: "Inbox" } };
 mountPage(App, options);
 
 // @ts-expect-error a prop the component does not have.
 mountPage(App, { props: { title: "Inbox", count: 1 } });
+// @ts-expect-error a prop the interface does not have.
+mountPage(Inbox, { props: { title: "Inbox", count: 1 } });
 // @ts-expect-error the function returns the component's props.
 mountPage(App, { props: () => ({ title: 1 }) });
 // @ts-expect-error the context is a map.

@@ -44,8 +44,8 @@ function pageRoot(options: { listen?: boolean; firstFrame?: boolean } = {}) {
 	return { page, handles, log, heard };
 }
 
-describe("before a page starts", () => {
-	// First in the file: no page has run yet.
+describe("while no page runs", () => {
+	// Whether a page ran before or not: none runs now.
 	it("the root is a node not on the page, whose listener is bound once the page starts", async () => {
 		const early: string[] = [];
 		const hear = (event: Heard) => void early.push(event.type);

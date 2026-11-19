@@ -2,9 +2,9 @@
 // and `mount` needs a running page on the background. A layer an effect mounts is not in the first
 // frame, which runs no effect; hydration keeps every element the frame drew.
 
-import { describe, expect, it } from "@rstest/core";
+import { describe, expect, it, rs } from "@rstest/core";
 
-import { mount } from "../../../src/background/root-entry.ts";
+import { mount, unmount } from "../../../src/background/root-entry.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import Layer from "../../fixtures/threads/page/Layer.svelte";
 import LayerHost from "../../fixtures/threads/page/LayerHost.svelte";
@@ -49,8 +49,8 @@ async function withALayerOpen() {
 describe("mount with no page running", () => {
 	const late = () => mount(Layer, { props: { label: "late", log: [] } });
 
-	// First in the file: no page has run yet.
-	it("throws one error before a page starts", () => {
+	// Whether a page ran before or not: none runs now.
+	it("throws one error while no page runs", () => {
 		expect(thrownBy(late)).toMatchObject({
 			code: "mount_without_page",
 			message: expect.stringMatching(/^A call of mount ran with no page running/),
@@ -86,14 +86,73 @@ describe("a layer", () => {
 	});
 });
 
+describe("unmount of a layer the page took away", () => {
+	/** Svelte's development warnings while `run` runs. */
+	function warnedDuring(run: () => void): string[] {
+		const warn = rs.spyOn(console, "warn").mockImplementation(() => {});
+		try {
+			run();
+			return warn.mock.calls.map((call) => String(call[0]));
+		} finally {
+			warn.mockRestore();
+		}
+	}
+
+	async function withAToast() {
+		const log: unknown[] = [];
+		const page = startSveltePage(LayerHost, { props: () => ({ handles: {}, log }) });
+		await page.settle();
+		const toast = page.asBackground(() => mount(Layer, { props: { label: "toast", log } }));
+		await page.settle();
+		return { page, log, toast };
+	}
+
+	it("does nothing after a reload, as when the old app's timer closes its toast", async () => {
+		const { page, log, toast } = await withAToast();
+		page.reload();
+		await page.settle();
+		expect(log.filter((entry) => entry === "destroyed toast")).toHaveLength(1);
+		expect(warnedDuring(() => page.asBackground(() => unmount(toast)))).toEqual([]);
+		expect(log.filter((entry) => entry === "destroyed toast")).toHaveLength(1);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("does nothing after the page closed", async () => {
+		const { page, toast } = await withAToast();
+		page.destroy();
+		await page.settle();
+		expect(warnedDuring(() => page.asBackground(() => unmount(toast)))).toEqual([]);
+	});
+
+	it("is not taken away again by the reload once the app took it away itself", async () => {
+		const { page, log, toast } = await withAToast();
+		page.asBackground(() => unmount(toast));
+		await page.settle();
+		expect(warnedDuring(() => page.reload())).toEqual([]);
+		await page.settle();
+		expect(log.filter((entry) => entry === "destroyed toast")).toHaveLength(1);
+	});
+});
+
 describe("on the main thread", () => {
-	it("mount, unmount, createStaticCopy and the root each throw one error, as the first frame is drawn", () => {
+	it("mount, unmount, createStaticCopy and listening on the root each throw one error, as the first frame is drawn", () => {
 		const page = startSveltePage(MainThreadProbe, {
 			props: { probe: false },
 			firstFrame: { draw: drawMainThreadProbe, props: { probe: true } },
 		});
+		const thrown = (call: string) =>
+			`A call of ${call} ran on the main thread, and ${call} works only on the background thread, which holds the page's components and elements.`;
 		// Before the background answers.
-		expect(page.engine.texts()).toEqual(Array(5).fill("called_on_main_thread"));
+		expect(page.engine.texts()).toEqual([
+			thrown("mount"),
+			thrown("unmount"),
+			thrown("createStaticCopy"),
+			thrown("on(root, …)"),
+			thrown("on(root, …)"),
+			// The root's questions have answers there: it holds nothing of the main thread's.
+			"false",
+			"false",
+		]);
 	});
 });
 

@@ -3,6 +3,8 @@
 	let { handles, withList = false }: { handles: Record<string, unknown>; withList?: boolean } =
 		$props();
 	let showHolder = $state(true);
+	// Text outside a <text>, which Lynx shows nowhere.
+	let gap = $state(" ");
 	handles["hideHolder"] = () => (showHolder = false);
 	const keep = (name: string) => (node: unknown) => {
 		handles[name] = node;
@@ -38,6 +40,7 @@
 		{/if}
 	</view>
 	<view class="second" id="second"><text>Second</text></view>
+	<view class="loose" {@attach keep("loose")}>{gap}<text>in</text></view>
 	{#if showHolder}
 		<view class="holder" {@attach keep("holder")}></view>
 	{/if}
