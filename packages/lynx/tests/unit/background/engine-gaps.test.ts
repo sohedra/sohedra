@@ -1,10 +1,19 @@
 // What the background's engine lacks, filled in before the page loads: on a global object and a
 // strings' prototype shaped like a device's, and never over what the engine has.
 
-import { describe, expect, it } from "@rstest/core";
+import { afterEach, describe, expect, it, rs } from "@rstest/core";
+import structuredCloneFill, { deserialize, serialize } from "@ungap/structured-clone";
 
 import { fillEngineGaps } from "../../../src/background/engine-gaps.ts";
 import type { BackgroundGlobals } from "../../../src/background/globals.ts";
+
+// In Node, `@ungap/event-target` and `@ungap/structured-clone` hand back Node's own `EventTarget`
+// and `structuredClone`, so these tests check where the fills go and what reaches them; the
+// device-shaped build tests (tests/build/device-snapshot.test.ts) run the packages' own code.
+rs.mock("@ungap/structured-clone", { spy: true });
+afterEach(() => {
+	rs.clearAllMocks();
+});
 
 /** A device's background: `lynx` alone has the timers and the microtask queue. */
 function device() {
@@ -38,9 +47,30 @@ describe("on a background that lacks them", () => {
 		expect(calls).toEqual([["queueMicrotask", callback]]);
 	});
 
-	it("puts no timers on the global object: the bundle's wrapper passes them", () => {
+	it("puts nothing else on the global object, and no timers: the bundle's wrapper passes them", () => {
 		const { scope } = device();
-		expect(Object.keys(scope)).toEqual(["queueMicrotask"]);
+		expect(Object.keys(scope).sort()).toEqual(["EventTarget", "queueMicrotask", "structuredClone"]);
+	});
+
+	it("puts a global EventTarget, which Svelte's runtime tests values with", () => {
+		const { scope } = device();
+		const Target = scope["EventTarget"] as typeof EventTarget;
+		const target = new Target();
+		const heard: string[] = [];
+		target.addEventListener("ping", (event) => heard.push(event.type));
+		target.dispatchEvent(new Event("ping"));
+		expect(heard).toEqual(["ping"]);
+	});
+
+	it("puts a global structuredClone, which Svelte's runtime copies state with", () => {
+		const { scope } = device();
+		const clone = scope["structuredClone"] as typeof structuredClone;
+		const value = { when: new Date(0), sizes: new Map([["a", [1]]]), rows: [[1, [2]]] };
+		const copy = clone(value);
+		expect(copy).toEqual(value);
+		expect(copy.when).not.toBe(value.when);
+		expect(copy.sizes.get("a")).not.toBe(value.sizes.get("a"));
+		expect(copy.rows[0]).not.toBe(value.rows[0]);
 	});
 
 	it("gives strings a replaceAll that is not enumerable, as the built-in is", () => {
@@ -51,6 +81,34 @@ describe("on a background that lacks them", () => {
 			enumerable: false,
 			configurable: true,
 		});
+	});
+});
+
+describe("the structuredClone it gives", () => {
+	const clone = device().scope["structuredClone"] as typeof structuredClone;
+
+	it("returns a primitive as it is, as @ungap/structured-clone's own copy does, without serializing it", () => {
+		const primitives = [undefined, null, true, false, 0, -0, NaN, Infinity, 1.5, 10n, "", "text"];
+		for (const value of primitives) {
+			expect(Object.is(clone(value), value)).toBe(true);
+			expect(Object.is(deserialize(serialize(value)), value)).toBe(true);
+		}
+		expect(structuredCloneFill).not.toHaveBeenCalled();
+	});
+
+	it("hands a symbol, a function and every object to @ungap/structured-clone, with the options", () => {
+		const symbol = Symbol("unique");
+		const action = () => {};
+		expect(() => clone(symbol)).toThrow();
+		expect(() => clone(action)).toThrow();
+		expect(() => serialize(symbol)).toThrow(new TypeError("unable to serialize symbol"));
+		expect(() => serialize(action)).toThrow(new TypeError("unable to serialize function"));
+		const value = { when: new Date(0) };
+		const options = { transfer: [] };
+		expect(clone(value, options)).toEqual(value);
+		const calls = rs.mocked(structuredCloneFill).mock.calls;
+		expect(calls.map(([handed]) => handed)).toEqual([symbol, action, value]);
+		expect(calls[2]).toEqual([value, options]);
 	});
 });
 
@@ -105,7 +163,11 @@ describe("the replaceAll it gives", () => {
 describe("on a background that has them", () => {
 	it("leaves the engine's own", () => {
 		const own = () => {};
-		const scope: Record<string, unknown> = { queueMicrotask: own };
+		const scope: Record<string, unknown> = {
+			queueMicrotask: own,
+			EventTarget: own,
+			structuredClone: own,
+		};
 		const strings = { replaceAll: own };
 		// Boundary: nothing of `lynx` is read when the engine has every global.
 		fillEngineGaps({ scope, strings, globals: {} as BackgroundGlobals });
@@ -116,10 +178,15 @@ describe("on a background that has them", () => {
 
 describe("the background's start", () => {
 	it("fills the thread's own global object, and leaves what this one has", async () => {
-		const own = [globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll];
+		const read = () => [
+			globalThis.queueMicrotask,
+			globalThis.setTimeout,
+			globalThis.EventTarget,
+			globalThis.structuredClone,
+			String.prototype.replaceAll,
+		];
+		const own = read();
 		await import("../../../src/background/start-up.ts");
-		expect([globalThis.queueMicrotask, globalThis.setTimeout, String.prototype.replaceAll]).toEqual(
-			own,
-		);
+		expect(read()).toEqual(own);
 	});
 });

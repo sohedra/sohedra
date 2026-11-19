@@ -1,6 +1,9 @@
 // What the background's engine lacks, filled in before the page's modules load (start-up.ts). Each
-// fill is made only where the engine has none. The language's own gaps are filled only where
-// Svelte's runtime needs it: an app gets no fill of the language from the binding.
+// fill is made only where the engine has none, and only for what Svelte's runtime reads or the other
+// thread has: an app gets no other fill, of the language or of the web's APIs, from the binding.
+
+import EventTargetFill from "@ungap/event-target";
+import structuredCloneFill from "@ungap/structured-clone";
 
 import type { BackgroundGlobals } from "./globals.ts";
 
@@ -18,6 +21,8 @@ export interface FillTargets {
 export function fillEngineGaps(targets: FillTargets): void {
 	fillQueueMicrotask(targets);
 	fillReplaceAll(targets.strings);
+	fillEventTarget(targets.scope);
+	fillStructuredClone(targets.scope);
 }
 
 /**
@@ -32,6 +37,39 @@ export function fillEngineGaps(targets: FillTargets): void {
 function fillQueueMicrotask({ scope, globals }: FillTargets): void {
 	if (typeof scope["queueMicrotask"] === "function") return;
 	scope["queueMicrotask"] = (callback: () => void) => globals.lynx.queueMicrotask(callback);
+}
+
+/**
+ * Svelte's runtime tests values with `instanceof EventTarget` as it copies state (`$state.snapshot`,
+ * and so `$inspect` and `{@debug}`) and as it walks an action's object
+ * (svelte/src/internal/shared/clone.js, internal/client/runtime.js).
+ *
+ * @workaround background-event-target kind=lynx-gap delete-when="Lynx's threads have a global EventTarget, or Svelte's clone.js and runtime.js no longer read it unguarded"
+ */
+function fillEventTarget(scope: Record<string, unknown>): void {
+	if (typeof scope["EventTarget"] !== "function") scope["EventTarget"] = EventTargetFill;
+}
+
+/**
+ * Svelte's runtime copies each value of state that is not an array, a plain object, a `Map` or a
+ * `Set` (a `Date`, a number) with `structuredClone` (svelte/src/internal/shared/clone.js).
+ *
+ * @workaround background-structured-clone kind=lynx-gap delete-when="Lynx's threads have a global structuredClone, or Svelte's clone.js no longer calls it unguarded"
+ */
+function fillStructuredClone(scope: Record<string, unknown>): void {
+	if (typeof scope["structuredClone"] !== "function") scope["structuredClone"] = cloneStructured;
+}
+
+/**
+ * `@ungap/structured-clone`, with a primitive returned as it is, as the web's `structuredClone`
+ * returns it: Svelte copies every number and string of state with it, and `@ungap` serializes each
+ * one whole. A symbol or a function still reaches `@ungap`, which refuses it.
+ */
+function cloneStructured<T>(value: T, options?: Parameters<typeof structuredCloneFill>[1]): T {
+	const type = typeof value;
+	return (type === "object" && value !== null) || type === "function" || type === "symbol"
+		? structuredCloneFill(value, options)
+		: value;
 }
 
 /**
