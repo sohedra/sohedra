@@ -10,6 +10,8 @@ import CapturedCycle from "../../fixtures/threads/functions/CapturedCycle.svelte
 import drawCapturedCycle from "../../fixtures/threads/functions/CapturedCycle.svelte?first-frame";
 import CapturedElement from "../../fixtures/threads/functions/CapturedElement.svelte";
 import drawCapturedElement from "../../fixtures/threads/functions/CapturedElement.svelte?first-frame";
+import CapturedOwnProxy from "../../fixtures/threads/functions/CapturedOwnProxy.svelte";
+import drawCapturedOwnProxy from "../../fixtures/threads/functions/CapturedOwnProxy.svelte?first-frame";
 import CapturedState from "../../fixtures/threads/functions/CapturedState.svelte";
 import drawCapturedState from "../../fixtures/threads/functions/CapturedState.svelte?first-frame";
 import { startFunctionsPage, tap } from "./pages.ts";
@@ -103,6 +105,30 @@ describe.each([false, true])(
 			);
 			expect(page.engine.texts()).toEqual(["count 0", "tap"]);
 			await count();
+			expect(page.engine.texts()).toEqual(["count 1", "tap"]);
+		});
+
+		it("is reported when it is given its own proxy to hold, and the page goes on drawing", async () => {
+			const log: unknown[] = [];
+			const api: Record<string, () => void> = {};
+			const page = startFunctionsPage(CapturedOwnProxy, {
+				draw: drawCapturedOwnProxy,
+				props: { log, api },
+				firstFrame,
+			});
+			await page.settle();
+			page.asBackground(() => api["cycle"]!());
+			await page.settle();
+			expect(page.errors).toEqual([
+				expect.objectContaining({
+					code: "capture_too_deep",
+					message: expect.stringMatching(
+						/^The main-thread function of main-thread:ontap on <view> captures box, which holds itself[^\n]*\n.*CapturedOwnProxy\.svelte:\d+:\d+/,
+					),
+				}),
+			]);
+			page.asBackground(() => api["count"]!());
+			await page.settle();
 			expect(page.engine.texts()).toEqual(["count 1", "tap"]);
 		});
 

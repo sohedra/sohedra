@@ -28,6 +28,13 @@ class Holder {
 	}
 }
 
+/** A class instance whose `toJSON` gives an object that holds the instance. */
+class Again {
+	toJSON() {
+		return { again: this };
+	}
+}
+
 class Point {
 	x = 1;
 	y = 2;
@@ -76,11 +83,10 @@ describe("a value the snapshot hands structuredClone", () => {
 		],
 		["a class instance holding a boxed number", new Holder(Object(3))],
 		[
-			"a class instance holding itself",
+			"an object with no prototype holding one class instance twice",
 			(() => {
-				const holder = new Holder(null);
-				holder.inner = holder;
-				return holder;
+				const point = new Point();
+				return Object.assign(Object.create(null) as object, { a: point, b: point });
 			})(),
 		],
 	])("%s is copied as the built-in or a plain object, as structuredClone does", (_, value) => {
@@ -151,6 +157,39 @@ describe("a capture that cannot be copied", () => {
 				),
 			}),
 		);
+	});
+
+	it("is sent as a value whose text throws its own error, whenever it holds itself", () => {
+		const object: Record<string, unknown> = { n: 1 };
+		object["self"] = object;
+		const array: unknown[] = [1];
+		array.push(array);
+		const deep: { a: { b: Record<string, unknown> } } = { a: { b: {} } };
+		deep.a.b["up"] = deep;
+		const holder = new Holder(null);
+		holder.inner = holder;
+		const map = new Map<string, unknown>();
+		map.set("self", map);
+		const held = new Holder(map);
+		const json = new Again();
+		for (const value of [object, array, deep, holder, held, json])
+			expect(
+				thrownBySending(copyCapture(value, { name: "tree", where: "src/Tree.svelte:4:2" })),
+			).toEqual(
+				expect.objectContaining({
+					code: "capture_too_deep",
+					message: expect.stringMatching(
+						/^A main-thread function captures tree, which holds itself/,
+					),
+				}),
+			);
+	});
+
+	it("copies a value met twice, but not inside itself, each time", () => {
+		const shared = { n: 1 };
+		expect(copyCapture({ a: shared, b: [shared] })).toEqual({ a: { n: 1 }, b: [{ n: 1 }] });
+		const point = new Point();
+		expect(copyCapture(new Holder([point, point]))).toEqual(new Holder([point, point]));
 	});
 
 	it("copies a value nested 500 levels deep, and not one level more", () => {
