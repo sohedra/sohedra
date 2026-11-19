@@ -21,7 +21,7 @@ export function rendererFixture(): RendererFixture {
 	const queue = new OpQueue();
 	const handlers = new HandlerRegistry();
 	const renderer = createLynxRenderer({ queue, handlers });
-	const root = renderer.createRoot();
+	const root = renderer.attachRoot();
 	return {
 		renderer,
 		handlers,

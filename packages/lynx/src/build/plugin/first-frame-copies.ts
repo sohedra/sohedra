@@ -44,7 +44,7 @@ export function pluginFirstFrameCopies(): RsbuildPlugin {
 					use: [
 						{
 							loader: loaderPath("first-frame-copy"),
-							options: { startPage: RUNTIME_FILES.firstFramePage },
+							options: { entry: RUNTIME_FILES.firstFrameEntry },
 						},
 					],
 				});

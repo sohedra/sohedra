@@ -26,14 +26,9 @@ const ENTRIES = [
 	"./internal/renderer",
 ];
 
-/**
- * The internal entries: what compiled code and the build import by name, and the page's start,
- * which the page's entry imports until the public page entry replaces it and it is deleted. The
- * page's start resolves by thread, to the main thread's copy under `worker`.
- */
+/** The internal entries: what compiled code and the build import by name. */
 const INTERNAL = [
 	"./internal/renderer",
-	"./internal/page",
 	"./internal/main-thread-functions",
 	"./internal/window-size",
 ];
@@ -68,16 +63,17 @@ describe("exports", () => {
 		expect(internal.filter((entry) => !INTERNAL.includes(entry))).toEqual([]);
 	});
 
-	it("starts the page through an entry that resolves by thread, built and as source", () => {
-		expect(manifest.exports["./internal/page"]).toEqual({
-			worker: "./src/first-frame/page.ts",
-			default: "./src/background/page-entry.ts",
+	it("starts the page through the package's own entry, which resolves by thread", () => {
+		expect(manifest.exports["."]).toEqual({
+			worker: "./src/first-frame/root-entry.ts",
+			default: "./src/background/root-entry.ts",
 		});
-		expect(manifest.publishConfig.exports["./internal/page"]).toEqual({
-			types: "./lib/background/page-entry.d.ts",
-			worker: "./lib/first-frame/page.js",
-			default: "./lib/background/page-entry.js",
+		expect(manifest.publishConfig.exports["."]).toEqual({
+			types: "./lib/background/root-entry.d.ts",
+			worker: "./lib/first-frame/root-entry.js",
+			default: "./lib/background/root-entry.js",
 		});
+		expect(Object.keys(manifest.exports)).not.toContain("./internal/page");
 	});
 
 	it("publishes the same entries as it exports", () => {

@@ -1,6 +1,6 @@
 // Runs a generated page on both threads of a test page, and what happens to it: the state changed
 // on the background, taps, Lynx asking for list cells and handing them back, a scroll through a
-// list, the host's data and a reload.
+// list, a layer mounted above the page and taken away, the host's data and a reload.
 
 import * as env from "@sohedra/lynx/env";
 import * as experimental from "@sohedra/lynx/experimental";
@@ -16,6 +16,7 @@ import { readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
+import GeneratedLayer from "../../fixtures/threads/GeneratedLayer.svelte";
 import { recyclable, SCREEN } from "../scroll.ts";
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
@@ -40,6 +41,8 @@ export type Step =
 	 * while the request for it is on its way.
 	 */
 	| { kind: "show-then-set"; list: number; index: number; key: keyof PageState; value: unknown }
+	/** A layer is mounted above the page, or the one mounted is taken away. */
+	| { kind: "layer" }
 	| { kind: "update"; data: PageState }
 	| { kind: "reload"; data: PageState };
 
@@ -84,6 +87,7 @@ export const step: fc.Arbitrary<Step> = fc.oneof(
 			.record({ list: pick, to: pick })
 			.map(({ list, to }): Step => ({ kind: "scroll", list, to })),
 	},
+	{ weight: 1, arbitrary: fc.constant<Step>({ kind: "layer" }) },
 	{ weight: 1, arbitrary: pageState.map((data): Step => ({ kind: "update", data })) },
 	{ weight: 1, arbitrary: pageState.map((data): Step => ({ kind: "reload", data })) },
 );
@@ -104,6 +108,8 @@ export interface GeneratedPage {
 	 * `Name id one-thread` for one the grammar put where only one thread renders.
 	 */
 	readonly ids: { readonly frame: string[]; readonly background: string[] };
+	/** The layer a step mounted, until a step takes it away or the page reloads. */
+	layer: Record<string, unknown> | undefined;
 }
 
 /** The test module a generated component records its id with. */
@@ -205,7 +211,7 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 			},
 		}),
 	});
-	return { page, handles, ids };
+	return { page, handles, ids, layer: undefined };
 }
 
 /** The key of a cell's item. */
@@ -357,10 +363,18 @@ export function apply(running: GeneratedPage, done: Step): void {
 			if (count > 0) scrollTo(page, element!, done.to % count);
 			return;
 		}
+		case "layer":
+			page.asBackground(() => {
+				if (running.layer) root.unmount(running.layer);
+				running.layer = running.layer ? undefined : root.mount(GeneratedLayer);
+			});
+			return;
 		case "update":
 			page.updateData({ host: copy(done.data) });
 			return;
 		case "reload":
+			// The reload takes the layer away.
+			running.layer = undefined;
 			page.reload({ host: copy(done.data) });
 			return;
 	}
@@ -391,6 +405,21 @@ export async function askEveryRow(page: SveltePage): Promise<void> {
 		await page.settle();
 		if (waiting === 0) return;
 	}
+}
+
+/** The line a step's layer starts with in a tree: the page's last child. */
+const LAYER_LINE = '  view class="layer" @bindEvent:tap';
+
+/**
+ * A tree without the layer a step mounted, which is no part of the page's state: what a page
+ * started from that state renders.
+ */
+export function withoutLayer(tree: readonly string[]): string[] {
+	const at = tree.indexOf(LAYER_LINE);
+	if (at === -1) return [...tree];
+	let end = at + 1;
+	while (end < tree.length && tree[end]!.startsWith("    ")) end++;
+	return [...tree.slice(0, at), ...tree.slice(end)];
 }
 
 /** Whether a patch asked the main thread to make the page again. */

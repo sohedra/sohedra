@@ -27,10 +27,6 @@
 		"./experimental": "./src/gesture/experimental.ts",
 		"./gesture": "./src/gesture/index.ts",
 		"./internal/renderer": "./src/background/renderer/entry.ts",
-		"./internal/page": {
-			"worker": "./src/first-frame/page.ts",
-			"default": "./src/background/page-entry.ts"
-		},
 		"./internal/main-thread-functions": {
 			"worker": "./src/first-frame/functions-entry.ts",
 			"default": "./src/background/functions-entry.ts"
@@ -73,11 +69,6 @@
 			"./internal/renderer": {
 				"types": "./lib/background/renderer/entry.d.ts",
 				"default": "./lib/background/renderer/entry.js"
-			},
-			"./internal/page": {
-				"types": "./lib/background/page-entry.d.ts",
-				"worker": "./lib/first-frame/page.js",
-				"default": "./lib/background/page-entry.js"
 			},
 			"./internal/main-thread-functions": {
 				"types": "./lib/background/functions-entry.d.ts",

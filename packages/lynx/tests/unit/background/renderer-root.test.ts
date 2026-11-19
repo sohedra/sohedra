@@ -1,5 +1,7 @@
-// The page's root: an element node bound to Lynx's page element, which takes listeners like the
-// other elements and stops being the page element when the page is destroyed.
+// The page's root: one element node for the renderer's life, bound to Lynx's page element while a
+// page runs. It takes listeners like the other elements, stops being the page element when the page
+// is destroyed, and is the page element again, with the listeners it was given meanwhile, when the
+// next page starts.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -11,6 +13,7 @@ const handler = () => {};
 describe("the root", () => {
 	it("is an element node tagged page, with the page element's id", () => {
 		const { renderer, root } = rendererFixture();
+		expect(renderer.root).toBe(root);
 		expect(root.tag).toBe("page");
 		expect(root.lynxId).toBe(ROOT_ID);
 		expect(renderer.nodeById(ROOT_ID)).toBe(root);
@@ -52,5 +55,18 @@ describe("the root", () => {
 		root.removeEventListener("tap", handler);
 		expect(ops()).toEqual([]);
 		expect(root.isConnected).toBe(false);
+	});
+
+	it("is the same node when the next page starts, bound with the listeners it got meanwhile", () => {
+		const { renderer, root, element, ops } = rendererFixture();
+		element("view");
+		renderer.retire();
+		root.addEventListener("tap", handler, { capture: true });
+		ops();
+		expect(renderer.attachRoot()).toBe(root);
+		expect(root.lynxId).toBe(ROOT_ID);
+		expect(renderer.nodeById(ROOT_ID)).toBe(root);
+		expect(root.first).toBeNull();
+		expect(ops()).toEqual([[OpCode.SetEvent, ROOT_ID, "capture-bind", "tap", 1]]);
 	});
 });

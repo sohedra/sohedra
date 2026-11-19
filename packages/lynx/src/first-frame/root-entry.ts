@@ -1,6 +1,7 @@
-// `@sohedra/lynx` on the main thread, where the page's main-thread code imports it: its components,
-// as they draw the first frame, and the bodies of its main-thread functions. The calls go to the
-// main thread's runtime through the global it shares with the page's code. Its background side is
+// `@sohedra/lynx` on the main thread, where the page's main-thread code imports it: the page's
+// entry, which records the first frame with `mountPage`, its components, as they draw the first
+// frame, and the bodies of its main-thread functions. The calls go to the main thread's runtime
+// through the global it shares with the page's code. Its background side is
 // ../background/root-entry.ts.
 
 import { FUNCTION_FIELDS, isMainThreadFunction, REF_FIELDS } from "../wire/index.ts";
@@ -8,6 +9,10 @@ import type { FunctionsRuntime, MainThreadRefHandle } from "../wire/index.ts";
 import { firstFrameError } from "./catalogue.ts";
 import { drawing } from "./drawing.ts";
 import { DEV, firstFrame, functionsGlobal } from "./globals.ts";
+
+export { mountPage } from "./page.ts";
+export type { MountPageOptions } from "./page.ts";
+export { createStaticCopy, mount, reportError, root, unmount } from "./stand-ins.ts";
 
 declare const brand: unique symbol;
 

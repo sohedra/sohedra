@@ -20,8 +20,24 @@ export interface FillTargets {
 export function fillEngineGaps(targets: FillTargets): void {
 	fillSystemInfo(targets);
 	fillReplaceAll(targets.strings);
+	fillQueueMicrotask(targets.scope);
 	fillEventTarget(targets.scope);
 	fillStructuredClone(targets.scope);
+}
+
+/**
+ * Svelte's `on()` adds a touch, pointer or wheel listener a microtask later when no renderer is
+ * current, as on the main thread, with the global `queueMicrotask`, which the main thread lacks: a
+ * component's top-level `on(el, "touchstart", …)` threw there at once, and the first frame was not
+ * drawn. A promise's reaction is the main thread's microtask: the engine runs pending jobs after
+ * each call into the script and reports a rejection left unhandled with the main thread's code
+ * (core/runtime/lepusng/quick_context.cc, QuickContext::InternalCall and EvalLepusPendingTask).
+ *
+ * @workaround main-thread-queue-microtask kind=lynx-gap delete-when="Lynx's main thread has a global queueMicrotask"
+ */
+function fillQueueMicrotask(scope: Record<string, unknown>): void {
+	if (typeof scope["queueMicrotask"] === "function") return;
+	scope["queueMicrotask"] = (callback: () => void) => void Promise.resolve().then(callback);
 }
 
 /**

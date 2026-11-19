@@ -5,10 +5,10 @@
 import type { Component } from "svelte";
 
 import { startSveltePage } from "../svelte-page.ts";
-import type { SveltePage, SveltePageOptions } from "../svelte-page.ts";
+import type { FirstFrameCopy, SveltePage, SveltePageOptions } from "../svelte-page.ts";
 
 /** A component's first-frame copy (`./App.svelte?first-frame`). */
-export type Draw = (props?: Record<string, unknown>) => void;
+export type Draw = FirstFrameCopy;
 
 /** What a page with main-thread functions starts with. */
 export interface FunctionsPageOptions extends Omit<SveltePageOptions, "firstFrame" | "props"> {

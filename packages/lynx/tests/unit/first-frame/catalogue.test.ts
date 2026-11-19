@@ -11,6 +11,7 @@ const SAMPLES: { [Code in FirstFrameCode]: FirstFrameDetails[Code] } = {
 	main_thread_runtime_missing: { call: "runOnBackground" },
 	main_thread_ref_set_outside_function: {},
 	run_on_main_thread_in_first_frame: { id: "9aef:c44c3:2" },
+	called_on_main_thread: { call: "mount" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

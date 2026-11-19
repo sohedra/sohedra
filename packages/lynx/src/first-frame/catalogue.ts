@@ -14,6 +14,8 @@ export interface FirstFrameDetails {
 	main_thread_ref_set_outside_function: Record<string, never>;
 	/** `id` is the function's, which names its file and its place in it. */
 	run_on_main_thread_in_first_frame: { id: string };
+	/** `call` is what the page's code called, as written: `mount`, `createStaticCopy`, `on(root, …)`. */
+	called_on_main_thread: { call: string };
 }
 
 /** What a code of the first frame names. */
@@ -48,6 +50,13 @@ export const FIRST_FRAME_CATALOGUE: Catalogue<FirstFrameDetails> = {
 		fix: () =>
 			"To run it as the page starts, call it from $effect. To run it on an element from the first frame on, once, give the element a function ref: main-thread:ref={fn}.",
 		docs: "run_on_main_thread_in_first_frame",
+	},
+	called_on_main_thread: {
+		message: ({ call }) =>
+			`A call of ${call} ran on the main thread, and ${call} works only on the background thread, which holds the page's components and elements.`,
+		fix: () =>
+			"Call it from $effect, an attachment or an event handler, which run on the background thread: not while a component renders the first frame, and not in a main-thread function.",
+		docs: "called_on_main_thread",
 	},
 };
 

@@ -29,6 +29,8 @@ export interface BackgroundGlobals {
 	lynx: {
 		/** The page's data, as the host opened it and as updates left it. */
 		__initData: Record<string, unknown>;
+		/** The host's global props (lynx-core's lynx.ts). */
+		__globalProps?: Record<string, unknown> | null;
 		/** `level` is `"error"` (the default) or `"warning"`. */
 		reportError(error: unknown, options?: { level?: "error" | "warning" }): void;
 		queueMicrotask(callback: () => void): void;

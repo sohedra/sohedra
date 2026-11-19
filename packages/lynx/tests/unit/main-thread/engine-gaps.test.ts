@@ -59,9 +59,13 @@ describe("the main thread's EventTarget and structuredClone, which Svelte's runt
 
 	it("are the engine's own when it has them", () => {
 		const own = () => {};
-		const scope: Record<string, unknown> = { EventTarget: own, structuredClone: own };
+		const scope: Record<string, unknown> = {
+			EventTarget: own,
+			structuredClone: own,
+			queueMicrotask: own,
+		};
 		fillEngineGaps({ scope, strings: {}, lynx: {} });
-		expect(scope).toEqual({ EventTarget: own, structuredClone: own });
+		expect(scope).toEqual({ EventTarget: own, structuredClone: own, queueMicrotask: own });
 	});
 
 	it("return a primitive as it is, as @ungap/structured-clone's own copy does, without serializing it", () => {

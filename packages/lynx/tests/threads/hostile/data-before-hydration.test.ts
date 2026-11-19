@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { startPage } from "../../../src/background/index.ts";
+import { mountPage } from "../../../src/background/index.ts";
 import { startMainThread } from "../../../src/main-thread/index.ts";
 import { installGlobals } from "../../../src/testing/globals.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
@@ -33,7 +33,7 @@ describe("data the host gives before the page loads", () => {
 				});
 			},
 			background: () => {
-				startPage(FrameCounter, { props: (data) => ({ parity: data["parity"] }) });
+				mountPage(FrameCounter, { props: (data) => ({ parity: data["parity"] }) });
 			},
 		});
 		const drawn = page.engine.all();

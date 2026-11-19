@@ -153,11 +153,16 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
-	it("runs the main thread with no global queueMicrotask, as on a device", async () => {
+	it("fills in the main thread's global queueMicrotask, which a device lacks, with one that runs", async () => {
 		const { page, mainThread } = startDevicePage(scripts);
 		try {
 			await page.settle();
-			expect(vm.runInContext("typeof queueMicrotask", mainThread)).toBe("undefined");
+			expect(vm.runInContext("typeof queueMicrotask", mainThread)).toBe("function");
+			const ran = vm.runInContext(
+				"new Promise((resolve) => queueMicrotask(() => resolve('ran')))",
+				mainThread,
+			) as Promise<string>;
+			await expect(ran).resolves.toBe("ran");
 			expect(page.errors.map(String)).toEqual([]);
 		} finally {
 			page.dispose();
@@ -220,5 +225,16 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		} finally {
 			page.dispose();
 		}
+	});
+});
+
+describe("a page built for production that copies nothing", () => {
+	it("carries none of createStaticCopy's code on either thread", () => {
+		const build = builds.get("production")!;
+		expect(build.ok).toBe(true);
+		const scripts = scriptsOf(build);
+		// A name only the copy's code reads, which minifying keeps.
+		expect(scripts.background).not.toContain("keepIds");
+		expect(scripts.mainThread).not.toContain("keepIds");
 	});
 });

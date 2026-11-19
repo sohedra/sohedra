@@ -9,6 +9,8 @@ export interface FirstFrameGlobals {
 	lynx: {
 		/** `level` is `"error"` (the default) or `"warning"`. */
 		reportError(error: unknown, options?: { level?: "error" | "warning" }): void;
+		/** The host's global props (core/renderer/template_entry.cc, UpdateGlobalPropsToContext). */
+		__globalProps?: Record<string, unknown> | null;
 	};
 }
 
