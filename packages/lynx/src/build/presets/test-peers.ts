@@ -21,14 +21,18 @@ function installed(name: string, root: string): boolean {
 	}
 }
 
-/** Throws the build's message when the app in `root` lacks what `preset` runs the tests with. */
+/**
+ * Throws the build's message when the app in `root` lacks what `preset` runs the tests with: its
+ * runner's, and `also` what the preset itself loads.
+ */
 export function checkTestPeers(options: {
 	runner: "rstest" | "vitest";
 	preset: string;
 	root: string;
+	also?: readonly string[];
 }): void {
-	const { runner, preset, root } = options;
-	const packages = TEST_PEERS[runner].filter((name) => !installed(name, root));
+	const { runner, preset, root, also = [] } = options;
+	const packages = [...TEST_PEERS[runner], ...also].filter((name) => !installed(name, root));
 	if (packages.length > 0)
 		throw buildError({ code: "test_peers_missing", details: { packages, preset, root } });
 }

@@ -92,13 +92,15 @@ export function withSvelteLynx(options: PluginSvelteLynxOptions = {}): ExtendCon
 
 /**
  * An app's tests: its own build config (and with it, its `pluginSvelteLynx` options), through
- * `@rstest/adapter-rsbuild`. Throws when the app lacks what the tests run with.
+ * `@rstest/adapter-rsbuild`. Throws when the app lacks what the tests run with, or that adapter.
  */
 export function withSvelteLynxFromConfig(options: ConfigFileOptions = {}): ExtendConfigFn {
 	checkTestPeers({
 		runner: "rstest",
 		preset: "withSvelteLynxFromConfig()",
 		root: options.rootPath ?? workingDirectory(),
+		// It reads the app's config through Rstest's Rsbuild adapter.
+		also: ["@rstest/adapter-rsbuild"],
 	});
 	return async () => {
 		const { toRstestConfig } = await import("@rstest/adapter-rsbuild");
