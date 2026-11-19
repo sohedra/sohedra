@@ -577,18 +577,7 @@ export interface LynxInputConfirmEvent<Target = LynxNode, CurrentTarget = Target
 	};
 }
 
-export interface LynxInputFocusEvent<Target = LynxNode, CurrentTarget = Target> extends LynxEvent<
-	Target,
-	CurrentTarget
-> {
-	/** Additional information. */
-	readonly detail: {
-		/** Input content */
-		value: string;
-	};
-}
-
-export interface LynxInputInputEvent<Target = LynxNode, CurrentTarget = Target> extends LynxEvent<
+export interface LynxInputEvent<Target = LynxNode, CurrentTarget = Target> extends LynxEvent<
 	Target,
 	CurrentTarget
 > {
@@ -604,6 +593,17 @@ export interface LynxInputInputEvent<Target = LynxNode, CurrentTarget = Target> 
 		isComposing?: boolean;
 		/** The type of input action, "paste" when pasting, "normal" otherwise */
 		inputType?: "normal" | "paste";
+	};
+}
+
+export interface LynxInputFocusEvent<Target = LynxNode, CurrentTarget = Target> extends LynxEvent<
+	Target,
+	CurrentTarget
+> {
+	/** Additional information. */
+	readonly detail: {
+		/** Input content */
+		value: string;
 	};
 }
 
@@ -4368,23 +4368,21 @@ export interface InputAttributes extends LynxCommonAttributes<"input"> {
 		LynxInputConfirmEvent<MainThread.Element>
 	>;
 	/** Input content changed */
-	oninput?: LynxEventHandler<LynxInputInputEvent<LynxNode, LynxNode<"input">>>;
+	oninput?: LynxEventHandler<LynxInputEvent<LynxNode, LynxNode<"input">>>;
 	/** `input`, heard in the capture phase: before the elements inside. */
-	oninputcapture?: LynxEventHandler<LynxInputInputEvent<LynxNode, LynxNode<"input">>>;
+	oninputcapture?: LynxEventHandler<LynxInputEvent<LynxNode, LynxNode<"input">>>;
 	/** `input`, caught here: the elements this is inside do not hear it. */
-	oncatchinput?: LynxEventHandler<LynxInputInputEvent<LynxNode, LynxNode<"input">>>;
+	oncatchinput?: LynxEventHandler<LynxInputEvent<LynxNode, LynxNode<"input">>>;
 	/** `input`, caught in the capture phase: the elements inside do not hear it. */
-	oncatchinputcapture?: LynxEventHandler<LynxInputInputEvent<LynxNode, LynxNode<"input">>>;
+	oncatchinputcapture?: LynxEventHandler<LynxInputEvent<LynxNode, LynxNode<"input">>>;
 	/** `input`, in a main-thread function. */
-	"main-thread:oninput"?: MainThreadEventHandler<LynxInputInputEvent<MainThread.Element>>;
+	"main-thread:oninput"?: MainThreadEventHandler<LynxInputEvent<MainThread.Element>>;
 	/** `input`, in a main-thread function, in the capture phase. */
-	"main-thread:oninputcapture"?: MainThreadEventHandler<LynxInputInputEvent<MainThread.Element>>;
+	"main-thread:oninputcapture"?: MainThreadEventHandler<LynxInputEvent<MainThread.Element>>;
 	/** `input`, in a main-thread function, caught here. */
-	"main-thread:oncatchinput"?: MainThreadEventHandler<LynxInputInputEvent<MainThread.Element>>;
+	"main-thread:oncatchinput"?: MainThreadEventHandler<LynxInputEvent<MainThread.Element>>;
 	/** `input`, in a main-thread function, caught in the capture phase. */
-	"main-thread:oncatchinputcapture"?: MainThreadEventHandler<
-		LynxInputInputEvent<MainThread.Element>
-	>;
+	"main-thread:oncatchinputcapture"?: MainThreadEventHandler<LynxInputEvent<MainThread.Element>>;
 	/** Input selection changed */
 	onselection?: LynxEventHandler<LynxInputSelectionEvent<LynxNode, LynxNode<"input">>>;
 	/** `selection`, heard in the capture phase: before the elements inside. */
@@ -4418,7 +4416,7 @@ export interface InputEvents extends LynxCommonEvents<"input"> {
 	/** Confirm button clicked */
 	confirm: LynxInputConfirmEvent<LynxNode, LynxNode<"input">>;
 	/** Input content changed */
-	input: LynxInputInputEvent<LynxNode, LynxNode<"input">>;
+	input: LynxInputEvent<LynxNode, LynxNode<"input">>;
 	/** Input selection changed */
 	selection: LynxInputSelectionEvent<LynxNode, LynxNode<"input">>;
 }
@@ -4740,7 +4738,7 @@ export interface OverlayAttributes
 	"main-thread:oncatchdismissoverlaycapture"?: MainThreadEventHandler<
 		LynxEvent<MainThread.Element>
 	>;
-	/** Callback when the back button is clicked. */
+	/** The overlay is asked to close: Android's Back button, or a swipe from the screen's edge on iOS. Lynx names the event `requestclose` on Android and `onRequestClose` on iOS, and this hears both. */
 	onrequestclose?: LynxEventHandler<LynxEvent<LynxNode, LynxNode<"overlay">>>;
 	/** `requestclose`, heard in the capture phase: before the elements inside. */
 	onrequestclosecapture?: LynxEventHandler<LynxEvent<LynxNode, LynxNode<"overlay">>>;
@@ -4798,28 +4796,6 @@ export interface OverlayAttributes
 	"main-thread:oncatcherrorcapture"?: MainThreadEventHandler<
 		LynxOverlayErrorEvent<MainThread.Element>
 	>;
-	/**
-	 * iOS asks to close the overlay: the user swiped from the screen's edge. iOS's event is named `onRequestClose`, so the attribute is `ononRequestClose`; Android sends `requestclose` for its Back button.
-	 *
-	 * @workaround overlay-ios-request-close kind=lynx-gap delete-when="@lynx-js/types declares the onRequestClose event on <overlay>: remove it from scripts/types/additions.ts"
-	 */
-	ononRequestClose?: LynxEventHandler<LynxEvent<LynxNode, LynxNode<"overlay">>>;
-	/** `onRequestClose`, heard in the capture phase: before the elements inside. */
-	ononRequestClosecapture?: LynxEventHandler<LynxEvent<LynxNode, LynxNode<"overlay">>>;
-	/** `onRequestClose`, caught here: the elements this is inside do not hear it. */
-	oncatchonRequestClose?: LynxEventHandler<LynxEvent<LynxNode, LynxNode<"overlay">>>;
-	/** `onRequestClose`, caught in the capture phase: the elements inside do not hear it. */
-	oncatchonRequestClosecapture?: LynxEventHandler<LynxEvent<LynxNode, LynxNode<"overlay">>>;
-	/** `onRequestClose`, in a main-thread function. */
-	"main-thread:ononRequestClose"?: MainThreadEventHandler<LynxEvent<MainThread.Element>>;
-	/** `onRequestClose`, in a main-thread function, in the capture phase. */
-	"main-thread:ononRequestClosecapture"?: MainThreadEventHandler<LynxEvent<MainThread.Element>>;
-	/** `onRequestClose`, in a main-thread function, caught here. */
-	"main-thread:oncatchonRequestClose"?: MainThreadEventHandler<LynxEvent<MainThread.Element>>;
-	/** `onRequestClose`, in a main-thread function, caught in the capture phase. */
-	"main-thread:oncatchonRequestClosecapture"?: MainThreadEventHandler<
-		LynxEvent<MainThread.Element>
-	>;
 }
 
 /** The events `<overlay>` sends, by name, as its listeners hear them. */
@@ -4828,14 +4804,12 @@ export interface OverlayEvents extends LynxCommonEvents<"overlay">, LynxDefaultE
 	showoverlay: LynxEvent<LynxNode, LynxNode<"overlay">>;
 	/** Callback when the overlay is hidden. */
 	dismissoverlay: LynxEvent<LynxNode, LynxNode<"overlay">>;
-	/** Callback when the back button is clicked. */
+	/** The overlay is asked to close: Android's Back button, or a swipe from the screen's edge on iOS. Lynx names the event `requestclose` on Android and `onRequestClose` on iOS, and this hears both. */
 	requestclose: LynxEvent<LynxNode, LynxNode<"overlay">>;
 	/** Callback when touch on the overlay */
 	overlaytouch: LynxOverlayTouchEvent<LynxNode, LynxNode<"overlay">>;
 	/** Callback when touch on the overlay */
 	error: LynxOverlayErrorEvent<LynxNode, LynxNode<"overlay">>;
-	/** iOS asks to close the overlay: the user swiped from the screen's edge. iOS's event is named `onRequestClose`, so the attribute is `ononRequestClose`; Android sends `requestclose` for its Back button. */
-	onRequestClose: LynxEvent<LynxNode, LynxNode<"overlay">>;
 }
 
 /** The attributes and events of `<svg>`. */

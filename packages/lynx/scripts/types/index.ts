@@ -1,5 +1,5 @@
-// The types generated from `@lynx-js/types`: Lynx's elements as a Svelte component writes them, and
-// `SystemInfo`. They are committed, since they are the binding's API: a move to a new
+// The types generated from `@lynx-js/types`: Lynx's elements as a Svelte component writes them,
+// `SystemInfo`, and the elements as the editor's HTML custom data. They are committed, since they are the binding's API: a move to a new
 // `@lynx-js/types` shows as a diff to review, and a test fails while the committed files differ from
 // what this makes.
 
@@ -8,11 +8,13 @@ import { format } from "oxfmt";
 import {
 	ADDED_ATTRIBUTES,
 	ADDED_EVENTS,
+	EVENT_DOCS,
 	OMITTED_TAGS,
 	OPTIONAL_ATTRIBUTES,
 	REPLACED_ATTRIBUTES,
 	SYSTEM_INFO_NOTES,
 } from "./additions.ts";
+import { writeCustomData } from "./custom-data.ts";
 import { readLynxTypes } from "./read.ts";
 import type { ElementModel, Model } from "./read.ts";
 import { writeElements, writeSystemInfo } from "./write.ts";
@@ -62,6 +64,11 @@ export function withAdditions(model: Model): Model {
 			);
 		own.events.push({ name, event, doc });
 	}
+	for (const { tag, name, doc } of EVENT_DOCS) {
+		const event = element(model, tag).events.find((candidate) => candidate.name === name);
+		if (!event) throw new Error(`@lynx-js/types no longer has the ${name} event on <${tag}>.`);
+		event.doc = doc;
+	}
 	return model;
 }
 
@@ -78,6 +85,7 @@ export async function generateTypes(): Promise<GeneratedFile[]> {
 	const files = [
 		{ path: "types/generated/elements.d.ts", text: writeElements(model) },
 		{ path: "src/background/host/system-info.ts", text: writeSystemInfo(model, SYSTEM_INFO_NOTES) },
+		{ path: "types/generated/html-custom-data.json", text: writeCustomData(model) },
 	];
 	return Promise.all(
 		files.map(async ({ path, text }) => ({ path, text: await formatted(path, text) })),

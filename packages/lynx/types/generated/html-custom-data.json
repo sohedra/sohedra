@@ -1,0 +1,4014 @@
+{
+	"version": 1.1,
+	"tags": [
+		{
+			"name": "component",
+			"attributes": [
+				{
+					"name": "is",
+					"description": {
+						"kind": "markdown",
+						"value": "Component name"
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "filter-image",
+			"attributes": [
+				{
+					"name": "src",
+					"description": {
+						"kind": "markdown",
+						"value": "Supports http/https/base64"
+					}
+				},
+				{
+					"name": "mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies image cropping/scaling mode\nscaleToFill: Scales the image without preserving the aspect ratio, stretching the image to fill the element\naspectFit: Scales the image while preserving aspect ratio so that the long side is fully visible\naspectFill: Scales the image while preserving aspect ratio, ensuring the short side fills the element\ncenter: Does not scale the image; image is centered"
+					},
+					"values": [
+						{
+							"name": "center"
+						},
+						{
+							"name": "scaleToFill"
+						},
+						{
+							"name": "aspectFit"
+						},
+						{
+							"name": "aspectFill"
+						}
+					]
+				},
+				{
+					"name": "blur-radius",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies the BoxBlur radius for the image"
+					}
+				},
+				{
+					"name": "drop-shadow",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies the shadow style for the image"
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onload",
+					"description": {
+						"kind": "markdown",
+						"value": "Image load success event"
+					}
+				},
+				{
+					"name": "onerror",
+					"description": {
+						"kind": "markdown",
+						"value": "Image load error event"
+					}
+				}
+			]
+		},
+		{
+			"name": "image",
+			"attributes": [
+				{
+					"name": "src",
+					"description": {
+						"kind": "markdown",
+						"value": "Supports http/https/base64"
+					}
+				},
+				{
+					"name": "mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies image cropping/scaling mode\n`scaleToFill`: Scales the image without preserving the aspect ratio, stretching the image to fill the element.\n`aspectFit`: Scales the image while preserving aspect ratio so that the long side is fully visible.\n`aspectFill`: Scales the image while preserving aspect ratio, ensuring the short side fills the element.\n`center`: Does not scale the image; image is centered."
+					},
+					"values": [
+						{
+							"name": "center"
+						},
+						{
+							"name": "scaleToFill"
+						},
+						{
+							"name": "aspectFit"
+						},
+						{
+							"name": "aspectFill"
+						}
+					]
+				},
+				{
+					"name": "image-config",
+					"description": {
+						"kind": "markdown",
+						"value": "`ARGB_8888`: 32-bit memory per pixel, supports semi-transparent images.\n`RGB_565`: 16-bit memory per pixel, reduces memory usage but loses transparency.\n\nSupport PC platform since 3.5\n\n:::note\n\nAffects the actual memory usage of the image bitmap.\n\nTaking an image with a resolution of 1024*768 as an example, the actual memory usage is (1024 * 768 * bits per pixel / 8) Bytes.\n\nThe default is ARGB_8888. Frontend developers can optimize image memory usage by setting it to RGB_565.\n\n`ARGB_8888`: Each pixel occupies 32 bits of memory and includes an alpha channel.\n`RGB_565`: Each pixel occupies 16 bits of memory, which reduces memory usage but results in the loss of transparency.\n\nSetting RGB_565 may affect the display of `<image>`'s border-radius. You can set border-radius on the parent view of the `<image>` and add the clip-radius attribute to the parent view.\n\nIt is not recommended to use RGB_565 when mode=\"aspectFit\", as it may cause black borders in the cropped area.\n\n:::"
+					},
+					"values": [
+						{
+							"name": "ARGB_8888"
+						},
+						{
+							"name": "RGB_565"
+						}
+					]
+				},
+				{
+					"name": "placeholder",
+					"description": {
+						"kind": "markdown",
+						"value": "Placeholder image, used same as src"
+					}
+				},
+				{
+					"name": "blur-radius",
+					"description": {
+						"kind": "markdown",
+						"value": "Image blur radius"
+					}
+				},
+				{
+					"name": "cap-insets",
+					"description": {
+						"kind": "markdown",
+						"value": "Stretchable area for 9patch images, in percentage or decimal, four values for top, right, bottom, left\n\n:::note\nUsing cap-insets does not require the original image to be a 9-patch image.\n:::"
+					}
+				},
+				{
+					"name": "cap-insets-scale",
+					"description": {
+						"kind": "markdown",
+						"value": "Adjust the scale of stretchable area for 9patch images"
+					}
+				},
+				{
+					"name": "loop-count",
+					"description": {
+						"kind": "markdown",
+						"value": "Number of times an animated image plays, 0 stands for infinite"
+					}
+				},
+				{
+					"name": "prefetch-width",
+					"description": {
+						"kind": "markdown",
+						"value": "Image won't load if its size is 0, but will load if prefetch-width is set"
+					}
+				},
+				{
+					"name": "prefetch-height",
+					"description": {
+						"kind": "markdown",
+						"value": "Image won't load if its size is 0, but will load if prefetch-height is set"
+					}
+				},
+				{
+					"name": "auto-size",
+					"description": {
+						"kind": "markdown",
+						"value": "When set to true and the `<image>` element has no width or height,\nthe size of the `<image>` will be automatically adjusted\nto match the image's original dimensions after the image is successfully loaded,\nensuring that the aspect ratio is maintained."
+					}
+				},
+				{
+					"name": "defer-src-invalidation",
+					"description": {
+						"kind": "markdown",
+						"value": "When set to true, the `<image>` will only clear the previously displayed image resource after a new image has successfully loaded.\nThe default behavior is to clear the image resource before starting a new load.\nThis can resolve flickering issues when the image src is switched and reloaded. It is not recommended to enable this in scenarios where there is node reuse in views like lists."
+					}
+				},
+				{
+					"name": "autoplay",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies whether the animated image should start playing automatically once it is loaded."
+					}
+				},
+				{
+					"name": "tint-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Changes the color of all non-transparent pixels to the tint-color specified. The value is a `<color>`."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onload",
+					"description": {
+						"kind": "markdown",
+						"value": "Image load success event"
+					}
+				},
+				{
+					"name": "onerror",
+					"description": {
+						"kind": "markdown",
+						"value": "Image load error event"
+					}
+				},
+				{
+					"name": "onstartplay",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when the animated image starts playing."
+					}
+				},
+				{
+					"name": "oncurrentloopcomplete",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when one loop of the animated image finishes playing."
+					}
+				},
+				{
+					"name": "onfinalloopcomplete",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when the animated image finishes playing all `loop-count` loops. If `loop-count` is not set, this callback will not be triggered."
+					}
+				}
+			]
+		},
+		{
+			"name": "inline-image",
+			"attributes": [
+				{
+					"name": "src",
+					"description": {
+						"kind": "markdown",
+						"value": "Supports http/https/base64"
+					}
+				},
+				{
+					"name": "mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies image cropping/scaling mode\n`scaleToFill`: Scales the image without preserving the aspect ratio, stretching the image to fill the element.\n`aspectFit`: Scales the image while preserving aspect ratio so that the long side is fully visible.\n`aspectFill`: Scales the image while preserving aspect ratio, ensuring the short side fills the element.\n`center`: Does not scale the image; image is centered."
+					},
+					"values": [
+						{
+							"name": "center"
+						},
+						{
+							"name": "scaleToFill"
+						},
+						{
+							"name": "aspectFit"
+						},
+						{
+							"name": "aspectFill"
+						}
+					]
+				},
+				{
+					"name": "image-config",
+					"description": {
+						"kind": "markdown",
+						"value": "`ARGB_8888`: 32-bit memory per pixel, supports semi-transparent images.\n`RGB_565`: 16-bit memory per pixel, reduces memory usage but loses transparency.\n\nSupport PC platform since 3.5\n\n:::note\n\nAffects the actual memory usage of the image bitmap.\n\nTaking an image with a resolution of 1024*768 as an example, the actual memory usage is (1024 * 768 * bits per pixel / 8) Bytes.\n\nThe default is ARGB_8888. Frontend developers can optimize image memory usage by setting it to RGB_565.\n\n`ARGB_8888`: Each pixel occupies 32 bits of memory and includes an alpha channel.\n`RGB_565`: Each pixel occupies 16 bits of memory, which reduces memory usage but results in the loss of transparency.\n\nSetting RGB_565 may affect the display of `<image>`'s border-radius. You can set border-radius on the parent view of the `<image>` and add the clip-radius attribute to the parent view.\n\nIt is not recommended to use RGB_565 when mode=\"aspectFit\", as it may cause black borders in the cropped area.\n\n:::"
+					},
+					"values": [
+						{
+							"name": "ARGB_8888"
+						},
+						{
+							"name": "RGB_565"
+						}
+					]
+				},
+				{
+					"name": "placeholder",
+					"description": {
+						"kind": "markdown",
+						"value": "Placeholder image, used same as src"
+					}
+				},
+				{
+					"name": "blur-radius",
+					"description": {
+						"kind": "markdown",
+						"value": "Image blur radius"
+					}
+				},
+				{
+					"name": "cap-insets",
+					"description": {
+						"kind": "markdown",
+						"value": "Stretchable area for 9patch images, in percentage or decimal, four values for top, right, bottom, left\n\n:::note\nUsing cap-insets does not require the original image to be a 9-patch image.\n:::"
+					}
+				},
+				{
+					"name": "cap-insets-scale",
+					"description": {
+						"kind": "markdown",
+						"value": "Adjust the scale of stretchable area for 9patch images"
+					}
+				},
+				{
+					"name": "loop-count",
+					"description": {
+						"kind": "markdown",
+						"value": "Number of times an animated image plays, 0 stands for infinite"
+					}
+				},
+				{
+					"name": "prefetch-width",
+					"description": {
+						"kind": "markdown",
+						"value": "Image won't load if its size is 0, but will load if prefetch-width is set"
+					}
+				},
+				{
+					"name": "prefetch-height",
+					"description": {
+						"kind": "markdown",
+						"value": "Image won't load if its size is 0, but will load if prefetch-height is set"
+					}
+				},
+				{
+					"name": "auto-size",
+					"description": {
+						"kind": "markdown",
+						"value": "When set to true and the `<image>` element has no width or height,\nthe size of the `<image>` will be automatically adjusted\nto match the image's original dimensions after the image is successfully loaded,\nensuring that the aspect ratio is maintained."
+					}
+				},
+				{
+					"name": "defer-src-invalidation",
+					"description": {
+						"kind": "markdown",
+						"value": "When set to true, the `<image>` will only clear the previously displayed image resource after a new image has successfully loaded.\nThe default behavior is to clear the image resource before starting a new load.\nThis can resolve flickering issues when the image src is switched and reloaded. It is not recommended to enable this in scenarios where there is node reuse in views like lists."
+					}
+				},
+				{
+					"name": "autoplay",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies whether the animated image should start playing automatically once it is loaded."
+					}
+				},
+				{
+					"name": "tint-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Changes the color of all non-transparent pixels to the tint-color specified. The value is a `<color>`."
+					}
+				},
+				{
+					"name": "custom-baseline-shift",
+					"description": {
+						"kind": "markdown",
+						"value": "Shift text or an inline image vertically relative to the text baseline. Positive values move it down.\nA px string is converted to device pixels, a percentage is relative to font size,\nand a unitless string is a font-size multiplier.\nFor text, an explicit zero string still selects custom baseline alignment."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onload",
+					"description": {
+						"kind": "markdown",
+						"value": "Image load success event"
+					}
+				},
+				{
+					"name": "onerror",
+					"description": {
+						"kind": "markdown",
+						"value": "Image load error event"
+					}
+				},
+				{
+					"name": "onstartplay",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when the animated image starts playing."
+					}
+				},
+				{
+					"name": "oncurrentloopcomplete",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when one loop of the animated image finishes playing."
+					}
+				},
+				{
+					"name": "onfinalloopcomplete",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when the animated image finishes playing all `loop-count` loops. If `loop-count` is not set, this callback will not be triggered."
+					}
+				}
+			]
+		},
+		{
+			"name": "inline-text",
+			"attributes": [
+				{
+					"name": "selection-background-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Backported to 2.18 on Android and iOS; availability differs across later maintenance releases.\nBackground color of selected text, encoded as a 32-bit ARGB number."
+					}
+				},
+				{
+					"name": "selection-handle-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Clay Android and Clay Harmony support begins in prerelease builds; the corresponding stable releases omit this API.\nBackported to 2.18 on Android and iOS; availability differs across later maintenance releases.\nColor of the text selection handles. Use a numeric ARGB color on native mobile platforms; Clay additionally accepts color strings."
+					}
+				},
+				{
+					"name": "selection-handle-size",
+					"description": {
+						"kind": "markdown",
+						"value": "Clay Android and Clay Harmony support begins in prerelease builds; the corresponding stable releases omit this API.\nBackported to 2.18 on Android and iOS; availability differs across later maintenance releases.\nSize of the text selection handle. Android uses physical pixels; iOS and Harmony use logical units.\nOmitted values and zero follow each platform's native defaults."
+					}
+				},
+				{
+					"name": "text-maxline",
+					"description": {
+						"kind": "markdown",
+						"value": "Maximum number of lines for text display"
+					}
+				},
+				{
+					"name": "text-maxlength",
+					"description": {
+						"kind": "markdown",
+						"value": "Maximum number of characters for text display"
+					}
+				},
+				{
+					"name": "enable-font-scaling",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether font-size is affected by system font scaling"
+					}
+				},
+				{
+					"name": "text-vertical-align",
+					"description": {
+						"kind": "markdown",
+						"value": "Baseline adjustment strategy in vertical direction; note: setting this value does not guarantee text centering"
+					},
+					"values": [
+						{
+							"name": "center"
+						},
+						{
+							"name": "top"
+						},
+						{
+							"name": "bottom"
+						}
+					]
+				},
+				{
+					"name": "tail-color-convert",
+					"description": {
+						"kind": "markdown",
+						"value": "By default, if text truncation occurs, the color of the inserted ... will be specified by the style on the nearest inline-text. If this attribute is enabled, the color of ... will be specified by the style on the outermost text tag."
+					}
+				},
+				{
+					"name": "text-single-line-vertical-align",
+					"description": {
+						"kind": "markdown",
+						"value": "Set single-line plain text to be centered and aligned within the line. Inline text settings are not supported. Recommended only when the default font doesn't meet center alignment needs, as it increases text measurement time."
+					},
+					"values": [
+						{
+							"name": "normal"
+						},
+						{
+							"name": "center"
+						},
+						{
+							"name": "top"
+						},
+						{
+							"name": "bottom"
+						}
+					]
+				},
+				{
+					"name": "include-font-padding",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable additional spacing above and below the text on Android; recommended only in high language scenarios to avoid text truncation."
+					}
+				},
+				{
+					"name": "android-emoji-compat",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable support for Emoji2 adaptation; requires androidx.emoji2 dependency."
+					}
+				},
+				{
+					"name": "text-fake-bold",
+					"description": {
+						"kind": "markdown",
+						"value": "Enables fake bold for fonts when the default bold is not found."
+					}
+				},
+				{
+					"name": "text-selection",
+					"description": {
+						"kind": "markdown",
+						"value": "Sets whether to enable text selection."
+					}
+				},
+				{
+					"name": "custom-context-menu",
+					"description": {
+						"kind": "markdown",
+						"value": "Used to set whether to turn on the custom pop-up context menu after selection and copying. It takes effect after enabling text-selection."
+					}
+				},
+				{
+					"name": "custom-text-selection",
+					"description": {
+						"kind": "markdown",
+						"value": "Used to set whether to enable the custom text selection function. When it is enabled, the element will no longer handle the gesture logic related to selection and copying. It takes effect after enabling text-selection."
+					}
+				},
+				{
+					"name": "custom-baseline-shift",
+					"description": {
+						"kind": "markdown",
+						"value": "Shift text or an inline image vertically relative to the text baseline. Positive values move it down.\nA px string is converted to device pixels, a percentage is relative to font size,\nand a unitless string is a font-size multiplier.\nFor text, an explicit zero string still selects custom baseline alignment."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onlayout",
+					"description": {
+						"kind": "markdown",
+						"value": "Text layout event"
+					}
+				},
+				{
+					"name": "onselectionchange",
+					"description": {
+						"kind": "markdown",
+						"value": "Text selection change event"
+					}
+				}
+			]
+		},
+		{
+			"name": "inline-truncation",
+			"attributes": []
+		},
+		{
+			"name": "list",
+			"attributes": [
+				{
+					"name": "scroll-orientation",
+					"description": {
+						"kind": "markdown",
+						"value": "Sets the scrolling direction and layout direction."
+					},
+					"values": [
+						{
+							"name": "horizontal"
+						},
+						{
+							"name": "vertical"
+						}
+					]
+				},
+				{
+					"name": "span-count",
+					"description": {
+						"kind": "markdown",
+						"value": "The number of columns or rows for the list, and only effective when list-type is 'flow' or 'waterfall'."
+					}
+				},
+				{
+					"name": "list-type",
+					"description": {
+						"kind": "markdown",
+						"value": "layout type of the list"
+					},
+					"values": [
+						{
+							"name": "single"
+						},
+						{
+							"name": "flow"
+						},
+						{
+							"name": "waterfall"
+						}
+					]
+				},
+				{
+					"name": "enable-scroll",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to allow scrolling for a list."
+					}
+				},
+				{
+					"name": "enable-nested-scroll",
+					"description": {
+						"kind": "markdown",
+						"value": "Indicates whether list can achieve nested scrolling with other scrollable containers. When enabled, the inner container scrolls first, followed by the outer container."
+					}
+				},
+				{
+					"name": "sticky",
+					"description": {
+						"kind": "markdown",
+						"value": "Declared on the list to control whether the list as a whole is allowed to be sticky at the top or bottom."
+					}
+				},
+				{
+					"name": "sticky-offset",
+					"description": {
+						"kind": "markdown",
+						"value": "The offset distance from the top or bottom of list for sticky positioning, in px."
+					}
+				},
+				{
+					"name": "bounces",
+					"description": {
+						"kind": "markdown",
+						"value": "Control whether list should produce bounces effect when scrolling past its content boundaries."
+					}
+				},
+				{
+					"name": "initial-scroll-index",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies the node position to which list automatically scrolls after rendering."
+					}
+				},
+				{
+					"name": "need-visible-item-info",
+					"description": {
+						"kind": "markdown",
+						"value": "Controls whether the scroll event callback parameters include the position information of the currently rendering node."
+					}
+				},
+				{
+					"name": "lower-threshold-item-count",
+					"description": {
+						"kind": "markdown",
+						"value": "When scrolling down, when the number of remaining displayable child nodes at the bottom is first less than lower-threshold-item-count, a scrolltolower event is triggered. If lower-threshold-item-count is specified, lower-threshold is not effective."
+					}
+				},
+				{
+					"name": "upper-threshold-item-count",
+					"description": {
+						"kind": "markdown",
+						"value": "When scrolling up, when the number of remaining displayable child nodes at the top is first less than upper-threshold-item-count, a scrolltoupper event is triggered. If upper-threshold-item-count is specified, upper-threshold is not effective."
+					}
+				},
+				{
+					"name": "scroll-event-throttle",
+					"description": {
+						"kind": "markdown",
+						"value": "Specify the callback frequency of the scroll event by passing in a value, which specifies how many milliseconds (ms) list will call the scroll callback event during scrolling."
+					}
+				},
+				{
+					"name": "item-snap",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable the paging effect, and after each scroll, the list-item will stop at a specified position. For list-type:single only."
+					}
+				},
+				{
+					"name": "need-layout-complete-info",
+					"description": {
+						"kind": "markdown",
+						"value": "Controls whether the layoutcomplete event includes the node layout information before and after this layout, and the list Diff information that triggered this layout, and the current list scroll state information."
+					}
+				},
+				{
+					"name": "layout-id",
+					"description": {
+						"kind": "markdown",
+						"value": "Used to mark the unique identifier for this data source update, which will be returned in the layoutcomplete event callback."
+					}
+				},
+				{
+					"name": "preload-buffer-count",
+					"description": {
+						"kind": "markdown",
+						"value": "This attribute controls the number of nodes outside list that are preloaded."
+					}
+				},
+				{
+					"name": "experimental-search-ref-anchor-strategy",
+					"description": {
+						"kind": "markdown",
+						"value": "Determine the strategy to search the reference anchor for removed on-screen children. If set to TO_START or TO_END, we will update reference anchor child for all removed on-screen children before consuming diff info. And in list layout pass, if no valid anchor child can be found from all on screen children, we use the reference anchor child in layout."
+					}
+				},
+				{
+					"name": "scroll-bar-enable",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to display the scroll bar of the list, with false on Harmony platform and true on other platforms."
+					}
+				},
+				{
+					"name": "enable-insert-platform-view-operation",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to using operation from c++ list to insert list-item's platform view. The default value is false, but we recommend to set it to true in the case with MOST_ON_TASM or MULTI_THREAD thread strategy."
+					}
+				},
+				{
+					"name": "harmony-scroll-edge-effect",
+					"description": {
+						"kind": "markdown",
+						"value": "When the content size of a component is smaller than the component itself, decide whether to enable scrolling."
+					}
+				},
+				{
+					"name": "experimental-use-new-update-animation",
+					"description": {
+						"kind": "markdown",
+						"value": "Selects the new C++ list update animation implementation. The selection is\nfixed by the first boolean value, or defaults to false before the first\nprops update finishes. Batch rendering and parallel element flushing are\nnot supported. Enable animations separately through the configuration."
+					}
+				},
+				{
+					"name": "experimental-new-update-animation",
+					"description": {
+						"kind": "markdown",
+						"value": "Configures the new list update animation implementation. Disabling it or\nchanging stages cancels pending and running animations; equivalent\nconfigurations preserve them. Legacy animations/durations stages remain\nsupported alongside type/duration entries (since Lynx 4.4).\nWhen omitted, update animations are disabled."
+					}
+				},
+				{
+					"name": "enable-scrollbar",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to display the scrollbar."
+					}
+				},
+				{
+					"name": "scroll-bar-auto-hide",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to hide the scrollbar automatically when it is inactive."
+					}
+				},
+				{
+					"name": "scroll-bar-width",
+					"description": {
+						"kind": "markdown",
+						"value": "Width of the scrollbar track, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-width",
+					"description": {
+						"kind": "markdown",
+						"value": "Width of the scrollbar thumb, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-min-length",
+					"description": {
+						"kind": "markdown",
+						"value": "Minimum length of the scrollbar thumb, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-radius",
+					"description": {
+						"kind": "markdown",
+						"value": "Corner radius of the scrollbar thumb, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar thumb.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-active-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar thumb while it is being dragged.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-hover-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar thumb while the pointer is hovering over it.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-track-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar track.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-auto-hide-delay",
+					"description": {
+						"kind": "markdown",
+						"value": "Delay before automatically hiding the scrollbar, in ms."
+					}
+				},
+				{
+					"name": "custom-list-name",
+					"description": {
+						"kind": "markdown",
+						"value": "The native list that draws it: `list-container` is Lynx's list that renders rows as it asks for them, which a deferred row needs."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onlistanimationstart",
+					"description": {
+						"kind": "markdown",
+						"value": "Called when an animation type starts within a transaction."
+					}
+				},
+				{
+					"name": "onlistanimationend",
+					"description": {
+						"kind": "markdown",
+						"value": "Called when all participating items of an animation type finish normally."
+					}
+				},
+				{
+					"name": "onlistanimationcancel",
+					"description": {
+						"kind": "markdown",
+						"value": "Called when a started, unfinished animation type is canceled."
+					}
+				},
+				{
+					"name": "onlistanimationupdate",
+					"description": {
+						"kind": "markdown",
+						"value": "Called with progress updates grouped by transaction and animation type."
+					}
+				},
+				{
+					"name": "onscroll",
+					"description": {
+						"kind": "markdown",
+						"value": "Scroll event."
+					}
+				},
+				{
+					"name": "onscrolltoupper",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback function for scrolling to the top."
+					}
+				},
+				{
+					"name": "onscrolltolower",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback function for scrolling to the bottom."
+					}
+				},
+				{
+					"name": "onscrollstatechange",
+					"description": {
+						"kind": "markdown",
+						"value": "This callback function is triggered when the scrolling state of the list changes."
+					}
+				},
+				{
+					"name": "onlayoutcomplete",
+					"description": {
+						"kind": "markdown",
+						"value": "This callback function will be triggered when the first screen of the list has finished rendering. On iOS, this callback function will be triggered when list has an update."
+					}
+				},
+				{
+					"name": "onsnap",
+					"description": {
+						"kind": "markdown",
+						"value": "Snap callback"
+					}
+				}
+			]
+		},
+		{
+			"name": "list-item",
+			"attributes": [
+				{
+					"name": "item-key",
+					"description": {
+						"kind": "markdown",
+						"value": "The unique key of list child node, and it's a mandatory property."
+					}
+				},
+				{
+					"name": "sticky-top",
+					"description": {
+						"kind": "markdown",
+						"value": "sticky top effect. Not compatible with flatten."
+					}
+				},
+				{
+					"name": "sticky-bottom",
+					"description": {
+						"kind": "markdown",
+						"value": "sticky bottom effect. Not compatible with flatten."
+					}
+				},
+				{
+					"name": "full-span",
+					"description": {
+						"kind": "markdown",
+						"value": "Adding the `full-span` attribute to `<list-item/>` will make it occupy a single line. You need to configure {@link ListProps. \"list-type\" | list-type} correctly to make the list enter a multi-column layout for this to work."
+					}
+				},
+				{
+					"name": "estimated-main-axis-size-px",
+					"description": {
+						"kind": "markdown",
+						"value": "Preset size in main scroll axis to control the placeholder size of the view while the list component has not finished rendering. The more accurately it is set, the less flickering the list will have. If not set, we will use list size in main axis as the estimated size of list-item."
+					}
+				},
+				{
+					"name": "recyclable",
+					"description": {
+						"kind": "markdown",
+						"value": "Control whether the list-item can be recycled. If set to false, the list-item will not be recycled after being scrolled off the screen, and do not need to be re-rendered when they come back on the screen. The default value is true."
+					}
+				},
+				{
+					"name": "reuse-identifier",
+					"description": {
+						"kind": "markdown",
+						"value": "The kind of row this is: the list reuses a row's native view only for a row of the same kind."
+					}
+				},
+				{
+					"name": "defer",
+					"description": {
+						"kind": "markdown",
+						"value": "Renders the row's contents only once Lynx asks for the row, unless it is in its list's first screen. With `unmountRecycled`, the contents unmount when the page lets go of the row, and render afresh when it shows again."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "list-row",
+			"attributes": [
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "page",
+			"attributes": [
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "scroll-view",
+			"attributes": [
+				{
+					"name": "scroll-orientation",
+					"description": {
+						"kind": "markdown",
+						"value": "Replacement of scroll-x and scroll-y"
+					},
+					"values": [
+						{
+							"name": "horizontal"
+						},
+						{
+							"name": "vertical"
+						}
+					]
+				},
+				{
+					"name": "bounces",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable bounce effect"
+					}
+				},
+				{
+					"name": "enable-scroll",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable dragging"
+					}
+				},
+				{
+					"name": "experimental-android-enable-new-overflow",
+					"description": {
+						"kind": "markdown",
+						"value": "Enables the experimental Android overflow clipping implementation for scroll-view."
+					}
+				},
+				{
+					"name": "scroll-bar-enable",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable scrollbar"
+					}
+				},
+				{
+					"name": "upper-threshold",
+					"description": {
+						"kind": "markdown",
+						"value": "Set upper threshold to onscrolltoupper event."
+					}
+				},
+				{
+					"name": "lower-threshold",
+					"description": {
+						"kind": "markdown",
+						"value": "Set upper threshold to onscrolltoupper event."
+					}
+				},
+				{
+					"name": "initial-scroll-offset",
+					"description": {
+						"kind": "markdown",
+						"value": "Initial scroll position, only effective once, in PX"
+					}
+				},
+				{
+					"name": "initial-scroll-to-index",
+					"description": {
+						"kind": "markdown",
+						"value": "Scroll to specified child node on first screen, only effective once. All direct child nodes must be flatten=false."
+					}
+				},
+				{
+					"name": "enable-scrollbar",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to display the scrollbar."
+					}
+				},
+				{
+					"name": "scroll-bar-auto-hide",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to hide the scrollbar automatically when it is inactive."
+					}
+				},
+				{
+					"name": "scroll-bar-width",
+					"description": {
+						"kind": "markdown",
+						"value": "Width of the scrollbar track, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-width",
+					"description": {
+						"kind": "markdown",
+						"value": "Width of the scrollbar thumb, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-min-length",
+					"description": {
+						"kind": "markdown",
+						"value": "Minimum length of the scrollbar thumb, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-radius",
+					"description": {
+						"kind": "markdown",
+						"value": "Corner radius of the scrollbar thumb, in px."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar thumb.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-active-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar thumb while it is being dragged.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-thumb-hover-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar thumb while the pointer is hovering over it.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-track-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Color of the scrollbar track.\nSupported formats are named colors, #RGB, #RRGGBB, #RRGGBBAA, and comma-separated rgb(), rgba(), hsl(), and hsla()."
+					}
+				},
+				{
+					"name": "scroll-bar-auto-hide-delay",
+					"description": {
+						"kind": "markdown",
+						"value": "Delay before automatically hiding the scrollbar, in ms."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onscrolltoupper",
+					"description": {
+						"kind": "markdown",
+						"value": "This event is triggered when the upper/left edge of the scrolling area intersects with the visible area defined by the upperThreshold."
+					}
+				},
+				{
+					"name": "onscrolltolower",
+					"description": {
+						"kind": "markdown",
+						"value": "This event is triggered when the lower/right edge of the scrolling area intersects with the visible area defined by the lowerThreshold."
+					}
+				},
+				{
+					"name": "onscroll",
+					"description": {
+						"kind": "markdown",
+						"value": "This event is triggered when the scrollview is scrolling."
+					}
+				},
+				{
+					"name": "onscrollend",
+					"description": {
+						"kind": "markdown",
+						"value": "This event is triggered when the scrollview's scroll ended."
+					}
+				},
+				{
+					"name": "oncontentsizechanged",
+					"description": {
+						"kind": "markdown",
+						"value": "This event is triggered when the scrollview's content size changed."
+					}
+				}
+			]
+		},
+		{
+			"name": "text",
+			"attributes": [
+				{
+					"name": "selection-background-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Backported to 2.18 on Android and iOS; availability differs across later maintenance releases.\nBackground color of selected text, encoded as a 32-bit ARGB number."
+					}
+				},
+				{
+					"name": "selection-handle-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Clay Android and Clay Harmony support begins in prerelease builds; the corresponding stable releases omit this API.\nBackported to 2.18 on Android and iOS; availability differs across later maintenance releases.\nColor of the text selection handles. Use a numeric ARGB color on native mobile platforms; Clay additionally accepts color strings."
+					}
+				},
+				{
+					"name": "selection-handle-size",
+					"description": {
+						"kind": "markdown",
+						"value": "Clay Android and Clay Harmony support begins in prerelease builds; the corresponding stable releases omit this API.\nBackported to 2.18 on Android and iOS; availability differs across later maintenance releases.\nSize of the text selection handle. Android uses physical pixels; iOS and Harmony use logical units.\nOmitted values and zero follow each platform's native defaults."
+					}
+				},
+				{
+					"name": "text-maxline",
+					"description": {
+						"kind": "markdown",
+						"value": "Maximum number of lines for text display"
+					}
+				},
+				{
+					"name": "text-maxlength",
+					"description": {
+						"kind": "markdown",
+						"value": "Maximum number of characters for text display"
+					}
+				},
+				{
+					"name": "enable-font-scaling",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether font-size is affected by system font scaling"
+					}
+				},
+				{
+					"name": "text-vertical-align",
+					"description": {
+						"kind": "markdown",
+						"value": "Baseline adjustment strategy in vertical direction; note: setting this value does not guarantee text centering"
+					},
+					"values": [
+						{
+							"name": "center"
+						},
+						{
+							"name": "top"
+						},
+						{
+							"name": "bottom"
+						}
+					]
+				},
+				{
+					"name": "tail-color-convert",
+					"description": {
+						"kind": "markdown",
+						"value": "By default, if text truncation occurs, the color of the inserted ... will be specified by the style on the nearest inline-text. If this attribute is enabled, the color of ... will be specified by the style on the outermost text tag."
+					}
+				},
+				{
+					"name": "text-single-line-vertical-align",
+					"description": {
+						"kind": "markdown",
+						"value": "Set single-line plain text to be centered and aligned within the line. Inline text settings are not supported. Recommended only when the default font doesn't meet center alignment needs, as it increases text measurement time."
+					},
+					"values": [
+						{
+							"name": "normal"
+						},
+						{
+							"name": "center"
+						},
+						{
+							"name": "top"
+						},
+						{
+							"name": "bottom"
+						}
+					]
+				},
+				{
+					"name": "include-font-padding",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable additional spacing above and below the text on Android; recommended only in high language scenarios to avoid text truncation."
+					}
+				},
+				{
+					"name": "android-emoji-compat",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable support for Emoji2 adaptation; requires androidx.emoji2 dependency."
+					}
+				},
+				{
+					"name": "text-fake-bold",
+					"description": {
+						"kind": "markdown",
+						"value": "Enables fake bold for fonts when the default bold is not found."
+					}
+				},
+				{
+					"name": "text-selection",
+					"description": {
+						"kind": "markdown",
+						"value": "Sets whether to enable text selection."
+					}
+				},
+				{
+					"name": "custom-context-menu",
+					"description": {
+						"kind": "markdown",
+						"value": "Used to set whether to turn on the custom pop-up context menu after selection and copying. It takes effect after enabling text-selection."
+					}
+				},
+				{
+					"name": "custom-text-selection",
+					"description": {
+						"kind": "markdown",
+						"value": "Used to set whether to enable the custom text selection function. When it is enabled, the element will no longer handle the gesture logic related to selection and copying. It takes effect after enabling text-selection."
+					}
+				},
+				{
+					"name": "custom-baseline-shift",
+					"description": {
+						"kind": "markdown",
+						"value": "Shift text or an inline image vertically relative to the text baseline. Positive values move it down.\nA px string is converted to device pixels, a percentage is relative to font size,\nand a unitless string is a font-size multiplier.\nFor text, an explicit zero string still selects custom baseline alignment."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onlayout",
+					"description": {
+						"kind": "markdown",
+						"value": "Text layout event"
+					}
+				},
+				{
+					"name": "onselectionchange",
+					"description": {
+						"kind": "markdown",
+						"value": "Text selection change event"
+					}
+				}
+			]
+		},
+		{
+			"name": "view",
+			"attributes": [
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "raw-text",
+			"attributes": [
+				{
+					"name": "text"
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "input",
+			"attributes": [
+				{
+					"name": "confirm-enter",
+					"description": {
+						"kind": "markdown",
+						"value": "Keep the editor focused after confirmation instead of dismissing the keyboard.\nThe next action still performs native focus traversal."
+					}
+				},
+				{
+					"name": "placeholder",
+					"description": {
+						"kind": "markdown",
+						"value": "Placeholder"
+					}
+				},
+				{
+					"name": "default-value",
+					"description": {
+						"kind": "markdown",
+						"value": "Initial input content. Only applies on the first render and does not trigger `oninput`."
+					}
+				},
+				{
+					"name": "confirm-type",
+					"description": {
+						"kind": "markdown",
+						"value": "The type of confirm button"
+					},
+					"values": [
+						{
+							"name": "search"
+						},
+						{
+							"name": "send"
+						},
+						{
+							"name": "go"
+						},
+						{
+							"name": "done"
+						},
+						{
+							"name": "next"
+						}
+					]
+				},
+				{
+					"name": "maxlength",
+					"description": {
+						"kind": "markdown",
+						"value": "Max input length"
+					}
+				},
+				{
+					"name": "readonly",
+					"description": {
+						"kind": "markdown",
+						"value": "Readonly"
+					}
+				},
+				{
+					"name": "disabled",
+					"description": {
+						"kind": "markdown",
+						"value": "Interaction enabled"
+					}
+				},
+				{
+					"name": "show-soft-input-on-focus",
+					"description": {
+						"kind": "markdown",
+						"value": "Show soft input keyboard while focused"
+					}
+				},
+				{
+					"name": "set-soft-input-mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Sets how the host avoids the soft keyboard.\n\n- `unspecified`: Uses the platform default behavior.\n- `nothing`: Leaves the host window or page unchanged when the keyboard appears.\n- `pan`: Moves the host content to keep the focused input visible.\n- `resize`: Resizes the host content to fit above the keyboard.\n\nThis setting affects the owning Android window or Harmony UI context, including\nsibling views that share it. It is not restored automatically when this input\nloses focus or is removed. Omitting the property leaves the current host setting\nunchanged. Unsupported strings fall back to `unspecified`.\n\nThis property is independent of `avoid-keyboard`, which controls Lynx's own\nkeyboard avoidance. On Android, `android-set-soft-input-mode` remains available\nas a compatibility alias. Harmony support requires API 14 or later."
+					},
+					"values": [
+						{
+							"name": "unspecified"
+						},
+						{
+							"name": "nothing"
+						},
+						{
+							"name": "pan"
+						},
+						{
+							"name": "resize"
+						}
+					]
+				},
+				{
+					"name": "input-filter",
+					"description": {
+						"kind": "markdown",
+						"value": "Filter the input content and process it in the form of regular expressions"
+					}
+				},
+				{
+					"name": "type",
+					"description": {
+						"kind": "markdown",
+						"value": "Input content type"
+					},
+					"values": [
+						{
+							"name": "number"
+						},
+						{
+							"name": "text"
+						},
+						{
+							"name": "digit"
+						},
+						{
+							"name": "password"
+						},
+						{
+							"name": "tel"
+						},
+						{
+							"name": "email"
+						}
+					]
+				},
+				{
+					"name": "ios-auto-correct",
+					"description": {
+						"kind": "markdown",
+						"value": "Auto correct input content on iOS"
+					}
+				},
+				{
+					"name": "ios-spell-check",
+					"description": {
+						"kind": "markdown",
+						"value": "Check spelling issue on iOS"
+					}
+				},
+				{
+					"name": "android-fullscreen-mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to enter the full-screen input mode when in landscape screen, in which the keyboard and input box will take up the entire screen"
+					}
+				},
+				{
+					"name": "value",
+					"description": {
+						"kind": "markdown",
+						"value": "The text in the field, as on the web: write it back in `oninput` (`oninput={(event) => (text = event.detail.value)}`)."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Focused"
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Blurred"
+					}
+				},
+				{
+					"name": "onconfirm",
+					"description": {
+						"kind": "markdown",
+						"value": "Confirm button clicked"
+					}
+				},
+				{
+					"name": "oninput",
+					"description": {
+						"kind": "markdown",
+						"value": "Input content changed"
+					}
+				},
+				{
+					"name": "onselection",
+					"description": {
+						"kind": "markdown",
+						"value": "Input selection changed"
+					}
+				}
+			]
+		},
+		{
+			"name": "textarea",
+			"attributes": [
+				{
+					"name": "confirm-enter",
+					"description": {
+						"kind": "markdown",
+						"value": "Keep the editor focused after confirmation instead of dismissing the keyboard.\nThe next action still performs native focus traversal."
+					}
+				},
+				{
+					"name": "placeholder",
+					"description": {
+						"kind": "markdown",
+						"value": "Placeholder"
+					}
+				},
+				{
+					"name": "default-value",
+					"description": {
+						"kind": "markdown",
+						"value": "Initial textarea content. Only applies on the first render and does not trigger `oninput`."
+					}
+				},
+				{
+					"name": "confirm-type",
+					"description": {
+						"kind": "markdown",
+						"value": "The type of confirm button"
+					},
+					"values": [
+						{
+							"name": "search"
+						},
+						{
+							"name": "send"
+						},
+						{
+							"name": "go"
+						},
+						{
+							"name": "done"
+						},
+						{
+							"name": "next"
+						}
+					]
+				},
+				{
+					"name": "maxlength",
+					"description": {
+						"kind": "markdown",
+						"value": "Max input length"
+					}
+				},
+				{
+					"name": "maxlines",
+					"description": {
+						"kind": "markdown",
+						"value": "Max input lines"
+					}
+				},
+				{
+					"name": "bounces",
+					"description": {
+						"kind": "markdown",
+						"value": "Bounce effect for iOS"
+					}
+				},
+				{
+					"name": "line-spacing",
+					"description": {
+						"kind": "markdown",
+						"value": "Line spacing"
+					}
+				},
+				{
+					"name": "readonly",
+					"description": {
+						"kind": "markdown",
+						"value": "Readonly"
+					}
+				},
+				{
+					"name": "disabled",
+					"description": {
+						"kind": "markdown",
+						"value": "Interaction enabled"
+					}
+				},
+				{
+					"name": "show-soft-input-on-focus",
+					"description": {
+						"kind": "markdown",
+						"value": "Show soft input keyboard while focused"
+					}
+				},
+				{
+					"name": "set-soft-input-mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Sets how the host avoids the soft keyboard.\n\n- `unspecified`: Uses the platform default behavior.\n- `nothing`: Leaves the host window or page unchanged when the keyboard appears.\n- `pan`: Moves the host content to keep the focused textarea visible.\n- `resize`: Resizes the host content to fit above the keyboard.\n\nThis setting affects the owning Android window or Harmony UI context, including\nsibling views that share it. It is not restored automatically when this textarea\nloses focus or is removed. Omitting the property leaves the current host setting\nunchanged. Unsupported strings fall back to `unspecified`.\n\nThis property is independent of `avoid-keyboard`, which controls Lynx's own\nkeyboard avoidance. On Android, `android-set-soft-input-mode` remains available\nas a compatibility alias. Harmony support requires API 14 or later."
+					},
+					"values": [
+						{
+							"name": "unspecified"
+						},
+						{
+							"name": "nothing"
+						},
+						{
+							"name": "pan"
+						},
+						{
+							"name": "resize"
+						}
+					]
+				},
+				{
+					"name": "input-filter",
+					"description": {
+						"kind": "markdown",
+						"value": "Filter the input content and process it in the form of regular expressions"
+					}
+				},
+				{
+					"name": "enable-scroll-bar",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to show scroll bar, on HarmonyOS, the scroll bar will always be shown"
+					}
+				},
+				{
+					"name": "type",
+					"description": {
+						"kind": "markdown",
+						"value": "Input content type"
+					},
+					"values": [
+						{
+							"name": "number"
+						},
+						{
+							"name": "text"
+						},
+						{
+							"name": "digit"
+						},
+						{
+							"name": "tel"
+						},
+						{
+							"name": "email"
+						}
+					]
+				},
+				{
+					"name": "ios-auto-correct",
+					"description": {
+						"kind": "markdown",
+						"value": "Auto correct input content on iOS"
+					}
+				},
+				{
+					"name": "ios-spell-check",
+					"description": {
+						"kind": "markdown",
+						"value": "Check spelling issue on iOS"
+					}
+				},
+				{
+					"name": "android-fullscreen-mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to enter the full-screen input mode when in landscape screen, in which the keyboard and input box will take up the entire screen"
+					}
+				},
+				{
+					"name": "value",
+					"description": {
+						"kind": "markdown",
+						"value": "The text in the field, as on the web: write it back in `oninput` (`oninput={(event) => (text = event.detail.value)}`)."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Focused"
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Blurred"
+					}
+				},
+				{
+					"name": "oninput",
+					"description": {
+						"kind": "markdown",
+						"value": "Input content changed"
+					}
+				},
+				{
+					"name": "onselection",
+					"description": {
+						"kind": "markdown",
+						"value": "Input selection changed"
+					}
+				},
+				{
+					"name": "onconfirm",
+					"description": {
+						"kind": "markdown",
+						"value": "Confirm button clicked, only work when confirm-type is defined"
+					}
+				}
+			]
+		},
+		{
+			"name": "overlay",
+			"attributes": [
+				{
+					"name": "always-show",
+					"description": {
+						"kind": "markdown",
+						"value": "Keeps a global overlay displayed when its authored view detaches.\nSet to false to hide the overlay on detach. Fragment-scoped overlays follow their owner."
+					}
+				},
+				{
+					"name": "ios-follow-mode-edge",
+					"description": {
+						"kind": "markdown",
+						"value": "Uses the bounds selected by mode and follows changes to those bounds.\nAvailable starting with 4.3 prereleases."
+					}
+				},
+				{
+					"name": "nest-scroll",
+					"description": {
+						"kind": "markdown",
+						"value": "ID selector of the nested scroll view used to coordinate overlay gesture handling."
+					}
+				},
+				{
+					"name": "visible",
+					"description": {
+						"kind": "markdown",
+						"value": "Control whether the overlay is displayed"
+					}
+				},
+				{
+					"name": "android-navigation-bar-style",
+					"description": {
+						"kind": "markdown",
+						"value": "Sets the Android navigation bar background and contrasting system-bar appearance. `auto` inherits the host Activity navigation bar.\nWhen set to `transparent`, `android-adapt-edge-to-edge` must also be set to `true`."
+					},
+					"values": [
+						{
+							"name": "auto"
+						},
+						{
+							"name": "light"
+						},
+						{
+							"name": "dark"
+						},
+						{
+							"name": "transparent"
+						}
+					]
+				},
+				{
+					"name": "android-overlay-scope",
+					"description": {
+						"kind": "markdown",
+						"value": "Scopes Android overlay visibility to the Fragment that owns its LynxView."
+					},
+					"values": [
+						{
+							"name": "global"
+						},
+						{
+							"name": "fragment"
+						}
+					]
+				},
+				{
+					"name": "level",
+					"description": {
+						"kind": "markdown",
+						"value": "Introduces the concept of layers, which are divided into four levels. The larger the layer, the closer it is to the bottom. By default, it is the first level. The layers are arranged in order from 1 to 4. The displayed layer is specified and is not affected by the order of display. Within each layer, the arrangement is based on the 'last in, first out' logic. The layer cannot be dynamically adjusted when the overlay is displayed, and can only be adjusted when it is hidden. *"
+					}
+				},
+				{
+					"name": "ios-enable-swipe-back",
+					"description": {
+						"kind": "markdown",
+						"value": "When overlay is displayed, 'true' allows swiping right to close the current page, 'false' does not allow it"
+					}
+				},
+				{
+					"name": "mode",
+					"description": {
+						"kind": "markdown",
+						"value": "Specifies the level at which overlay content resides. On iOS, window mounts on the app window, top mounts on the topViewController, page mounts on UINavigationController, and other strings customize the client class name. On Harmony native overlay, page embeds in the current page; window, top, missing, and other strings use the default window-like overlay level."
+					}
+				},
+				{
+					"name": "events-pass-through",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether a touch outside the overlay's children reaches the page below it."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onshowoverlay",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when the overlay is displayed"
+					}
+				},
+				{
+					"name": "ondismissoverlay",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when the overlay is hidden."
+					}
+				},
+				{
+					"name": "onrequestclose",
+					"description": {
+						"kind": "markdown",
+						"value": "The overlay is asked to close: Android's Back button, or a swipe from the screen's edge on iOS. Lynx names the event `requestclose` on Android and `onRequestClose` on iOS, and this hears both."
+					}
+				},
+				{
+					"name": "onoverlaytouch",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when touch on the overlay"
+					}
+				},
+				{
+					"name": "onerror",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when touch on the overlay"
+					}
+				}
+			]
+		},
+		{
+			"name": "svg",
+			"attributes": [
+				{
+					"name": "src",
+					"description": {
+						"kind": "markdown",
+						"value": "SVG resource URL"
+					}
+				},
+				{
+					"name": "content",
+					"description": {
+						"kind": "markdown",
+						"value": "SVG XML content"
+					}
+				},
+				{
+					"name": "current-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Host-injected default color used to resolve `currentColor` in SVG content.\nThis does not override explicit `fill` or `stroke` values."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onload",
+					"description": {
+						"kind": "markdown",
+						"value": "SVG Loaded"
+					}
+				}
+			]
+		},
+		{
+			"name": "title-bar-view",
+			"attributes": [
+				{
+					"name": "moveable",
+					"description": {
+						"kind": "markdown",
+						"value": "When set to true, the title bar view is able to move the window when dragged."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "refresh",
+			"attributes": [
+				{
+					"name": "enable-refresh",
+					"description": {
+						"kind": "markdown",
+						"value": "Determines if dragging down or calling autoStartRefresh can trigger the startrefresh event."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onstartrefresh",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when enable-refresh is true, and dragging down or calling autoStartRefresh (enters refresh state)."
+					}
+				},
+				{
+					"name": "onheaderoffset",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered during movement when `<refresh-header>` is exposed."
+					}
+				},
+				{
+					"name": "onrefreshstatechange",
+					"description": {
+						"kind": "markdown",
+						"value": "Triggered when `<refresh-header>` state changes."
+					}
+				}
+			]
+		},
+		{
+			"name": "refresh-header",
+			"attributes": [
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "scroll-coordinator",
+			"attributes": [
+				{
+					"name": "ios-scroll-exclude",
+					"description": {
+						"kind": "markdown",
+						"value": "Initial support was backported; component registration differs across later release branches.\nComma-separated native scroll-view names to exclude from nested-scroll discovery."
+					}
+				},
+				{
+					"name": "ios-scroll-view-filter",
+					"description": {
+						"kind": "markdown",
+						"value": "Initial support was backported; component registration differs across later release branches.\nMinimum nested scroll-view height as a fraction of the available slot height when selecting the scroll view to coordinate."
+					}
+				},
+				{
+					"name": "ios-scrolls-to-top",
+					"description": {
+						"kind": "markdown",
+						"value": "When the user taps the status bar, the scroll view beneath the touch which is closest to the status bar will be scrolled to top. iOS feature only."
+					}
+				},
+				{
+					"name": "header-over-slot",
+					"description": {
+						"kind": "markdown",
+						"value": "This property controls whether the header hierarchy higher than the slot, when header is overflow, it will be displayed on top of the slot. Otherwise, it will be displayed below the slot. It is better to set this property explicitly, rather than use the default value."
+					}
+				},
+				{
+					"name": "enable-scroll",
+					"description": {
+						"kind": "markdown",
+						"value": "Set whether the coordinator can scroll vertically."
+					}
+				},
+				{
+					"name": "bounces",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable the bounce effect when the coordinator scrolls past its boundary."
+					}
+				},
+				{
+					"name": "enable-scroll-bar",
+					"description": {
+						"kind": "markdown",
+						"value": "Set whether the scrollbar is visible during coordinator scrolling."
+					}
+				},
+				{
+					"name": "android-adapt-to-empty-slot",
+					"description": {
+						"kind": "markdown",
+						"value": "Adapt the Android coordinator offset when the active slot is empty or is shorter than the app bar and cannot scroll vertically."
+					}
+				},
+				{
+					"name": "android-nested-scroll-as-child",
+					"description": {
+						"kind": "markdown",
+						"value": "Android foldview is based on CoordinateLayout, but it only implements NestedScrollingParent, so it not support to nested scroll as child in other scrolling widget, set this property true to make it work."
+					}
+				},
+				{
+					"name": "ios-force-scroll-detach",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to force the nested-vertical-scroll-behavior invalid of foldview on iOS, the setting is ineffective for other platforms"
+					}
+				},
+				{
+					"name": "granularity",
+					"description": {
+						"kind": "markdown",
+						"value": "The event response granularity of onoffset, once the scroll distance exceeds the scrollable distance of granularity, it may trigger. It defaults to 0.01, but it doesn't necessarily trigger every 0.01."
+					}
+				},
+				{
+					"name": "refresh-mode",
+					"description": {
+						"kind": "markdown",
+						"value": "The pull-to-refresh mode of foldview, none (none, default value), page (category pull-to-refresh), fold (overall pull-to-refresh)"
+					},
+					"values": [
+						{
+							"name": "none"
+						},
+						{
+							"name": "page"
+						},
+						{
+							"name": "fold"
+						}
+					]
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onoffset",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback for folding progress"
+					}
+				}
+			]
+		},
+		{
+			"name": "scroll-coordinator-header",
+			"attributes": [
+				{
+					"name": "android-consume-gesture",
+					"description": {
+						"kind": "markdown",
+						"value": "Keep gestures in the header with its children instead of allowing the parent to intercept them."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "scroll-coordinator-slot",
+			"attributes": [
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "scroll-coordinator-slot-drag",
+			"attributes": [
+				{
+					"name": "enable-drag",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to allow drag-ng to respond to up and down dragging gestures"
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "scroll-coordinator-toolbar",
+			"attributes": [
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "viewpager",
+			"attributes": [
+				{
+					"name": "ios-recognized-view-tag",
+					"description": {
+						"kind": "markdown",
+						"value": "UIView's tag, be used to identify the UIView of the UIGestureRecognizer which identified by `ios-recognized-gesture-class`. This property is designed to let an UIPanGesture work together with viewpager."
+					}
+				},
+				{
+					"name": "ios-recognized-gesture-class",
+					"description": {
+						"kind": "markdown",
+						"value": "UIGestureRecognizer's class name, be used to identify the UIGestureRecognizer which may be recognized simultaneously with viewpager. This property is designed to let an UIPanGesture work together with viewpager."
+					}
+				},
+				{
+					"name": "initial-select-index",
+					"description": {
+						"kind": "markdown",
+						"value": "Select the specified page at initialization, specifically referring to the first time when there are children."
+					}
+				},
+				{
+					"name": "enable-scroll",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable horizontal scroll gesture"
+					}
+				},
+				{
+					"name": "bounces",
+					"description": {
+						"kind": "markdown",
+						"value": "Is a spring effect needed. Note that this effect is not available on Android. On PC, only macOS support this feature."
+					}
+				},
+				{
+					"name": "ios-gesture-offset",
+					"description": {
+						"kind": "markdown",
+						"value": "When the finger touches within [0, value] from the left edge of the screen, it doesn't respond to the horizontal swipe gesture, but it can directly respond to the iOS right swipe to return gesture. However, it's not applicable to Android."
+					}
+				},
+				{
+					"name": "ios-gesture-direction",
+					"description": {
+						"kind": "markdown",
+						"value": "When enabled, when sliding to the head or tail, it can respond to the horizontal swipe events of the outer container (horizontal UIScrollView)"
+					}
+				},
+				{
+					"name": "keep-item-view",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to enable the lazy load mode based on early exposure, it needs to be used in conjunction with the lazyComponent."
+					}
+				},
+				{
+					"name": "android-always-overscroll",
+					"description": {
+						"kind": "markdown",
+						"value": "On Android, this attribute is used to control the interaction behavior when scrolling to the edges. Setting it to true enables the default bounce effect, while setting it to false disables the bounce effect. The default value is false."
+					}
+				},
+				{
+					"name": "android-force-can-scroll",
+					"description": {
+						"kind": "markdown",
+						"value": "On Android, this attribute is used to control if at start/end of viewpager and set true, gesture can not pass to parent."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onchange",
+					"description": {
+						"kind": "markdown",
+						"value": "Page switch event, it will only be triggered when the UI completely switches to the next page (from 100% to 200%)."
+					}
+				},
+				{
+					"name": "onwillchange",
+					"description": {
+						"kind": "markdown",
+						"value": "Page switch event, it will be triggered when the page is about to switch, and at this time the UI has not switched to the next page yet, so the offset is still in the range of 0~100% (from page 0 to page 1) or 100%~200% (from page 1 to page 2)."
+					}
+				},
+				{
+					"name": "onoffsetchange",
+					"description": {
+						"kind": "markdown",
+						"value": "Page switch progress callback, the range is the index of each page, for example, from page 0 to page 1, it's 0~1, from the first page to the second page, it's 1~2."
+					}
+				}
+			]
+		},
+		{
+			"name": "viewpager-item",
+			"attributes": [
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "blur-view",
+			"attributes": [
+				{
+					"name": "blur-radius",
+					"description": {
+						"kind": "markdown",
+						"value": "Gaussian blur radius."
+					}
+				},
+				{
+					"name": "blur-sampling",
+					"description": {
+						"kind": "markdown",
+						"value": "The downsampling ratio of the blurred area is similar to reducing the blur of the background area first and then zooming in,\nwhich slightly affects the blur effect, but can significantly improve performance."
+					}
+				},
+				{
+					"name": "enable-auto-blur",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to automatically update blur."
+					}
+				},
+				{
+					"name": "android-capture-target",
+					"description": {
+						"kind": "markdown",
+						"value": "The raw id of the Android Lynx view to capture and blur.\nOnly the overlap with the `<blur-view>` is used as the blur source.\nWhen omitted or unresolved, Android uses the default parent capture path."
+					}
+				},
+				{
+					"name": "experimental-update-blur-radius",
+					"description": {
+						"kind": "markdown",
+						"value": "Switches the Android internal blur-buffer refresh path."
+					}
+				},
+				{
+					"name": "blur-effect",
+					"description": {
+						"kind": "markdown",
+						"value": "It mainly affects the brightness of the blurred area:\nlight: the brightness is basically the same as the background;\ndark: the brightness is darker than the background;\nextra-light: the brightness is brighter than the background;\nglass: a visual effect that renders a glass material;\nglass-container: a UIGlassContainerEffect renders multiple glass elements into a combined effect."
+					}
+				},
+				{
+					"name": "spacing",
+					"description": {
+						"kind": "markdown",
+						"value": "The spacing specifies the distance between elements at which they begin to merge."
+					}
+				},
+				{
+					"name": "glass-interactive",
+					"description": {
+						"kind": "markdown",
+						"value": "Enables interactive behavior for the glass effect."
+					}
+				},
+				{
+					"name": "ios-user-interface-style",
+					"description": {
+						"kind": "markdown",
+						"value": "The user interface style adopted by `<blur-view>`."
+					},
+					"values": [
+						{
+							"name": "light"
+						},
+						{
+							"name": "dark"
+						}
+					]
+				},
+				{
+					"name": "glass-tint-color",
+					"description": {
+						"kind": "markdown",
+						"value": "A tint color applied to the glass effect."
+					}
+				},
+				{
+					"name": "glass-style",
+					"description": {
+						"kind": "markdown",
+						"value": "The style of the glass effect."
+					},
+					"values": [
+						{
+							"name": "regular"
+						},
+						{
+							"name": "clear"
+						}
+					]
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				}
+			]
+		},
+		{
+			"name": "webview",
+			"attributes": [
+				{
+					"name": "src",
+					"description": {
+						"kind": "markdown",
+						"value": "A string that represents the location of a resource on a remote server. Automatically trigger content refresh when the src changes"
+					}
+				},
+				{
+					"name": "html",
+					"description": {
+						"kind": "markdown",
+						"value": "A string that represents the html content to load. Automatically trigger content refresh when the html changes. Priority lower than `src`."
+					}
+				},
+				{
+					"name": "bounces",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable bounce effect"
+					}
+				},
+				{
+					"name": "scroll-bar-enable",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable scrollbar"
+					}
+				},
+				{
+					"name": "ios-hide-keyboard-accessory-view",
+					"description": {
+						"kind": "markdown",
+						"value": "Hide the system keyboard accessory view above the software keyboard.\nSupported by the built-in loader on iOS 13 and later. Custom loaders must opt in."
+					}
+				},
+				{
+					"name": "params",
+					"description": {
+						"kind": "markdown",
+						"value": "Params for external webview implementation"
+					}
+				},
+				{
+					"name": "webview-type",
+					"description": {
+						"kind": "markdown",
+						"value": "Specify the type of webview, it could be a implementation of a webview inject from LynxService"
+					}
+				},
+				{
+					"name": "enable-debug",
+					"description": {
+						"kind": "markdown",
+						"value": "Enable WebView debugging in Android so that it can be debugged in Chrome DevTools"
+					}
+				},
+				{
+					"name": "initjs",
+					"description": {
+						"kind": "markdown",
+						"value": "Execute javascript when document ready"
+					}
+				},
+				{
+					"name": "cookies",
+					"description": {
+						"kind": "markdown",
+						"value": "Preset cookies"
+					}
+				},
+				{
+					"name": "use-osr",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether enable offscreen rendering mode"
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onload",
+					"description": {
+						"kind": "markdown",
+						"value": "Load success event"
+					}
+				},
+				{
+					"name": "onerror",
+					"description": {
+						"kind": "markdown",
+						"value": "Error event"
+					}
+				},
+				{
+					"name": "onmessage",
+					"description": {
+						"kind": "markdown",
+						"value": "Message post from javascript"
+					}
+				},
+				{
+					"name": "onopenwindow",
+					"description": {
+						"kind": "markdown",
+						"value": "open window event"
+					}
+				},
+				{
+					"name": "onlocationchange",
+					"description": {
+						"kind": "markdown",
+						"value": "location change event"
+					}
+				}
+			]
+		},
+		{
+			"name": "markdown",
+			"attributes": [
+				{
+					"name": "text-mark-attachments",
+					"description": {
+						"kind": "markdown",
+						"value": "Decorations and optional click targets attached to text ranges.\nClay mobile support in 4.3 requires the Skity rendering backend."
+					}
+				},
+				{
+					"name": "exposure-tags",
+					"description": {
+						"kind": "markdown",
+						"value": "Markdown tags whose visibility should be tracked, such as 'link'."
+					}
+				},
+				{
+					"name": "markdown-max-height",
+					"description": {
+						"kind": "markdown",
+						"value": "Maximum layout height of the markdown content, in platform logical units."
+					}
+				},
+				{
+					"name": "selection-background-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Text selection highlight color, encoded as a 32-bit ARGB number.\nClay Android and iOS require the Skity rendering backend in 4.3 prereleases.\nDesktop versions refer to the earliest verified prerelease builds."
+					}
+				},
+				{
+					"name": "selection-handle-color",
+					"description": {
+						"kind": "markdown",
+						"value": "Text selection handle color, encoded as a 32-bit ARGB number.\nClay Android and iOS require the Skity rendering backend in 4.3 prereleases.\nDesktop versions refer to the earliest verified prerelease builds."
+					}
+				},
+				{
+					"name": "selection-handle-size",
+					"description": {
+						"kind": "markdown",
+						"value": "Text selection handle size. Android uses physical pixels; iOS uses points.\nClay Android and iOS require the Skity rendering backend in 4.3 prereleases.\nDesktop versions refer to the earliest verified prerelease builds."
+					}
+				},
+				{
+					"name": "typewriter-height-transition-prefetch",
+					"description": {
+						"kind": "markdown",
+						"value": "Prefetches the next content height for typewriter height transitions.\nRemoving this attribute resets it to false on Android and iOS."
+					}
+				},
+				{
+					"name": "content",
+					"description": {
+						"kind": "markdown",
+						"value": "Markdown source content."
+					}
+				},
+				{
+					"name": "markdown-style",
+					"description": {
+						"kind": "markdown",
+						"value": "Set the style of markdown."
+					}
+				},
+				{
+					"name": "animation-type",
+					"description": {
+						"kind": "markdown",
+						"value": "Which animation to use.\nnone: no animation.\ntypewriter: typewriter animation.\nline-expand: line expand animation."
+					}
+				},
+				{
+					"name": "animation-velocity",
+					"description": {
+						"kind": "markdown",
+						"value": "Velocity of animation.\nWhen animation-type is typewriter, it is the number of characters typed per second."
+					}
+				},
+				{
+					"name": "text-maxline",
+					"description": {
+						"kind": "markdown",
+						"value": "Maximum number of text lines.\nA table row is counted as a line."
+					}
+				},
+				{
+					"name": "initial-animation-step",
+					"description": {
+						"kind": "markdown",
+						"value": "Animation will start at the given step."
+					}
+				},
+				{
+					"name": "content-complete",
+					"description": {
+						"kind": "markdown",
+						"value": "true: typewriter cursor will be hidden and drawEnd event will be triggered after the animation is complete.\nfalse: typewriter cursor will be shown and drawEnd event will not be triggered."
+					}
+				},
+				{
+					"name": "typewriter-dynamic-height",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether markdown height is equal to the content height typed by typewriter."
+					}
+				},
+				{
+					"name": "text-selection",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether markdown content is selectable."
+					}
+				},
+				{
+					"name": "enable-selection",
+					"description": {
+						"kind": "markdown",
+						"value": "Alias of text-selection."
+					}
+				},
+				{
+					"name": "allow-break-around-punctuation",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether text can break around punctuation."
+					}
+				},
+				{
+					"name": "enable-break-around-punctuation",
+					"description": {
+						"kind": "markdown",
+						"value": "Alias of allow-break-around-punctuation."
+					}
+				},
+				{
+					"name": "content-range",
+					"description": {
+						"kind": "markdown",
+						"value": "The range of content to be parsed.\n[start, end]"
+					}
+				},
+				{
+					"name": "markdown-effect",
+					"description": {
+						"kind": "markdown",
+						"value": "Additional effects."
+					}
+				},
+				{
+					"name": "content-id",
+					"description": {
+						"kind": "markdown",
+						"value": "Mark the content when the event or UI method is triggered."
+					}
+				},
+				{
+					"name": "typewriter-height-transition-duration",
+					"description": {
+						"kind": "markdown",
+						"value": "Height transition duration. Disable height transition if value less than or equal to 0."
+					}
+				},
+				{
+					"name": "animation-frame-rate",
+					"description": {
+						"kind": "markdown",
+						"value": "Control animation frame rate to improve performance."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "ondrawStart",
+					"description": {
+						"kind": "markdown",
+						"value": "Draw start."
+					}
+				},
+				{
+					"name": "ondrawEnd",
+					"description": {
+						"kind": "markdown",
+						"value": "Draw end."
+					}
+				},
+				{
+					"name": "onanimationStep",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback after each animation frame. Some animation steps may be skipped if animation velocity is too fast."
+					}
+				},
+				{
+					"name": "onoverflow",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when text overflows."
+					}
+				},
+				{
+					"name": "onlink",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when link is clicked."
+					}
+				},
+				{
+					"name": "onselectionchange",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when selection changes."
+					}
+				},
+				{
+					"name": "onimageTap",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when image is clicked."
+					}
+				},
+				{
+					"name": "ontextClick",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when a text attachment is clicked."
+					}
+				},
+				{
+					"name": "onparseEnd",
+					"description": {
+						"kind": "markdown",
+						"value": "Callback when parse ends."
+					}
+				}
+			]
+		},
+		{
+			"name": "video",
+			"attributes": [
+				{
+					"name": "src",
+					"description": {
+						"kind": "markdown",
+						"value": "Video source URL. Only online network URLs are supported."
+					}
+				},
+				{
+					"name": "loop",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether to loop playback."
+					}
+				},
+				{
+					"name": "volume",
+					"description": {
+						"kind": "markdown",
+						"value": "Playback volume from 0 to 1."
+					}
+				},
+				{
+					"name": "muted",
+					"description": {
+						"kind": "markdown",
+						"value": "Whether the video is muted."
+					}
+				},
+				{
+					"name": "speed",
+					"description": {
+						"kind": "markdown",
+						"value": "Playback speed from 0.1 to 2.0."
+					}
+				},
+				{
+					"name": "object-fit",
+					"description": {
+						"kind": "markdown",
+						"value": "Video scaling strategy."
+					},
+					"values": [
+						{
+							"name": "contain"
+						},
+						{
+							"name": "cover"
+						},
+						{
+							"name": "fill"
+						}
+					]
+				},
+				{
+					"name": "mode",
+					"description": {
+						"kind": "markdown",
+						"value": "UIMethod execution mode."
+					},
+					"values": [
+						{
+							"name": "queue"
+						},
+						{
+							"name": "direct"
+						},
+						{
+							"name": "latest"
+						}
+					]
+				},
+				{
+					"name": "timeupdate-interval",
+					"description": {
+						"kind": "markdown",
+						"value": "Minimum interval for timeupdate dispatch, in seconds."
+					}
+				},
+				{
+					"name": "onfocus",
+					"description": {
+						"kind": "markdown",
+						"value": "Element gets focus."
+					}
+				},
+				{
+					"name": "onblur",
+					"description": {
+						"kind": "markdown",
+						"value": "Element loses focus."
+					}
+				},
+				{
+					"name": "onfirstframe",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired when the first video frame has loaded."
+					}
+				},
+				{
+					"name": "onplaying",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired when video playback starts or resumes."
+					}
+				},
+				{
+					"name": "onpaused",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired when video playback pauses."
+					}
+				},
+				{
+					"name": "onstopped",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired when video playback is stopped by the stop UIMethod."
+					}
+				},
+				{
+					"name": "ontimeupdate",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired when the playback position updates."
+					}
+				},
+				{
+					"name": "onended",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired when video playback fully ends."
+					}
+				},
+				{
+					"name": "onlooped",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired at the end of each loop iteration."
+					}
+				},
+				{
+					"name": "onerror",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired when a video playback error occurs."
+					}
+				},
+				{
+					"name": "onbuffering",
+					"description": {
+						"kind": "markdown",
+						"value": "Fired while the video is buffering."
+					}
+				}
+			]
+		}
+	],
+	"globalAttributes": [
+		{
+			"name": "accessibility-attached-cell-class",
+			"description": {
+				"kind": "markdown",
+				"value": "Class name of the containing UITableViewCell whose accessibility elements should be updated with this element."
+			}
+		},
+		{
+			"name": "accessibility-auto-scroll-if-focused",
+			"description": {
+				"kind": "markdown",
+				"value": "Scroll to this element when it receives accessibility focus programmatically."
+			}
+		},
+		{
+			"name": "accessibility-enable-tap",
+			"description": {
+				"kind": "markdown",
+				"value": "Enable accessibility tap actions for this element."
+			}
+		},
+		{
+			"name": "allow-edge-antialiasing",
+			"description": {
+				"kind": "markdown",
+				"value": "Enable edge antialiasing on the view layer and its background."
+			}
+		},
+		{
+			"name": "android-accessibility-keep-focused",
+			"description": {
+				"kind": "markdown",
+				"value": "Keep accessibility focus on this element when the accessibility helper updates."
+			}
+		},
+		{
+			"name": "android-consume-hover-event",
+			"description": {
+				"kind": "markdown",
+				"value": "Consume hover events in the accessibility helper instead of dispatching them to other views."
+			}
+		},
+		{
+			"name": "async-display",
+			"description": {
+				"kind": "markdown",
+				"value": "Allow the iOS drawing path to display asynchronously."
+			}
+		},
+		{
+			"name": "enable-cross-language-option",
+			"description": {
+				"kind": "markdown",
+				"value": "Enable cross-language attribute setting on the Harmony ArkUI node."
+			}
+		},
+		{
+			"name": "enable-new-animator",
+			"description": {
+				"kind": "markdown",
+				"value": "Enable the new animator implementation for this element."
+			}
+		},
+		{
+			"name": "hardware-layer",
+			"description": {
+				"kind": "markdown",
+				"value": "Render the Android view into a hardware texture layer."
+			}
+		},
+		{
+			"name": "next-focus-fallback",
+			"description": {
+				"kind": "markdown",
+				"value": "Fall back to directional focus traversal when the explicitly configured next-focus target cannot be focused."
+			}
+		},
+		{
+			"name": "id",
+			"description": {
+				"kind": "markdown",
+				"value": "The unique identifier of the element, ensuring the uniqueness of the entire page"
+			}
+		},
+		{
+			"name": "hidden",
+			"description": {
+				"kind": "markdown",
+				"value": "Element display, All elements is displayed by Default"
+			}
+		},
+		{
+			"name": "animation",
+			"description": {
+				"kind": "markdown",
+				"value": "Animation Properties"
+			}
+		},
+		{
+			"name": "flatten",
+			"description": {
+				"kind": "markdown",
+				"value": "Used to flatten the specified element, avoiding the creation of a real renderObject to accelerate rendering performance. Its default value is true on `<view>`"
+			}
+		},
+		{
+			"name": "name",
+			"description": {
+				"kind": "markdown",
+				"value": "The unique identifier of the element, used for the client to find the View"
+			}
+		},
+		{
+			"name": "overlap",
+			"description": {
+				"kind": "markdown",
+				"value": "Used to control overlapRendering on Android"
+			}
+		},
+		{
+			"name": "overlap-ios",
+			"description": {
+				"kind": "markdown",
+				"value": "Controls whether to overlap the drawing of the background and content to achieve the correct alpha blend effect"
+			}
+		},
+		{
+			"name": "enableLayoutOnly",
+			"description": {
+				"kind": "markdown",
+				"value": "Layout only"
+			}
+		},
+		{
+			"name": "cssAlignWithLegacyW3C",
+			"description": {
+				"kind": "markdown",
+				"value": "Legacy API"
+			}
+		},
+		{
+			"name": "accessibility-label",
+			"description": {
+				"kind": "markdown",
+				"value": "Accessibility reading content"
+			}
+		},
+		{
+			"name": "accessibility-traits",
+			"description": {
+				"kind": "markdown",
+				"value": "The combination of accessibility traits that best characterizes the accessibility element."
+			},
+			"values": [
+				{
+					"name": "text"
+				},
+				{
+					"name": "image"
+				},
+				{
+					"name": "button"
+				},
+				{
+					"name": "link"
+				},
+				{
+					"name": "header"
+				},
+				{
+					"name": "search"
+				},
+				{
+					"name": "selected"
+				},
+				{
+					"name": "playable"
+				},
+				{
+					"name": "keyboard"
+				},
+				{
+					"name": "summary"
+				},
+				{
+					"name": "disabled"
+				},
+				{
+					"name": "updating"
+				},
+				{
+					"name": "adjustable"
+				},
+				{
+					"name": "tabbar"
+				},
+				{
+					"name": "none"
+				}
+			]
+		},
+		{
+			"name": "accessibility-element",
+			"description": {
+				"kind": "markdown",
+				"value": "A Boolean value that indicates whether the element is an accessibility element that an assistive app can access."
+			}
+		},
+		{
+			"name": "accessibility-value",
+			"description": {
+				"kind": "markdown",
+				"value": "A localized string that contains the value of the accessibility element."
+			}
+		},
+		{
+			"name": "accessibility-heading",
+			"description": {
+				"kind": "markdown",
+				"value": "Sets whether the node represents a heading."
+			}
+		},
+		{
+			"name": "accessibility-role-description",
+			"description": {
+				"kind": "markdown",
+				"value": "Sets the class this node comes from, or, sets the custom role description."
+			}
+		},
+		{
+			"name": "accessibility-actions",
+			"description": {
+				"kind": "markdown",
+				"value": "The custom actions of the current accessibility element."
+			}
+		},
+		{
+			"name": "accessibility-elements-hidden",
+			"description": {
+				"kind": "markdown",
+				"value": "Whether the element is hidden from the accessibility tree."
+			}
+		},
+		{
+			"name": "accessibility-exclusive-focus",
+			"description": {
+				"kind": "markdown",
+				"value": "Whether the element is the only focusable element in the accessibility tree."
+			}
+		},
+		{
+			"name": "ios-platform-accessibility-id",
+			"description": {
+				"kind": "markdown",
+				"value": "Used to specify the accessibility identifier of a UIView in iOS, which is only required when accessing the platform accessibility framework."
+			}
+		},
+		{
+			"name": "pan-intercept-direction",
+			"description": {
+				"kind": "markdown",
+				"value": "Direction used to start pan gesture interception. 0 means horizontal, and 1 means vertical."
+			}
+		},
+		{
+			"name": "pan-intercept-scope",
+			"description": {
+				"kind": "markdown",
+				"value": "Scope used to decide which external gesture views can be intercepted. 0 means self, 1 means ancestors, 2 means descendants, 3 means self and ancestors, 4 means self and descendants, and 5 means all."
+			}
+		},
+		{
+			"name": "ios-pan-intercept-gesture-class",
+			"description": {
+				"kind": "markdown",
+				"value": "UIGestureRecognizer's class name, used with `ios-pan-intercept-view-class` and `ios-pan-intercept-view-tag` to identify an external gesture that should be intercepted by pan-intercept."
+			}
+		},
+		{
+			"name": "ios-pan-intercept-view-class",
+			"description": {
+				"kind": "markdown",
+				"value": "UIView's class name, used with `ios-pan-intercept-gesture-class` and `ios-pan-intercept-view-tag` to identify the view bound to an external gesture that should be intercepted by pan-intercept."
+			}
+		},
+		{
+			"name": "ios-pan-intercept-view-tag",
+			"description": {
+				"kind": "markdown",
+				"value": "UIView's tag, used with `ios-pan-intercept-gesture-class` and `ios-pan-intercept-view-class` to identify the view bound to an external gesture that should be intercepted by pan-intercept."
+			}
+		},
+		{
+			"name": "focusable",
+			"description": {
+				"kind": "markdown",
+				"value": "Control whether the component can receive focus"
+			}
+		},
+		{
+			"name": "focus-index",
+			"description": {
+				"kind": "markdown",
+				"value": "Use two-dimensional coordinates such as \"0, 0\" to represent the focus priority of the x and y axes respectively. Nodes with the same priority will switch focus based on their position."
+			}
+		},
+		{
+			"name": "next-focus-up",
+			"description": {
+				"kind": "markdown",
+				"value": "Manually specify the node ID that will receive focus when the user presses the \"up\" arrow key"
+			}
+		},
+		{
+			"name": "next-focus-down",
+			"description": {
+				"kind": "markdown",
+				"value": "Manually specify the node ID that will receive focus when the user presses the \"down\" arrow key"
+			}
+		},
+		{
+			"name": "next-focus-left",
+			"description": {
+				"kind": "markdown",
+				"value": "Manually specify the node ID that will receive focus when the user presses the \"left\" arrow key"
+			}
+		},
+		{
+			"name": "next-focus-right",
+			"description": {
+				"kind": "markdown",
+				"value": "Manually specify the node id that receives focus when the user presses the \"right\" arrow key"
+			}
+		},
+		{
+			"name": "__lynx_timing_flag",
+			"description": {
+				"kind": "markdown",
+				"value": "Custom timing flag"
+			}
+		},
+		{
+			"name": "ios-background-shape-layer",
+			"description": {
+				"kind": "markdown",
+				"value": "We use CAShapeLayer to accelerate rendering of the component's backgrounds on iOS."
+			}
+		},
+		{
+			"name": "background-shape-layer",
+			"description": {
+				"kind": "markdown",
+				"value": "Use CAShapeLayer for background rendering. When omitted, the native background configuration applies."
+			}
+		},
+		{
+			"name": "exposure-id",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify whether the node needs exposure/un-exposure events"
+			}
+		},
+		{
+			"name": "exposure-scene",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the scene of the node that needs exposure/un-exposure events"
+			}
+		},
+		{
+			"name": "exposure-screen-margin-top",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the top extension value of the screen boundary referenced by the target node in the exposure detection task, which affects the viewport intersection judgment of the target node. Each node can have its own screen boundary scaling value"
+			}
+		},
+		{
+			"name": "exposure-screen-margin-right",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the right extension value of the screen boundary referenced by the target node in the exposure detection task, which affects the viewport intersection judgment of the target node. Each node can have its own screen boundary scaling value"
+			}
+		},
+		{
+			"name": "exposure-screen-margin-bottom",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the bottom extension value of the screen boundary referenced by the target node in the exposure detection task, which affects the viewport intersection judgment of the target node. Each node can have its own screen boundary scaling value"
+			}
+		},
+		{
+			"name": "exposure-screen-margin-left",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the left extension value of the screen boundary referenced by the target node in the exposure detection task, which affects the viewport intersection judgment of the target node. Each node can have its own screen boundary scaling value"
+			}
+		},
+		{
+			"name": "exposure-ui-margin-top",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the top boundary extension value of the target node itself in the exposure detection, which affects the viewport intersection judgment of the target node. Each node can have its own boundary extension value. Before using this feature, you also need to set `enable-exposure-ui-margin` for the current node."
+			}
+		},
+		{
+			"name": "exposure-ui-margin-right",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the right boundary extension value of the target node itself in the exposure detection, which affects the viewport intersection judgment of the target node. Each node can have its own boundary extension value. Before using this feature, you also need to set `enable-exposure-ui-margin` for the current node."
+			}
+		},
+		{
+			"name": "exposure-ui-margin-bottom",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the bottom boundary extension value of the target node itself in the exposure detection, which affects the viewport intersection judgment of the target node. Each node can have its own boundary extension value. Before using this feature, you also need to set `enable-exposure-ui-margin` for the current node."
+			}
+		},
+		{
+			"name": "exposure-ui-margin-left",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the left boundary extension value of the target node itself in the exposure detection, which affects the viewport intersection judgment of the target node. Each node can have its own boundary extension value. Before using this feature, you also need to set `enable-exposure-ui-margin` for the current node."
+			}
+		},
+		{
+			"name": "exposure-area",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies the viewport intersection ratio at which the target node can trigger an exposure event. An exposure event is triggered when the ratio is greater than this value, and an un-exposure event is triggered when the ratio is less than this value. By default, the exposure event is triggered as soon as the target node is visible."
+			}
+		},
+		{
+			"name": "enable-exposure-ui-margin",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the target node needs to extend the viewport intersection area for exposure detection. If set to true, the target node will be extended by the values specified in `exposure-ui-margin-top`, `exposure-ui-margin-right`, `exposure-ui-margin-bottom`, and `exposure-ui-margin-left`. The default value is `true` on Harmony"
+			}
+		},
+		{
+			"name": "enable-exposure-ui-clip",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify whether the exposure detection task takes into account the viewport clipping of the parent node. When set to true, nodes outside the parent node viewport cannot trigger exposure, and when set to false, nodes outside the parent node viewport can trigger exposure."
+			}
+		},
+		{
+			"name": "user-interaction-enabled",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the target node and its child nodes can respond to Lynx touch events. This property does not affect platform gestures (such as scrolling of the `<scroll-view>`)"
+			}
+		},
+		{
+			"name": "native-interaction-enabled",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the target node and its child nodes can consume platform touch events. This property does not affect platform gestures (such as scrolling of the `<scroll-view>`). The default value is `true` on iOS and Harmony and `false` on Android."
+			}
+		},
+		{
+			"name": "block-native-event",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the target node blocks platform gestures outside Lynx when it is on the event response chain, which can achieve an effect like blocking the platform swipe-back gesture."
+			}
+		},
+		{
+			"name": "block-native-event-areas",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether to block platform gestures outside Lynx when the target node is on the event response chain and the touch is within the specified area of the target node. This can achieve an effect similar to blocking the platform swipe-back gesture. The inner array is an array containing four numbers: x, y, width, and height, representing the position of the touch area within the target node."
+			}
+		},
+		{
+			"name": "consume-slide-event",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the platform gestures should respond when the target node is on the event response chain and a swipe occurs at a specific angle. This does not affect Lynx touch events and can be used to implement a front - end scroll container that consumes swipes in a specified direction. The inner array contains two numbers, start and end, representing the start and end angles respectively."
+			}
+		},
+		{
+			"name": "event-through",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the platform touch events should be dispatched to Lynx when the touch occurs on the target node. This can achieve an effect similar to displaying content without interaction. This property supports inheritance. This property can only ensure that Lynx does not consume platform touch events, but the parent view of LynxView may consume touch events, causing the penetration effect to fail."
+			}
+		},
+		{
+			"name": "enable-touch-pseudo-propagation",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the target node supports the :active pseudo-class to continue bubbling up the event response chain when a touch event occurs."
+			}
+		},
+		{
+			"name": "hit-slop",
+			"description": {
+				"kind": "markdown",
+				"value": "Specify the touch event response hot zone of the target node without affecting platform gestures"
+			}
+		},
+		{
+			"name": "ignore-focus",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether the target node should not抢占 focus when touched. By default, the node will抢占 focus when clicked, which can achieve an effect similar to preventing the keyboard from closing when clicking other areas. Additionally, it supports inheritance, meaning the default value of child nodes is the `ignore-focus` value of the parent node, and child nodes can override this value."
+			}
+		},
+		{
+			"name": "ios-enable-simultaneous-touch",
+			"description": {
+				"kind": "markdown",
+				"value": "Specifies whether to force the triggering of touch events when the target node is on the event response chain, which can solve the problem of touch events not being triggered on iOS"
+			}
+		},
+		{
+			"name": "event-through-active-regions",
+			"description": {
+				"kind": "markdown",
+				"value": "Used in conjunction with `event-through` to specify the event penetration definition for the target node in specific areas. The inner array is in the form of [x, y, width, height], with units of px or %. The x/y positions are relative to the viewport coordinate system of the target node."
+			}
+		},
+		{
+			"name": "onbgload",
+			"description": {
+				"kind": "markdown",
+				"value": "Listening for background image loading success."
+			}
+		},
+		{
+			"name": "onbgerror",
+			"description": {
+				"kind": "markdown",
+				"value": "Failed to load background image for listening."
+			}
+		},
+		{
+			"name": "ontouchstart",
+			"description": {
+				"kind": "markdown",
+				"value": "Finger touch action begins."
+			}
+		},
+		{
+			"name": "ontouchmove",
+			"description": {
+				"kind": "markdown",
+				"value": "Moving after touching with fingers."
+			}
+		},
+		{
+			"name": "ontouchcancel",
+			"description": {
+				"kind": "markdown",
+				"value": "Finger touch actions are interrupted by incoming call reminders and pop-up windows."
+			}
+		},
+		{
+			"name": "ontouchend",
+			"description": {
+				"kind": "markdown",
+				"value": "Finger touch action ends."
+			}
+		},
+		{
+			"name": "onpointerdown",
+			"description": {
+				"kind": "markdown",
+				"value": "A pointer becomes active over the element."
+			}
+		},
+		{
+			"name": "onpointermove",
+			"description": {
+				"kind": "markdown",
+				"value": "An active pointer changes coordinates."
+			}
+		},
+		{
+			"name": "onpointerup",
+			"description": {
+				"kind": "markdown",
+				"value": "A pointer is no longer active."
+			}
+		},
+		{
+			"name": "onpointercancel",
+			"description": {
+				"kind": "markdown",
+				"value": "An active pointer is canceled."
+			}
+		},
+		{
+			"name": "onpointerover",
+			"description": {
+				"kind": "markdown",
+				"value": "A pointer enters the element or one of its descendants."
+			}
+		},
+		{
+			"name": "onpointerenter",
+			"description": {
+				"kind": "markdown",
+				"value": "A pointer enters the element."
+			}
+		},
+		{
+			"name": "onpointerout",
+			"description": {
+				"kind": "markdown",
+				"value": "A pointer leaves the element or enters one of its descendants."
+			}
+		},
+		{
+			"name": "onpointerleave",
+			"description": {
+				"kind": "markdown",
+				"value": "A pointer leaves the element."
+			}
+		},
+		{
+			"name": "onlongpress",
+			"description": {
+				"kind": "markdown",
+				"value": "After touching the finger, if it leaves after more than 350ms and the event callback function is specified and triggered, the tap event will not be triggered."
+			}
+		},
+		{
+			"name": "ontransitionstart",
+			"description": {
+				"kind": "markdown",
+				"value": "It will trigger during a transition animation start."
+			}
+		},
+		{
+			"name": "ontransitioncancel",
+			"description": {
+				"kind": "markdown",
+				"value": "It will trigger when a transition animation is canceled."
+			}
+		},
+		{
+			"name": "ontransitionend",
+			"description": {
+				"kind": "markdown",
+				"value": "It will trigger after the transition or createAnimation animation is finished."
+			}
+		},
+		{
+			"name": "onanimationstart",
+			"description": {
+				"kind": "markdown",
+				"value": "It will trigger at the beginning of an animation."
+			}
+		},
+		{
+			"name": "onanimationiteration",
+			"description": {
+				"kind": "markdown",
+				"value": "It will trigger during an animation iteration."
+			}
+		},
+		{
+			"name": "onanimationcancel",
+			"description": {
+				"kind": "markdown",
+				"value": "It will trigger when an animation is canceled."
+			}
+		},
+		{
+			"name": "onanimationend",
+			"description": {
+				"kind": "markdown",
+				"value": "It will trigger upon completion of an animation."
+			}
+		},
+		{
+			"name": "onmousedown",
+			"description": {
+				"kind": "markdown",
+				"value": "Indicates that a mouse button (primary or secondary) is pressed. The target is the UI that contains the mouse pointer and is closest to the user."
+			}
+		},
+		{
+			"name": "onmouseup",
+			"description": {
+				"kind": "markdown",
+				"value": "Indicates that a mouse button (primary or secondary) is released. The target is the UI that contains the mouse pointer and is closest to the user."
+			}
+		},
+		{
+			"name": "onmousemove",
+			"description": {
+				"kind": "markdown",
+				"value": "Mouse movement."
+			}
+		},
+		{
+			"name": "onmouseenter",
+			"description": {
+				"kind": "markdown",
+				"value": "Indicates that a pointing device is moved onto the element."
+			}
+		},
+		{
+			"name": "onmouseleave",
+			"description": {
+				"kind": "markdown",
+				"value": "Indicates that a pointing device is moved off the element."
+			}
+		},
+		{
+			"name": "onmouseclick",
+			"description": {
+				"kind": "markdown",
+				"value": "Mouse click."
+			}
+		},
+		{
+			"name": "onmousedblclick",
+			"description": {
+				"kind": "markdown",
+				"value": "Double-click the mouse."
+			}
+		},
+		{
+			"name": "onmouselongpress",
+			"description": {
+				"kind": "markdown",
+				"value": "Long press on the mouse."
+			}
+		},
+		{
+			"name": "onwheel",
+			"description": {
+				"kind": "markdown",
+				"value": "Mouse (or touchpad) scrolling."
+			}
+		},
+		{
+			"name": "onzoom",
+			"description": {
+				"kind": "markdown",
+				"value": "Zoom gesture in the trackpaad"
+			}
+		},
+		{
+			"name": "onkeydown",
+			"description": {
+				"kind": "markdown",
+				"value": "Keyboard (or remote control) button pressed."
+			}
+		},
+		{
+			"name": "onkeyup",
+			"description": {
+				"kind": "markdown",
+				"value": "Keyboard (or remote control) key released."
+			}
+		},
+		{
+			"name": "onlayoutchange",
+			"description": {
+				"kind": "markdown",
+				"value": "Layout info changed event"
+			}
+		},
+		{
+			"name": "onuiappear",
+			"description": {
+				"kind": "markdown",
+				"value": "Element appear event"
+			}
+		},
+		{
+			"name": "onuidisappear",
+			"description": {
+				"kind": "markdown",
+				"value": "Element disappear event"
+			}
+		},
+		{
+			"name": "onaccessibilityaction",
+			"description": {
+				"kind": "markdown",
+				"value": "The custom actions of the current accessibility element is triggered."
+			}
+		},
+		{
+			"name": "ontap",
+			"description": {
+				"kind": "markdown",
+				"value": "Triggered when a finger clicks on the touch plane. This event and the `longpress` event are mutually exclusive in event listening. That is, if the front-end listens to both events simultaneously, the two events will not be triggered at the same time, and the `longpress` event takes precedence."
+			}
+		},
+		{
+			"name": "onlongtap",
+			"description": {
+				"kind": "markdown",
+				"value": "After touching the finger, leave after more than 350ms"
+			}
+		}
+	]
+}
