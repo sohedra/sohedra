@@ -104,7 +104,22 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 			expect(page.engine.state(press).inlineStyles.get("width")).toBe("2px");
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
-			expect(drawn(page).texts).toContain("Pressed 2");
+			expect(drawn(page).texts).toContain("Pressed 2 (Apple, 0)");
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("gives a main-thread tap the state the background changed inside", async () => {
+		const { page } = startDevicePage(scripts);
+		try {
+			await page.settle();
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			page.engine.dispatch(byClass(page, "press"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(drawn(page).texts).toContain("Pressed 1 (Banana, 1)");
 		} finally {
 			page.dispose();
 		}
@@ -149,6 +164,34 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 			) as Promise<string>;
 			await expect(ran).resolves.toBe("ran");
 			expect(page.errors.map(String)).toEqual([]);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("copies a main-thread tap's captured state without Svelte's snapshot or structuredClone", async () => {
+		const calls: string[] = [];
+		// Svelte's snapshot tests every value with `instanceof EventTarget`.
+		class EventTarget {
+			static [Symbol.hasInstance](): boolean {
+				calls.push("instanceof EventTarget");
+				return false;
+			}
+		}
+		const structuredClone = (value: unknown) => {
+			calls.push("structuredClone");
+			return value;
+		};
+		const { page } = startDevicePage(scripts, { globals: { EventTarget, structuredClone } });
+		try {
+			await page.settle();
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			page.engine.dispatch(byClass(page, "press"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(drawn(page).texts).toContain("Pressed 1 (Banana, 1)");
+			expect(calls).toEqual([]);
 		} finally {
 			page.dispose();
 		}

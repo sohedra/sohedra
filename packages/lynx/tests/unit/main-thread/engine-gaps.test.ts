@@ -1,9 +1,18 @@
 // What the main thread's engine lacks, filled in before the page loads: on a global object and a
 // strings' prototype shaped like a device's, and never over what the engine has.
 
-import { describe, expect, it } from "@rstest/core";
+import { afterEach, describe, expect, it, rs } from "@rstest/core";
+import structuredCloneFill, { deserialize, serialize } from "@ungap/structured-clone";
 
 import { fillEngineGaps } from "../../../src/main-thread/engine-gaps.ts";
+
+// In Node, `@ungap/event-target` and `@ungap/structured-clone` hand back Node's own `EventTarget`
+// and `structuredClone`, so these tests check where the fills go and what reaches them; the
+// device-shaped build tests (tests/build/device-snapshot.test.ts) run the packages' own code.
+rs.mock("@ungap/structured-clone", { spy: true });
+afterEach(() => {
+	rs.clearAllMocks();
+});
 
 /** A device's main thread: `lynx` has `SystemInfo`, the global object and strings have neither. */
 function device(lynx: { SystemInfo?: unknown } = {}) {
@@ -28,6 +37,61 @@ describe("the main thread's SystemInfo", () => {
 
 	it("is not made up when lynx has none either", () => {
 		expect("SystemInfo" in device().scope).toBe(false);
+	});
+});
+
+describe("the main thread's EventTarget and structuredClone, which Svelte's runtime reads as it copies state in the first frame", () => {
+	it("are put on a global object that lacks them", () => {
+		const { scope } = device();
+		const Target = scope["EventTarget"] as typeof EventTarget;
+		const heard: string[] = [];
+		const target = new Target();
+		target.addEventListener("ping", (event) => heard.push(event.type));
+		target.dispatchEvent(new Event("ping"));
+		expect(heard).toEqual(["ping"]);
+		const clone = scope["structuredClone"] as typeof structuredClone;
+		const value = { when: new Date(0), rows: [[1, [2]]] };
+		const copy = clone(value);
+		expect(copy).toEqual(value);
+		expect(copy.when).not.toBe(value.when);
+		expect(copy.rows[0]).not.toBe(value.rows[0]);
+	});
+
+	it("are the engine's own when it has them", () => {
+		const own = () => {};
+		const scope: Record<string, unknown> = {
+			EventTarget: own,
+			structuredClone: own,
+			queueMicrotask: own,
+		};
+		fillEngineGaps({ scope, strings: {}, lynx: {} });
+		expect(scope).toEqual({ EventTarget: own, structuredClone: own, queueMicrotask: own });
+	});
+
+	it("return a primitive as it is, as @ungap/structured-clone's own copy does, without serializing it", () => {
+		const clone = device().scope["structuredClone"] as typeof structuredClone;
+		const primitives = [undefined, null, true, false, 0, -0, NaN, Infinity, 1.5, 10n, "", "text"];
+		for (const value of primitives) {
+			expect(Object.is(clone(value), value)).toBe(true);
+			expect(Object.is(deserialize(serialize(value)), value)).toBe(true);
+		}
+		expect(structuredCloneFill).not.toHaveBeenCalled();
+	});
+
+	it("hand a symbol, a function and every object to @ungap/structured-clone, with the options", () => {
+		const clone = device().scope["structuredClone"] as typeof structuredClone;
+		const symbol = Symbol("unique");
+		const action = () => {};
+		expect(() => clone(symbol)).toThrow();
+		expect(() => clone(action)).toThrow();
+		expect(() => serialize(symbol)).toThrow(new TypeError("unable to serialize symbol"));
+		expect(() => serialize(action)).toThrow(new TypeError("unable to serialize function"));
+		const value = { when: new Date(0) };
+		const options = { transfer: [] };
+		expect(clone(value, options)).toEqual(value);
+		const calls = rs.mocked(structuredCloneFill).mock.calls;
+		expect(calls.map(([handed]) => handed)).toEqual([symbol, action, value]);
+		expect(calls[2]).toEqual([value, options]);
 	});
 });
 

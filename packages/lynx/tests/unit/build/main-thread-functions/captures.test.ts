@@ -401,7 +401,7 @@ describe("what a main-thread function captures", () => {
       <view main-thread:onscroll={onScroll} main-thread:ontap={plain}></view>`;
 		const background = (await component(source, { thread: "background" })).code;
 		expect(background).toMatch(
-			/_c: \{\s*\$count: \$count\(\),\s*items: \$\.snapshot\(items\),\s*cfg: \{ a: \$\.snapshot\(cfg\?\.a\) \},\s*threshold: threshold\(\)\s*\}/,
+			/_c: \{\s*\$count: \$count\(\),\s*items: __copyCapture_\w+\(items\),\s*cfg: \{ a: __copyCapture_\w+\(cfg\?\.a\) \},\s*threshold: threshold\(\)\s*\}/,
 		);
 		// The first frame is drawn once: nothing to follow.
 		const mainThread = (await component(source, { thread: "main-thread" })).code;

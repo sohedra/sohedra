@@ -20,7 +20,7 @@ import { describe, placeAt } from "../diagnostics/messages.ts";
 import type { Edit, Piece } from "../source-map/edits.ts";
 import { stringLiteral } from "../string-literal.ts";
 import { writeCaptures } from "./captures.ts";
-import type { Guard } from "./captures.ts";
+import type { Copy, Guard } from "./captures.ts";
 import type { Found, ScriptFunctions } from "./find.ts";
 import type { Hoisting } from "./hoisting.ts";
 import { hash, idPrefix, pathInApp } from "./ids.ts";
@@ -72,7 +72,7 @@ export interface Emitted {
 	registrations: Piece[];
 	/** The ids of the functions, in source order. */
 	ids: string[];
-	/** What the script imports to turn background functions into handles, if any is used. */
+	/** What the script imports from the binding for its functions, if they need anything. */
 	imports: string;
 }
 
@@ -125,6 +125,26 @@ function guardFor(options: EmitOptions, fn: Found): Guard | undefined {
 }
 
 /**
+ * How the captured `$state` names of a function that follows its captures are copied: through the
+ * binding's copy, told in development what each is called and where its function is.
+ */
+function copyFor(options: EmitOptions, fn: Found, toCopy: string): Copy {
+	let where: string | undefined;
+	return {
+		names: options.functions.deepState,
+		wrap: (value, name) => {
+			if (!options.development) return `${toCopy}(${value})`;
+			// The path under the app, so two checkouts of one app give one development bundle.
+			where ??= placeAt(
+				{ file: pathInApp(options.filename, options.root), text: options.source },
+				fn.node.start,
+			).where;
+			return `${toCopy}(${value}, { name: ${stringLiteral(name)}, where: ${stringLiteral(where)} })`;
+		},
+	};
+}
+
+/**
  * Write the object of a named function declaration: `let name = {…}`, or `export const` for an
  * exported one (Svelte refuses `export let` in a component), or `const name = {…}` before
  * `export default name` for a default export. At the top of its scope, when it is hoisted.
@@ -160,11 +180,13 @@ export function emitFunctions(options: EmitOptions): Emitted {
 	const { source, thread, instance, functions, hoisted } = options;
 	const prefix = idPrefix(options);
 	const toHandle = `__transformToWorklet_${hash(options.script, 5)}`;
+	const toCopy = `__copyCapture_${hash(options.script, 5)}`;
 	const background = thread === "background";
 	const emitted: Emitted = { edits: [], declarations: [], registrations: [], ids: [], imports: "" };
 	/** What a declaration made at the top of its scope writes there, by its node. */
 	const tops = new Map<Node, Edit>();
 	let anyHandle = false;
+	let anyCopy = false;
 
 	for (const fn of functions.found) {
 		const { node, parent, captures, handles } = fn;
@@ -178,8 +200,10 @@ export function emitFunctions(options: EmitOptions): Emitted {
 		const parts: string[] = [];
 		if (captures.size > 0) {
 			const guard = options.development && background ? guardFor(options, fn) : undefined;
-			const deepState = follows ? functions.deepState : undefined;
-			parts.push(`${FUNCTION_FIELDS.captures}: ${writeCaptures(captures, { deepState, guard })}`);
+			const copy = follows ? copyFor(options, fn, toCopy) : undefined;
+			const written = writeCaptures(captures, { copy, guard });
+			anyCopy ||= written.includes(toCopy);
+			parts.push(`${FUNCTION_FIELDS.captures}: ${written}`);
 		}
 		parts.push(`${FUNCTION_FIELDS.id}: ${JSON.stringify(id)}`);
 		if (handles.length > 0) {
@@ -261,6 +285,8 @@ export function emitFunctions(options: EmitOptions): Emitted {
 	// Before the other edits: one may start where a declaration is made.
 	emitted.edits.unshift(...options.hoisting.order.map((node) => tops.get(node)!));
 	if (background && anyHandle)
-		emitted.imports = `\nimport { ${FUNCTION_RUNTIME.handle} as ${toHandle} } from ${JSON.stringify(MAIN_THREAD_FUNCTIONS_ENTRY)};\n`;
+		emitted.imports += `\nimport { ${FUNCTION_RUNTIME.handle} as ${toHandle} } from ${JSON.stringify(MAIN_THREAD_FUNCTIONS_ENTRY)};\n`;
+	if (background && anyCopy)
+		emitted.imports += `\nimport { ${FUNCTION_RUNTIME.copy} as ${toCopy} } from ${JSON.stringify(MAIN_THREAD_FUNCTIONS_ENTRY)};\n`;
 	return emitted;
 }

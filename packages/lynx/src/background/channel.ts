@@ -40,6 +40,7 @@ import type {
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { BackgroundError } from "./catalogue.ts";
+import { unsentFunctionError } from "./functions/capture-copy.ts";
 import { contextsIn, createContexts } from "./functions/contexts.ts";
 import { takeCollectedRefs } from "./functions/refs.ts";
 import { background, DEV } from "./globals.ts";
@@ -128,13 +129,13 @@ function callName(request: CallRequest): string {
 	return request[0] === "invoke" ? request[1] : request[0];
 }
 
-/** Why `op` cannot be written as text, or `undefined` when it can. */
-function unsendable(op: Op): string | undefined {
+/** What writing `op` as text throws, or `undefined` when it can be written. */
+function unsendable(op: Op): { error: unknown } | undefined {
 	try {
 		JSON.stringify(op);
 		return undefined;
 	} catch (error) {
-		return error instanceof Error ? error.message : String(error);
+		return { error };
 	}
 }
 
@@ -160,15 +161,31 @@ export function openChannel(options: ChannelOptions): Channel {
 	let nextCall = 1;
 	let open = true;
 
+	/** Why `op` cannot be sent, in the developer's words. */
+	function unsendableError(op: Op, error: unknown): BackgroundError {
+		if (op[0] === OpCode.SetAttr && op[2].startsWith(MAIN_THREAD_PREFIX)) {
+			const bound = { attribute: op[2], owner: tagOf(op[1]) ?? "element" };
+			const named = unsentFunctionError(op[3], error, bound);
+			if (named !== undefined) return named;
+		}
+		return backgroundError({
+			code: "attribute_not_copyable",
+			details: {
+				name: op[0] === OpCode.SetAttr ? op[2] : "update-list-info",
+				tag: tagOf(op[1]) ?? "list",
+				reason: error instanceof Error ? error.message : String(error),
+			},
+		});
+	}
+
 	/**
 	 * `ops` without those that cannot be sent; each one dropped is reported, and the contexts it was
 	 * given are let go of, and taken out of `given`.
 	 */
 	function sendable(ops: Op[], given?: number[]): Op[] {
 		return ops.filter((op) => {
-			const reason = unsendable(op);
-			if (reason === undefined) return true;
-			const id = op[1];
+			const failed = unsendable(op);
+			if (failed === undefined) return true;
 			if (op[0] === OpCode.SetAttr) {
 				const dropped = contextsIn(op[3]);
 				contexts.release(dropped);
@@ -177,16 +194,7 @@ export function openChannel(options: ChannelOptions): Channel {
 					if (at !== -1) given!.splice(at, 1);
 				}
 			}
-			reportError(
-				backgroundError({
-					code: "attribute_not_copyable",
-					details: {
-						name: op[0] === OpCode.SetAttr ? op[2] : "update-list-info",
-						tag: tagOf(id) ?? "list",
-						reason,
-					},
-				}),
-			);
+			reportError(unsendableError(op, failed.error));
 			return false;
 		});
 	}
