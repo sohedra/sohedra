@@ -10,6 +10,7 @@ import {
 	describe as describeMessage,
 	placeAt,
 } from "../../../../src/build/diagnostics/messages.ts";
+import { INTERNAL_WORDS } from "../../../contract/messages/internal-words.ts";
 
 /** What each message is written from in the snapshots: one set of details for every code. */
 const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
@@ -77,6 +78,10 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		file: "/app/node_modules/svelte/src/internal/client/reactivity/props.js",
 		anchor: "get_descriptor(props, key)?.set ??",
 	},
+	dev_client_moved: {
+		file: "node_modules/@lynx-js/webpack-dev-transport/lib/client/reloadApp.js",
+		anchor: "function reloadPage() {",
+	},
 	primjs_regex_moved: {
 		file: "/app/node_modules/svelte/src/utils.js",
 		name: "REGEX_VALID_TAG_NAME",
@@ -112,7 +117,7 @@ describe("the build's catalogue", () => {
 	it("keeps the build's internal words out of every message", () => {
 		for (const code of CODES) {
 			const text = describeMessage({ code, details: SAMPLES[code] as never });
-			expect(text, code).not.toMatch(/\b(?:patch|op|ops|worklet|lepus|svelte-lynx)\b/i);
+			expect(text, code).not.toMatch(INTERNAL_WORDS);
 		}
 	});
 

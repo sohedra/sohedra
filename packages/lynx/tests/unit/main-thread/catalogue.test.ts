@@ -5,6 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { MAIN_THREAD_CATALOGUE, mainThreadMessage } from "../../../src/main-thread/catalogue.ts";
 import type { MainThreadCode, MainThreadDetails } from "../../../src/main-thread/catalogue.ts";
+import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
 const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 	change_not_applied: {
@@ -18,6 +19,7 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 	first_frame_markup_unreadable: { reason: "the value of class on <view> is not quoted", at: 11 },
 	first_frame_threw: { reason: "NativeModules is not defined" },
 	rewrite_not_page: { id: 7 },
+	list_row_not_written: { id: 12 },
 	main_thread_function_not_found: { id: "9aef:c44c3:1" },
 	main_thread_value_too_deep: { depth: 1000 },
 	page_is_gone: { call: "runOnBackground" },
@@ -53,7 +55,7 @@ describe("the main thread's catalogue", () => {
 	it.each(CODES)("%s: the message", (code) => {
 		const text = mainThreadMessage({ code, details: SAMPLES[code] as never });
 		expect(text.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
-		expect(text).not.toMatch(/\b(?:patch|op|ops|worklet|lepus|svelte-lynx|generation|wire)\b/i);
+		expect(text).not.toMatch(INTERNAL_WORDS);
 		expect(text).toMatchSnapshot();
 	});
 });

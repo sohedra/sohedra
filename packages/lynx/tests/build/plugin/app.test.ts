@@ -49,6 +49,15 @@ describe("the output", () => {
 	});
 });
 
+describe("Lynx's dev client", () => {
+	it("is in no thread's script of a production build, nor the binding's part of it", () => {
+		for (const script of [scripts.background, scripts.mainThread]) {
+			expect(script).not.toContain("the terminal shows all");
+			expect(script).not.toContain("Errors while compiling");
+		}
+	});
+});
+
 describe("the constants of the threads", () => {
 	it("gives the main thread __LEPUS__ true, __JS__ false and process.env.DEBUG", () => {
 		expect(scripts.mainThread).toContain("lepus=true js=false");

@@ -74,9 +74,9 @@ describe("the page a message belongs to", () => {
 		expect(keepsMessage(received(4), 3)).toBe(false);
 	});
 
-	it("keeps an error of any page: it runs nothing, and only reports", () => {
-		expect(keepsMessage(ERROR(2), 3)).toBe(true);
-		expect(keepsMessage(ERROR(4), 3)).toBe(true);
+	it("drops an error of another page: Lynx has its report, and that page's onError is gone", () => {
+		expect(keepsMessage(ERROR(2), 3)).toBe(false);
+		expect(keepsMessage(ERROR(4), 3)).toBe(false);
 	});
 });
 
@@ -84,7 +84,7 @@ describe("a reload, in the engine's order", () => {
 	// The engine posts the reload to the background, then reloads the main thread in the same task,
 	// so the main thread bumps first. What the main thread sends after its bump reaches the
 	// background after the reload does, and the background bumps first thing when it gets it.
-	it("drops the old page's work and keeps the new page's and every error", () => {
+	it("drops the old page's work and errors, and keeps the new page's", () => {
 		let mainThread = 0;
 		let background = 0;
 		// The old app flushed a patch as the reload began: the main thread gets it after its bump.
@@ -100,7 +100,7 @@ describe("a reload, in the engine's order", () => {
 		// A main-thread function of the old page answers its call after the reload.
 		const reply = toBackground({ t: "reply", id: 7, result: { ok: true, value: 1 } })(0);
 		background++;
-		expect(keepsMessage(error, background)).toBe(true);
+		expect(keepsMessage(error, background)).toBe(false);
 		expect(keepsMessage(tap, background)).toBe(true);
 		expect(keepsMessage(reply, background)).toBe(false);
 		// The new app's first patch.

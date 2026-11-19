@@ -1,6 +1,10 @@
 // What the background's engine lacks, filled in before the page loads: on a global object and a
 // strings' prototype shaped like a device's, and never over what the engine has.
 
+import fs from "node:fs";
+import { createRequire } from "node:module";
+import path from "node:path";
+
 import { afterEach, describe, expect, it, rs } from "@rstest/core";
 import structuredCloneFill, { deserialize, serialize } from "@ungap/structured-clone";
 
@@ -43,9 +47,33 @@ function device() {
 describe("on a background that lacks them", () => {
 	it("puts a global queueMicrotask that queues on lynx's", () => {
 		const { calls, scope } = device();
-		const callback = () => {};
-		(scope["queueMicrotask"] as (callback: () => void) => void)(callback);
-		expect(calls).toEqual([["queueMicrotask", callback]]);
+		let ran = 0;
+		(scope["queueMicrotask"] as (callback: () => void) => void)(() => ran++);
+		expect(calls).toEqual([["queueMicrotask", expect.any(Function)]]);
+		(calls[0]![1] as () => void)();
+		expect(ran).toBe(1);
+	});
+
+	it("reports what a callback throws, into Lynx and to the page's onError, and throws nothing", () => {
+		const reported: unknown[] = [];
+		const restore = installGlobals({
+			lynx: { reportError: (error: unknown) => reported.push(error) },
+		});
+		try {
+			const { calls, scope } = device();
+			const failure = new Error("an effect threw");
+			let ran = 0;
+			const queue = scope["queueMicrotask"] as (callback: () => void) => void;
+			queue(() => {
+				throw failure;
+			});
+			queue(() => ran++);
+			for (const [, callback] of calls) expect(() => (callback as () => void)()).not.toThrow();
+			expect(reported).toEqual([failure]);
+			expect(ran).toBe(1);
+		} finally {
+			restore();
+		}
 	});
 
 	it("puts nothing else on the global object, and no timers: the bundle's wrapper passes them", () => {
@@ -196,5 +224,23 @@ describe("the background's start", () => {
 		} finally {
 			restore();
 		}
+	});
+});
+
+describe("the reason for the queueMicrotask fill", () => {
+	// A canary: the fill exists, and catches what Svelte's work throws, because the background's
+	// bundle gets no `queueMicrotask` from Lynx. Lynx hands the bundle its thread's functions as the
+	// parameters of the function its runtime wrapper writes around it (setTimeout, setInterval…).
+	// When the wrapper passes `queueMicrotask` too, the fill steps aside for Lynx's, and a throw of
+	// Svelte's work after a timer no longer reaches `onError`: the fill must then wrap Lynx's
+	// function instead of standing in for it.
+	it("is that Lynx's runtime wrapper passes the background's bundle no queueMicrotask", () => {
+		const require = createRequire(import.meta.url);
+		const folder = path.dirname(
+			require.resolve("@lynx-js/runtime-wrapper-webpack-plugin/package.json"),
+		);
+		const source = fs.readFileSync(path.join(folder, "lib/RuntimeWrapperWebpackPlugin.js"), "utf8");
+		expect(source).toContain("'setTimeout',");
+		expect(source).not.toMatch(/['"]queueMicrotask['"]/);
 	});
 });

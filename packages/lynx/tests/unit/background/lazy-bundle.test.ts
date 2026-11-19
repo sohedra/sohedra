@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, it, rs } from "@rstest/core";
 
 import { loadLazyBundle, resolveUrl } from "../../../src/background/lazy-bundle.ts";
+import { clearRepeats } from "../../../src/background/report.ts";
 import { installGlobals } from "../../../src/testing/globals.ts";
 import { LAZY_BUNDLE_METHOD } from "../../../src/wire/index.ts";
 
@@ -13,6 +14,8 @@ let restore = (): void => {};
 afterEach(() => {
 	restore();
 	rs.useRealTimers();
+	// Each test's timeout is the first of its kind, not a repeat of the one before.
+	clearRepeats();
 });
 
 describe("resolveUrl", () => {
@@ -40,6 +43,7 @@ describe("resolveUrl", () => {
 /** A background `lynx` whose fetches the test answers, recording what the loader asks, in order. */
 function fakeBackground(srcName: string | null = PAGE) {
 	const steps: string[] = [];
+	const reports: unknown[] = [];
 	let answer: ((bundle: unknown) => void) | undefined;
 	let taken: (() => void) | undefined;
 	restore = installGlobals({
@@ -64,10 +68,12 @@ function fakeBackground(srcName: string | null = PAGE) {
 					taken = callback;
 				},
 			}),
+			reportError: (error: unknown) => void reports.push(error),
 		},
 	});
 	return {
 		steps,
+		reports,
 		answer: (bundle: unknown) => answer?.(bundle),
 		take: () => taken?.(),
 	};
@@ -140,6 +146,25 @@ describe("loadLazyBundle, a bundle that never comes", () => {
 		await loading;
 		expect(outcome).toMatchObject({ code: "lazy_bundle_timed_out" });
 		expect(String(outcome)).toContain(`${URL} did not load within 30 seconds`);
+	});
+
+	it("reports the timeout into Lynx once, as the rejection's error: Lynx says nothing of it", async () => {
+		rs.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+		const { reports } = fakeBackground();
+		const loading = loadLazyBundle(URL).catch((error: unknown) => error);
+		await rs.advanceTimersByTimeAsync(31_000);
+		expect(reports).toEqual([await loading]);
+		expect(reports[0]).toMatchObject({ code: "lazy_bundle_timed_out" });
+	});
+
+	it("reports nothing of a bundle that did not arrive, which Lynx reports, nor after its timeout", async () => {
+		rs.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+		const { answer, reports } = fakeBackground();
+		const loading = loadLazyBundle(URL).catch((error: unknown) => error);
+		answer({ url: "", code: 1601, error_msg: "Failed to connect" });
+		await loading;
+		await rs.advanceTimersByTimeAsync(31_000);
+		expect(reports).toEqual([]);
 	});
 
 	it("rejects when the main thread never takes it", async () => {

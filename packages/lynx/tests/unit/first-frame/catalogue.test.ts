@@ -5,6 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { FIRST_FRAME_CATALOGUE, firstFrameError } from "../../../src/first-frame/catalogue.ts";
 import type { FirstFrameCode, FirstFrameDetails } from "../../../src/first-frame/catalogue.ts";
+import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
 const SAMPLES: { [Code in FirstFrameCode]: FirstFrameDetails[Code] } = {
 	first_frame_skipped_await: { component: "Feed" },
@@ -32,9 +33,7 @@ describe("the first frame's catalogue", () => {
 		const error = firstFrameError({ code, details: SAMPLES[code] as never });
 		expect(error.code).toBe(code);
 		expect(error.message.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
-		expect(error.message).not.toMatch(
-			/\b(?:patch|op|ops|worklet|lepus|svelte-lynx|generation|wire)\b/i,
-		);
+		expect(error.message).not.toMatch(INTERNAL_WORDS);
 		expect(error.message).toMatchSnapshot();
 	});
 });

@@ -20,6 +20,7 @@ function functionsPage() {
 		flattening: createFlattening(),
 		send: (message) => void sent.push(message),
 		report: (error) => void reports.push(error),
+		reportBody: (error, place) => void reports.push({ error, place }),
 		flush() {},
 		afterLayout: (run) => run(),
 		soon: (callback) => callback(),

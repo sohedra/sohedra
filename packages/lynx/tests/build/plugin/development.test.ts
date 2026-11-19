@@ -54,3 +54,27 @@ describe("hot reload", () => {
 		expect(scripts.mainThread).not.toContain("svelteLynxComponent");
 	});
 });
+
+// Strings only the binding's part of the dev client has: the functions the loader calls, and a line
+// of its build-error report.
+const DEV_CLIENT = ["reloadNeedsDevTool", "reportBuildErrors", "the terminal shows all"];
+
+describe("Lynx's dev client", () => {
+	it("calls the binding first where it reloads the page and logs build errors, on the background", () => {
+		for (const text of DEV_CLIENT) expect(scripts.background).toContain(text);
+		// Before anything else the function does: SWC's lowering declares its variables first.
+		expect(scripts.background).toMatch(
+			/function reloadPage\(\) \{(?:\s*var [^;]*;)*\s*if \([^\n]*reloadNeedsDevTool\)\(\)\) return;/,
+		);
+		expect(scripts.background).toMatch(
+			/function logBuildErrors\(errors\) \{\s*[^\n]*reportBuildErrors\)\(errors\);/,
+		);
+		// The dev client's own code is still there after the calls.
+		expect(scripts.background).toContain("[HMR] reload failed: cannot invoke cdp from DevTool.");
+		expect(scripts.background).toContain("Errors while compiling. Reload prevented.");
+	});
+
+	it("is not on the main thread", () => {
+		for (const text of DEV_CLIENT) expect(scripts.mainThread).not.toContain(text);
+	});
+});
