@@ -11,6 +11,7 @@ import { lowered, readCoverageBaseline } from "./coverage-baseline.ts";
 import { readLabels } from "./labels.ts";
 import { checkSharedPackages } from "./shared-packages.ts";
 import { listIsCurrent, scanRepository } from "./workarounds.ts";
+import { checkWorkflows } from "./workflows.ts";
 
 const problems: string[] = [];
 const IGNORED_DIRS = new Set([".git", "node_modules", ".svelte-kit", "dist", "coverage"]);
@@ -246,6 +247,9 @@ for (const file of allFiles.filter(
 		);
 	}
 }
+
+// 11. Workflows keep AGENTS.md's rules, and CI runs every Node.js line a package claims.
+problems.push(...checkWorkflows("."));
 
 if (problems.length > 0) {
 	console.error(["Repository check failed:", ...problems].join("\n- "));

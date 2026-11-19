@@ -1,0 +1,135 @@
+# Every claim the packages make, run on every pull request and every push to main:
+#
+# - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
+#   own Node.js (devEngines in package.json).
+# - generated: the generated pages, many more of them than a local run tries, on Linux.
+# - apps: @sohedra/lynx packed as it is published, installed into a fresh app with each package
+#   manager and on each Node.js line it supports, then built and tested with both test presets; once
+#   with every range at its newest, once at its floor (packages/lynx/scripts/consumer.ts).
+#
+# No job runs an agent or reads a secret, so the pnpm store is cached. The repository check
+# (scripts/workflows.ts) holds the rules of AGENTS.md for this file: no pull_request_target,
+# read-only permissions, actions pinned by commit, a time limit on every job.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  # A new push to a pull request cancels its older run; each push to main runs to the end.
+  group:
+    ci-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  checks:
+    name: Checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      # Git for Windows checks a symbolic link out as a text file unless told otherwise, and the
+      # repository links each skill into .claude/skills/.
+      - name: Keep symbolic links
+        if: runner.os == 'Windows'
+        run: git config --global core.symlinks true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The repository check compares recorded coverage with main's.
+      - name: Fetch main
+        run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm check
+      - run: pnpm build
+      - run: pnpm test
+
+  generated:
+    name: Generated pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          cache: true
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -F @sohedra/lynx test tests/threads/generated
+        env:
+          GENERATED_RUNS: 300
+
+  apps:
+    name: App with ${{ matrix.manager }}, Node.js ${{ matrix.node }} (${{ matrix.versions }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # What changes with the Node.js line is the binding's own code, the same under every
+        # manager; what changes with the manager is the app's node_modules, the same on every line.
+        # So pnpm runs on each line, the other managers on the newest, and the floors on the oldest.
+        include:
+          - { manager: pnpm, node: 22, versions: newest }
+          - { manager: pnpm, node: 24, versions: newest }
+          - { manager: pnpm, node: 26, versions: newest }
+          - { manager: npm, node: 26, versions: newest }
+          - { manager: yarn, node: 26, versions: newest }
+          - { manager: bun, node: 26, versions: newest }
+          - { manager: pnpm, node: 22, versions: floor }
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          cache: true
+      # The repository's own Node.js builds and packs the package.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: package.json
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Pack @sohedra/lynx
+        run: |
+          pnpm -F @sohedra/lynx build
+          pnpm -F @sohedra/lynx pack --pack-destination "$RUNNER_TEMP/pack"
+      # The app's Node.js line runs the app.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - if: matrix.manager == 'bun'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version: 1.4.4
+      - name: Install, build and test the app
+        env:
+          MANAGER: ${{ matrix.manager }}
+          VERSIONS: ${{ matrix.versions }}
+        run: >-
+          node packages/lynx/scripts/consumer.ts --manager "$MANAGER" --versions "$VERSIONS"
+          --tarball "$RUNNER_TEMP"/pack/*.tgz
