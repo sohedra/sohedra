@@ -301,6 +301,22 @@ export const checks: Checks = {
 		expect(() => component({}, {})).toThrow(/renderer_cannot_cross/);
 	},
 
+	"class-and-style-set-whole": async () => {
+		// A canary: when only a text of the template changes and `class` and `style` are not set
+		// again, the renderer's `unchanged-class-and-style` workaround can go.
+		const { app, log } = await mountComponent(
+			'<script>let n = $state(0); let x = $state("a"); export const tap = () => n++; export const tone = (v) => (x = v);</script>' +
+				'<view class="b {x}" style="color: {x}"><text>{n}</text></view>',
+		);
+		const { flushSync } = (await importSvelte("src/index-client.js")) as unknown as {
+			flushSync(): void;
+		};
+		// Boundary: the component's exports, as the markup above declares them.
+		(app as { tap(): void }).tap();
+		flushSync();
+		expect(log).toEqual(["set view class", "set view style"]);
+	},
+
 	"mount-renderer-option": async () => {
 		// `mount` takes the renderer as an option: without it, it sets up DOM event delegation.
 		const { target } = await mountComponent(MARKUP);

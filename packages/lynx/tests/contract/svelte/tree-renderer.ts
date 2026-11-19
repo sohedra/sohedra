@@ -13,7 +13,7 @@ interface TreeNode {
 	attributes: Record<string, unknown>;
 }
 
-/** The inserts and removes the renderer was asked for, in order. */
+/** The inserts, removes and attributes the renderer was asked for, in order. */
 export const log: string[] = [];
 
 const make = (type: TreeNode["type"], extra: Partial<TreeNode> = {}): TreeNode => ({
@@ -52,6 +52,7 @@ const renderer: Parameters<typeof createRenderer<Nodes>>[0] = createRenderer<Nod
 		name in element.attributes ? String(element.attributes[name]) : null,
 	setAttribute: (element: TreeNode, name: string, value: unknown) => {
 		element.attributes[name] = value;
+		log.push(`set ${element.name} ${name}`);
 	},
 	removeAttribute: (element: TreeNode, name: string) => {
 		delete element.attributes[name];

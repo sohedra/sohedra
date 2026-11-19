@@ -30,8 +30,8 @@ const SCAN = { matchesPerItem: 1, matchesAround: 10, iterations: 0 };
  * calls ran slower there). A Svelte upgrade may move Svelte's share.
  */
 const MOUNT = {
-	plain: { lookupsPerRow: 283, iterationsPerRow: 0 },
-	row: { lookupsPerRow: 298, iterationsPerRow: 2 },
+	plain: { lookupsPerRow: 268.1, iterationsPerRow: 0 },
+	row: { lookupsPerRow: 283.1, iterationsPerRow: 2 },
 };
 const HEADROOM = 1.04;
 /** What the page around the list counts, once. */

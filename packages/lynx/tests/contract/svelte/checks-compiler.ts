@@ -99,12 +99,14 @@ export const checks: Checks = {
 		).toBe("const_tag_invalid_placement");
 	},
 	"css-props-holder": () => {
-		// A component given `--x` props is wrapped in an element that holds them, by one of two tags.
+		// A component given `--x` props is wrapped in an element that holds them, by one of two tags,
+		// and placed at its last child, which Svelte reads through the renderer.
 		for (const markup of ['<view><el.C --tone="1" /></view>', '<el.C --tone="1" />']) {
 			const code = compileClient(markup);
 			const tag = /\['(g|svelte-css-wrapper)', /.exec(code)?.[1];
 			expect(tag, markup).toBeDefined();
 			expect(CSS_PROPS_HOLDERS.has(tag!), markup).toBe(true);
+			expect(code).toMatch(/\$\.css_props\((\w+), [^]*\$\.component\(\$\.get_last_child\(\1\),/);
 		}
 		expect(new Set(CSS_PROPS_HOLDERS)).toEqual(new Set(["g", "svelte-css-wrapper"]));
 	},
