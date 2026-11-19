@@ -17,10 +17,10 @@ import {
 	componentOfError,
 	endFirstScreens,
 	listenThrough,
-	pushRenderer,
 	SCROLL_INDEX_CAP,
 	startFirstScreens,
 	startPropsIds,
+	withRenderer,
 } from "../svelte/runtime/index.ts";
 import { decodeError, encodeError, ROOT_ID } from "../wire/index.ts";
 import type {
@@ -129,12 +129,7 @@ export function mountPage<Props extends Bag>(
 		try {
 			// With the renderer current, as Svelte runs effects: `on()` called in a handler listens
 			// through the renderer.
-			const pop = pushRenderer(pageRenderer);
-			try {
-				run();
-			} finally {
-				pop();
-			}
+			withRenderer(pageRenderer, run);
 			runSvelte(flushSync);
 		} catch (error) {
 			report(error, source);

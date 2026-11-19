@@ -9,7 +9,7 @@
 
 import path from "node:path";
 
-import { isBoundaryCrash, nodes, svelteCompiler } from "../../svelte/build/index.ts";
+import { svelteCompiler } from "../../svelte/build/index.ts";
 import type {
 	CompileOptions,
 	ComponentAst,
@@ -17,7 +17,6 @@ import type {
 	SvelteCompiler,
 } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
-import { buildError, placeAt } from "../diagnostics/messages.ts";
 import type { BuildWarning, SourceText } from "../diagnostics/messages.ts";
 import { compileError, compileWarnings, preprocessError } from "../diagnostics/svelte-errors.ts";
 import { appendMap, compose } from "../source-map/maps.ts";
@@ -94,23 +93,6 @@ async function preprocessed(
 	} catch (error) {
 		throw preprocessError(error, filename);
 	}
-}
-
-/** The compile error of a `<svelte:boundary>` that needs async, at its place, if that is the crash. */
-function boundaryNeedsAsync(
-	error: unknown,
-	ast: ComponentAst,
-	source: SourceText,
-	options: CompileOptions,
-): Error | undefined {
-	if (options.experimental?.async || !isBoundaryCrash(error)) return undefined;
-	const boundary = [...nodes(ast.fragment)].find((node) => node.type === "SvelteBoundary");
-	if (boundary === undefined) return undefined;
-	return buildError({
-		code: "boundary_needs_async",
-		details: {},
-		place: placeAt(source, boundary.start!),
-	});
 }
 
 /** The name Svelte gives the component's function: the file's, made into an identifier. */
@@ -197,7 +179,7 @@ export async function compileComponent(
 	try {
 		result = svelte.compile(prepared.code, compiling);
 	} catch (error) {
-		throw boundaryNeedsAsync(error, ast, text, compiling) ?? compileError(error, context);
+		throw compileError(error, context);
 	}
 
 	// Boundary: Svelte's map is a source map. Its text is the prepared component; the file as

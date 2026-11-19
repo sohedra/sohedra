@@ -8,10 +8,8 @@
 // the listener's first argument as a DOM event.
 
 import { on as svelteOn } from "svelte/events";
-// @ts-expect-error -- Svelte publishes no types for its internal modules; the cast below gives this one's.
-import { push_renderer } from "svelte/internal/client";
 
-const pushRenderer = push_renderer as (renderer: object | null) => () => void;
+import { withRenderer } from "./current-renderer.ts";
 
 /** A target of `on()` that keeps its own listeners: the host, or the page's root before a page. */
 interface Target {
@@ -33,16 +31,6 @@ let pageRenderer: object = passThrough;
 /** Makes `renderer` the one `on()` listens through; `null` when no page runs. */
 export function listenThrough(renderer: object | null): void {
 	pageRenderer = renderer ?? passThrough;
-}
-
-/** Runs `run` with `renderer` current. */
-function withRenderer<T>(renderer: object, run: () => T): T {
-	const pop = pushRenderer(renderer);
-	try {
-		return run();
-	} finally {
-		pop();
-	}
 }
 
 function listen(...args: Parameters<typeof svelteOn>): () => void {

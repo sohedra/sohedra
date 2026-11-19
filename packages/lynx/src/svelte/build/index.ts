@@ -22,7 +22,7 @@ export type {
 	SvelteCompiler,
 	Warning,
 } from "./compiler.ts";
-export { bannedFeature, isBoundaryCrash, isDiagnostic, splitLink } from "./errors.ts";
+export { bannedFeature, isDiagnostic, splitLink } from "./errors.ts";
 export type { Diagnostic } from "./errors.ts";
 export { scriptParser } from "./script-parser.ts";
 export type { ScriptParser } from "./script-parser.ts";

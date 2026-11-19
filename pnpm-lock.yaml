@@ -274,22 +274,22 @@ importers:
         version: 31.0.1
       oxfmt:
         specifier: ^0.78.0
-        version: 0.78.0(svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea)
+        version: 0.78.0(svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be)
       publint:
         specifier: ^0.3.25
         version: 0.3.25
       svelte:
-        specifier: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
-        version: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
+        specifier: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be
+        version: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be
       svelte-check:
         specifier: ^4.7.8
-        version: 4.7.8(picomatch@4.0.7)(svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea)(typescript@6.0.3)
+        version: 4.7.8(picomatch@4.0.7)(svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be)(typescript@6.0.3)
       svelte-released:
         specifier: npm:svelte@^5.58.0
         version: svelte@5.58.0
       svelte2tsx:
         specifier: ^0.7.63
-        version: 0.7.63(svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea)(typescript@6.0.3)
+        version: 0.7.63(svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be)(typescript@6.0.3)
       tailwindcss:
         specifier: ^3.4.19
         version: 3.4.19(yaml@2.9.1)
@@ -309,15 +309,15 @@ importers:
   playgrounds/lynx:
     dependencies:
       svelte:
-        specifier: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
-        version: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
+        specifier: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be
+        version: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be
     devDependencies:
       '@lynx-js/qrcode-rsbuild-plugin':
         specifier: ^0.7.3
-        version: 0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)
+        version: 0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)
       '@lynx-js/rspeedy':
         specifier: ^0.18.6
-        version: 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
+        version: 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@sohedra/lynx':
         specifier: workspace:*
         version: link:../../packages/lynx
@@ -3489,9 +3489,9 @@ packages:
     resolution: {integrity: sha512-rOMKTD9WP2C6ahWDmntey4p+JqUxtup1w9G3KdVuTbNGHi5u97iMw0CIc8a+F5rZtiH7x98kVniDlBRRR5e98w==}
     engines: {node: '>=18'}
 
-  svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea:
-    resolution: {integrity: sha512-xwo6EcW3qtDsQWEhtrfYf1DLTli3QipvsZ/+CAB4d3Ah7qfPYmlfnro/Gi0Q6KegisD645wRHHSqg9BnSj9Dvg==, tarball: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea}
-    version: 5.57.3
+  svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be:
+    resolution: {integrity: sha512-MKivLmJLNGdCfGCPTchijwEDXLNbmjqp2acacuvLCqrBDNxu6CxWBiPIY4SUfwVBJ9gahuH6/v5peW6qleTGVg==, tarball: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be}
+    version: 5.58.0
     engines: {node: '>=18'}
 
   svgo@4.1.0:
@@ -3954,9 +3954,9 @@ snapshots:
 
   '@lynx-js/debug-metadata@0.1.0': {}
 
-  '@lynx-js/qrcode-rsbuild-plugin@0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)':
+  '@lynx-js/qrcode-rsbuild-plugin@0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)':
     optionalDependencies:
-      '@lynx-js/rspeedy': 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
+      '@lynx-js/rspeedy': 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rsbuild/core': 2.3.2
 
   '@lynx-js/rsbuild-plugin@0.1.9(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
@@ -3970,31 +3970,6 @@ snapshots:
       '@lynx-js/webpack-dev-transport': 0.4.1
       '@lynx-js/websocket': 0.0.4
       '@rsbuild/plugin-css-minimizer': 2.0.1(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
-    optionalDependencies:
-      '@rsbuild/core': 2.2.9
-    transitivePeerDependencies:
-      - '@lynx-js/animax'
-      - '@lynx-js/lynx-core'
-      - '@parcel/css'
-      - '@swc/css'
-      - clean-css
-      - csso
-      - esbuild
-      - lightningcss
-      - tslib
-      - webpack
-
-  '@lynx-js/rsbuild-plugin@0.1.9(@rsbuild/core@2.2.9)(csso@5.0.5)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))':
-    dependencies:
-      '@lynx-js/cache-events-webpack-plugin': 0.2.3
-      '@lynx-js/chunk-loading-webpack-plugin': 0.4.3
-      '@lynx-js/debug-metadata-rsbuild-plugin': 0.2.3(@rsbuild/core@2.2.9)
-      '@lynx-js/runtime-wrapper-webpack-plugin': 0.2.6
-      '@lynx-js/template-webpack-plugin': 0.16.8(tslib@2.9.1)
-      '@lynx-js/web-rsbuild-server-middleware': 0.26.8
-      '@lynx-js/webpack-dev-transport': 0.4.1
-      '@lynx-js/websocket': 0.0.4
-      '@rsbuild/plugin-css-minimizer': 2.0.1(@rsbuild/core@2.2.9)(csso@5.0.5)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
     optionalDependencies:
       '@rsbuild/core': 2.2.9
     transitivePeerDependencies:
@@ -4037,29 +4012,6 @@ snapshots:
   '@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
       '@lynx-js/rsbuild-plugin': 0.1.9(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
-      '@rsbuild/core': 2.2.9
-      '@rsdoctor/core': 2.0.0(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)
-    optionalDependencies:
-      typescript: 6.0.3
-    transitivePeerDependencies:
-      - '@lynx-js/animax'
-      - '@lynx-js/lynx-core'
-      - '@module-federation/runtime-tools'
-      - '@parcel/css'
-      - '@rspack/core'
-      - '@swc/css'
-      - '@types/node'
-      - clean-css
-      - core-js
-      - csso
-      - esbuild
-      - lightningcss
-      - tslib
-      - webpack
-
-  '@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))':
-    dependencies:
-      '@lynx-js/rsbuild-plugin': 0.1.9(@rsbuild/core@2.2.9)(csso@5.0.5)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
       '@rsbuild/core': 2.2.9
       '@rsdoctor/core': 2.0.0(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)
     optionalDependencies:
@@ -4446,21 +4398,6 @@ snapshots:
   '@rsbuild/plugin-css-minimizer@2.0.1(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
       css-minimizer-webpack-plugin: 8.0.0(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
-      reduce-configs: 1.1.2
-    optionalDependencies:
-      '@rsbuild/core': 2.2.9
-    transitivePeerDependencies:
-      - '@parcel/css'
-      - '@swc/css'
-      - clean-css
-      - csso
-      - esbuild
-      - lightningcss
-      - webpack
-
-  '@rsbuild/plugin-css-minimizer@2.0.1(@rsbuild/core@2.2.9)(csso@5.0.5)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))':
-    dependencies:
-      css-minimizer-webpack-plugin: 8.0.0(csso@5.0.5)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
       reduce-configs: 1.1.2
     optionalDependencies:
       '@rsbuild/core': 2.2.9
@@ -5287,18 +5224,6 @@ snapshots:
     optionalDependencies:
       csso: 5.0.5
       lightningcss: 1.33.0
-
-  css-minimizer-webpack-plugin@8.0.0(csso@5.0.5)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)):
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      cssnano: 7.1.9(postcss@8.5.33)
-      jest-worker: 30.5.1
-      postcss: 8.5.33
-      schema-utils: 4.8.3(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
-      serialize-javascript: 7.1.4
-      webpack: 5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)
-    optionalDependencies:
-      csso: 5.0.5
 
   css-select@6.0.0:
     dependencies:
@@ -6199,18 +6124,6 @@ snapshots:
       postcss: 8.5.33
       svgo: 4.1.0
 
-  minimizer-webpack-plugin@5.14.0(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)):
-    dependencies:
-      jest-worker: 27.5.1
-      schema-utils: 4.8.3(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
-      terser: 5.51.2
-      webpack: 5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)
-    optionalDependencies:
-      cssnano: 7.1.9(postcss@8.5.33)
-      csso: 5.0.5
-      postcss: 8.5.33
-      svgo: 4.1.0
-
   mri@1.2.0: {}
 
   mrmime@2.0.1: {}
@@ -6310,7 +6223,7 @@ snapshots:
       '@oxfmt/binding-win32-x64-msvc': 0.78.0
       svelte: 5.58.0
 
-  oxfmt@0.78.0(svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea):
+  oxfmt@0.78.0(svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be):
     dependencies:
       tinypool: 2.2.0
     optionalDependencies:
@@ -6333,7 +6246,7 @@ snapshots:
       '@oxfmt/binding-win32-arm64-msvc': 0.78.0
       '@oxfmt/binding-win32-ia32-msvc': 0.78.0
       '@oxfmt/binding-win32-x64-msvc': 0.78.0
-      svelte: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
+      svelte: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be
 
   oxlint-tsgolint@7.0.2007:
     optionalDependencies:
@@ -6840,15 +6753,6 @@ snapshots:
     optionalDependencies:
       webpack: 5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)
 
-  schema-utils@4.8.3(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)):
-    dependencies:
-      '@types/json-schema': 7.0.15
-      ajv: 8.20.0
-      ajv-formats: 3.0.1
-      ajv-keywords: 5.1.0(ajv@8.20.0)
-    optionalDependencies:
-      webpack: 5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)
-
   scule@1.3.0: {}
 
   semver@7.8.6: {}
@@ -7025,7 +6929,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-check@4.7.8(picomatch@4.0.7)(svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea)(typescript@6.0.3):
+  svelte-check@4.7.8(picomatch@4.0.7)(svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be)(typescript@6.0.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@sveltejs/load-config': 0.2.3
@@ -7033,16 +6937,16 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.7)
       picocolors: 1.1.1
       sade: 1.8.1
-      svelte: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
+      svelte: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be
       typescript: 6.0.3
     transitivePeerDependencies:
       - picomatch
 
-  svelte2tsx@0.7.63(svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea)(typescript@6.0.3):
+  svelte2tsx@0.7.63(svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be)(typescript@6.0.3):
     dependencies:
       dedent-js: 1.0.1
       scule: 1.3.0
-      svelte: https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea
+      svelte: https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be
       typescript: 6.0.3
 
   svelte@5.58.0:
@@ -7065,7 +6969,7 @@ snapshots:
     transitivePeerDependencies:
       - '@typescript-eslint/types'
 
-  svelte@https://pkg.svelte.dev/svelte/c/f7b26fed5a7391b146253fdddad7efa039dbcfea:
+  svelte@https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be:
     dependencies:
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -7319,43 +7223,6 @@ snapshots:
       mime-db: 1.54.0
       minimizer-webpack-plugin: 5.14.0(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       schema-utils: 4.8.3(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
-      tapable: 2.3.4
-      watchpack: 2.6.4
-      webpack-sources: 3.7.0
-    transitivePeerDependencies:
-      - '@minify-html/node'
-      - '@napi-rs/image'
-      - '@swc/core'
-      - '@swc/css'
-      - '@swc/html'
-      - clean-css
-      - cssnano
-      - csso
-      - esbuild
-      - html-minifier-terser
-      - imagemin
-      - lightningcss
-      - postcss
-      - sharp
-      - svgo
-      - uglify-js
-
-  webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0):
-    dependencies:
-      '@types/estree': 1.0.10
-      '@types/json-schema': 7.0.15
-      '@webassemblyjs/ast': 1.14.1
-      '@webassemblyjs/wasm-edit': 1.14.1
-      '@webassemblyjs/wasm-parser': 1.14.1
-      browserslist: 4.29.5
-      chrome-trace-event: 1.0.4
-      enhanced-resolve: 5.27.0
-      es-module-lexer: 2.3.2
-      events: 3.3.0
-      graceful-fs: 4.2.12
-      mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.14.0(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
-      schema-utils: 4.8.3(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(postcss@8.5.33)(svgo@4.1.0))
       tapable: 2.3.4
       watchpack: 2.6.4
       webpack-sources: 3.7.0

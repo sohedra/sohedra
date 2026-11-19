@@ -58,6 +58,9 @@ const config: RstestConfig = defineConfig({
 			exclude: [...onTheTestTree.map((folder) => `${folder}/*.test.ts`), "tests/vitest/**"],
 		},
 	],
+	// Node loads Svelte's server runtime unless told otherwise; the contract tests load the client
+	// runtime and compiled components with Node itself, as Svelte's docs on custom renderers say.
+	pool: { execArgv: ["--conditions=svelte-custom-renderer"] },
 	coverage: {
 		enabled: true,
 		provider: "istanbul",

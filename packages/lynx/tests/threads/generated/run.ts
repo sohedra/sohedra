@@ -192,6 +192,7 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		"@sohedra/lynx/experimental": experimental,
 		"@sohedra/lynx/internal/main-thread-functions": functions,
 		"svelte/internal/disclose-version": {},
+		"svelte/internal/flags/custom-renderer": {},
 		[IDS]: recorder(ids.background),
 	}) as Component<Record<string, unknown>>;
 	// The page's main-thread functions register as its main-thread copy loads, as a built page's

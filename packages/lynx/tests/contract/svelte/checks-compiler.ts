@@ -7,7 +7,7 @@ import type { AST } from "svelte/compiler";
 import { CSS_PROPS_HOLDERS } from "../../../src/svelte/runtime/index.ts";
 import type { Checks } from "./check.ts";
 import { clientOptions, compileClient, compileServer } from "./compile.ts";
-import { importSvelte } from "./svelte-package.ts";
+import { importSvelte, readSvelte } from "./svelte-package.ts";
 
 /** The compile error `run` throws, or `undefined` when it does not throw. */
 function thrown(run: () => unknown): (Error & { code?: string }) | undefined {
@@ -48,12 +48,15 @@ const SUPPORTED = [
 	["{#await}", "{#await Promise.resolve(1) then v}<text>{v}</text>{/await}"],
 	["{#key}", "{#key x}<view></view>{/key}"],
 	["<svelte:boundary onerror>", "<svelte:boundary onerror={fn}><view></view></svelte:boundary>"],
+	[
+		"<svelte:boundary> with a failed snippet",
+		"<svelte:boundary><view></view>{#snippet failed(e)}<text>err</text>{/snippet}</svelte:boundary>",
+	],
+	[
+		"<svelte:boundary> with a pending snippet",
+		"<svelte:boundary>{#snippet pending()}<text>wait</text>{/snippet}<view></view></svelte:boundary>",
+	],
 ] as const;
-
-const BOUNDARY_FAILED =
-	"<svelte:boundary><view></view>{#snippet failed(e)}<text>err</text>{/snippet}</svelte:boundary>";
-const BOUNDARY_PENDING =
-	"<svelte:boundary>{#snippet pending()}<text>wait</text>{/snippet}<view></view></svelte:boundary>";
 
 /** Where the build puts a deferred row's `{@const}`, by the node and field that hold it. */
 const CONST_PLACES = [
@@ -96,14 +99,14 @@ export const checks: Checks = {
 		).toBe("const_tag_invalid_placement");
 	},
 	"css-props-holder": () => {
-		// A component given `--x` props is wrapped in an element that holds them, and placed at its
-		// `lastChild`, read before the wrapper is on the page.
+		// A component given `--x` props is wrapped in an element that holds them, by one of two tags,
+		// and placed at its last child, which Svelte reads through the renderer.
 		for (const markup of ['<view><el.C --tone="1" /></view>', '<el.C --tone="1" />']) {
 			const code = compileClient(markup);
 			const tag = /\['(g|svelte-css-wrapper)', /.exec(code)?.[1];
 			expect(tag, markup).toBeDefined();
 			expect(CSS_PROPS_HOLDERS.has(tag!), markup).toBe(true);
-			expect(code).toMatch(/\$\.css_props\((\w+), [^]*\$\.component\(\1\.lastChild,/);
+			expect(code).toMatch(/\$\.css_props\((\w+), [^]*\$\.component\(\$\.get_last_child\(\1\),/);
 		}
 		expect(new Set(CSS_PROPS_HOLDERS)).toEqual(new Set(["g", "svelte-css-wrapper"]));
 	},
@@ -113,6 +116,27 @@ export const checks: Checks = {
 		expect(thrown(() => compileClient("<view></view>"))).toBeUndefined();
 		const code = compileClient("<view></view>");
 		expect(code).toMatch(/\$\.from_tree\(/);
+		// The renderer is named by its package's specifier: a relative path is refused, since every
+		// component would resolve it from its own folder.
+		const relative = thrown(() =>
+			compileClient("<view></view>", { customRenderer: "./renderer.js" }),
+		);
+		expect(relative?.code).toBe("options_invalid_value");
+	},
+
+	"custom-renderer-flag-import": () => {
+		// Every component imports the module that turns Svelte's renderer code on as it loads.
+		expect(compileClient("<view></view>")).toContain(
+			"import 'svelte/internal/flags/custom-renderer';",
+		);
+		// Boundary: Svelte's package.json, read as JSON.
+		const { exports } = JSON.parse(readSvelte("package.json")) as {
+			exports: Record<string, Record<string, string>>;
+		};
+		const flag = exports["./internal/flags/custom-renderer"]!;
+		expect(flag["browser"]).toBe(flag["svelte-custom-renderer"]);
+		expect(flag["default"]).not.toBe(flag["browser"]);
+		expect(readSvelte(flag["browser"]!)).toContain("enable_custom_renderers_flag();");
 	},
 
 	"hot-reload-footer": () => {
@@ -272,7 +296,7 @@ export const checks: Checks = {
 		// A component calls `$props.id()` first, on both threads.
 		const id = "<script>const uid = $props.id();</script><view id={uid}></view>";
 		expect(compile(id, clientOptions()).js.code).toMatch(
-			/var \$\$pop_renderer = \$\.push_renderer\(\$renderer\);\s*const uid = \$\.props_id\(\);/,
+			/var \$\$previous_renderer = \$\.push_renderer\(\$renderer\);\s*try \{\s*const uid = \$\.props_id\(\);/,
 		);
 		expect(
 			compile(id, { filename: "Contract.svelte", generate: "server", runes: true }).js.code,
@@ -293,8 +317,8 @@ export const checks: Checks = {
 				`${feature} is not compatible with \`customRenderer\``,
 			);
 		}
-		const injected = thrown(() => compileClient("<view></view>", {}, { css: "injected" }));
-		expect(injected?.code).toBe("incompatible_with_custom_renderer");
+		// The compile option is ignored, so `<svelte:options>` is the one place a component sets it.
+		expect(thrown(() => compileClient("<view></view>", {}, { css: "injected" }))).toBeUndefined();
 	},
 
 	"supported-features-compile": () => {
@@ -308,16 +332,5 @@ export const checks: Checks = {
 		expect(
 			thrown(() => compileClient("<svelte:options customRenderer={null} /><view></view>")),
 		).toBeUndefined();
-	},
-
-	"boundary-needs-async": () => {
-		// A canary: when these start compiling without `experimental.async`, the binding's error can go.
-		for (const markup of [BOUNDARY_FAILED, BOUNDARY_PENDING]) {
-			const error = thrown(() => compileClient(markup));
-			expect(error).toBeInstanceOf(TypeError);
-			expect(error?.message).toContain("reading 'body'");
-			expect(error?.stack).toMatch(/\bSvelteBoundary\b/);
-			expect(thrown(() => compileClient(markup, { async: true }))).toBeUndefined();
-		}
 	},
 };

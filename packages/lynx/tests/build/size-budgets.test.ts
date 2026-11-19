@@ -41,7 +41,8 @@ describe("the size of a thread's script", () => {
 		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(109_300);
 	});
 
-	it("is within budget for a minimal page's background: Svelte, the renderer and the page (94,591 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(96_500);
+	it("is within budget for a minimal page's background: Svelte, the renderer and the page (106,053 bytes measured)", () => {
+		// Raised from 96,500 by Svelte's newest renderer build: its batching rewrite and crossing code.
+		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(108_200);
 	});
 });

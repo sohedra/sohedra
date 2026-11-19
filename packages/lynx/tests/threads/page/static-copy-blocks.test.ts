@@ -25,7 +25,7 @@ interface Api {
 /** The renderer's calls that read, write or walk into a node: what would show Svelte inside. */
 const LOOKING_INSIDE = ["getFirstChild", "getLastChild", "setText", "getAttribute"];
 /** What Svelte may ask about the container: its place among its siblings. */
-const ABOUT_PLACE = ["getNextSibling", "getParent", "nodeType"];
+const ABOUT_PLACE = ["getNextSibling", "getParent", "getNodeType"];
 
 /** Records each renderer call of `methods`, with its first argument, until the returned stop. */
 function spy(calls: { method: string; first: unknown; node: unknown }[]): () => void {

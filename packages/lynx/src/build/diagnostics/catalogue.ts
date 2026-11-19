@@ -34,7 +34,6 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	svelte_document: Refused;
 	svelte_body: Refused;
 	svelte_head: Refused;
-	boundary_needs_async: Plain;
 	main_thread_function_method: { kind: "class" | "object" };
 	main_thread_function_this: { keyword: "this" | "super" };
 	main_thread_function_generator: Plain;
@@ -145,12 +144,6 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		message: ({ feature }) => NOT_AVAILABLE(feature),
 		fix: () => "Remove it: a Lynx page has no head.",
 		docs: "svelte_head",
-	},
-	boundary_needs_async: {
-		message: () =>
-			"A `<svelte:boundary>` with a `pending` or `failed` snippet needs async support, which is off.",
-		fix: () => "Set `compilerOptions: { experimental: { async: true } }` in svelte.config.js.",
-		docs: "boundary_needs_async",
 	},
 	main_thread_function_method: {
 		message: ({ kind }) =>

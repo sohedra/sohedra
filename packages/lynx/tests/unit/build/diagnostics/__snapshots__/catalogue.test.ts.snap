@@ -60,18 +60,6 @@ Read the value in an event handler, and set it with an attribute.
 https://sohedra.com/e/bind_directive"
 `;
 
-exports[`the build's catalogue > boundary_needs_async: the message 1`] = `
-"A \`<svelte:boundary>\` with a \`pending\` or \`failed\` snippet needs async support, which is off.
-/app/src/App.svelte:2:3
-
-1: <script>
-2:   let a = 1;
-     ^
-
-Set \`compilerOptions: { experimental: { async: true } }\` in svelte.config.js.
-https://sohedra.com/e/boundary_needs_async"
-`;
-
 exports[`the build's catalogue > css_injected: the message 1`] = `
 "\`css: 'injected'\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3

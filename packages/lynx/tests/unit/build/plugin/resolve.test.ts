@@ -1,9 +1,13 @@
 // Which requests resolve from the app's folder (`svelte` and the packages named in `singleCopy`),
-// and which from this package's.
+// and which from this package's; and the conditions each thread resolves with.
 
+import { createRsbuild } from "@rsbuild/core";
+import type { Rspack } from "@rsbuild/core";
 import { describe, expect, it } from "@rstest/core";
 
-import { requestsOf } from "../../../../src/build/plugin/resolve.ts";
+import { LAYERS } from "../../../../src/build/plugin/layers.ts";
+import { configureResolve, requestsOf } from "../../../../src/build/plugin/resolve.ts";
+import { APP_ROOT } from "../app.ts";
 
 describe("requestsOf", () => {
 	const requests = requestsOf(["svelte", "zustand", "@acme/state"]);
@@ -37,5 +41,21 @@ describe("requestsOf", () => {
 		expect(odd.test("axb")).toBe(false);
 		expect(odd.test("c+d/sub")).toBe(true);
 		expect(odd.test("ccd")).toBe(false);
+	});
+});
+
+describe("configureResolve", { timeout: 30_000 }, () => {
+	it("resolves Svelte's custom-renderer build on the background, and its server build on the main thread", async () => {
+		const rsbuild = await createRsbuild({
+			cwd: APP_ROOT,
+			rsbuildConfig: { tools: { bundlerChain: (chain) => configureResolve(chain, false) } },
+		});
+		const [config] = await rsbuild.initConfigs();
+		expect(config!.resolve?.conditionNames).toContain("svelte-custom-renderer");
+		// Boundary: the rules of a config are its own objects.
+		const rules = (config!.module?.rules ?? []) as Rspack.RuleSetRule[];
+		const mainThread = rules.find((rule) => rule.issuerLayer === LAYERS["main-thread"]);
+		expect(mainThread!.resolve!.conditionNames).toContain("worker");
+		expect(mainThread!.resolve!.conditionNames).not.toContain("svelte-custom-renderer");
 	});
 });

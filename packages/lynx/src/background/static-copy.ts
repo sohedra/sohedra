@@ -76,7 +76,7 @@ function copyElement(node: TreeNode, keepIds: boolean): ElementNode {
 		// `<text>` (spaces between views) never had an element.
 		if (child.kind === "element") pageRenderer.insert(made, copyElement(child, keepIds), null);
 		else if (child.kind === "text" && child.lynxId !== 0)
-			pageRenderer.insert(made, pageRenderer.createTextNode(child.data ?? ""), null);
+			pageRenderer.insert(made, pageRenderer.createText(child.data ?? ""), null);
 	}
 	return made;
 }

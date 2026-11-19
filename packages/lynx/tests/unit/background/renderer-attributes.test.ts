@@ -92,25 +92,24 @@ describe("text", () => {
 	it("becomes a raw-text element inside a text element, and setText changes it", () => {
 		const { renderer, element, ops } = setup();
 		const text = renderer.createElement("text");
-		const words = renderer.createTextNode("hi");
+		const words = renderer.createText("hi");
 		renderer.insert(text, words, null);
 		renderer.insert(element, text, null);
 		renderer.setText(words, "ho");
 		const made = ops();
 		expect(made).toContainEqual([OpCode.CreateText, expect.any(Number), "hi"]);
 		expect(made.at(-1)).toEqual([OpCode.SetText, expect.any(Number), "ho"]);
+		expect(renderer.getText(words)).toBe("ho");
 	});
 
-	it("of an element replaces its children, as textContent does", () => {
-		const { renderer, ops } = setup();
-		const text = renderer.createElement("text");
-		renderer.setText(text, "one");
-		renderer.setText(text, "two");
-		expect(renderer.getFirstChild(text)).toBe(renderer.getLastChild(text));
-		expect(renderer.getNodeValue(renderer.getFirstChild(text) as never)).toBe("two");
-		renderer.setText(text, "");
-		expect(renderer.getFirstChild(text)).toBeNull();
-		expect(ops()).toEqual([]);
+	it("is read back with getText, as a comment's data is, and each node says its kind", () => {
+		const { renderer, element } = setup();
+		const comment = renderer.createComment("anchor");
+		expect(renderer.getText(comment)).toBe("anchor");
+		expect(renderer.getNodeType(comment)).toBe("comment");
+		expect(renderer.getNodeType(renderer.createText(""))).toBe("text");
+		expect(renderer.getNodeType(element)).toBe("element");
+		expect(renderer.getNodeType(renderer.createFragment())).toBe("fragment");
 	});
 });
 

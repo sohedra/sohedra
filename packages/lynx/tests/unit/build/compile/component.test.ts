@@ -3,7 +3,6 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { inApp, withoutRoot } from "../app.ts";
 import { component, SERVER_INTERNALS } from "../compiling.ts";
 
 describe("the options Svelte compiles with", () => {
@@ -104,16 +103,8 @@ describe("<svelte:boundary>", () => {
 	const boundary =
 		"<svelte:boundary>\n\t<view></view>\n\t{#snippet failed(error)}<text>oops</text>{/snippet}\n</svelte:boundary>";
 
-	it("with a failed snippet is an error that says async support is off, at the boundary", async () => {
-		const error = (await component(boundary).catch((thrown: Error) => thrown)) as Error & {
-			code?: string;
-		};
-		expect(error.code).toBe("boundary_needs_async");
-		expect(error.message).toContain(`${inApp("Component.svelte")}:1:1`);
-		expect(withoutRoot(error.message)).toMatchSnapshot();
-	});
-
-	it("compiles when the app turns async on", async () => {
+	it("with a failed snippet compiles, with async support off or on", async () => {
+		await expect(component(boundary)).resolves.toBeDefined();
 		await expect(
 			component(boundary, { compilerOptions: { experimental: { async: true } } }),
 		).resolves.toBeDefined();

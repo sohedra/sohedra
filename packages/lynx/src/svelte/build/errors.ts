@@ -40,13 +40,3 @@ export function bannedFeature(error: unknown): string | undefined {
 	if (!isDiagnostic(error) || error.code !== BANNED_CODE) return undefined;
 	return BANNED_MESSAGE.exec(error.message)?.[1];
 }
-
-/**
- * Whether `error` is the crash of a `<svelte:boundary>` with a `pending` or `failed` snippet
- * when `experimental.async` is off.
- *
- * @workaround boundary-snippets-need-async kind=svelte-internal delete-when="Svelte compiles a boundary with a failed or pending snippet without experimental.async"
- */
-export function isBoundaryCrash(error: unknown): boolean {
-	return error instanceof TypeError && /\bSvelteBoundary\b/.test(error.stack ?? "");
-}
