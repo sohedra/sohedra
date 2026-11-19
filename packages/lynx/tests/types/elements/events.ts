@@ -3,8 +3,10 @@
 // `currentTarget` is the element's node; a main-thread function gets Lynx's own event, which it can
 // stop.
 
+import type * as Elements from "@sohedra/lynx/elements";
 import type {
 	LynxEvent,
+	LynxInputEvent,
 	LynxNode,
 	LynxScrollEvent,
 	LynxTouchEvent,
@@ -56,10 +58,20 @@ element("scroll-view", {
 	},
 });
 element("input", { oninput: (event) => void event.detail.value.length });
-element("overlay", {
-	ononRequestClose: (event: LynxEvent) => void event,
-	onrequestclose: () => {},
+element("input", {
+	oninput: (event: LynxInputEvent) => void event.detail.value.length,
+	"main-thread:oninput": (event: LynxInputEvent<MainThread.Element>) =>
+		void event.detail.selectionEnd,
 });
+element("textarea", { oninput: (event: Elements.LynxTextAreaInputEvent) => void event.detail });
+// @ts-expect-error an event's name says the element once: `LynxInputEvent`.
+export type Stutter = Elements.LynxInputInputEvent;
+
+// One close request on both platforms: Android's Back button and iOS's edge swipe.
+element("overlay", { onrequestclose: (event: LynxEvent) => void event });
+element("overlay", { "main-thread:onrequestclose": (event) => void event.currentTarget });
+// @ts-expect-error iOS's own name is not an attribute: `onrequestclose` hears it.
+element("overlay", { ononRequestClose: () => {} });
 
 // A handler typed by hand, with the event types the elements entry exports.
 const tapped = (event: LynxTouchEvent) => void event.detail.x;

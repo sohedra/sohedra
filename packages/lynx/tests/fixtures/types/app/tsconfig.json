@@ -1,17 +1,8 @@
 {
-	// As an app's: Lynx's threads have no DOM, and every declaration file is checked, the binding's
-	// included.
+	// As an app's: the binding's base, and every declaration file checked, the binding's included.
+	"extends": "@sohedra/lynx/tsconfig",
 	"compilerOptions": {
-		"target": "ES2021",
-		"lib": ["ES2021"],
-		"module": "ESNext",
-		"moduleResolution": "bundler",
-		"types": [],
 		"allowImportingTsExtensions": true,
-		"noEmit": true,
-		"strict": true,
-		"isolatedModules": true,
-		"verbatimModuleSyntax": true,
 		"skipLibCheck": false
 	},
 	"svelteOptions": { "namespace": "svelteLynx" },
