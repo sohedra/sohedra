@@ -65,6 +65,12 @@ export interface BackgroundDetails {
 		tag: string;
 		where?: string | undefined;
 	};
+	mount_without_page: Record<string, never>;
+	/** `what` is the argument: `container`, `source` or `source[1]`. */
+	static_copy_not_on_page: { what: string };
+	/** `tag` is the container's. */
+	static_copy_container_not_empty: { tag: string };
+	static_copy_list: Record<string, never>;
 }
 
 /** What a code of the background names. */
@@ -218,6 +224,32 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 			`The <${tag}>'s ${name} uses Lynx's own spelling of an event, which a component no longer writes.`,
 		fix: ({ replacement }) => `Write ${replacement} instead.`,
 		docs: "main_thread_event_spelling_removed",
+	},
+	mount_without_page: {
+		message: () =>
+			"A call of mount ran with no page running: before mountPage started the page, or after the page closed.",
+		fix: () =>
+			"Call mount once mountPage has started the page: from $effect, an attachment or an event handler.",
+		docs: "mount_without_page",
+	},
+	static_copy_not_on_page: {
+		message: ({ what }) => `The ${what} given to createStaticCopy is not an element on the page.`,
+		fix: () =>
+			"Pass an element Svelte rendered while it is on the page, such as the node an attachment gets.",
+		docs: "static_copy_not_on_page",
+	},
+	static_copy_container_not_empty: {
+		message: ({ tag }) =>
+			`The <${tag}> given to createStaticCopy as the container holds something that is not a copy.`,
+		fix: () =>
+			"Give the copies an element of their own that Svelte renders with no children: Svelte never looks inside it.",
+		docs: "static_copy_container_not_empty",
+	},
+	static_copy_list: {
+		message: () =>
+			"The source given to createStaticCopy holds a <list>, and a <list> cannot be copied.",
+		fix: () => "Copy the elements around the list, or the contents of its rows, instead.",
+		docs: "static_copy_list",
 	},
 };
 

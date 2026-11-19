@@ -1,8 +1,8 @@
-// The page's entry on the main thread, where `@sohedra/lynx/internal/page` resolves to this. The
-// entry runs on both threads. Here its `startPage` records how to draw the page's first frame:
-// Svelte's server renderer, from the page's initial data, before the background runs. The main
-// thread's runtime draws it when the engine renders the page, and the background's first patch
-// adopts what it drew (hydration). Effects, handlers and attachments never run here.
+// `mountPage` on the main thread, where `@sohedra/lynx` resolves to ./root-entry.ts. The page's
+// entry runs on both threads. Here `mountPage` records how to draw the page's first frame: Svelte's
+// server renderer, from the page's initial data, before the background runs. The main thread's
+// runtime draws it when the engine renders the page, and the background's first patch adopts what
+// it drew (hydration). Effects, handlers and attachments never run here.
 
 import type { Component } from "svelte";
 import { render } from "svelte/server";
@@ -12,33 +12,40 @@ import { firstFrameError } from "./catalogue.ts";
 import { whileDrawing } from "./drawing.ts";
 import { DEV, DRAWS, firstFrame, setGlobalFunction } from "./globals.ts";
 
-/** How the page starts: the background's options, of which the first frame reads `props`. */
-export interface StartPageOptions<Props extends Record<string, unknown>> {
-	props?: (initData: Record<string, unknown>) => Props;
+/** How the page starts: the background's options, which the first frame draws with too. */
+export interface MountPageOptions<Props extends Record<string, unknown>> {
+	props?:
+		| Props
+		| ((initData: Record<string, unknown>, globalProps: Record<string, unknown>) => Props);
+	// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own type of a context
+	context?: Map<any, any>;
 }
 
 /** Svelte's error when a component awaits while the page renders synchronously. */
 const AWAIT_INVALID = "await_invalid";
 
 /**
- * Records how to draw the page's first frame: its markup, from the initial data, or `null` when
- * the page has none (a component awaits outside a `pending` boundary, as on Svelte's server).
+ * Records how to draw the page's first frame: its markup, from the initial data and the host's
+ * global props, or `null` when the page has none (a component awaits outside a `pending` boundary,
+ * as on Svelte's server).
  */
-export function startPage<Props extends Record<string, unknown>>(
+export function mountPage<Props extends Record<string, unknown>>(
 	App: Component<Props>,
-	options: StartPageOptions<Props> = {},
+	options: MountPageOptions<NoInfer<Props>> = {},
 ): void {
 	if (!DRAWS) return;
 	let warned = false;
 	setGlobalFunction(FIRST_FRAME_GLOBAL, (initData: Record<string, unknown>): string | null => {
-		// Boundary: an app without `props` has a root component that takes none.
-		const props = options.props?.(initData) ?? ({} as Props);
+		const { props, context } = options;
+		const given =
+			typeof props === "function" ? props(initData, firstFrame.lynx.__globalProps ?? {}) : props;
 		try {
 			// Boundary: `render` takes the component's props as `Omit<Props, …>`, which `Props` is.
 			return whileDrawing(
 				() =>
 					render(App as Component<Record<string, unknown>>, {
-						props,
+						props: given ?? {},
+						...(context && { context }),
 						idPrefix: PROPS_ID_PREFIX,
 					}).body,
 			);

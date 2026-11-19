@@ -52,8 +52,16 @@ type SvelteRenderer = Parameters<typeof createRenderer<Nodes>>[0];
 
 /** The renderer, with what the page asks of it. */
 export interface LynxRenderer extends SvelteRenderer {
-	/** The page's root: an element node the main thread binds to Lynx's page element. */
-	createRoot(): ElementNode;
+	/**
+	 * The page's root: one element node for the renderer's life, which the main thread binds to
+	 * Lynx's page element while a page runs.
+	 */
+	readonly root: ElementNode;
+	/**
+	 * A page starts: the root becomes Lynx's page element again, with the listeners it was given
+	 * while no page ran. Returns the root.
+	 */
+	attachRoot(): ElementNode;
 	/** The element node with this id, while it is on the page. */
 	nodeById(id: number): ElementNode | undefined;
 	/** The node as an event's target: it keeps the `uid` the event gave it. */
@@ -62,7 +70,10 @@ export interface LynxRenderer extends SvelteRenderer {
 	setHost(host: RendererHost | null): void;
 	/** The page heard a `layoutchange` on `target`, with `detail`: a late listener gets it. */
 	sawLayout(target: unknown, detail: unknown): void;
-	/** The page is gone: its root is no longer Lynx's page element. */
+	/**
+	 * The page is gone: its root is no longer Lynx's page element, and keeps none of its listeners or
+	 * of what was left under it.
+	 */
 	retire(): void;
 	/** An element's tag by its id, for the text of an error. */
 	tagOf(id: number): string | undefined;
@@ -103,6 +114,7 @@ function kindOf(value: unknown): string {
 export function createLynxRenderer({ queue, handlers }: RendererState): LynxRenderer {
 	let nextId = ROOT_ID + 1;
 	let host: RendererHost | null = null;
+	/** The root while a page runs. */
 	let root: ElementNode | undefined;
 	const elementsById = new Map<number, ElementNode>();
 	const uids = new WeakMap<TreeNode, number>();
@@ -126,6 +138,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		host: () => host,
 		nodeById: (id) => elementsById.get(id),
 	});
+	const pageRoot = new Element("page");
 	const answerLateLayout = lateLayouts({
 		host: () => host,
 		sent: () => queue.sent,
@@ -243,6 +256,19 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (container)
 			for (const real of topReals(node)) queue.push([OpCode.Remove, container.lynxId, real.lynxId]);
 		unlink(node);
+	}
+
+	/**
+	 * Forgets a subtree of a page that is gone: its handlers and its elements' ids, with no op, since
+	 * no page shows them.
+	 */
+	function forget(node: TreeNode): void {
+		for (let child = node.first; child; child = child.next) forget(child);
+		if (node.events) for (const id of node.events.values()) handlers.release(id);
+		node.events = null;
+		if (node.lynxId !== 0) elementsById.delete(node.lynxId);
+		node.lynxId = 0;
+		node.layout = null;
 	}
 
 	/** Lets go of a removed subtree: its handlers, and its Lynx elements for good. */
@@ -423,12 +449,13 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 	}
 
 	return {
-		createRoot() {
-			const made = new Element("page");
-			made.lynxId = ROOT_ID;
-			elementsById.set(ROOT_ID, made);
-			root = made;
-			return made;
+		root: pageRoot,
+		attachRoot() {
+			pageRoot.lynxId = ROOT_ID;
+			elementsById.set(ROOT_ID, pageRoot);
+			root = pageRoot;
+			pushEvents(pageRoot);
+			return pageRoot;
 		},
 		nodeById: (id) => elementsById.get(id),
 		eventTarget(node, target) {
@@ -444,10 +471,13 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		retire() {
 			host = null;
 			if (!root) return;
-			if (root.events) for (const id of root.events.values()) handlers.release(id);
-			root.events = null;
-			root.lynxId = 0;
-			elementsById.delete(ROOT_ID);
+			// What the page left under the root, such as the anchor it was mounted at.
+			while (root.first) {
+				const child = root.first;
+				unlink(child);
+				forget(child);
+			}
+			forget(root);
 			root = undefined;
 		},
 		tagOf: (id) => elementsById.get(id)?.tag ?? undefined,

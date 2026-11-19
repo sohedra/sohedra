@@ -1,12 +1,12 @@
-// The page on the background thread: the app's root component, mounted with the renderer, and
-// the hooks the engine calls on the app (`lynx.getApp()`), as ReactLynx installs them:
+// The page on the background thread (`mountPage`): the app's root component, mounted with the
+// renderer, and the hooks the engine calls on the app (`lynx.getApp()`), as ReactLynx installs them:
 //
 //   updateCardData(data, { type })  new data for the page (type 1: start from none)
 //   onAppReload(data)               the host reloads the page, with data to add
 //   callDestroyLifetimeFun()        the page is going away
 //
-// A reload and a destroy tear the old app down synchronously: Svelte's `unmount` takes the
-// component's nodes out before it returns. So a reload is one patch, the new app, and the
+// A reload and a destroy tear the old app and its layers down synchronously: Svelte's `unmount`
+// takes the component's nodes out before it returns. So a reload is one patch, the new app, and the
 // destroy is over when the engine's call returns.
 
 import { flushSync, mount, unmount } from "svelte";
@@ -35,6 +35,7 @@ import { openChannel } from "./channel.ts";
 import { callThrough } from "./functions/calls.ts";
 import { background } from "./globals.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
+import { closeLayers, openLayers, unmountLayers } from "./layers.ts";
 import { bumpPage, clearPageState, currentPage, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { numberInput } from "./renderer/input.ts";
@@ -43,10 +44,22 @@ import type { ElementNode } from "./renderer/renderer.ts";
 import { rowOf, waitsToBeAsked } from "./renderer/rows.ts";
 import { reportError, warnOnce } from "./report.ts";
 
-/** How the page starts. */
-export interface StartPageOptions<Props extends Record<string, unknown>> {
-	/** The root component's props, from the page's data; called at each start and reload. */
-	props?: (initData: Record<string, unknown>) => Props;
+/** How `mountPage` mounts the page's root component. */
+export interface MountPageOptions<Props extends Record<string, unknown>> {
+	/**
+	 * The root component's props: an object, or a function of the page's data and the host's global
+	 * props, called at the page's start and at each reload. The first frame is drawn with the same,
+	 * so both threads draw the same page.
+	 */
+	props?:
+		| Props
+		| ((initData: Record<string, unknown>, globalProps: Record<string, unknown>) => Props);
+	/**
+	 * The contexts the root component gets, as Svelte's `mount` takes them: on the first frame and
+	 * on the background alike.
+	 */
+	// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own type of a context
+	context?: Map<any, any>;
 }
 
 /** What the engine gives the app when it opens the page (lynx-core's app `_params`). */
@@ -89,17 +102,26 @@ function withNodes(event: SentEvent): Record<string, unknown> {
 }
 
 /**
- * Starts the page: mounts `App` as the root of this Lynx view's page, on the background thread,
- * and installs the engine's hooks. An error while the page starts is reported into Lynx, not
- * thrown.
+ * Mounts `App` as the page of this Lynx view: the page's entry calls it once, on both threads. On
+ * the main thread it draws the first frame from the page's data; on the background it mounts the
+ * component over that frame, then answers the page's events, and mounts it again when the host
+ * reloads the page. An error while the page starts is reported into Lynx, not thrown.
+ *
+ * ```ts
+ * import { mountPage } from "@sohedra/lynx";
+ * import App from "./App.svelte";
+ *
+ * mountPage(App, { props: (initData) => ({ route: String(initData.route ?? "/") }) });
+ * ```
  */
-export function startPage<Props extends Record<string, unknown>>(
+export function mountPage<Props extends Record<string, unknown>>(
 	App: Component<Props>,
-	options: StartPageOptions<Props> = {},
+	options: MountPageOptions<NoInfer<Props>> = {},
 ): void {
 	const { lynx } = background;
 	const app = lynx.getApp();
 	startGeneration();
+	openLayers();
 	// `on()` listens through the page's renderer wherever it is called.
 	listenThrough(pageRenderer);
 	let instance: Record<string, unknown> | undefined;
@@ -244,13 +266,22 @@ export function startPage<Props extends Record<string, unknown>>(
 	 * first frame from it.
 	 */
 	function render(starting: boolean): void {
+		const given = options.props;
 		// Boundary: an app without `props` has a root component that takes none.
-		const props = options.props?.(lynx.__initData) ?? ({} as Props);
+		const props =
+			(typeof given === "function" ? given(lynx.__initData, lynx.__globalProps ?? {}) : given) ??
+			({} as Props);
 		// The ids of `$props.id()` are the first frame's: a reload draws no frame, and starts them too.
 		startPropsIds();
 		if (starting) startFirstScreens();
 		try {
-			instance = mount(App, { target: root!, anchor: anchor!, renderer: pageRenderer, props });
+			instance = mount(App, {
+				target: root!,
+				anchor: anchor!,
+				renderer: pageRenderer,
+				props,
+				...(options.context && { context: options.context }),
+			});
 		} finally {
 			for (const note of endFirstScreens())
 				warnOnce(`${note.code}:${note.where ?? ""}`, () =>
@@ -263,11 +294,19 @@ export function startPage<Props extends Record<string, unknown>>(
 		flushSync();
 	}
 
-	/** Unmounts the app: synchronous under a renderer; a teardown's error is reported. */
+	/**
+	 * Unmounts the app, then the layers still mounted: synchronous under a renderer; a teardown's
+	 * error is reported. A layer the app's own teardown unmounts is gone by then.
+	 */
 	function teardown(): void {
 		const mounted = instance;
 		instance = undefined;
-		if (mounted) unmount(mounted).catch(reportError);
+		runAll([
+			() => {
+				if (mounted) unmount(mounted).catch(reportError);
+			},
+			unmountLayers,
+		]);
 	}
 
 	function mergeData(data: unknown): void {
@@ -295,6 +334,7 @@ export function startPage<Props extends Record<string, unknown>>(
 			() => channel.close(),
 			() => pageRenderer.retire(),
 			() => listenThrough(null),
+			closeLayers,
 			clearPageState,
 		]);
 	}
@@ -331,7 +371,7 @@ export function startPage<Props extends Record<string, unknown>>(
 			run: (handler: Handler, event: unknown) => handle(() => handler(event)),
 		});
 		callThrough({ call: (request) => channel.call(0, request), contexts: channel.contexts });
-		root = pageRenderer.createRoot();
+		root = pageRenderer.attachRoot();
 		anchor = pageRenderer.createComment("");
 		pageRenderer.insert(root, anchor, null);
 		render(true);
