@@ -24,6 +24,7 @@
 		},
 		"./config/rsbuild": "./src/build/plugin/index.ts",
 		"./config/rstest": "./src/build/presets/rstest.ts",
+		"./config/vitest": "./src/build/presets/vitest.ts",
 		"./config/svelte": "./src/build/svelte-config/index.ts",
 		"./elements": {
 			"types": "./types/elements.d.ts"
@@ -60,6 +61,10 @@
 			"./config/rstest": {
 				"types": "./lib/build/presets/rstest.d.ts",
 				"default": "./lib/build/presets/rstest.js"
+			},
+			"./config/vitest": {
+				"types": "./lib/build/presets/vitest.d.ts",
+				"default": "./lib/build/presets/vitest.js"
 			},
 			"./config/svelte": {
 				"types": "./lib/build/svelte-config/index.d.ts",
@@ -150,7 +155,9 @@
 		"@rstest/core": "^0.12.0",
 		"@testing-library/dom": "^10.4.0",
 		"jsdom": ">=28.0.0",
-		"svelte": "*"
+		"svelte": "*",
+		"vite": "^8.0.0",
+		"vitest": "^5.0.0"
 	},
 	"peerDependenciesMeta": {
 		"@lynx-js/rspeedy": {
@@ -166,6 +173,12 @@
 			"optional": true
 		},
 		"jsdom": {
+			"optional": true
+		},
+		"vite": {
+			"optional": true
+		},
+		"vitest": {
 			"optional": true
 		}
 	}
