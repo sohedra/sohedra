@@ -188,8 +188,8 @@ export async function buildInto({
 			...(options.callerName !== undefined && { callerName: options.callerName }),
 			config: {
 				mode: options.development ? "development" : "production",
-				plugins: [pluginSvelteLynx(options.plugin)],
 				...options.rsbuild,
+				plugins: [pluginSvelteLynx(options.plugin), ...(options.rsbuild?.plugins ?? [])],
 				source: { entry: entries, ...options.rsbuild?.source },
 				resolve: { alias: ALIASES, ...options.rsbuild?.resolve },
 				output: {
