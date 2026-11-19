@@ -45,7 +45,7 @@ export const TESTING_CATALOGUE: Catalogue<TestingDetails> = {
 		message: ({ component }) =>
 			`${component} has no first-frame copy, so render could not draw its first frame.`,
 		fix: ({ preset }) =>
-			`Run the test with ${preset} without \`firstFrame: false\` in its options, or render with \`lynx: { firstFrame: false }\`.`,
+			`Run the test with ${preset} without \`firstFrame: false\` in its options, or render without \`lynx: { firstFrame: true }\`.`,
 		docs: "first_frame_copy_missing",
 	},
 	first_frame_needed_alone: {

@@ -10,7 +10,7 @@ https://sohedra.com/e/background_not_started"
 exports[`the test library's catalogue > first_frame_copy_missing: the message 1`] = `
 "Card has no first-frame copy, so render could not draw its first frame.
 
-Run the test with withSvelteLynx() from @sohedra/lynx/config/rstest without \`firstFrame: false\` in its options, or render with \`lynx: { firstFrame: false }\`.
+Run the test with withSvelteLynx() from @sohedra/lynx/config/rstest without \`firstFrame: false\` in its options, or render without \`lynx: { firstFrame: true }\`.
 https://sohedra.com/e/first_frame_copy_missing"
 `;
 

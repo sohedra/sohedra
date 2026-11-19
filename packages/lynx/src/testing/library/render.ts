@@ -1,7 +1,8 @@
 // `render`: a Svelte component as a Lynx page, on both threads in this process, as a device runs it.
-// The main thread starts the binding's runtime and draws the first frame from the component's
-// first-frame copy; then the background fills what it lacks and mounts the component, and its
-// first update hydrates the frame. `render` resolves once both threads are idle.
+// The main thread starts the binding's runtime, and, when the test asks for it, draws the first
+// frame from the component's first-frame copy; then the background fills what it lacks and mounts
+// the component, and its first update hydrates the frame. `render` resolves once both threads are
+// idle.
 
 import { getQueriesForElement, prettyDOM } from "@testing-library/dom";
 import type { BoundFunctions, queries } from "@testing-library/dom";
@@ -32,9 +33,12 @@ export interface LynxRenderOptions {
 	systemInfo?: Record<string, unknown>;
 	/**
 	 * Draw the first frame from the component's first-frame copy, which the background then
-	 * hydrates, as a device does.
-	 * @defaultValue whether the component has a copy: the test preset gives each one, unless its
-	 * options say `firstFrame: false`
+	 * hydrates, as a device does. Turn it on to test what the first frame shows, or that the first
+	 * frame and the background agree (hydration). Off, the background draws the page alone, which is
+	 * what most tests of a component's behavior need. The test presets give each component its copy
+	 * either way, since a copy also brings the component's main-thread functions to the main thread;
+	 * with the plugin's `firstFrame: false`, components have none, and this cannot be on.
+	 * @defaultValue false, as ReactLynx's `render` leaves the main thread's render off
 	 */
 	firstFrame?: boolean;
 	/**
@@ -97,7 +101,7 @@ export async function render<
 	if (!background && knobs.firstFrame === false)
 		throw testingError({ code: "first_frame_needed_alone", details: {} });
 	const copy: unknown = Reflect.get(Component, Symbol.for(FIRST_FRAME_COPY_KEY));
-	const firstFrame = !background || (knobs.firstFrame ?? typeof copy === "function");
+	const firstFrame = !background || knobs.firstFrame === true;
 	if (firstFrame && typeof copy !== "function")
 		throw testingError({
 			code: "first_frame_copy_missing",
