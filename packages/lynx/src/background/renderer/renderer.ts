@@ -122,7 +122,19 @@ function kindOf(value: unknown): string {
 	if (Array.isArray(value)) return "a list";
 	if (typeof value === "object") return "an object";
 	if (typeof value === "string") return `the string ${JSON.stringify(value)}`;
+	if (typeof value === "symbol") return `the symbol ${String(value)}`;
 	return `the ${typeof value} ${textOf(value)}`;
+}
+
+/**
+ * Runs `report`, in a development build once Svelte has recorded where the element is: it sets an
+ * attribute written as plain text (`main-thread:ref="…"`) as it makes the element from the
+ * template, before its development build records the element's component and place. In
+ * production nothing records them, and `report` runs at once.
+ */
+function afterTemplate(report: () => void): void {
+	if (DEV) background.lynx.queueMicrotask(report);
+	else report();
 }
 
 /** Makes the renderer, writing its ops into `queue` and its handlers into `handlers`. */
@@ -417,29 +429,38 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (key === GESTURE_ATTRIBUTE) {
 			// `false` turns a gesture off, as `undefined` does: `main-thread:gesture={on && pan}`.
 			if (value !== false && !isGesture(value))
-				reportOnce(`main_thread_gesture_not_a_gesture:${where ?? tag}`, () =>
-					backgroundError({
-						code: "main_thread_gesture_not_a_gesture",
-						details: { value: kindOf(value), tag, where },
-					}),
+				reportOnce(
+					`main_thread_gesture_not_a_gesture:${where ?? tag}`,
+					() =>
+						backgroundError({
+							code: "main_thread_gesture_not_a_gesture",
+							details: { value: kindOf(value), tag, where },
+						}),
+					{ node: element },
 				);
 			return;
 		}
 		if (isFunction(value))
-			reportOnce(`plain_function_under_main_thread:${where ?? tag}:${key}`, () =>
-				backgroundError({
-					code: "plain_function_under_main_thread",
-					details: { name: key, tag, where },
-				}),
+			reportOnce(
+				`plain_function_under_main_thread:${where ?? tag}:${key}`,
+				() =>
+					backgroundError({
+						code: "plain_function_under_main_thread",
+						details: { name: key, tag, where },
+					}),
+				{ node: element },
 			);
 		const removed = removedEventSpelling(key);
 		if (removed?.replacement !== undefined) {
 			const replacement = removed.replacement;
-			reportOnce(`main_thread_event_spelling_removed:${where ?? tag}:${key}`, () =>
-				backgroundError({
-					code: "main_thread_event_spelling_removed",
-					details: { name: key, replacement, tag, where },
-				}),
+			reportOnce(
+				`main_thread_event_spelling_removed:${where ?? tag}:${key}`,
+				() =>
+					backgroundError({
+						code: "main_thread_event_spelling_removed",
+						details: { name: key, replacement, tag, where },
+					}),
+				{ node: element },
 			);
 		}
 	}
@@ -462,21 +483,24 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		}
 		// In every build, as ReactLynx's: the main thread would bind nothing and say nothing.
 		if (key === REF_ATTRIBUTE && !takesRef(value)) {
-			// With the element, which names its component to `onError` in a development build.
-			report(
-				backgroundError({
-					code: "main_thread_ref_not_a_ref",
-					details: {
-						value: kindOf(value),
-						tag: element.tag ?? "element",
-						where: DEV ? sourceLocation(element) : undefined,
-					},
-				}),
-				{ node: element },
+			// With the element, which names its component and its place in a development build.
+			afterTemplate(() =>
+				report(
+					backgroundError({
+						code: "main_thread_ref_not_a_ref",
+						details: {
+							value: kindOf(value),
+							tag: element.tag ?? "element",
+							where: DEV ? sourceLocation(element) : undefined,
+						},
+					}),
+					{ node: element },
+				),
 			);
 			return;
 		}
-		if (DEV && key.startsWith(MAIN_THREAD_PREFIX)) checkMainThreadAttribute(element, key, value);
+		if (DEV && key.startsWith(MAIN_THREAD_PREFIX))
+			afterTemplate(() => checkMainThreadAttribute(element, key, value));
 		const stored = key === "item-key" ? itemKey(element, value) : value;
 		element.attrs ??= new Map();
 		element.attrs.set(key, stored);
