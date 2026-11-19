@@ -170,6 +170,8 @@ export async function render<
 			});
 		},
 		async rerender(next) {
+			if (rendered() !== session)
+				throw testingError({ code: "no_page_rendered", details: { call: "rerender()" } });
 			if (!background)
 				throw testingError({ code: "background_not_started", details: { what: "rerender()" } });
 			page.asBackground(() => props.update(next));

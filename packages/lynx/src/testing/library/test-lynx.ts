@@ -2,10 +2,11 @@
 // answers of the elements' UI methods, a list's cells and an element's gestures.
 
 import type { HostEvents } from "../../background/index.ts";
+import { GestureType } from "../../wire/index.ts";
 import { testingError } from "../catalogue.ts";
 import type { Detector } from "../engine/state.ts";
 import type { InvokeResult, LynxElement } from "../engine/types.ts";
-import { settle } from "./session.ts";
+import { rendered, settle } from "./session.ts";
 import type { Rendered } from "./session.ts";
 
 /** A Lynx element in a test: a DOM element (`<view>`, `<text>`) in `document.body`. */
@@ -29,28 +30,16 @@ export interface TestRect {
 	height: number;
 }
 
-/** The kinds of gesture an element's detectors may be. */
-export type GestureKind =
-	| "pan"
-	| "fling"
-	| "default"
-	| "tap"
-	| "longpress"
-	| "rotation"
-	| "pinch"
-	| "native";
+/** The kinds of gesture an element's detectors may be: Lynx's gesture types, by name. */
+export type GestureKind = Lowercase<Exclude<keyof typeof GestureType, "COMPOSED">>;
 
-/** Lynx's numbers of the kinds of gesture. */
-const KINDS: readonly GestureKind[] = [
-	"pan",
-	"fling",
-	"default",
-	"tap",
-	"longpress",
-	"rotation",
-	"pinch",
-	"native",
-];
+/** Each kind, by Lynx's number of it. */
+const KINDS: ReadonlyMap<number, GestureKind> = new Map(
+	Object.entries(GestureType)
+		.filter(([name]) => name !== "COMPOSED")
+		// Boundary: the names are `GestureType`'s keys, which `GestureKind` lowers.
+		.map(([name, type]) => [type, name.toLowerCase() as GestureKind]),
+);
 
 /** What a gesture's callback gets besides the gesture manager: its values and when it happened. */
 export interface TestGestureEvent {
@@ -130,7 +119,12 @@ export function createTestLynx(session: Rendered): TestLynx {
 		if (!session.background)
 			throw testingError({ code: "background_not_started", details: { what } });
 	};
+	/** Throws for a call made once the page has ended: `cleanup()` or `unmount()`. */
+	const live = (call: string): void => {
+		if (rendered() !== session) throw testingError({ code: "no_page_rendered", details: { call } });
+	};
 	const after = async (what: string, change: () => void): Promise<void> => {
+		live(what);
 		needsBackground(what);
 		change();
 		await settle(session);
@@ -152,6 +146,7 @@ export function createTestLynx(session: Rendered): TestLynx {
 			rects.set(element, rect);
 		},
 		list(element) {
+			live("lynx.list()");
 			// Boundary: an element of the page is the engine's.
 			const target = element as LynxElement;
 			if (engine.state(target).tag !== "list")
@@ -164,11 +159,13 @@ export function createTestLynx(session: Rendered): TestLynx {
 			};
 		},
 		gesture(element, kind) {
+			live("lynx.gesture()");
 			// Boundary: an element of the page is the engine's.
 			const target = element as LynxElement;
 			const tag = element.localName;
 			const detectors = engine.detectors(target);
-			const kindOf = (detector: Detector): string => KINDS[detector.type] ?? String(detector.type);
+			const kindOf = (detector: Detector): string =>
+				KINDS.get(detector.type) ?? String(detector.type);
 			const found =
 				kind === undefined ? detectors : detectors.filter((detector) => kindOf(detector) === kind);
 			if (found.length === 0)
@@ -181,6 +178,7 @@ export function createTestLynx(session: Rendered): TestLynx {
 			const detector = found[0]!;
 			return {
 				async fire(name, event = {}) {
+					live("lynx.gesture().fire()");
 					if (!detector.callbacks.some((callback) => callback.name === name))
 						throw testingError({
 							code: "gesture_callback_missing",
