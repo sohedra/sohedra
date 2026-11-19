@@ -387,14 +387,26 @@ export function apply(running: GeneratedPage, done: Step): void {
 	}
 }
 
+const { nextTick } = readGlobal("process") as { nextTick(callback: () => void): void };
+
 /**
- * Does `steps` to a page whose first frame the background has not taken over yet: a tap picks only
- * among what both threads render.
+ * Ends the task a step ran in: the promise reactions it left run, and nothing crosses between the
+ * threads yet. On a device a thread ends its task before it runs anything else; here a step that
+ * runs the other thread's code at once would leave those reactions the other thread's globals (a
+ * tap's handler changes its element, and the main thread's flush at the task's end then finds no
+ * `__FlushElementTree`). Node runs a tick once the reactions due have run.
  */
-export function applyEarly(running: GeneratedPage, steps: readonly Step[]): void {
+const endTask = (): Promise<void> => new Promise((resolve) => nextTick(resolve));
+
+/**
+ * Does `steps` to a page whose first frame the background has not taken over yet, each in a task of
+ * its own: a tap picks only among what both threads render.
+ */
+export async function runEarly(running: GeneratedPage, steps: readonly Step[]): Promise<void> {
 	for (const done of steps) {
 		if (done.kind === "tap") tap(running.page, done.pick, true);
 		else apply(running, done);
+		await endTask();
 	}
 }
 

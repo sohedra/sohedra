@@ -9,11 +9,11 @@ import { expectFunctionsAgree } from "./functions.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
 import {
-	applyEarly,
 	askEveryRow,
 	earlyStep,
 	rewrote,
 	run,
+	runEarly,
 	startGenerated,
 	step,
 	withoutLayer,
@@ -118,7 +118,7 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 			expect(pageIds(running.ids.background), "The background's ids of $props.id()").toEqual(
 				pageIds(running.ids.frame),
 			);
-			applyEarly(running, early);
+			await runEarly(running, early);
 			await running.page.settle();
 			expectNoErrors(running.page.errors, "At hydration");
 			expect(rewrote(running.page), "The page was written again").toBe(false);
@@ -154,7 +154,7 @@ export function updatesProperty(
 		async (model, early, steps) => {
 			await about(pageSources(model), { ...described(model), early, steps }, async () => {
 				const { compiled, running } = await start(model, { firstFrame });
-				applyEarly(running, early);
+				await runEarly(running, early);
 				await running.page.settle();
 				// What the background rendered after each step, by the state it rendered.
 				const renders = new Map<string, { after: number; tree: string[] }[]>();
