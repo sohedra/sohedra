@@ -12,6 +12,9 @@
 		"strict": true,
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
-		"noEmit": true
+		"noEmit": true,
+		// Svelte's and Rsbuild's declarations name the DOM's types, which the base leaves out: their
+		// files are theirs to check.
+		"skipLibCheck": true
 	}
 }
