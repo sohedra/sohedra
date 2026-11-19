@@ -33,8 +33,8 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
   once without its marker.
 - **`sideEffects`**: a file of `src/` that acts on load (registers on a global, adds a listener) is
   listed in `package.json`, source and built. Only production drops an unlisted one.
-- **Build tests** (`tests/build/`) build a fixture of `tests/fixtures/build/apps/` through
-  `buildApp`, one at a time; `tests/fixtures/` is not type-checked. Runtime not written yet is
-  stubbed in `fixtures/build/stubs/`. `apps/package.json` ends `sideEffects` for fixtures.
+- **Build tests** (`tests/build/`) share a production and a development build of
+  `tests/fixtures/build/apps/` per run (`sharedBuild`); `buildApp` builds with a test's own options,
+  `cliBuild` with a CLI. Raise a size budget only on purpose. `tests/fixtures/` is not type-checked.
 - Only a bare `pnpm test` checks `tests/coverage-baseline.json`. The engine fake cites Lynx's source
   per behavior, and throws where unverified. `GENERATED_RUNS=500` tries more pages.
