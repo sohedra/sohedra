@@ -1,0 +1,17 @@
+{
+	// The base of an app's tsconfig.json: `"extends": "@sohedra/lynx/tsconfig"`. Lynx's threads run
+	// ES2021 and have no DOM, so a DOM name used in a component fails the check instead of on the
+	// device. The app's own tsconfig.json sets `"svelteOptions": { "namespace": "svelteLynx" }`, which
+	// the Svelte tools read from that file only.
+	"compilerOptions": {
+		"target": "ES2021",
+		"lib": ["ES2021"],
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"types": ["@sohedra/lynx/client"],
+		"strict": true,
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"noEmit": true
+	}
+}

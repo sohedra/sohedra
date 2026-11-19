@@ -42,7 +42,8 @@
 		},
 		"./client": {
 			"types": "./types/client.d.ts"
-		}
+		},
+		"./tsconfig": "./types/tsconfig.base.json"
 	},
 	"publishConfig": {
 		"exports": {
@@ -94,7 +95,8 @@
 			},
 			"./client": {
 				"types": "./types/client.d.ts"
-			}
+			},
+			"./tsconfig": "./types/tsconfig.base.json"
 		}
 	},
 	"scripts": {
