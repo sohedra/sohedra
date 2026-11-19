@@ -40,7 +40,10 @@ function collect(source: string, node: unknown, ranges: [number, number][]): voi
 	const record = node as AnyNode & { start?: number; end?: number };
 	const { type, start, end } = record;
 	if (typeof type === "string" && typeof start === "number" && typeof end === "number") {
-		if (WHOLE.has(type) || (type === "ExportNamedDeclaration" && record.exportKind === "type")) {
+		const typeOnly =
+			(type === "ExportNamedDeclaration" && record.exportKind === "type") ||
+			(type === "ImportDeclaration" && record.importKind === "type");
+		if (WHOLE.has(type) || typeOnly) {
 			ranges.push([start, end]);
 			return;
 		}
