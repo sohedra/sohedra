@@ -1,10 +1,15 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"description": "Renovate's settings for sohedra/sohedra, on top of the organization's. CONTRIBUTING.md § Pull requests sets the titles; scripts/renovate.ts checks the peer rule.",
+	"description": "Renovate opens pull requests only for dev dependencies' minor and patch updates, GitHub Actions and lockfile maintenance, and merges them once CI passes. Every other update waits on the Dependency Dashboard for a person.",
 	"extends": ["github>sohedra/.github:renovate-preset"],
-	"commitMessageTopic": "{{depName}}",
+	"dependencyDashboardApproval": true,
+	"commitMessageTopic": "{{{depName}}}",
 	"automergeStrategy": "squash",
-	"lockFileMaintenance": { "commitMessageAction": "refresh the lockfile" },
+	"lockFileMaintenance": {
+		"dependencyDashboardApproval": false,
+		"automerge": true,
+		"commitMessageAction": "refresh the lockfile"
+	},
 	"customManagers": [
 		{
 			"description": "zizmor, which CI runs with pipx, not as an action.",
@@ -17,24 +22,22 @@
 	],
 	"packageRules": [
 		{
-			"description": "Minor and patch updates of dev dependencies merge themselves once CI passes. Dependencies ship to users, so they never do.",
+			"description": "Minor and patch updates of dev dependencies open a pull request that merges itself once CI passes.",
 			"matchDepTypes": ["devDependencies"],
 			"matchUpdateTypes": ["minor", "patch"],
+			"dependencyDashboardApproval": false,
 			"automerge": true
 		},
 		{
-			"description": "zizmor joins the GitHub Actions pull request, with Bun, which Renovate reads from pnpm/setup's runtime input.",
-			"matchManagers": ["custom.regex"],
-			"groupName": "GitHub Actions"
-		},
-		{
-			"description": "GitHub Actions updates merge themselves once CI passes, except a major.",
-			"matchManagers": ["github-actions", "custom.regex"],
+			"description": "The workflows' actions, zizmor, and Bun (read from pnpm/setup's runtime input) update in one pull request that merges itself once CI passes, except a major.",
+			"matchFileNames": [".github/workflows/**"],
 			"matchUpdateTypes": ["minor", "patch", "digest"],
+			"groupName": "GitHub Actions",
+			"dependencyDashboardApproval": false,
 			"automerge": true
 		},
 		{
-			"description": "The repository allows pnpm/setup at one commit only, so its update fails CI at startup until a person allows the new commit in Settings > Actions > General and in ALLOWED of scripts/workflows.ts, in place of the old one.",
+			"description": "The repository allows pnpm/setup at one commit only, so its update fails CI until a person allows the new commit.",
 			"matchPackageNames": ["pnpm/setup"],
 			"groupName": "pnpm/setup",
 			"automerge": false,
@@ -43,66 +46,45 @@
 			]
 		},
 		{
-			"description": "A peer's next major or next 0.x minor widens the peer range from its tested floor and moves the exact dev copy beside it, one pull request per upstream repository, so CI's newest job tests it. A person merges it.",
-			"matchFileNames": ["packages/*/package.json", "modules/*/package.json"],
-			"matchDepTypes": ["devDependencies", "peerDependencies"],
+			"description": "Each peer of @sohedra/lynx and its dev copy wait on the dashboard, so a dev copy never moves past its peer range. A new peer belongs in this list.",
+			"matchFileNames": ["packages/lynx/package.json"],
 			"matchPackageNames": [
 				"@lynx-js/rspeedy",
-				"@rsbuild/**",
-				"@rstest/**",
+				"@rsbuild/core",
+				"@rstest/adapter-rsbuild",
+				"@rstest/core",
 				"@testing-library/dom",
 				"jsdom",
 				"vite",
 				"vitest"
 			],
-			"matchJsonata": [
-				"updateType = 'major'",
-				"updateType = 'minor' and $substringBefore(currentVersion, '.') = '0'"
-			],
-			"groupName": "{{{sourceRepoName}}} peer range",
-			"semanticCommitType": "feat",
-			"semanticCommitScope": "{{parentDir}}",
-			"commitMessageAction": "widen",
-			"commitMessageTopic": "{{{sourceRepoName}}} peer range",
-			"commitMessageExtra": "to {{{newMajor}}}{{#if (equals newMajor 0)}}.{{{newMinor}}}{{/if}}",
+			"groupName": null,
+			"dependencyDashboardApproval": true,
 			"automerge": false
 		},
 		{
 			"description": "Lynx moves one version at a time, with the engine-upgrade checklist, in one pull request.",
 			"matchPackageNames": ["@lynx-js/**"],
 			"groupName": "Lynx",
-			"semanticCommitType": "feat",
-			"semanticCommitScope": "lynx",
 			"dependencyDashboardApproval": true,
 			"automerge": false
 		},
 		{
-			"description": "The released Svelte the tests compare with (svelte-released) waits for a person.",
-			"matchPackageNames": ["svelte"],
-			"groupName": "Svelte",
+			"description": "The released Svelte the tests compare with waits on the dashboard: its update is the sign that Svelte shipped custom renderers.",
+			"matchDepNames": ["svelte-released"],
+			"groupName": null,
+			"dependencyDashboardApproval": true,
 			"automerge": false
 		},
 		{
-			"description": "Svelte's custom-renderer build is pinned to a pkg.svelte.dev URL on purpose. Renovate skips URL versions anyway; a person moves it, with the binding's contract tests.",
-			"matchDepNames": ["svelte"],
+			"description": "Svelte's custom-renderer build is pinned to a pkg.svelte.dev URL on purpose; a person moves it. Released Svelte, as the docs use, still updates.",
+			"matchCurrentValue": "/^https:\\/\\/pkg\\.svelte\\.dev\\//",
 			"enabled": false
 		},
 		{
 			"description": "engines.node follows the support policy, by hand.",
 			"matchDepTypes": ["engines"],
 			"enabled": false
-		},
-		{
-			"description": "The repository's own Node.js: CI runs the newest release in devEngines' range already, so only a new LTS major opens a pull request, for a person, who also updates CONTRIBUTING.md § Setup.",
-			"matchDepTypes": ["devEngines.runtime"],
-			"rangeStrategy": "replace",
-			"automerge": false
-		},
-		{
-			"description": "The repository's own pnpm, in devEngines and packageManager together, waits for a person.",
-			"matchDepTypes": ["devEngines.packageManager", "packageManager"],
-			"groupName": "pnpm",
-			"automerge": false
 		}
 	]
 }
