@@ -80,3 +80,24 @@ it("counts the cells of the page a reload replaces, until the new page shows", a
 	expect(liveCells(page, list)).toEqual([cell]);
 	await page.settle();
 });
+
+it("keeps an item's key through an update Lynx would not apply", async () => {
+	const compiled = await listPage("");
+	const { page } = startGenerated({ compiled, data: { ...DATA, a0: ["a"] }, firstFrame: false });
+	await page.settle();
+	const list = page.engine.all().find((element) => page.engine.state(element).tag === "list")!;
+	// Lynx applies an update's key only with a boolean `flush`, and `from` and `to` numbers.
+	for (const update of [
+		{ from: 0, to: 0, "item-key": "e0-x" },
+		{ from: "0", to: 0, flush: false, "item-key": "e0-x" },
+		{ from: 0, to: -1, flush: false, "item-key": "e0-x" },
+	])
+		page.asMainThread(() =>
+			page.engine.functions.__SetAttribute(list, "update-list-info", {
+				insertAction: [],
+				removeAction: [],
+				updateAction: [update],
+			}),
+		);
+	expect(listKeys(page.engine, list)).toEqual(["e0-a"]);
+});
