@@ -8,6 +8,7 @@ import type { Component } from "svelte";
 import { render } from "svelte/server";
 
 import { FIRST_FRAME_GLOBAL, PROPS_ID_PREFIX } from "../wire/index.ts";
+import type { Thread } from "../wire/index.ts";
 import { firstFrameError } from "./catalogue.ts";
 import { whileDrawing } from "./drawing.ts";
 import { DEV, DRAWS, firstFrame, setGlobalFunction } from "./globals.ts";
@@ -22,6 +23,13 @@ export interface MountPageOptions<Props extends Bag> {
 		| ((initData: Record<string, unknown>, globalProps: Record<string, unknown>) => Props);
 	// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own type of a context
 	context?: Map<any, any>;
+	/**
+	 * The background's: the main thread's errors reach it there. The first frame never calls it.
+	 */
+	onError?: (
+		error: Error,
+		context: { thread: Thread; component: string | undefined; code: string | undefined },
+	) => void;
 }
 
 /** Svelte's error when a component awaits while the page renders synchronously. */

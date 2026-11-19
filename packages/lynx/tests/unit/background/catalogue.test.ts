@@ -5,6 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { BACKGROUND_CATALOGUE, backgroundMessage } from "../../../src/background/catalogue.ts";
 import type { BackgroundCode, BackgroundDetails } from "../../../src/background/catalogue.ts";
+import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
 const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	page_is_gone: { call: "scrollTo" },
@@ -80,6 +81,11 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	},
 	lazy_bundle_timed_out: { url: "https://cdn.example/lazy-bundle/Chart.bundle", seconds: 30 },
 	lazy_bundle_address_not_full: { url: "/lazy-bundle/Chart.bundle" },
+	build_failed: {
+		where:
+			"error   src/App.svelte:3:9 Unexpected token\n  1 | <script>\n> 3 |   let a = ;\n\nAnd 2 more: the terminal shows all.",
+	},
+	reload_needs_devtool: {},
 };
 
 // Boundary: the keys of the catalogue are its codes.
@@ -99,7 +105,7 @@ describe("the background's catalogue", () => {
 	it.each(CODES)("%s: the message", (code) => {
 		const text = backgroundMessage({ code, details: SAMPLES[code] as never });
 		expect(text.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
-		expect(text).not.toMatch(/\b(?:patch|op|ops|worklet|lepus|svelte-lynx|generation|wire)\b/i);
+		expect(text).not.toMatch(INTERNAL_WORDS);
 		expect(text).toMatchSnapshot();
 	});
 });

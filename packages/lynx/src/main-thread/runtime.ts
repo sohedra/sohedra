@@ -16,7 +16,9 @@
 //   - starts the page over when it reloads, and lets go of it when its life ends.
 
 import {
+	asError,
 	checkMessage,
+	createRepeats,
 	decodeError,
 	decodePatch,
 	decodeResult,
@@ -29,8 +31,10 @@ import {
 	PATCH_METHOD,
 	ROOT_ID,
 	RUN_FUNCTION,
+	withCount,
 } from "../wire/index.ts";
 import type {
+	ErrorPlace,
 	LazyBundleParams,
 	Op,
 	Patch,
@@ -67,18 +71,23 @@ import type { MainThreadPage } from "./page.ts";
 import { afterFirstPaint } from "./paint.ts";
 import { isRecord, toSentEvent } from "./sent-event.ts";
 
-/** Lynx's error code of an error on the main thread (`LYNX_ERROR_CODE_LEPUS`). */
-const MAIN_THREAD_ERROR = 1101;
+/**
+ * Lynx's code of an error on the main thread, as the engine itself reports one: its sub-code
+ * `E_MTS_RUNTIME_ERROR`, which the host sees as 1101. It is `_ReportError`'s own default
+ * (core/runtime/lepus/bindings/renderer_functions.cc), and what the engine reports for a throw out
+ * of any function it calls, a main-thread function bound as the binding binds it included
+ * (`CallClosure`, core/runtime/lepusng/quick_context.cc, `InternalCall`).
+ */
+const MAIN_THREAD_ERROR = 110100;
 
-/** Reports an error into Lynx, with Lynx's code for the main thread. Never throws. */
+/**
+ * Reports an error into Lynx, with Lynx's code for the main thread. Never throws. Never through
+ * `console.error`: on this thread that is a report of its own.
+ */
 function reportIntoLynx(error: Error): void {
-	try {
-		if (typeof mainThread._ReportError === "function")
-			mainThread._ReportError(error, { errorCode: MAIN_THREAD_ERROR });
-		else mainThread.lynx.reportError(error);
-	} catch {
-		// Reporting must never throw over the error.
-	}
+	if (typeof mainThread._ReportError === "function")
+		mainThread._ReportError(error, { errorCode: MAIN_THREAD_ERROR });
+	else mainThread.lynx.reportError(error);
 }
 
 /** The arguments of an engine event, which the engine sends as an array. */
@@ -114,6 +123,7 @@ export function startMainThread(): MainThreadRuntime {
 			...scope,
 			send: (message) => send(message, generation),
 			report: (error) => report(error),
+			reportBody: (error, place) => report(error, { place }),
 			flush: () => {
 				if (state.element) mainThread.__FlushElementTree(state.element);
 			},
@@ -128,12 +138,25 @@ export function startMainThread(): MainThreadRuntime {
 		});
 	}
 
-	/** Reports an error into Lynx, and tells the background, which has the page's error handler. */
-	function report(error: unknown, op?: Op): void {
-		const thrown = error instanceof Error ? error : new Error(String(error));
-		reportIntoLynx(thrown);
+	/** The page's errors that repeat, counted in a development build. */
+	const repeats = createRepeats();
+
+	/**
+	 * Reports an error into Lynx, and tells the background, which has the page's `onError`. In a
+	 * development build, an error that repeats reaches Lynx the first time and at each power of ten,
+	 * with its count; the background hears every one. Never throws over the error it reports.
+	 */
+	function report(error: unknown, { op, place }: { op?: Op; place?: ErrorPlace } = {}): void {
+		const thrown = asError(error);
+		try {
+			const count = DEV ? repeats.count(thrown) : 1;
+			if (count !== undefined) reportIntoLynx(withCount(thrown, count));
+		} catch {
+			// Reporting must never throw over the error.
+		}
 		try {
 			const message: ToBackground = { t: "error", error: encodeError(thrown) };
+			if (place) message.place = place;
 			if (DEV && op) message.op = op;
 			send(message);
 		} catch {
@@ -158,7 +181,7 @@ export function startMainThread(): MainThreadRuntime {
 		for (const { op, error } of state.applier!.apply(ops)) {
 			const reason = error instanceof Error ? error.message : String(error);
 			const change = DEV ? describeOp(op) : undefined;
-			report(mainThreadError({ code: "change_not_applied", details: { reason, change } }), op);
+			report(mainThreadError({ code: "change_not_applied", details: { reason, change } }), { op });
 		}
 	}
 
@@ -444,6 +467,7 @@ export function startMainThread(): MainThreadRuntime {
 				// The page starts over: the old page hears no more events, and the background's next
 				// patch, of the new page, makes it again.
 				state.generation++;
+				repeats.clear();
 				state.frame?.stop();
 				state.frame = undefined;
 				// The old page's patches waiting for its paint are dropped, as they would be on arrival.
@@ -508,6 +532,7 @@ export function startMainThread(): MainThreadRuntime {
 	functionsGlobal().runtime = {
 		runOnBackground: (handle, params) => state.functions.runOnBackground(handle, params),
 		runOnMainThread: (fn, params) => state.functions.runOnMainThread(fn, params),
+		reportError: (error) => report(error),
 	};
 
 	engine.addEventListener("__RenderPage", onRenderPage);

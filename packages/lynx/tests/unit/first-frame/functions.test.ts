@@ -69,6 +69,7 @@ describe("a call before the main thread's runtime started", () => {
 		shared.runtime = {
 			runOnMainThread: (fn, params) => Promise.resolve(["main", fn, params]),
 			runOnBackground: (fn, params) => Promise.resolve(["background", fn, params]),
+			reportError: () => {},
 		};
 		try {
 			const fn = () => 1;

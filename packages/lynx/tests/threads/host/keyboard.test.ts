@@ -56,6 +56,11 @@ describe("keyboard", () => {
 		expect(await send(page, "off", 48, 48)).toBe("closed 0");
 	});
 
+	it("is open with no height when Android measures the keyboard below a view that ends above it", async () => {
+		const page = await shown();
+		expect(await send(page, "on", -69, -69)).toBe("open 0");
+	});
+
 	it("is open with no height when the event gives none", async () => {
 		const page = await shown();
 		expect(await send(page, "on")).toBe("open 0");

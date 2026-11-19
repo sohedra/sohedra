@@ -96,7 +96,7 @@ describe("the main thread", () => {
 		]);
 	});
 
-	it("reports with Lynx's code for the main thread where the engine has _ReportError", () => {
+	it("reports with Lynx's sub-code for the main thread where the engine has _ReportError", () => {
 		const reports: unknown[] = [];
 		const page = startTestPage({ mainThread: () => startMainThread() });
 		const restore = installGlobals({
@@ -119,7 +119,7 @@ describe("the main thread", () => {
 			restore();
 		}
 		expect(reports).toEqual([
-			[expect.stringMatching(/^The main thread has no element 9\.\n/), { errorCode: 1101 }],
+			[expect.stringMatching(/^The main thread has no element 9\.\n/), { errorCode: 110100 }],
 		]);
 	});
 });

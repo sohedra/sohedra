@@ -130,6 +130,7 @@ describe("a static page of 200 cards", () => {
 					flattening,
 					send: () => undefined,
 					report: (error) => void page.errors.push(error),
+					reportBody: (error) => void page.errors.push(error),
 					flush: () => undefined,
 					afterLayout: () => undefined,
 					soon: () => undefined,

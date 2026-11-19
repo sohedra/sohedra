@@ -72,6 +72,20 @@ export const checks: Checks = {
 		]);
 	},
 
+	"dev-error-component-lines": () => {
+		const handling = readSvelte("src/internal/client/error-handling.js");
+		// A development build adds a line per component under the message of an error that leaves an
+		// effect, the innermost first, after a line for the effect: `\n\tin $effect\n\tin Card.svelte`.
+		expect(handling).toMatch(
+			/var component_stack = `\\n\$\{indent\}in \$\{effect\.fn\?\.name \|\| '<unknown>'\}`;/,
+		);
+		expect(handling).toMatch(
+			/component_stack \+= `\\n\$\{indent\}in \$\{context\.function\?\.\[FILENAME\]\.split\('\/'\)\.pop\(\)\}`;/,
+		);
+		expect(handling).toContain("var indent = is_firefox ? '  ' : '\\t';");
+		expect(handling).toMatch(/message: error\.message \+ `\\n\$\{component_stack\}\\n`,/);
+	},
+
 	"spread-props-setter-anchors": () => {
 		const props = readSvelte("src/internal/client/reactivity/props.js");
 		// The two lines the build patches: each must be there exactly once.

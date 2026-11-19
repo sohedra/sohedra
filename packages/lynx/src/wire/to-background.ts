@@ -136,6 +136,8 @@ export interface ErrorPlace {
 	component?: string;
 	/** The id of the main-thread function that threw, which names its file and its function. */
 	mainThreadFunction?: string;
+	/** The background's id of the element whose main-thread function threw. */
+	node?: number;
 }
 
 /**

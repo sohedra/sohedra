@@ -4,6 +4,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { WIRE_CATALOGUE, wireMessage } from "../../../src/wire/index.ts";
 import type { WireCode, WireDetails } from "../../../src/wire/index.ts";
+import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
 const SAMPLES: { [Code in WireCode]: WireDetails[Code] } = {
 	threads_from_different_builds: { thread: "main-thread", received: 2, expected: 1 },
@@ -28,7 +29,7 @@ describe("the wire's catalogue", () => {
 	it.each(CODES)("%s: the message", (code) => {
 		const text = wireMessage({ code, details: SAMPLES[code] as never });
 		expect(text.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
-		expect(text).not.toMatch(/\b(?:patch|op|ops|worklet|lepus|svelte-lynx|generation|wire)\b/i);
+		expect(text).not.toMatch(INTERNAL_WORDS);
 		expect(text).toMatchSnapshot();
 	});
 });

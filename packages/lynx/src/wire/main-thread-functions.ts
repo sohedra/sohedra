@@ -146,4 +146,6 @@ export interface FunctionsRuntime {
 	runOnBackground(handle: unknown, params: unknown[]): Promise<unknown>;
 	/** `runOnMainThread(fn)(...params)` from a main-thread function: it runs at once. */
 	runOnMainThread(fn: unknown, params: unknown[]): Promise<unknown>;
+	/** `reportError(error)` from a main-thread function: into Lynx, and to the page's `onError`. */
+	reportError(error: unknown): void;
 }

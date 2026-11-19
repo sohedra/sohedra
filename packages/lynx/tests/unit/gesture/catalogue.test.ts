@@ -5,6 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { GESTURE_CATALOGUE, gestureError } from "../../../src/gesture/catalogue.ts";
 import type { GestureCode, GestureDetails } from "../../../src/gesture/catalogue.ts";
+import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
 const SAMPLES: { [Code in GestureCode]: GestureDetails[Code] } = {
 	gesture_callback_not_main_thread: { gesture: "PanGesture", name: "onUpdate" },
@@ -32,9 +33,7 @@ describe("the gestures' catalogue", () => {
 		const error = gestureError({ code, details: SAMPLES[code] as never });
 		expect(error.code).toBe(code);
 		expect(error.message.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
-		expect(error.message).not.toMatch(
-			/\b(?:patch|op|ops|worklet|lepus|svelte-lynx|serialized|wire)\b/i,
-		);
+		expect(error.message).not.toMatch(INTERNAL_WORDS);
 		expect(error.message).toMatchSnapshot();
 	});
 });

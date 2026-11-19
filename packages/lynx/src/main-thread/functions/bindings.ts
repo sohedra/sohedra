@@ -34,6 +34,8 @@ const LET_GO: MainThreadFunction = Object.freeze({ _wkltId: "" });
 export class Entry {
 	/** The function it runs now. */
 	fn: MainThreadFunction;
+	/** The element whose event or gesture runs it: an error names it. */
+	readonly element: LynxElement;
 	/**
 	 * What a gesture's callback gets as its second argument, from what the engine gives: the
 	 * engine's own when this is not set.
@@ -42,9 +44,10 @@ export class Entry {
 	private made: Ready | undefined;
 	private readonly scope: BindingScope;
 
-	constructor(fn: MainThreadFunction, scope: BindingScope) {
+	constructor(fn: MainThreadFunction, scope: BindingScope, element: LynxElement) {
 		this.fn = fn;
 		this.scope = scope;
+		this.element = element;
 	}
 
 	/** The function, ready to call; `undefined` once the page is silenced or the entry let go. */
@@ -202,7 +205,7 @@ const eventKind: BindingKind = {
 	bind(binding, scope) {
 		const { value, event } = binding;
 		if (!isMainThreadFunction(value) || !event) return;
-		binding.entry = new Entry(value, scope);
+		binding.entry = new Entry(value, scope, binding.element);
 		mainThread.__AddEvent(binding.element, event.type, event.name, {
 			type: "worklet",
 			value: binding.entry,

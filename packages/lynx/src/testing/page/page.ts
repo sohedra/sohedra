@@ -99,7 +99,10 @@ export interface TestPage {
 	reload(data?: Record<string, unknown>): void;
 	/**
 	 * The page's life ends: the native side tells the main thread, then the app's
-	 * `callDestroyLifetimeFun` runs on the background (js_app.cc, CallDestroyLifetimeFun).
+	 * `callDestroyLifetimeFun` runs on the background (js_app.cc, CallDestroyLifetimeFun). Once it
+	 * returns, the engine frees the background's runtime, as Lynx 4.2 does on Android: what the
+	 * background queued does not run, and nothing it reports reaches Lynx. A promise's reaction runs
+	 * all the same here, on the process's own queue, but what it reports is dropped.
 	 */
 	destroy(): void;
 	/** Runs `code` as the main thread's, with that thread's globals in place, as the engine runs it. */
@@ -145,6 +148,8 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	const bridge = createBridge((error) => void errors.push(error));
 	let ended = false;
 	let destroyed = false;
+	/** The engine freed the background's runtime: `callDestroyLifetimeFun` has returned. */
+	let freed = false;
 	/**
 	 * Puts the thread's globals in place, before that thread's code runs: its `lynx`, and Lynx's
 	 * element functions on the main thread only. On a device the background has none, so a call of
@@ -215,6 +220,7 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		getJSModule: hostEvents.getJSModule,
 		bundles: createBundles(bundles),
 		systemInfo,
+		freed: () => freed,
 	});
 	/**
 	 * Calls a hook of the app, as the engine does: a missing one is skipped (js_app.cc, which
@@ -273,7 +279,13 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 			if (destroyed) return;
 			destroyed = true;
 			engine.lifecycle.destroy();
-			toBackground("callDestroyLifetimeFun");
+			bridge.send(() => {
+				try {
+					callApp("callDestroyLifetimeFun");
+				} finally {
+					freed = true;
+				}
+			});
 		},
 		asMainThread(code) {
 			enter("main-thread");
@@ -294,6 +306,8 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 					callApp("callDestroyLifetimeFun");
 				} catch (error) {
 					errors.push(error);
+				} finally {
+					freed = true;
 				}
 			}
 			ended = true;

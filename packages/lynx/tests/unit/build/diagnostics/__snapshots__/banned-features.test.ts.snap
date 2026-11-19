@@ -40,7 +40,7 @@ exports[`a feature the custom-renderer build does not support > <svelte:window>:
 1: <svelte:window />
    ^
 
-Read the page's size from \`svelte/reactivity/window\`. Listen to the page's events with \`on(root, …)\`.
+Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`. Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_window"
 `;
 
@@ -64,7 +64,7 @@ exports[`a feature the custom-renderer build does not support > animate:: says i
 3: {#each a as x (x)}<view animate:t></view>{/each}
                            ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/animate_directive"
 `;
 
@@ -112,7 +112,7 @@ exports[`a feature the custom-renderer build does not support > in:: says it is 
 2: <view in:t></view>
          ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/in_directive"
 `;
 
@@ -136,7 +136,7 @@ exports[`a feature the custom-renderer build does not support > out:: says it is
 2: <view out:t></view>
          ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/out_directive"
 `;
 
@@ -148,6 +148,6 @@ exports[`a feature the custom-renderer build does not support > transition:: say
 2: <view transition:t></view>
          ^
 
-Drive the change from state with \`Spring\` or \`Tween\` from \`svelte/motion\`.
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/transition_directive"
 `;

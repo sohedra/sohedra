@@ -9,8 +9,8 @@
 // changed: at a patch's end, before a call of the patch, inside a list's making of a cell, as the
 // first frame is drawn and at hydration.
 
-import { isMainThreadFunction, RUN_FUNCTION } from "../../wire/index.ts";
-import type { Result, ToBackground } from "../../wire/index.ts";
+import { FUNCTION_FIELDS, isMainThreadFunction, RUN_FUNCTION } from "../../wire/index.ts";
+import type { ErrorPlace, MainThreadFunction, Result, ToBackground } from "../../wire/index.ts";
 import { mainThreadError } from "../catalogue.ts";
 import type { CodeStyles } from "../code-styles.ts";
 import type { Flattening } from "../flatten.ts";
@@ -108,6 +108,11 @@ export interface FunctionsPageOptions {
 	/** Sends a message to the background, stamped with this page. */
 	send(message: ToBackground): void;
 	report(error: unknown): void;
+	/**
+	 * Reports what the body of a main-thread function the engine ran threw, with its function and
+	 * the background's id of its element, with the code the engine would report it with.
+	 */
+	reportBody(error: unknown, place: ErrorPlace): void;
 	/** Flushes the page's tree: what functions change outside a patch. */
 	flush(): void;
 	/** Runs a UI method after the patch being applied is flushed and laid out. */
@@ -122,7 +127,8 @@ export interface FunctionsPageOptions {
 
 /** The main-thread functions of a page. */
 export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPage {
-	const { styles, flattening, send, report, flush, afterLayout, soon, nextTurn, idOf } = options;
+	const { styles, flattening, send, report, reportBody, flush, afterLayout, soon, nextTurn, idOf } =
+		options;
 	const guard = DEV ? createLoopGuard({ report, nextTurn }) : undefined;
 	const refs = createRefs();
 	const lifetimes = createLifetimes({
@@ -314,12 +320,24 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 						: undefined;
 				guard?.ran(value.fn._wkltId, typeof type === "string" ? type : undefined);
 			}
-			return runAs(ready, {
-				params: source === undefined ? (made(list, scope, 0) as unknown[]) : list,
-				source,
-				elements,
-				manager: value instanceof Entry ? value.manager : undefined,
-			});
+			// What the body throws is reported here, as the engine would report it, and the page's
+			// `onError` hears it.
+			try {
+				return runAs(ready, {
+					params: source === undefined ? (made(list, scope, 0) as unknown[]) : list,
+					source,
+					elements,
+					manager: value instanceof Entry ? value.manager : undefined,
+				});
+			} catch (error) {
+				const fn = value instanceof Entry ? value.fn : (value as MainThreadFunction);
+				const node = value instanceof Entry ? idOf(value.element) : undefined;
+				reportBody(error, {
+					mainThreadFunction: fn[FUNCTION_FIELDS.id],
+					...(node !== undefined && { node }),
+				});
+				return undefined;
+			}
 		},
 		holdFirstFrame: calls.holdFirstFrame,
 		binds: (element) => store.has(element),

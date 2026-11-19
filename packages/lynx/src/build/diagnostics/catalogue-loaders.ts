@@ -9,6 +9,8 @@ export interface LoaderDetails {
 	hot_footer_missing: { file: string };
 	spread_setter_moved: { file: string; anchor: string };
 	primjs_regex_moved: { file: string; name: string };
+	/** `anchor` is the function's first line, when the file is there and the function is not. */
+	dev_client_moved: { file: string; anchor?: string | undefined };
 	background_only_in_component: { file?: string };
 	background_only_reexport_all: { file: string; from: string };
 	background_only_used: { used: string; file: string };
@@ -33,6 +35,19 @@ export const LOADER_CATALOGUE: Catalogue<LoaderDetails> = {
 			`Svelte's props code has changed, so the build cannot make bindings work beside a spread: ${anchor} is not in ${file} exactly once.`,
 		fix: () => "Use the Svelte version this @sohedra/lynx was built for, or update @sohedra/lynx.",
 		docs: "spread_setter_moved",
+	},
+	dev_client_moved: {
+		message: ({ file, anchor }) => {
+			const lost = file.endsWith("reloadApp.js")
+				? "a change that needs DevTool to load the page says nothing while DevTool is off"
+				: "build errors stay out of LogBox";
+			return anchor === undefined
+				? `Lynx's dev client has changed: ${file} is not in the build, so ${lost}.`
+				: `Lynx's dev client has changed: \`${anchor}\` is not in ${file} exactly once, so ${lost}.`;
+		},
+		fix: () =>
+			"Use the @lynx-js/webpack-dev-transport this @sohedra/lynx was built for, or update @sohedra/lynx.",
+		docs: "dev_client_moved",
 	},
 	primjs_regex_moved: {
 		message: ({ file, name }) =>

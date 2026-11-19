@@ -28,6 +28,7 @@ import type {
 	AttrValue,
 	CallMessage,
 	CallRequest,
+	ErrorMessage,
 	HideMessage,
 	Op,
 	PatchItem,
@@ -67,6 +68,8 @@ export interface ChannelOptions {
 	onHide?(message: HideMessage): void;
 	/** A main-thread function calls a background function (`call`), answered with `reply`. */
 	onCall?(message: CallMessage): void;
+	/** The main thread reported an error into Lynx (`error`), for the page's `onError`. */
+	onError?(message: ErrorMessage): void;
 	/** Whether a new cell of a list of the page is held back until it is asked for. */
 	waits?(id: number): boolean;
 	/** An element's tag, for the error of a value that cannot be sent. */
@@ -149,7 +152,8 @@ interface Waiting {
 
 /** Opens the page's channel. */
 export function openChannel(options: ChannelOptions): Channel {
-	const { queue, onEvent, onRewrite, onPropsIds, onShow, onHide, onCall, waits, tagOf } = options;
+	const { queue, onEvent, onRewrite, onPropsIds, onShow, onHide, onCall, onError, waits, tagOf } =
+		options;
 	const nativeApp = background.lynx.getNativeApp();
 	const core = background.lynx.getCoreContext();
 	const waiting = new Map<number, Waiting>();
@@ -317,8 +321,9 @@ export function openChannel(options: ChannelOptions): Channel {
 			const { result } = received;
 			if (result.ok) entry.resolve(result.value);
 			else entry.reject(decodeError(result.error));
+			return;
 		}
-		// Errors are for the page's error handler, a later part of the page.
+		if (received.t === "error") onError?.(received);
 	}
 
 	core.addEventListener(TO_BACKGROUND.events, onMessage);

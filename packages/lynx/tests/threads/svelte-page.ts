@@ -6,8 +6,8 @@
 
 import type { Component } from "svelte";
 
-import { mountPage } from "../../src/background/index.ts";
-import type { MountPageOptions } from "../../src/background/index.ts";
+import { fillEngineGaps, mountPage } from "../../src/background/index.ts";
+import type { BackgroundGlobals, MountPageOptions } from "../../src/background/index.ts";
 import { startMainThread } from "../../src/main-thread/index.ts";
 import type { MainThreadRuntime } from "../../src/main-thread/index.ts";
 import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
@@ -59,6 +59,8 @@ export interface SveltePageOptions {
 	props?: MountPageOptions<Record<string, unknown>>["props"];
 	/** The context the background mounts the root component with. */
 	context?: Map<unknown, unknown>;
+	/** The page's `onError`, as `mountPage` takes it. */
+	onError?: MountPageOptions<Record<string, unknown>>["onError"];
 	/**
 	 * The first frame: the markup Svelte's server would write, from the page's data, or a
 	 * component's first-frame copy (`./App.svelte?first-frame`) with the props and the context it
@@ -113,7 +115,19 @@ export function startSveltePage(
 			recordFirstFrame(options.firstFrame);
 		},
 		background: () => {
-			const native = (readGlobal("lynx") as BackgroundLynx).getNativeApp();
+			const lynx = readGlobal("lynx") as BackgroundLynx;
+			// The background's start-up module: Lynx's background has no `queueMicrotask`, and the
+			// binding's queues on `lynx.queueMicrotask` and reports what a callback throws. The page
+			// keeps it as the background's own.
+			const filled: Record<string, unknown> = {};
+			// Boundary: the fill reads only `lynx` of the background's globals.
+			fillEngineGaps({
+				scope: filled,
+				strings: {},
+				globals: { lynx } as unknown as BackgroundGlobals,
+			});
+			installGlobals({ queueMicrotask: filled["queueMicrotask"] });
+			const native = lynx.getNativeApp();
 			const send = native.callLepusMethod.bind(native);
 			native.callLepusMethod = (name, params, callback) => {
 				// Boundary: the patch method's params are a patch.
@@ -123,6 +137,7 @@ export function startSveltePage(
 			mountPage(App, {
 				...(options.props && { props: options.props }),
 				...(options.context && { context: options.context }),
+				...(options.onError && { onError: options.onError }),
 			});
 		},
 	});

@@ -10,7 +10,8 @@
 //
 // The promise resolves after 3, so the patch that shows the bundle's components, with their
 // main-thread functions and styles, reaches a main thread that has them. A bundle that did not
-// arrive rejects without a report: Lynx reported it.
+// arrive rejects without a report: Lynx reported it. One that takes too long is reported once, then
+// rejects: Lynx says nothing of a request that never completes.
 //
 // Adapted from @lynx-js/react (packages/react/runtime/src/core/lynx/lazy-bundle.ts), Apache License
 // 2.0.
@@ -20,6 +21,7 @@ import type { LazyBundleParams } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import { background } from "./globals.ts";
 import type { FetchedBundle } from "./globals.ts";
+import { reportError } from "./report.ts";
 
 /** A URL's scheme, which a full URL starts with. */
 const ABSOLUTE = /^[a-z][a-z\d+.-]*:/i;
@@ -89,12 +91,14 @@ export function loadLazyBundle(path: string): Promise<unknown> {
 		// It settles once: an answer after the timeout, or after a failure, runs nothing.
 		let settled = false;
 		const timer = background.setTimeout(() => {
-			fail(
-				backgroundError({
-					code: "lazy_bundle_timed_out",
-					details: { url, seconds: LOAD_TIMEOUT_MS / 1000 },
-				}),
-			);
+			const error = backgroundError({
+				code: "lazy_bundle_timed_out",
+				details: { url, seconds: LOAD_TIMEOUT_MS / 1000 },
+			});
+			// The only sign of a bundle that does not answer: Lynx says nothing of a request that
+			// never completes, and Lynx Explorer's fetch never answers a missing one.
+			reportError(error);
+			fail(error);
 		}, LOAD_TIMEOUT_MS);
 		function fail(error: unknown): void {
 			if (settled) return;

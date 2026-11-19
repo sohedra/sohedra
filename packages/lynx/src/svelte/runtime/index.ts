@@ -13,7 +13,12 @@ export {
 } from "./first-screen.ts";
 export type { ListNote } from "./first-screen.ts";
 export { listenThrough } from "./events.ts";
-export { sourceLocation } from "./locations.ts";
+export {
+	componentInMessage,
+	componentOfError,
+	componentOfNode,
+	sourceLocation,
+} from "./locations.ts";
 export { signal } from "./signal.ts";
 export type { Signal } from "./signal.ts";
 

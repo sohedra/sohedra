@@ -40,11 +40,12 @@ export interface Stamp {
 export type Stamped = Stamp & { t?: string };
 
 /**
- * Whether a receiver keeps a message: one of the page it shows now, or an error of any page. Every
- * receiver asks this of every message, and drops what it does not keep.
+ * Whether a receiver keeps a message: one of the page it shows now. Every receiver asks this of
+ * every message, and drops what it does not keep. An error of another page was reported into Lynx
+ * where it was thrown, and the page's `onError` does not hear it: that page is gone.
  */
 export function keepsMessage(message: Stamped, page: number): boolean {
-	return message.page === page || message.t === "error";
+	return message.page === page;
 }
 
 /** The thread that received a message, and the page it shows. */

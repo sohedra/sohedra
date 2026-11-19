@@ -332,7 +332,7 @@ export function createGestures(scope: () => BindingScope): Gestures {
 		const manager = stateManager(binding.element, native);
 		const entries = new Map<string, Entry>();
 		for (const callback of names) {
-			const entry = new Entry(gesture.callbacks[callback]!, scope());
+			const entry = new Entry(gesture.callbacks[callback]!, scope(), binding.element);
 			entry.manager = manager;
 			entries.set(callback, entry);
 		}
