@@ -15,17 +15,17 @@ const effects = `<script>
 <view></view>`;
 
 describe("the effects' imports on the main thread", () => {
-	it("are kept in a function that never runs, for each kind of effect", async () => {
+	it("are kept in a block that never runs, for each kind of effect", async () => {
 		const { code } = await component(effects, { thread: "main-thread" });
 		expect(code).toMatch(
-			/function __svelteLynxEffectImports\(\) \{\s*import\("\.\/A\.svelte"\);\s*import\("\.\/B\.svelte"\);\s*import\("\.\/C\.svelte"\);\s*\}/,
+			/typeof __svelteLynxKeptImports !== ["']undefined["']\) \{\s*import\("\.\/A\.svelte"\);\s*import\("\.\/B\.svelte"\);\s*import\("\.\/C\.svelte"\);\s*\}/,
 		);
 	});
 
 	it("leave out an import that is not in an effect, which Svelte keeps, and one that is not a string", async () => {
 		const { code } = await component(effects, { thread: "main-thread" });
 		expect(code.match(/import\("\.\/E\.svelte"\)/g)).toHaveLength(1);
-		expect(code).not.toMatch(/__svelteLynxEffectImports[^}]*(import\(n\)|`\.\/d`)/);
+		expect(code).not.toMatch(/__svelteLynxKeptImports[^}]*(import\(n\)|`\.\/d`)/);
 	});
 
 	it("are written once for an import that two effects share", async () => {
@@ -39,12 +39,12 @@ describe("the effects' imports on the main thread", () => {
 			"<script>$effect(() => console.log(1));</script><view></view>",
 			{ thread: "main-thread" },
 		);
-		expect(code).not.toContain("__svelteLynxEffectImports");
+		expect(code).not.toContain("__svelteLynxKeptImports");
 	});
 
 	it("are not added on the background, where the effect runs", async () => {
 		const { code } = await component(effects, { thread: "background" });
-		expect(code).not.toContain("__svelteLynxEffectImports");
+		expect(code).not.toContain("__svelteLynxKeptImports");
 		expect(code).toContain('import("./A.svelte")');
 	});
 
@@ -58,7 +58,7 @@ describe("the effects' imports on the main thread", () => {
 // A package that says it has no side effects is left out of a production build where nothing reads
 // its exports, and with it the main-thread functions it registers as it loads. Svelte's server copy
 // drops code (an effect, an action, an attachment, a boundary's children while it is pending), so
-// the main thread's copy reads, in a function that never runs, every name the component imports and
+// the main thread's copy reads, in a block that never runs, every name the component imports and
 // reads as a value.
 const dropped = `<script lang="ts">
 	import { triple } from "lib-effect";
@@ -86,9 +86,9 @@ const dropped = `<script lang="ts">
 	{#snippet pending()}<text>waiting</text>{/snippet}
 </svelte:boundary>`;
 
-/** The body of the function that never runs, in a copy's code. */
+/** The body of the block that never runs, in a copy's code. */
 const keeper = (code: string): string =>
-	/function __svelteLynxEffectImports\(\) \{([^}]*)\}/.exec(code)?.[1] ?? "";
+	/typeof __svelteLynxKeptImports !== ["']undefined["']\) \{([^}]*)\}/.exec(code)?.[1] ?? "";
 
 /** Compiled for the main thread, with the boundary's `await` allowed. */
 const mainThread = (source: string) =>
@@ -98,7 +98,7 @@ const mainThread = (source: string) =>
 	});
 
 describe("the names a component imports, on the main thread", () => {
-	it("are read in the function that never runs: an effect's, an action's, an attachment's, a boundary's", async () => {
+	it("are read in the block that never runs: an effect's, an action's, an attachment's, a boundary's", async () => {
 		const { code } = await mainThread(dropped);
 		for (const name of ["triple", "act", "attach", "waited"])
 			expect(keeper(code)).toMatch(new RegExp(`\\b${name}\\b`));
