@@ -58,9 +58,12 @@ describe("first-frame copies", { timeout: 30_000 }, () => {
 			for (const item of Object.values(value)) walk(item);
 		};
 		walk(rules);
-		expect(found).toEqual([
-			expect.objectContaining({ thread: "background", firstFrameCopy: true }),
-		]);
+		// The background's component loader, once for each language a component may be written in.
+		expect(found.length).toBeGreaterThan(0);
+		for (const options of found)
+			expect(options).toEqual(
+				expect.objectContaining({ thread: "background", firstFrameCopy: true }),
+			);
 	});
 
 	it("are a module that imports the component and records its first frame with mountPage", () => {
