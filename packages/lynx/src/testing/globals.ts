@@ -21,6 +21,13 @@ export const processQueueMicrotask: (callback: () => void) => void =
 	globalThis.queueMicrotask.bind(globalThis);
 
 /**
+ * The process's own `structuredClone`, as it was when this module loaded: a thread's global one is
+ * the binding's fill, or none.
+ */
+export const processStructuredClone: <T>(value: T) => T =
+	globalThis.structuredClone.bind(globalThis);
+
+/**
  * Delivers `callback` on a later macrotask. The function is the one the process had when this
  * module loaded: a test that fakes timers must not stop the threads.
  */
@@ -83,6 +90,12 @@ export function installGlobals(
 	};
 }
 
+/** The process's global object, for a fill that puts its globals there as a thread's does. */
+export function globalScope(): Record<string, unknown> {
+	// Boundary: any name may be a global.
+	return globalThis as unknown as Record<string, unknown>;
+}
+
 /** Deletes the globals named `names`: what `installGlobals` saved puts them back at the end. */
 export function removeGlobals(names: readonly string[]): void {
 	// Boundary: any name may be a global.
@@ -125,4 +138,22 @@ export function activeSession(): ActiveSession | undefined {
 export function setActiveSession(session: ActiveSession | undefined): void {
 	// Boundary: the slot is this module's own symbol on the process's global object.
 	(globalThis as unknown as Record<symbol, ActiveSession | undefined>)[ACTIVE] = session;
+}
+
+/** The runners a test library's setup file names. */
+export type TestRunner = "rstest" | "vitest";
+
+// A symbol from the registry, as for the active session: the setup file says it, the test reads it.
+const RUNNER = Symbol.for("@sohedra/lynx/testing:runner");
+
+/** The runner the setup file said the tests run under, if one did. */
+export function testRunner(): TestRunner | undefined {
+	// Boundary: the slot is this module's own symbol on the process's global object.
+	return (globalThis as unknown as Record<symbol, TestRunner | undefined>)[RUNNER];
+}
+
+/** Records the runner the tests run under. */
+export function setTestRunner(runner: TestRunner): void {
+	// Boundary: the slot is this module's own symbol on the process's global object.
+	(globalThis as unknown as Record<symbol, TestRunner | undefined>)[RUNNER] = runner;
 }
