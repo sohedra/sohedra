@@ -2,6 +2,7 @@
 // renderer, and the hooks the engine calls on the app (`lynx.getApp()`), as ReactLynx installs them:
 //
 //   updateCardData(data, { type })  new data for the page (type 1: start from none)
+//   updateGlobalProps(props)        the host's new global props, all of them
 //   onAppReload(data)               the host reloads the page, with data to add
 //   callDestroyLifetimeFun()        the page is going away
 //
@@ -34,8 +35,12 @@ import { backgroundError } from "./catalogue.ts";
 import { openChannel } from "./channel.ts";
 import { callThrough } from "./functions/calls.ts";
 import { background } from "./globals.ts";
+import { globalPropsChanged, initDataChanged } from "./host/data.ts";
+import { closeHostEvents, openHostEvents } from "./host/events.ts";
+import { resetKeyboard } from "./host/keyboard.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
 import { closeLayers, openLayers, unmountLayers } from "./layers.ts";
+import { installLazyBundles } from "./lazy-bundle.ts";
 import { bumpPage, clearPageState, currentPage, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { numberInput } from "./renderer/input.ts";
@@ -125,6 +130,9 @@ export function mountPage<Props extends Bag>(
 	const app = lynx.getApp();
 	startGeneration();
 	openLayers();
+	openHostEvents();
+	resetKeyboard();
+	installLazyBundles();
 	// `on()` listens through the page's renderer wherever it is called.
 	listenThrough(pageRenderer);
 	let instance: Record<string, unknown> | undefined;
@@ -316,6 +324,9 @@ export function mountPage<Props extends Bag>(
 	function reload(data: unknown): void {
 		bumpPage();
 		mergeData(data);
+		// Before the old app goes: what reads the data outside the app runs again as the new app
+		// renders, and the new app reads it as it starts.
+		initDataChanged();
 		runAll([teardown, () => channel.abandon()]);
 		try {
 			render(false);
@@ -335,14 +346,26 @@ export function mountPage<Props extends Bag>(
 			() => pageRenderer.retire(),
 			() => listenThrough(null),
 			closeLayers,
+			closeHostEvents,
+			resetKeyboard,
 			clearPageState,
 		]);
 	}
 
+	/** What read the data runs again, and the patch that shows it says the data was updated. */
 	function updateData(data: unknown, update?: { type?: unknown }): void {
 		if (update?.type === RESET_DATA) lynx.__initData = {};
 		mergeData(data);
-		channel.markDataUpdated();
+		handle(initDataChanged, () => channel.markDataUpdated());
+	}
+
+	/**
+	 * The host's global props, all of them (the platform merges an update into them before the
+	 * engine sends them). lynx-core sets `lynx.__globalProps` only as the page starts.
+	 */
+	function updateGlobalProps(props: unknown): void {
+		if (isRecord(props)) lynx.__globalProps = { ...lynx.__globalProps, ...props };
+		handle(globalPropsChanged);
 	}
 
 	const guard =
@@ -356,6 +379,7 @@ export function mountPage<Props extends Bag>(
 		};
 
 	app["updateCardData"] = guard(updateData);
+	app["updateGlobalProps"] = guard(updateGlobalProps);
 	app["onAppReload"] = guard(reload);
 	app["callDestroyLifetimeFun"] = guard(destroy);
 	for (const name of QUIET_HOOKS) if (typeof app[name] !== "function") app[name] = () => {};

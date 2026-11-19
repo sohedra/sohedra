@@ -33,6 +33,8 @@ export type {
 	ListUpdate,
 	LynxElement,
 } from "./engine/types.ts";
+export type { FetchAnswer, TestBundle } from "./page/bundles.ts";
+export type { HostEventsLog, TestEmitter } from "./page/host.ts";
 export { startTestPage } from "./page/page.ts";
 export type { TestPage, TestPageOptions } from "./page/page.ts";
 export type {

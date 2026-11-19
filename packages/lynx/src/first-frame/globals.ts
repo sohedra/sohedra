@@ -11,6 +11,8 @@ export interface FirstFrameGlobals {
 		reportError(error: unknown, options?: { level?: "error" | "warning" }): void;
 		/** The host's global props (core/renderer/template_entry.cc, UpdateGlobalPropsToContext). */
 		__globalProps?: Record<string, unknown> | null;
+		/** What Lynx says about the device and itself: on `lynx` here, as a device showed. */
+		SystemInfo?: Record<string, unknown>;
 	};
 }
 

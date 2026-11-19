@@ -78,7 +78,23 @@ export interface MainThreadGlobals {
 		setTimeout(callback: () => void, delay: number): unknown;
 		/** Cancels what `setTimeout` returned. */
 		clearTimeout(timer: unknown): void;
+		/**
+		 * A bundle the engine has fetched or is fetching: `wait` answers once it is there, or once
+		 * `seconds` have passed (core/runtime/lepus/bindings/renderer_functions.cc, FetchBundle).
+		 */
+		fetchBundle(
+			url: string,
+			options: Record<string, never>,
+		): { wait(seconds: number): { code: number; url: string } | undefined };
+		/** Runs a section of a fetched bundle and answers what it returns (LoadScript). */
+		loadScript(section: string, options: { bundleName: string }): unknown;
+		/** What the bundler's chunk loader calls for an `import()` the build made a lazy bundle. */
+		loadLazyBundle?: (url: string) => Promise<unknown>;
 	};
+	/** A style sheet section of a fetched bundle, or nothing (LoadStyleSheet). */
+	__LoadStyleSheet(section: string, bundleName: string): unknown;
+	/** Applies a style sheet `__LoadStyleSheet` answered to the page (AdoptStyleSheet). */
+	__AdoptStyleSheet(sheet: unknown): void;
 	__CreatePage(componentId: string, cssId: number): LynxElement;
 	__GetElementUniqueID(element: LynxElement): number;
 	__CreateView(parentComponentUniqueId: number): LynxElement;
@@ -210,6 +226,22 @@ declare const __DEV__: boolean;
 
 /** `true` in a development build: the build replaces it, and drops what it guards otherwise. */
 export const DEV: boolean = __DEV__;
+
+/** A chunk of the bundler's: its modules, by id. */
+export interface BundlerChunk {
+	modules?: Record<string, unknown>;
+}
+
+/** The bundler's runtime: it runs a module by id, and `C` installs a chunk's modules. */
+export type BundlerRequire = ((id: string) => unknown) & { C?: (chunk: BundlerChunk) => void };
+
+// The bundler names its own runtime so in the modules it bundles.
+declare const __webpack_require__: BundlerRequire | undefined;
+
+/** The bundler's runtime of the main thread's script. */
+export function bundlerRequire(): BundlerRequire | undefined {
+	return typeof __webpack_require__ === "undefined" ? undefined : __webpack_require__;
+}
 
 /** The value of a global the page's own script set, by name. */
 export function readGlobal(name: string): unknown {

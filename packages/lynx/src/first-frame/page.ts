@@ -45,6 +45,7 @@ export function mountPage<Props extends Bag>(
 		try {
 			// Boundary: `render` takes the component's props as `Omit<Props, …>`, which `Props` is.
 			return whileDrawing(
+				initData,
 				() =>
 					render(App as Component<Record<string, unknown>>, {
 						props: given ?? {},

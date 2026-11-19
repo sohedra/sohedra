@@ -9,6 +9,8 @@ start:
 
 - src/background/lazy-bundle.ts, adapted from @lynx-js/react
   (packages/react/runtime/src/core/lynx/lazy-bundle.ts)
+- src/main-thread/lazy-bundle.ts, adapted from @lynx-js/react
+  (packages/react/runtime/src/snapshot/lynx/prepareLazyBundleMTS.ts)
 - src/gesture/, adapted from @lynx-js/gesture-runtime 2.1.3
   (packages/lynx/gesture-runtime/src)
 - src/build/main-thread-functions/, written anew: what it writes, its ids and
@@ -23,3 +25,10 @@ start:
   test inputs adapted from @lynx-js/react's worklet transform tests
   (packages/react/transform/crates/swc_plugin_worklet/lib.rs); the inputs only,
   not the expected outputs
+
+This product includes software adapted from Lynx
+(https://github.com/lynx-family/lynx), Copyright 2024 The Lynx Authors,
+licensed under the Apache License, Version 2.0:
+
+- src/background/host/system-info.ts, the type of SystemInfo from @lynx-js/types
+  (js_libraries/types/types/common/system-info.d.ts)
