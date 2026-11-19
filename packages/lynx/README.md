@@ -48,7 +48,7 @@ then the background, on an engine fake that has only what a device has and the b
 `fireEvent`, `act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a
 list's cells, a gesture's callbacks) are awaited. Run the tests with `withSvelteLynx()` from
 `@sohedra/lynx/config/rstest` or `svelteLynx()` from `@sohedra/lynx/config/vitest`, and install
-`jsdom`, `@testing-library/dom` and the runner.
+`jsdom`, `@testing-library/dom` and the runner (Vitest needs `vite` too).
 
 Run its tests and type check from the repository root with `pnpm -F @sohedra/lynx test` and
 `pnpm -F @sohedra/lynx check`. Read [CONTRIBUTING.md](../../CONTRIBUTING.md) § Code before you
