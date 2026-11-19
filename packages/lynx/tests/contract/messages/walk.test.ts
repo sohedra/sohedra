@@ -150,6 +150,32 @@ const NAMES: Record<string, Resolves> = {
 	"define.background": { kind: "an option of the plugin" },
 	"event.currentTarget.dataset": { kind: "an event's field" },
 	"process.env.API": { kind: "the developer's own name, as an example" },
+	__API__: { kind: "the developer's own name, as an example" },
+	define: { kind: "an option of the plugin" },
+	"dev: { hmr: false }": { kind: "an Rsbuild setting" },
+	"tools.swc: false": { kind: "an Rsbuild setting" },
+	"compilerOptions: { experimental: { async: true } }": { kind: "a Svelte config option" },
+	"export default svelteConfig({ … })": { kind: "the line of an app's svelte.config.js" },
+	"export { a, b } from 'sample'": { kind: "JavaScript's syntax" },
+	true: { kind: "a value" },
+	false: { kind: "a value" },
+	"<svelte:boundary>": { kind: "Svelte's syntax" },
+	pending: { kind: "Svelte's syntax: a snippet of <svelte:boundary>" },
+	"{#each}": { kind: "Svelte's syntax" },
+	"{#if background}": { kind: "Svelte's syntax, with background from @sohedra/lynx/env" },
+	"{#if mainThread}": { kind: "Svelte's syntax, with mainThread from @sohedra/lynx/env" },
+	"{#if BROWSER}": { kind: "Svelte's syntax, with BROWSER from esm-env" },
+	"{@attach}": { kind: "Svelte's syntax" },
+	"ontap={…}": { kind: "an event attribute of Lynx's elements" },
+	"item-key": { kind: "an attribute of Lynx's <list-item>" },
+	"data-*": { kind: "an attribute of Lynx's elements" },
+	"<list-item>": { kind: "a Lynx element" },
+	"<list-item defer>": { kind: "a Lynx element and its attribute" },
+	"on(root, …)": { kind: "on() from svelte/events, with root from @sohedra/lynx" },
+	'on(root, "sample", handler)': { kind: "on() from svelte/events, with root from @sohedra/lynx" },
+	"runOnBackground(sample)": {
+		kind: "runOnBackground from @sohedra/lynx, given the developer's function",
+	},
 };
 
 /** The modules a fix line names, by their specifier. */
@@ -165,12 +191,23 @@ const API_NAME =
 /** Text a fix line takes from its details, which names nothing of an API. */
 const SAMPLE = "sample";
 
-/** The API names and modules in one fix line. */
+/**
+ * The API names and modules in one fix line: every text in backticks, whole (a trailing `()` left
+ * out), then the names in what is left.
+ */
 function namesIn(fix: string): { names: string[]; modules: string[] } {
-	const modules = [...fix.matchAll(MODULE)].map((match) => match[0]);
-	let rest = fix;
-	for (const module of modules) rest = rest.replace(module, " ");
 	const names: string[] = [];
+	const modules: string[] = [];
+	let rest = fix;
+	for (const [quoted, inside] of fix.matchAll(/`([^`]+)`/g)) {
+		rest = rest.replace(quoted, " ");
+		const text = inside!.replace(/\(\)$/, "");
+		if (text === SAMPLE) continue;
+		if (new RegExp(`^(?:${MODULE.source})$`).test(text)) modules.push(text);
+		else names.push(text);
+	}
+	modules.push(...[...rest.matchAll(MODULE)].map((match) => match[0]));
+	for (const module of modules) rest = rest.replace(module, " ");
 	for (const match of rest.matchAll(API_NAME)) {
 		const name = match.slice(1).find((group) => group !== undefined) ?? match[0];
 		if (name !== SAMPLE) names.push(name);
@@ -183,6 +220,16 @@ describe("every name a fix line gives", () => {
 		where: `${program}:${code}`,
 		...namesIn(entry.fix(ANY_DETAILS)),
 	}));
+
+	it("is read whole from backticks, one-word and PascalCase names too", () => {
+		const { names, modules } = namesIn(
+			"Drive it with `Spring` or `Tween` from `svelte/motion`, or with `root` and `lynx.reload()`.",
+		);
+		expect(names).toEqual(["Spring", "Tween", "root", "lynx.reload"]);
+		expect(modules).toEqual(["svelte/motion"]);
+		expect(names.filter((name) => !(name in NAMES))).toEqual(["Spring", "Tween"]);
+		expect(modules.filter((module) => !(module in OTHER_MODULES))).toEqual(["svelte/motion"]);
+	});
 
 	it("is one the walk knows", () => {
 		const unknown = named.flatMap(({ where, names }) =>
@@ -238,7 +285,7 @@ describe("the binding's messages", () => {
 		"replaceAll must be called with a global RegExp",
 	];
 
-	it("are written in a catalogue: no error is made from text written in place", () => {
+	it("are written in a catalogue: no error is made from a literal text", () => {
 		const written: string[] = [];
 		for (const file of sources(SOURCE)) {
 			const relative = path.relative(SOURCE, file);

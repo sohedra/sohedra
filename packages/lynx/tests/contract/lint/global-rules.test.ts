@@ -88,7 +88,7 @@ describe("globals by folder", () => {
 describe("console in the threads' code", () => {
 	// On the main thread `console.error` is a Lynx error report of its own (PrimJS reports it with
 	// the main thread's code), so an error the binding reports and logs would show twice in LogBox.
-	const folders = ["main-thread", "first-frame", "gesture", "wire"];
+	const folders = ["main-thread", "first-frame", "gesture", "wire", "svelte/runtime", "env"];
 	const files: Record<string, string> = {};
 	for (const folder of folders)
 		files[`${SRC}/${folder}/probe-console.ts`] =

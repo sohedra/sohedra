@@ -11,7 +11,7 @@ import Faults from "../fixtures/threads/Faults.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 describe("an attribute value that cannot be sent", () => {
-	it("is reported with the attribute and the element, which is made without it, on the page and in a cell, its repeat counted", async () => {
+	it("is reported with the attribute and the element, which is made without it, on the page and in a cell", async () => {
 		const page = startSveltePage(Faults);
 		await page.settle();
 		expect(page.engine.state(page.byClass("unsendable")).attrs["title"]).toBe("kept");
@@ -19,8 +19,7 @@ describe("an attribute value that cannot be sent", () => {
 		const reported = page.errors.filter(
 			(error) => (error as { code?: unknown }).code === "attribute_not_copyable",
 		);
-		// The cell's is the same error again: a development build counts it, and reports it at the 10th.
-		expect(reported).toHaveLength(1);
+		expect(reported).toHaveLength(2);
 		expect(reported[0]).toMatchObject({
 			message: expect.stringMatching(/^The value of data-big on <view> cannot be sent/),
 		});

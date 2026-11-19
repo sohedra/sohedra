@@ -7,7 +7,10 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "@rstest/core";
 import * as acorn from "acorn";
 
-import devClientLoader, { DEV_CLIENT_FILE } from "../../../../src/build/loaders/dev-client.ts";
+import devClientLoader, {
+	DEV_CLIENT_FILE,
+	missingDevClientFiles,
+} from "../../../../src/build/loaders/dev-client.ts";
 import { runLoader } from "./loader-context.ts";
 
 const require = createRequire(import.meta.url);
@@ -81,5 +84,53 @@ describe("the dev-client loader", () => {
 		expect(warnings[0]!.message).toMatch(
 			/^Lynx's dev client has changed: `function reloadPage\(\) \{`/,
 		);
+	});
+});
+
+describe("the dev-client loader, against a changed dev client", () => {
+	it("warns, and leaves the file, when the function is there twice", async () => {
+		const source = fs.readFileSync(files.logBuildErrors, "utf8");
+		const twice = `${source}\nfunction logBuildErrors(errors) {}\n`;
+		const { code, warnings } = await run(files.logBuildErrors, twice);
+		expect(code).toBe(twice);
+		expect(warnings).toHaveLength(1);
+		expect(warnings[0]!.message).toMatch(
+			/^Lynx's dev client has changed: `function logBuildErrors\(errors\) \{` is not in .*logBuildErrors\.js exactly once, so build errors stay out of LogBox\./,
+		);
+	});
+
+	it("names only what the moved file loses", async () => {
+		const changed = fs
+			.readFileSync(files.reloadApp, "utf8")
+			.replace("function reloadPage()", "function x()");
+		const { warnings } = await run(files.reloadApp, changed);
+		expect(warnings[0]!.message).toContain(
+			"a change that needs DevTool to load the page says nothing",
+		);
+		expect(warnings[0]!.message).not.toContain("build errors");
+	});
+});
+
+describe("missingDevClientFiles", () => {
+	const folder = files.reloadApp.replace("reloadApp.js", "");
+
+	it("finds nothing missing in a build with the dev client and both files", () => {
+		expect(
+			missingDevClientFiles([`${folder}index.js?hot=true`, files.reloadApp, files.logBuildErrors]),
+		).toEqual([]);
+	});
+
+	it("names a file a build with the dev client lacks: Lynx renamed it, or the dev client is older", () => {
+		expect(missingDevClientFiles([`${folder}index.js?hot=true`, files.reloadApp])).toEqual([
+			"@lynx-js/webpack-dev-transport/lib/client/logBuildErrors.js",
+		]);
+		expect(missingDevClientFiles([`${folder}index.js`])).toEqual([
+			"@lynx-js/webpack-dev-transport/lib/client/reloadApp.js",
+			"@lynx-js/webpack-dev-transport/lib/client/logBuildErrors.js",
+		]);
+	});
+
+	it("finds nothing missing in a build without the dev client, as a production build", () => {
+		expect(missingDevClientFiles(["/app/src/index.ts"])).toEqual([]);
 	});
 });

@@ -96,6 +96,15 @@ describe("reloadNeedsDevTool", () => {
 		).toEqual([["reload_needs_devtool", "warning"]]);
 	});
 
+	it("reads iOS's answer, a number, as on or off", () => {
+		// A native BOOL reaches JavaScript as 0 or 1 on iOS, and as a boolean on Android.
+		const off = host({ LynxDevToolSetModule: { invokeCdp() {}, isDevToolEnabled: () => 0 } });
+		expect(reloadNeedsDevTool()).toBe(true);
+		expect(off.reloads).toEqual([]);
+		host({ LynxDevToolSetModule: { invokeCdp() {}, isDevToolEnabled: () => 1 } });
+		expect(reloadNeedsDevTool()).toBe(false);
+	});
+
 	it("says so too where the host has no DevTool module, or no native modules at all", () => {
 		host({});
 		expect(reloadNeedsDevTool()).toBe(true);

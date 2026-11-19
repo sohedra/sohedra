@@ -5,7 +5,9 @@
 import { describe, expect, it, rs } from "@rstest/core";
 import { on } from "svelte/events";
 
+import { crashedSinceStart } from "../../../src/background/errors.ts";
 import { host } from "../../../src/background/host-entry.ts";
+import { reportError } from "../../../src/background/root-entry.ts";
 import type { ErrorContext } from "../../../src/background/root-entry.ts";
 import { installGlobals } from "../../../src/testing/globals.ts";
 import type { MainThreadLynx } from "../../../src/testing/index.ts";
@@ -16,6 +18,7 @@ import Parent from "../../fixtures/threads/errors/Parent.svelte";
 import Fails from "../../fixtures/threads/Fails.svelte";
 import ReportsOnMainThread from "../../fixtures/threads/page/ReportsOnMainThread.svelte";
 import drawReportsOnMainThread from "../../fixtures/threads/page/ReportsOnMainThread.svelte?first-frame";
+import TeardownThrows from "../../fixtures/threads/page/TeardownThrows.svelte";
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
 import { lynxTimer, tapAndWait } from "./lynx-timer.ts";
@@ -43,6 +46,18 @@ async function errorsPage(): Promise<{
 	made.page = page;
 	await page.settle();
 	return { page, heard, tap: (name) => tapAndWait(page, name) };
+}
+
+/** The main thread's reports into Lynx, with their codes, where the engine has `_ReportError`. */
+function withCodes(page: SveltePage): unknown[][] {
+	const reports: unknown[][] = [];
+	page.asMainThread(() =>
+		installGlobals({
+			_ReportError: (error: Error, options: unknown) =>
+				void reports.push([error.message.split("\n")[0], options]),
+		}),
+	);
+	return reports;
 }
 
 const messages = (values: unknown[]): string[] =>
@@ -133,11 +148,27 @@ describe("onError on the background", () => {
 		]);
 	});
 
-	it("does not hear a timer's throw, which Lynx reports itself", async () => {
-		const { page, heard, tap } = await errorsPage();
-		await tap("timer");
-		expect(messages(page.errors)).toEqual(["the timer threw"]);
-		expect(heard).toEqual([]);
+	it("leaves the global timer an app calls as it is: its throw reaches the host, not onError", async () => {
+		// The binding replaces no timer (the background's fills put none on the global object): an
+		// app's `setTimeout` is the thread's own, which on a device is lynx-core's and reports what
+		// it throws. Here it is the process's, so the process hears the throw, in place of the test
+		// runner, which would fail the file for it.
+		const thrown: unknown[] = [];
+		const onThrown = (error: unknown) => void thrown.push(error);
+		const runners = process.listeners("uncaughtException");
+		process.removeAllListeners("uncaughtException");
+		process.on("uncaughtException", onThrown);
+		try {
+			const { page, heard, tap } = await errorsPage();
+			await tap("global-timer");
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			expect(page.errors).toEqual([]);
+			expect(heard).toEqual([]);
+		} finally {
+			process.off("uncaughtException", onThrown);
+			for (const runner of runners) process.on("uncaughtException", runner);
+		}
+		expect(messages(thrown)).toEqual(["the global timer threw"]);
 	});
 
 	it("does not hear a rejection nobody handled, which Lynx reports itself", async () => {
@@ -161,37 +192,22 @@ describe("onError on the background", () => {
 		expect(messages(rejected)).toEqual(["nobody handled it"]);
 	});
 
-	it("hears a repeat at the 10th, with the count Lynx shows", async () => {
+	it("hears every repeat, while Lynx gets the 1st and the 10th, with the count", async () => {
 		const { page, heard, tap } = await errorsPage();
 		for (let time = 0; time < 12; time++) await tap("handler");
 		expect(messages(page.errors)).toEqual(["the handler threw", "the handler threw (×10)"]);
-		expect(heard).toHaveLength(2);
+		expect(heard).toHaveLength(12);
 		// `onError` gets the error as it was thrown; Lynx's report says how many.
-		expect(heard.map(([error]) => error.message)).toEqual([
-			"the handler threw",
-			"the handler threw",
-		]);
+		expect(new Set(heard.map(([error]) => error.message))).toEqual(new Set(["the handler threw"]));
 	});
 });
 
 describe("onError and the main thread", () => {
-	/** The main thread's reports into Lynx, with their codes, where the engine has `_ReportError`. */
-	function withCodes(page: SveltePage): unknown[][] {
-		const reports: unknown[][] = [];
-		page.asMainThread(() =>
-			installGlobals({
-				_ReportError: (error: Error, options: unknown) =>
-					void reports.push([error.message.split("\n")[0], options]),
-			}),
-		);
-		return reports;
-	}
-
-	it("hears a main-thread function's throw once, reported with the engine's code for it", async () => {
+	it("hears a main-thread function's throw once, reported with the main thread's code, as the engine reports it", async () => {
 		const { page, heard, tap } = await errorsPage();
 		const reports = withCodes(page);
 		await tap("main-thread");
-		expect(reports).toEqual([["the main-thread function threw", { errorCode: 190100 }]]);
+		expect(reports).toEqual([["the main-thread function threw", { errorCode: 110100 }]]);
 		expect(heard).toHaveLength(1);
 		expect(heard[0]![0].message).toBe("the main-thread function threw");
 		expect(heard[0]![1]).toEqual({
@@ -291,7 +307,6 @@ describe("what onError throws", () => {
 
 	it("does not call onError again for what onError reports", async () => {
 		const heard: string[] = [];
-		const { reportError } = await import("../../../src/background/root-entry.ts");
 		const page = startSveltePage(Errors, {
 			props: { later: () => {} },
 			onError: (error) => {
@@ -304,5 +319,113 @@ describe("what onError throws", () => {
 		await page.settle();
 		expect(messages(page.errors)).toEqual(["the handler threw", "heard: the handler threw"]);
 		expect(heard).toEqual(["the handler threw"]);
+	});
+});
+
+describe("a thrown value that is not an Error", () => {
+	it("is written as Lynx writes it, and different values count apart", async () => {
+		const { page, heard, tap } = await errorsPage();
+		await tap("object-404");
+		await tap("object-500");
+		await tap("report-503");
+		expect(page.errors).toEqual([
+			{ status: 404 },
+			{ status: 500, reason: "the server failed" },
+			{ status: 503 },
+		]);
+		expect(heard.map(([error]) => error.message)).toEqual([
+			'{"status":404}',
+			'{"status":500,"reason":"the server failed"}',
+			'{"status":503}',
+		]);
+	});
+
+	it("thrown by a main-thread function, reaches onError with its value as its text", async () => {
+		const { page, heard, tap } = await errorsPage();
+		const reports = withCodes(page);
+		await tap("main-thread-object");
+		expect(reports).toEqual([['{"status":418}', { errorCode: 110100 }]]);
+		expect(heard.map(([error, context]) => [error.message, context.thread])).toEqual([
+			['{"status":418}', "main-thread"],
+		]);
+	});
+});
+
+describe("onError's code", () => {
+	it("is undefined for an app's own error that has a code of its own", async () => {
+		const { heard, tap } = await errorsPage();
+		await tap("coded");
+		expect(heard.map(([error, context]) => [error.message, context.code])).toEqual([
+			["reset", undefined],
+		]);
+	});
+});
+
+describe("reporting", () => {
+	it("never throws over the error it reports, even one whose stack is not text", async () => {
+		const { page, heard, tap } = await errorsPage();
+		await tap("odd-stack");
+		await tap("odd-stack");
+		expect(messages(page.errors)).toEqual(["odd stack"]);
+		expect(heard.map(([error]) => error.message)).toEqual(["odd stack", "odd stack"]);
+	});
+
+	it("counts a page's repeats from none again at a reload, on the background", async () => {
+		const { page, tap } = await errorsPage();
+		await tap("handler");
+		page.reload();
+		await page.settle();
+		await tap("handler");
+		expect(messages(page.errors)).toEqual(["the handler threw", "the handler threw"]);
+	});
+
+	it("counts the main thread's repeats, and from none again at a reload", async () => {
+		const { page, heard, tap } = await errorsPage();
+		const reports = withCodes(page);
+		for (let time = 0; time < 10; time++) await tap("main-thread");
+		expect(reports.map(([message]) => message)).toEqual([
+			"the main-thread function threw",
+			"the main-thread function threw (×10)",
+		]);
+		expect(heard).toHaveLength(10);
+		page.reload();
+		await page.settle();
+		await tap("main-thread");
+		expect(reports.map(([message]) => message).at(-1)).toBe("the main-thread function threw");
+	});
+});
+
+describe("a page's crash, for the reload after a save", () => {
+	it("is marked by a reported error, and cleared by a reload", async () => {
+		const { page, tap } = await errorsPage();
+		expect(crashedSinceStart()).toBe(false);
+		await tap("handler");
+		expect(crashedSinceStart()).toBe(true);
+		page.reload();
+		await page.settle();
+		expect(crashedSinceStart()).toBe(false);
+	});
+});
+
+describe("onError at the page's end", () => {
+	it("hears what the page's last teardown threw", async () => {
+		const heard: string[] = [];
+		const page = startSveltePage(TeardownThrows, {
+			onError: (error) => void heard.push(error.message.split("\n")[0]!),
+		});
+		await page.settle();
+		page.destroy();
+		await page.settle();
+		expect(messages(page.errors)).toEqual(["teardown failed"]);
+		expect(heard).toEqual(["teardown failed"]);
+	});
+
+	it("hears nothing more once the page has ended", async () => {
+		const { page, heard } = await errorsPage();
+		page.destroy();
+		await page.settle();
+		page.asBackground(() => reportError(new Error("after the end")));
+		expect(messages(page.errors)).toEqual(["after the end"]);
+		expect(heard).toEqual([]);
 	});
 });

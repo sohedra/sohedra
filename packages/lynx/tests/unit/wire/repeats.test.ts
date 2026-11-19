@@ -23,6 +23,30 @@ describe("createRepeats", () => {
 		expect(reported).toEqual([1, 10, 100, 1000]);
 	});
 
+	it("counts apart two callers of one helper, whose stacks differ below its frame", () => {
+		const repeats = createRepeats();
+		const fromSave = thrown("not allowed");
+		fromSave.stack =
+			"Error: not allowed\n    at fail (src/fail.ts:2:9)\n    at onSave (src/App.svelte:4:3)";
+		const fromSend = thrown("not allowed");
+		fromSend.stack =
+			"Error: not allowed\n    at fail (src/fail.ts:2:9)\n    at onSend (src/App.svelte:9:3)";
+		expect(repeats.count(fromSave)).toBe(1);
+		expect(repeats.count(fromSend)).toBe(1);
+	});
+
+	it("counts an error whose fields are not text, and throws nothing", () => {
+		const repeats = createRepeats();
+		const odd = Object.assign(new Error("odd"), { stack: 42 as unknown as string });
+		expect(repeats.count(odd)).toBe(1);
+		expect(repeats.count(odd)).toBeUndefined();
+		const counted = withCount(
+			Object.assign(new Error("x"), { message: 7 as unknown as string }),
+			10,
+		);
+		expect(counted.message).toBe("7 (×10)");
+	});
+
 	it("counts errors apart by their message and by the place they were thrown", () => {
 		const repeats = createRepeats();
 		expect(repeats.count(thrown("one"))).toBe(1);
@@ -55,15 +79,17 @@ describe("withCount", () => {
 		expect(withCount(error, 1)).toBe(error);
 	});
 
-	it("ends the first line with the count, keeping the rest, the name, the stack and the code", () => {
+	it("ends the first line with the count, keeping the rest, the name, the stack, the code and the cause", () => {
 		const error = Object.assign(new TypeError("A value failed.\nWhere it failed."), {
 			code: "value_failed",
+			cause: { status: 500 },
 		});
 		const counted = withCount(error, 10) as TypeError & { code?: string };
 		expect(counted.message).toBe("A value failed. (×10)\nWhere it failed.");
 		expect(counted.name).toBe("TypeError");
 		expect(counted.stack).toBe(error.stack);
 		expect(counted.code).toBe("value_failed");
+		expect(counted.cause).toEqual({ status: 500 });
 		expect(error.message).toBe("A value failed.\nWhere it failed.");
 	});
 });
