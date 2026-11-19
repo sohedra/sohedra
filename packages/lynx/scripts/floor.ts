@@ -24,9 +24,9 @@ const lineOf = ([major, minor, patch]: Version): Version =>
 
 /** Whether `range` is a peer range: caret ranges joined by `||`, each starting a later line. */
 export function isPeerRange(range: string): boolean {
-	const parts = range.split("||");
-	if (!parts.every((part) => part.trim().startsWith("^"))) return false;
-	const versions = parts.map(versionOf);
+	const versions = range
+		.split("||")
+		.map((part) => (part.trim().startsWith("^") ? versionOf(part) : undefined));
 	if (!versions.every(isVersion)) return false;
 	return versions.every(
 		(version, index) => index === 0 || before(lineOf(versions[index - 1]!), lineOf(version)),
