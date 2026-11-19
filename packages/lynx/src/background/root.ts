@@ -49,7 +49,10 @@ export interface Root {
  *
  * It is one value for the runtime's life. Before a page starts it is not on the page: a listener
  * it is given then is bound when the page starts. Once the page closes, its listeners are dropped
- * and none is called. On the main thread, its listeners throw: listen from the background.
+ * and none is called. On the main thread, listening on it throws: listen from the background.
+ *
+ * A tap on the first frame, before the background has taken it over, reaches the handlers of the
+ * element and its ancestors once the background has, but no listener on `root`.
  */
 // Boundary: the root is the renderer's own element node; this is the part an app uses.
 export const root: Root = pageRenderer.root as unknown as Root;
