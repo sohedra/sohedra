@@ -5,8 +5,9 @@
 // - A build error reaches LogBox: the dev client logs it to the console only.
 // - A change that needs the page to load again says so when DevTool, through which the dev client
 //   loads it, is off: the dev client's call then does nothing, and says nothing.
-// - After an error, a hot update that lands loads the page again: a component that threw stays
-//   broken after a save that fixes it, since Svelte swaps the component and mounts nothing again.
+// - After Svelte threw while it mounted, flushed or ran effects, a hot update that lands loads the
+//   page again: a component that threw stays broken after a save that fixes it, since Svelte swaps
+//   the component and mounts nothing again.
 
 import { backgroundError } from "./catalogue.ts";
 import { crashedSinceStart } from "./errors.ts";
@@ -87,9 +88,13 @@ export interface HotUpdates {
 }
 
 /**
- * Loads the page again when a hot update lands after an error was reported on it: the update's
- * modules are in place then, and the page starts from them. A hot update is applied in the status
- * `apply`, and lands when the status turns `idle` after it.
+ * Loads the page again when a hot update lands after Svelte threw on it while it mounted, flushed
+ * or ran effects: the update's modules are in place then, and the page starts from them. What the
+ * app reports, a handler's own throw and the binding's own reports do not count, so the page keeps
+ * its state. Two of Svelte's throws are not counted either: an `{#await}` branch's, which Svelte
+ * runs in the promise's own reaction, where only Lynx sees the rejection, and an effect's inside
+ * the app's own `flushSync()`, which leaves the handler as the handler's throw. A hot update is
+ * applied in the status `apply`, and lands when the status turns `idle` after it.
  */
 export function reloadAfterCrash(hot: HotUpdates | undefined): void {
 	let last = "idle";

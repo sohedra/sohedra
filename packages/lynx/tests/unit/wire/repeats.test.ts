@@ -1,7 +1,7 @@
 // An error that repeats is reported the first time and at each power of ten, with its count on its
-// first line.
+// first line, until it has been quiet for five seconds: then it is reported as new.
 
-import { describe, expect, it } from "@rstest/core";
+import { afterEach, describe, expect, it, rs } from "@rstest/core";
 
 import { createRepeats, withCount } from "../../../src/wire/index.ts";
 
@@ -11,6 +11,21 @@ const thrown = (message: string): Error => {
 	error.stack = `Error: ${message}\n    at onTap (src/App.svelte:4:9)\n    at run (runtime.js:1:1)`;
 	return error;
 };
+
+afterEach(() => {
+	rs.restoreAllMocks();
+});
+
+/** The thread's clock, moved by the test: `Date.now`, in milliseconds. */
+function clock(): { pass(milliseconds: number): void } {
+	let now = 1_000_000;
+	rs.spyOn(Date, "now").mockImplementation(() => now);
+	return {
+		pass(milliseconds) {
+			now += milliseconds;
+		},
+	};
+}
 
 describe("createRepeats", () => {
 	it("reports the 1st, 10th, 100th and 1000th of one error, and counts the rest", () => {
@@ -70,6 +85,53 @@ describe("createRepeats", () => {
 		expect(repeats.count(thrown("error 0"))).toBeUndefined();
 		expect(repeats.count(thrown("one more"))).toBe(1);
 		expect(repeats.count(thrown("error 0"))).toBe(1);
+	});
+});
+
+describe("createRepeats over time", () => {
+	it("still counts a repeat that comes within five seconds of the last", () => {
+		const time = clock();
+		const repeats = createRepeats();
+		expect(repeats.count(thrown("the tap failed"))).toBe(1);
+		time.pass(4999);
+		expect(repeats.count(thrown("the tap failed"))).toBeUndefined();
+	});
+
+	it("reports an error as new once it has been quiet for five seconds", () => {
+		const time = clock();
+		const repeats = createRepeats();
+		for (let tap = 0; tap < 5; tap++) repeats.count(thrown("the tap failed"));
+		time.pass(5000);
+		expect(repeats.count(thrown("the tap failed"))).toBe(1);
+		const reported: number[] = [];
+		for (let tap = 1; tap < 10; tap++) {
+			const count = repeats.count(thrown("the tap failed"));
+			if (count !== undefined) reported.push(count);
+		}
+		expect(reported).toEqual([10]);
+	});
+
+	it("keeps counting an error that never goes quiet, however long it lasts", () => {
+		const time = clock();
+		const repeats = createRepeats();
+		const reported: number[] = [];
+		for (let frame = 1; frame <= 100; frame++) {
+			const count = repeats.count(thrown("the frame failed"));
+			if (count !== undefined) reported.push(count);
+			time.pass(1000);
+		}
+		expect(reported).toEqual([1, 10, 100]);
+	});
+
+	it("times each error on its own", () => {
+		const time = clock();
+		const repeats = createRepeats();
+		repeats.count(thrown("one"));
+		time.pass(3000);
+		repeats.count(thrown("two"));
+		time.pass(3000);
+		expect(repeats.count(thrown("one"))).toBe(1);
+		expect(repeats.count(thrown("two"))).toBeUndefined();
 	});
 });
 

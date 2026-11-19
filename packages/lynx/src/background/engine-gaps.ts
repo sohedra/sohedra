@@ -5,6 +5,7 @@
 import EventTargetFill from "@ungap/event-target";
 import structuredCloneFill from "@ungap/structured-clone";
 
+import { runSvelte } from "./errors.ts";
 import type { BackgroundGlobals } from "./globals.ts";
 import { report } from "./report.ts";
 
@@ -44,7 +45,7 @@ function fillQueueMicrotask({ scope, globals }: FillTargets): void {
 	scope["queueMicrotask"] = (callback: () => void) =>
 		globals.lynx.queueMicrotask(() => {
 			try {
-				callback();
+				runSvelte(callback);
 			} catch (error) {
 				report(error);
 			}
