@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import type { ElementNode } from "../../../src/background/renderer/element.ts";
 import type { StaticCopy } from "../../../src/background/root-entry.ts";
 import type { LynxElement } from "../../../src/testing/index.ts";
 import { OpCode } from "../../../src/wire/index.ts";
@@ -41,7 +42,8 @@ describe("a copy and what is done to it in one tick", () => {
 		expect(page.engine.texts()).toEqual(["b", "a"]);
 		const items = page.patches.at(-1)!.items;
 		const ops = items.flatMap((item) => (item[0] === "ops" ? (item[1] as Op[]) : []));
-		const id = results.copy!.nodes[0]!.lynxId;
+		// Boundary: the test reads the renderer's own id of the node.
+		const id = (results.copy!.nodes[0] as unknown as ElementNode).lynxId;
 		const at = (match: (op: Op) => boolean) => ops.findIndex(match);
 		const created = at((op) => op[0] === OpCode.Create && op[1] === id);
 		const inserted = at((op) => op[0] === OpCode.Insert && op[2] === id);

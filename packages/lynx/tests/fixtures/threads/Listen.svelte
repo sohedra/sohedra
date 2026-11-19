@@ -1,10 +1,12 @@
 <script lang="ts">
+	import type { LynxEvent, LynxNode } from "@sohedra/lynx/elements";
 	import { on } from "svelte/events";
 
 	let { log }: { log: unknown[] } = $props();
-	let box: Element | undefined;
+	let box: LynxNode<"view"> | undefined;
 	let off: (() => void) | undefined;
-	const hear = (name: string) => (event: Event) => log.push([name, event.currentTarget === box]);
+	const hear = (name: string) => (event: LynxEvent) =>
+		log.push([name, event.currentTarget === box]);
 	async function listenLater() {
 		await Promise.resolve();
 		off = on(box!, "tap", hear("tap"));
@@ -14,7 +16,7 @@
 <view
 	class="box"
 	{@attach (node) => {
-		box = node as unknown as Element;
+		box = node;
 	}}
 >
 	<view class="inner"><text>inner</text></view>

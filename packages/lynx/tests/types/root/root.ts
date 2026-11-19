@@ -1,12 +1,18 @@
-// Checked by `pnpm check`, not run. `on(root, …)` from `svelte/events` listens on the page's root:
-// its handler gets the event with the root as `currentTarget`, and its one option is `capture`.
+// Checked by `pnpm check`, not run. The page's root is a node, of the page element: `on(root, …)`
+// from `svelte/events` listens on it, its handler gets the event with the root as `currentTarget`,
+// and its one option is `capture`.
 
 import { root } from "@sohedra/lynx";
+import type { LynxNode } from "@sohedra/lynx/elements";
 import { on } from "svelte/events";
+
+const page: LynxNode<"page"> = root;
+const node: LynxNode = root;
+void [page, node];
 
 const off: () => void = on(root, "tap", (event) => {
 	const type: string = event.type;
-	const target: unknown = event.target;
+	const target: LynxNode = event.target;
 	const self: typeof root = event.currentTarget;
 	void [type, target, self];
 });

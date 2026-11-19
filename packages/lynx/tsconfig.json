@@ -16,6 +16,6 @@
 		"erasableSyntaxOnly": true,
 		"skipLibCheck": true
 	},
-	"include": ["src", "tests", "rstest.config.ts"],
-	"exclude": ["tests/fixtures/build"]
+	"include": ["src", "tests", "scripts", "rstest.config.ts"],
+	"exclude": ["tests/fixtures/build", "tests/fixtures/types"]
 }

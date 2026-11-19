@@ -3,8 +3,8 @@
 // second page element.
 
 import { describe, expect, it } from "@rstest/core";
+import type { LynxNode } from "@sohedra/lynx/elements";
 
-import type { ElementNode } from "../../../src/background/renderer/element.ts";
 import { createStaticCopy, root } from "../../../src/background/root-entry.ts";
 import CopySource from "../../fixtures/threads/page/CopySource.svelte";
 import drawCopySource from "../../fixtures/threads/page/CopySource.svelte?first-frame";
@@ -20,9 +20,7 @@ describe("the page's root as a static copy's source", () => {
 		const patches = page.patches.length;
 		let thrown: unknown;
 		try {
-			page.asBackground(() =>
-				createStaticCopy(root as unknown as ElementNode, handles["holder"] as ElementNode),
-			);
+			page.asBackground(() => createStaticCopy(root, handles["holder"] as LynxNode));
 		} catch (error) {
 			thrown = error;
 		}

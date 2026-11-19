@@ -5,6 +5,7 @@
 // page is gone, no listener of it is called and nothing it is asked throws.
 
 import { describe, expect, it } from "@rstest/core";
+import type { LynxNode } from "@sohedra/lynx/elements";
 import { on } from "svelte/events";
 
 import { root } from "../../../src/background/root-entry.ts";
@@ -16,7 +17,7 @@ import type { SveltePage } from "../svelte-page.ts";
 
 interface Heard {
 	type: string;
-	target: unknown;
+	target: LynxNode;
 	currentTarget: unknown;
 }
 
@@ -80,7 +81,7 @@ describe("the root", () => {
 		const { page, handles } = pageRoot();
 		await page.settle();
 		expect(root.contains(root)).toBe(true);
-		expect(root.contains(handles["plain"])).toBe(true);
+		expect(root.contains(handles["plain"] as LynxNode)).toBe(true);
 	});
 });
 
@@ -222,7 +223,7 @@ describe("once the page is gone", () => {
 			expect(() => root.removeEventListener("touchstart", hear)).not.toThrow();
 		});
 		expect(root.isConnected).toBe(false);
-		expect(root.contains(handles["plain"])).toBe(false);
+		expect(root.contains(handles["plain"] as LynxNode)).toBe(false);
 		expect(page.errors).toEqual([]);
 	});
 });
