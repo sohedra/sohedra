@@ -24,7 +24,8 @@ interface Entries {
 		| "snapshot-action"
 		| "device"
 		| "minimal"
-		| "minimal-runtime";
+		| "minimal-runtime"
+		| "syntax";
 	development: "snapshot" | "device";
 }
 
@@ -42,6 +43,7 @@ const ENTRIES: { [Mode in SharedMode]: Record<Entries[Mode], string> } = {
 		device: "./device/index.ts",
 		minimal: "./minimal/index.ts",
 		"minimal-runtime": "./minimal/runtime.ts",
+		syntax: "./syntax/index.ts",
 	},
 	development: {
 		snapshot: "./snapshot/index.ts",
