@@ -1,6 +1,6 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"description": "Renovate opens pull requests only for dev dependencies' minor and patch updates and GitHub Actions, which merge themselves once CI passes, and for lockfile maintenance, which waits for a person. Every other update waits on the Dependency Dashboard.",
+	"description": "Renovate opens pull requests that merge themselves once CI passes for dev dependencies' minor and patch updates and for the workflows' actions, zizmor and Bun, and pull requests that wait for a person for pnpm/setup and lockfile maintenance. Everything else waits on the Dependency Dashboard: peers of @sohedra/lynx and their dev copies, Lynx, majors, runtime dependencies, pnpm, Node.js and svelte-released. Security fixes keep Renovate's default: they open a pull request at once, whatever the rule; only a dev dependency's merges itself.",
 	"extends": ["github>sohedra/.github:renovate-preset"],
 	"dependencyDashboardApproval": true,
 	"dependencyDashboard": {
@@ -10,7 +10,8 @@
 	"automergeStrategy": "squash",
 	"lockFileMaintenance": {
 		"dependencyDashboardApproval": false,
-		"commitMessageAction": "refresh the lockfile"
+		"commitMessageAction": "refresh the lockfile",
+		"prBodyNotes": ["If a dependency of `@sohedra/lynx` moved, run the phone check before merging."]
 	},
 	"customManagers": [
 		{
@@ -65,6 +66,13 @@
 			"automerge": false
 		},
 		{
+			"description": "rstest's coverage plugin moves with @rstest/core, which waits as a peer.",
+			"matchPackageNames": ["@rstest/coverage-istanbul"],
+			"groupName": null,
+			"dependencyDashboardApproval": true,
+			"automerge": false
+		},
+		{
 			"description": "TypeScript 7 waits for a decision.",
 			"matchDepNames": ["typescript"],
 			"allowedVersions": "<7"
@@ -80,7 +88,7 @@
 			"allowedVersions": "<4"
 		},
 		{
-			"description": "Lynx moves one version at a time, with the engine-upgrade checklist, in one pull request.",
+			"description": "Lynx packages wait on the dashboard as one entry; Lynx moves by hand, one version at a time, with the engine-upgrade checklist.",
 			"matchPackageNames": ["@lynx-js/**"],
 			"groupName": "Lynx",
 			"dependencyDashboardApproval": true,
@@ -101,6 +109,7 @@
 		{
 			"description": "engines.node follows the support policy, by hand.",
 			"matchDepTypes": ["engines"],
+			"matchDepNames": ["node"],
 			"enabled": false
 		}
 	]
