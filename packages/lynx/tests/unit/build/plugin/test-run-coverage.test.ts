@@ -61,11 +61,11 @@ describe("a test run under Rstest's coverage", { timeout: 30_000 }, () => {
 		expect(threadOptions.filter((options) => !options.includes("coverage-instrument"))).toEqual([]);
 	});
 
-	it("has no rule that makes a component's first-frame copy: that is the binding's own tests'", async () => {
+	it("has the rule that makes a component's first-frame copy, for `render` to draw with", async () => {
 		const rules = rulesOf((await testRunConfig()).module?.rules ?? []);
 		const queries = rules.map((rule) =>
 			rule.resourceQuery instanceof RegExp ? rule.resourceQuery.source : "",
 		);
-		expect(queries.filter((query) => query.includes("first-frame"))).toEqual([]);
+		expect(queries.filter((query) => query.includes("first-frame"))).toHaveLength(1);
 	});
 });

@@ -21,7 +21,7 @@ const APP = path.join(WORK, "app");
 const TYPE_TESTS = path.join(WORK, "type-tests");
 
 /** The type tests that reach the source past the public entries, which a published package hides. */
-const INTERNAL_TYPE_TESTS = ["globals", "testing"];
+const INTERNAL_TYPE_TESTS = ["globals", "testing/test-page.ts"];
 
 interface Manifest {
 	name: string;

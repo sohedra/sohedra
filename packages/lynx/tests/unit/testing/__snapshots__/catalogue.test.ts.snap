@@ -1,0 +1,85 @@
+// Rstest Snapshot v1
+
+exports[`the test library's catalogue > background_not_started: the message 1`] = `
+"This page has no background thread, which rerender() needs: it was rendered with \`background: false\`.
+
+Render without \`background: false\` to start the background.
+https://sohedra.com/e/background_not_started"
+`;
+
+exports[`the test library's catalogue > first_frame_copy_missing: the message 1`] = `
+"Card has no first-frame copy, so render could not draw its first frame.
+
+Run the test with withSvelteLynx() from @sohedra/lynx/config/rstest without \`firstFrame: false\` in its options, or render with \`lynx: { firstFrame: false }\`.
+https://sohedra.com/e/first_frame_copy_missing"
+`;
+
+exports[`the test library's catalogue > first_frame_needed_alone: the message 1`] = `
+"A page rendered without its background is its first frame alone, so it cannot also leave the first frame out.
+
+Leave out \`firstFrame: false\`, or leave out \`background: false\` to render on the background.
+https://sohedra.com/e/first_frame_needed_alone"
+`;
+
+exports[`the test library's catalogue > gesture_callback_missing: the message 1`] = `
+"The pan gesture on the <view> has no onSwipe callback to run.
+
+Fire a callback the gesture has, or give the gesture that one.
+https://sohedra.com/e/gesture_callback_missing"
+`;
+
+exports[`the test library's catalogue > gesture_missing: the message 1`] = `
+"The <view> has no pan gesture for lynx.gesture to run.
+
+Pass the element whose main-thread:gesture holds the gesture, once the page has set it: await render first.
+https://sohedra.com/e/gesture_missing"
+`;
+
+exports[`the test library's catalogue > gesture_not_named: the message 1`] = `
+"The <view> has several gestures (pan, tap), and lynx.gesture was not told which to run.
+
+Name the kind of gesture to run as the second argument, such as pan or tap.
+https://sohedra.com/e/gesture_not_named"
+`;
+
+exports[`the test library's catalogue > handler_on_background: the message 1`] = `
+"The tap event on a <view> has a handler on the background thread, which this page does not have: the handler did not run.
+
+Render without \`background: false\` to run it.
+https://sohedra.com/e/handler_on_background"
+`;
+
+exports[`the test library's catalogue > no_page_rendered: the message 1`] = `
+"Nothing is rendered, so fireEvent has no page to act on.
+
+Render the component first, and await it.
+https://sohedra.com/e/no_page_rendered"
+`;
+
+exports[`the test library's catalogue > not_a_list: the message 1`] = `
+"A <view> was given to lynx.list, which drives a <list>.
+
+Pass the <list> element itself.
+https://sohedra.com/e/not_a_list"
+`;
+
+exports[`the test library's catalogue > page_already_rendered: the message 1`] = `
+"A page is rendered already, and a Lynx view shows one page at a time.
+
+End the first page with cleanup() or its unmount() before rendering the next.
+https://sohedra.com/e/page_already_rendered"
+`;
+
+exports[`the test library's catalogue > page_reported_errors: the message 1`] = `
+"The page reported 2 errors while the test waited for it.
+
+Each one is in this error's list of errors: fix the first, which may cause the rest.
+https://sohedra.com/e/page_reported_errors"
+`;
+
+exports[`the test library's catalogue > render_needs_dom: the message 1`] = `
+"There is no DOM to put the page's elements in, so render could not draw it.
+
+Run the test with withSvelteLynx() from @sohedra/lynx/config/rstest, which sets up jsdom.
+https://sohedra.com/e/render_needs_dom"
+`;

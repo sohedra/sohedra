@@ -48,9 +48,9 @@ describe("a build for a test run", () => {
 		);
 	});
 
-	it("compiles the app as the background thread: its constants, and the component for the client", () => {
+	it("compiles the app for the background, and each component's first-frame copy for the main thread", () => {
 		expect(code).toContain("lepus=false js=true");
-		expect(code).not.toContain("lepus=true");
+		expect(code).toContain("lepus=true js=false");
 	});
 
 	it("resolves background-only to its empty module, so a test can import what the app guards with it", () => {
