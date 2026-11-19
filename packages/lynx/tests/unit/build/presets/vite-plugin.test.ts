@@ -128,7 +128,11 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 		const importer = `${path.join(library, "Styled.svelte")}${MAIN}`;
 		expect(await resolve("./styled.css", importer)).toBe(slashed(path.join(library, "styled.css")));
 		const outside = RUNTIME_FILES.firstFrameEntry;
-		expect(await resolve(`/@fs${outside}${MAIN}`, importer)).toBe(`${outside}${MAIN}`);
+		// Vite's name of a file outside the root: `/@fs/` and its path, which on Windows starts with
+		// its drive.
+		expect(await resolve(`/@fs/${outside.replace(/^\//, "")}${MAIN}`, importer)).toBe(
+			`${outside}${MAIN}`,
+		);
 	});
 
 	it("leaves the copies out with firstFrame: false", async () => {
