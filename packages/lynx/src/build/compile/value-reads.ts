@@ -64,6 +64,12 @@ function read(node: unknown, names: Set<string>): void {
 	}
 	if ((type === "ExportNamedDeclaration" || type === "ExportAllDeclaration") && record.source)
 		return;
+	// `export type { Shape }`, `export { type Sized }`: a type's name, never read.
+	if (
+		(type === "ExportNamedDeclaration" || type === "ExportSpecifier") &&
+		record.exportKind === "type"
+	)
+		return;
 	if (type === "ExportSpecifier") {
 		read(field(record, "local"), names);
 		return;
