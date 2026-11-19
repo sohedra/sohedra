@@ -221,12 +221,17 @@ const keyOf = (page: SveltePage, cell: LynxElement): string =>
 
 /**
  * The cells of a list that show one of its items now. The engine fake keeps the cell of an item
- * that was taken out, which Lynx would hand back and never ask about again.
+ * that was taken out, which Lynx would hand back and never ask about again: its key may be one an
+ * item kept has taken since, but the page has let go of its element.
  */
 function liveCells(page: SveltePage, list: LynxElement): LynxElement[] {
 	const keys = new Set(listKeys(page.engine, list));
+	const held = (cell: LynxElement): boolean =>
+		page.asMainThread(() => page.runtime.page.applier?.idOf(cell) !== undefined);
 	// Boundary: a list's children in the engine are the cells Lynx holds.
-	return ([...list.childNodes] as LynxElement[]).filter((cell) => keys.has(keyOf(page, cell)));
+	return ([...list.childNodes] as LynxElement[]).filter(
+		(cell) => keys.has(keyOf(page, cell)) && held(cell),
+	);
 }
 
 /** The live cells Lynx may hand back: those of recyclable items. */
