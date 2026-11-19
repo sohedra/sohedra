@@ -175,7 +175,7 @@ Issues and pull requests that don't meet these rules may be closed without revie
 - Each area of a package keeps one catalogue of its messages, each entry with its fix line and its
   docs page. A test fails when an entry lacks either, and every message has a snapshot test.
 - Warnings appear only in development builds, once per place. An error that repeats is shown once,
-  with a count.
+  with a count, until it has been quiet for five seconds.
 - On Lynx, errors are reported into Lynx with `lynx.reportError`, using Lynx's codes and levels, not
   through a separate system.
 

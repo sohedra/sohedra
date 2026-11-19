@@ -90,9 +90,11 @@ export interface HotUpdates {
 /**
  * Loads the page again when a hot update lands after Svelte threw on it while it mounted, flushed
  * or ran effects: the update's modules are in place then, and the page starts from them. What the
- * app reports, a handler's own throw and the binding's own reports leave nothing broken that a
- * reload would mend, so the page keeps its state. A hot update is applied in the status `apply`,
- * and lands when the status turns `idle` after it.
+ * app reports, a handler's own throw and the binding's own reports do not count, so the page keeps
+ * its state. Two of Svelte's throws are not counted either: an `{#await}` branch's, which Svelte
+ * runs in the promise's own reaction, where only Lynx sees the rejection, and an effect's inside
+ * the app's own `flushSync()`, which leaves the handler as the handler's throw. A hot update is
+ * applied in the status `apply`, and lands when the status turns `idle` after it.
  */
 export function reloadAfterCrash(hot: HotUpdates | undefined): void {
 	let last = "idle";
