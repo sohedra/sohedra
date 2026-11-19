@@ -26,7 +26,7 @@ const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 //              behavior spec run on the fake
 //   types/     checked by `pnpm check`, not run
 //   vitest/    the Vitest preset's own projects, which Vitest runs
-//   fixtures/  inputs the tests read
+//   fixtures/  inputs the tests read (the app of scripts/consumer.ts has tests of its own)
 //
 // The tests of the page, and of the Lynx it runs on, go through the package's own preset: a DOM,
 // the engine fake and a cleanup after each test. The rest run in Node.
@@ -54,8 +54,13 @@ const config: RstestConfig = defineConfig({
 			include: ["tests/**/*.test.ts"],
 			// The run's folder of the builds the build tests share.
 			globalSetup: ["tests/build/global-setup.ts"],
-			// The Vitest preset's suite runs under Vitest (tests/build/vitest-run.test.ts).
-			exclude: [...onTheTestTree.map((folder) => `${folder}/*.test.ts`), "tests/vitest/**"],
+			// The Vitest preset's suite runs under Vitest (tests/build/vitest-run.test.ts), and the
+			// fixture app's tests in the app that scripts/consumer.ts installs.
+			exclude: [
+				...onTheTestTree.map((folder) => `${folder}/*.test.ts`),
+				"tests/vitest/**",
+				"tests/fixtures/**",
+			],
 		},
 	],
 	// Node loads Svelte's server runtime unless told otherwise; the contract tests load the client

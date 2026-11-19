@@ -38,7 +38,9 @@ own build) and for the versions you use.
 
 ## Setup
 
-You need Node.js 26.13.1 or later and pnpm 12.21 or later (see `devEngines` in `package.json`).
+You need Node.js 26.13.1 or later and pnpm 12.21 or later (see `devEngines` in `package.json`). On
+Windows, clone with symbolic links on (`git clone -c core.symlinks=true`), which the agent skills in
+`.claude/skills/` are.
 
 ```sh
 pnpm install

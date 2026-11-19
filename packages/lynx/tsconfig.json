@@ -17,5 +17,5 @@
 		"skipLibCheck": true
 	},
 	"include": ["src", "tests", "scripts", "rstest.config.ts"],
-	"exclude": ["tests/fixtures/build", "tests/fixtures/types"]
+	"exclude": ["tests/fixtures/build", "tests/fixtures/consumer", "tests/fixtures/types"]
 }

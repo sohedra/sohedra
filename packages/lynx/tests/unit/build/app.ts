@@ -10,7 +10,13 @@ export function inApp(...segments: string[]): string {
 	return path.join(APP_ROOT, "src", ...segments);
 }
 
-/** `text` with the app's folder written as `/app`, so a snapshot is the same on every machine. */
+/**
+ * `text` with the app's folder written as `/app`, and the paths under it with `/`, so a snapshot is
+ * the same on every machine: Windows separates the folders with `\`.
+ */
 export function withoutRoot(text: string): string {
-	return text.split(APP_ROOT).join("/app");
+	return text
+		.split(APP_ROOT)
+		.join("/app")
+		.replace(/\/app(?:\\[\w.-]+)+/g, (file) => file.replaceAll("\\", "/"));
 }

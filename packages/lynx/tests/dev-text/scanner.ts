@@ -171,7 +171,8 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 		types: [],
 	});
 	const checker = program.getTypeChecker();
-	const scanned = new Set(files);
+	// TypeScript names files with `/`, which Windows' paths have not.
+	const scanned = new Set(files.map((file) => file.split(path.sep).join("/")));
 	const sources = program.getSourceFiles().filter((source) => scanned.has(source.fileName));
 
 	// 1. The code that runs only in development, from the guards.
@@ -321,7 +322,12 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 						if (!isDev) shipped.add(text);
 						else if (!dev.has(text)) {
 							const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
-							dev.set(text, { text, file: path.relative(root, source.fileName), line });
+							dev.set(text, {
+								text,
+								// With `/` between folders on every system, as Windows' `relative()` has not.
+								file: path.relative(root, source.fileName).replaceAll("\\", "/"),
+								line,
+							});
 						}
 					}
 				}

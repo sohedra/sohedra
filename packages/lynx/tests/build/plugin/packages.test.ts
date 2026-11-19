@@ -1,6 +1,9 @@
 // How packages in `node_modules` are built and resolved: compiled by each thread's rules whatever
 // the app says about `source.include`, and one copy of the packages `singleCopy` names.
 
+import fs from "node:fs";
+import path from "node:path";
+
 import { afterEach, describe, expect, it } from "@rstest/core";
 
 import { buildApp, cleanBuild, scriptsOf } from "../build-app.ts";
@@ -36,6 +39,19 @@ describe("a package of node_modules", () => {
 		expect(mainThread).not.toContain("__MAIN_THREAD__");
 		expect(background).toContain("background-lib-branch");
 		expect(background).not.toContain("__MAIN_THREAD__");
+	}, 180_000);
+
+	it("is compiled in a test run too, as the background's, where Rstest compiles none of them", async () => {
+		build = await buildApp("include", { packages: ["thread-lib"], callerName: "rstest" });
+		expect(build.error + build.messages).toBe("");
+		const out = path.join(build.dist, "out");
+		const code = fs
+			.readdirSync(out, { recursive: true, encoding: "utf8" })
+			.filter((file) => file.endsWith(".js"))
+			.map((file) => fs.readFileSync(path.join(out, file), "utf8"))
+			.join("\n");
+		expect(code).toContain("background-lib-branch");
+		expect(code).not.toContain("__MAIN_THREAD__");
 	}, 180_000);
 });
 

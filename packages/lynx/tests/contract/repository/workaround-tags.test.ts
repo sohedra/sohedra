@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, it } from "@rstest/core";
 
@@ -10,7 +11,7 @@ import {
 	workaroundList,
 } from "../../../../../scripts/workarounds.ts";
 
-const REPO = new URL("../../../../../", import.meta.url).pathname;
+const REPO = fileURLToPath(new URL("../../../../../", import.meta.url));
 
 /** The problems found in one source file, the lines joined with newlines. */
 const problems = (...lines: string[]): string[] =>

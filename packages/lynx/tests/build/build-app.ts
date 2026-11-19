@@ -130,7 +130,8 @@ function copyOutside(app: string, under: string, options: BuildAppOptions): stri
 	const svelte = path.dirname(
 		createRequire(import.meta.url).resolve(`${options.svelte ?? "svelte"}/package.json`),
 	);
-	fs.symlinkSync(svelte, path.join(modules, "svelte"), "dir");
+	// A junction on Windows, which links a folder without the privilege a symbolic link needs.
+	fs.symlinkSync(svelte, path.join(modules, "svelte"), "junction");
 	for (const name of options.packages ?? []) {
 		const target = path.join(modules, name);
 		fs.cpSync(path.join(FIXTURES, "packages", name), target, { recursive: true });

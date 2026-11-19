@@ -63,7 +63,9 @@ beforeAll(() => {
 	const tarball = fs.readdirSync(work).find((name) => name.endsWith(".tgz"))!;
 	unpacked = path.join(work, "unpacked");
 	fs.mkdirSync(unpacked);
-	execFileSync("tar", ["-xzf", path.join(work, tarball), "-C", unpacked]);
+	// Names relative to `work`: GNU tar, which Windows' Git puts first on the path, reads `D:\…` as
+	// a remote host.
+	execFileSync("tar", ["-xzf", tarball, "-C", "unpacked"], { cwd: work });
 	unpacked = path.join(unpacked, "package");
 	files = fs
 		.readdirSync(unpacked, { recursive: true, encoding: "utf8" })

@@ -3,6 +3,7 @@
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 
@@ -10,6 +11,12 @@ import ts from "typescript";
 
 const ROOT = path.resolve(import.meta.dirname, "../../../../..");
 const PACKAGE = "packages/lynx";
+const OXLINT = (() => {
+	const manifest = createRequire(path.join(ROOT, "package.json")).resolve("oxlint/package.json");
+	// Boundary: the package's manifest, read for its `bin`.
+	const { bin } = JSON.parse(fs.readFileSync(manifest, "utf8")) as { bin: Record<string, string> };
+	return path.join(path.dirname(manifest), bin["oxlint"]!);
+})();
 
 /** One reported problem: the file, and the rule that reported it. */
 export interface Problem {
@@ -40,15 +47,21 @@ export function lint(files: Record<string, string>): Problem[] {
 			fs.mkdirSync(path.dirname(path.join(folder, file)), { recursive: true });
 			fs.writeFileSync(path.join(folder, file), source);
 		}
+		// oxlint's own script, run by this Node: `node_modules/.bin/oxlint` is a shell script, which
+		// Windows cannot start.
 		const result = spawnSync(
-			path.join(ROOT, "node_modules/.bin/oxlint"),
-			["--format", "json", "--no-error-on-unmatched-pattern", "."],
+			process.execPath,
+			[OXLINT, "--format", "json", "--no-error-on-unmatched-pattern", "."],
 			{ cwd: folder, encoding: "utf8" },
 		);
 		const report = JSON.parse(result.stdout) as {
 			diagnostics: { code: string; filename: string }[];
 		};
-		return report.diagnostics.map(({ code, filename }) => ({ file: filename, rule: code }));
+		// Windows names the files with `\`.
+		return report.diagnostics.map(({ code, filename }) => ({
+			file: filename.replaceAll("\\", "/"),
+			rule: code,
+		}));
 	} finally {
 		fs.rmSync(folder, { recursive: true, force: true });
 	}

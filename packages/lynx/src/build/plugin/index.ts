@@ -95,12 +95,20 @@ const SWC_DEFAULTS = {
 export const PLUGIN_OPTIONS: unique symbol = Symbol.for("@sohedra/lynx:plugin-options");
 
 /**
+ * The scripts a build or a test run compiles: node_modules too (Svelte ships ES2022, and packages
+ * written for Lynx, this one among them, read the thread's constants), as ReactLynx does. The app's
+ * own `source.include` only adds files, so it joins this one.
+ */
+const EVERY_SCRIPT = /\.(?:js|mjs|cjs|ts|mts|cts)$/;
+
+/**
  * The Rsbuild plugin that builds a Svelte app for Lynx, on top of Lynx's own build plugins. Throws
  * when an option is unknown or has a wrong value: one error lists every mistake.
  *
- * It runs on the Node.js versions rspeedy and Rsbuild run on. A component's main-thread functions
- * written in TypeScript need Node.js 22.13 or later, whose `module.stripTypeScriptTypes` takes out
- * their types; only types: an `enum` or a `namespace` there is a build error.
+ * It runs on the Node.js versions the package's `engines` names (22.22.2, 24.15 and 26, each line
+ * from that version). A component's main-thread functions written in TypeScript have their types
+ * taken out by Node's `module.stripTypeScriptTypes`; only types: an `enum` or a `namespace` there is
+ * a build error.
  *
  * The background's script may be split into chunks (`splitChunks`, `performance.chunkSplit`); the
  * main thread's never is. The chunks go into the bundle (`output.inlineScripts`, on by default) or
@@ -143,6 +151,9 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 				// A test draws the first frame of whatever it renders: the option's function form is
 				// for a build's entries, which a test run has none of.
 				const firstFrameCopies = firstFrame !== false;
+				api.modifyRsbuildConfig((config, { mergeRsbuildConfig }) =>
+					mergeRsbuildConfig(config, { source: { include: [EVERY_SCRIPT] } }),
+				);
 				api.modifyBundlerChain({
 					order: "post",
 					handler: (chain, { CHAIN_ID, bundler }) => {
@@ -175,9 +186,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 			let checked = false;
 			api.modifyRsbuildConfig((config, { mergeRsbuildConfig }) => {
 				const merged = mergeRsbuildConfig(config, {
-					// Compile node_modules too (Svelte ships ES2022), as ReactLynx does. The app's own
-					// `source.include` only adds files, so it joins this one.
-					source: { include: [/\.(?:js|mjs|cjs|ts|mts|cts)$/] },
+					source: { include: [EVERY_SCRIPT] },
 					// After the app's own: the main thread's script stays whole.
 					tools: { rspack: mainThreadScriptWhole(sayOnce) },
 				});

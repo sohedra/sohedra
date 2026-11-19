@@ -1,0 +1,13 @@
+{
+	"name": "fixture-consumer-app",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "rspeedy build",
+		"test:rstest": "rstest run",
+		"test:vitest": "vitest run"
+	},
+	"devDependencies": {
+		"typescript": "^6.0.3"
+	}
+}

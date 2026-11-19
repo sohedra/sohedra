@@ -289,7 +289,11 @@ export const deferredRows: Pass = (context) => {
 		const read = listAttributesText(source, list) ?? "";
 		// Counted from 0, as the places of Svelte's development build are.
 		const [line, column] = position(source, list.start!);
-		const file = path.relative(context.root ?? "", filename);
+		// With `/` on every system, as Svelte names a component's file.
+		const file = path
+			.relative(context.root ?? "", filename)
+			.split(path.sep)
+			.join("/");
 		const where =
 			background && development ? stringLiteral(`${file}:${line + 1}:${column}`) : undefined;
 		const args = where === undefined ? read : `${read || "undefined"}, ${where}`;

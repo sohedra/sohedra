@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import net from "node:net";
 import path from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import zlib from "node:zlib";
 
 import { RsdoctorRspackPlugin } from "@rsdoctor/rspack-plugin";
@@ -100,7 +101,10 @@ describe("a build with Rsdoctor", () => {
 	it("builds, with no message but the findings of Rsdoctor's own rules", () => {
 		expect(build.error).toBe("");
 		expect(build.ok).toBe(true);
-		const messages = build.messages.split(/\n(?=WARNING in |ERROR in )/).filter(Boolean);
+		// Without colors, which Rsdoctor adds where the terminal is said to take them (CI).
+		const messages = stripVTControlCharacters(build.messages)
+			.split(/\n(?=WARNING in |ERROR in )/)
+			.filter(Boolean);
 		expect(messages.filter((message) => !/^WARNING in ⚠ \[E\d+:Warn:/.test(message))).toEqual([]);
 	});
 
