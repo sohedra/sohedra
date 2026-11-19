@@ -1,0 +1,190 @@
+# Every claim the packages make, run on every pull request and every push to main:
+#
+# - fast: lint, format and type checks, on Linux. A draft pull request runs only these
+#   (CONTRIBUTING.md § Pull requests); marking it ready runs the rest.
+# - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
+#   own Node.js (devEngines in package.json).
+# - generated: the generated pages, many more of them than a local run tries, on Linux.
+# - apps: @sohedra/lynx packed as it is published, installed into a fresh app and built and tested
+#   with both test presets (packages/lynx/scripts/consumer.ts): pnpm on each Node.js line, the other
+#   package managers on the newest, pnpm on Windows, and every range at its floor on the oldest
+#   Node.js claimed.
+# - ci-passed: one result for the rest, which a ruleset can require whatever runs.
+#
+# The repository allows only GitHub's own actions and pnpm/setup at one commit. No job runs an
+# agent or reads a secret, so the pnpm store is cached; the app jobs, whose installs have no
+# lockfile, only restore it. zizmor audits this file in the fast and Linux checks, and `pnpm lint`
+# checks the repository's own rules for it (scripts/workflows.ts).
+
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  # A new push to a pull request cancels its older run; each push to main runs to the end.
+  group:
+    ci-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    # Bash on every system: PowerShell would check only a script's last command.
+    shell: bash
+
+jobs:
+  fast:
+    name: Fast checks
+    if: github.event.pull_request.draft == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # GitHub Actions' security linter, run as a command: the repository allows no action but
+      # GitHub's own and pnpm/setup. Offline: its online audits need a token.
+      - name: zizmor
+        run: pipx run zizmor==1.32.0 --offline .github/workflows
+      # The repository check compares recorded coverage with main's.
+      - name: Fetch main
+        run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+      # pnpm, the Node.js of devEngines, and `pnpm install --frozen-lockfile`.
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+          require-lockfile: true
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm check
+
+  checks:
+    name: Checks (${{ matrix.os }})
+    if: github.event.pull_request.draft != true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      # Git for Windows checks a symbolic link out as a text file unless told otherwise, and the
+      # repository links each skill into .claude/skills/.
+      - name: Keep symbolic links
+        if: runner.os == 'Windows'
+        run: git config --global core.symlinks true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # GitHub Actions' security linter, run as a command: the repository allows no action but
+      # GitHub's own and pnpm/setup. Offline: its online audits need a token.
+      - name: zizmor
+        if: runner.os == 'Linux'
+        run: pipx run zizmor==1.32.0 --offline .github/workflows
+      - name: Fetch main
+        run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+          require-lockfile: true
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm check
+      - run: pnpm build
+      - run: pnpm test
+
+  generated:
+    name: Generated pages
+    if: github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+          require-lockfile: true
+      - run: pnpm -F @sohedra/lynx test tests/threads/generated
+        env:
+          GENERATED_RUNS: 300
+          # The suite's seed on a pull request, so a run says the same each time; a new one for each
+          # push to main, so the pages tried grow over time. A failure prints its seed.
+          GENERATED_SEED: ${{ github.event_name == 'push' && github.run_number || 2026 }}
+
+  apps:
+    name:
+      App with ${{ matrix.manager }}, Node.js ${{ matrix.node }} (${{ matrix.versions }}${{
+      matrix.os && ', Windows' || '' }})
+    if: github.event.pull_request.draft != true
+    strategy:
+      fail-fast: false
+      matrix:
+        # What changes with the Node.js line is the binding's own code, the same under every
+        # manager; what changes with the manager is the app's node_modules, the same on every line.
+        # So pnpm runs on each line, the other managers on the newest, and the floors on the oldest
+        # Node.js claimed, which is also the oldest of everything. pnpm once on Windows runs the
+        # install a Windows developer gets.
+        include:
+          - { manager: pnpm, node: 22, versions: newest }
+          - { manager: pnpm, node: 24, versions: newest }
+          - { manager: pnpm, node: 26, versions: newest }
+          - { manager: npm, node: 26, versions: newest }
+          - { manager: yarn, node: 26, versions: newest }
+          - { manager: bun, node: 26, versions: newest }
+          - { manager: pnpm, node: 22.22.2, versions: floor }
+          - { manager: pnpm, node: 26, versions: newest, os: windows-latest }
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The repository's own Node.js installs, builds and packs the package. The app's install has
+      # no lockfile, so this job restores the store and never saves it.
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+          save-cache: false
+          require-lockfile: true
+      - name: Pack @sohedra/lynx
+        run: |
+          pnpm -F @sohedra/lynx build
+          pnpm -F @sohedra/lynx pack --pack-destination "$RUNNER_TEMP/pack"
+      - if: matrix.manager == 'bun'
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          runtime: bun@1.4.4
+          install: false
+      # The app's Node.js line runs the app; set up last, so it comes first on the path.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - name: Install, build and test the app
+        env:
+          MANAGER: ${{ matrix.manager }}
+          VERSIONS: ${{ matrix.versions }}
+        run: >-
+          node packages/lynx/scripts/consumer.ts --manager "$MANAGER" --versions "$VERSIONS"
+          --tarball "$RUNNER_TEMP/pack"
+
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [fast, checks, generated, apps]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # A draft runs only `fast`, and a ready pull request or main everything else: a skipped job
+      # passes, a failed or cancelled one does not.
+      - name: Fail unless every job passed or was skipped
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1

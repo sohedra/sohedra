@@ -1,19 +1,27 @@
 // Checks the repository's own setup, so decisions written in AGENTS.md and CONTRIBUTING.md can't
 // drift. Runs as part of `pnpm lint`.
 
-import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { execFileSync } from "node:child_process";
+import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 
 import { parse } from "yaml";
 
+import { lowered, readCoverageBaseline } from "./coverage-baseline.ts";
 import { readLabels } from "./labels.ts";
+import { checkSharedPackages } from "./shared-packages.ts";
+import { listIsCurrent, scanRepository } from "./workarounds.ts";
+import { checkWorkflows } from "./workflows.ts";
 
 const problems: string[] = [];
 const IGNORED_DIRS = new Set([".git", "node_modules", ".svelte-kit", "dist", "coverage"]);
 // Agent worktrees are other checkouts of this repository, checked in their own run.
 const IGNORED_PATHS = new Set([join(".claude", "worktrees")]);
 
-/** Every file under `dir`, as paths relative to the repository root, skipping build and VCS folders. */
+/**
+ * Every file under `dir`, as paths relative to the repository root with `/` between folders on every
+ * system, skipping build and VCS folders.
+ */
 function walk(dir: string): string[] {
 	if (!existsSync(dir)) {
 		return [];
@@ -27,7 +35,8 @@ function walk(dir: string): string[] {
 		if (entry.isDirectory()) {
 			files.push(...walk(path));
 		} else {
-			files.push(relative(".", path));
+			// Windows' `relative()` separates folders with `\`, which no name in the repository holds.
+			files.push(relative(".", path).replaceAll("\\", "/"));
 		}
 	}
 	return files;
@@ -103,7 +112,14 @@ const agentFiles = allFiles.filter(
 		file.endsWith("AGENTS.md") || file.startsWith(".agents/") || file.startsWith(".claude/"),
 );
 for (const file of agentFiles) {
-	if (statSync(file).isFile() && HIDDEN.test(readFileSync(file, "utf8"))) {
+	let text: string;
+	try {
+		text = readFileSync(file, "utf8");
+	} catch {
+		// A folder, or a file removed since it was listed: nothing to read.
+		continue;
+	}
+	if (HIDDEN.test(text)) {
 		problems.push(
 			`${file} contains hidden Unicode characters (zero-width, bidirectional or tag). Remove them.`,
 		);
@@ -181,6 +197,63 @@ for (const pattern of workspace.packages ?? []) {
 		}
 	}
 }
+
+// 7. A package that runs on both the web and Lynx never imports `@sohedra/lynx`.
+problems.push(...checkSharedPackages("."));
+
+// 8. Workaround tags are complete, and the committed list, if there is one, matches them.
+const workaroundTags = scanRepository(".");
+problems.push(...workaroundTags.problems);
+if (workaroundTags.problems.length === 0 && !listIsCurrent(".", workaroundTags.workarounds)) {
+	problems.push("docs/workarounds.md is out of date. Run: node scripts/workarounds.ts --write");
+}
+
+// 9. Recorded coverage is valid, and never lower than on main (when main is known here).
+for (const file of allFiles.filter((name) => name.endsWith("/tests/coverage-baseline.json"))) {
+	const folder = file.slice(0, -"/tests/coverage-baseline.json".length);
+	try {
+		const current = readCoverageBaseline(folder);
+		let before: string | undefined;
+		try {
+			before = execFileSync("git", ["show", `origin/main:${file}`], {
+				encoding: "utf8",
+				stdio: ["ignore", "pipe", "ignore"],
+			});
+		} catch {
+			// No origin/main in this clone, or the file is new: nothing to compare with.
+		}
+		const lower =
+			// Boundary: JSON has no type; it is the same shape as `current`.
+			before === undefined ? [] : lowered(current, JSON.parse(before) as typeof current);
+		if (lower.length > 0) {
+			problems.push(
+				`${file} lowers ${lower.join(", ")}. Recorded coverage only goes up: add tests instead.`,
+			);
+		}
+	} catch (error) {
+		// Boundary: a thrown value is `unknown`; these are `Error`s from the readers.
+		problems.push((error as Error).message);
+	}
+}
+
+// 10. A package's lint config extends the root's: oxlint gives a nested config none of the root's
+// rules unless it says so.
+for (const file of allFiles.filter(
+	(name) => name.endsWith(".oxlintrc.jsonc") && name !== ".oxlintrc.jsonc",
+)) {
+	const list = /"extends"\s*:\s*\[([^\]]*)\]/.exec(readFileSync(file, "utf8"))?.[1] ?? "";
+	const extended = [...list.matchAll(/"([^"]+)"/g)].map((match) =>
+		relative(".", join(dirname(file), match[1]!)),
+	);
+	if (!extended.includes(".oxlintrc.jsonc")) {
+		problems.push(
+			`${file} doesn't extend the root's lint config. Add "extends": ["${relative(dirname(file), ".oxlintrc.jsonc")}"].`,
+		);
+	}
+}
+
+// 11. Workflows keep AGENTS.md's rules, and CI runs every Node.js line a package claims.
+problems.push(...checkWorkflows("."));
 
 if (problems.length > 0) {
 	console.error(["Repository check failed:", ...problems].join("\n- "));

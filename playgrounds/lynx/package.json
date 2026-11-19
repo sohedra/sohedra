@@ -1,0 +1,23 @@
+{
+	"name": "@sohedra/playground-lynx",
+	"version": "0.0.0",
+	"private": true,
+	"description": "A Svelte page on Lynx, built with rspeedy",
+	"license": "Apache-2.0",
+	"type": "module",
+	"scripts": {
+		"build": "rspeedy build",
+		"check": "tsc -p tsconfig.json --noEmit",
+		"dev": "rspeedy dev"
+	},
+	"dependencies": {
+		"svelte": "https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be"
+	},
+	"devDependencies": {
+		"@lynx-js/qrcode-rsbuild-plugin": "^0.7.3",
+		"@lynx-js/rspeedy": "^0.18.6",
+		"@sohedra/lynx": "workspace:*",
+		"@types/node": "^26.6.6",
+		"typescript": "^6.0.3"
+	}
+}

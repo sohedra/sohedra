@@ -1,0 +1,137 @@
+// Rstest Snapshot v1
+
+exports[`the main thread's catalogue > change_not_applied: the message 1`] = `
+"A change to the page could not be applied on the main thread: The main thread has no element 7.
+While trying to insert <view> 42 into <scroll-view> 7.
+
+The rest of the change was applied. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/change_not_applied"
+`;
+
+exports[`the main thread's catalogue > element_has_no_view: the message 1`] = `
+"Lynx could not run boundingClientRect: the element has no view on the screen. Lynx makes a view only for an element it draws, not for one that is hidden or not shown yet.
+
+Call boundingClientRect once the element is shown, for example after a layoutchange event of the element.
+https://sohedra.com/e/element_has_no_view"
+`;
+
+exports[`the main thread's catalogue > element_left_page: the message 1`] = `
+"Lynx could not run scrollTo: the element was removed from the page in the same update, before Lynx ran the call.
+
+Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.
+https://sohedra.com/e/element_left_page"
+`;
+
+exports[`the main thread's catalogue > element_missing: the message 1`] = `
+"The main thread has no element 7.
+
+The two threads disagree about the page. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/element_missing"
+`;
+
+exports[`the main thread's catalogue > element_released: the message 1`] = `
+"A main-thread function called setStyleProperty on an element the page has let go of, so nothing happened.
+
+Read the element where the function runs, from its event's target or a ref the element holds now, rather than keeping it past its element's life.
+https://sohedra.com/e/element_released"
+`;
+
+exports[`the main thread's catalogue > first_frame_call_unanswered: the message 1`] = `
+"A main-thread function called runOnBackground in the first frame, and no background function took the call when the background took the page over, so it has no answer (3 calls).
+
+Call it from an element the background renders the same way as the first frame, not one inside {#if mainThread} or a branch the threads take apart, or once the page has started.
+https://sohedra.com/e/first_frame_call_unanswered"
+`;
+
+exports[`the main thread's catalogue > first_frame_markup_unreadable: the message 1`] = `
+"The first frame was not drawn: its markup could not be read at character 11, where the value of class on <view> is not quoted.
+
+The page is shown when the background has made it. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/first_frame_markup_unreadable"
+`;
+
+exports[`the main thread's catalogue > first_frame_threw: the message 1`] = `
+"The first frame was not drawn: a component threw as the page rendered it on the main thread (NativeModules is not defined).
+
+Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/env. The page is shown when the background has made it.
+https://sohedra.com/e/first_frame_threw"
+`;
+
+exports[`the main thread's catalogue > lazy_bundle_not_on_main_thread: the message 1`] = `
+"The lazy bundle https://cdn.example/lazy-bundle/Chart.bundle reached the background but not the main thread, so its main-thread functions and styles are missing.
+
+Check that the bundle is served at that address and that the device reaches it: the main thread takes the bundle again only when the page is opened again.
+https://sohedra.com/e/lazy_bundle_not_on_main_thread"
+`;
+
+exports[`the main thread's catalogue > list_row_not_written: the message 1`] = `
+"A <list> asked for its row 12, which the page has not written, so the row stays empty.
+
+The list's other rows are shown. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/list_row_not_written"
+`;
+
+exports[`the main thread's catalogue > main_thread_attribute_unknown: the message 1`] = `
+"The attribute main-thread:bindtap-later binds nothing: a main-thread attribute is main-thread:ref, main-thread:gesture or a main-thread event.
+
+Write a main-thread event as main-thread:ontap, main-thread:ontapcapture, main-thread:oncatchtap or main-thread:oncatchtapcapture, with the event's name in place of tap.
+https://sohedra.com/e/main_thread_attribute_unknown"
+`;
+
+exports[`the main thread's catalogue > main_thread_function_not_found: the message 1`] = `
+"The main-thread function 9aef:c44c3:1 has no body on the main thread: the module that declares it did not load there.
+
+A function of a bundle loaded with import() runs once that bundle has loaded. Otherwise, this is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/main_thread_function_not_found"
+`;
+
+exports[`the main thread's catalogue > main_thread_update_loop: the message 1`] = `
+"Main-thread functions changed the page 1000 times in a row, and the main thread got no turn for anything else: a main-thread function probably changes what makes it run again.
+The last to run was 9aef:c44c3:2, for the event layoutchange.
+Its last change was setStyleProperty(height).
+
+Change the element only when the value differs, as a layout handler that sets a size or a scroll handler that sets a scroll position must. Until the main thread's next turn, what main-thread functions change is not shown.
+https://sohedra.com/e/main_thread_update_loop"
+`;
+
+exports[`the main thread's catalogue > main_thread_value_not_runnable: the message 1`] = `
+"Lynx asked the main thread to run a value that is not a main-thread function, so nothing ran.
+
+The engine handed back something the page did not give it. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/main_thread_value_not_runnable"
+`;
+
+exports[`the main thread's catalogue > main_thread_value_too_deep: the message 1`] = `
+"A value a main-thread function captured or was given is nested more than 1000 levels deep, so the function did not run.
+
+Give the function a flatter value, or only the part of it the function reads.
+https://sohedra.com/e/main_thread_value_too_deep"
+`;
+
+exports[`the main thread's catalogue > not_a_background_function_handle: the message 1`] = `
+"The value given to runOnBackground, save, is not a background function it can call, so the call has no answer.
+
+Call runOnBackground(fn) in the body of a function that starts with 'main thread', with fn the background function itself: the build turns it into what the call needs there.
+https://sohedra.com/e/not_a_background_function_handle"
+`;
+
+exports[`the main thread's catalogue > page_is_gone: the message 1`] = `
+"A call of runOnBackground has no answer: the page it was made on has been closed or reloaded.
+
+Nothing to fix when the page closed on purpose. Otherwise, stop the timers and animations of a page that reloads, so they make no calls for it.
+https://sohedra.com/e/page_is_gone"
+`;
+
+exports[`the main thread's catalogue > rewrite_not_page: the message 1`] = `
+"The background wrote element 7 again, and the main thread writes only the whole page again.
+
+The rest of the change was applied. This is a bug in @sohedra/lynx: report it with the component and the steps that lead to it.
+https://sohedra.com/e/rewrite_not_page"
+`;
+
+exports[`the main thread's catalogue > ui_method_failed: the message 1`] = `
+"Lynx could not run setValue on the element: it answered with the code 4.
+
+Check that the element is on the page, and that Lynx's docs list setValue as a UI method of its tag.
+https://sohedra.com/e/ui_method_failed"
+`;

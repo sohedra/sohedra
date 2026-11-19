@@ -1,0 +1,13 @@
+// Rstest Snapshot v1
+
+exports[`what cannot be a main-thread function > a method of a class or of an object: an error with the file, line and column 1`] = `
+"A class method cannot be a main-thread function: it would run without its object.
+/app/src/broken.ts:2:3
+
+1: export class Box {
+2:   onTap() {
+     ^
+
+Write a function instead, and pass it what it needs.
+https://sohedra.com/e/main_thread_function_method"
+`;

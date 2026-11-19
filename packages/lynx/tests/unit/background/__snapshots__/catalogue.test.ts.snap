@@ -1,0 +1,257 @@
+// Rstest Snapshot v1
+
+exports[`the background's catalogue > animation_canceled: the message 1`] = `
+"The animation fade of the <view> was canceled before it finished.
+
+Nothing to fix when the animation was canceled on purpose. Catch the rejection of finished where a canceled animation matters.
+https://sohedra.com/e/animation_canceled"
+`;
+
+exports[`the background's catalogue > attribute_not_copyable: the message 1`] = `
+"The value of accessibility-actions on <view> cannot be sent to the main thread (Do not know how to serialize a BigInt), so the element does not get it.
+
+Give the attribute plain data: strings, numbers, booleans, null, arrays and plain objects, without cycles or BigInt values.
+https://sohedra.com/e/attribute_not_copyable"
+`;
+
+exports[`the background's catalogue > background_function_missing: the message 1`] = `
+"A main-thread function called a background function through runOnBackground, and the background no longer has it: the page let go of the main-thread function that named it.
+
+Keep main-thread functions that call the background in an attribute, a ref or a call that is still on the page. If the page was made again after its first frame could not be hydrated, functions kept from before cannot call the background.
+https://sohedra.com/e/background_function_missing"
+`;
+
+exports[`the background's catalogue > build_failed: the message 1`] = `
+"The app's last change did not build, so the page still runs the app as it was.
+error   src/App.svelte:3:9 Unexpected token
+  1 | <script>
+> 3 |   let a = ;
+
+And 2 more: the terminal shows all.
+
+Fix the error the terminal shows too: the page updates once the app builds.
+https://sohedra.com/e/build_failed"
+`;
+
+exports[`the background's catalogue > capture_too_deep: the message 1`] = `
+"The main-thread function of main-thread:ontap on <view> captures tree, which holds itself or is nested more than 500 levels deep, so it cannot be sent to the main thread.
+src/Tree.svelte:12:2
+
+Read only the members the function needs, such as tree.id, so that it captures those alone.
+https://sohedra.com/e/capture_too_deep"
+`;
+
+exports[`the background's catalogue > element_in_main_thread_function: the message 1`] = `
+"The main-thread function of main-thread:ontap on <text> captures box, which holds the <view> element of the background, and an element cannot be sent to the main thread.
+src/Box.svelte:8:2
+
+Give the element main-thread:ref={ref}, with const ref = mainThreadRef() from @sohedra/lynx, and capture ref instead: the function reads the element as ref.current.
+https://sohedra.com/e/element_in_main_thread_function"
+`;
+
+exports[`the background's catalogue > element_not_on_page: the message 1`] = `
+"The <view> is not on the page, so its boundingClientRect cannot run: Lynx has no element for it.
+
+Call boundingClientRect once the element is on the page: in an attachment, an effect or an event handler, not while the component is being built or after the element was removed.
+https://sohedra.com/e/element_not_on_page"
+`;
+
+exports[`the background's catalogue > element_not_shown: the message 1`] = `
+"The <view> is in a list row Lynx is not showing, so its boundingClientRect cannot run: Lynx makes a row's elements only while it shows the row.
+
+Call boundingClientRect while Lynx shows the row, for example from the row's layoutchange event.
+https://sohedra.com/e/element_not_shown"
+`;
+
+exports[`the background's catalogue > hydration_mismatch: the message 1`] = `
+"The first frame did not match the page the background rendered: the <view>'s class is "card" on the background and "card wide" in the first frame. The page was made again.
+src/Card.svelte:4:1
+
+Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.
+https://sohedra.com/e/hydration_mismatch"
+`;
+
+exports[`the background's catalogue > initial_item_count_not_a_count: the message 1`] = `
+"A <list>'s initial-item-count is "three", which is not a number of rows, so its first frame draws as many rows as it would without it.
+src/Feed.svelte:7:0
+
+Give initial-item-count a whole number of rows, 0 or more: initial-item-count={5} or initial-item-count="5".
+https://sohedra.com/e/initial_item_count_not_a_count"
+`;
+
+exports[`the background's catalogue > initial_scroll_index_past_first_screen: the message 1`] = `
+"A <list> starts at initial-scroll-index 150, more than 100 rows down, so its first frame draws only its first rows, and the deferred rows it starts at are empty until the background renders them.
+src/Feed.svelte:7:0
+
+Start the list at most 100 rows down, or take defer off the rows it starts at.
+https://sohedra.com/e/initial_scroll_index_past_first_screen"
+`;
+
+exports[`the background's catalogue > input_value_not_written: the message 1`] = `
+"The value of the <input> element could not be written: Lynx answered setValue with the code 4.
+
+Check that the element is still on the page when its value changes, and that it is an <input> or a <textarea>.
+https://sohedra.com/e/input_value_not_written"
+`;
+
+exports[`the background's catalogue > lazy_bundle_address_not_full: the message 1`] = `
+"The lazy bundle /lazy-bundle/Chart.bundle has no full address, and the page's own address, to resolve it against, is unknown.
+
+Set output.assetPrefix to the full address the bundles are served from.
+https://sohedra.com/e/lazy_bundle_address_not_full"
+`;
+
+exports[`the background's catalogue > lazy_bundle_not_loaded: the message 1`] = `
+"The lazy bundle https://cdn.example/lazy-bundle/Chart.bundle did not load: Lynx answered with the code 1601 (Failed to connect).
+
+Check that the bundle is served at that address and that the device reaches it: Lynx's own report of the failure says why it failed.
+https://sohedra.com/e/lazy_bundle_not_loaded"
+`;
+
+exports[`the background's catalogue > lazy_bundle_timed_out: the message 1`] = `
+"The lazy bundle https://cdn.example/lazy-bundle/Chart.bundle did not load within 30 seconds.
+
+Check that the bundle is served at that address and that the device reaches it.
+https://sohedra.com/e/lazy_bundle_timed_out"
+`;
+
+exports[`the background's catalogue > list_item_defer_needs_async_list: the message 1`] = `
+"A <list-item defer> is in a <list> without custom-list-name="list-container", so its row renders now instead of waiting until Lynx asks for it.
+src/Feed.svelte:9:3
+
+Give the list custom-list-name="list-container", the list that waits for a row Lynx asked for. Or remove defer.
+https://sohedra.com/e/list_item_defer_needs_async_list"
+`;
+
+exports[`the background's catalogue > list_item_key_object: the message 1`] = `
+"A <list-item> has an object as its item-key, and Lynx reads an item-key as text.
+src/Feed.svelte:12:2
+
+Key the item with a string or a number that names it, such as its id: {#each items as item (item.id)}, or item-key={item.id}.
+https://sohedra.com/e/list_item_key_object"
+`;
+
+exports[`the background's catalogue > main_thread_event_spelling_removed: the message 1`] = `
+"The <view>'s main-thread:bindtap uses Lynx's own spelling of an event, which a component no longer writes.
+src/Sheet.svelte:14:2
+
+Write main-thread:ontap instead.
+https://sohedra.com/e/main_thread_event_spelling_removed"
+`;
+
+exports[`the background's catalogue > main_thread_gesture_not_a_gesture: the message 1`] = `
+"The <view>'s main-thread:gesture is a function, not a gesture, so the main thread sets no gesture on it.
+src/Sheet.svelte:14:2
+
+Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohedra/lynx/gesture. Several gestures on one element go in one composition, such as RaceGesture from @sohedra/lynx/experimental.
+https://sohedra.com/e/main_thread_gesture_not_a_gesture"
+`;
+
+exports[`the background's catalogue > main_thread_ref_not_a_ref: the message 1`] = `
+"The <view>'s main-thread:ref is the string "box", which is neither a ref nor a main-thread function, so the main thread binds nothing.
+src/Sheet.svelte:9:2
+
+Give it a ref made with mainThreadRef() from @sohedra/lynx, or a main-thread function that takes the element.
+https://sohedra.com/e/main_thread_ref_not_a_ref"
+`;
+
+exports[`the background's catalogue > main_thread_ref_read_on_background: the message 1`] = `
+"The current value of a main-thread ref was read on the background, where it is only the ref's initial value: the ref's value lives on the main thread.
+
+Read it inside a main-thread function. To get it on the background, return it from one: await runOnMainThread(read)().
+https://sohedra.com/e/main_thread_ref_read_on_background"
+`;
+
+exports[`the background's catalogue > main_thread_ref_set_on_background: the message 1`] = `
+"The current value of a main-thread ref was set on the background: the ref's value lives on the main thread, and only main-thread functions set it.
+
+Set it inside a main-thread function, and call that from the background with runOnMainThread(set)(value).
+https://sohedra.com/e/main_thread_ref_set_on_background"
+`;
+
+exports[`the background's catalogue > mount_without_page: the message 1`] = `
+"A call of mount ran with no page running: before mountPage started the page, or after the page closed.
+
+Call mount once mountPage has started the page: from $effect, an attachment or an event handler.
+https://sohedra.com/e/mount_without_page"
+`;
+
+exports[`the background's catalogue > not_a_main_thread_function: the message 1`] = `
+"The value given to runOnMainThread, measure, is not a main-thread function, so nothing runs on the main thread.
+
+Start the function's body with the 'main thread' directive, and pass the function itself: runOnMainThread(fn)(...args).
+https://sohedra.com/e/not_a_main_thread_function"
+`;
+
+exports[`the background's catalogue > page_is_gone: the message 1`] = `
+"A call of scrollTo has no answer: the page it was made on has been closed or reloaded.
+
+Nothing to fix when the page closed on purpose. Otherwise, make the call again on the page that is open now.
+https://sohedra.com/e/page_is_gone"
+`;
+
+exports[`the background's catalogue > plain_function_under_main_thread: the message 1`] = `
+"The <view>'s main-thread:ontap is a plain function, so the main thread binds nothing: a main-thread attribute takes a main-thread function.
+src/Sheet.svelte:14:2
+
+Start the function's body with the 'main thread' directive, or use the attribute without the main-thread: prefix to run it on the background.
+https://sohedra.com/e/plain_function_under_main_thread"
+`;
+
+exports[`the background's catalogue > props_id_mismatch: the message 1`] = `
+"The <text>'s id is "lynx-s2" in the first frame and "lynx-s3" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.
+src/Field.svelte:8:1
+
+Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/env, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.
+https://sohedra.com/e/props_id_mismatch"
+`;
+
+exports[`the background's catalogue > reload_needs_devtool: the message 1`] = `
+"A change needs the page to load again, and only Lynx's DevTool loads it from the dev server: DevTool is off.
+
+Reopen the page to see the change: until then, later changes do not show either. To have the page load again by itself, turn DevTool on in the host's settings (in Lynx Explorer, its DevTool switch).
+https://sohedra.com/e/reload_needs_devtool"
+`;
+
+exports[`the background's catalogue > run_on_background_outside_main_thread: the message 1`] = `
+"A call of runOnBackground(save) ran on the background: it calls a background function from a main-thread function only.
+
+On the background, call the function itself. Use runOnBackground inside a function whose body starts with 'main thread'.
+https://sohedra.com/e/run_on_background_outside_main_thread"
+`;
+
+exports[`the background's catalogue > static_copy_container_not_empty: the message 1`] = `
+"The <view> given to createStaticCopy as the container holds something that is not a copy.
+
+Give the copies an element of their own that Svelte renders with no children: Svelte never looks inside it.
+https://sohedra.com/e/static_copy_container_not_empty"
+`;
+
+exports[`the background's catalogue > static_copy_list: the message 1`] = `
+"The source given to createStaticCopy holds a <list>, and a <list> cannot be copied.
+
+Copy the elements around the list, or the contents of its rows, instead.
+https://sohedra.com/e/static_copy_list"
+`;
+
+exports[`the background's catalogue > static_copy_not_on_page: the message 1`] = `
+"The source[1] given to createStaticCopy is not an element on the page.
+
+Pass an element Svelte rendered while it is on the page, such as the node an attachment gets.
+https://sohedra.com/e/static_copy_not_on_page"
+`;
+
+exports[`the background's catalogue > static_copy_page_root: the message 1`] = `
+"The page's root was given to createStaticCopy as a source, and the page itself cannot be copied.
+
+Copy the element that holds the page's content instead, such as the top element of the page's root component.
+https://sohedra.com/e/static_copy_page_root"
+`;
+
+exports[`the background's catalogue > text_outside_text: the message 1`] = `
+"The text "Hello" is inside <view>, and Lynx shows text only inside <text>.
+src/App.svelte:3:1
+
+Wrap it in <text>: <text>Hello</text>.
+https://sohedra.com/e/text_outside_text"
+`;

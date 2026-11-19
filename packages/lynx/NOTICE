@@ -1,0 +1,35 @@
+@sohedra/lynx (Svelte on Lynx)
+Copyright 2026 Batuhan Demir
+
+This product includes software adapted from lynx-stack
+(https://github.com/lynx-family/lynx-stack), Copyright 2024-2025 The Lynx
+Authors, licensed under the Apache License, Version 2.0. The files below arrive
+with the pull requests that port them; their credits are kept here from the
+start:
+
+- src/background/lazy-bundle.ts, adapted from @lynx-js/react
+  (packages/react/runtime/src/core/lynx/lazy-bundle.ts)
+- src/main-thread/lazy-bundle.ts, adapted from @lynx-js/react
+  (packages/react/runtime/src/snapshot/lynx/prepareLazyBundleMTS.ts)
+- src/gesture/, adapted from @lynx-js/gesture-runtime 2.1.3
+  (packages/lynx/gesture-runtime/src)
+- src/build/main-thread-functions/, written anew: what it writes, its ids and
+  what a function captures follow @lynx-js/react's worklet transform
+  (packages/react/transform/crates/swc_plugin_worklet)
+- src/main-thread/functions/, written anew: the element as a main-thread
+  function sees it, its animations, the release of what the main thread no
+  longer holds, and the hydration of the first frame's functions into the
+  background's follow the design of @lynx-js/react's worklet runtime
+  (packages/react/runtime/src/worklet-runtime)
+- tests/unit/build/main-thread-functions/corpus/reactlynx and corpus/rejected,
+  test inputs adapted from @lynx-js/react's worklet transform tests
+  (packages/react/transform/crates/swc_plugin_worklet/lib.rs); the inputs only,
+  not the expected outputs
+
+This product includes software adapted from Lynx
+(https://github.com/lynx-family/lynx), Copyright 2024 The Lynx Authors,
+licensed under the Apache License, Version 2.0:
+
+- types/generated/elements.d.ts and src/background/host/system-info.ts, generated
+  from @lynx-js/types 4.4.2 (js_libraries/types): Lynx's elements, their
+  attributes, events and UI methods, SystemInfo, and their doc comments

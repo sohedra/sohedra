@@ -1,0 +1,710 @@
+// Rstest Snapshot v1
+
+exports[`the build's catalogue > animate_directive: the message 1`] = `
+"\`animate:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
+https://sohedra.com/e/animate_directive"
+`;
+
+exports[`the build's catalogue > background_only_in_component: the message 1`] = `
+"The component src/Card.svelte imports 'background-only', but every component also renders on the main thread for the first frame.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Keep the background-only code in a .ts module, or keep the component out of the first frame with a \`<svelte:boundary>\` that has a \`pending\` snippet.
+https://sohedra.com/e/background_only_in_component"
+`;
+
+exports[`the build's catalogue > background_only_reexport_all: the message 1`] = `
+"The module src/store.ts imports 'background-only' and has \`export * from './other'\`: the main thread replaces the module with a stub, and needs its export names.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Name them: \`export { a, b } from './other'\`.
+https://sohedra.com/e/background_only_reexport_all"
+`;
+
+exports[`the build's catalogue > background_only_used: the message 1`] = `
+"The first frame used \`store.value\`, from the background-only module src/store.ts.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+The main thread draws the first frame and has no copy of it: use it in onMount, $effect or an event handler. The background thread draws this page instead.
+https://sohedra.com/e/background_only_used"
+`;
+
+exports[`the build's catalogue > bind_directive: the message 1`] = `
+"\`bind:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Read the value in an event handler, and set it with an attribute.
+https://sohedra.com/e/bind_directive"
+`;
+
+exports[`the build's catalogue > css_injected: the message 1`] = `
+"\`css: 'injected'\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it: the build writes a component's styles to the page's stylesheet.
+https://sohedra.com/e/css_injected"
+`;
+
+exports[`the build's catalogue > css_not_stored: the message 1`] = `
+"The styles of /app/src/Card.svelte were not found: its code came from a build cache that has none for it.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Delete node_modules/.cache and build again.
+https://sohedra.com/e/css_not_stored"
+`;
+
+exports[`the build's catalogue > define_key_invalid: the message 1`] = `
+"\`define.mainThread.a.b\` is not a plain identifier.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use a name such as \`__API__\`: \`define\` replaces a global name, not an expression like \`process.env.API\`.
+https://sohedra.com/e/define_key_invalid"
+`;
+
+exports[`the build's catalogue > define_key_reserved: the message 1`] = `
+"\`define.mainThread.__DEV__\` is set by the plugin.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it from \`define\`.
+https://sohedra.com/e/define_key_reserved"
+`;
+
+exports[`the build's catalogue > define_thread_unknown: the message 1`] = `
+"\`worker\` is not a thread.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use \`define.mainThread\` or \`define.background\`.
+https://sohedra.com/e/define_thread_unknown"
+`;
+
+exports[`the build's catalogue > dev_client_moved: the message 1`] = `
+"Lynx's dev client has changed: \`function reloadPage() {\` is not in node_modules/@lynx-js/webpack-dev-transport/lib/client/reloadApp.js exactly once, so a change that needs DevTool to load the page says nothing while DevTool is off.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use the @lynx-js/webpack-dev-transport this @sohedra/lynx was built for, or update @sohedra/lynx.
+https://sohedra.com/e/dev_client_moved"
+`;
+
+exports[`the build's catalogue > encoder_not_handed_over: the message 1`] = `
+"The Lynx encoder that @sohedra/lynx carries could not be given to the template plugin: its LynxEncodePlugin has no encodePool to run the encode step in.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Add an override of @lynx-js/tasm to the exact version in @sohedra/lynx's package.json, install again, and report the error if it stays.
+https://sohedra.com/e/encoder_not_handed_over"
+`;
+
+exports[`the build's catalogue > engine_version_new: the message 1`] = `
+"\`engineVersion\` is '4.4', and the encoder of @sohedra/lynx encodes for Lynx 4.3 at most.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use '4.3' or earlier, or update @sohedra/lynx.
+https://sohedra.com/e/engine_version_new"
+`;
+
+exports[`the build's catalogue > engine_version_old: the message 1`] = `
+"\`engineVersion\` is '3.9', and @sohedra/lynx builds for Lynx 4.2 and later.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use '4.2' or later, or leave the option out for '4.2'.
+https://sohedra.com/e/engine_version_old"
+`;
+
+exports[`the build's catalogue > event_attribute_renamed: the message 1`] = `
+"\`bindtap\` reads as the old \`bind\` spelling of an event attribute, which a component does not write.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write \`ontap\` instead.
+https://sohedra.com/e/event_attribute_renamed"
+`;
+
+exports[`the build's catalogue > first_frame_not_boolean: the message 1`] = `
+"\`firstFrame\` returned "yes" for the entry \`settings\`, and it must return a boolean.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Return \`true\` or \`false\` from the function.
+https://sohedra.com/e/first_frame_not_boolean"
+`;
+
+exports[`the build's catalogue > global_event_attribute: the message 1`] = `
+"\`global-bindtap\` is not an event attribute.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Listen with \`on(root, "tap", handler)\` in an effect, with \`root\` from \`@sohedra/lynx\`.
+https://sohedra.com/e/global_event_attribute"
+`;
+
+exports[`the build's catalogue > hot_footer_missing: the message 1`] = `
+"Svelte's hot-reload code is not where the build expected it in /app/src/Card.svelte, so a change to this component reloads the page.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Update @sohedra/lynx, or turn hot reload off with \`dev: { hmr: false }\`.
+https://sohedra.com/e/hot_footer_missing"
+`;
+
+exports[`the build's catalogue > html_tag: the message 1`] = `
+"\`@html\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write the elements in the markup: a Lynx page has no HTML to parse.
+https://sohedra.com/e/html_tag"
+`;
+
+exports[`the build's catalogue > iife_ignored: the message 1`] = `
+"\`output.iife\` is false for both threads, so your value (true) is ignored.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`output.iife\`: the main thread's script must not be wrapped in a function that runs at once, and the bundler has one setting for both threads.
+https://sohedra.com/e/iife_ignored"
+`;
+
+exports[`the build's catalogue > in_directive: the message 1`] = `
+"\`in:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
+https://sohedra.com/e/in_directive"
+`;
+
+exports[`the build's catalogue > list_item_defer_ignored: the message 1`] = `
+"A \`defer\` written in a spread is not read, so the row's contents render with the row.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write it on the \`<list-item>\` itself: \`<list-item defer>\`.
+https://sohedra.com/e/list_item_defer_ignored"
+`;
+
+exports[`the build's catalogue > list_item_without_key: the message 1`] = `
+"A \`<list-item>\` has no key, and Lynx's list needs one to track its cells.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write it directly inside a keyed \`{#each}\`, or give it an \`item-key\`.
+https://sohedra.com/e/list_item_without_key"
+`;
+
+exports[`the build's catalogue > lynx_engine_missing: the message 1`] = `
+"The Lynx build engine is not set up, so there is no template to build.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Build with rspeedy, or add \`pluginLynx()\` from @lynx-js/rsbuild-plugin to the Rsbuild config.
+https://sohedra.com/e/lynx_engine_missing"
+`;
+
+exports[`the build's catalogue > main_thread_asset_missing: the message 1`] = `
+"The main thread's script .lynx/main/main-thread.js is not in the build's output.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`output.filename\` and \`output.distPath\` overrides that rename the page's scripts, or report the setting.
+https://sohedra.com/e/main_thread_asset_missing"
+`;
+
+exports[`the build's catalogue > main_thread_function_block_name: the message 1`] = `
+"The main-thread function in \`main-thread:ontap\` uses \`row\`, \`index\`, which only exists inside the markup.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Put the value in a \`data-*\` attribute and read \`event.currentTarget.dataset\`, or move this markup into a child component.
+https://sohedra.com/e/main_thread_function_block_name"
+`;
+
+exports[`the build's catalogue > main_thread_function_generator: the message 1`] = `
+"A generator cannot be a main-thread function.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write a function that returns its values, and loop over them where you call it.
+https://sohedra.com/e/main_thread_function_generator"
+`;
+
+exports[`the build's catalogue > main_thread_function_method: the message 1`] = `
+"A class method cannot be a main-thread function: it would run without its object.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write a function instead, and pass it what it needs.
+https://sohedra.com/e/main_thread_function_method"
+`;
+
+exports[`the build's catalogue > main_thread_function_this: the message 1`] = `
+"\`this\` cannot be used in a main-thread function.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Read what it needs into a variable outside the function.
+https://sohedra.com/e/main_thread_function_this"
+`;
+
+exports[`the build's catalogue > main_thread_function_typescript: the message 1`] = `
+"A main-thread function cannot use an \`enum\`: the main thread runs it as JavaScript, with only its types taken out.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write an object of its values (\`const Color = { Red: 0 } as const\`) instead.
+https://sohedra.com/e/main_thread_function_typescript"
+`;
+
+exports[`the build's catalogue > main_thread_function_used_early: the message 1`] = `
+"The main-thread function \`onScroll\` is used above its declaration, where it does not exist yet: it captures \`count\`, which is set further down.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Move the declaration of \`onScroll\` above this use, after the values it captures.
+https://sohedra.com/e/main_thread_function_used_early"
+`;
+
+exports[`the build's catalogue > on_directive: the message 1`] = `
+"\`on:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write an event attribute instead, such as \`ontap={…}\`.
+https://sohedra.com/e/on_directive"
+`;
+
+exports[`the build's catalogue > out_directive: the message 1`] = `
+"\`out:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
+https://sohedra.com/e/out_directive"
+`;
+
+exports[`the build's catalogue > page_config_reserved: the message 1`] = `
+"\`pageConfig.enableA11y\` is set by the plugin.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it from \`pageConfig\`.
+https://sohedra.com/e/page_config_reserved"
+`;
+
+exports[`the build's catalogue > plain_function_in_main_thread_function: the message 1`] = `
+"\`save\` is a plain function, and a main-thread function calls it. The main thread cannot run it.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Call it through \`runOnBackground(save)\`, or start its body with 'main thread'.
+https://sohedra.com/e/plain_function_in_main_thread_function"
+`;
+
+exports[`the build's catalogue > plugin_option_type: the message 1`] = `
+"\`firstFrame\` must be a boolean or a function of the entry's name that returns one; got "yes".
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Set \`firstFrame\` to a boolean or a function of the entry's name that returns one, or leave it out.
+https://sohedra.com/e/plugin_option_type"
+`;
+
+exports[`the build's catalogue > preprocess_failed: the message 1`] = `
+"A preprocessor failed on this file.
+unexpected }
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Fix the error the preprocessor reports, or check its options in svelte.config.js.
+https://sohedra.com/e/preprocess_failed"
+`;
+
+exports[`the build's catalogue > primjs_regex_moved: the message 1`] = `
+"Svelte's \`REGEX_VALID_TAG_NAME\` is not where the build expected it in /app/node_modules/svelte/src/utils.js, so Lynx's main-thread engine may refuse the file.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use the Svelte version this @sohedra/lynx was built for, or update @sohedra/lynx.
+https://sohedra.com/e/primjs_regex_moved"
+`;
+
+exports[`the build's catalogue > renderer_option_off: the message 1`] = `
+"\`<svelte:options customRenderer={null}>\` turns the renderer off, and a Lynx page has no DOM to draw without it.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove the \`customRenderer\` option.
+https://sohedra.com/e/renderer_option_off"
+`;
+
+exports[`the build's catalogue > rsbuild_swc_missing: the message 1`] = `
+"Rsbuild's JavaScript rule has no SWC loader to build the page's scripts with.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Do not remove the SWC loader from Rsbuild's \`tools.bundlerChain\`, and do not turn it off with \`tools.swc: false\`.
+https://sohedra.com/e/rsbuild_swc_missing"
+`;
+
+exports[`the build's catalogue > script_syntax_error: the message 1`] = `
+"A script has a syntax error: Unexpected token.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Fix the syntax at this place.
+https://sohedra.com/e/script_syntax_error"
+`;
+
+exports[`the build's catalogue > single_copy_name: the message 1`] = `
+"\`singleCopy\` must be a list of package names such as 'zustand' or '@acme/state'; got ["./local"].
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write the package's name, not a path into it or a file.
+https://sohedra.com/e/single_copy_name"
+`;
+
+exports[`the build's catalogue > spread_setter_moved: the message 1`] = `
+"Svelte's props code has changed, so the build cannot make bindings work beside a spread: get_descriptor(props, key)?.set ?? is not in /app/node_modules/svelte/src/internal/client/reactivity/props.js exactly once.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use the Svelte version this @sohedra/lynx was built for, or update @sohedra/lynx.
+https://sohedra.com/e/spread_setter_moved"
+`;
+
+exports[`the build's catalogue > svelte_body: the message 1`] = `
+"\`<svelte:body>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Listen to the page's events with \`on(root, …)\`.
+https://sohedra.com/e/svelte_body"
+`;
+
+exports[`the build's catalogue > svelte_config_invalid: the message 1`] = `
+"The Svelte config /app/svelte.config.js could not be read: it has no default export that is an object.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Export the config as the default export: \`export default svelteConfig({ … })\` from @sohedra/lynx/config/svelte.
+https://sohedra.com/e/svelte_config_invalid"
+`;
+
+exports[`the build's catalogue > svelte_config_option_owned: the message 1`] = `
+"\`compilerOptions.generate\` in svelte.config.js is set by @sohedra/lynx, so your value is ignored.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`generate\` from the compiler options.
+https://sohedra.com/e/svelte_config_option_owned"
+`;
+
+exports[`the build's catalogue > svelte_config_option_unsupported: the message 1`] = `
+"\`compilerOptions.accessors\` in svelte.config.js is not supported on Lynx, so it is ignored.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove \`accessors\` from the compiler options.
+https://sohedra.com/e/svelte_config_option_unsupported"
+`;
+
+exports[`the build's catalogue > svelte_document: the message 1`] = `
+"\`<svelte:document>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Listen to the page's events with \`on(root, …)\`.
+https://sohedra.com/e/svelte_document"
+`;
+
+exports[`the build's catalogue > svelte_head: the message 1`] = `
+"\`<svelte:head>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Remove it: a Lynx page has no head.
+https://sohedra.com/e/svelte_head"
+`;
+
+exports[`the build's catalogue > svelte_missing: the message 1`] = `
+"Svelte is not installed in /app.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Add the Svelte build with custom renderers (sveltejs/svelte#18042) to the app's package.json dependencies.
+https://sohedra.com/e/svelte_missing"
+`;
+
+exports[`the build's catalogue > svelte_window: the message 1`] = `
+"\`<svelte:window>\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`. Listen to the page's events with \`on(root, …)\`.
+https://sohedra.com/e/svelte_window"
+`;
+
+exports[`the build's catalogue > svelte_without_renderers: the message 1`] = `
+"The installed Svelte (5.40.0, /app) has no custom renderers.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Install the Svelte build with custom renderers (sveltejs/svelte#18042), which @sohedra/lynx is built for.
+https://sohedra.com/e/svelte_without_renderers"
+`;
+
+exports[`the build's catalogue > template_plugin_versions: the message 1`] = `
+"The Lynx build engine uses @lynx-js/template-webpack-plugin 0.15.4, and @sohedra/lynx needs ^0.16.8 (it installs 0.16.8).
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Update @lynx-js/rspeedy (or @lynx-js/rsbuild-plugin) so that its template plugin is in that range, or update @sohedra/lynx to a version that supports the engine's.
+https://sohedra.com/e/template_plugin_versions"
+`;
+
+exports[`the build's catalogue > test_peers_missing: the message 1`] = `
+"\`withSvelteLynx()\` runs the tests with jsdom and @testing-library/dom, which are not installed in /app.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Add jsdom and @testing-library/dom to the app's devDependencies.
+https://sohedra.com/e/test_peers_missing"
+`;
+
+exports[`the build's catalogue > thread_branch_name_taken: the message 1`] = `
+"The name SohedraLynxThreadBranch is one the build adds to this component, to draw a part only one thread renders, and the component declares it too.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Rename your SohedraLynxThreadBranch.
+https://sohedra.com/e/thread_branch_name_taken"
+`;
+
+exports[`the build's catalogue > thread_branch_test: the message 1`] = `
+"\`{#if background && user}\` holds a component that one thread can render without the other, so the \`$props.id()\` of the components after it may differ between the first frame and the background.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Give the part only one thread renders a block of its own whose test is the flag alone, \`{#if background}\`, \`{#if mainThread}\` or \`{#if BROWSER}\`, and put the rest of the test inside it.
+https://sohedra.com/e/thread_branch_test"
+`;
+
+exports[`the build's catalogue > transition_directive: the message 1`] = `
+"\`transition:\` is not available in Svelte on Lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
+https://sohedra.com/e/transition_directive"
+`;
+
+exports[`the build's catalogue > typescript_stripper_missing: the message 1`] = `
+"Main-thread functions written in TypeScript need Node.js 22.13 or later to build, which takes their types out; this build runs on Node.js v20.19.0.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Build with Node.js 22.13 or later, or write this component's main-thread functions without types.
+https://sohedra.com/e/typescript_stripper_missing"
+`;
+
+exports[`the build's catalogue > unknown_plugin_option: the message 1`] = `
+"\`firstframe\` is not an option of \`pluginSvelteLynx()\`.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Did you mean \`firstFrame\`?
+https://sohedra.com/e/unknown_plugin_option"
+`;

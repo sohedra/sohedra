@@ -1,0 +1,10 @@
+{
+	// As an app's: the binding's base, and every declaration file checked, the binding's included.
+	"extends": "@sohedra/lynx/tsconfig",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"skipLibCheck": false
+	},
+	"svelteOptions": { "namespace": "svelteLynx" },
+	"include": ["src"]
+}

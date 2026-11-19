@@ -38,7 +38,9 @@ own build) and for the versions you use.
 
 ## Setup
 
-You need Node.js 26.13.1 or later and pnpm 12.21 or later (see `devEngines` in `package.json`).
+You need Node.js 26.13.1 or later and pnpm 12.21 or later (see `devEngines` in `package.json`). On
+Windows, clone with symbolic links on (`git clone -c core.symlinks=true`), which the agent skills in
+`.claude/skills/` are.
 
 ```sh
 pnpm install
@@ -175,7 +177,7 @@ Issues and pull requests that don't meet these rules may be closed without revie
 - Each area of a package keeps one catalogue of its messages, each entry with its fix line and its
   docs page. A test fails when an entry lacks either, and every message has a snapshot test.
 - Warnings appear only in development builds, once per place. An error that repeats is shown once,
-  with a count.
+  with a count, until it has been quiet for five seconds.
 - On Lynx, errors are reported into Lynx with `lynx.reportError`, using Lynx's codes and levels, not
   through a separate system.
 
@@ -201,7 +203,7 @@ fixed) and says which workaround can go.
   entry.
 - Lynx packages use Rstest; web packages use Vitest.
 - Coverage is measured on every run and never drops below its last value.
-- Every package runs `publint` after it builds.
+- Every package runs `publint` on its packed package, in its tests.
 - Every public entry has type tests, run against the packed package on TypeScript's last two minor
   versions.
 - The binding (`@sohedra/lynx`) has size budgets as tests for its per-thread scripts: the

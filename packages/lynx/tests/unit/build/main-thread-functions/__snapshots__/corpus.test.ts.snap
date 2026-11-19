@@ -1,0 +1,1182 @@
+// Rstest Snapshot v1
+
+exports[`the main-thread function transform, over the corpus > apps/Pan.svelte 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 1,
+        "captures": [],
+        "extraKeys": [],
+        "id": "5543:e5f58:2",
+        "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "5543:e5f58:3",
+        "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "box",
+        ],
+        "extraKeys": [],
+        "id": "5543:e5f58:1",
+        "values": [
+          "box = box",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 1,
+        "captures": [],
+        "extraKeys": [],
+        "id": "5543:e5f58:2",
+        "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "5543:e5f58:3",
+        "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "box",
+        ],
+        "extraKeys": [],
+        "id": "5543:e5f58:1",
+        "values": [
+          "box = box",
+        ],
+      },
+    ],
+    "registrations": [
+      "5543:e5f58:1",
+      "5543:e5f58:2",
+      "5543:e5f58:3",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > apps/Scroll.svelte 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 1,
+        "captures": [
+          "header",
+        ],
+        "extraKeys": [],
+        "id": "3499:3de88:1",
+        "values": [
+          "header = header",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 1,
+        "captures": [
+          "header",
+        ],
+        "extraKeys": [],
+        "id": "3499:3de88:1",
+        "values": [
+          "header = header",
+        ],
+      },
+    ],
+    "registrations": [
+      "3499:3de88:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > apps/app-first-frame-Inside.svelte 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "998b:07606:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "998b:07606:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "998b:07606:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > apps/app-first-frame-InsideLazy.svelte 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "b4ef:4286b:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "b4ef:4286b:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "b4ef:4286b:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > apps/app-first-frame-mt-effect.ts 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "a517:48fe2:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "a517:48fe2:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "a517:48fe2:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > apps/app-lazy-Heavy.svelte 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "c4e7:e8322:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "c4e7:e8322:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "c4e7:e8322:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/arrow-function.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "b1e4:a090b:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "b1e4:a090b:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+    ],
+    "registrations": [
+      "b1e4:a090b:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/background-function.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 3,
+        "captures": [],
+        "extraKeys": [],
+        "id": "726e:10f03:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 3,
+        "captures": [],
+        "extraKeys": [],
+        "id": "726e:10f03:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "726e:10f03:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/capture-environment.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+          "y3",
+          "y4",
+          "y8",
+          "y5",
+          "y6.m",
+          "y7",
+        ],
+        "extraKeys": [],
+        "id": "d7e2:dae96:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y8 = y8",
+          "y5 = y5",
+          "y6.m = y6?.m",
+          "y7 = y7",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+          "y3",
+          "y4",
+          "y5.r",
+          "props.value",
+        ],
+        "extraKeys": [],
+        "id": "d7e2:dae96:2",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y5.r = y5?.r",
+          "props.value = props?.value",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+          "y3",
+          "y4",
+          "y8",
+          "y5",
+          "y6.m",
+          "y7",
+        ],
+        "extraKeys": [],
+        "id": "d7e2:dae96:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y8 = y8",
+          "y5 = y5",
+          "y6.m = y6?.m",
+          "y7 = y7",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+          "y3",
+          "y4",
+          "y5.r",
+          "props.value",
+        ],
+        "extraKeys": [],
+        "id": "d7e2:dae96:2",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "y3 = y3",
+          "y4 = y4",
+          "y5.r = y5?.r",
+          "props.value = props?.value",
+        ],
+      },
+    ],
+    "registrations": [
+      "d7e2:dae96:1",
+      "d7e2:dae96:2",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/directive-spellings.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "e6b8:02c23:1",
+        "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "e6b8:02c23:2",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "e6b8:02c23:1",
+        "values": [],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "e6b8:02c23:2",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "e6b8:02c23:1",
+      "e6b8:02c23:2",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/function-declaration.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "x",
+        ],
+        "extraKeys": [],
+        "id": "00c6:70d31:1",
+        "values": [
+          "x = x",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "x",
+        ],
+        "extraKeys": [],
+        "id": "00c6:70d31:1",
+        "values": [
+          "x = x",
+        ],
+      },
+    ],
+    "registrations": [
+      "00c6:70d31:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/function-expression.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "a8d9:3db52:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "a8d9:3db52:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+    ],
+    "registrations": [
+      "a8d9:3db52:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/inside-another-function.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "6f4c:b0c81:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "z1",
+          "z2",
+        ],
+        "extraKeys": [],
+        "id": "6f4c:b0c81:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "6f4c:b0c81:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "z1",
+          "z2",
+        ],
+        "extraKeys": [],
+        "id": "6f4c:b0c81:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
+      },
+    ],
+    "registrations": [
+      "6f4c:b0c81:1",
+      "6f4c:b0c81:2",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/member-paths.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "aaaa.bbbb",
+          "cccc.dddd",
+          "hhhh.iiii",
+          "llll",
+          "oooo.pppp",
+          "oooo.qqqq",
+          "rrrr",
+          "uuuu.__??__",
+          "enabled",
+          "handlers",
+          "vvvv",
+        ],
+        "extraKeys": [],
+        "id": "e5cc:719ac:1",
+        "values": [
+          "aaaa.bbbb = aaaa?.bbbb",
+          "cccc.dddd = cccc?.dddd",
+          "hhhh.iiii = hhhh?.iiii",
+          "llll = llll",
+          "oooo.pppp = oooo?.pppp",
+          "oooo.qqqq = oooo?.qqqq",
+          "rrrr = rrrr",
+          "uuuu.__??__ = uuuu?.["__??__"]",
+          "enabled = enabled",
+          "handlers = handlers",
+          "vvvv = vvvv",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "aaaa.bbbb",
+          "cccc.dddd",
+          "hhhh.iiii",
+          "llll",
+          "oooo.pppp",
+          "oooo.qqqq",
+          "rrrr",
+          "uuuu.__??__",
+          "enabled",
+          "handlers",
+          "vvvv",
+        ],
+        "extraKeys": [],
+        "id": "e5cc:719ac:1",
+        "values": [
+          "aaaa.bbbb = aaaa?.bbbb",
+          "cccc.dddd = cccc?.dddd",
+          "hhhh.iiii = hhhh?.iiii",
+          "llll = llll",
+          "oooo.pppp = oooo?.pppp",
+          "oooo.qqqq = oooo?.qqqq",
+          "rrrr = rrrr",
+          "uuuu.__??__ = uuuu?.["__??__"]",
+          "enabled = enabled",
+          "handlers = handlers",
+          "vvvv = vvvv",
+        ],
+      },
+    ],
+    "registrations": [
+      "e5cc:719ac:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/nested-not-transformed.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+          "z1",
+          "z2",
+        ],
+        "extraKeys": [],
+        "id": "0e3e:371d6:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "z1 = z1",
+          "z2 = z2",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+          "z1",
+          "z2",
+        ],
+        "extraKeys": [],
+        "id": "0e3e:371d6:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+          "z1 = z1",
+          "z2 = z2",
+        ],
+      },
+    ],
+    "registrations": [
+      "0e3e:371d6:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/several-per-file.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "39ae:32594:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "z1",
+          "z2",
+        ],
+        "extraKeys": [],
+        "id": "39ae:32594:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "y1",
+          "y2",
+        ],
+        "extraKeys": [],
+        "id": "39ae:32594:1",
+        "values": [
+          "y1 = y1",
+          "y2 = y2",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "z1",
+          "z2",
+        ],
+        "extraKeys": [],
+        "id": "39ae:32594:2",
+        "values": [
+          "z1 = z1",
+          "z2 = z2",
+        ],
+      },
+    ],
+    "registrations": [
+      "39ae:32594:1",
+      "39ae:32594:2",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/shared-import.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "local",
+        ],
+        "extraKeys": [],
+        "id": "8f61:26bce:1",
+        "values": [
+          "local = local",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "local",
+        ],
+        "extraKeys": [],
+        "id": "8f61:26bce:1",
+        "values": [
+          "local = local",
+        ],
+      },
+    ],
+    "registrations": [
+      "8f61:26bce:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/skip-catch-parameters.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "g",
+        ],
+        "extraKeys": [],
+        "id": "646a:fccb4:1",
+        "values": [
+          "g = g",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "g",
+        ],
+        "extraKeys": [],
+        "id": "646a:fccb4:1",
+        "values": [
+          "g = g",
+        ],
+      },
+    ],
+    "registrations": [
+      "646a:fccb4:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/skip-globals.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "73f9:b923e:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "73f9:b923e:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "73f9:b923e:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/skip-inner-declarations.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "c",
+          "a",
+          "m",
+          "b",
+        ],
+        "extraKeys": [],
+        "id": "fbc6:aa8e5:1",
+        "values": [
+          "c = c",
+          "a = a",
+          "m = m",
+          "b = b",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "c",
+        ],
+        "extraKeys": [],
+        "id": "fbc6:aa8e5:2",
+        "values": [
+          "c = c",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "c",
+          "a",
+          "m",
+          "b",
+        ],
+        "extraKeys": [],
+        "id": "fbc6:aa8e5:1",
+        "values": [
+          "c = c",
+          "a = a",
+          "m = m",
+          "b = b",
+        ],
+      },
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "c",
+        ],
+        "extraKeys": [],
+        "id": "fbc6:aa8e5:2",
+        "values": [
+          "c = c",
+        ],
+      },
+    ],
+    "registrations": [
+      "fbc6:aa8e5:1",
+      "fbc6:aa8e5:2",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/skip-types.ts 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "7e3c:ab00c:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "7e3c:ab00c:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "7e3c:ab00c:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/undeclared-name.js 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "b50b:3a5b3:1",
+        "values": [],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [],
+        "extraKeys": [],
+        "id": "b50b:3a5b3:1",
+        "values": [],
+      },
+    ],
+    "registrations": [
+      "b50b:3a5b3:1",
+    ],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > reactlynx/wrong-directive.js 1`] = `
+{
+  "background": {
+    "functions": [],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [],
+    "registrations": [],
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > rejected/class-method.js 1`] = `
+{
+  "background": {
+    "error": "A class method cannot be a main-thread function: it would run without its object.",
+  },
+  "mainThread": {
+    "error": "A class method cannot be a main-thread function: it would run without its object.",
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > rejected/class-method-captures.js 1`] = `
+{
+  "background": {
+    "error": "A class method cannot be a main-thread function: it would run without its object.",
+  },
+  "mainThread": {
+    "error": "A class method cannot be a main-thread function: it would run without its object.",
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > rejected/class-property.js 1`] = `
+{
+  "background": {
+    "error": "\`this\` cannot be used in a main-thread function.",
+  },
+  "mainThread": {
+    "error": "\`this\` cannot be used in a main-thread function.",
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > rejected/object-method.js 1`] = `
+{
+  "background": {
+    "error": "A method of an object cannot be a main-thread function: it would run without its object.",
+  },
+  "mainThread": {
+    "error": "A method of an object cannot be a main-thread function: it would run without its object.",
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > rejected/object-method-this.js 1`] = `
+{
+  "background": {
+    "error": "A method of an object cannot be a main-thread function: it would run without its object.",
+  },
+  "mainThread": {
+    "error": "A method of an object cannot be a main-thread function: it would run without its object.",
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > rejected/this-in-function.js 1`] = `
+{
+  "background": {
+    "error": "\`this\` cannot be used in a main-thread function.",
+  },
+  "mainThread": {
+    "error": "\`this\` cannot be used in a main-thread function.",
+  },
+}
+`;
+
+exports[`the main-thread function transform, over the corpus > runtime/gesture-wrapper.ts 1`] = `
+{
+  "background": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "callback",
+          "id",
+        ],
+        "extraKeys": [],
+        "id": "dd19:eb28c:1",
+        "values": [
+          "callback = callback",
+          "id = id",
+        ],
+      },
+    ],
+    "registrations": [],
+  },
+  "mainThread": {
+    "functions": [
+      {
+        "backgroundFunctions": 0,
+        "captures": [
+          "callback",
+          "id",
+        ],
+        "extraKeys": [],
+        "id": "dd19:eb28c:1",
+        "values": [
+          "callback = callback",
+          "id = id",
+        ],
+      },
+    ],
+    "registrations": [
+      "dd19:eb28c:1",
+    ],
+  },
+}
+`;

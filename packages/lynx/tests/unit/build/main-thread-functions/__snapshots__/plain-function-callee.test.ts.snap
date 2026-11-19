@@ -1,0 +1,13 @@
+// Rstest Snapshot v1
+
+exports[`the plain-function callee check > says which function and where, with the fix 1`] = `
+"\`save\` is a plain function, and a main-thread function calls it. The main thread cannot run it.
+src/handlers.ts:6:3
+
+5:   "main thread";
+6:   save(1);
+     ^
+
+Call it through \`runOnBackground(save)\`, or start its body with 'main thread'.
+https://sohedra.com/e/plain_function_in_main_thread_function"
+`;

@@ -1,0 +1,34 @@
+// Rstest Snapshot v1
+
+exports[`<svelte:options css="injected"> > is an error that says the build writes the styles to the page's stylesheet 1`] = `
+"\`css: 'injected'\` is not available in Svelte on Lynx.
+/app/src/Component.svelte:1:17
+
+1: <svelte:options css="injected" />
+                   ^
+
+Remove it: the build writes a component's styles to the page's stylesheet.
+https://sohedra.com/e/css_injected"
+`;
+
+exports[`<svelte:options customRenderer={null}> > is an error that names the file and the place (background) 1`] = `
+"\`<svelte:options customRenderer={null}>\` turns the renderer off, and a Lynx page has no DOM to draw without it.
+/app/src/Component.svelte:1:17
+
+1: <svelte:options customRenderer={null} />
+                   ^
+
+Remove the \`customRenderer\` option.
+https://sohedra.com/e/renderer_option_off"
+`;
+
+exports[`<svelte:options customRenderer={null}> > is an error that names the file and the place (main-thread) 1`] = `
+"\`<svelte:options customRenderer={null}>\` turns the renderer off, and a Lynx page has no DOM to draw without it.
+/app/src/Component.svelte:1:17
+
+1: <svelte:options customRenderer={null} />
+                   ^
+
+Remove the \`customRenderer\` option.
+https://sohedra.com/e/renderer_option_off"
+`;

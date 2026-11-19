@@ -1,0 +1,139 @@
+// A list of 1,000 rows: what crosses to the main thread, in ops and in bytes, is pinned. A change
+// that sends more must raise a budget here, on purpose.
+
+import { describe, expect, it } from "@rstest/core";
+
+import { decodeCell } from "../../src/wire/index.ts";
+import type { Patch } from "../../src/wire/index.ts";
+import ManyRows from "../fixtures/threads/ManyRows.svelte";
+import { scroller, scrollThrough } from "./scroll.ts";
+import { startSveltePage } from "./svelte-page.ts";
+
+interface Row {
+	id: number;
+	label: string;
+}
+
+/**
+ * The budgets, as measured: raise one only on purpose, and say why in the pull request. A list
+ * update carries the list's whole order, so a change of one row still sends 1,001 ids. A scroll
+ * through the rows sends the ids of the rows the main thread lets go of (`up`, in bytes as sent),
+ * and each of those rows written again. A change of every row on each tick piles up the text of
+ * rows never shown in step: `tick` is the largest patch it sends.
+ */
+const BUDGET = {
+	start: { ops: 9004, bytes: 261_608 },
+	append: { ops: 10, bytes: 5377 },
+	reverse: { ops: 1, bytes: 62_229 },
+	scroll: { ops: 8829, bytes: 222_981, up: 15_726 },
+	tick: { bytes: 52_919 },
+};
+
+/** The most ids one request to write rows again names. */
+const IDS_PER_REQUEST = 64;
+
+/** The ops of patches, those of their cells too, and their size as sent. */
+function measure(patches: Patch[]): { ops: number; bytes: number } {
+	let ops = 0;
+	let bytes = 0;
+	for (const patch of patches) {
+		bytes += JSON.stringify(patch).length;
+		for (const item of patch.items) {
+			if (item[0] === "ops") ops += item[1].length;
+			else if (item[0] === "cell") ops += decodeCell(item[2]).length;
+		}
+	}
+	return { ops, bytes };
+}
+
+/** What was sent is no more than the budget. */
+function within(
+	sent: { ops: number; bytes: number },
+	budget: { ops: number; bytes: number },
+): void {
+	expect(sent.ops).toBeLessThanOrEqual(budget.ops);
+	expect(sent.bytes).toBeLessThanOrEqual(budget.bytes);
+}
+
+async function manyRows() {
+	const handles: Record<string, unknown> = {};
+	const page = startSveltePage(ManyRows, { props: () => ({ handles }) });
+	await page.settle();
+	const feed = handles["feed"] as { rows: Row[] };
+	const change = async (update: (rows: Row[]) => Row[]) => {
+		const sent = page.patches.length;
+		page.asBackground(() => (feed.rows = update(feed.rows)));
+		await page.settle();
+		return measure(page.patches.slice(sent));
+	};
+	return { page, change };
+}
+
+describe("a list of 1,000 rows", () => {
+	it("starts within its budget, and makes no cell before Lynx asks", async () => {
+		const { page } = await manyRows();
+		within(measure(page.patches), BUDGET.start);
+		expect(page.engine.list(page.byClass("list")).updates[0]!.insertAction).toHaveLength(1000);
+		expect(page.engine.madeCount("list-item")).toBe(0);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("adds a row within its budget", async () => {
+		const { change } = await manyRows();
+		const sent = await change((rows) => [...rows, { id: 1001, label: "Row 1001" }]);
+		within(sent, BUDGET.append);
+	});
+
+	it("reverses the rows within its budget, with no cell made again", async () => {
+		const { page, change } = await manyRows();
+		const made = page.engine.madeCount("view");
+		const sent = await change((rows) => rows.toReversed());
+		within(sent, BUDGET.reverse);
+		expect(page.engine.madeCount("view")).toBe(made);
+	});
+
+	it("scrolls through the rows within its budget, keeping a screen of cells past those shown", async () => {
+		const { page } = await manyRows();
+		const list = page.byClass("list");
+		const sent = page.patches.length;
+		const scroll = scroller(page.engine, list);
+		await scrollThrough({ scroll, from: 0, to: 991, settle: page.settle });
+		const down = measure(page.patches.slice(sent));
+		within(down, BUDGET.scroll);
+		const up = page.messages
+			.map((message, index) => (message.t === "rewrite" ? page.messageSizes[index]! : 0))
+			.reduce((bytes, size) => bytes + size, 0);
+		expect(up).toBeLessThanOrEqual(BUDGET.scroll.up);
+		// Lynx holds nine; the ten it handed back last keep their elements.
+		expect(list.childNodes).toHaveLength(19);
+		expect(page.errors).toEqual([]);
+	});
+
+	it("changes every row on each tick, its rows written again a few at a time", async () => {
+		const { page, change } = await manyRows();
+		let largest = 0;
+		for (let tick = 1; tick <= 12; tick++) {
+			const sent = page.patches.length;
+			await change((rows) =>
+				rows.map((row) => ({ ...row, label: `Row ${row.id}, ${tick} min ago` })),
+			);
+			for (const patch of page.patches.slice(sent))
+				largest = Math.max(largest, JSON.stringify(patch).length);
+		}
+		expect(largest).toBeLessThanOrEqual(BUDGET.tick.bytes);
+		const requests = page.messages.flatMap((message) => (message.t === "rewrite" ? [message] : []));
+		expect(Math.max(...requests.map((request) => request.nodes.length))).toBeLessThanOrEqual(
+			IDS_PER_REQUEST,
+		);
+		expect(new Set(requests.flatMap((request) => request.nodes)).size).toBeGreaterThan(900);
+		const list = page.engine.list(page.byClass("list"));
+		expect(page.engine.text(list.show(999))).toBe("Row 1000, 12 min ago");
+		expect(page.errors).toEqual([]);
+	});
+
+	it("shows a cell Lynx asks for", async () => {
+		const { page } = await manyRows();
+		const cell = page.engine.list(page.byClass("list")).show(999);
+		expect(page.engine.text(cell)).toBe("Row 1000");
+	});
+});

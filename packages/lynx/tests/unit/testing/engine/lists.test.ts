@@ -1,0 +1,259 @@
+// A `<list>` as the engine keeps it: the callbacks Lynx would call to show and recycle cells, and
+// the updates the page sends.
+
+import { describe, expect, it } from "@rstest/core";
+
+import type { LynxElement } from "../../../../src/testing/index.ts";
+import { engineForEach, smallPage } from "./engine-fixture.ts";
+
+const engine = engineForEach();
+
+/** A list in a page, whose cells are `<list-item>`s made on request. */
+function list() {
+	const { page, outer } = smallPage(engine());
+	const f = engine().functions;
+	const asked: unknown[][] = [];
+	const returned: unknown[][] = [];
+	const cells: LynxElement[] = [];
+	const element = f.__CreateList(
+		0,
+		(_list, listId, index, operationId) => {
+			asked.push([listId, index, operationId]);
+			const cell = f.__CreateElement("list-item", 0);
+			cells.push(cell);
+			f.__AppendElement(element, cell);
+			return f.__GetElementUniqueID(cell);
+		},
+		(_list, listId, sign) => returned.push([listId, sign]),
+	);
+	f.__AppendElement(outer, element);
+	f.__SetAttribute(element, "update-list-info", items(6));
+	return { page, element, asked, returned, cells };
+}
+
+/** An update that inserts `count` items at the start. */
+function items(count: number) {
+	return {
+		insertAction: Array.from({ length: count }, (_, position) => ({ position, type: "item" })),
+		removeAction: [],
+		updateAction: [],
+	};
+}
+
+describe("a list", () => {
+	it("is an element with the tag list, and can be handed what Lynx asks of it", () => {
+		const { element } = list();
+		expect((element as Element).localName).toBe("list");
+		expect(typeof engine().list(element).componentAtIndex).toBe("function");
+	});
+
+	it("takes the tag its info names, as the engine does", () => {
+		const f = engine().functions;
+		const custom = f.__CreateList(
+			0,
+			() => 0,
+			() => {},
+			{ tag: "x-list" },
+		);
+		expect((custom as Element).localName).toBe("x-list");
+		expect(typeof engine().list(custom).show).toBe("function");
+	});
+
+	it("shows the cell at an index, numbering each request, and takes it back", () => {
+		const { element, asked, returned, cells } = list();
+		const handle = engine().list(element);
+		const first = handle.show(0);
+		const second = handle.show(5);
+		expect(first).toBe(cells[0]);
+		expect(second).toBe(cells[1]);
+		const listId = engine().functions.__GetElementUniqueID(element);
+		expect(asked).toEqual([
+			[listId, 0, 1],
+			[listId, 5, 2],
+		]);
+		handle.hide(first);
+		expect(returned).toEqual([[listId, engine().functions.__GetElementUniqueID(first)]]);
+	});
+
+	it("never hands back the cell of an item that is not recyclable, as Lynx", () => {
+		const { element } = list();
+		const f = engine().functions;
+		const handle = engine().list(element);
+		const keep = { position: 6, type: "item", "item-key": "kept", recyclable: false };
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [keep, { position: 7, type: "item", "item-key": "later" }],
+			removeAction: [],
+			updateAction: [],
+		});
+		const kept = handle.show(6);
+		f.__SetAttribute(kept, "item-key", "kept");
+		expect(() => handle.hide(kept)).toThrow(
+			'Lynx never hands back the cell of an item that is not recyclable: "kept".',
+		);
+		const later = handle.show(7);
+		f.__SetAttribute(later, "item-key", "later");
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [],
+			removeAction: [],
+			updateAction: [{ from: 7, to: 7, type: "item", "item-key": "later", recyclable: false }],
+		});
+		expect(() => handle.hide(later)).toThrow('not recyclable: "later".');
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [],
+			removeAction: [],
+			updateAction: [{ from: 6, to: 6, type: "item", "item-key": "kept", recyclable: true }],
+		});
+		handle.hide(kept);
+	});
+
+	it("throws when asked for a cell past the items the page gave it", () => {
+		const { element } = list();
+		const f = engine().functions;
+		f.__SetAttribute(element, "update-list-info", {
+			insertAction: [],
+			removeAction: [0, 1],
+			updateAction: [],
+		});
+		expect(() => engine().list(element).show(4)).toThrow(
+			"The list has 4 items, so Lynx asks for no cell at index 4.",
+		);
+	});
+
+	it("refuses an update-list-info that is not the three lists Lynx reads", () => {
+		const { element } = list();
+		expect(() =>
+			engine().functions.__SetAttribute(element, "update-list-info", { insertAction: [] }),
+		).toThrow("update-list-info should be { insertAction, removeAction, updateAction }");
+	});
+
+	it("throws when the cell asked for is not an element the engine made", () => {
+		const { element } = list();
+		const f = engine().functions;
+		f.__UpdateListCallbacks(
+			element,
+			() => 9999,
+			() => {},
+		);
+		expect(() => engine().list(element).show(0)).toThrow(
+			"The list has no cell for the unique id 9999 at index 0.",
+		);
+	});
+
+	it("keeps every update-list-info the page sends, and tells the test's listener inside the call", () => {
+		const { element } = list();
+		const handle = engine().list(element);
+		const seen: unknown[] = [];
+		handle.onUpdate = (update) => seen.push(update);
+		const update = { insertAction: [{ position: 0 }], removeAction: [], updateAction: [] };
+		engine().functions.__SetAttribute(element, "update-list-info", update);
+		expect(handle.updates).toEqual([items(6), update]);
+		expect(seen).toEqual([update]);
+		expect(engine().functions.__GetAttributeByName(element, "update-list-info")).toBeNull();
+	});
+
+	it("takes new callbacks, and calls those from then on", () => {
+		const { element, asked } = list();
+		const f = engine().functions;
+		const calls: string[] = [];
+		const cell = f.__CreateElement("list-item", 0);
+		f.__UpdateListCallbacks(
+			element,
+			() => (calls.push("new"), f.__GetElementUniqueID(cell)),
+			() => calls.push("enqueue"),
+			() => calls.push("many"),
+		);
+		expect(engine().list(element).show(0)).toBe(cell);
+		expect(calls).toEqual(["new"]);
+		expect(asked).toEqual([]);
+		expect(typeof engine().list(element).componentAtIndexes).toBe("function");
+	});
+
+	it("is refused for an element that is not a list", () => {
+		const { inner } = smallPage(engine());
+		expect(() => engine().list(inner)).toThrow("<view> 3 is not a list.");
+		expect(() =>
+			engine().functions.__UpdateListCallbacks(
+				inner,
+				() => 0,
+				() => {},
+			),
+		).toThrow("__UpdateListCallbacks param 0 should be a list");
+		expect(() => engine().functions.__SetAttribute(inner, "update-list-info", {})).not.toThrow();
+	});
+});
+
+describe("Lynx's async list", () => {
+	/** A list that answers each request later, with a flush that names it. */
+	function asyncList(container: boolean) {
+		const { outer } = smallPage(engine());
+		const f = engine().functions;
+		const later: (() => void)[] = [];
+		const handedBack: number[] = [];
+		const element = f.__CreateList(
+			0,
+			(_list, listId, _index, operationId) => {
+				const cell = f.__CreateElement("list-item", 0);
+				later.push(() => {
+					f.__AppendElement(element, cell);
+					f.__FlushElementTree(cell, {
+						operationID: operationId,
+						elementID: f.__GetElementUniqueID(cell),
+						listID: listId,
+					});
+				});
+				return undefined;
+			},
+			(_list, _listId, sign) => void handedBack.push(sign),
+		);
+		if (container) f.__SetAttribute(element, "custom-list-name", "list-container");
+		f.__AppendElement(outer, element);
+		f.__SetAttribute(element, "update-list-info", items(3));
+		return { element, later, handedBack };
+	}
+
+	it("binds only the newest request of an index, and hands back a cell flushed for an older one", () => {
+		const { element, later, handedBack } = asyncList(true);
+		const handle = engine().list(element);
+		handle.ask(1);
+		const older = handle.operation;
+		handle.ask(1);
+		const newer = handle.operation;
+		later[0]!();
+		expect(handle.given(older)).toBeUndefined();
+		const stale = element.childNodes[0] as LynxElement;
+		expect(handedBack).toEqual([engine().state(stale).uid]);
+		later[1]!();
+		expect(handle.given(newer)).toBe(element.childNodes[1]);
+		expect(handedBack).toHaveLength(1);
+	});
+
+	it("hands back a cell flushed again for a request it already bound", () => {
+		const { element, later, handedBack } = asyncList(true);
+		const handle = engine().list(element);
+		handle.ask(0);
+		later[0]!();
+		const cell = handle.given(handle.operation)!;
+		engine().functions.__FlushElementTree(cell, {
+			operationID: handle.operation,
+			elementID: engine().state(cell).uid,
+			listID: engine().state(element).uid,
+		});
+		expect(handedBack).toEqual([engine().state(cell).uid]);
+	});
+
+	it("takes a cell flushed later with the request's operation id", () => {
+		const { element, later } = asyncList(true);
+		const handle = engine().list(element);
+		expect(handle.ask(1)).toBeUndefined();
+		const operation = handle.operation;
+		expect(() => handle.show(2)).toThrow(/comes later, with a flush of its request/);
+		later[0]!();
+		expect(handle.given(operation)).toBeDefined();
+		expect(handle.given(operation)).toBe(element.childNodes[0]);
+	});
+
+	it("is only the list named list-container: another reads an answer that is not a number as none", () => {
+		const { element } = asyncList(false);
+		expect(() => engine().list(element).ask(0)).toThrow(/no cell for the unique id undefined/);
+	});
+});
