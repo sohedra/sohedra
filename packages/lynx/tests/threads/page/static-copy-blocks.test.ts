@@ -5,8 +5,8 @@
 // and Svelte asked the renderer about the container's place only.
 
 import { expect, it } from "@rstest/core";
+import type { LynxNode } from "@sohedra/lynx/elements";
 
-import type { ElementNode } from "../../../src/background/renderer/element.ts";
 import type { TreeNode } from "../../../src/background/renderer/node.ts";
 import { pageRenderer } from "../../../src/background/renderer/page-renderer.ts";
 import { createStaticCopy } from "../../../src/background/root-entry.ts";
@@ -50,12 +50,13 @@ it("keeps a copy inside its container through every change Svelte makes around i
 	const page = startSveltePage(CopyBlocks, { props: { handles } });
 	await page.settle();
 	const api = handles["api"] as Api;
-	const rowB = handles["row-b"] as ElementNode;
-	const copy = page.asBackground(() => createStaticCopy(handles["src"] as ElementNode, rowB));
+	const rowB = handles["row-b"] as LynxNode;
+	const copy = page.asBackground(() => createStaticCopy(handles["src"] as LynxNode, rowB));
 	await page.settle();
 
 	const inside = (node: unknown): boolean => {
-		for (let at = node as TreeNode | null; at; at = at.parent) if (at === rowB) return at !== node;
+		for (let at = node as TreeNode | null; at; at = at.parent)
+			if (at === (rowB as unknown)) return at !== node;
 		return false;
 	};
 	const block = () => page.byClass("block");

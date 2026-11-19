@@ -3,3 +3,6 @@
 
 # SWC plugin cache that coverage instrumentation writes
 /.swc/
+
+# The app the type tests check against the package as published
+/.types-consumer/

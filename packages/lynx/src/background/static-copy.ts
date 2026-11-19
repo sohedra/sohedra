@@ -3,6 +3,8 @@
 // none of it. Svelte never looks inside the container it puts copies in (it walks a container's
 // own children only), so the copies are the app's.
 
+import type { LynxNode } from "@sohedra/lynx/elements";
+
 import { MAIN_THREAD_PREFIX } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { ElementNode } from "./renderer/element.ts";
@@ -22,7 +24,7 @@ export interface StaticCopyOptions {
 /** What `createStaticCopy` returns. */
 export interface StaticCopy {
 	/** The copies' roots, in the order of the sources: nodes of the page. */
-	readonly nodes: readonly ElementNode[];
+	readonly nodes: readonly LynxNode[];
 	/**
 	 * Takes this call's copies out of the container. It does nothing the second time, or once Svelte
 	 * removed the container, which took the copies with it.
@@ -110,10 +112,11 @@ function copyElement(node: TreeNode, keepIds: boolean): ElementNode {
  * event handler.
  */
 export function createStaticCopy(
-	source: ElementNode | readonly ElementNode[],
-	container: ElementNode,
+	source: LynxNode | readonly LynxNode[],
+	container: LynxNode,
 	options: StaticCopyOptions = {},
 ): StaticCopy {
+	// Boundary: what an app passes as a node is checked to be one of the renderer's own here.
 	if (!isOnPage(container))
 		throw backgroundError({ code: "static_copy_not_on_page", details: { what: "container" } });
 	const held = (copies ??= new WeakSet());
@@ -145,7 +148,8 @@ export function createStaticCopy(
 		pageRenderer.insert(container, made, null);
 	}
 	return {
-		nodes: roots,
+		// Boundary: the renderer's own nodes are what an app sees as nodes.
+		nodes: roots as readonly LynxNode[],
 		// A copy taken out before, by this or by Svelte with its container, is taken out again as a
 		// node that has no Lynx element and no parent on the page: nothing happens.
 		remove: () => roots.forEach((made) => pageRenderer.remove(made)),

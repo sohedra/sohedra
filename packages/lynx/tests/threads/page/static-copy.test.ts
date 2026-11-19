@@ -4,9 +4,9 @@
 // attribute of a copy is its own: changing one changes nothing of the other.
 
 import { describe, expect, it, rs } from "@rstest/core";
+import type { LynxNode } from "@sohedra/lynx/elements";
 
 import type { ElementNode } from "../../../src/background/renderer/element.ts";
-import type { TreeNode } from "../../../src/background/renderer/node.ts";
 import { pageRenderer } from "../../../src/background/renderer/page-renderer.ts";
 import { createStaticCopy } from "../../../src/background/root-entry.ts";
 import type { StaticCopy } from "../../../src/background/root-entry.ts";
@@ -15,7 +15,10 @@ import CopySource from "../../fixtures/threads/page/CopySource.svelte";
 import drawCopySource from "../../fixtures/threads/page/CopySource.svelte?first-frame";
 import { startSveltePage } from "../svelte-page.ts";
 
-type Handles = Record<string, ElementNode> & { taps: number; hideHolder(): void };
+type Handles = Record<string, LynxNode> & { taps: number; hideHolder(): void };
+
+/** A node as the renderer holds it. Boundary: the test reads what the public type hides. */
+const own = (node: LynxNode): ElementNode => node as unknown as ElementNode;
 
 async function source(props: Record<string, unknown> = {}) {
 	// Boundary: the fixture fills the nodes in as it renders.
@@ -37,9 +40,9 @@ async function source(props: Record<string, unknown> = {}) {
 }
 
 /** The kinds of the nodes under `node`, as the renderer holds them. */
-function kinds(node: TreeNode): string[] {
+function kinds(node: LynxNode): string[] {
 	const found: string[] = [];
-	for (let child = node.first; child; child = child.next) found.push(child.kind);
+	for (let child = own(node).first; child; child = child.next) found.push(child.kind);
 	return found;
 }
 
@@ -128,7 +131,7 @@ describe("a static copy", () => {
 		// The source keeps an anchor of its {#if}; the copy holds elements and the text of a <text>.
 		expect(kinds(handles["source"]!)).toContain("comment");
 		expect(kinds(root)).toEqual(["element", "element", "element"]);
-		expect(kinds(root.first!)).toEqual(["text"]);
+		expect(kinds(own(root).first as unknown as LynxNode)).toEqual(["text"]);
 	});
 
 	it("leaves out text outside a <text>, which has no element", async () => {
@@ -205,9 +208,7 @@ describe("a static copy", () => {
 	it("throws one error for a container or a source that is not an element on the page", async () => {
 		const { page, handles, act, children } = await source();
 		const call = (from: unknown, into: unknown) =>
-			thrownBy(() =>
-				page.asBackground(() => createStaticCopy(from as ElementNode, into as ElementNode)),
-			);
+			thrownBy(() => page.asBackground(() => createStaticCopy(from as LynxNode, into as LynxNode)));
 		for (const into of [null, undefined, {}, "holder", 3, page.byClass("holder")])
 			expect(call(handles["title"], into)).toMatchObject({
 				code: "static_copy_not_on_page",
@@ -252,7 +253,7 @@ describe("a static copy", () => {
 		expect(handles["holder"]!.contains(root)).toBe(true);
 		expect(handles["source"]!.contains(root)).toBe(false);
 		expect(root.parentElement).toBe(handles["holder"]);
-		expect(root.compareOrder(handles["holder"])).toBeGreaterThan(0);
+		expect(root.compareOrder(handles["holder"]!)).toBeGreaterThan(0);
 		const [size] = await act(() => [root.invoke("boundingClientRect")]);
 		await expect(size).resolves.toMatchObject({ width: 100, height: 40 });
 		expect(page.engine.invocations.at(-1)).toMatchObject({
@@ -276,7 +277,7 @@ describe("a static copy", () => {
 		const copy: StaticCopy = await act(() =>
 			createStaticCopy([handles["source"]!, handles["title"]!], handles["holder"]!),
 		);
-		const id = copy.nodes[0]!.lynxId;
+		const id = own(copy.nodes[0]!).lynxId;
 		expect(pageRenderer.nodeById(id)).toBe(copy.nodes[0]);
 		await act(() => handles.hideHolder());
 		expect(page.engine.texts().filter((text) => text === "Title")).toHaveLength(1);

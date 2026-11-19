@@ -2,15 +2,13 @@
 // page's renderer filled in and the page's root as the default target. The page keeps the layers
 // still mounted, and unmounts them when it reloads or closes.
 
+import type { LynxNode } from "@sohedra/lynx/elements";
 import { mount as svelteMount, unmount as svelteUnmount } from "svelte";
 import type { Component } from "svelte";
 
 import { backgroundError } from "./catalogue.ts";
-import type { ElementNode } from "./renderer/element.ts";
 import { pageRenderer } from "./renderer/page-renderer.ts";
 import { reportError } from "./report.ts";
-import type { Root } from "./root.ts";
-
 // oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props and exports
 type Bag = Record<string, any>;
 
@@ -20,9 +18,9 @@ export interface MountOptions<Props extends Bag = Bag> {
 	 * The node the layer goes in, such as the one an attachment gets. Left out, it goes under the
 	 * page's root, after everything the page drew, so it is above the page.
 	 */
-	target?: ElementNode | Root;
+	target?: LynxNode;
 	/** A child of `target` the layer goes before. Left out, it goes after the target's children. */
-	anchor?: ElementNode;
+	anchor?: LynxNode;
 	/** The component's props. */
 	props?: Props;
 	/**

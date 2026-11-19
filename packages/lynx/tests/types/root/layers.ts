@@ -3,11 +3,12 @@
 
 import { mount, root, unmount } from "@sohedra/lynx";
 import type { MountOptions } from "@sohedra/lynx";
+import type { LynxNode } from "@sohedra/lynx/elements";
 import type { Component } from "svelte";
 
 declare const Sheet: Component<{ label: string }, { close(): void }>;
 declare const Plain: Component<{ label?: string }>;
-declare const node: NonNullable<MountOptions["anchor"]>;
+declare const node: LynxNode<"view">;
 
 const sheet = mount(Sheet, { props: { label: "x" } });
 sheet.close();
@@ -19,6 +20,8 @@ mount(Plain, options);
 // @ts-expect-error unmount returns nothing: it is done when it returns.
 unmount(sheet).then(() => {});
 
+// @ts-expect-error the target is a node, not a selector.
+mount(Plain, { target: "#sheet" });
 // @ts-expect-error this component has a required prop.
 mount(Sheet);
 // @ts-expect-error the renderer is always the page's.

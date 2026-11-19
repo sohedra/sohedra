@@ -1,8 +1,6 @@
-// The type of Lynx's `SystemInfo`, field for field as Lynx declares it, with its doc comments
-// written anew. Compare it with that file when the engine moves.
-//
-// Adapted from Lynx's @lynx-js/types 4.4.7 (js_libraries/types/types/common/system-info.d.ts),
-// Apache License 2.0.
+// Generated from @lynx-js/types 4.4.2 by `pnpm -F @sohedra/lynx generate`. Do not edit:
+// change scripts/types/ and generate again. The doc comments are Lynx's, adapted from
+// @lynx-js/types (Apache License 2.0).
 
 /** The platforms Lynx runs on. `pc` is Lynx's older name for Windows and macOS. */
 export type PlatformType = "Android" | "iOS" | "Harmony" | "windows" | "macOS" | "pc";
@@ -10,26 +8,32 @@ export type PlatformType = "Android" | "iOS" | "Harmony" | "windows" | "macOS" |
 /** What Lynx says about the device and itself. */
 export interface SystemInfo {
 	/**
-	 * The version of the Lynx engine, as `engineVersion` gives it; kept by Lynx for older code.
-	 *
+	 * The version of the Lynx Engine.
 	 * @deprecated Use `engineVersion`.
+	 * @example '2.4', '2.10'
 	 */
 	readonly lynxSdkVersion: string;
-	/** The version of the Lynx engine: `"3.2"`. */
+	/**
+	 * The version of the Lynx Engine.
+	 * @example '3.2'
+	 */
 	readonly engineVersion: string;
-	/** The version of the device's operating system. Not on the main thread. */
+	/**
+	 * The current operating system version.
+	 * Not on the main thread.
+	 */
 	readonly osVersion: string;
-	/** The screen's height, in physical pixels. */
+	/** The physical pixel height of the real device. */
 	readonly pixelHeight: number;
-	/** The screen's width, in physical pixels. */
+	/** The physical pixel width of the real device. */
 	readonly pixelWidth: number;
-	/** How many physical pixels make one of Lynx's layout units. */
+	/** The physical pixel ratio of the real device. */
 	readonly pixelRatio: number;
-	/** The device's platform. */
+	/** The platform of the current device. */
 	readonly platform: PlatformType;
 	/**
-	 * The JavaScript engine the background thread runs on. Not on the main thread: a template that
-	 * shows it, or `osVersion`, is drawn without it in the first frame.
+	 * The JavaScript engine currently used.
+	 * Not on the main thread: a template that shows it, or `osVersion`, is drawn without it in the first frame.
 	 */
 	readonly runtimeType: "v8" | "jsc" | "quickjs";
 	/** The theme the host gave Lynx, if any. */

@@ -30,5 +30,6 @@ This product includes software adapted from Lynx
 (https://github.com/lynx-family/lynx), Copyright 2024 The Lynx Authors,
 licensed under the Apache License, Version 2.0:
 
-- src/background/host/system-info.ts, the type of SystemInfo from @lynx-js/types
-  4.4.7 (js_libraries/types/types/common/system-info.d.ts)
+- types/generated/elements.d.ts and src/background/host/system-info.ts, generated
+  from @lynx-js/types 4.4.2 (js_libraries/types): Lynx's elements, their
+  attributes, events and UI methods, SystemInfo, and their doc comments
