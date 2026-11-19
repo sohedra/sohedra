@@ -42,11 +42,13 @@ const nextTick = environment.process.nextTick.bind(environment.process);
  * no later macrotask, so nothing crosses between a page's threads meanwhile. A thread's promise
  * reaction runs with the globals of the thread that ran last, so a test ends the task before it
  * runs the other thread's code, as a device ends a thread's task before the thread runs anything
- * else. Node runs a tick once the reactions due have run. The function is the one the process had
- * when this module loaded: a test that fakes timers must not stop it.
+ * else. It starts from a microtask, so the tick comes once every reaction due, and those they
+ * queue, has run: from a macrotask's own code, Node runs ticks before the reactions. The tick is
+ * the one the process had when this module loaded: a test that fakes timers must not stop it.
  */
-export function endTask(): Promise<void> {
-	return new Promise((resolve) => nextTick(resolve));
+export async function endTask(): Promise<void> {
+	await Promise.resolve();
+	await new Promise<void>((resolve) => nextTick(resolve));
 }
 
 /**
