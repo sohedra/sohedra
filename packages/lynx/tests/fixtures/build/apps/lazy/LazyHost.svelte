@@ -9,5 +9,5 @@
 	}
 </script>
 
-<view ontap={load}><text>load</text></view>
+<view class="load" ontap={load}><text>load</text></view>
 {#if Loaded}<Loaded />{/if}

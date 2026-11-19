@@ -144,21 +144,27 @@ describe("each thread's lynx", () => {
 		const page = startTestPage();
 		const own = (value: object) => Object.keys(value).toSorted();
 		expect(own(page.lynx.mainThread)).toEqual([
+			"SystemInfo",
 			"__globalProps",
 			"__initData",
 			"clearTimeout",
+			"fetchBundle",
 			"getEngine",
 			"getJSContext",
 			"getNative",
+			"loadScript",
 			"reportError",
 			"setTimeout",
 		]);
 		expect(own(page.lynx.background)).toEqual([
 			"__globalProps",
 			"__initData",
+			"fetchBundle",
 			"getApp",
 			"getCoreContext",
+			"getJSModule",
 			"getNativeApp",
+			"loadScript",
 			"queueMicrotask",
 			"reportError",
 		]);

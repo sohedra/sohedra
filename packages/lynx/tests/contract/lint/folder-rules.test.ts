@@ -23,7 +23,6 @@ const MAY_IMPORT: Record<string, string[]> = {
 	"svelte/runtime": ["wire"],
 	testing: ["wire", "background", "main-thread", "first-frame", "svelte/runtime"],
 	gesture: ["wire"],
-	host: ["wire"],
 	env: ["wire"],
 };
 

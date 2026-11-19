@@ -16,9 +16,15 @@ import type {
 	BackgroundLynx,
 	LynxElement,
 	MainThreadLynx,
+	TestBundle,
 	TestPage,
 } from "../../src/testing/index.ts";
-import { decodePatch, decodeToBackground, FIRST_FRAME_GLOBAL } from "../../src/wire/index.ts";
+import {
+	decodePatch,
+	decodeToBackground,
+	FIRST_FRAME_GLOBAL,
+	PATCH_METHOD,
+} from "../../src/wire/index.ts";
 import type { Patch, PatchParams, ReceivedByBackground } from "../../src/wire/index.ts";
 
 /** A running Svelte page. */
@@ -43,6 +49,12 @@ export interface SveltePageOptions {
 	templateData?: Record<string, unknown>;
 	/** The host's global props. */
 	globalProps?: Record<string, unknown>;
+	/** What Lynx says about the device. */
+	systemInfo?: Record<string, unknown>;
+	/** The page's own URL. */
+	url?: string;
+	/** The lazy bundles the page can fetch, by URL. */
+	bundles?: Record<string, TestBundle>;
 	/** The root component's props on the background, as `mountPage` takes them. */
 	props?: MountPageOptions<Record<string, unknown>>["props"];
 	/** The context the background mounts the root component with. */
@@ -86,6 +98,9 @@ export function startSveltePage(
 		...(options.initData && { initData: options.initData }),
 		...(options.templateData && { templateData: options.templateData }),
 		...(options.globalProps && { globalProps: options.globalProps }),
+		...(options.systemInfo && { systemInfo: options.systemInfo }),
+		...(options.url !== undefined && { url: options.url }),
+		...(options.bundles && { bundles: options.bundles }),
 		mainThread: () => {
 			const context = (readGlobal("lynx") as MainThreadLynx).getJSContext();
 			const send = context.dispatchEvent.bind(context);
@@ -101,8 +116,8 @@ export function startSveltePage(
 			const native = (readGlobal("lynx") as BackgroundLynx).getNativeApp();
 			const send = native.callLepusMethod.bind(native);
 			native.callLepusMethod = (name, params, callback) => {
-				// Boundary: the page's patches are the one method it calls here.
-				patches.push(decodePatch(params as PatchParams));
+				// Boundary: the patch method's params are a patch.
+				if (name === PATCH_METHOD) patches.push(decodePatch(params as PatchParams));
 				send(name, params, callback);
 			};
 			mountPage(App, {

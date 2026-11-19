@@ -27,8 +27,8 @@ import { JSDOM } from "jsdom";
 
 import { readGlobal } from "../../src/testing/globals.ts";
 import { createEngine, startTestPage } from "../../src/testing/index.ts";
-import type { BackgroundLynx, TestPage } from "../../src/testing/index.ts";
-import { PATCH_METHOD, RUN_FUNCTION } from "../../src/wire/index.ts";
+import type { BackgroundLynx, TestBundle, TestPage } from "../../src/testing/index.ts";
+import { LAZY_BUNDLE_METHOD, PATCH_METHOD, RUN_FUNCTION } from "../../src/wire/index.ts";
 
 /** The built-ins seen missing on a device, on both threads, by the object that would hold them. */
 const SEEN_MISSING: Readonly<Record<string, readonly string[]>> = {
@@ -120,6 +120,7 @@ export const SYSTEM_INFO: Readonly<Record<string, unknown>> = {
  */
 const PAGE_FUNCTIONS = [
 	PATCH_METHOD,
+	LAZY_BUNDLE_METHOD,
 	RUN_FUNCTION,
 	"removeComponents",
 	"updateGlobalProps",
@@ -195,15 +196,27 @@ function wrapperArguments(lynx: BackgroundLynx): unknown[] {
 	return names.map((name) => given[name]);
 }
 
+/** What a script lynx-core loads leaves: the function that runs it with lynx-core's `tt`. */
+interface ScriptHolder {
+	init(inject: { tt: unknown }): unknown;
+}
+
+/** The background's realm, and how lynx-core runs a script there: the page's or a bundle's. */
+interface BackgroundRealm {
+	context: vm.Context;
+	/** Runs a script that registers its factory as lynx-core does, and answers what it exports. */
+	run(holder: ScriptHolder): unknown;
+}
+
 /** Loads the background's script as lynx-core does, with `lynx` given to it alone. */
-function runBackground(script: string, lynx: BackgroundLynx): vm.Context {
+function runBackground(script: string, lynx: BackgroundLynx): BackgroundRealm {
 	const { context, adopt } = realm({ bundleSupportLoadScript: true });
 	// The data the page was opened with, as lynx-core hands it to the page's script.
 	const app = lynx.getApp();
 	app._params = adopt(app._params) as typeof app._params;
 	vm.runInContext(script, context, { filename: "background.js" });
 	// Boundary: the script leaves its factory's holder on the global object.
-	const holder = context["__bundle__holder"] as { init(inject: { tt: unknown }): unknown };
+	const holder = context["__bundle__holder"] as ScriptHolder;
 	const factories = new Map<string, (...args: unknown[]) => void>();
 	// lynx-core's `lynx` also has the timers, and the engine's `Promise`, which the wrapper takes as
 	// the script's own (lynx-core's lynx.ts).
@@ -227,8 +240,20 @@ function runBackground(script: string, lynx: BackgroundLynx): vm.Context {
 			return module.exports;
 		},
 	};
-	holder.init({ tt });
-	return context;
+	// lynx-core runs a script's factory with its `tt` (lynx-core's app.ts, `_$executeInit`).
+	const run = (loaded: ScriptHolder): unknown => loaded.init({ tt });
+	run(holder);
+	return { context, run };
+}
+
+/** A lazy bundle's sections as the build wrote them, served at a URL. */
+export interface DeviceBundle {
+	/** The background section: a script lynx-core loads as it loads the page's. */
+	background: string;
+	/** The main-thread section: a function of the bundle's entry, as text. */
+	mainThread: string;
+	/** The bundle's style sheet, as the engine keeps it. */
+	styles: string;
 }
 
 /** A page whose threads run the built scripts, each in its realm. */
@@ -239,12 +264,31 @@ export interface DevicePage {
 }
 
 /** Starts a page from a build's scripts, on threads shaped like a device's. */
-export function startDevicePage(scripts: { mainThread: string; background: string }): DevicePage {
+export function startDevicePage(
+	scripts: { mainThread: string; background: string },
+	options: { url?: string; bundles?: Record<string, DeviceBundle> } = {},
+): DevicePage {
 	const { window } = new JSDOM("<!doctype html><body></body>");
 	let mainThread: vm.Context | undefined;
-	let background: vm.Context | undefined;
+	let background: BackgroundRealm | undefined;
+	// Each section runs in its thread's realm, as the engine runs it there.
+	const bundles: Record<string, TestBundle> = {};
+	for (const [url, bundle] of Object.entries(options.bundles ?? {}))
+		bundles[url] = {
+			background: () =>
+				background!.run(
+					vm.runInContext(bundle.background, background!.context, {
+						filename: `${url}/background.js`,
+					}) as ScriptHolder,
+				),
+			mainThread: () =>
+				vm.runInContext(bundle.mainThread, mainThread!, { filename: `${url}/main-thread.js` }),
+			styles: bundle.styles,
+		};
 	const page = startTestPage({
 		document: window.document,
+		...(options.url !== undefined && { url: options.url }),
+		bundles,
 		mainThread: () => {
 			Object.assign(readGlobal("lynx") as object, { SystemInfo: SYSTEM_INFO });
 			mainThread = mainThreadRealm();
@@ -260,5 +304,5 @@ export function startDevicePage(scripts: { mainThread: string; background: strin
 			}
 		},
 	});
-	return { page, mainThread: mainThread!, background: background! };
+	return { page, mainThread: mainThread!, background: background!.context };
 }
