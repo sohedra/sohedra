@@ -9,6 +9,7 @@ it("renders the first frame on the main thread, then the background takes over",
 	const seen: [string, boolean][] = [];
 	await render(Threads, {
 		props: { onrender: (thread: string, dev: boolean) => seen.push([thread, dev]) },
+		lynx: { firstFrame: true },
 	});
 	expect(seen).toEqual([
 		["main", true],
@@ -17,11 +18,8 @@ it("renders the first frame on the main thread, then the background takes over",
 	expect(screen.getByText("background")).toBeTruthy();
 });
 
-it("renders on the background only with firstFrame: false", async () => {
+it("renders on the background alone by default", async () => {
 	const seen: string[] = [];
-	await render(Threads, {
-		props: { onrender: (thread: string) => seen.push(thread) },
-		lynx: { firstFrame: false },
-	});
+	await render(Threads, { props: { onrender: (thread: string) => seen.push(thread) } });
 	expect(seen).toEqual(["background"]);
 });

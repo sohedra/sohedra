@@ -125,7 +125,7 @@ const NAMES: Record<string, Resolves> = {
 	cleanup: { from: "@sohedra/lynx/testing" },
 	unmount: { kind: "a method of what render resolves with" },
 	"firstFrame: false": { kind: "an option of the plugin and of render's lynx" },
-	"lynx: { firstFrame: false }": { kind: "an option of render" },
+	"lynx: { firstFrame: true }": { kind: "an option of render" },
 	"background: false": { kind: "an option of render's lynx" },
 	BROWSER: { from: "esm-env" },
 	onMount: { from: "svelte" },

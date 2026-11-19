@@ -7,7 +7,7 @@ import { fireEvent, render, screen } from "@sohedra/lynx/testing";
 import Counter from "../fixtures/library/Counter.svelte";
 
 it("counts taps, from the first frame on", async () => {
-	const { container } = await render(Counter);
+	const { container } = await render(Counter, { lynx: { firstFrame: true } });
 	expect(container.localName).toBe("page");
 	expect(screen.getByText("Count: 0")).toBeTruthy();
 
@@ -23,8 +23,8 @@ it("takes new props on rerender", async () => {
 	expect(screen.getByText("Count: 10")).toBeTruthy();
 });
 
-it("renders without the first frame too", async () => {
-	await render(Counter, { lynx: { firstFrame: false } });
+it("renders on the background alone by default", async () => {
+	await render(Counter);
 	await fireEvent.tap(screen.getByText("Add 1"));
 	expect(screen.getByText("Count: 1")).toBeTruthy();
 });

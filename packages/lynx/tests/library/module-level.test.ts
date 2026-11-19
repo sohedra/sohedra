@@ -17,7 +17,7 @@ it("shows the main thread's value in the first frame and the background's after 
 	const observer = new MutationObserver(() => seen.push(document.body.textContent ?? ""));
 	observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 	try {
-		await render(ModuleLevel);
+		await render(ModuleLevel, { lynx: { firstFrame: true } });
 	} finally {
 		observer.disconnect();
 	}
@@ -26,7 +26,7 @@ it("shows the main thread's value in the first frame and the background's after 
 	expect(screen.getByText("background")).toBeTruthy();
 });
 
-it("shows the background's value with firstFrame: false", async () => {
-	await render(ModuleLevel, { lynx: { firstFrame: false } });
+it("shows the background's value by default", async () => {
+	await render(ModuleLevel);
 	expect(screen.getByText("background")).toBeTruthy();
 });

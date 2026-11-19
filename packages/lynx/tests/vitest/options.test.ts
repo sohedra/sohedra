@@ -9,7 +9,10 @@ import Typed from "./fixtures/Typed.svelte";
 
 it("replaces the app's constants in each thread's copy, as `define` says", async () => {
 	const seen: string[] = [];
-	await render(Define, { props: { onrender: (thread: string) => seen.push(thread) } });
+	await render(Define, {
+		props: { onrender: (thread: string) => seen.push(thread) },
+		lynx: { firstFrame: true },
+	});
 	expect(seen).toEqual(["from the main thread", "from the background"]);
 	expect(screen.getByText("from the background")).toBeTruthy();
 });

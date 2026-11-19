@@ -35,7 +35,7 @@ it("prints the page", async () => {
 
 it("resolves when a main-thread function of the first frame calls the background", async () => {
 	const log: unknown[] = [];
-	await render(RefFunction, { props: { log } });
+	await render(RefFunction, { props: { log }, lynx: { firstFrame: true } });
 	expect(log).toEqual(["ref a element"]);
 });
 
