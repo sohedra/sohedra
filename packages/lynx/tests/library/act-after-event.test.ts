@@ -7,14 +7,17 @@ import { act, fireEvent, render } from "@sohedra/lynx/testing";
 import TapFaded from "../fixtures/library/TapFaded.svelte";
 import TapLater from "../fixtures/library/TapLater.svelte";
 
-/** What `run` left rejected with no handler, once the process had a moment to say so. */
+/**
+ * What `run` left rejected with no handler: Node says so as it runs the reactions, before the
+ * next macrotask.
+ */
 async function unhandledDuring(run: () => Promise<void>): Promise<unknown[]> {
 	const unhandled: unknown[] = [];
 	const onUnhandled = (reason: unknown) => void unhandled.push(reason);
 	process.on("unhandledRejection", onUnhandled);
 	try {
 		await run();
-		await new Promise((resolve) => setTimeout(resolve, 10));
+		await new Promise((resolve) => setImmediate(resolve));
 	} finally {
 		process.off("unhandledRejection", onUnhandled);
 	}
