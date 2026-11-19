@@ -135,6 +135,14 @@ export function addPageEntries(chain: RspackChain, options: PageEntryOptions): s
 }
 
 /**
+ * Whether `issuer` is the main thread's copy of an entry: the first frame's runtime file, with the
+ * entry in its query. The bundler names it with Windows' `\` there; the runtime file's path has `/`.
+ */
+export function issuedByFirstFrameCopy(issuer: string): boolean {
+	return issuer.replace(/\\/g, "/").startsWith(RUNTIME_FILES.firstFrame);
+}
+
+/**
  * Resolves the request of the main thread's copy of an entry from the app's root, where the
  * bundler resolves an entry for the background's copy: a file, a package's name or whatever else
  * an entry may be. The copy's own module lives in this package, which is where its request would
@@ -151,8 +159,7 @@ class FirstFrameEntryContextPlugin {
 		const name = `${PACKAGE_NAME}:first-frame-entry-context`;
 		compiler.hooks.normalModuleFactory.tap(name, (factory) => {
 			factory.hooks.beforeResolve.tap(name, (data) => {
-				if (data.contextInfo.issuer.startsWith(RUNTIME_FILES.firstFrame))
-					data.context = this.rootPath;
+				if (issuedByFirstFrameCopy(data.contextInfo.issuer)) data.context = this.rootPath;
 			});
 		});
 	}
