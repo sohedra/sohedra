@@ -14,6 +14,7 @@ import { applyEdits, pieceMap, pieceText } from "../source-map/edits.ts";
 import type { Piece } from "../source-map/edits.ts";
 import type { SourceMap } from "../source-map/maps.ts";
 import { bareAttributes } from "./bare-attributes.ts";
+import { blankTypes } from "./blank-types.ts";
 import { deferredRows } from "./deferred-rows.ts";
 import { effectImports } from "./effect-imports.ts";
 import { eventSpellings } from "./event-spellings.ts";
@@ -80,12 +81,16 @@ export function prepare(options: PrepareOptions): Prepared {
 	const name = path.basename(filename);
 	const edited = applyEdits(source, edits);
 	const pieces: Piece[] = functions?.registrations ?? [];
+	// The main-thread functions follow Svelte's JavaScript as JavaScript: copied without their types.
+	const { ast } = options;
+	const typeless =
+		pieces.length > 0 ? blankTypes(source, [ast.instance, ast.module, ast.fragment]) : source;
 	return {
 		code: edited.code,
 		map: sourceMap ? edited.map(name) : undefined,
 		locate: edited.locate,
 		registrations: {
-			code: pieceText(source, pieces),
+			code: pieceText(typeless, pieces),
 			map: sourceMap && pieces.length > 0 ? pieceMap({ source, pieces, name }) : undefined,
 		},
 		functionIds: functions?.ids ?? [],

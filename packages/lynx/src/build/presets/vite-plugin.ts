@@ -28,7 +28,7 @@ import {
 } from "../../svelte/build/index.ts";
 import { PACKAGE_NAME, RENDERER_ENTRY } from "../../wire/index.ts";
 import type { Thread } from "../../wire/index.ts";
-import { compileComponent, writtenInTypeScript } from "../compile/component.ts";
+import { compileComponent } from "../compile/component.ts";
 import { compileRuneModule } from "../compile/rune-module.ts";
 import { buildError } from "../diagnostics/messages.ts";
 import { backgroundOnlyStub } from "../loaders/background-only-stub.ts";
@@ -328,16 +328,9 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 				? { serverInternals: RUNTIME_FILES.serverInternals }
 				: { clientInternals: RUNTIME_FILES.clientInternals }),
 		});
-		// Types out of a component written in TypeScript, as the build's SWC reads the compiler's
-		// output: every import kept. Svelte's own output is JavaScript, read as such.
-		const typescript = writtenInTypeScript(code);
-		let output = (
-			await transformOxc(
-				compiled.code,
-				`${file}.${typescript ? "ts" : "js"}`,
-				typescript ? "ts" : "js",
-			)
-		).code;
+		// Svelte's output is JavaScript, its main-thread functions copied without their types: read
+		// as JavaScript, as the build's SWC reads it, every import kept.
+		let output = (await transformOxc(compiled.code, `${file}.js`, "js")).code;
 		const self = `./${path.basename(file)}`;
 		if (thread === "background" && firstFrame)
 			output += hangFirstFrameCopy(self, `${self}?${FIRST_FRAME_QUERY}`);
