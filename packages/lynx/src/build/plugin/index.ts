@@ -98,6 +98,10 @@ export const PLUGIN_OPTIONS: unique symbol = Symbol.for("@sohedra/lynx:plugin-op
  * The Rsbuild plugin that builds a Svelte app for Lynx, on top of Lynx's own build plugins. Throws
  * when an option is unknown or has a wrong value: one error lists every mistake.
  *
+ * It runs on the Node.js versions rspeedy and Rsbuild run on. A component's main-thread functions
+ * written in TypeScript need Node.js 22.13 or later, whose `module.stripTypeScriptTypes` takes out
+ * their types; only types: an `enum` or a `namespace` there is a build error.
+ *
  * The background's script may be split into chunks (`splitChunks`, `performance.chunkSplit`); the
  * main thread's never is. The chunks go into the bundle (`output.inlineScripts`, on by default) or
  * are files of their own, and Lynx loads them by `output.assetPrefix`. Inlined chunks need a path

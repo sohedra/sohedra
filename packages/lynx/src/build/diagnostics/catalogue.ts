@@ -40,6 +40,10 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	main_thread_function_generator: Plain;
 	main_thread_function_block_name: { where: string; names: string[] };
 	main_thread_function_used_early: { name: string; captures: string[] };
+	/** `feature` names the TypeScript ("an `enum`"); `instead`, what to write. */
+	main_thread_function_typescript: { feature: string; instead: string };
+	/** `version` is the Node.js that builds (`v20.19.0`). */
+	typescript_stripper_missing: { version: string };
 	plain_function_in_main_thread_function: { name: string };
 	script_syntax_error: { reason: string };
 	event_attribute_renamed: { attribute: string; replacement: string; spelling: string };
@@ -180,6 +184,19 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		fix: ({ name }) =>
 			`Move the declaration of \`${name}\` above this use, after the values it captures.`,
 		docs: "main_thread_function_used_early",
+	},
+	main_thread_function_typescript: {
+		message: ({ feature }) =>
+			`A main-thread function cannot use ${feature}: the main thread runs it as JavaScript, with only its types taken out.`,
+		fix: ({ instead }) => `Write ${instead} instead.`,
+		docs: "main_thread_function_typescript",
+	},
+	typescript_stripper_missing: {
+		message: ({ version }) =>
+			`Main-thread functions written in TypeScript need Node.js 22.13 or later to build, which takes their types out; this build runs on Node.js ${version}.`,
+		fix: () =>
+			"Build with Node.js 22.13 or later, or write this component's main-thread functions without types.",
+		docs: "typescript_stripper_missing",
 	},
 	plain_function_in_main_thread_function: {
 		message: ({ name }) =>
