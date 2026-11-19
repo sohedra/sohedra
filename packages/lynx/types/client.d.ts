@@ -5,18 +5,16 @@
 // - the build's own types, from Rsbuild (`import.meta.webpackHot`, asset imports, CSS modules):
 //   the file rspeedy's client types refer to, so an app built with Rsbuild alone needs no
 //   `@lynx-js/rspeedy`;
-// - `.svelte` imports for plain `tsc`, which cannot read components itself (svelte-check uses the
-//   real component types);
+// - Lynx's elements for the Svelte language tools (elements.d.ts), which they read with
+//   `"svelteOptions": { "namespace": "svelteLynx" }` in tsconfig.json;
 // - `esm-env`, which the binding resolves from Svelte, and `background-only`, which it provides.
 
 /// <reference types="@rsbuild/core/types" />
+// oxlint-disable-next-line typescript/triple-slash-reference -- an import would make this file a module, which turns its `declare module`s into augmentations
+/// <reference path="./elements.d.ts" />
 
-declare module "*.svelte" {
-	import type { Component } from "svelte";
-
-	const component: Component<Record<string, unknown>>;
-	export default component;
-}
+// `.svelte` imports, for plain `tsc`, are Svelte's own: declaring them here too would declare them
+// twice for an app that checks every declaration file.
 
 /** Svelte's environment flags. */
 declare module "esm-env" {
