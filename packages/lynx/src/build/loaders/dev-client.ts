@@ -18,6 +18,25 @@ import { stringLiteral } from "../string-literal.ts";
 export const DEV_CLIENT_FILE: RegExp =
 	/[\\/]webpack-dev-transport[\\/]lib[\\/]client[\\/](?:reloadApp|logBuildErrors)\.js$/;
 
+/** The dev client's own module, which imports the two. */
+const DEV_CLIENT_INDEX = /[\\/]webpack-dev-transport[\\/]lib[\\/]client[\\/]index\.js(?:\?|$)/;
+
+/** The files the loader changes, by their name in the dev client's folder. */
+const PATCHED = ["reloadApp.js", "logBuildErrors.js"];
+
+/**
+ * The dev client's files the loader never saw in a build that has the dev client: Lynx renamed or
+ * removed them, or the app's build brings a dev client older than these files. Nothing of a build
+ * without the dev client (a production build) is missing.
+ */
+export function missingDevClientFiles(resources: readonly string[]): string[] {
+	if (!resources.some((resource) => DEV_CLIENT_INDEX.test(resource))) return [];
+	return PATCHED.filter(
+		(name) =>
+			!resources.some((resource) => DEV_CLIENT_FILE.test(resource) && resource.endsWith(name)),
+	).map((name) => `@lynx-js/webpack-dev-transport/lib/client/${name}`);
+}
+
 /** Each function, the call put first in it, and the binding's function it calls. */
 const PATCHES = [
 	{

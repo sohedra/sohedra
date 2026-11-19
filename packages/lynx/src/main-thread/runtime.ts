@@ -16,6 +16,7 @@
 //   - starts the page over when it reloads, and lets go of it when its life ends.
 
 import {
+	asError,
 	checkMessage,
 	createRepeats,
 	decodeError,
@@ -71,27 +72,22 @@ import { afterFirstPaint } from "./paint.ts";
 import { isRecord, toSentEvent } from "./sent-event.ts";
 
 /**
- * Lynx's codes of an error on the main thread, as the engine itself reports them: its sub-codes,
- * which the host sees as 1101 and 1901 (core/runtime/lepusng/quick_context.cc and
- * core/renderer/worklet/lepus_element.cc). One form for both, so a report of the binding's is the
- * engine's own.
+ * Lynx's code of an error on the main thread, as the engine itself reports one: its sub-code
+ * `E_MTS_RUNTIME_ERROR`, which the host sees as 1101. It is `_ReportError`'s own default
+ * (core/runtime/lepus/bindings/renderer_functions.cc), and what the engine reports for a throw out
+ * of any function it calls, a main-thread function bound as the binding binds it included
+ * (`CallClosure`, core/runtime/lepusng/quick_context.cc, `InternalCall`).
  */
 const MAIN_THREAD_ERROR = 110100;
-/** What the body of a main-thread function the engine runs throws (`E_WORKLET_MTS_CALL_EXCEPTION`). */
-const FUNCTION_THREW = 190100;
 
 /**
- * Reports an error into Lynx, with Lynx's code for where on the main thread it was thrown. Never
- * throws. Never through `console.error`: on this thread that is a report of its own.
+ * Reports an error into Lynx, with Lynx's code for the main thread. Never throws. Never through
+ * `console.error`: on this thread that is a report of its own.
  */
-function reportIntoLynx(error: Error, code: number): void {
-	try {
-		if (typeof mainThread._ReportError === "function")
-			mainThread._ReportError(error, { errorCode: code });
-		else mainThread.lynx.reportError(error);
-	} catch {
-		// Reporting must never throw over the error.
-	}
+function reportIntoLynx(error: Error): void {
+	if (typeof mainThread._ReportError === "function")
+		mainThread._ReportError(error, { errorCode: MAIN_THREAD_ERROR });
+	else mainThread.lynx.reportError(error);
 }
 
 /** The arguments of an engine event, which the engine sends as an array. */
@@ -127,7 +123,7 @@ export function startMainThread(): MainThreadRuntime {
 			...scope,
 			send: (message) => send(message, generation),
 			report: (error) => report(error),
-			reportBody: (error, place) => report(error, { place, code: FUNCTION_THREW }),
+			reportBody: (error, place) => report(error, { place }),
 			flush: () => {
 				if (state.element) mainThread.__FlushElementTree(state.element);
 			},
@@ -147,17 +143,17 @@ export function startMainThread(): MainThreadRuntime {
 
 	/**
 	 * Reports an error into Lynx, and tells the background, which has the page's `onError`. In a
-	 * development build, an error that repeats is reported the first time and at each power of ten,
-	 * with its count.
+	 * development build, an error that repeats reaches Lynx the first time and at each power of ten,
+	 * with its count; the background hears every one. Never throws over the error it reports.
 	 */
-	function report(
-		error: unknown,
-		{ op, place, code = MAIN_THREAD_ERROR }: { op?: Op; place?: ErrorPlace; code?: number } = {},
-	): void {
-		const thrown = error instanceof Error ? error : new Error(String(error));
-		const count = DEV ? repeats.count(thrown) : 1;
-		if (count === undefined) return;
-		reportIntoLynx(withCount(thrown, count), code);
+	function report(error: unknown, { op, place }: { op?: Op; place?: ErrorPlace } = {}): void {
+		const thrown = asError(error);
+		try {
+			const count = DEV ? repeats.count(thrown) : 1;
+			if (count !== undefined) reportIntoLynx(withCount(thrown, count));
+		} catch {
+			// Reporting must never throw over the error.
+		}
 		try {
 			const message: ToBackground = { t: "error", error: encodeError(thrown) };
 			if (place) message.place = place;

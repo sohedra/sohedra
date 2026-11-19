@@ -178,18 +178,29 @@ export function decodeResult(text: string): Result {
 	return JSON.parse(text) as Result;
 }
 
-/** A thrown value that is not an `Error`, as the text of a message. Never throws. */
-function describeThrown(value: unknown): string {
+/**
+ * A thrown value that is not an `Error`, as the text of a message, as Lynx writes it: a string as
+ * it is, anything else as JSON, or as `String` gives it when JSON has none. Different values give
+ * different text. Never throws.
+ */
+export function thrownText(value: unknown): string {
 	if (typeof value === "string") return value;
 	try {
-		if (typeof value === "object" && value !== null) {
-			const text = JSON.stringify(value);
-			if (text !== undefined) return text;
-		}
+		const text = JSON.stringify(value);
+		if (text !== undefined && text !== "") return text;
+	} catch {
+		// A cycle or a BigInt: `String` below.
+	}
+	try {
 		return String(value);
 	} catch {
 		return "A value was thrown that cannot be shown.";
 	}
+}
+
+/** `error` as an `Error`: a thrown value that is not one is wrapped, with its text as the message. */
+export function asError(error: unknown): Error {
+	return error instanceof Error ? error : new Error(thrownText(error));
 }
 
 /** What a thread caught, ready to cross: an error's name, message, stack and code. */
@@ -197,7 +208,7 @@ export function encodeError(error: unknown): ThrownError {
 	const thrown: ThrownError =
 		error instanceof Error
 			? { name: error.name, message: error.message }
-			: { name: "Error", message: describeThrown(error) };
+			: { name: "Error", message: thrownText(error) };
 	if (error instanceof Error && typeof error.stack === "string") thrown.stack = error.stack;
 	if (typeof error === "object" && error !== null && "code" in error) {
 		const { code } = error;

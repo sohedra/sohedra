@@ -95,9 +95,9 @@ export function loadLazyBundle(path: string): Promise<unknown> {
 				code: "lazy_bundle_timed_out",
 				details: { url, seconds: LOAD_TIMEOUT_MS / 1000 },
 			});
-			// In development the only sign of a bundle that is not there: Lynx Explorer's fetch never
-			// answers a missing one.
-			if (!settled) reportError(error);
+			// The only sign of a bundle that does not answer: Lynx says nothing of a request that
+			// never completes, and Lynx Explorer's fetch never answers a missing one.
+			reportError(error);
 			fail(error);
 		}, LOAD_TIMEOUT_MS);
 		function fail(error: unknown): void {

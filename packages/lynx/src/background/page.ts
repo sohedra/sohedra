@@ -14,8 +14,7 @@ import { flushSync, mount, unmount } from "svelte";
 import type { Component } from "svelte";
 
 import {
-	componentInMessage,
-	componentOfNode,
+	componentOfError,
 	endFirstScreens,
 	listenThrough,
 	pushRenderer,
@@ -35,7 +34,7 @@ import type {
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import { openChannel } from "./channel.ts";
-import { heard, setErrorHandler, startOver } from "./errors.ts";
+import { heard, releaseErrorHandler, setErrorHandler, startOver } from "./errors.ts";
 import type { ErrorSource } from "./errors.ts";
 import { callThrough } from "./functions/calls.ts";
 import { background } from "./globals.ts";
@@ -79,13 +78,6 @@ const isThenable = (value: unknown): value is PromiseLike<unknown> =>
 	value !== null &&
 	typeof Reflect.get(value, "then") === "function";
 
-/** The component an error came from, from what the thread knew or Svelte's development records. */
-function componentOf(error: Error, { node, component }: ErrorSource): string | undefined {
-	return (
-		component ?? componentInMessage(error.message) ?? (node ? componentOfNode(node) : undefined)
-	);
-}
-
 /** What a call that threw answers. */
 const failure = (error: unknown): Result => ({ ok: false, error: encodeError(error) });
 
@@ -108,7 +100,9 @@ export function mountPage<Props extends Bag>(
 ): void {
 	const { lynx } = background;
 	const app = lynx.getApp();
-	setErrorHandler(options.onError, componentOf);
+	const errors = setErrorHandler(options.onError, (error, source) =>
+		componentOfError(typeof error.message === "string" ? error.message : "", source),
+	);
 	clearRepeats();
 	startGeneration();
 	openLayers();
@@ -301,11 +295,12 @@ export function mountPage<Props extends Bag>(
 	 * teardown's error in the promise `unmount` returns, where it is reported. A layer the app's own
 	 * teardown unmounts is gone by then.
 	 */
-	function teardown(): void {
+	function teardown(): Promise<void> | undefined {
 		const mounted = instance;
 		instance = undefined;
-		if (mounted) unmount(mounted).catch(reportError);
+		const done = mounted ? unmount(mounted).catch(reportError) : undefined;
 		unmountLayers();
+		return done;
 	}
 
 	function mergeData(data: unknown): void {
@@ -332,8 +327,9 @@ export function mountPage<Props extends Bag>(
 
 	function destroy(): void {
 		bumpPage();
+		let tornDown: Promise<void> | undefined;
 		runAll([
-			teardown,
+			() => void (tornDown = teardown()),
 			() => callThrough(null),
 			() => channel.close(),
 			() => pageRenderer.retire(),
@@ -342,8 +338,10 @@ export function mountPage<Props extends Bag>(
 			closeHostEvents,
 			resetKeyboard,
 			clearPageState,
-			() => setErrorHandler(undefined),
 		]);
+		// The page's `onError` hears what its teardown threw, which Svelte gives the promise
+		// `unmount` returns, then lets go.
+		void Promise.resolve(tornDown).then(() => releaseErrorHandler(errors));
 	}
 
 	/** What read the data runs again, and the patch that shows it says the data was updated. */

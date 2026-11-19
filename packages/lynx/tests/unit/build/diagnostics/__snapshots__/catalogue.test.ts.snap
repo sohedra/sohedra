@@ -133,7 +133,7 @@ https://sohedra.com/e/define_thread_unknown"
 `;
 
 exports[`the build's catalogue > dev_client_moved: the message 1`] = `
-"Lynx's dev client has changed: \`function reloadPage() {\` is not in node_modules/@lynx-js/webpack-dev-transport/lib/client/reloadApp.js exactly once, so build errors stay out of LogBox and a change that needs DevTool to load the page says nothing.
+"Lynx's dev client has changed: \`function reloadPage() {\` is not in node_modules/@lynx-js/webpack-dev-transport/lib/client/reloadApp.js exactly once, so a change that needs DevTool to load the page says nothing while DevTool is off.
 /app/src/App.svelte:2:3
 
 1: <script>

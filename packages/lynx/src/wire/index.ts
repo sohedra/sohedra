@@ -70,6 +70,7 @@ export { createRepeats, withCount } from "./repeats.ts";
 export type { Repeats } from "./repeats.ts";
 export type { Receiver, Stamp, Stamped } from "./page.ts";
 export {
+	asError,
 	decodeCall,
 	decodeCell,
 	decodeError,
@@ -80,6 +81,7 @@ export {
 	encodeError,
 	encodePatch,
 	encodeResult,
+	thrownText,
 } from "./patch.ts";
 export type {
 	CallItem,

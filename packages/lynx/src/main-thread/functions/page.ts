@@ -110,7 +110,7 @@ export interface FunctionsPageOptions {
 	report(error: unknown): void;
 	/**
 	 * Reports what the body of a main-thread function the engine ran threw, with its function and
-	 * the background's id of its element, as the engine would report it.
+	 * the background's id of its element, with the code the engine would report it with.
 	 */
 	reportBody(error: unknown, place: ErrorPlace): void;
 	/** Flushes the page's tree: what functions change outside a patch. */

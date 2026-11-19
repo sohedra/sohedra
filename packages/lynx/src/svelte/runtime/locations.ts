@@ -42,3 +42,18 @@ export function componentInMessage(message: string): string | undefined {
 	const found = COMPONENT_LINE.exec(message)?.[1];
 	return found === undefined ? undefined : fileName(found);
 }
+
+/**
+ * The component an error came from: what the thread that threw it knew, else the innermost of
+ * Svelte's lines under its message, else the component whose markup made its element.
+ */
+export function componentOfError(
+	message: string,
+	place: { node?: object | undefined; component?: string | undefined },
+): string | undefined {
+	return (
+		place.component ??
+		componentInMessage(message) ??
+		(place.node ? componentOfNode(place.node) : undefined)
+	);
+}

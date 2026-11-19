@@ -201,7 +201,7 @@ https://sohedra.com/e/props_id_mismatch"
 exports[`the background's catalogue > reload_needs_devtool: the message 1`] = `
 "A change needs the page to load again, and only Lynx's DevTool loads it from the dev server: DevTool is off.
 
-Reopen the page to see the change. To have the page load again by itself, turn DevTool on in the host's settings (in Lynx Explorer, its DevTool switch).
+Reopen the page to see the change: until then, later changes do not show either. To have the page load again by itself, turn DevTool on in the host's settings (in Lynx Explorer, its DevTool switch).
 https://sohedra.com/e/reload_needs_devtool"
 `;
 

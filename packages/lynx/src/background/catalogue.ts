@@ -346,7 +346,7 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		message: () =>
 			"A change needs the page to load again, and only Lynx's DevTool loads it from the dev server: DevTool is off.",
 		fix: () =>
-			"Reopen the page to see the change. To have the page load again by itself, turn DevTool on in the host's settings (in Lynx Explorer, its DevTool switch).",
+			"Reopen the page to see the change: until then, later changes do not show either. To have the page load again by itself, turn DevTool on in the host's settings (in Lynx Explorer, its DevTool switch).",
 		docs: "reload_needs_devtool",
 	},
 };

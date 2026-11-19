@@ -45,13 +45,17 @@ export function reportBuildErrors(errors: unknown): void {
 	}
 }
 
-/** Whether `module` is DevTool's, able to load the page again from the dev server. */
+/**
+ * Whether `module` is DevTool's, able to load the page again from the dev server. Its
+ * `isDevToolEnabled` answers a boolean on Android and a number on iOS (a native `BOOL` reaches
+ * JavaScript as `0` or `1`), so any falsy answer is off. A module that cannot say is taken as on.
+ */
 function canReload(module: Record<string, unknown> | undefined): boolean {
 	if (typeof module?.["invokeCdp"] !== "function") return false;
 	const enabled = module["isDevToolEnabled"];
 	if (typeof enabled !== "function") return true;
 	try {
-		return enabled.call(module) !== false;
+		return Boolean(enabled.call(module));
 	} catch {
 		return true;
 	}

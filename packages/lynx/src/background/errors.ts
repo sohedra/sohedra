@@ -2,6 +2,7 @@
 // with where it came from. Lynx's own catches (a timer's callback, a rejection nobody handled) go to
 // the host and not here: Lynx gives them to no JavaScript hook.
 
+import { docsLink } from "../wire/index.ts";
 import type { Thread } from "../wire/index.ts";
 import { background } from "./globals.ts";
 
@@ -34,26 +35,33 @@ export interface ErrorSource {
 export type ComponentOf = (error: Error, source: ErrorSource) => string | undefined;
 
 let handler: ErrorHandler | undefined;
+/** Which page set the handler: a page that ended lets go only of its own. */
+let owner: object = {};
 let componentOf: ComponentOf = (_error, source) => source.component;
 /** `onError` is running: an error it causes is reported into Lynx, and does not call it again. */
 let running = false;
 /** An error was reported since the page started or reloaded. */
 let crashed = false;
 
-/** `error` as an `Error`: a thrown value that is not one is wrapped, with the value as its text. */
-export function asError(error: unknown): Error {
-	return error instanceof Error ? error : new Error(String(error));
-}
-
 /**
- * The page's `onError` from now on, and how it names components; `undefined` once the page has
- * ended. This module loads before Svelte's runtime (the background's start-up fills in a function
- * that reports), so it reads none of Svelte's records itself.
+ * The page's `onError` from now on, and how it names components. This module loads before Svelte's
+ * runtime (the background's start-up fills in a function that reports), so it reads none of
+ * Svelte's records itself.
  */
-export function setErrorHandler(next: ErrorHandler | undefined, names?: ComponentOf): void {
+export function setErrorHandler(next: ErrorHandler | undefined, names?: ComponentOf): object {
 	handler = next;
 	if (names) componentOf = names;
 	crashed = false;
+	owner = {};
+	return owner;
+}
+
+/**
+ * The page whose `setErrorHandler` answered `ended` has ended: its `onError` hears nothing more. A
+ * page started since keeps its own.
+ */
+export function releaseErrorHandler(ended: object): void {
+	if (owner === ended) handler = undefined;
 }
 
 /** The page starts again (a reload): no error has been reported on it yet. */
@@ -66,10 +74,14 @@ export function crashedSinceStart(): boolean {
 	return crashed;
 }
 
-/** The binding's code of `error`, when it is one of its messages. */
+/**
+ * The binding's code of `error`, when the binding wrote it: every message of its catalogues ends
+ * with the docs link of its code. An app's or a library's own `code` is not the binding's.
+ */
 function codeOf(error: Error): string | undefined {
 	const code = (error as { code?: unknown }).code;
-	return typeof code === "string" ? code : undefined;
+	if (typeof code !== "string" || typeof error.message !== "string") return undefined;
+	return error.message.includes(docsLink(code)) ? code : undefined;
 }
 
 /**

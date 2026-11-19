@@ -7,6 +7,7 @@ import type { Thread } from "../../wire/index.ts";
 import { PACKAGE_NAME } from "../../wire/index.ts";
 import { DEV_CLIENT_FILE } from "../loaders/dev-client.ts";
 import type { DevClientLoaderOptions } from "../loaders/dev-client.ts";
+import { DevClientCheckPlugin } from "./dev-client-check.ts";
 import { loaderPath, RUNTIME_FILES } from "./layers.ts";
 import { configureCssRules, keepSelectorListsApart } from "./rules-css.ts";
 import { splitScriptRule, threadsOf } from "./rules-script.ts";
@@ -53,6 +54,7 @@ function patchDevClientSource(chain: RspackChain): void {
 		.use("dev-client")
 		.loader(loaderPath("dev-client"))
 		.options(options);
+	chain.plugin(`${PACKAGE_NAME}:dev-client-check`).use(DevClientCheckPlugin);
 }
 
 /**
