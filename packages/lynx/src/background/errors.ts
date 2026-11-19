@@ -40,7 +40,7 @@ let owner: object = {};
 let componentOf: ComponentOf = (_error, source) => source.component;
 /** `onError` is running: an error it causes is reported into Lynx, and does not call it again. */
 let running = false;
-/** An error was reported since the page started or reloaded. */
+/** Svelte threw while it mounted, flushed or ran effects, since the page started or reloaded. */
 let crashed = false;
 
 /**
@@ -64,12 +64,27 @@ export function releaseErrorHandler(ended: object): void {
 	if (owner === ended) handler = undefined;
 }
 
-/** The page starts again (a reload): no error has been reported on it yet. */
+/** The page starts again (a reload): Svelte has thrown nothing on it yet. */
 export function startOver(): void {
 	crashed = false;
 }
 
-/** Whether an error was reported since the page started or last reloaded. */
+/**
+ * Runs Svelte's mount or flush, or a microtask, from which Svelte runs the effects of a change made
+ * in a timer or a promise. What it throws is thrown on, and marks the page as crashed: Svelte leaves
+ * what threw broken, and a hot update does not mount it again. What the app reports, a handler's
+ * own throw and the binding's own reports leave the mark alone.
+ */
+export function runSvelte<T>(run: () => T): T {
+	try {
+		return run();
+	} catch (error) {
+		crashed = true;
+		throw error;
+	}
+}
+
+/** Whether Svelte threw while it mounted, flushed or ran effects, since the page started or reloaded. */
 export function crashedSinceStart(): boolean {
 	return crashed;
 }
@@ -89,7 +104,6 @@ function codeOf(error: Error): string | undefined {
  * reported into Lynx once, and goes no further.
  */
 export function heard(error: Error, thread: Thread, source: ErrorSource = {}): void {
-	crashed = true;
 	if (!handler || running) return;
 	const component = componentOf(error, source);
 	running = true;

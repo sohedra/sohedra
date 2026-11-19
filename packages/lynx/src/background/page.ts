@@ -34,7 +34,7 @@ import type {
 } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import { openChannel } from "./channel.ts";
-import { heard, releaseErrorHandler, setErrorHandler, startOver } from "./errors.ts";
+import { heard, releaseErrorHandler, runSvelte, setErrorHandler, startOver } from "./errors.ts";
 import type { ErrorSource } from "./errors.ts";
 import { callThrough } from "./functions/calls.ts";
 import { background } from "./globals.ts";
@@ -127,7 +127,7 @@ export function mountPage<Props extends Bag>(
 			} finally {
 				pop();
 			}
-			flushSync();
+			runSvelte(flushSync);
 		} catch (error) {
 			report(error, source);
 		}
@@ -271,13 +271,15 @@ export function mountPage<Props extends Bag>(
 		startPropsIds();
 		if (starting) startFirstScreens();
 		try {
-			instance = mount(App, {
-				target: root!,
-				anchor: anchor!,
-				renderer: pageRenderer,
-				props,
-				...(options.context && { context: options.context }),
-			});
+			instance = runSvelte(() =>
+				mount(App, {
+					target: root!,
+					anchor: anchor!,
+					renderer: pageRenderer,
+					props,
+					...(options.context && { context: options.context }),
+				}),
+			);
 		} finally {
 			for (const note of endFirstScreens())
 				warnOnce(`${note.code}:${note.where ?? ""}`, () =>
@@ -287,7 +289,7 @@ export function mountPage<Props extends Bag>(
 				);
 		}
 		if (starting) channel.markRendered();
-		flushSync();
+		runSvelte(flushSync);
 	}
 
 	/**

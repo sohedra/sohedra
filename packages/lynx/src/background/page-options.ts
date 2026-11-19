@@ -31,7 +31,7 @@ export interface MountPageOptions<Props extends Bag> {
 	 * does; neither Lynx nor `onError` gets it. Its context says the thread, the component when a
 	 * development build knows it, and the binding's code when the binding wrote the error. A crash
 	 * reporter plugs in here. It hears every error in every build: a development build only folds
-	 * the repeats of one error in LogBox.
+	 * the repeats of one error in LogBox, until it has been quiet for five seconds.
 	 *
 	 * What Lynx catches itself, a timer's callback or a rejection nobody handled, goes to the host
 	 * and LogBox, not here: Lynx offers no hook for it. What `onError` throws is reported into Lynx,
