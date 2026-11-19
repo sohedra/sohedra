@@ -155,7 +155,7 @@ describe("peerDependencies", () => {
 });
 
 describe("engines", () => {
-	it("names the Node.js lines in Active or Maintenance LTS, each from its tested floor, as the README does", () => {
+	it("names even Node.js lines, each from a floor, in the same words as the README", () => {
 		expect(manifest.engines["node"]).toMatch(
 			/^\^\d*[02468]\.\d+\.\d+(?: \|\| \^\d*[02468]\.\d+\.\d+)*$/,
 		);
