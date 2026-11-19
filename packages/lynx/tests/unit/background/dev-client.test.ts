@@ -1,5 +1,5 @@
 // The binding's part of Lynx's dev client: build errors reach LogBox, a load DevTool cannot do is
-// said once, and a hot update that lands after an error loads the page again.
+// said once, and a hot update that lands after Svelte threw loads the page again.
 
 import { afterEach, describe, expect, it } from "@rstest/core";
 
@@ -9,7 +9,7 @@ import {
 	reportBuildErrors,
 } from "../../../src/background/dev-client.ts";
 import type { HotUpdates } from "../../../src/background/dev-client.ts";
-import { setErrorHandler, startOver } from "../../../src/background/errors.ts";
+import { runSvelte, setErrorHandler, startOver } from "../../../src/background/errors.ts";
 import { clearRepeats, reportError } from "../../../src/background/report.ts";
 import { installGlobals } from "../../../src/testing/globals.ts";
 
@@ -125,25 +125,33 @@ describe("reloadAfterCrash", () => {
 		};
 	}
 
-	it("loads the page again when a hot update lands after an error was reported", () => {
+	/** Svelte throws while it flushes, as a component's effect does. */
+	const svelteThrows = (): void =>
+		expect(() =>
+			runSvelte(() => {
+				throw new Error("the child threw");
+			}),
+		).toThrow("the child threw");
+
+	it("loads the page again when a hot update lands after Svelte threw", () => {
 		const { reloads } = host();
 		const updates = hot();
 		reloadAfterCrash(updates);
 		setErrorHandler(undefined);
-		reportError(new Error("the child threw"));
+		svelteThrows();
 		updates.status("check", "prepare", "ready", "dispose", "apply");
 		expect(reloads).toEqual([]);
 		updates.status("idle");
 		expect(reloads).toEqual([{}]);
 	});
 
-	it("leaves the page when no error was reported since it started or reloaded", () => {
+	it("leaves the page when Svelte threw nothing since it started or reloaded", () => {
 		const { reloads } = host();
 		const updates = hot();
 		reloadAfterCrash(updates);
 		setErrorHandler(undefined);
 		updates.status("check", "prepare", "ready", "dispose", "apply", "idle");
-		reportError(new Error("the child threw"));
+		svelteThrows();
 		startOver();
 		updates.status("check", "prepare", "ready", "dispose", "apply", "idle");
 		expect(reloads).toEqual([]);
@@ -154,9 +162,19 @@ describe("reloadAfterCrash", () => {
 		const updates = hot();
 		reloadAfterCrash(updates);
 		setErrorHandler(undefined);
-		reportError(new Error("the child threw"));
+		svelteThrows();
 		updates.status("check", "prepare", "ready", "abort", "idle");
 		updates.status("check", "prepare", "ready", "dispose", "apply", "fail");
+		expect(reloads).toEqual([]);
+	});
+
+	it("leaves the page after an error the app reported", () => {
+		const { reloads } = host();
+		const updates = hot();
+		reloadAfterCrash(updates);
+		setErrorHandler(undefined);
+		reportError(new Error("the request failed"));
+		updates.status("check", "prepare", "ready", "dispose", "apply", "idle");
 		expect(reloads).toEqual([]);
 	});
 

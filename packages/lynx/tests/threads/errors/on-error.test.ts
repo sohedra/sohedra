@@ -396,10 +396,12 @@ describe("reporting", () => {
 });
 
 describe("a page's crash, for the reload after a save", () => {
-	it("is marked by a reported error, and cleared by a reload", async () => {
+	it("is marked by what Svelte threw, not by a handler's throw, and cleared by a reload", async () => {
 		const { page, tap } = await errorsPage();
 		expect(crashedSinceStart()).toBe(false);
 		await tap("handler");
+		expect(crashedSinceStart()).toBe(false);
+		await tap("effect");
 		expect(crashedSinceStart()).toBe(true);
 		page.reload();
 		await page.settle();
