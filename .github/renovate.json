@@ -3,6 +3,9 @@
 	"description": "Renovate opens pull requests only for dev dependencies' minor and patch updates and GitHub Actions, which merge themselves once CI passes, and for lockfile maintenance, which waits for a person. Every other update waits on the Dependency Dashboard.",
 	"extends": ["github>sohedra/.github:renovate-preset"],
 	"dependencyDashboardApproval": true,
+	"dependencyDashboard": {
+		"header": "This issue lists Renovate updates and detected dependencies. Read the [Dependency Dashboard](https://docs.renovatebot.com/key-concepts/dashboard/) docs to learn more.\n\nAn entry for a peer of `@sohedra/lynx` is a signal to widen its peer range by hand; never approve it."
+	},
 	"commitMessageTopic": "{{{depName}}}",
 	"automergeStrategy": "squash",
 	"lockFileMaintenance": {
