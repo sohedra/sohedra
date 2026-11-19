@@ -30,12 +30,19 @@ function byClass(page: TestPage, token: string): LynxElement {
 describe("an app built with Rsbuild's CLI and the binding's plugin alone, twice with its build cache", () => {
 	let app: string;
 	const builds: CliBuild[] = [];
+	/** After each build, how many times the bundler has compiled the page's component. */
+	const compiled: number[] = [];
+	const compiledLines = (): number => {
+		const log = path.join(app, "compiled.log");
+		return fs.existsSync(log) ? fs.readFileSync(log, "utf8").split("\n").filter(Boolean).length : 0;
+	};
 	beforeAll(async () => {
 		app = cliApp("rsbuild", ["press-lib"]);
 		for (const round of [0, 1]) {
 			// The second build restores the component from the cache, and builds the entry again.
 			if (round === 1) fs.appendFileSync(path.join(app, "index.ts"), "\n// Changed.\n");
 			builds.push(await cliBuild({ cli: "rsbuild", cwd: app }));
+			compiled.push(compiledLines());
 		}
 	}, 360_000);
 	afterAll(() => fs.rmSync(path.dirname(app), { recursive: true, force: true }));
@@ -53,7 +60,9 @@ describe("an app built with Rsbuild's CLI and the binding's plugin alone, twice 
 			expect(build.output).not.toMatch(MESSAGE);
 			expect(fs.existsSync(path.join(build.dist, "main.lynx.bundle"))).toBe(true);
 		}
-		expect(fs.existsSync(path.join(app, "node_modules/.cache"))).toBe(true);
+		// Once for each thread, then not at all: the second build restored the component.
+		expect(compiled[0]).toBeGreaterThan(0);
+		expect(compiled[1]).toBe(compiled[0]);
 	});
 
 	it("runs a library's main-thread function at a main-thread tap, from a `.js` file of a package that has no side effects", async () => {
@@ -78,6 +87,19 @@ describe("an app built with Rsbuild's CLI and the binding's plugin alone, twice 
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
 			expect(page.engine.texts()).toContain("Tripled 6");
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("runs a library's main-thread function that only a rune module's effect calls, from a package that has no side effects", async () => {
+		const page = start(0);
+		try {
+			await page.settle();
+			page.engine.dispatch(byClass(page, "ask-module"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts()).toContain("Quadrupled 8");
 		} finally {
 			page.dispose();
 		}

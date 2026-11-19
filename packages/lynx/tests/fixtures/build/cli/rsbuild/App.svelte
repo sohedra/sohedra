@@ -4,8 +4,16 @@
 	import { runOnMainThread } from "@sohedra/lynx";
 	import { triple, widen } from "press-lib";
 
+	import { asker } from "./ask.svelte.js";
+
 	let tripled = $state(0);
 	let asked = $state(0);
+	let quadrupled = $state(0);
+	let askedModule = $state(0);
+	asker(
+		() => askedModule,
+		(value: number) => (quadrupled = value),
+	);
 
 	$effect(() => {
 		if (asked > 0) void runOnMainThread(triple)(asked).then((value) => (tripled = value));
@@ -17,6 +25,9 @@
 </view>
 <view class="ask" ontap={() => (asked = 2)}>
 	<text>Tripled {tripled}</text>
+</view>
+<view class="ask-module" ontap={() => (askedModule = 2)}>
+	<text>Quadrupled {quadrupled}</text>
 </view>
 
 <style>

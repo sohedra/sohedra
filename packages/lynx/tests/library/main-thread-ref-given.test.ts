@@ -18,6 +18,7 @@ it.each([
 	["empty text", 'the string ""'],
 	["object", "an object"],
 	["number", "the number 3"],
+	["symbol", "the symbol Symbol(box)"],
 ])("refuses %s as main-thread:ref, saying what it takes", async (kind, said) => {
 	await expect(render(RefNotRef, { props: { kind } })).rejects.toThrow(
 		`The <view>'s main-thread:ref is ${said}, which is neither a ref nor a main-thread function`,

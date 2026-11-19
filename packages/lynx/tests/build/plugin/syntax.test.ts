@@ -1,7 +1,6 @@
-// The build reads the Svelte compiler's output as TypeScript, which it needs for the main-thread
-// functions a component's script has. JavaScript that TypeScript reads otherwise keeps its meaning
-// on both threads: in a component without `lang="ts"`, a rune module written in JavaScript and a
-// plain one.
+// JavaScript that TypeScript reads otherwise keeps its meaning on both threads: in a component
+// without `lang="ts"`, a rune module written in JavaScript and a plain one. `a < b > (c)` is the
+// shape Svelte's printer turns into `a < b > c`; the template and the other parentheses it keeps.
 
 import { beforeAll, describe, expect, it } from "@rstest/core";
 
@@ -16,15 +15,25 @@ beforeAll(async () => {
 	build = await sharedBuild("production", "syntax");
 }, 180_000);
 
-describe("`a < b > (c)` in JavaScript", () => {
+const ALL_TRUE = "true true true true";
+
+describe("`a < b > (c)` and its like in JavaScript", () => {
 	it("compares, in the first frame and on the background", async () => {
 		expect(build.error + build.messages).toBe("");
 		const { page } = startDevicePage(scriptsOf(build));
 		try {
-			expect(page.engine.texts()).toEqual(["component true", "rune module true", "module true"]);
+			expect(page.engine.texts()).toEqual([
+				`component ${ALL_TRUE}`,
+				`rune module ${ALL_TRUE}`,
+				`module ${ALL_TRUE}`,
+			]);
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
-			expect(page.engine.texts()).toEqual(["component true", "rune module true", "module true"]);
+			expect(page.engine.texts()).toEqual([
+				`component ${ALL_TRUE}`,
+				`rune module ${ALL_TRUE}`,
+				`module ${ALL_TRUE}`,
+			]);
 		} finally {
 			page.dispose();
 		}

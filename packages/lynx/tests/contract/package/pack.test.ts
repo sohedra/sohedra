@@ -105,6 +105,19 @@ describe("the packed package", () => {
 		}
 	});
 
+	it("carries the sources in its source maps, which name files it does not hold", () => {
+		const maps = files.filter((file) => file.endsWith(".js.map"));
+		expect(maps.length).toBeGreaterThan(0);
+		const missing = maps.filter((file) => {
+			const map = JSON.parse(fs.readFileSync(path.join(unpacked, file), "utf8")) as {
+				sources: string[];
+				sourcesContent?: (string | null)[];
+			};
+			return map.sources.some((_, index) => typeof map.sourcesContent?.[index] !== "string");
+		});
+		expect(missing).toEqual([]);
+	});
+
 	it("passes publint", async () => {
 		const { messages, pkg } = await publint({ pkgDir: unpacked, pack: false, level: "suggestion" });
 		expect(messages.map((message) => formatMessage(message, pkg))).toEqual([]);

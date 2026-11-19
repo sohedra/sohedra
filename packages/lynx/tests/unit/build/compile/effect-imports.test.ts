@@ -56,33 +56,69 @@ describe("the effects' imports on the main thread", () => {
 });
 
 // A package that says it has no side effects is left out of a production build where nothing reads
-// its exports, and with it the main-thread functions it registers as it loads.
+// its exports, and with it the main-thread functions it registers as it loads. Svelte's server copy
+// drops code (an effect, an action, an attachment, a boundary's children while it is pending), so
+// the main thread's copy reads, in a function that never runs, every name the component imports and
+// reads as a value.
 const dropped = `<script lang="ts">
 	import { triple } from "lib-effect";
 	import { act } from "lib-action";
 	import { attach } from "lib-attach";
 	import { shown } from "lib-shown";
+	import { waited } from "lib-boundary";
 	import type { Kind } from "lib-type";
 	import { type Other, other } from "lib-other";
+	import { Shape, Sized, Listed, Made, Keyed } from "./shapes.ts";
 	const kind: Kind | Other = "a";
-	$effect(() => { triple(kind); });
+	const size = (shape: Shape): number => shape.size;
+	$effect(() => {
+		const shape = { size: 2 } as Shape;
+		const sized: Sized = { size: 3 };
+		const listed = [] satisfies Listed[];
+		const made = new Map<string, Made>();
+		const keyed = { Keyed: 1, value: kind };
+		triple(size(shape) + sized.size + listed.length + made.size + keyed.Keyed + made.Keyed);
+	});
 </script>
-<view use:act {@attach attach}><text>{shown}{other}</text></view>`;
+<view use:act {@attach attach}><text>{shown}{other}</text></view>
+<svelte:boundary>
+	<text>{await waited()}</text>
+	{#snippet pending()}<text>waiting</text>{/snippet}
+</svelte:boundary>`;
 
 /** The body of the function that never runs, in a copy's code. */
 const keeper = (code: string): string =>
 	/function __svelteLynxEffectImports\(\) \{([^}]*)\}/.exec(code)?.[1] ?? "";
 
-describe("the imports Svelte's server copy drops, on the main thread", () => {
-	it("are read in the function that never runs: an effect's, an action's and an attachment's", async () => {
-		const { code } = await component(dropped, { thread: "main-thread" });
-		for (const name of ["triple", "act", "attach"])
+/** Compiled for the main thread, with the boundary's `await` allowed. */
+const mainThread = (source: string) =>
+	component(source, {
+		thread: "main-thread",
+		compilerOptions: { experimental: { async: true } },
+	});
+
+describe("the names a component imports, on the main thread", () => {
+	it("are read in the function that never runs: an effect's, an action's, an attachment's, a boundary's", async () => {
+		const { code } = await mainThread(dropped);
+		for (const name of ["triple", "act", "attach", "waited"])
 			expect(keeper(code)).toMatch(new RegExp(`\\b${name}\\b`));
 	});
 
-	it("leave out a type, and an import the server copy reads itself", async () => {
-		const { code } = await component(dropped, { thread: "main-thread" });
-		for (const name of ["Kind", "Other", "shown", "other"])
+	it("are read there when the server copy reads them too", async () => {
+		const { code } = await mainThread(dropped);
+		for (const name of ["shown", "other"])
+			expect(keeper(code)).toMatch(new RegExp(`\\b${name}\\b`));
+	});
+
+	it("leave out a type: imported as one, or only read as one (`as`, `:`, `satisfies`, an argument), or as a property's name", async () => {
+		const { code } = await mainThread(dropped);
+		for (const name of ["Kind", "Other", "Shape", "Sized", "Listed", "Made", "Keyed"])
 			expect(keeper(code)).not.toMatch(new RegExp(`\\b${name}\\b`));
+	});
+
+	it("are read from a component whose only script is its module script", async () => {
+		const source = `<script module>\n\timport { triple } from "lib-effect";\n\texport const later = () => triple(2);\n</script>\n<view></view>`;
+		const { code } = await mainThread(source);
+		expect(keeper(code)).toMatch(/\btriple\b/);
 	});
 });
