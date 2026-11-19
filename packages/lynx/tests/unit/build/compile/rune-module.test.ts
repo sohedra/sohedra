@@ -72,4 +72,15 @@ describe("a rune module", () => {
 		expect(message).toContain("https://svelte.dev/e/");
 		expect(message).toContain("1: let a = $state(0, 1);");
 	});
+
+	it("reads, on the main thread only, every name it imports and reads as a value, in a block that never runs", () => {
+		const source = `import { quadruple } from "lib";\nimport { unused } from "lib";\nexport function asker(read) {\n\t$effect(() => quadruple(read()));\n}\n`;
+		const mainThread = compile(source, "main-thread").code;
+		expect(mainThread).toMatch(
+			/if \(typeof __svelteLynxKeptImports !== "undefined"\) \{ quadruple; \}/,
+		);
+		expect(mainThread).not.toMatch(/__svelteLynxKeptImports[^}]*unused/);
+		expect(compile(source, "background").code).not.toContain("__svelteLynxKeptImports");
+		expect(compile(counter, "main-thread").code).not.toContain("__svelteLynxKeptImports");
+	});
 });

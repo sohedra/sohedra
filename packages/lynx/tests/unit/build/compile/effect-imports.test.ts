@@ -121,4 +121,23 @@ describe("the names a component imports, on the main thread", () => {
 		const { code } = await mainThread(source);
 		expect(keeper(code)).toMatch(/\btriple\b/);
 	});
+
+	it("read a value where a script reads it, and nothing a re-export, a label or a name only names", async () => {
+		const source = `<script module>
+	import { exported, reexported, labelled, computed, keyed, method, meta, tooltip } from "lib";
+	export { exported };
+	export { reexported } from "lib";
+	labelled: for (;;) break labelled;
+	const table = { [computed]: 1, keyed: 2, method() {} };
+	class Box { method() {} [keyed] = 1; }
+	console.log(table, Box, import.meta.url);
+</script>
+<view use:tooltip.show></view>`;
+		const { code } = await mainThread(source);
+		const kept = keeper(code);
+		for (const name of ["exported", "computed", "keyed", "tooltip"])
+			expect(kept).toMatch(new RegExp(`\\b${name}\\b`));
+		for (const name of ["reexported", "labelled", "method", "meta"])
+			expect(kept).not.toMatch(new RegExp(`\\b${name}\\b`));
+	});
 });
