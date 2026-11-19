@@ -1,13 +1,12 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"description": "Renovate opens pull requests only for dev dependencies' minor and patch updates, GitHub Actions and lockfile maintenance, and merges them once CI passes. Every other update waits on the Dependency Dashboard for a person.",
+	"description": "Renovate opens pull requests only for dev dependencies' minor and patch updates and GitHub Actions, which merge themselves once CI passes, and for lockfile maintenance, which waits for a person. Every other update waits on the Dependency Dashboard.",
 	"extends": ["github>sohedra/.github:renovate-preset"],
 	"dependencyDashboardApproval": true,
 	"commitMessageTopic": "{{{depName}}}",
 	"automergeStrategy": "squash",
 	"lockFileMaintenance": {
 		"dependencyDashboardApproval": false,
-		"automerge": true,
 		"commitMessageAction": "refresh the lockfile"
 	},
 	"customManagers": [
@@ -46,7 +45,7 @@
 			]
 		},
 		{
-			"description": "Each peer of @sohedra/lynx and its dev copy wait on the dashboard, so a dev copy never moves past its peer range. A new peer belongs in this list.",
+			"description": "Each peer of @sohedra/lynx and its dev copy wait on the dashboard, so a dev copy never moves past its peer range. Their entries are a signal to widen the peer by hand and are never approved. scripts/renovate.ts keeps this list equal to the peers.",
 			"matchFileNames": ["packages/lynx/package.json"],
 			"matchPackageNames": [
 				"@lynx-js/rspeedy",
@@ -61,6 +60,21 @@
 			"groupName": null,
 			"dependencyDashboardApproval": true,
 			"automerge": false
+		},
+		{
+			"description": "TypeScript 7 waits for a decision.",
+			"matchDepNames": ["typescript"],
+			"allowedVersions": "<7"
+		},
+		{
+			"description": "The type tests' older TypeScript stays on 5.x.",
+			"matchDepNames": ["typescript-5.9"],
+			"allowedVersions": "<6"
+		},
+		{
+			"description": "Tailwind CSS 4 is not supported (support policy S8).",
+			"matchDepNames": ["tailwindcss"],
+			"allowedVersions": "<4"
 		},
 		{
 			"description": "Lynx moves one version at a time, with the engine-upgrade checklist, in one pull request.",
