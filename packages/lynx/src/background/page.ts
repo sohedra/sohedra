@@ -44,8 +44,11 @@ import type { ElementNode } from "./renderer/renderer.ts";
 import { rowOf, waitsToBeAsked } from "./renderer/rows.ts";
 import { reportError, warnOnce } from "./report.ts";
 
+// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
+type Bag = Record<string, any>;
+
 /** How `mountPage` mounts the page's root component. */
-export interface MountPageOptions<Props extends Record<string, unknown>> {
+export interface MountPageOptions<Props extends Bag> {
 	/**
 	 * The root component's props: an object, or a function of the page's data and the host's global
 	 * props, called at the page's start and at each reload. The first frame is drawn with the same,
@@ -114,7 +117,7 @@ function withNodes(event: SentEvent): Record<string, unknown> {
  * mountPage(App, { props: (initData) => ({ route: String(initData.route ?? "/") }) });
  * ```
  */
-export function mountPage<Props extends Record<string, unknown>>(
+export function mountPage<Props extends Bag>(
 	App: Component<Props>,
 	options: MountPageOptions<NoInfer<Props>> = {},
 ): void {
@@ -295,18 +298,15 @@ export function mountPage<Props extends Record<string, unknown>>(
 	}
 
 	/**
-	 * Unmounts the app, then the layers still mounted: synchronous under a renderer; a teardown's
-	 * error is reported. A layer the app's own teardown unmounts is gone by then.
+	 * Unmounts the app, then the layers still mounted: synchronous under a renderer. Svelte ends a
+	 * teardown's error in the promise `unmount` returns, where it is reported. A layer the app's own
+	 * teardown unmounts is gone by then.
 	 */
 	function teardown(): void {
 		const mounted = instance;
 		instance = undefined;
-		runAll([
-			() => {
-				if (mounted) unmount(mounted).catch(reportError);
-			},
-			unmountLayers,
-		]);
+		if (mounted) unmount(mounted).catch(reportError);
+		unmountLayers();
 	}
 
 	function mergeData(data: unknown): void {

@@ -35,10 +35,7 @@ let copies: WeakSet<TreeNode> | undefined;
 
 /** An element node of the page that has a Lynx element now. */
 const isOnPage = (value: unknown): value is ElementNode =>
-	value instanceof TreeNode &&
-	value.kind === "element" &&
-	value.lynxId !== 0 &&
-	pageRenderer.nodeById(value.lynxId) === value;
+	value instanceof TreeNode && value.kind === "element" && value.lynxId !== 0;
 
 function holdsList(node: TreeNode): boolean {
 	if (node.tag === "list") return true;
@@ -108,8 +105,8 @@ function copyElement(node: TreeNode, keepIds: boolean): ElementNode {
  * function set. A `<list>` cannot be copied.
  *
  * Throws, before any node is made, when the container is not an element on the page or holds
- * something that is not a copy, when a source is not an element on the page, and when a source
- * holds a `<list>`. On the main thread it throws too: call it from an effect, an attachment or an
+ * something that is not a copy, when a source is not an element on the page or is the page's
+ * `root`, and when a source holds a `<list>`. On the main thread it throws too: call it from an effect, an attachment or an
  * event handler.
  */
 export function createStaticCopy(
@@ -136,6 +133,8 @@ export function createStaticCopy(
 			});
 	});
 	const nodes = sources as readonly ElementNode[];
+	if (nodes.includes(pageRenderer.root))
+		throw backgroundError({ code: "static_copy_page_root", details: {} });
 	if (nodes.some(holdsList)) throw backgroundError({ code: "static_copy_list", details: {} });
 
 	const keepIds = options.keepIds === true;
@@ -145,17 +144,10 @@ export function createStaticCopy(
 		held.add(made);
 		pageRenderer.insert(container, made, null);
 	}
-	let removed = false;
 	return {
 		nodes: roots,
-		remove() {
-			if (removed) return;
-			removed = true;
-			for (const made of roots) {
-				held.delete(made);
-				// A copy Svelte took away with its container has no Lynx element left.
-				if (made.lynxId !== 0) pageRenderer.remove(made);
-			}
-		},
+		// A copy taken out before, by this or by Svelte with its container, is taken out again as a
+		// node that has no Lynx element and no parent on the page: nothing happens.
+		remove: () => roots.forEach((made) => pageRenderer.remove(made)),
 	};
 }

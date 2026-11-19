@@ -24,18 +24,27 @@ export function createStaticCopy(..._args: unknown[]): never {
 	throw onMainThread("createStaticCopy");
 }
 
-/** The page's root on the main thread: a value to import, whose listeners throw. */
+/**
+ * The page's root on the main thread: a value to import. Its questions have answers, since none of
+ * the background's nodes is here, as a root before its page; listening on it throws, since a
+ * listener here would never be called.
+ */
 export const root: {
 	readonly tag: "page";
+	readonly isConnected: false;
+	contains(other: unknown): false;
 	addEventListener(...args: unknown[]): never;
 	removeEventListener(...args: unknown[]): never;
 } = {
 	tag: "page",
+	isConnected: false,
+	contains: () => false,
+	// Named as the developer writes it: `on()` is the documented way to listen.
 	addEventListener() {
-		throw onMainThread("root.addEventListener");
+		throw onMainThread("on(root, …)");
 	},
 	removeEventListener() {
-		throw onMainThread("root.removeEventListener");
+		throw onMainThread("on(root, …)");
 	},
 };
 

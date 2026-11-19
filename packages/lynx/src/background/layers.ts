@@ -35,6 +35,8 @@ export interface MountOptions<Props extends Bag = Bag> {
 
 /** The layers still mounted; null while no page runs. */
 let layers: Set<Bag> | null = null;
+/** The layers the page took away when it reloaded or closed: the app may still unmount them. */
+const takenAway = new WeakSet<Bag>();
 
 /** A page starts: layers can be mounted above it. */
 export function openLayers(): void {
@@ -46,7 +48,10 @@ export function unmountLayers(): void {
 	if (!layers) return;
 	const open = [...layers];
 	layers.clear();
-	for (const layer of open) unmount(layer);
+	for (const layer of open) {
+		unmount(layer);
+		takenAway.add(layer);
+	}
 }
 
 /** The page has closed: nothing can be mounted until the next one starts. */
@@ -62,7 +67,8 @@ export function closeLayers(): void {
  *
  * Without a `target`, the component goes under the page's root, after everything the page drew: a
  * later layer is above an earlier one. A layer that covers the page is `position: absolute` with
- * `width: 100%; height: 100%`.
+ * `width: 100%; height: 100%`. A layer outlives the effect that mounted it: unmount it in the
+ * effect's cleanup to tie it to the component.
  *
  * ```svelte
  * <script lang="ts">
@@ -101,9 +107,11 @@ export function mount<Props extends Bag, Exports extends Bag>(
 
 /**
  * Unmounts a component that `mount` returned: it is off the page when this returns. An error in its
- * teardown is reported into Lynx.
+ * teardown is reported into Lynx. A layer the page already took away, when it reloaded or closed,
+ * is left as it is.
  */
 export function unmount(component: Bag): void {
+	if (takenAway.has(component)) return;
 	layers?.delete(component);
 	svelteUnmount(component).catch(reportError);
 }

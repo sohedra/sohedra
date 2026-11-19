@@ -71,6 +71,7 @@ export interface BackgroundDetails {
 	/** `tag` is the container's. */
 	static_copy_container_not_empty: { tag: string };
 	static_copy_list: Record<string, never>;
+	static_copy_page_root: Record<string, never>;
 }
 
 /** What a code of the background names. */
@@ -250,6 +251,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 			"The source given to createStaticCopy holds a <list>, and a <list> cannot be copied.",
 		fix: () => "Copy the elements around the list, or the contents of its rows, instead.",
 		docs: "static_copy_list",
+	},
+	static_copy_page_root: {
+		message: () =>
+			"The page's root was given to createStaticCopy as a source, and the page itself cannot be copied.",
+		fix: () =>
+			"Copy the element that holds the page's content instead, such as the top element of the page's root component.",
+		docs: "static_copy_page_root",
 	},
 };
 

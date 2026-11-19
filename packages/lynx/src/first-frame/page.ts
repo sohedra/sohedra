@@ -12,8 +12,11 @@ import { firstFrameError } from "./catalogue.ts";
 import { whileDrawing } from "./drawing.ts";
 import { DEV, DRAWS, firstFrame, setGlobalFunction } from "./globals.ts";
 
+// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
+type Bag = Record<string, any>;
+
 /** How the page starts: the background's options, which the first frame draws with too. */
-export interface MountPageOptions<Props extends Record<string, unknown>> {
+export interface MountPageOptions<Props extends Bag> {
 	props?:
 		| Props
 		| ((initData: Record<string, unknown>, globalProps: Record<string, unknown>) => Props);
@@ -29,7 +32,7 @@ const AWAIT_INVALID = "await_invalid";
  * global props, or `null` when the page has none (a component awaits outside a `pending` boundary,
  * as on Svelte's server).
  */
-export function mountPage<Props extends Record<string, unknown>>(
+export function mountPage<Props extends Bag>(
 	App: Component<Props>,
 	options: MountPageOptions<NoInfer<Props>> = {},
 ): void {

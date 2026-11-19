@@ -177,6 +177,13 @@ Pass an element Svelte rendered while it is on the page, such as the node an att
 https://sohedra.com/e/static_copy_not_on_page"
 `;
 
+exports[`the background's catalogue > static_copy_page_root: the message 1`] = `
+"The page's root was given to createStaticCopy as a source, and the page itself cannot be copied.
+
+Copy the element that holds the page's content instead, such as the top element of the page's root component.
+https://sohedra.com/e/static_copy_page_root"
+`;
+
 exports[`the background's catalogue > text_outside_text: the message 1`] = `
 "The text "Hello" is inside <view>, and Lynx shows text only inside <text>.
 src/App.svelte:3:1
