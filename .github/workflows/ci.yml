@@ -5,13 +5,15 @@
 # - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
 #   own Node.js (devEngines in package.json).
 # - generated: the generated pages, many more of them than a local run tries, on Linux.
-# - apps: @sohedra/lynx packed as it is published, installed into a fresh app with each package
-#   manager and on each Node.js line it supports, then built and tested with both test presets; once
-#   with every range at its newest, once at its floor (packages/lynx/scripts/consumer.ts).
+# - apps: @sohedra/lynx packed as it is published, installed into a fresh app and built and tested
+#   with both test presets (packages/lynx/scripts/consumer.ts): pnpm on each Node.js line, the other
+#   package managers on the newest, pnpm on Windows, and every range at its floor on the oldest
+#   Node.js claimed.
+# - ci-passed: one result for the rest, which a ruleset can require whatever runs.
 #
-# No job runs an agent or reads a secret, so the pnpm store is cached. The repository check
-# (scripts/workflows.ts) holds the rules of AGENTS.md for this file: no pull_request_target,
-# read-only permissions, actions pinned by commit, a time limit on every job.
+# The repository allows only GitHub's own actions and pnpm/setup at one commit. No job runs an
+# agent or reads a secret, so the pnpm store is cached; the app jobs, whose installs have no
+# lockfile, only restore it. `pnpm lint` checks this file's rules (scripts/workflows.ts).
 
 name: CI
 
@@ -30,6 +32,11 @@ concurrency:
     ci-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+defaults:
+  run:
+    # Bash on every system: PowerShell would check only a script's last command.
+    shell: bash
+
 jobs:
   fast:
     name: Fast checks
@@ -40,16 +47,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # The repository check compares recorded coverage with main's.
       - name: Fetch main
         run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # pnpm, the Node.js of devEngines, and `pnpm install --frozen-lockfile`.
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: package.json
-          package-manager-cache: false
-      - run: pnpm install --frozen-lockfile
+          require-lockfile: true
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm check
@@ -72,17 +77,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # The repository check compares recorded coverage with main's.
       - name: Fetch main
         run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: package.json
-          package-manager-cache: false
-      - run: pnpm install --frozen-lockfile
+          require-lockfile: true
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm check
@@ -98,27 +98,30 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: package.json
-          package-manager-cache: false
-      - run: pnpm install --frozen-lockfile
+          require-lockfile: true
       - run: pnpm -F @sohedra/lynx test tests/threads/generated
         env:
           GENERATED_RUNS: 300
+          # The suite's seed on a pull request, so a run says the same each time; a new one for each
+          # push to main, so the pages tried grow over time. A failure prints its seed.
+          GENERATED_SEED: ${{ github.event_name == 'push' && github.run_number || 2026 }}
 
   apps:
-    name: App with ${{ matrix.manager }}, Node.js ${{ matrix.node }} (${{ matrix.versions }})
+    name:
+      App with ${{ matrix.manager }}, Node.js ${{ matrix.node }} (${{ matrix.versions }}${{
+      matrix.os && ', Windows' || '' }})
     if: github.event.pull_request.draft != true
     strategy:
       fail-fast: false
       matrix:
         # What changes with the Node.js line is the binding's own code, the same under every
         # manager; what changes with the manager is the app's node_modules, the same on every line.
-        # So pnpm runs on each line, the other managers on the newest, and the floors on the oldest.
+        # So pnpm runs on each line, the other managers on the newest, and the floors on the oldest
+        # Node.js claimed, which is also the oldest of everything. pnpm once on Windows runs the
+        # install a Windows developer gets.
         include:
           - { manager: pnpm, node: 22, versions: newest }
           - { manager: pnpm, node: 24, versions: newest }
@@ -126,39 +129,52 @@ jobs:
           - { manager: npm, node: 26, versions: newest }
           - { manager: yarn, node: 26, versions: newest }
           - { manager: bun, node: 26, versions: newest }
-          - { manager: pnpm, node: 22, versions: floor }
-    runs-on: ubuntu-latest
+          - { manager: pnpm, node: 22.22.2, versions: floor }
+          - { manager: pnpm, node: 26, versions: newest, os: windows-latest }
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # The repository's own Node.js installs, builds and packs the package. The app's install has
+      # no lockfile, so this job restores the store and never saves it.
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
         with:
           cache: true
-      # The repository's own Node.js builds and packs the package.
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: package.json
-          package-manager-cache: false
-      - run: pnpm install --frozen-lockfile
+          save-cache: false
+          require-lockfile: true
       - name: Pack @sohedra/lynx
         run: |
           pnpm -F @sohedra/lynx build
           pnpm -F @sohedra/lynx pack --pack-destination "$RUNNER_TEMP/pack"
-      # The app's Node.js line runs the app.
+      - if: matrix.manager == 'bun'
+        uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          runtime: bun@1.4.4
+          install: false
+      # The app's Node.js line runs the app; set up last, so it comes first on the path.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
           package-manager-cache: false
-      - if: matrix.manager == 'bun'
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-        with:
-          bun-version: 1.4.4
       - name: Install, build and test the app
         env:
           MANAGER: ${{ matrix.manager }}
           VERSIONS: ${{ matrix.versions }}
         run: >-
           node packages/lynx/scripts/consumer.ts --manager "$MANAGER" --versions "$VERSIONS"
-          --tarball "$RUNNER_TEMP"/pack/*.tgz
+          --tarball "$RUNNER_TEMP/pack"
+
+  ci-passed:
+    name: CI passed
+    if: always()
+    needs: [fast, checks, generated, apps]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # A draft runs only `fast`, and a ready pull request or main everything else: a skipped job
+      # passes, a failed or cancelled one does not.
+      - name: Fail unless every job passed or was skipped
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
