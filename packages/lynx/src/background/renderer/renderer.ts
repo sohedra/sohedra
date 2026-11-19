@@ -24,7 +24,7 @@ import {
 import type { LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import { background, DEV } from "../globals.ts";
-import { reportError, reportOnce, warnOnce } from "../report.ts";
+import { report, reportOnce, warnOnce } from "../report.ts";
 import { elementClass, svelteListener } from "./element.ts";
 import type { ElementNode, ListenerChange } from "./element.ts";
 import type { HandlerRegistry } from "./handlers.ts";
@@ -113,11 +113,15 @@ function takesRef(value: unknown): boolean {
 	return value === false || isRefHandle(value) || isMainThreadFunction(value) || isFunction(value);
 }
 
-/** What a value is, as a message says it. */
+/**
+ * What a value is, as a message says it. A text is quoted, so that a phrase or an empty one reads
+ * apart from the message's own words.
+ */
 function kindOf(value: unknown): string {
 	if (isFunction(value)) return "a function";
 	if (Array.isArray(value)) return "a list";
 	if (typeof value === "object") return "an object";
+	if (typeof value === "string") return `the string ${JSON.stringify(value)}`;
 	return `the ${typeof value} ${textOf(value)}`;
 }
 
@@ -458,7 +462,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		}
 		// In every build, as ReactLynx's: the main thread would bind nothing and say nothing.
 		if (key === REF_ATTRIBUTE && !takesRef(value)) {
-			reportError(
+			// With the element, which names its component to `onError` in a development build.
+			report(
 				backgroundError({
 					code: "main_thread_ref_not_a_ref",
 					details: {
@@ -467,6 +472,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 						where: DEV ? sourceLocation(element) : undefined,
 					},
 				}),
+				{ node: element },
 			);
 			return;
 		}
