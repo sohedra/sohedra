@@ -1,51 +1,29 @@
 // The playground, built as an app builds: through rspeedy's own CLI, in its own folder, with the
 // binding as a dependency. One build serves every test in this file.
 
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
-import { createRequire } from "node:module";
 import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
 import { PATCH_METHOD } from "../../src/wire/index.ts";
-import { lock } from "./build-app.ts";
+import { cliBuild } from "./cli-build.ts";
+import type { CliBuild } from "./cli-build.ts";
 import { startDevicePage } from "./device-threads.ts";
 
 const PLAYGROUND = path.resolve(import.meta.dirname, "../../../../playgrounds/lynx");
-const DIST = path.join(PLAYGROUND, "dist");
 
-let status: number | null = null;
-let output = "";
-const read = (file: string): string => fs.readFileSync(path.join(DIST, file), "latin1");
+let build: CliBuild;
+const read = (file: string): string => fs.readFileSync(path.join(build.dist, file), "latin1");
 
 beforeAll(async () => {
-	const require = createRequire(path.join(PLAYGROUND, "package.json"));
-	const manifest = require.resolve("@lynx-js/rspeedy/package.json");
-	// Boundary: the package's manifest, read for its `bin`.
-	const { bin } = JSON.parse(fs.readFileSync(manifest, "utf8")) as { bin: Record<string, string> };
-	const cli = path.join(path.dirname(manifest), bin["rspeedy"]!);
-	fs.rmSync(DIST, { recursive: true, force: true });
-	const release = await lock();
-	try {
-		// `DEBUG=lynx` keeps each thread's script in `dist/.lynx/<entry>/`.
-		const run = spawnSync(process.execPath, [cli, "build"], {
-			cwd: PLAYGROUND,
-			env: { ...process.env, DEBUG: "lynx", NODE_ENV: "production" },
-			encoding: "utf8",
-			timeout: 170_000,
-		});
-		status = run.status;
-		output = `${run.stdout}\n${run.stderr}`;
-	} finally {
-		release();
-	}
+	build = await cliBuild({ cli: "rspeedy", cwd: PLAYGROUND });
 }, 180_000);
-afterAll(() => fs.rmSync(DIST, { recursive: true, force: true }));
+afterAll(() => fs.rmSync(build.dist, { recursive: true, force: true }));
 
 describe("the playground, built with rspeedy's CLI", () => {
 	it("builds", () => {
-		expect(status, output).toBe(0);
+		expect(build.ok, build.output).toBe(true);
 	});
 
 	it("is one bundle that holds both threads' scripts and the page", () => {
@@ -70,7 +48,7 @@ describe("the playground, built with rspeedy's CLI", () => {
 
 	it("reverses its list on a tap, on threads shaped like a device's", async () => {
 		const script = (thread: string) =>
-			fs.readFileSync(path.join(DIST, ".lynx/main", thread), "utf8");
+			fs.readFileSync(path.join(build.dist, ".lynx/main", thread), "utf8");
 		const { page } = startDevicePage({
 			mainThread: script("main-thread.js"),
 			background: script("background.js"),
