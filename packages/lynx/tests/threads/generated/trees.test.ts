@@ -4,7 +4,7 @@
 import { expect, it } from "@rstest/core";
 
 import { compilePage } from "./compile.ts";
-import { askEveryRow, startGenerated } from "./run.ts";
+import { askEveryRow, liveCells, startGenerated } from "./run.ts";
 import type { PageState } from "./state.ts";
 import { listKeys } from "./trees.ts";
 
@@ -66,4 +66,17 @@ it("asks no list in the cell of a row taken out, though an item kept took its ke
 	await page.settle();
 	await askEveryRow(page);
 	expect(page.errors).toEqual([]);
+});
+
+it("counts the cells of the page a reload replaces, until the new page shows", async () => {
+	const compiled = await listPage("");
+	const data: PageState = { ...DATA, a0: ["a"] };
+	const { page } = startGenerated({ compiled, data, firstFrame: false });
+	await page.settle();
+	const list = page.engine.all().find((element) => page.engine.state(element).tag === "list")!;
+	const cell = page.engine.list(list).ask(0);
+	page.reload({ host: data });
+	// The old page stays on screen until the background's patch of the new one comes.
+	expect(liveCells(page, list)).toEqual([cell]);
+	await page.settle();
 });
