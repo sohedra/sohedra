@@ -124,10 +124,10 @@ describe("the names a component imports, on the main thread", () => {
 
 	it("read a value where a script reads it, and nothing a re-export, a label or a name only names", async () => {
 		const source = `<script module>
-	import { exported, reexported, labelled, computed, keyed, method, meta, tooltip } from "lib";
+	import { exported, reexported, labeled, computed, keyed, method, meta, tooltip } from "lib";
 	export { exported };
 	export { reexported } from "lib";
-	labelled: for (;;) break labelled;
+	labeled: for (;;) break labeled;
 	const table = { [computed]: 1, keyed: 2, method() {} };
 	class Box { method() {} [keyed] = 1; }
 	console.log(table, Box, import.meta.url);
@@ -137,7 +137,7 @@ describe("the names a component imports, on the main thread", () => {
 		const kept = keeper(code);
 		for (const name of ["exported", "computed", "keyed", "tooltip"])
 			expect(kept).toMatch(new RegExp(`\\b${name}\\b`));
-		for (const name of ["reexported", "labelled", "method", "meta"])
+		for (const name of ["reexported", "labeled", "method", "meta"])
 			expect(kept).not.toMatch(new RegExp(`\\b${name}\\b`));
 	});
 });
