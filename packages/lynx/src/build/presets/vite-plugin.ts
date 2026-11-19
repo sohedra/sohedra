@@ -88,7 +88,17 @@ function bindingEntry(request: string, thread: Thread): string | undefined {
 }
 
 /** The Vite plugins of a Vitest run, with the plugin's options already checked and resolved. */
-export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptions): Plugin[] {
+/** The plugins of a Vitest run, and what the compile reads that Vitest's cache key must hold. */
+export interface VitePlugins {
+	plugins: Plugin[];
+	/**
+	 * What the compile read once Vite's config is resolved: the app's Svelte options (a function as
+	 * its text) and the installed Svelte's `package.json`, its path and its text.
+	 */
+	compileInputs(): string;
+}
+
+export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptions): VitePlugins {
 	const { define, singleCopy } = resolved;
 	const firstFrame = resolved.firstFrame !== false;
 	// Development unless NODE_ENV says production, as in a Rstest run (Vitest sets `test`).
@@ -110,6 +120,8 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 	let root = "";
 	let svelte: SvelteOptions;
 	let esmEnv = "";
+	/** The installed Svelte's `package.json`, once Vite's config is resolved. */
+	let sveltePackage: string | undefined;
 	/** Vite's own resolution, with the main thread's conditions. */
 	let resolveMainThread: ReturnType<typeof createIdResolver>;
 
@@ -155,6 +167,7 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 				createRequire(path.join(root, "package.json")).resolve("svelte/package.json"),
 			);
 			esmEnv = createRequire(path.join(svelteRoot, "package.json")).resolve("esm-env");
+			sveltePackage = path.join(svelteRoot, "package.json");
 		},
 
 		resolveId: {
@@ -348,5 +361,20 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 		},
 	};
 
-	return [main, last];
+	return {
+		plugins: [main, last],
+		compileInputs: () =>
+			// Nothing is read before Vite's config is resolved.
+			sveltePackage === undefined
+				? ""
+				: JSON.stringify(
+						{
+							compilerOptions: svelte.compilerOptions,
+							preprocess: svelte.preprocess,
+							svelte: sveltePackage,
+							version: fs.readFileSync(sveltePackage, "utf8"),
+						},
+						(_key, value: unknown) => (typeof value === "function" ? String(value) : value),
+					),
+	};
 }

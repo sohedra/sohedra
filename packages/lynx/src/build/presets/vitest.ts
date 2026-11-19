@@ -34,12 +34,10 @@ interface CacheKeyContext {
 	experimental_defineCacheKeyGenerator?: (generator: () => string) => void;
 }
 
-/**
- * What keys a transformed module in Vitest's file-system cache, besides its source: the binding's
- * version, its build code and the plugin's options. Vitest keys the cache on the source and Vite's
- * config only, so after an upgrade of the binding a run would test what the old version compiled.
- */
-export function cacheKey(given: unknown): string {
+/** The hash of the binding's version and of the code that compiles: read once a process. */
+let bindingHash: string | undefined;
+
+function hashBinding(): string {
 	const hash = createHash("sha256");
 	const manifest = fs.readFileSync(path.join(PACKAGE_ROOT, "package.json"), "utf8");
 	hash.update((JSON.parse(manifest) as { version: string }).version);
@@ -53,6 +51,19 @@ export function cacheKey(given: unknown): string {
 			.sort();
 		for (const file of files) hash.update(file).update(fs.readFileSync(path.join(at, file)));
 	}
+	return hash.digest("hex");
+}
+
+/**
+ * What keys a transformed module in Vitest's file-system cache, besides its source: the binding's
+ * version, its build code, the plugin's options, and what the compile read (`compiling`: the app's
+ * Svelte options and the installed Svelte). Vitest keys the cache on the source and Vite's config
+ * only, so after an upgrade of the binding or of Svelte, or a change of `svelte.config.js`, a run
+ * would test what was compiled before.
+ */
+export function cacheKey(given: unknown, compiling = ""): string {
+	bindingHash ??= hashBinding();
+	const hash = createHash("sha256").update(bindingHash).update(compiling);
 	hash.update(
 		JSON.stringify(given ?? {}, (_key, value: unknown) =>
 			typeof value === "function" ? String(value) : value,
@@ -63,16 +74,18 @@ export function cacheKey(given: unknown): string {
 
 /** The plugins for the options given, the last one keying Vitest's cache on them. */
 function plugins(options: PluginSvelteLynxOptions, rootPath?: string): Plugin[] {
-	const key = cacheKey(options);
+	const run = vitePlugins(resolveOptions(options), { rootPath, given: options });
+	// Made when Vitest first asks, once Vite's config, and with it the Svelte options, is resolved.
+	let key: string | undefined;
 	const keying: Plugin & { configureVitest(context: CacheKeyContext): void } = {
 		name: `${PACKAGE_NAME}:vitest-cache`,
 		configureVitest(context) {
 			const define =
 				context.defineCacheKeyGenerator ?? context.experimental_defineCacheKeyGenerator;
-			define?.(() => key);
+			define?.(() => (key ??= cacheKey(options, run.compileInputs())));
 		},
 	};
-	return [...vitePlugins(resolveOptions(options), { rootPath, given: options }), keying];
+	return [...run.plugins, keying];
 }
 
 /**
@@ -89,7 +102,7 @@ function plugins(options: PluginSvelteLynxOptions, rootPath?: string): Plugin[] 
  * | `define` and the thread's constants | Replaced in each thread's copy of the app's code and the binding's, not in other packages |
  * | Dependencies | Svelte, `esm-env`, the binding, the `singleCopy` packages and every main-thread copy go through Vite; other packages are loaded by Node as they are, where Rstest bundles them |
  * | An app's config | `svelteLynxFromConfig` reads the plugin's options only: not the config's aliases or `source.define` |
- * | Vitest's module cache | Keyed on the binding's version, its build code and the plugin's options, so an upgrade compiles again |
+ * | Vitest's module cache | Keyed on the binding's version and build code, the plugin's options, the Svelte config and the installed Svelte, so a change of any compiles again |
  *
  * The rest is the same: styles are left out and the scoping class kept, the build's messages, and
  * `firstFrame: false` leaving the first-frame copies out.
