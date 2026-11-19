@@ -10,6 +10,7 @@ import ts from "typescript";
 
 import {
 	docOf,
+	EVENT_BASE,
 	isFunction,
 	keyOf,
 	lynxName,
@@ -79,12 +80,14 @@ export interface Model {
 	systemInfo: { platforms: string; fields: Field[]; doc: string[] };
 }
 
+/** Orders by name as plain code units, the same on every machine (a locale may not be). */
+function byName(a: { name: string }, b: { name: string }): number {
+	return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+}
+
 /** Lynx's event attribute spellings: `bindtap` names the event; the others are the same event. */
 const BIND = /^bind(.+)$/;
 const OTHER_EVENT_SPELLING = /^(?:catch|capture-bind|capture-catch|global-bind|main-thread:)/;
-
-/** The fields every event has, which the base interface declares. */
-const EVENT_BASE = new Set(["type", "timestamp", "target", "currentTarget"]);
 
 /** Where `@lynx-js/types` is, and its version. */
 function lynxTypes(): { root: string; version: string } {
@@ -211,9 +214,7 @@ function methodOf(printer: Printer, type: ts.Type): MethodModel {
 /** The members of a union of method interfaces, as models, sorted by name. */
 function methodsOf(printer: Printer, union: ts.Type): MethodModel[] {
 	const members = union.isUnion() ? union.types : [union];
-	return members
-		.map((member) => methodOf(printer, member))
-		.sort((a, b) => a.name.localeCompare(b.name));
+	return members.map((member) => methodOf(printer, member)).sort(byName);
 }
 
 /** Reads `@lynx-js/types`, leaving out the tags in `omit`. */
@@ -325,7 +326,7 @@ export function readLynxTypes(omit: ReadonlySet<string>): Model {
 	const commonMethods = (invokeParams as ts.UnionType).types
 		.map((type) => methodOf(printer, type))
 		.filter((method) => !own.has(method.name));
-	const commonMethodModels = commonMethods.sort((a, b) => a.name.localeCompare(b.name));
+	const commonMethodModels = commonMethods.sort(byName);
 
 	const systemInfoType = declared(program, file("common/system-info.d.ts"), "SystemInfo");
 	const platformType = declared(program, file("common/system-info.d.ts"), "PlatformType");
@@ -355,14 +356,14 @@ export function readLynxTypes(omit: ReadonlySet<string>): Model {
 			});
 		}
 	}
-	interfaces.sort((a, b) => a.name.localeCompare(b.name));
+	interfaces.sort(byName);
 
 	return {
 		version,
 		common,
 		defaults,
 		elements,
-		events: [...events.values()].sort((a, b) => a.name.localeCompare(b.name)),
+		events: [...events.values()].sort(byName),
 		interfaces,
 		methods: { common: commonMethodModels, byTag },
 		systemInfo,

@@ -9,7 +9,7 @@ export type PlatformType = "Android" | "iOS" | "Harmony" | "windows" | "macOS" |
 export interface SystemInfo {
 	/**
 	 * The version of the Lynx Engine.
-	 * @deprecated
+	 * @deprecated Use `engineVersion`.
 	 * @example '2.4', '2.10'
 	 */
 	readonly lynxSdkVersion: string;
@@ -36,5 +36,6 @@ export interface SystemInfo {
 	 * Not on the main thread: a template that shows it, or `osVersion`, is drawn without it in the first frame.
 	 */
 	readonly runtimeType: "v8" | "jsc" | "quickjs";
+	/** The theme the host gave Lynx, if any. */
 	readonly theme?: object;
 }

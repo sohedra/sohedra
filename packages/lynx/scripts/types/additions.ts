@@ -1,6 +1,7 @@
 // What the generated types change in Lynx's: the tags left out, the attributes Svelte writes in
-// its own way, and what the binding adds. An attribute or event here that Lynx's types lack carries
-// a workaround tag; generating fails once Lynx's types declare it, so it is removed then.
+// its own way, and what the binding adds. What Lynx's elements have and Lynx's types lack carries a
+// workaround tag; the binding's own (`defer`, `value`) carries none. Generating fails once Lynx's
+// types declare one of them, so it is removed from here then.
 
 /** An attribute the binding adds to one element. */
 export interface AddedAttribute {
@@ -47,7 +48,7 @@ export const ADDED_ATTRIBUTES: readonly AddedAttribute[] = [
 		doc: [
 			"Whether a touch outside the overlay's children reaches the page below it.",
 			"",
-			'@workaround overlay-events-pass-through kind=lynx-gap delete-when="@lynx-js/types declares events-pass-through on <overlay>"',
+			'@workaround overlay-events-pass-through kind=lynx-gap delete-when="@lynx-js/types declares events-pass-through on <overlay>: remove it from scripts/types/additions.ts"',
 		],
 	},
 	{
@@ -57,7 +58,7 @@ export const ADDED_ATTRIBUTES: readonly AddedAttribute[] = [
 		doc: [
 			"The native list that draws it: `list-container` is Lynx's list that renders rows as it asks for them, which a deferred row needs.",
 			"",
-			'@workaround list-custom-list-name kind=lynx-gap delete-when="@lynx-js/types declares custom-list-name on <list>"',
+			'@workaround list-custom-list-name kind=lynx-gap delete-when="@lynx-js/types declares custom-list-name on <list>: remove it from scripts/types/additions.ts"',
 		],
 	},
 	{
@@ -67,7 +68,7 @@ export const ADDED_ATTRIBUTES: readonly AddedAttribute[] = [
 		doc: [
 			"The kind of row this is: the list reuses a row's native view only for a row of the same kind.",
 			"",
-			'@workaround list-item-reuse-identifier kind=lynx-gap delete-when="@lynx-js/types declares reuse-identifier on <list-item>"',
+			'@workaround list-item-reuse-identifier kind=lynx-gap delete-when="@lynx-js/types declares reuse-identifier on <list-item>: remove it from scripts/types/additions.ts"',
 		],
 	},
 	{
@@ -102,17 +103,28 @@ export const ADDED_EVENTS: readonly AddedEvent[] = [
 		name: "onRequestClose",
 		event: "LynxEvent",
 		doc: [
-			"iOS asks to close the overlay: the user swiped from the screen's edge. Android sends `requestclose` for its Back button.",
+			"iOS asks to close the overlay: the user swiped from the screen's edge. iOS's event is named `onRequestClose`, so the attribute is `ononRequestClose`; Android sends `requestclose` for its Back button.",
 			"",
-			'@workaround overlay-ios-request-close kind=lynx-gap delete-when="@lynx-js/types declares the onRequestClose event on <overlay>"',
+			'@workaround overlay-ios-request-close kind=lynx-gap delete-when="@lynx-js/types declares the onRequestClose event on <overlay>: remove it from scripts/types/additions.ts"',
 		],
 	},
 ];
 
-/** What the binding says of `SystemInfo` and its fields, past Lynx's doc comments. */
-export const SYSTEM_INFO_NOTES: Readonly<Record<string, string>> = {
-	"": "What Lynx says about the device and itself.",
-	osVersion: "Not on the main thread.",
-	runtimeType:
-		"Not on the main thread: a template that shows it, or `osVersion`, is drawn without it in the first frame.",
+/** What the binding says of one field of `SystemInfo`, past Lynx's doc comment. */
+export interface SystemInfoNote {
+	/** A line after Lynx's description. */
+	note?: string;
+	/** What to use instead, after Lynx's `@deprecated`. */
+	deprecated?: string;
+}
+
+/** What the binding says of `SystemInfo` (`""`) and its fields. */
+export const SYSTEM_INFO_NOTES: Readonly<Record<string, SystemInfoNote>> = {
+	"": { note: "What Lynx says about the device and itself." },
+	lynxSdkVersion: { deprecated: "Use `engineVersion`." },
+	osVersion: { note: "Not on the main thread." },
+	runtimeType: {
+		note: "Not on the main thread: a template that shows it, or `osVersion`, is drawn without it in the first frame.",
+	},
+	theme: { note: "The theme the host gave Lynx, if any." },
 };

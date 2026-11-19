@@ -504,20 +504,8 @@ export interface LynxErrorEvent<Target = LynxNode, CurrentTarget = Target> exten
 		error_code: number;
 		/** Categorized error code. */
 		lynx_categorized_code: number;
-		/** Event type. */
-		type: string;
-		/** Timestamp when the event was generated. */
-		timestamp: number;
-		/** Collection of attribute values of the target that triggers the event. */
-		target: LynxNode;
-		/** Collection of attribute values of the target that listens to the event. */
-		currentTarget: LynxNode;
 		/** Additional information. */
 		detail: {};
-		/** Preventing elements from performing default behavior. */
-		preventDefault: () => void;
-		/** Prevent the event from bubbling up to the parent element, preventing any parent event handlers from being executed. */
-		stopPropagation: () => void;
 	};
 }
 
@@ -703,7 +691,7 @@ export interface LynxLayoutEvent<Target = LynxNode, CurrentTarget = Target> exte
 	};
 }
 
-/** A started, unfinished animation type is cancelled. */
+/** A started, unfinished animation type is canceled. */
 export interface LynxListAnimationCancelEvent<
 	Target = LynxNode,
 	CurrentTarget = Target,
@@ -813,20 +801,8 @@ export interface LynxLoadEvent<Target = LynxNode, CurrentTarget = Target> extend
 		width: number;
 		/** Image height. In pixels. */
 		height: number;
-		/** Event type. */
-		type: string;
-		/** Timestamp when the event was generated. */
-		timestamp: number;
-		/** Collection of attribute values of the target that triggers the event. */
-		target: LynxNode;
-		/** Collection of attribute values of the target that listens to the event. */
-		currentTarget: LynxNode;
 		/** Additional information. */
 		detail: {};
-		/** Preventing elements from performing default behavior. */
-		preventDefault: () => void;
-		/** Prevent the event from bubbling up to the parent element, preventing any parent event handlers from being executed. */
-		stopPropagation: () => void;
 	};
 }
 
@@ -2012,7 +1988,7 @@ export interface LynxCommonAttributes<
 	"main-thread:oncatchtransitionstartcapture"?: MainThreadEventHandler<
 		LynxTransitionEvent<MainThread.Element>
 	>;
-	/** It will trigger when a transition animation is cancelled. */
+	/** It will trigger when a transition animation is canceled. */
 	ontransitioncancel?: LynxEventHandler<LynxTransitionEvent<LynxNode, LynxNode<Tag>>>;
 	/** `transitioncancel`, heard in the capture phase: before the elements inside. */
 	ontransitioncancelcapture?: LynxEventHandler<LynxTransitionEvent<LynxNode, LynxNode<Tag>>>;
@@ -2104,7 +2080,7 @@ export interface LynxCommonAttributes<
 	"main-thread:oncatchanimationiterationcapture"?: MainThreadEventHandler<
 		LynxAnimationEvent<MainThread.Element>
 	>;
-	/** It will trigger when an animation is cancelled. */
+	/** It will trigger when an animation is canceled. */
 	onanimationcancel?: LynxEventHandler<LynxAnimationEvent<LynxNode, LynxNode<Tag>>>;
 	/** `animationcancel`, heard in the capture phase: before the elements inside. */
 	onanimationcancelcapture?: LynxEventHandler<LynxAnimationEvent<LynxNode, LynxNode<Tag>>>;
@@ -2521,7 +2497,7 @@ export interface LynxCommonEvents<Tag extends string = string> {
 	longpress: LynxTouchEvent<LynxNode, LynxNode<Tag>>;
 	/** It will trigger during a transition animation start. */
 	transitionstart: LynxTransitionEvent<LynxNode, LynxNode<Tag>>;
-	/** It will trigger when a transition animation is cancelled. */
+	/** It will trigger when a transition animation is canceled. */
 	transitioncancel: LynxTransitionEvent<LynxNode, LynxNode<Tag>>;
 	/** It will trigger after the transition or createAnimation animation is finished. */
 	transitionend: LynxTransitionEvent<LynxNode, LynxNode<Tag>>;
@@ -2529,7 +2505,7 @@ export interface LynxCommonEvents<Tag extends string = string> {
 	animationstart: LynxAnimationEvent<LynxNode, LynxNode<Tag>>;
 	/** It will trigger during an animation iteration. */
 	animationiteration: LynxAnimationEvent<LynxNode, LynxNode<Tag>>;
-	/** It will trigger when an animation is cancelled. */
+	/** It will trigger when an animation is canceled. */
 	animationcancel: LynxAnimationEvent<LynxNode, LynxNode<Tag>>;
 	/** It will trigger upon completion of an animation. */
 	animationend: LynxAnimationEvent<LynxNode, LynxNode<Tag>>;
@@ -3462,7 +3438,7 @@ export interface ListAttributes
 	/**
 	 * The native list that draws it: `list-container` is Lynx's list that renders rows as it asks for them, which a deferred row needs.
 	 *
-	 * @workaround list-custom-list-name kind=lynx-gap delete-when="@lynx-js/types declares custom-list-name on <list>"
+	 * @workaround list-custom-list-name kind=lynx-gap delete-when="@lynx-js/types declares custom-list-name on <list>: remove it from scripts/types/additions.ts"
 	 */
 	"custom-list-name"?: string | null;
 	/** Called when an animation type starts within a transaction. */
@@ -3523,7 +3499,7 @@ export interface ListAttributes
 	"main-thread:oncatchlistanimationendcapture"?: MainThreadEventHandler<
 		LynxListAnimationEndEvent<MainThread.Element>
 	>;
-	/** Called when a started, unfinished animation type is cancelled. */
+	/** Called when a started, unfinished animation type is canceled. */
 	onlistanimationcancel?: LynxEventHandler<
 		LynxListAnimationCancelEvent<LynxNode, LynxNode<"list">>
 	>;
@@ -3741,7 +3717,7 @@ export interface ListEvents extends LynxCommonEvents<"list">, LynxDefaultEvents<
 	listanimationstart: LynxListAnimationStartEvent<LynxNode, LynxNode<"list">>;
 	/** Called when all participating items of an animation type finish normally. */
 	listanimationend: LynxListAnimationEndEvent<LynxNode, LynxNode<"list">>;
-	/** Called when a started, unfinished animation type is cancelled. */
+	/** Called when a started, unfinished animation type is canceled. */
 	listanimationcancel: LynxListAnimationCancelEvent<LynxNode, LynxNode<"list">>;
 	/** Called with progress updates grouped by transaction and animation type. */
 	listanimationupdate: LynxListAnimationUpdateEvent<LynxNode, LynxNode<"list">>;
@@ -3792,7 +3768,7 @@ export interface ListItemAttributes
 	/**
 	 * The kind of row this is: the list reuses a row's native view only for a row of the same kind.
 	 *
-	 * @workaround list-item-reuse-identifier kind=lynx-gap delete-when="@lynx-js/types declares reuse-identifier on <list-item>"
+	 * @workaround list-item-reuse-identifier kind=lynx-gap delete-when="@lynx-js/types declares reuse-identifier on <list-item>: remove it from scripts/types/additions.ts"
 	 */
 	"reuse-identifier"?: string | null;
 	/** Renders the row's contents only once Lynx asks for the row, unless it is in its list's first screen. With `unmountRecycled`, the contents unmount when the page lets go of the row, and render afresh when it shows again. */
@@ -3847,12 +3823,12 @@ export interface ScrollViewAttributes
 	 */
 	"scroll-bar-enable"?: boolean | null;
 	/**
-	 * Set upper threshold to bindscrolltoupper event.
+	 * Set upper threshold to onscrolltoupper event.
 	 * @defaultValue 0
 	 */
 	"upper-threshold"?: number | null;
 	/**
-	 * Set upper threshold to bindscrolltoupper event.
+	 * Set upper threshold to onscrolltoupper event.
 	 * @defaultValue 0
 	 */
 	"lower-threshold"?: number | null;
@@ -4265,7 +4241,7 @@ export interface InputAttributes extends LynxCommonAttributes<"input"> {
 	"confirm-enter"?: boolean | null;
 	/** Placeholder */
 	placeholder?: string | null;
-	/** Initial input content. Only applies on the first render and does not trigger `bindinput`. */
+	/** Initial input content. Only applies on the first render and does not trigger `oninput`. */
 	"default-value"?: string | null;
 	/**
 	 * The type of confirm button
@@ -4457,7 +4433,7 @@ export interface TextareaAttributes extends LynxCommonAttributes<"textarea"> {
 	"confirm-enter"?: boolean | null;
 	/** Placeholder */
 	placeholder?: string | null;
-	/** Initial textarea content. Only applies on the first render and does not trigger `bindinput`. */
+	/** Initial textarea content. Only applies on the first render and does not trigger `oninput`. */
 	"default-value"?: string | null;
 	/**
 	 * The type of confirm button
@@ -4727,7 +4703,7 @@ export interface OverlayAttributes
 	/**
 	 * Whether a touch outside the overlay's children reaches the page below it.
 	 *
-	 * @workaround overlay-events-pass-through kind=lynx-gap delete-when="@lynx-js/types declares events-pass-through on <overlay>"
+	 * @workaround overlay-events-pass-through kind=lynx-gap delete-when="@lynx-js/types declares events-pass-through on <overlay>: remove it from scripts/types/additions.ts"
 	 */
 	"events-pass-through"?: boolean | null;
 	/** Callback when the overlay is displayed */
@@ -4823,9 +4799,9 @@ export interface OverlayAttributes
 		LynxOverlayErrorEvent<MainThread.Element>
 	>;
 	/**
-	 * iOS asks to close the overlay: the user swiped from the screen's edge. Android sends `requestclose` for its Back button.
+	 * iOS asks to close the overlay: the user swiped from the screen's edge. iOS's event is named `onRequestClose`, so the attribute is `ononRequestClose`; Android sends `requestclose` for its Back button.
 	 *
-	 * @workaround overlay-ios-request-close kind=lynx-gap delete-when="@lynx-js/types declares the onRequestClose event on <overlay>"
+	 * @workaround overlay-ios-request-close kind=lynx-gap delete-when="@lynx-js/types declares the onRequestClose event on <overlay>: remove it from scripts/types/additions.ts"
 	 */
 	ononRequestClose?: LynxEventHandler<LynxEvent<LynxNode, LynxNode<"overlay">>>;
 	/** `onRequestClose`, heard in the capture phase: before the elements inside. */
@@ -4858,7 +4834,7 @@ export interface OverlayEvents extends LynxCommonEvents<"overlay">, LynxDefaultE
 	overlaytouch: LynxOverlayTouchEvent<LynxNode, LynxNode<"overlay">>;
 	/** Callback when touch on the overlay */
 	error: LynxOverlayErrorEvent<LynxNode, LynxNode<"overlay">>;
-	/** iOS asks to close the overlay: the user swiped from the screen's edge. Android sends `requestclose` for its Back button. */
+	/** iOS asks to close the overlay: the user swiped from the screen's edge. iOS's event is named `onRequestClose`, so the attribute is `ononRequestClose`; Android sends `requestclose` for its Back button. */
 	onRequestClose: LynxEvent<LynxNode, LynxNode<"overlay">>;
 }
 
@@ -5087,7 +5063,7 @@ export interface ScrollCoordinatorAttributes
 	 */
 	"ios-force-scroll-detach"?: boolean | null;
 	/**
-	 * The event response granularity of bindoffset, once the scroll distance exceeds the scrollable distance of granularity, it may trigger. It defaults to 0.01, but it doesn't necessarily trigger every 0.01.
+	 * The event response granularity of onoffset, once the scroll distance exceeds the scrollable distance of granularity, it may trigger. It defaults to 0.01, but it doesn't necessarily trigger every 0.01.
 	 * @defaultValue 0.01
 	 */
 	granularity?: number | null;

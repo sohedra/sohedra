@@ -232,7 +232,9 @@ export interface LynxNode<Tag extends string = string> {
 	/**
 	 * Calls one of the element's UI methods (`boundingClientRect`, `scrollTo`…) and resolves with its
 	 * answer, typed as Lynx's types give it. It runs once the platform has laid out the update it came
-	 * with. A method Lynx's types do not know is allowed, and resolves with `unknown`.
+	 * with. A method Lynx's types do not know is allowed, and resolves with `unknown`. A node whose
+	 * tag is not known (`querySelector`'s) has every element's methods only: narrow it to call an
+	 * element's own, `(node as LynxNode<"list">).invoke("scrollToPosition", …)`.
 	 */
 	invoke<Method extends keyof MethodsOf<Tag> & string>(
 		method: Method,
@@ -283,10 +285,10 @@ export declare namespace MainThread {
 		getComputedStyleProperty(name: string): string;
 		querySelector(selector: string): Element | null;
 		querySelectorAll(selector: string): Element[];
-		/** Animates the element; a number is the duration in milliseconds. */
+		/** Animates the element; a number is the duration in milliseconds. Its `id` is made up. */
 		animate(
 			keyframes: Record<string, string | number>[],
-			options?: number | AnimationOptions,
+			options?: number | Omit<AnimationOptions, "name">,
 		): Animation;
 		/** Calls one of the element's UI methods and resolves with its answer. */
 		invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
@@ -331,20 +333,32 @@ declare global {
 		// oxlint-disable-next-line typescript/no-explicit-any -- `<svelte:element>`'s tag and node are whatever it is given
 		function mapElementTag(tag: any): any;
 
-		// As Svelte's own namespace has them, with any element's attributes where the tag is not known
-		// (`<svelte:element this={tag}>`).
+		// An element the tag names takes its attributes. A tag only known at run time, a `string` (as in
+		// `<svelte:element this={tag}>`), takes the attributes every element has, as Svelte's own
+		// namespace takes `HTMLAttributes<any>`; a misspelled literal tag matches neither.
 		function createElement<Elements extends IntrinsicElements, Key extends keyof Elements>(
 			// `undefined` and `null` for `<svelte:element>`
 			element: Key | undefined | null,
-			// oxlint-disable-next-line typescript/no-explicit-any -- any element's attributes, as Svelte's `HTMLAttributes<any>`
-			attrs: string extends Key ? LynxCommonAttributes<any> : Elements[Key],
+			attrs: Elements[Key],
+			// oxlint-disable-next-line typescript/no-explicit-any -- the language tools read no element out of it
+		): any;
+		function createElement<Tag extends string>(
+			element: Tag & (string extends Tag ? unknown : never),
+			// oxlint-disable-next-line typescript/no-explicit-any -- any element's attributes
+			attrs: LynxCommonAttributes<any>,
 			// oxlint-disable-next-line typescript/no-explicit-any -- the language tools read no element out of it
 		): any;
 		function createElement<Elements extends IntrinsicElements, Key extends keyof Elements, T>(
 			element: Key | undefined | null,
 			attrsEnhancers: T,
-			// oxlint-disable-next-line typescript/no-explicit-any -- any element's attributes, as Svelte's `HTMLAttributes<any>`
-			attrs: (string extends Key ? LynxCommonAttributes<any> : Elements[Key]) & T,
+			attrs: Elements[Key] & T,
+			// oxlint-disable-next-line typescript/no-explicit-any -- the language tools read no element out of it
+		): any;
+		function createElement<Tag extends string, T>(
+			element: Tag & (string extends Tag ? unknown : never),
+			attrsEnhancers: T,
+			// oxlint-disable-next-line typescript/no-explicit-any -- any element's attributes
+			attrs: LynxCommonAttributes<any> & T,
 			// oxlint-disable-next-line typescript/no-explicit-any -- the language tools read no element out of it
 		): any;
 	}
@@ -361,7 +375,11 @@ declare module "svelte/events" {
 		handler: (event: EventsOf<Tag>[Type]) => unknown,
 		options?: { capture?: boolean },
 	): () => void;
-	/** Listens to an event Lynx's types do not name for this element: its event is a `LynxEvent`. */
+	/**
+	 * Listens to an event Lynx's types do not name for this element: its event is a `LynxEvent`. A
+	 * caught event (`on(node, "catchtap", …)`) is one of these too, though Lynx sends the event it
+	 * names.
+	 */
 	export function on<Tag extends string>(
 		node: LynxNode<Tag>,
 		type: string,

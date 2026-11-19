@@ -2,6 +2,7 @@
 // Lynx's doc comments. Nothing here is mapped or conditional, so the editor reads each element's
 // attributes as written instead of computing them.
 
+import type { SystemInfoNote } from "./additions.ts";
 import { docComment, keyOf } from "./print.ts";
 import type { EventField, Field, MethodModel, Model } from "./read.ts";
 
@@ -212,15 +213,21 @@ function attributeText(field: Field, modifier = ""): string {
 }
 
 /** The text of `src/background/host/system-info.ts`, before formatting. */
-export function writeSystemInfo(model: Model, notes: Readonly<Record<string, string>>): string {
+export function writeSystemInfo(
+	model: Model,
+	notes: Readonly<Record<string, SystemInfoNote>>,
+): string {
 	const { systemInfo } = model;
-	// A note goes after Lynx's description, before its tags.
+	// A note goes after Lynx's description, before its tags; a replacement after `@deprecated`.
 	const withNote = (doc: readonly string[], name: string): string[] => {
-		const note = notes[name];
-		if (!note) return [...doc];
-		const tags = doc.findIndex((line) => line.startsWith("@"));
-		const at = tags === -1 ? doc.length : tags;
-		return [...doc.slice(0, at), note, ...doc.slice(at)];
+		const { note, deprecated } = notes[name] ?? {};
+		const lines = doc.map((line) =>
+			deprecated && line === "@deprecated" ? `@deprecated ${deprecated}` : line,
+		);
+		if (!note) return lines;
+		const tags = lines.findIndex((line) => line.startsWith("@"));
+		const at = tags === -1 ? lines.length : tags;
+		return [...lines.slice(0, at), note, ...lines.slice(at)];
 	};
 	return `${[
 		[

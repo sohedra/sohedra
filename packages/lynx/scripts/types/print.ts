@@ -23,6 +23,14 @@ export function keyOf(name: string): string {
 	return /^[A-Za-z_$][\w$]*$/.test(name) ? name : JSON.stringify(name);
 }
 
+/** The fields every event has, which the binding's base event interface declares. */
+export const EVENT_BASE: ReadonlySet<string> = new Set([
+	"type",
+	"timestamp",
+	"target",
+	"currentTarget",
+]);
+
 /** Whether `type` is a function and nothing else. */
 export function isFunction(type: ts.Type): boolean {
 	return type.getCallSignatures().length > 0 && type.getProperties().length === 0;
@@ -121,6 +129,13 @@ export function printType(printer: Printer, type: ts.Type, depth = 0): string {
 		return name;
 	}
 	if (depth >= MAX_DEPTH) return "unknown";
+	// Lynx's types give some events another event as their detail (`<image>`'s `load` and `error`):
+	// what reaches the detail is that event's fields, never its targets or functions.
+	if (named && type.getProperty("target") && type.getProperty("currentTarget"))
+		return printObject(printer, type, depth, (property) => {
+			const propertyType = checker.getNonNullableType(checker.getTypeOfSymbol(property));
+			return !EVENT_BASE.has(property.name) && !isFunction(propertyType);
+		});
 	return printObject(printer, type, depth);
 }
 
@@ -156,14 +171,19 @@ function printFunction(printer: Printer, signature: ts.Signature, depth: number)
 }
 
 /** An object type written out: its index signatures, then its properties. */
-export function printObject(printer: Printer, type: ts.Type, depth: number): string {
+export function printObject(
+	printer: Printer,
+	type: ts.Type,
+	depth: number,
+	keep: (property: ts.Symbol) => boolean = () => true,
+): string {
 	const { checker } = printer;
 	const lines: string[] = [];
 	for (const info of checker.getIndexInfosOfType(type)) {
 		const key = printType(printer, info.keyType, depth + 1);
 		lines.push(`[key: ${key}]: ${printType(printer, info.type, depth + 1)};`);
 	}
-	for (const property of checker.getPropertiesOfType(type)) {
+	for (const property of checker.getPropertiesOfType(type).filter(keep)) {
 		const optional = (property.flags & ts.SymbolFlags.Optional) !== 0;
 		const propertyType = checker.getTypeOfSymbol(property);
 		const text = optional
@@ -191,6 +211,18 @@ export function docOf(checker: ts.TypeChecker, symbol: ts.Symbol): string[] {
 	return lines;
 }
 
+/** An event attribute in Lynx's spelling, as Lynx's doc text names one (`bindscrolltoupper`). */
+const LYNX_EVENT_SPELLING =
+	/\b(capture-bind|capture-catch|global-bind|bind|catch)(?!(?:ing|ings|s|es|er)\b)([a-z]+)/g;
+
+/** An event attribute in the binding's spelling: `bindtap` is `ontap`, `catchtap` `oncatchtap`. */
+function bindingSpelling(prefix: string, event: string): string {
+	if (prefix === "catch") return `oncatch${event}`;
+	if (prefix === "capture-bind") return `on${event}capture`;
+	if (prefix === "capture-catch") return `oncatch${event}capture`;
+	return `on${event}`;
+}
+
 /** The lines of a doc text, each trimmed, with what an unclosed tag left inside it taken out. */
 function cleanLines(text: string): string[] {
 	return text
@@ -200,6 +232,10 @@ function cleanLines(text: string): string[] {
 				.replace(/\s+\*\s+@\w+\s*$/, "")
 				.replace(/\s+/g, " ")
 				.replaceAll("*/", "*\\/")
+				.replace(LYNX_EVENT_SPELLING, (_, prefix: string, event: string) =>
+					bindingSpelling(prefix, event),
+				)
+				.replace(/\b([Cc])ancell(ed|ing)\b/g, "$1ancel$2")
 				.trim(),
 		)
 		.filter((line, index, all) => line !== "" || (index > 0 && all[index - 1] !== ""))
