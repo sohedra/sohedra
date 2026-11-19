@@ -4,7 +4,6 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { reloadAfterCrash } from "../../../src/background/dev-client.ts";
 import EffectFails from "../../fixtures/threads/errors/EffectFails.svelte";
 import Errors from "../../fixtures/threads/errors/Errors.svelte";
 import drawErrors from "../../fixtures/threads/errors/Errors.svelte?first-frame";
@@ -13,29 +12,8 @@ import Fails from "../../fixtures/threads/Fails.svelte";
 import Faults from "../../fixtures/threads/Faults.svelte";
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
+import { devLoop } from "./dev-loop.ts";
 import { lynxTimer, tapAndWait } from "./lynx-timer.ts";
-
-/**
- * The bundler's hot updates on `page`'s background, and Lynx's `reload` there. `save` lands one
- * update, as a save does, and answers how many times the page was loaded again so far.
- */
-function devLoop(page: SveltePage): { save(): number } {
-	const handlers: ((status: string) => void)[] = [];
-	let reloads = 0;
-	Object.assign(page.lynx.background, { reload: () => void reloads++ });
-	page.asBackground(() =>
-		reloadAfterCrash({ addStatusHandler: (handler) => void handlers.push(handler) }),
-	);
-	return {
-		save() {
-			page.asBackground(() => {
-				for (const status of ["check", "prepare", "ready", "dispose", "apply", "idle"])
-					for (const handler of handlers) handler(status);
-			});
-			return reloads;
-		},
-	};
-}
 
 /** The page of `Errors.svelte`, with its dev loop and an `onError`. */
 async function errorsPage(onError?: () => void): Promise<{
