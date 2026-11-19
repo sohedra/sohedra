@@ -14,6 +14,7 @@ import type { BackgroundLynx } from "../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL, ROOT_ID } from "../../src/wire/index.ts";
 import LongFeed from "../fixtures/threads/LongFeed.svelte";
 import drawLongFeed from "../fixtures/threads/LongFeed.svelte?first-frame";
+import { startUp } from "./svelte-page.ts";
 
 /**
  * The budgets, as measured: the scan matches one regex per item (its tag) and a few for the page
@@ -102,6 +103,7 @@ describe.each([1000, 5000])("a list of %i rows", (count) => {
 				let sent = 0;
 				startTestPage({
 					background: () => {
+						startUp();
 						const native = (readGlobal("lynx") as BackgroundLynx).getNativeApp();
 						const send = native.callLepusMethod.bind(native);
 						native.callLepusMethod = (name, params, callback) => {

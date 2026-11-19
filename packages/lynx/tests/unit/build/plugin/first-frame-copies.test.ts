@@ -1,13 +1,12 @@
-// The binding's own tests' first-frame copies: a rule that puts `./Card.svelte?first-frame` in the
-// main thread's layer, before the component rule's thread branches, with the main thread's resolve
-// conditions, and the module it makes.
+// A test run's first-frame copies: a rule that puts `./Card.svelte?first-frame` in the main thread's
+// layer, before the component rule's thread branches, with the main thread's resolve conditions;
+// the module it makes; and each background component hanging its own copy on itself.
 
 import { createRsbuild } from "@rsbuild/core";
 import type { RsbuildConfig, Rspack } from "@rsbuild/core";
 import { describe, expect, it } from "@rstest/core";
 
 import firstFrameCopyLoader from "../../../../src/build/loaders/first-frame-copy.ts";
-import { pluginFirstFrameCopies } from "../../../../src/build/plugin/first-frame-copies.ts";
 import { pluginSvelteLynx } from "../../../../src/build/plugin/index.ts";
 import { LAYERS } from "../../../../src/build/plugin/layers.ts";
 import { APP_ROOT } from "../app.ts";
@@ -31,7 +30,7 @@ async function rulesOf(rsbuildConfig: RsbuildConfig): Promise<RuleSetRule[]> {
 
 describe("first-frame copies", { timeout: 30_000 }, () => {
 	it("come first in the component rule, in the main thread's layer, with its conditions", async () => {
-		const rules = await rulesOf({ plugins: [pluginSvelteLynx(), pluginFirstFrameCopies()] });
+		const rules = await rulesOf({ plugins: [pluginSvelteLynx()] });
 		const component = rules.find(
 			(rule) => rule.test instanceof RegExp && rule.test.source === "\\.svelte$",
 		);
@@ -44,9 +43,24 @@ describe("first-frame copies", { timeout: 30_000 }, () => {
 		expect(resolve!.resolve!.conditionNames).toContain("worker");
 	});
 
-	it("add nothing without the plugin's rules", async () => {
-		const rules = await rulesOf({ plugins: [pluginFirstFrameCopies()] });
+	it("are left out with `firstFrame: false`, and the components carry none", async () => {
+		const rules = await rulesOf({ plugins: [pluginSvelteLynx({ firstFrame: false })] });
 		expect(rules.some((rule) => queryOf(rule).includes("first-frame"))).toBe(false);
+		expect(JSON.stringify(rules)).not.toContain('"firstFrameCopy":true');
+	});
+
+	it("are what each background component hangs on itself, and only those", async () => {
+		const rules = await rulesOf({ plugins: [pluginSvelteLynx()] });
+		const found: unknown[] = [];
+		const walk = (value: unknown): void => {
+			if (typeof value !== "object" || value === null) return;
+			if ("firstFrameCopy" in value) found.push(value);
+			for (const item of Object.values(value)) walk(item);
+		};
+		walk(rules);
+		expect(found).toEqual([
+			expect.objectContaining({ thread: "background", firstFrameCopy: true }),
+		]);
 	});
 
 	it("are a module that imports the component and records its first frame with mountPage", () => {

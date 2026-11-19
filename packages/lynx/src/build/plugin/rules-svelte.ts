@@ -23,6 +23,8 @@ const SVELTE_COMPONENT = /\.svelte$/;
 export interface SvelteRuleOptions {
 	compilerOptions: CompileOptions;
 	preprocess: PreprocessorGroup[];
+	/** A test run's: each background component carries its first-frame copy. */
+	firstFrameCopies?: boolean;
 }
 
 /**
@@ -63,6 +65,7 @@ function useSvelteLoaders(
 		compilerOptions,
 		preprocess,
 		hot,
+		...(options.firstFrameCopies && thread === "background" && { firstFrameCopy: true }),
 		...(thread === "main-thread"
 			? { serverInternals: RUNTIME_FILES.serverInternals }
 			: { clientInternals: RUNTIME_FILES.clientInternals }),

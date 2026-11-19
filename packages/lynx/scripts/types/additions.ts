@@ -97,15 +97,21 @@ export const ADDED_ATTRIBUTES: readonly AddedAttribute[] = [
 	},
 ];
 
-export const ADDED_EVENTS: readonly AddedEvent[] = [
+export const ADDED_EVENTS: readonly AddedEvent[] = [];
+
+/** What the binding says of an event Lynx's types declare, in place of their doc. */
+export interface EventDoc {
+	tag: string;
+	name: string;
+	doc: string[];
+}
+
+export const EVENT_DOCS: readonly EventDoc[] = [
 	{
 		tag: "overlay",
-		name: "onRequestClose",
-		event: "LynxEvent",
+		name: "requestclose",
 		doc: [
-			"iOS asks to close the overlay: the user swiped from the screen's edge. iOS's event is named `onRequestClose`, so the attribute is `ononRequestClose`; Android sends `requestclose` for its Back button.",
-			"",
-			'@workaround overlay-ios-request-close kind=lynx-gap delete-when="@lynx-js/types declares the onRequestClose event on <overlay>: remove it from scripts/types/additions.ts"',
+			"The overlay is asked to close: Android's Back button, or a swipe from the screen's edge on iOS. Lynx names the event `requestclose` on Android and `onRequestClose` on iOS, and this hears both.",
 		],
 	},
 ];

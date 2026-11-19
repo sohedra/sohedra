@@ -52,6 +52,14 @@ import type { ElementNode } from "./renderer/renderer.ts";
 import { rowOf, waitsToBeAsked } from "./renderer/rows.ts";
 import { clearRepeats, report, reportError, warnOnce } from "./report.ts";
 
+/** The exports of the page's root component, while it is mounted. */
+let rootExports: Record<string, unknown> | undefined;
+
+/** The exports of the page's root component, while it is mounted: for the test library. */
+export function pageExports(): Record<string, unknown> | undefined {
+	return rootExports;
+}
+
 /** What the engine gives the app when it opens the page (lynx-core's app `_params`). */
 interface AppParams {
 	initData?: Record<string, unknown>;
@@ -288,6 +296,7 @@ export function mountPage<Props extends Bag>(
 						: backgroundError({ code: note.code, details: note }),
 				);
 		}
+		rootExports = instance;
 		if (starting) channel.markRendered();
 		runSvelte(flushSync);
 	}
@@ -300,6 +309,7 @@ export function mountPage<Props extends Bag>(
 	function teardown(): void {
 		const mounted = instance;
 		instance = undefined;
+		rootExports = undefined;
 		if (mounted) unmount(mounted).catch(reportError);
 		unmountLayers();
 	}

@@ -14,6 +14,7 @@ import {
 	isRefHandle,
 	MAIN_THREAD_PREFIX,
 	removedEventSpelling,
+	sentNames,
 } from "../../wire/index.ts";
 import type { LynxEventType, MainThreadFunction } from "../../wire/index.ts";
 import type { Flattening } from "../flatten.ts";
@@ -205,11 +206,14 @@ const eventKind: BindingKind = {
 	bind(binding, scope) {
 		const { value, event } = binding;
 		if (!isMainThreadFunction(value) || !event) return;
-		binding.entry = new Entry(value, scope, binding.element);
-		mainThread.__AddEvent(binding.element, event.type, event.name, {
-			type: "worklet",
-			value: binding.entry,
-		});
+		const entry = new Entry(value, scope, binding.element);
+		binding.entry = entry;
+		const names = sentNames(event.name);
+		for (let index = 0; index < names.length; index++)
+			mainThread.__AddEvent(binding.element, event.type, names[index]!, {
+				type: "worklet",
+				value: entry,
+			});
 	},
 	change(binding, value, scope) {
 		binding.value = value;
@@ -226,7 +230,10 @@ const eventKind: BindingKind = {
 	release(binding) {
 		const { entry, event } = binding;
 		binding.entry = undefined;
-		if (entry && event) mainThread.__AddEvent(binding.element, event.type, event.name, undefined);
+		if (!entry || !event) return;
+		const names = sentNames(event.name);
+		for (let index = 0; index < names.length; index++)
+			mainThread.__AddEvent(binding.element, event.type, names[index]!, undefined);
 	},
 };
 

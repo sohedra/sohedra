@@ -637,6 +637,18 @@ Update @lynx-js/rspeedy (or @lynx-js/rsbuild-plugin) so that its template plugin
 https://sohedra.com/e/template_plugin_versions"
 `;
 
+exports[`the build's catalogue > test_peers_missing: the message 1`] = `
+"\`withSvelteLynx()\` runs the tests with jsdom and @testing-library/dom, which are not installed in /app.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Add jsdom and @testing-library/dom to the app's devDependencies.
+https://sohedra.com/e/test_peers_missing"
+`;
+
 exports[`the build's catalogue > thread_branch_name_taken: the message 1`] = `
 "The name SohedraLynxThreadBranch is one the build adds to this component, to draw a part only one thread renders, and the component declares it too.
 /app/src/App.svelte:2:3

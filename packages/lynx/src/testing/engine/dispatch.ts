@@ -86,6 +86,8 @@ export interface Dispatcher {
 	dispatch(element: LynxElement, event: EngineEvent): void;
 	/** An animation event as the engine sends it; returns whether it went. */
 	animationEvent(state: ElementState, event: AnimationEvent): boolean;
+	/** Whether `fire` would reach anything: a binding of the element's, or the global phase. */
+	hears(element: LynxElement, name: string): boolean;
 }
 
 /** One binding of an element for one event: its flags, and how the engine runs it. */
@@ -315,5 +317,10 @@ export function createDispatcher(engine: EngineState): Dispatcher {
 		return true;
 	}
 
-	return { fire, dispatch, animationEvent };
+	function hears(element: LynxElement, name: string): boolean {
+		const state = stateOf(engine, { value: element, fn: "hears", index: 0 });
+		return boundTo(state, name) || globalElements(name).length > 0;
+	}
+
+	return { fire, dispatch, animationEvent, hears };
 }

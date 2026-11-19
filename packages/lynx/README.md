@@ -12,11 +12,14 @@ background thread and draws with Lynx's elements on the main thread.
 > `@sohedra/lynx/experimental`); the rest grows one pull request at a time.
 
 `@sohedra/lynx/elements` types Lynx's elements for components. With
-`/// <reference types="@sohedra/lynx/client" />` in the app and
-`"svelteOptions": { "namespace": "svelteLynx" }` in its `tsconfig.json`, svelte-check and the editor
-check each element's attributes and events, in the binding's spellings (`ontap`, `oncatchtap`,
-`ontapcapture`, `main-thread:ontap`), and Svelte's `on()` types a node's events by name. The types
-are generated from Lynx's own (`@lynx-js/types`), which an app does not install.
+`"extends": "@sohedra/lynx/tsconfig"` and `"svelteOptions": { "namespace": "svelteLynx" }` in the
+app's `tsconfig.json`, svelte-check and the editor check each element's attributes and events, in
+the binding's spellings (`ontap`, `oncatchtap`, `ontapcapture`, `main-thread:ontap`), and Svelte's
+`on()` types a node's events by name. The base config leaves out the DOM, which Lynx's threads do
+not have, and loads `@sohedra/lynx/client`. The types are generated from Lynx's own
+(`@lynx-js/types`), which an app does not install. For hovers and completions in the markup, add
+`node_modules/@sohedra/lynx/types/generated/html-custom-data.json` to the editor's
+`html.customData`.
 
 Lynx's threads lack some globals and built-ins that Svelte's runtime reads or that the other thread
 has. The binding installs these where a thread has none, never over the engine's own:
@@ -38,6 +41,16 @@ Your code sees the fills too, and `EventTarget` and `structuredClone` are smalle
 - `structuredClone` throws a `TypeError` where the web's throws a `DataCloneError`. It copies what
   the web's refuses, such as a `Promise` or a `WeakMap`, as an empty object, gives an array's holes
   the value `undefined`, and ignores `transfer`.
+
+`@sohedra/lynx/testing` tests components without a phone, in `@testing-library/svelte`'s shape:
+`await render(Component, { props, context, lynx })` runs the page on both threads, on an engine fake
+that has only what a device has and the binding's fills. The background draws it; with
+`lynx: { firstFrame: true }` the main thread draws the first frame first, and the background
+hydrates it: turn that on to test what the first frame shows, or that the two agree. `fireEvent`,
+`act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a list's cells,
+a gesture's callbacks) are awaited. Run the tests with `withSvelteLynx()` from
+`@sohedra/lynx/config/rstest` or `svelteLynx()` from `@sohedra/lynx/config/vitest`, and install
+`jsdom`, `@testing-library/dom` and the runner (Vitest needs `vite` too).
 
 Run its tests and type check from the repository root with `pnpm -F @sohedra/lynx test` and
 `pnpm -F @sohedra/lynx check`. Read [CONTRIBUTING.md](../../CONTRIBUTING.md) § Code before you

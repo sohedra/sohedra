@@ -7,7 +7,14 @@
 // A `<list>`'s cells do not go into the tree here: the list takes each one when Lynx asks for it,
 // and lets go of one Lynx handed back once the background wrote it again (./lists.ts).
 
-import { decodeCell, LIST_ITEM_INFO, MAIN_THREAD_PREFIX, OpCode, ROOT_ID } from "../wire/index.ts";
+import {
+	decodeCell,
+	LIST_ITEM_INFO,
+	MAIN_THREAD_PREFIX,
+	OpCode,
+	ROOT_ID,
+	sentNames,
+} from "../wire/index.ts";
 import type { LynxEventType, Op } from "../wire/index.ts";
 import { createAnimations } from "./animations.ts";
 import { mainThreadError } from "./catalogue.ts";
@@ -134,7 +141,8 @@ export interface ApplierOptions {
 }
 
 interface Registration {
-	name: string;
+	/** The names Lynx sends the event under, each listened to. */
+	names: readonly string[];
 	handler: number;
 	listener: (event: unknown) => void;
 	options: ListenerOptions;
@@ -178,12 +186,10 @@ export function createApplier(options: ApplierOptions): Applier {
 		const slots = registrations.get(id);
 		const registration = slots?.get(slot);
 		if (!slots || !registration) return;
-		mainThread.__RemoveEventListener(
-			get(id),
-			registration.name,
-			registration.listener,
-			registration.options,
-		);
+		const { names, listener, options } = registration;
+		// By index: the main thread's engine pays for each iterator.
+		for (let index = 0; index < names.length; index++)
+			mainThread.__RemoveEventListener(get(id), names[index]!, listener, options);
 		slots.delete(slot);
 		if (slots.size === 0) registrations.delete(id);
 	}
@@ -194,7 +200,7 @@ export function createApplier(options: ApplierOptions): Applier {
 		removeListener(id, slot);
 		if (handler === 0) return;
 		const registration: Registration = {
-			name,
+			names: sentNames(name),
 			handler,
 			listener:
 				name === "input"
@@ -202,7 +208,14 @@ export function createApplier(options: ApplierOptions): Applier {
 					: (event) => dispatch(handler, event),
 			options: LISTENER_OPTIONS[type],
 		};
-		mainThread.__AddEventListener(get(id), name, registration.listener, registration.options);
+		const names = registration.names;
+		for (let index = 0; index < names.length; index++)
+			mainThread.__AddEventListener(
+				get(id),
+				names[index]!,
+				registration.listener,
+				registration.options,
+			);
 		let slots = registrations.get(id);
 		if (!slots) registrations.set(id, (slots = new Map()));
 		slots.set(slot, registration);

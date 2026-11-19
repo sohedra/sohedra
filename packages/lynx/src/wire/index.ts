@@ -6,7 +6,13 @@ export type { WireCode, WireDetails, WireError, WireReport } from "./catalogue.t
 export { describeOp } from "./describe-op.ts";
 export { escapeJsonText } from "./escape.ts";
 export type { TagOf } from "./describe-op.ts";
-export { eventOf, listenerEvent, lynxEventName, removedEventSpelling } from "./events.ts";
+export {
+	eventOf,
+	listenerEvent,
+	lynxEventName,
+	removedEventSpelling,
+	sentNames,
+} from "./events.ts";
 export type { LynxEvent, LynxEventType, LynxListener, RemovedEventSpelling } from "./events.ts";
 export { GestureState, GestureType, isGesture, plainGestures } from "./gesture.ts";
 export type {
@@ -51,6 +57,7 @@ export {
 	ASYNC_LIST,
 	DEFER,
 	DEFERRED_ROW,
+	FIRST_FRAME_COPY_KEY,
 	FIRST_FRAME_GLOBAL,
 	LAZY_BUNDLE_METHOD,
 	MAIN_THREAD_PREFIX,

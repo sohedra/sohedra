@@ -56,6 +56,8 @@ export interface BackgroundDetails {
 	background_function_missing: Record<string, never>;
 	/** `name` is the attribute's; `where` the element's `file:line:col`, in development builds. */
 	plain_function_under_main_thread: { name: string; tag: string; where?: string | undefined };
+	/** `value` says what was given: the text, the number, an object. */
+	main_thread_ref_not_a_ref: { value: string; tag: string; where?: string | undefined };
 	/** `value` says what was given: a function, a list, an object. */
 	main_thread_gesture_not_a_gesture: { value: string; tag: string; where?: string | undefined };
 	/**
@@ -258,6 +260,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Start the function's body with the 'main thread' directive, or use the attribute without the main-thread: prefix to run it on the background.",
 		docs: "plain_function_under_main_thread",
+	},
+	main_thread_ref_not_a_ref: {
+		message: ({ value, tag }) =>
+			`The <${tag}>'s main-thread:ref is ${value}, which is neither a ref nor a main-thread function, so the main thread binds nothing.`,
+		fix: () =>
+			"Give it a ref made with mainThreadRef() from @sohedra/lynx, or a main-thread function that takes the element.",
+		docs: "main_thread_ref_not_a_ref",
 	},
 	main_thread_gesture_not_a_gesture: {
 		message: ({ value, tag }) =>

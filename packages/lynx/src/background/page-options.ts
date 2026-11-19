@@ -26,9 +26,10 @@ export interface MountPageOptions<Props extends Bag> {
 	 * Hears each error the binding reports into Lynx, once, on either thread: what a component, an
 	 * effect, an event handler, a host listener, a teardown at a reload or a main-thread function
 	 * throws, what fails as the page starts, hydrates or changes, and what the app reports with
-	 * `reportError`. A teardown that throws as the page is destroyed is lost: Svelte reports it a
-	 * microtask later, and the engine frees the background's runtime first, as Lynx on Android
-	 * does; neither Lynx nor `onError` gets it. Its context says the thread, the component when a
+	 * `reportError`. A teardown that throws as the page is destroyed is lost: Svelte reports it in a
+	 * promise's reaction, and Lynx frees the background's runtime before that runs, so neither Lynx
+	 * nor `onError` gets it. After one teardown throws, Svelte runs none of the teardowns after it
+	 * (sveltejs/svelte#18415), at a reload too. Its context says the thread, the component when a
 	 * development build knows it, and the binding's code when the binding wrote the error. A crash
 	 * reporter plugs in here. It hears every error in every build: a development build only folds
 	 * the repeats of one error in LogBox, until it has been quiet for five seconds.

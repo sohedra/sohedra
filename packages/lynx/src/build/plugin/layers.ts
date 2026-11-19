@@ -68,3 +68,6 @@ export const RUNTIME_FILES: Readonly<{
 
 /** Rstest's setup file for the test preset: it ends the page each test started. */
 export const TEST_SETUP_FILE: string = programFile("testing/setup-rstest");
+
+/** Vitest's setup file for the test preset: it ends the page each test started. */
+export const VITEST_SETUP_FILE: string = programFile("testing/setup-vitest");

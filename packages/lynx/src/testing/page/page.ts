@@ -9,7 +9,6 @@ import type { Engine } from "../engine/create-engine.ts";
 import {
 	activeSession,
 	installGlobals,
-	processQueueMicrotask,
 	readGlobal,
 	removeGlobals,
 	setActiveSession,
@@ -115,8 +114,8 @@ export interface TestPage {
 	dispose(): void;
 }
 
-/** What an iPhone's Lynx says about it. */
-const IPHONE: Readonly<Record<string, unknown>> = {
+/** What an iPhone's Lynx says about it: what a test page's Lynx says by default. */
+export const IPHONE: Readonly<Record<string, unknown>> = {
 	platform: "iOS",
 	osVersion: "18.0",
 	engineVersion: "3.2",
@@ -127,9 +126,16 @@ const IPHONE: Readonly<Record<string, unknown>> = {
 	runtimeType: "quickjs",
 };
 
+/**
+ * What neither of Lynx's threads has (the device checks: `queueMicrotask is not defined` on Lynx
+ * 4.2's main thread, and Svelte's `EventTarget` and `structuredClone` missing on both): each thread
+ * has only what its own code puts there, the binding's fills.
+ */
+const THREAD_FILLED = ["queueMicrotask", "EventTarget", "structuredClone"];
+
 /** The globals a page's own code sets while it runs, put back when the page ends. */
 const PAGE_GLOBALS = [
-	"queueMicrotask",
+	...THREAD_FILLED,
 	"runWorklet",
 	"renderPage",
 	"updatePage",
@@ -156,32 +162,29 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	 * one there fails as it would.
 	 */
 	let current: Thread | undefined;
-	/**
-	 * Each thread's global `queueMicrotask`. Lynx's main thread has none (the device check of the
-	 * page's entry: `queueMicrotask is not defined` on the main thread of Lynx 4.2 on Android), so
-	 * there it is only what the page's own code puts there; the background keeps the process's.
-	 */
-	const microtasks: Record<Thread, unknown> = {
-		"main-thread": undefined,
-		background: processQueueMicrotask,
-	};
+	/** Each thread's own of `THREAD_FILLED`: none until its code fills them. */
+	const filled: Record<Thread, Record<string, unknown>> = { "main-thread": {}, background: {} };
 	const enter = (thread: Thread): Thread | undefined => {
 		const before = current;
 		if (ended) return before;
 		if (thread !== current) {
 			// What the thread's own code left there stays its own.
-			if (current) microtasks[current] = readGlobal("queueMicrotask");
-			const own = microtasks[thread];
-			if (own === undefined) removeGlobals(["queueMicrotask"]);
-			else installGlobals({ queueMicrotask: own });
+			if (current) for (const name of THREAD_FILLED) filled[current][name] = readGlobal(name);
+			const own = filled[thread];
+			removeGlobals(THREAD_FILLED.filter((name) => own[name] === undefined));
+			installGlobals(
+				Object.fromEntries(
+					THREAD_FILLED.flatMap((name) => (own[name] === undefined ? [] : [[name, own[name]]])),
+				),
+			);
 		}
 		current = thread;
 		if (thread === "main-thread") {
 			installGlobals({ ...engine.functions, lynx: lynx.mainThread, SystemInfo: systemInfo });
 			return before;
 		}
-		installGlobals({ lynx: lynx.background, SystemInfo: systemInfo });
-		removeGlobals(elementFunctions);
+		installGlobals({ lynx: lynx.background, SystemInfo: systemInfo, ...backgroundFrames });
+		removeGlobals(mainThreadOnly);
 		return before;
 	};
 	const engine = createEngine({
@@ -191,7 +194,16 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		enter: () => enter("main-thread"),
 		report: (error) => void errors.push(error),
 	});
-	const elementFunctions = Object.keys(engine.functions);
+	/**
+	 * lynx-core gives the background a `requestAnimationFrame` of its own, through the app's frames
+	 * (lynx-core's common/amd.ts, app.ts): the process's stands in for it there.
+	 */
+	const processFrame = readGlobal("requestAnimationFrame");
+	const backgroundFrames: Record<string, unknown> =
+		processFrame === undefined ? {} : { requestAnimationFrame: processFrame };
+	const mainThreadOnly = Object.keys(engine.functions).filter(
+		(name) => !(name in backgroundFrames),
+	);
 	const templateData = options.templateData ?? {};
 	const hostData = options.initData ?? {};
 	// The data the engine renders the page with (core/renderer/template_assembler.cc).

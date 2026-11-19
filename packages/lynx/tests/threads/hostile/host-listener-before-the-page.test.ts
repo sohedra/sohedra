@@ -10,6 +10,7 @@ import { mountPage } from "../../../src/background/index.ts";
 import { startMainThread } from "../../../src/main-thread/index.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
 import Counter from "../../fixtures/threads/Counter.svelte";
+import { startUp } from "../svelte-page.ts";
 
 describe("a host listener added before the page starts", () => {
 	it("gets each event's arguments, nothing is reported, and its remover removes it", async () => {
@@ -17,6 +18,7 @@ describe("a host listener added before the page starts", () => {
 		const page = startTestPage({
 			mainThread: () => startMainThread(),
 			background: () => {
+				startUp();
 				on(host, "onWindowResize", (width, height) => void log.push([width, height]));
 				on(host, "keyboardstatuschanged", (status, height) => void log.push([status, height]));
 				on(host, "onFontScaleChanged", ({ scale }) => void log.push(scale));

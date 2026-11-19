@@ -12,12 +12,14 @@ import type { RsbuildPlugin } from "@rsbuild/core";
 import type { ExtendConfig, ExtendConfigFn } from "@rstest/core";
 
 import { PACKAGE_NAME } from "../../wire/index.ts";
+import { workingDirectory } from "../globals.ts";
 import { pluginSvelteLynx } from "../plugin/index.ts";
 import type { PluginSvelteLynxOptions } from "../plugin/index.ts";
 import { TEST_SETUP_FILE } from "../plugin/layers.ts";
 import { checkPluginOptions } from "../plugin/option-checks.ts";
 import { loadLynxConfig } from "./config-file.ts";
 import type { ConfigFileOptions } from "./config-file.ts";
+import { checkTestPeers } from "./test-peers.ts";
 
 export type { ConfigFileOptions };
 
@@ -76,10 +78,12 @@ function defaults(): ExtendConfig {
 
 /**
  * A library's tests (no app config): the plugin with `options`, as the app using the library would
- * set them. Throws when an option is unknown or has a wrong value.
+ * set them. Throws when an option is unknown or has a wrong value, or when the app lacks what the
+ * tests run with: `@rstest/core`, `jsdom` and `@testing-library/dom`.
  */
 export function withSvelteLynx(options: PluginSvelteLynxOptions = {}): ExtendConfigFn {
 	checkPluginOptions(options);
+	checkTestPeers({ runner: "rstest", preset: "withSvelteLynx()", root: workingDirectory() });
 	return () => ({
 		...defaults(),
 		plugins: [pluginSvelteLynx(options), conditionsByImport],
@@ -88,9 +92,16 @@ export function withSvelteLynx(options: PluginSvelteLynxOptions = {}): ExtendCon
 
 /**
  * An app's tests: its own build config (and with it, its `pluginSvelteLynx` options), through
- * `@rstest/adapter-rsbuild`.
+ * `@rstest/adapter-rsbuild`. Throws when the app lacks what the tests run with, or that adapter.
  */
 export function withSvelteLynxFromConfig(options: ConfigFileOptions = {}): ExtendConfigFn {
+	checkTestPeers({
+		runner: "rstest",
+		preset: "withSvelteLynxFromConfig()",
+		root: options.rootPath ?? workingDirectory(),
+		// It reads the app's config through Rstest's Rsbuild adapter.
+		also: ["@rstest/adapter-rsbuild"],
+	});
 	return async () => {
 		const { toRstestConfig } = await import("@rstest/adapter-rsbuild");
 		const config = toRstestConfig({ rsbuildConfig: await loadLynxConfig(options) });

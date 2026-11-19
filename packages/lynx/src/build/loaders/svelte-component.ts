@@ -20,6 +20,7 @@ import { buildError, buildWarning } from "../diagnostics/messages.ts";
 import type { SourceMap } from "../source-map/maps.ts";
 import { stringLiteral } from "../string-literal.ts";
 import { storeCss } from "./css-store.ts";
+import { hangFirstFrameCopy } from "./first-frame-copy.ts";
 import { DECLINE, rewriteHotFooter } from "./hot-reload.ts";
 
 const require = createRequire(import.meta.url);
@@ -45,6 +46,11 @@ export interface SvelteComponentLoaderOptions {
 	clientInternals?: string;
 	/** Swap components in place in a development build. */
 	hot?: boolean;
+	/**
+	 * A test run's: hang the component's first-frame copy on it, for `render` from
+	 * `@sohedra/lynx/testing` to draw its first frame with (./first-frame-copy.ts).
+	 */
+	firstFrameCopy?: boolean;
 }
 
 type Context = Rspack.LoaderContext<SvelteComponentLoaderOptions>;
@@ -100,6 +106,10 @@ async function compileSource(
 				code = rewritten;
 			}
 		}
+	}
+	if (options.firstFrameCopy) {
+		const file = `./${path.basename(filename)}`;
+		code += hangFirstFrameCopy(file, `${file}?first-frame`);
 	}
 	if (compiled.css !== undefined) {
 		// The CSS waits in the build's store; the import carries its key (see svelte-css.ts).

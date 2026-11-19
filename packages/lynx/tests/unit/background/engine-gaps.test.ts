@@ -6,15 +6,15 @@ import { createRequire } from "node:module";
 import path from "node:path";
 
 import { afterEach, describe, expect, it, rs } from "@rstest/core";
-import structuredCloneFill, { deserialize, serialize } from "@ungap/structured-clone";
+import { deserialize, serialize } from "@ungap/structured-clone";
 
 import { fillEngineGaps } from "../../../src/background/engine-gaps.ts";
 import type { BackgroundGlobals } from "../../../src/background/globals.ts";
 import { installGlobals } from "../../../src/testing/globals.ts";
 
-// In Node, `@ungap/event-target` and `@ungap/structured-clone` hand back Node's own `EventTarget`
-// and `structuredClone`, so these tests check where the fills go and what reaches them; the
-// device-shaped build tests (tests/build/device-snapshot.test.ts) run the packages' own code.
+// In Node, `@ungap/event-target` hands back Node's own `EventTarget`, so these tests check where the
+// fills go and what reaches `@ungap/structured-clone`'s own copy; the device-shaped build tests
+// (tests/build/device-snapshot.test.ts) run the packages' own code.
 rs.mock("@ungap/structured-clone", { spy: true });
 afterEach(() => {
 	rs.clearAllMocks();
@@ -120,9 +120,10 @@ describe("the structuredClone it gives", () => {
 		const primitives = [undefined, null, true, false, 0, -0, NaN, Infinity, 1.5, 10n, "", "text"];
 		for (const value of primitives) {
 			expect(Object.is(clone(value), value)).toBe(true);
-			expect(Object.is(deserialize(serialize(value)), value)).toBe(true);
 		}
-		expect(structuredCloneFill).not.toHaveBeenCalled();
+		expect(serialize).not.toHaveBeenCalled();
+		for (const value of primitives)
+			expect(Object.is(deserialize(serialize(value)), value)).toBe(true);
 	});
 
 	it("hands a symbol, a function and every object to @ungap/structured-clone, with the options", () => {
@@ -130,14 +131,14 @@ describe("the structuredClone it gives", () => {
 		const action = () => {};
 		expect(() => clone(symbol)).toThrow();
 		expect(() => clone(action)).toThrow();
-		expect(() => serialize(symbol)).toThrow(new TypeError("unable to serialize symbol"));
-		expect(() => serialize(action)).toThrow(new TypeError("unable to serialize function"));
 		const value = { when: new Date(0) };
 		const options = { transfer: [] };
 		expect(clone(value, options)).toEqual(value);
-		const calls = rs.mocked(structuredCloneFill).mock.calls;
+		const calls = [...rs.mocked(serialize).mock.calls];
 		expect(calls.map(([handed]) => handed)).toEqual([symbol, action, value]);
 		expect(calls[2]).toEqual([value, options]);
+		expect(() => serialize(symbol)).toThrow(new TypeError("unable to serialize symbol"));
+		expect(() => serialize(action)).toThrow(new TypeError("unable to serialize function"));
 	});
 });
 

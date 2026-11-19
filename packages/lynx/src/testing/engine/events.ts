@@ -5,6 +5,7 @@
 // core/runtime/lepus/bindings/renderer_functions.cc, FiberAddEventListener). The engine's side
 // that sends them is in dispatch.ts.
 
+import { processStructuredClone } from "../globals.ts";
 import { argumentError, elementName, stateOf } from "./state.ts";
 import type { EngineState } from "./state.ts";
 import type { LynxElement, ListenerFunction, ListenerOptions } from "./types.ts";
@@ -71,7 +72,7 @@ export function flagsOfOptions(options: ListenerOptions | undefined): BindingFla
  */
 export function recorded<T>(value: T): T {
 	try {
-		return structuredClone(value);
+		return processStructuredClone(value);
 	} catch {
 		return value;
 	}

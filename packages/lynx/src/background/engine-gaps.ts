@@ -3,7 +3,7 @@
 // thread has: an app gets no other fill, of the language or of the web's APIs, from the binding.
 
 import EventTargetFill from "@ungap/event-target";
-import structuredCloneFill from "@ungap/structured-clone";
+import { deserialize, serialize } from "@ungap/structured-clone";
 
 import { runSvelte } from "./errors.ts";
 import type { BackgroundGlobals } from "./globals.ts";
@@ -74,14 +74,17 @@ function fillStructuredClone(scope: Record<string, unknown>): void {
 }
 
 /**
- * `@ungap/structured-clone`, with a primitive returned as it is, as the web's `structuredClone`
- * returns it: Svelte copies every number and string of state with it, and `@ungap` serializes each
- * one whole. A symbol or a function still reaches `@ungap`, which refuses it.
+ * `@ungap/structured-clone`'s own copy, with a primitive returned as it is, as the web's
+ * `structuredClone` returns it: Svelte copies every number and string of state with it, and
+ * `@ungap` serializes each one whole. A symbol or a function still reaches `@ungap`, which refuses
+ * it. Its copy is called by name: the package's default export hands the value to a global
+ * `structuredClone` when one is there as it loads, which would be this fill wherever the thread
+ * has none.
  */
-function cloneStructured<T>(value: T, options?: Parameters<typeof structuredCloneFill>[1]): T {
+function cloneStructured<T>(value: T, options?: Parameters<typeof serialize>[1]): T {
 	const type = typeof value;
 	return (type === "object" && value !== null) || type === "function" || type === "symbol"
-		? structuredCloneFill(value, options)
+		? (deserialize(serialize(value, options)) as T)
 		: value;
 }
 

@@ -152,12 +152,20 @@ function eventParameter(checker: ts.TypeChecker, property: ts.Symbol): ts.Type {
 	return checker.getTypeOfSymbol(parameter);
 }
 
+/** An element's name and its event's, when they are one word: `InputInput` says it once. */
+const STUTTER = /^Lynx([A-Z][a-z]+)\1(?=[A-Z])/;
+
 /**
  * The name of an event's interface, from Lynx's: `BaseTouchEvent<Target>` is `LynxTouchEvent`, and
- * `BaseEvent<"bindinput", InputInputEvent>` is named for its detail, `LynxInputInputEvent`. An event
- * that adds nothing to every event's fields is `LynxEvent`.
+ * `BaseEvent<"bindinput", InputInputEvent>` is named for its detail, `LynxInputEvent`, with the
+ * word the element and its event share said once. An event that adds nothing to every event's
+ * fields is `LynxEvent`.
  */
 function eventName(checker: ts.TypeChecker, type: ts.Type): string {
+	return lynxEventName(checker, type).replace(STUTTER, "Lynx$1");
+}
+
+function lynxEventName(checker: ts.TypeChecker, type: ts.Type): string {
 	const symbol = type.aliasSymbol ?? type.getSymbol();
 	const name = symbol?.name ?? "";
 	if (name === "BaseEvent" || name === "BaseEventOrig") {

@@ -56,8 +56,7 @@
 		</list>
 	</scroll-view>
 	<input value={text} oninput={(event) => (text = event.detail.value)} />
-	<overlay visible events-pass-through ononRequestClose={() => {}} onrequestclose={() => {}}
-	></overlay>
+	<overlay visible events-pass-through onrequestclose={() => {}}></overlay>
 	<image src="a.png" onload={(event) => void [event.detail.width, event.detail.height]} />
 	<view ontap={() => scroller?.invoke("scrollTo", { offset: 0, smooth: true })}></view>
 	<svelte:element this={tag} class="part" ontap={() => {}}></svelte:element>

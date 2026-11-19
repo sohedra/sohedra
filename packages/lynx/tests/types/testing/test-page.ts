@@ -1,6 +1,6 @@
-// Checked by `pnpm check`, not run. The test library (src/testing, the face of `./testing` once it
-// is published): a test page starts with the host's values and each thread's script, and gives
-// what each thread sent and reported.
+// Checked by `pnpm check`, not run. The binding's own test page (src/testing), which
+// `@sohedra/lynx/testing` stands on: a test page starts with the host's values and each thread's
+// script, and gives what each thread sent and reported.
 
 import { cleanup, startTestPage } from "../../../src/testing/index.ts";
 import type { Engine, LynxElement, TestPage, TestPageOptions } from "../../../src/testing/index.ts";

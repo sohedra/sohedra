@@ -67,6 +67,42 @@ describe("the generated types", { timeout: 60_000 }, () => {
 		expect(text).toMatch(/@deprecated Use `engineVersion`/);
 	});
 
+	it("name an event's interface with the word its element and event share once", () => {
+		const names = readLynxTypes(OMITTED_TAGS).events.map((event) => event.name);
+		expect(names).toContain("LynxInputEvent");
+		expect(names.filter((name) => /^Lynx([A-Z][a-z]+)\1[A-Z]/.test(name))).toEqual([]);
+	});
+
+	it("hear an overlay's close request under one name, with both platforms in its doc", () => {
+		const text = fs.readFileSync(path.join(ROOT, "types/generated/elements.d.ts"), "utf8");
+		expect(text).not.toContain("onRequestClose?:");
+		const overlay = withAdditions(readLynxTypes(OMITTED_TAGS)).elements.find(
+			(element) => element.tag === "overlay",
+		)!;
+		const close = overlay.events.find((event) => event.name === "requestclose")!;
+		expect(close.doc.join(" ")).toMatch(/Android.*iOS/);
+	});
+
+	it("give the editor each element, its attributes and its events as a component writes them", () => {
+		const data = JSON.parse(
+			fs.readFileSync(path.join(ROOT, "types/generated/html-custom-data.json"), "utf8"),
+		) as {
+			version: number;
+			tags: { name: string; attributes: { name: string; values?: { name: string }[] }[] }[];
+			globalAttributes: { name: string }[];
+		};
+		expect(data.version).toBe(1.1);
+		const tags = new Map(data.tags.map((tag) => [tag.name, tag]));
+		expect(tags.has("frame")).toBe(false);
+		expect(tags.get("scroll-view")!.attributes.map((each) => each.name)).toContain("onscroll");
+		expect(tags.get("overlay")!.attributes.map((each) => each.name)).toContain("onrequestclose");
+		const names = data.globalAttributes.map((each) => each.name);
+		expect(names).toContain("ontap");
+		expect(names.filter((name) => /^(?:bind|catch|global-bind)/.test(name))).toEqual([]);
+		const withValues = data.tags.flatMap((tag) => tag.attributes).filter((each) => each.values);
+		expect(withValues.length).toBeGreaterThan(0);
+	});
+
 	it("stop generating once Lynx's types declare what the binding adds for them", () => {
 		const model = readLynxTypes(OMITTED_TAGS);
 		const overlay = model.elements.find((element) => element.tag === "overlay")!;

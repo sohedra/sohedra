@@ -1,4 +1,4 @@
-// A walk across the binding's six catalogues: their codes are its docs pages, one namespace under
+// A walk across the binding's seven catalogues: their codes are its docs pages, one namespace under
 // `https://sohedra.com/e/`, so no two entries share one; every name a fix line gives the developer
 // works; and no message of the binding is written outside a catalogue.
 
@@ -24,7 +24,7 @@ const ENTRIES = Object.entries(CATALOGUES).flatMap(([program, catalogue]) =>
  */
 const ON_BOTH_THREADS = new Set(["page_is_gone"]);
 
-describe("the codes of the six catalogues", () => {
+describe("the codes of the seven catalogues", () => {
 	it("are unique across them, as their docs pages are", () => {
 		const seen = new Map<string, string>();
 		const clashes: string[] = [];
@@ -63,6 +63,7 @@ const OWN_ENTRIES: Record<string, string> = {
 	"@sohedra/lynx/host": "background/host-entry.ts",
 	"@sohedra/lynx/config/svelte": "build/svelte-config/index.ts",
 	"@sohedra/lynx/config/rsbuild": "build/plugin/index.ts",
+	"@sohedra/lynx/testing": "testing/library-entry.ts",
 };
 
 /** Other packages' modules a fix line may name: each works on Lynx. */
@@ -121,6 +122,11 @@ const NAMES: Record<string, Resolves> = {
 	PanGesture: { from: "@sohedra/lynx/gesture" },
 	RaceGesture: { from: "@sohedra/lynx/experimental" },
 	svelteConfig: { from: "@sohedra/lynx/config/svelte" },
+	cleanup: { from: "@sohedra/lynx/testing" },
+	unmount: { kind: "a method of what render resolves with" },
+	"firstFrame: false": { kind: "an option of the plugin and of render's lynx" },
+	"lynx: { firstFrame: true }": { kind: "an option of render" },
+	"background: false": { kind: "an option of render's lynx" },
 	BROWSER: { from: "esm-env" },
 	onMount: { from: "svelte" },
 	on: { from: "svelte/events" },
@@ -130,6 +136,7 @@ const NAMES: Record<string, Resolves> = {
 	"sample.id": { kind: "the developer's own value, read from the message's details" },
 	"ref.current": { kind: "a main-thread ref's value" },
 	"package.json": { kind: "a file of the app" },
+	devDependencies: { kind: "a field of the app's package.json" },
 	"svelte.config.js": { kind: "a file of the app" },
 	$effect: { kind: "a rune" },
 	animate: { kind: "a method of the background's element nodes" },

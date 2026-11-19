@@ -59,6 +59,11 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	css_not_stored: { file: "/app/src/Card.svelte" },
 	hot_footer_missing: { file: "/app/src/Card.svelte" },
 	svelte_missing: { root: "/app" },
+	test_peers_missing: {
+		packages: ["jsdom", "@testing-library/dom"],
+		preset: "withSvelteLynx()",
+		root: "/app",
+	},
 	svelte_without_renderers: { version: "5.40.0", where: "/app" },
 	lynx_engine_missing: {},
 	template_plugin_versions: { engine: "0.15.4", own: "0.16.8", range: "^0.16.8" },

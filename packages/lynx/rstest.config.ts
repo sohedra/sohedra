@@ -1,9 +1,8 @@
 import fs from "node:fs";
 
 import { defineConfig } from "@rstest/core";
-import type { ExtendConfigFn, RstestConfig } from "@rstest/core";
+import type { RstestConfig } from "@rstest/core";
 
-import { pluginFirstFrameCopies } from "./src/build/plugin/first-frame-copies.ts";
 import { withSvelteLynx } from "./src/build/presets/rstest.ts";
 
 // The coverage floor: the measured values, rounded down. Coverage may never drop below it; a pull
@@ -22,9 +21,11 @@ const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 //   unit/      one module at a time; those of `src/testing` and of the threads' programs on the
 //              engine fake
 //   threads/   both threads of a page on the engine fake
+//   library/   components tested through `@sohedra/lynx/testing`, as a component library would
 //   contract/  rules about the source, the repository, the pinned Svelte build, and the engine
 //              behavior spec run on the fake
 //   types/     checked by `pnpm check`, not run
+//   vitest/    the Vitest preset's own projects, which Vitest runs
 //   fixtures/  inputs the tests read
 //
 // The tests of the page, and of the Lynx it runs on, go through the package's own preset: a DOM,
@@ -37,26 +38,22 @@ const onTheTestTree = [
 	"tests/unit/main-thread/**",
 	"tests/contract/engine/**",
 	"tests/threads/**",
+	"tests/library/**",
 ];
-
-/** The package's preset, with the binding's own first-frame copies (`./Card.svelte?first-frame`). */
-const withFirstFrameCopies: ExtendConfigFn = async (user) => {
-	const preset = await withSvelteLynx()(user);
-	return { ...preset, plugins: [...(preset.plugins ?? []), pluginFirstFrameCopies()] };
-};
 
 const config: RstestConfig = defineConfig({
 	projects: [
 		{
 			name: "page",
-			extends: withFirstFrameCopies,
+			extends: withSvelteLynx(),
 			include: onTheTestTree.map((folder) => `${folder}/*.test.ts`),
 		},
 		{
 			name: "node",
 			testEnvironment: "node",
 			include: ["tests/**/*.test.ts"],
-			exclude: onTheTestTree.map((folder) => `${folder}/*.test.ts`),
+			// The Vitest preset's suite runs under Vitest (tests/build/vitest-run.test.ts).
+			exclude: [...onTheTestTree.map((folder) => `${folder}/*.test.ts`), "tests/vitest/**"],
 		},
 	],
 	coverage: {

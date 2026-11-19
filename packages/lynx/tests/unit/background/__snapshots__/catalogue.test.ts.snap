@@ -147,6 +147,14 @@ Give it a gesture made with new, such as new PanGesture({ onUpdate }) from @sohe
 https://sohedra.com/e/main_thread_gesture_not_a_gesture"
 `;
 
+exports[`the background's catalogue > main_thread_ref_not_a_ref: the message 1`] = `
+"The <view>'s main-thread:ref is the string box, which is neither a ref nor a main-thread function, so the main thread binds nothing.
+src/Sheet.svelte:9:2
+
+Give it a ref made with mainThreadRef() from @sohedra/lynx, or a main-thread function that takes the element.
+https://sohedra.com/e/main_thread_ref_not_a_ref"
+`;
+
 exports[`the background's catalogue > main_thread_ref_read_on_background: the message 1`] = `
 "The current value of a main-thread ref was read on the background, where it is only the ref's initial value: the ref's value lives on the main thread.
 

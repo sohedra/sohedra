@@ -50,6 +50,26 @@ export function eventOf(attribute: string): LynxEvent | undefined {
 	return { type, name: lynxName, mainThread };
 }
 
+/** Each name Lynx sends an event under, by the name a component writes. */
+const SENT_AS: Readonly<Record<string, readonly string[]>> = {
+	/**
+	 * An `<overlay>` is asked to close: Android sends `requestclose` for its Back button, iOS sends
+	 * `onRequestClose` for a swipe from the screen's edge, and neither sends the other's
+	 * (LynxOverlayView.kt, LynxUIOverlay.m). Only an overlay sends either.
+	 *
+	 * @workaround overlay-request-close kind=lynx-gap delete-when="Lynx sends an overlay's close request under one name on every platform"
+	 */
+	requestclose: ["requestclose", "onRequestClose"],
+};
+
+/**
+ * The names Lynx sends an event under, which an element listens to for it: the event's own name,
+ * and for an overlay's `requestclose` also iOS's `onRequestClose`.
+ */
+export function sentNames(name: string): readonly string[] {
+	return SENT_AS[name] ?? [name];
+}
+
 const SPELLING: Record<LynxEventType, string> = {
 	bindEvent: "bind",
 	catchEvent: "catch",

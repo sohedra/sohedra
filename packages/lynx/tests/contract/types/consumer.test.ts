@@ -21,7 +21,7 @@ const APP = path.join(WORK, "app");
 const TYPE_TESTS = path.join(WORK, "type-tests");
 
 /** The type tests that reach the source past the public entries, which a published package hides. */
-const INTERNAL_TYPE_TESTS = ["globals", "testing"];
+const INTERNAL_TYPE_TESTS = ["globals", "testing/test-page.ts"];
 
 interface Manifest {
 	name: string;
@@ -111,8 +111,14 @@ function checkTypeTests(typescript: typeof ts): string[] {
 	);
 }
 
-/** The app's TypeScript files, checked with its tsconfig by one version of TypeScript. */
-function check(typescript: typeof ts): { files: string[]; diagnostics: Diagnostic[] } {
+/**
+ * The app's TypeScript files, checked with its tsconfig by one version of TypeScript, with
+ * `overrides` over its options.
+ */
+function check(
+	typescript: typeof ts,
+	overrides: ts.CompilerOptions = {},
+): { files: string[]; diagnostics: Diagnostic[] } {
 	const config = typescript.getParsedCommandLineOfConfigFile(
 		path.join(APP, "tsconfig.json"),
 		{},
@@ -123,7 +129,7 @@ function check(typescript: typeof ts): { files: string[]; diagnostics: Diagnosti
 	)!;
 	const program = typescript.createProgram({
 		rootNames: config.fileNames.filter((file) => file.endsWith(".ts")),
-		options: config.options,
+		options: { ...config.options, ...overrides },
 	});
 	return {
 		files: program.getSourceFiles().map((file) => file.fileName),
@@ -204,6 +210,11 @@ describe("the types an app gets", { timeout: 120_000 }, () => {
 			expect(checkTypeTests(typescript)).toEqual([]);
 		});
 	}
+
+	it("check with the base's skipLibCheck: nothing reported, no dependency's declarations either", () => {
+		const { diagnostics } = check(ts, { skipLibCheck: true });
+		expect(diagnostics.map(({ file, line, code }) => `${file}:${line} TS${code}`)).toEqual([]);
+	});
 
 	it("load no file of @lynx-js/types, which an app does not install", () => {
 		const { files } = check(ts);

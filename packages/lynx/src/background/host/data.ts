@@ -95,7 +95,7 @@ export const globalProps: { readonly current: GlobalProps } = {
  * What Lynx says about the device and itself: the platform, the screen's size in physical pixels,
  * the pixel ratio and the versions. `.current` is not reactive: Lynx gives it once, as the page
  * starts, and does not change it while the page runs, even when the device rotates. For the page's
- * size as it changes, read `svelte/reactivity/window`.
+ * size as it changes, listen to `on(host, "onWindowResize", …)`.
  *
  * ```svelte
  * <script lang="ts">

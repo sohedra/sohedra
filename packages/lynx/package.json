@@ -24,6 +24,7 @@
 		},
 		"./config/rsbuild": "./src/build/plugin/index.ts",
 		"./config/rstest": "./src/build/presets/rstest.ts",
+		"./config/vitest": "./src/build/presets/vitest.ts",
 		"./config/svelte": "./src/build/svelte-config/index.ts",
 		"./elements": {
 			"types": "./types/elements.d.ts"
@@ -35,6 +36,7 @@
 			"worker": "./src/first-frame/host-entry.ts",
 			"default": "./src/background/host-entry.ts"
 		},
+		"./testing": "./src/testing/library-entry.ts",
 		"./internal/renderer": "./src/background/renderer/entry.ts",
 		"./internal/main-thread-functions": {
 			"worker": "./src/first-frame/functions-entry.ts",
@@ -42,7 +44,8 @@
 		},
 		"./client": {
 			"types": "./types/client.d.ts"
-		}
+		},
+		"./tsconfig": "./types/tsconfig.base.json"
 	},
 	"publishConfig": {
 		"exports": {
@@ -58,6 +61,10 @@
 			"./config/rstest": {
 				"types": "./lib/build/presets/rstest.d.ts",
 				"default": "./lib/build/presets/rstest.js"
+			},
+			"./config/vitest": {
+				"types": "./lib/build/presets/vitest.d.ts",
+				"default": "./lib/build/presets/vitest.js"
 			},
 			"./config/svelte": {
 				"types": "./lib/build/svelte-config/index.d.ts",
@@ -83,6 +90,10 @@
 				"worker": "./lib/first-frame/host-entry.js",
 				"default": "./lib/background/host-entry.js"
 			},
+			"./testing": {
+				"types": "./lib/testing/library-entry.d.ts",
+				"default": "./lib/testing/library-entry.js"
+			},
 			"./internal/renderer": {
 				"types": "./lib/background/renderer/entry.d.ts",
 				"default": "./lib/background/renderer/entry.js"
@@ -94,7 +105,8 @@
 			},
 			"./client": {
 				"types": "./types/client.d.ts"
-			}
+			},
+			"./tsconfig": "./types/tsconfig.base.json"
 		}
 	},
 	"scripts": {
@@ -121,6 +133,7 @@
 		"@rstest/core": "^0.12.6",
 		"@rstest/coverage-istanbul": "^0.12.6",
 		"@testing-library/dom": "^10.4.2",
+		"@testing-library/jest-dom": "^7.0.1",
 		"@types/node": "^26.6.6",
 		"@types/ungap__structured-clone": "^1.2.0",
 		"acorn": "^8.19.0",
@@ -131,7 +144,9 @@
 		"svelte-check": "^4.7.8",
 		"svelte2tsx": "^0.7.63",
 		"typescript": "^6.0.3",
-		"typescript-5.9": "npm:typescript@^5.9.3"
+		"typescript-5.9": "npm:typescript@^5.9.3",
+		"vite": "^8.3.8",
+		"vitest": "^5.1.1"
 	},
 	"peerDependencies": {
 		"@lynx-js/rspeedy": "^0.18.0",
@@ -140,7 +155,9 @@
 		"@rstest/core": "^0.12.0",
 		"@testing-library/dom": "^10.4.0",
 		"jsdom": ">=28.0.0",
-		"svelte": "*"
+		"svelte": "*",
+		"vite": "^8.3.8",
+		"vitest": "^5.1.1"
 	},
 	"peerDependenciesMeta": {
 		"@lynx-js/rspeedy": {
@@ -156,6 +173,12 @@
 			"optional": true
 		},
 		"jsdom": {
+			"optional": true
+		},
+		"vite": {
+			"optional": true
+		},
+		"vitest": {
 			"optional": true
 		}
 	}
