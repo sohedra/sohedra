@@ -1,5 +1,6 @@
 // Two pages whose background code the app splits into chunks: a vendor chunk of `node_modules` and
-// a chunk the two pages share, inlined into each bundle or written as files of their own, and a
+// a chunk the two pages share, inlined into each bundle (`output.inlineScripts`, on unless the app
+// turns it off) or written as files of their own, and a
 // lazy bundle each loads on a tap. Each page runs on threads shaped like a device's
 // (device-threads.ts), its background loaded as lynx-core loads it, from the bundle's
 // `/app-service.js`. The main thread's script stays whole, and so does the lazy bundle's
@@ -25,7 +26,8 @@ beforeAll(async () => {
 			await buildApp("chunks", {
 				entries: { a: "./a.ts", b: "./b.ts" },
 				rsbuild: {
-					output: { inlineScripts },
+					// Inlined is the default.
+					...(!inlineScripts && { output: { inlineScripts } }),
 					splitChunks: {
 						chunks: "all",
 						minSize: 0,
@@ -72,6 +74,7 @@ describe.each([true, false])("split chunks, inlineScripts %s", (inlineScripts) =
 		const load = inlineScripts ? "requireModule" : "requireModuleAsync";
 		expect(service).toMatch(new RegExp(`lynx\\.${load}\\("/static/js/vendor\\.[0-9a-f]+\\.js"`));
 		expect(service).toMatch(new RegExp(`lynx\\.${load}\\("/static/js/shared\\.[0-9a-f]+\\.js"`));
+		if (inlineScripts) expect(service).not.toContain('lynx.requireModuleAsync("/static/js/');
 	});
 
 	it("keeps each page's main-thread script whole", () => {

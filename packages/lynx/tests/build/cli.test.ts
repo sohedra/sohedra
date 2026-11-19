@@ -1,6 +1,6 @@
 // Apps built as apps build them, through a CLI in a process of its own (cli-build.ts), beside the
 // playground (playground.test.ts): Rsbuild's CLI with only the binding's plugin, for production,
-// also twice with its build cache; and rspeedy's, for development.
+// twice with its build cache; and rspeedy's, for development.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -27,26 +27,37 @@ function byClass(page: TestPage, token: string): LynxElement {
 	return found;
 }
 
-describe("an app built with Rsbuild's CLI and the binding's plugin alone", () => {
+describe("an app built with Rsbuild's CLI and the binding's plugin alone, twice with its build cache", () => {
 	let app: string;
-	let build: CliBuild;
+	const builds: CliBuild[] = [];
 	beforeAll(async () => {
 		app = cliApp("rsbuild", ["press-lib"]);
-		build = await cliBuild({ cli: "rsbuild", cwd: app });
-	}, 180_000);
+		for (const round of [0, 1]) {
+			// The second build restores the component from the cache, and builds the entry again.
+			if (round === 1) fs.appendFileSync(path.join(app, "index.ts"), "\n// Changed.\n");
+			builds.push(await cliBuild({ cli: "rsbuild", cwd: app }));
+		}
+	}, 360_000);
 	afterAll(() => fs.rmSync(path.dirname(app), { recursive: true, force: true }));
 
-	it("builds, the Lynx build engine registered by the plugin", () => {
-		expect(build.ok, build.output).toBe(true);
-		expect(build.output).not.toMatch(MESSAGE);
-		expect(fs.existsSync(path.join(build.dist, "main.lynx.bundle"))).toBe(true);
+	/** The page of build `round`, started on threads shaped like a device's. */
+	const start = (round: number) =>
+		startDevicePage({
+			mainThread: script(builds[round]!, "main-thread.js"),
+			background: script(builds[round]!, "background.js"),
+		}).page;
+
+	it("builds both times, the Lynx build engine registered by the plugin, the second from the cache", () => {
+		for (const build of builds) {
+			expect(build.ok, build.output).toBe(true);
+			expect(build.output).not.toMatch(MESSAGE);
+			expect(fs.existsSync(path.join(build.dist, "main.lynx.bundle"))).toBe(true);
+		}
+		expect(fs.existsSync(path.join(app, "node_modules/.cache"))).toBe(true);
 	});
 
 	it("runs a library's main-thread function at a main-thread tap, from a `.js` file of a package that has no side effects", async () => {
-		const { page } = startDevicePage({
-			mainThread: script(build, "main-thread.js"),
-			background: script(build, "background.js"),
-		});
+		const page = start(0);
 		try {
 			await page.settle();
 			const press = byClass(page, "press");
@@ -60,10 +71,7 @@ describe("an app built with Rsbuild's CLI and the binding's plugin alone", () =>
 	});
 
 	it("runs a library's main-thread function that only an effect calls, from a package that has no side effects", async () => {
-		const { page } = startDevicePage({
-			mainThread: script(build, "main-thread.js"),
-			background: script(build, "background.js"),
-		});
+		const page = start(0);
 		try {
 			await page.settle();
 			page.engine.dispatch(byClass(page, "ask"), { type: "tap" });
@@ -74,44 +82,14 @@ describe("an app built with Rsbuild's CLI and the binding's plugin alone", () =>
 			page.dispose();
 		}
 	});
-});
-
-describe("an app built twice with Rsbuild's build cache", () => {
-	let app: string;
-	const builds: CliBuild[] = [];
-	const styles: string[] = [];
-	beforeAll(async () => {
-		app = cliApp("rsbuild", ["press-lib"]);
-		const config = path.join(app, "rsbuild.config.ts");
-		fs.writeFileSync(
-			config,
-			fs
-				.readFileSync(config, "utf8")
-				.replace("plugins:", "performance: { buildCache: true },\n\tplugins:"),
-		);
-		for (const round of [0, 1]) {
-			// The second build restores the component from the cache, and builds the entry again.
-			if (round === 1) fs.appendFileSync(path.join(app, "index.ts"), "\n// Changed.\n");
-			const build = await cliBuild({ cli: "rsbuild", cwd: app });
-			builds.push(build);
-			if (build.ok) styles.push(JSON.stringify(JSON.parse(script(build, "tasm.json"))["css"]));
-		}
-	}, 360_000);
-	afterAll(() => fs.rmSync(path.dirname(app), { recursive: true, force: true }));
-
-	it("builds both times, the second from the cache", () => {
-		for (const build of builds) expect(build.ok, build.output).toBe(true);
-		expect(fs.existsSync(path.join(app, "node_modules/.cache"))).toBe(true);
-	});
 
 	it("never restores a component without its styles", async () => {
-		expect(styles).toHaveLength(2);
+		const styles = builds.map((build) =>
+			JSON.stringify(JSON.parse(script(build, "tasm.json"))["css"]),
+		);
 		expect(styles[0]).toContain("margin-top");
 		expect(styles[1]).toBe(styles[0]);
-		const { page } = startDevicePage({
-			mainThread: script(builds[1]!, "main-thread.js"),
-			background: script(builds[1]!, "background.js"),
-		});
+		const page = start(1);
 		try {
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
