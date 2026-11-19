@@ -1,5 +1,5 @@
-import { startPage } from "@sohedra/lynx/internal/page";
+import { mountPage } from "@sohedra/lynx";
 
 import App from "./App.svelte";
 
-startPage(App);
+mountPage(App);
