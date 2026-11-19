@@ -1,8 +1,8 @@
 // Mistakes with main-thread functions, named in a development build: a plain function under a
 // `main-thread:` attribute, which would bind nothing on either thread, Lynx's own spelling of an
 // event through a spread, and an attribute that is no main-thread attribute. And one named in
-// every build: a main-thread function that captures a value that holds itself, which cannot be
-// sent and is reported once, the page going on.
+// every build: a main-thread function that captures an element, which cannot be sent and is
+// reported once, the page going on.
 
 import { expect, it } from "@rstest/core";
 
@@ -35,9 +35,16 @@ it("names a plain function under a main-thread attribute, and an attribute that 
 	expect(page.engine.state(page.byClass("removed")).mainThreadEvents).toHaveLength(1);
 });
 
-it("reports a captured value that holds itself once, and goes on, in good time", async () => {
+it("reports a captured element once, and goes on, in good time", async () => {
 	const page = startFunctionsPage(CapturedNode, { draw: drawCapturedNode });
 	await page.settle();
-	expect(page.errors).toEqual([expect.objectContaining({ code: "attribute_not_copyable" })]);
+	expect(page.errors).toEqual([
+		expect.objectContaining({
+			code: "element_in_main_thread_function",
+			message: expect.stringMatching(
+				/^The main-thread function of main-thread:ontap on <view> captures the <view> element of the background, and an element cannot be sent to the main thread\./,
+			),
+		}),
+	]);
 	expect(page.engine.texts()).toEqual(["tap"]);
 }, 10_000);

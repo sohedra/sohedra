@@ -91,6 +91,8 @@
 		"@lynx-js/tasm": "0.0.53",
 		"@lynx-js/template-webpack-plugin": "^0.16.8",
 		"@lynx-js/webpack-dev-transport": "^0.4.1",
+		"@ungap/event-target": "^0.2.4",
+		"@ungap/structured-clone": "^1.4.0",
 		"es-module-lexer": "^3.0.5"
 	},
 	"devDependencies": {
@@ -101,6 +103,7 @@
 		"@rstest/coverage-istanbul": "^0.12.6",
 		"@testing-library/dom": "^10.4.2",
 		"@types/node": "^26.6.6",
+		"@types/ungap__structured-clone": "^1.2.0",
 		"acorn": "^8.19.0",
 		"fast-check": "^4.10.2",
 		"jsdom": "^31.0.1",

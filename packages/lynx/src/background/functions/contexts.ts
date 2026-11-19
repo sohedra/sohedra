@@ -39,10 +39,18 @@ export interface Contexts {
 	ids(): number[];
 }
 
-/** A class instance as it is sent: what its `toJSON` gives, as `JSON.stringify` would. */
+/**
+ * A class instance as it is sent: what its `toJSON` gives, as `JSON.stringify` would. One whose
+ * `toJSON` throws is itself here: writing it as text throws again, where the channel reports why.
+ */
 function asSent(value: object): unknown {
 	const toJSON: unknown = Reflect.get(value, "toJSON");
-	return typeof toJSON === "function" ? toJSON.call(value) : value;
+	if (typeof toJSON !== "function") return value;
+	try {
+		return toJSON.call(value);
+	} catch {
+		return value;
+	}
 }
 
 /** Whether a main-thread function reaches a background function, itself or through its captures. */
