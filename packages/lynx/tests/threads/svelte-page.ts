@@ -10,7 +10,7 @@ import { fillEngineGaps, mountPage } from "../../src/background/index.ts";
 import type { BackgroundGlobals, MountPageOptions } from "../../src/background/index.ts";
 import { startMainThread } from "../../src/main-thread/index.ts";
 import type { MainThreadRuntime } from "../../src/main-thread/index.ts";
-import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
+import { globalScope, installGlobals, readGlobal } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import type {
 	BackgroundLynx,
@@ -87,6 +87,20 @@ function recordFirstFrame(firstFrame: SveltePageOptions["firstFrame"]): void {
 	else firstFrame?.draw(firstFrame.props, firstFrame.context);
 }
 
+/**
+ * What a built page's background script runs first: it fills what the background lacks, as on a
+ * device. A test page's background script calls it before the page's own code.
+ */
+export function startUp(): void {
+	const lynx = readGlobal("lynx") as BackgroundLynx;
+	// Boundary: the fill reads only `lynx` of the background's globals.
+	fillEngineGaps({
+		scope: globalScope(),
+		strings: String.prototype,
+		globals: { lynx } as unknown as BackgroundGlobals,
+	});
+}
+
 /** Starts `App` as a page on both threads. */
 export function startSveltePage(
 	App: Component<Record<string, unknown>>,
@@ -116,17 +130,7 @@ export function startSveltePage(
 		},
 		background: () => {
 			const lynx = readGlobal("lynx") as BackgroundLynx;
-			// The background's start-up module: Lynx's background has no `queueMicrotask`, and the
-			// binding's queues on `lynx.queueMicrotask` and reports what a callback throws. The page
-			// keeps it as the background's own.
-			const filled: Record<string, unknown> = {};
-			// Boundary: the fill reads only `lynx` of the background's globals.
-			fillEngineGaps({
-				scope: filled,
-				strings: {},
-				globals: { lynx } as unknown as BackgroundGlobals,
-			});
-			installGlobals({ queueMicrotask: filled["queueMicrotask"] });
+			startUp();
 			const native = lynx.getNativeApp();
 			const send = native.callLepusMethod.bind(native);
 			native.callLepusMethod = (name, params, callback) => {

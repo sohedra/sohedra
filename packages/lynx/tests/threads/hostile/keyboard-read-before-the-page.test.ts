@@ -9,12 +9,16 @@ import { mountPage } from "../../../src/background/index.ts";
 import { startMainThread } from "../../../src/main-thread/index.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
 import Counter from "../../fixtures/threads/Counter.svelte";
+import { startUp } from "../svelte-page.ts";
 
 describe("the keyboard read before the page starts", () => {
 	it("keeps what it heard when the page starts", async () => {
 		const page = startTestPage({
 			mainThread: () => startMainThread(),
-			background: () => void keyboard.current,
+			background: () => {
+				startUp();
+				void keyboard.current;
+			},
 		});
 		page.emitHostEvent("keyboardstatuschanged", ["on", 300]);
 		await page.settle();
