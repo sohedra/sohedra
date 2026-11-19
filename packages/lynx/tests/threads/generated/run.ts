@@ -221,13 +221,20 @@ const keyOf = (page: SveltePage, cell: LynxElement): string =>
 
 /**
  * The cells of a list that show one of its items now. The engine fake keeps the cell of an item
- * that was taken out, which Lynx would hand back and never ask about again: its key may be one an
- * item kept has taken since, but the page has let go of its element.
+ * that was taken out, which Lynx would hand back at its next layout and never ask about again: its
+ * key may be one an item kept has taken since. Until the fake models Lynx's item holders and hands
+ * those cells back, this reads the main thread's bookkeeping instead: a cell counts while an
+ * applier holds its element, of the page shown or of the one a reload replaces, which stays on
+ * screen until the new page's patch.
  */
 export function liveCells(page: SveltePage, list: LynxElement): LynxElement[] {
 	const keys = new Set(listKeys(page.engine, list));
 	const held = (cell: LynxElement): boolean =>
-		page.asMainThread(() => page.runtime.page.applier?.idOf(cell) !== undefined);
+		page.asMainThread(() =>
+			[page.runtime.page.applier, ...page.runtime.page.previous].some(
+				(applier) => applier?.idOf(cell) !== undefined,
+			),
+		);
 	// Boundary: a list's children in the engine are the cells Lynx holds.
 	return ([...list.childNodes] as LynxElement[]).filter(
 		(cell) => keys.has(keyOf(page, cell)) && held(cell),
