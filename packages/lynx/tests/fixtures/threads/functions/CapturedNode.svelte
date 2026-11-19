@@ -1,4 +1,4 @@
-<!-- A main-thread function that captures a background node, by mistake: a value that holds itself. -->
+<!-- A main-thread function that captures one of the background's elements, by mistake, from $state.raw. -->
 <script lang="ts">
 	let node: unknown = $state.raw(null);
 	const keep = (found: unknown) => {
