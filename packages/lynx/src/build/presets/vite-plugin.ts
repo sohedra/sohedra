@@ -59,6 +59,10 @@ const TYPESCRIPT = /\.[cm]?ts$/;
 const NODE_MODULES = /[\\/]node_modules[\\/]/;
 
 const withoutQuery = (id: string): string => id.replace(/[?#].*$/, "");
+/** A path as Vite names a file, with `/` between folders: Windows' paths have `\\`. */
+const slashed = (file: string): string => file.replaceAll("\\", "/");
+/** The binding's folder, found whichever separator a path has. */
+const IN_BINDING = new RegExp(slashed(PACKAGE_ROOT).split("/").map(escapeRegExp).join("[\\\\/]"));
 const isMainThread = (id: string): boolean => MAIN_THREAD.test(id) || FIRST_FRAME.test(id);
 const markMainThread = (id: string): string =>
 	MAIN_THREAD.test(id) ? id : `${id}${id.includes("?") ? "&" : "?"}${MAIN_THREAD_QUERY}`;
@@ -104,7 +108,7 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 	// Development unless NODE_ENV says production, as in a Rstest run (Vitest sets `test`).
 	const development = process.env["NODE_ENV"] !== "production";
 	const appCode = (file: string): boolean =>
-		!NODE_MODULES.test(file) || file.startsWith(PACKAGE_ROOT);
+		!NODE_MODULES.test(file) || slashed(file).startsWith(`${slashed(PACKAGE_ROOT)}/`);
 	const constants: Record<Thread, Record<string, string>> = {
 		"main-thread": { ...define.mainThread, ...threadDefines("main-thread", development) },
 		background: { ...define.background, ...threadDefines("background", development) },
@@ -143,7 +147,7 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 							inline: [
 								/[\\/]svelte[\\/]/,
 								/[\\/]esm-env[\\/]/,
-								new RegExp(escapeRegExp(PACKAGE_ROOT)),
+								IN_BINDING,
 								...singleCopy.map((name) => new RegExp(`[\\\\/]${escapeRegExp(name)}[\\\\/]`)),
 								MAIN_THREAD,
 							],
@@ -180,7 +184,7 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 				const thread = threadOf(importer);
 				const mainThread = thread === "main-thread";
 				if (FIRST_FRAME.test(source)) {
-					const file = path.resolve(path.dirname(fileOf(importer)), withoutQuery(source));
+					const file = slashed(path.resolve(path.dirname(fileOf(importer)), withoutQuery(source)));
 					return `${file}?${FIRST_FRAME_QUERY}`;
 				}
 				let request = source;
@@ -304,9 +308,9 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 			root,
 			clean.startsWith(FS_PREFIX) ? clean.slice(FS_PREFIX.length - 1) : clean,
 		);
-		if (fs.existsSync(file)) return file;
+		if (fs.existsSync(file)) return slashed(file);
 		const fromRoot = path.join(root, file);
-		return fs.existsSync(fromRoot) ? fromRoot : file;
+		return slashed(fs.existsSync(fromRoot) ? fromRoot : file);
 	}
 
 	/** A component's copy for `thread`, compiled as the build's loader compiles it. */
