@@ -303,13 +303,15 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 	 */
 	function fileOf(id: string): string {
 		const clean = withoutQuery(id);
-		// Vite's name of a file outside the root.
-		const file = path.resolve(
-			root,
-			clean.startsWith(FS_PREFIX) ? clean.slice(FS_PREFIX.length - 1) : clean,
-		);
+		// Vite's name of a file outside the root: `/@fs/` and its path, which on Windows starts with
+		// its drive.
+		const outside = clean.startsWith(FS_PREFIX) ? clean.slice(FS_PREFIX.length) : undefined;
+		const named =
+			outside === undefined ? clean : /^[A-Za-z]:/.test(outside) ? outside : `/${outside}`;
+		const file = path.resolve(root, named);
 		if (fs.existsSync(file)) return slashed(file);
-		const fromRoot = path.join(root, file);
+		// Not the system's root (on Windows, the root of the drive): the path from the app's root.
+		const fromRoot = path.join(root, named);
 		return slashed(fs.existsSync(fromRoot) ? fromRoot : file);
 	}
 
