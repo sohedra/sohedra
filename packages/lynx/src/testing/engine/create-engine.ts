@@ -113,6 +113,8 @@ export interface Engine {
 	 * function returns.
 	 */
 	dispatch(element: LynxElement, event: EngineEvent): void;
+	/** Whether `fire` would reach anything: a binding of the element's, or the global phase. */
+	hears(element: LynxElement, name: string): boolean;
 	/** Every listener still registered anywhere in the page. */
 	listenerCount(): number;
 	/**
@@ -289,6 +291,7 @@ export function createEngine(options: EngineOptions = {}): Engine {
 		},
 		fire: dispatcher.fire,
 		dispatch: dispatcher.dispatch,
+		hears: dispatcher.hears,
 		listenerCount: () =>
 			engine.page
 				? descendantsOf(engine.page).reduce(

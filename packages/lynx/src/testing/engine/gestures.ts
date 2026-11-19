@@ -32,6 +32,8 @@ export interface GestureCall {
 	/** The callback's name: `onBegin`, `onUpdate`, `onEnd` and the like. */
 	callback: string;
 	params?: Record<string, unknown>;
+	/** When the gesture happened, in milliseconds: now by default. */
+	timestamp?: number;
 }
 
 /** What the engine's side of gestures offers. */
@@ -121,7 +123,7 @@ export function createGestureDriver(engine: EngineState): GestureDriver {
 
 	return {
 		fireGesture(element, gesture) {
-			const { id, callback: name, params = {} } = gesture;
+			const { id, callback: name, params = {}, timestamp = Date.now() } = gesture;
 			const state: ElementState = stateOf(engine, { value: element, fn: "fireGesture", index: 0 });
 			const detector = state.detectors.get(id);
 			if (!detector) {
@@ -139,7 +141,7 @@ export function createGestureDriver(engine: EngineState): GestureDriver {
 				params: [
 					{
 						type: name,
-						timestamp: Date.now(),
+						timestamp,
 						target: mainThreadTarget(state),
 						currentTarget: mainThreadTarget(state),
 						// GetCustomEventParam: the gesture's values are `params`, and `detail` too.

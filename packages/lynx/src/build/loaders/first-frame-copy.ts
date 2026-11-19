@@ -10,6 +10,7 @@ import path from "node:path";
 
 import type { Rspack } from "@rsbuild/core";
 
+import { FIRST_FRAME_COPY_KEY } from "../../wire/index.ts";
 import { stringLiteral } from "../string-literal.ts";
 
 /** What the copy's loader is told. */
@@ -18,11 +19,8 @@ export interface FirstFrameCopyOptions {
 	entry: string;
 }
 
-export default function firstFrameCopyLoader(
-	this: Rspack.LoaderContext<FirstFrameCopyOptions>,
-): string {
-	const { entry } = this.getOptions();
-	const component = `./${path.basename(this.resourcePath)}`;
+/** The copy's source: `component` is the component's request, `entry` the main thread's root. */
+export function firstFrameCopySource(component: string, entry: string): string {
 	return [
 		`import Component from ${stringLiteral(component)};`,
 		`import { mountPage } from ${stringLiteral(entry)};`,
@@ -31,4 +29,22 @@ export default function firstFrameCopyLoader(
 		"}",
 		"",
 	].join("\n");
+}
+
+/**
+ * What a test run's component appends to hang its copy on itself, `copy` being the copy's request:
+ * it imports itself, its default export whatever the compiler named it.
+ */
+export function hangFirstFrameCopy(self: string, copy: string): string {
+	return (
+		`\nimport __sohedraSelf from ${stringLiteral(self)};` +
+		`\nimport __sohedraFirstFrame from ${stringLiteral(copy)};` +
+		`\n__sohedraSelf[Symbol.for(${stringLiteral(FIRST_FRAME_COPY_KEY)})] = __sohedraFirstFrame;\n`
+	);
+}
+
+export default function firstFrameCopyLoader(
+	this: Rspack.LoaderContext<FirstFrameCopyOptions>,
+): string {
+	return firstFrameCopySource(`./${path.basename(this.resourcePath)}`, this.getOptions().entry);
 }

@@ -4,5 +4,7 @@
 import { afterEach } from "@rstest/core";
 
 import { cleanup } from "./cleanup.ts";
+import { setTestRunner } from "./globals.ts";
 
+setTestRunner("rstest");
 afterEach(cleanup);

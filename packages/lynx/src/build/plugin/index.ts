@@ -35,6 +35,7 @@ import { environment } from "../globals.ts";
 import { carryEncoder } from "./encoder.ts";
 import { addBundlePlugins, addPageEntries } from "./entry.ts";
 import type { LynxEngineConfig } from "./entry.ts";
+import { addFirstFrameCopies } from "./first-frame-copies.ts";
 import { loaderPath } from "./layers.ts";
 import {
 	appSetsSplitChunks,
@@ -85,6 +86,12 @@ const SWC_DEFAULTS = {
 } as const;
 
 /**
+ * The registry key under which the plugin keeps the options it was given, for the Vitest preset to
+ * read from an app's config.
+ */
+export const PLUGIN_OPTIONS: unique symbol = Symbol.for("@sohedra/lynx:plugin-options");
+
+/**
  * The Rsbuild plugin that builds a Svelte app for Lynx, on top of Lynx's own build plugins. Throws
  * when an option is unknown or has a wrong value: one error lists every mistake.
  */
@@ -94,7 +101,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 	const { engineVersion, firstFrame, define, singleCopy, configFile } = resolved;
 	const { template, pageConfig } = resolvePageConfig(resolved.pageConfig);
 
-	return {
+	const plugin: RsbuildPlugin = {
 		name: PACKAGE_NAME,
 		pre: ["lynx:rsbuild:plugin-api", "lynx:config"],
 		async setup(api) {
@@ -120,23 +127,31 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 				// Development unless NODE_ENV says production (Rstest sets `test` and does not build in
 				// development mode).
 				const development = environment["NODE_ENV"] !== "production";
+				// A test draws the first frame of whatever it renders: the option's function form is
+				// for a build's entries, which a test run has none of.
+				const firstFrameCopies = firstFrame !== false;
 				api.modifyBundlerChain({
 					order: "post",
 					handler: (chain, { CHAIN_ID, bundler }) => {
 						configureTestRules({
 							chain,
 							CHAIN_ID,
-							define: define.background,
+							define: { "main-thread": define.mainThread, background: define.background },
 							development,
 							compilerOptions: svelte.compilerOptions,
 							preprocess: svelte.preprocess,
+							firstFrameCopies,
 						});
+						// A first-frame copy's modules are the main thread's: a background-only one is a stub.
+						configureBackgroundOnly(chain, loaderPath("background-only"));
 						configureSingleCopies(chain, { rootPath: root, singleCopy });
 						configureSvelteEvents(chain);
 						configureTestResolve(chain, development);
 						ignoreUnusedSvelteServerCode(chain, bundler);
 					},
 				});
+				if (firstFrameCopies)
+					api.modifyRspackConfig((config) => addFirstFrameCopies(config, development));
 				return;
 			}
 
@@ -247,6 +262,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 			});
 		},
 	};
+	return Object.assign(plugin, { [PLUGIN_OPTIONS]: options });
 }
 
 /**

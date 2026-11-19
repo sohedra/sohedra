@@ -35,6 +35,12 @@ export const DEFERRED_ROW = "sohedra-lynx-row";
 /** The `custom-list-name` of Lynx's list that takes a cell after `componentAtIndex` returns. */
 export const ASYNC_LIST = "list-container";
 
+/**
+ * The registry key of the symbol under which a test run hangs a component's first-frame copy on the
+ * component, for `render` from `@sohedra/lynx/testing` to draw its first frame with.
+ */
+export const FIRST_FRAME_COPY_KEY = "@sohedra/lynx:first-frame-copy";
+
 /** The global where a page's main-thread copy records how to draw its first frame. */
 export const FIRST_FRAME_GLOBAL = "__sohedraLynxFirstFrame";
 
