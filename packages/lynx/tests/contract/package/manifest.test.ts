@@ -16,6 +16,18 @@ interface Manifest {
 }
 
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")) as Manifest;
+
+/** Each source file of the package, with its code: its text without its comments. */
+const sources = fs
+	.readdirSync(path.join(ROOT, "src"), { recursive: true, encoding: "utf8" })
+	.filter((file) => file.endsWith(".ts"))
+	.map((file) => ({
+		file: `src/${file.split(path.sep).join("/")}`,
+		code: fs
+			.readFileSync(path.join(ROOT, "src", file), "utf8")
+			.replace(/\/\*[\s\S]*?\*\//g, "")
+			.replace(/^\s*\/\/.*$/gm, ""),
+	}));
 const ENTRIES = [
 	"./config/rsbuild",
 	"./config/rstest",
@@ -88,6 +100,11 @@ describe("exports", () => {
 		});
 	});
 
+	it("names the renderer's entry in one file of the source, which the others import", () => {
+		const naming = sources.filter(({ code }) => /["'`][^"'`\n]*\/internal\/renderer/.test(code));
+		expect(naming.map(({ file }) => file)).toEqual(["src/wire/names.ts"]);
+	});
+
 	it("publishes the same entries as it exports", () => {
 		expect(Object.keys(manifest.publishConfig.exports).toSorted()).toEqual(
 			Object.keys(manifest.exports).toSorted(),
@@ -115,5 +132,15 @@ describe("dependencies", () => {
 		expect(manifest.dependencies["@lynx-js/tasm"]).toMatch(/^\d+\.\d+\.\d+$/);
 		expect(manifest.dependencies["@lynx-js/template-webpack-plugin"]).toMatch(/^\^/);
 		expect(manifest.dependencies["@lynx-js/rsbuild-plugin"]).toMatch(/^\^/);
+	});
+
+	it("writes the encoder's pinned version in the manifest only, not in the source or its comments", () => {
+		const pin = manifest.dependencies["@lynx-js/tasm"]!;
+		const files = fs.readdirSync(path.join(ROOT, "src"), { recursive: true, encoding: "utf8" });
+		const naming = files.filter(
+			(file) =>
+				file.endsWith(".ts") && fs.readFileSync(path.join(ROOT, "src", file), "utf8").includes(pin),
+		);
+		expect(naming).toEqual([]);
 	});
 });

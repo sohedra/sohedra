@@ -6,29 +6,20 @@
 
 import vm from "node:vm";
 
-import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
+import { beforeAll, describe, expect, it } from "@rstest/core";
 
 import type { LynxElement, TestPage } from "../../src/testing/index.ts";
-import { buildApp, cleanBuild, scriptsOf } from "./build-app.ts";
+import { scriptsOf } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
 import { startDevicePage, SYSTEM_INFO } from "./device-threads.ts";
+import { sharedBuild } from "./shared-build.ts";
 
 const MODES = ["production", "development"] as const;
 const builds = new Map<(typeof MODES)[number], AppBuild>();
 
 beforeAll(async () => {
-	for (const mode of MODES)
-		builds.set(
-			mode,
-			await buildApp("device", {
-				development: mode === "development",
-				rsbuild: { dev: { hmr: false, liveReload: false } },
-			}),
-		);
+	for (const mode of MODES) builds.set(mode, await sharedBuild(mode, "device"));
 }, 360_000);
-afterAll(() => {
-	for (const build of builds.values()) cleanBuild(build);
-});
 
 /** The first element with this class token. */
 function byClass(page: TestPage, token: string): LynxElement {

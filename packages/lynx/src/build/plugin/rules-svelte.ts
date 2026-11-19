@@ -36,16 +36,19 @@ export interface SvelteRuleOptions {
  * `pending`, imports only `$effect` uses. TypeScript would drop those, and with them the
  * main-thread functions they define.
  *
- * It is read as TypeScript, which is said here because the build relies on it: on the main thread
- * a component's module ends with its main-thread functions as they were written, types included.
+ * Svelte's output is JavaScript, read as such: TypeScript reads some of it otherwise
+ * (`` a < b > `0` `` is a call there). Svelte strips a component's types, and a component's
+ * main-thread functions follow its output on the main thread copied without theirs
+ * (compile/blank-types.ts); a rune module's were stripped before Svelte compiled it.
  */
 function afterSvelte(options: SwcOptions): SwcOptions {
+	const { tsx: _tsx, dts: _dts, syntax: _syntax, ...parser } = options.jsc?.parser ?? {};
 	return {
 		...options,
 		detectSyntax: false,
 		jsc: {
 			...options.jsc,
-			parser: { ...options.jsc?.parser, syntax: "typescript", tsx: false },
+			parser: { ...parser, syntax: "ecmascript" },
 			transform: { ...options.jsc?.transform, verbatimModuleSyntax: true },
 		},
 	};
@@ -74,7 +77,7 @@ function useSvelteLoaders(
 	component
 		.use("swc")
 		.loader("builtin:swc-loader")
-		.options(swc)
+		.options(afterSvelte(swc))
 		.end()
 		.use("svelte")
 		.loader(loaderPath("svelte-component"))
@@ -88,7 +91,7 @@ function useSvelteLoaders(
 		.type("javascript/auto")
 		.use("swc")
 		.loader("builtin:swc-loader")
-		.options(swc)
+		.options(afterSvelte(swc))
 		.end()
 		.use("svelte")
 		.loader(loaderPath("svelte-module"))
@@ -97,8 +100,11 @@ function useSvelteLoaders(
 		.use("strip-ts")
 		.loader("builtin:swc-loader")
 		.options({
+			// By the file's extension: a `.svelte.js` module is JavaScript, which TypeScript reads
+			// otherwise (`a < b > (c)` is a call there).
+			detectSyntax: "auto",
 			jsc: {
-				parser: { syntax: "typescript", tsx: false, decorators: true },
+				parser: { decorators: true },
 				target: "esnext",
 				// Keep `x = $state(0)` as a class field for the Svelte compiler.
 				transform: { useDefineForClassFields: true },
@@ -126,7 +132,7 @@ export function splitSvelteRules(
 			threadRule(component, rules),
 			threadRule(runeModule, rules),
 			rules.thread,
-			afterSvelte(swc[rules.thread]),
+			swc[rules.thread],
 			{ ...options, hot: rules.hot },
 		);
 	}

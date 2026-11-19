@@ -13,9 +13,12 @@ it("refuses a plain function as main-thread:ref, saying what it takes", async ()
 });
 
 it.each([
-	["text", "the string not a ref"],
+	// Quoted: a text that is a phrase, or empty, reads apart from the message's own words.
+	["text", 'the string "not a ref"'],
+	["empty text", 'the string ""'],
 	["object", "an object"],
 	["number", "the number 3"],
+	["symbol", "the symbol Symbol(box)"],
 ])("refuses %s as main-thread:ref, saying what it takes", async (kind, said) => {
 	await expect(render(RefNotRef, { props: { kind } })).rejects.toThrow(
 		`The <view>'s main-thread:ref is ${said}, which is neither a ref nor a main-thread function`,

@@ -21,6 +21,12 @@ not have, and loads `@sohedra/lynx/client`. The types are generated from Lynx's 
 `node_modules/@sohedra/lynx/types/generated/html-custom-data.json` to the editor's
 `html.customData`.
 
+The build runs where rspeedy and Rsbuild run: Node.js 20.19, or 22.12 and later. A component's
+main-thread functions written in TypeScript need Node.js 22.13 or later: the build takes their types
+out with Node's own `module.stripTypeScriptTypes`, and says so when the Node that builds has none.
+What is more than a type (an `enum`, a `namespace`, a parameter property, a decorator) is a build
+error in a main-thread function, which says what to write instead.
+
 Lynx's threads lack some globals and built-ins that Svelte's runtime reads or that the other thread
 has. The binding installs these where a thread has none, never over the engine's own:
 `queueMicrotask` on the background, `SystemInfo` on the main thread, and

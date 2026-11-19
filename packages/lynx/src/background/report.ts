@@ -66,10 +66,11 @@ export function warnOnce(place: string, warning: () => Error): void {
 
 /**
  * Reports `error` into Lynx, in a development build, the first time `place` reports it: a mistake
- * in the page's code that the binding finds, which repeats wherever the code runs again.
+ * in the page's code that the binding finds, which repeats wherever the code runs again. `source`
+ * says where it came from, for `onError`.
  */
-export function reportOnce(place: string, error: () => Error): void {
+export function reportOnce(place: string, error: () => Error, source?: ErrorSource): void {
 	if (!DEV || warned.has(place)) return;
 	warned.add(place);
-	reportError(error());
+	report(error(), source);
 }

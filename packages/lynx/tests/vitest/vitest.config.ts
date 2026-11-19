@@ -38,6 +38,10 @@ const config: ViteUserConfig = defineConfig({
 				plugins: [svelteLynx()],
 				test: { name: "errors", include: ["tests/vitest/errors.test.ts"] },
 			},
+			{
+				plugins: [svelteLynx()],
+				test: { name: "syntax", include: ["tests/vitest/syntax.test.ts"] },
+			},
 		],
 	},
 });

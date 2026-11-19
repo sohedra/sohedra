@@ -1,4 +1,4 @@
-// CSS rules, split by thread.
+// Style rules, split by thread.
 
 import type { ChainIdentifier, CSSLoaderOptions, RspackChain } from "@rsbuild/core";
 
@@ -22,35 +22,61 @@ function exportOnlyLocals(options: CSSLoaderOptions): CSSLoaderOptions {
 }
 
 /**
- * Plain CSS files (`import './app.css'`) load on both threads, and the CSS extract plugin would
- * put each copy in the template: the rule is split by layer, extracting on the background thread
- * only. The main thread keeps the class-name map of CSS Modules. Svelte `<style>` blocks are
- * unaffected: the main thread (Svelte's server) never imports them.
+ * Style sheets a script imports (`import './app.css'`, `.scss`, `.less`, `.styl`) load on both
+ * threads, and the CSS extract plugin would put each copy in the template: each of Rsbuild's style
+ * rules (CSS's, and Sass's, Less's and Stylus's when their plugins add them) is split by layer,
+ * extracting on the background thread only. The main thread keeps the class-name map of CSS
+ * Modules. Svelte `<style>` blocks are unaffected: the main thread (Svelte's server) never imports
+ * them. ReactLynx splits the same rules the same way.
  *
- * Neither thread's CSS goes through lightningcss: Lynx needs no vendor prefixes.
+ * No style sheet goes through lightningcss: Lynx needs no vendor prefixes.
  */
 export function configureCssRules(chain: RspackChain, CHAIN_ID: ChainIdentifier): void {
-	const cssRule = chain.module.rule(CHAIN_ID.RULE.CSS);
-	const main = cssRule.oneOf(CHAIN_ID.ONE_OF.CSS_MAIN);
+	for (const name of [
+		CHAIN_ID.RULE.CSS,
+		CHAIN_ID.RULE.SASS,
+		CHAIN_ID.RULE.LESS,
+		CHAIN_ID.RULE.STYLUS,
+	]) {
+		if (!chain.module.rules.has(name)) continue;
+		const isCss = name === CHAIN_ID.RULE.CSS;
+		splitStyleRule(chain, {
+			CHAIN_ID,
+			name,
+			main: isCss ? CHAIN_ID.ONE_OF.CSS_MAIN : name,
+			inline: isCss ? CHAIN_ID.ONE_OF.CSS_INLINE : `${name}-inline`,
+		});
+	}
+}
+
+/** Split one style rule by layer, its `main` branch's loaders copied for the main thread. */
+function splitStyleRule(
+	chain: RspackChain,
+	options: { CHAIN_ID: ChainIdentifier; name: string; main: string; inline: string },
+): void {
+	const { CHAIN_ID, name } = options;
+	const rule = chain.module.rule(name);
+	if (!rule.oneOfs.has(options.main)) return;
+	const main = rule.oneOf(options.main);
 	main.uses.delete(CHAIN_ID.USE.LIGHTNINGCSS);
-	if (cssRule.oneOfs.has(CHAIN_ID.ONE_OF.CSS_INLINE))
-		cssRule.oneOf(CHAIN_ID.ONE_OF.CSS_INLINE).uses.delete(CHAIN_ID.USE.LIGHTNINGCSS);
+	if (rule.oneOfs.has(options.inline))
+		rule.oneOf(options.inline).uses.delete(CHAIN_ID.USE.LIGHTNINGCSS);
 	const uses = main.uses.entries() ?? {};
 	const cssLoader = uses[CHAIN_ID.USE.CSS];
-	// Not an Rsbuild CSS rule (Sass and Less are not set up).
+	// Not a rule Rsbuild made: no css-loader to keep the class names with.
 	if (!cssLoader) return;
 	// Boundary: the chain gives a rule's settings as `unknown`.
 	const entries = main.entries() as Record<string, unknown>;
 	// Boundary: the chain gives a rule's settings as `unknown`.
-	const { test, dependency } = cssRule.entries() as { test: RegExp; dependency?: string };
+	const { test, dependency } = rule.entries() as { test: RegExp; dependency?: string };
 
 	const mainThread = chain.module
-		.rule(`${CHAIN_ID.RULE.CSS}:${LAYERS["main-thread"]}`)
+		.rule(`${name}:${LAYERS["main-thread"]}`)
 		.test(test)
 		.merge(entries)
 		.issuerLayer(LAYERS["main-thread"]);
 	if (dependency !== undefined) mainThread.merge({ dependency });
-	// Loaders run bottom-up: css-loader, then ours.
+	// Loaders run bottom-up: the pre-processor, css-loader, then ours.
 	mainThread
 		.use(IGNORE_CSS)
 		.loader(loaderPath("ignore-css"))

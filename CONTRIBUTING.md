@@ -201,7 +201,7 @@ fixed) and says which workaround can go.
   entry.
 - Lynx packages use Rstest; web packages use Vitest.
 - Coverage is measured on every run and never drops below its last value.
-- Every package runs `publint` after it builds.
+- Every package runs `publint` on its packed package, in its tests.
 - Every public entry has type tests, run against the packed package on TypeScript's last two minor
   versions.
 - The binding (`@sohedra/lynx`) has size budgets as tests for its per-thread scripts: the

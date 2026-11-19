@@ -360,6 +360,18 @@ Read what it needs into a variable outside the function.
 https://sohedra.com/e/main_thread_function_this"
 `;
 
+exports[`the build's catalogue > main_thread_function_typescript: the message 1`] = `
+"A main-thread function cannot use an \`enum\`: the main thread runs it as JavaScript, with only its types taken out.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write an object of its values (\`const Color = { Red: 0 } as const\`) instead.
+https://sohedra.com/e/main_thread_function_typescript"
+`;
+
 exports[`the build's catalogue > main_thread_function_used_early: the message 1`] = `
 "The main-thread function \`onScroll\` is used above its declaration, where it does not exist yet: it captures \`count\`, which is set further down.
 /app/src/App.svelte:2:3
@@ -683,6 +695,18 @@ exports[`the build's catalogue > transition_directive: the message 1`] = `
 
 Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/transition_directive"
+`;
+
+exports[`the build's catalogue > typescript_stripper_missing: the message 1`] = `
+"Main-thread functions written in TypeScript need Node.js 22.13 or later to build, which takes their types out; this build runs on Node.js v20.19.0.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Build with Node.js 22.13 or later, or write this component's main-thread functions without types.
+https://sohedra.com/e/typescript_stripper_missing"
 `;
 
 exports[`the build's catalogue > unknown_plugin_option: the message 1`] = `

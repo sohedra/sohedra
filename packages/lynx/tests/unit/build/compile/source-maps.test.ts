@@ -58,7 +58,7 @@ describe("the map of a component", () => {
 				const { code, map } = await compiled;
 				if (thread === "background")
 					expect(mapped(code, map!, 'import("./Lazy.svelte")')[0]).toBe(lineWith("$effect"));
-				else expect(mapped(code, map!, "__svelteLynxEffectImports")[0]).toBe(lineWith("$effect"));
+				else expect(mapped(code, map!, "__svelteLynxKeptImports")[0]).toBe(lineWith("$effect"));
 			});
 
 			it("points the bare attribute and the item-key at their lines", async () => {

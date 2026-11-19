@@ -1,0 +1,5 @@
+{
+	"name": "fixture-rsbuild-app",
+	"private": true,
+	"type": "module"
+}

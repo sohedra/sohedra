@@ -55,3 +55,15 @@ describe("an option that does not exist", () => {
 		expect(build.error).toContain("Did you mean `firstFrame`?");
 	});
 });
+
+// The newest released Svelte the lockfile has: once one has custom renderers, this fails, and the
+// peer range on Svelte can name it.
+describe("an app that installed a released Svelte", () => {
+	it("fails as the plugin is set up, with the setup check's message", async () => {
+		build = await buildApp("broken", { svelte: "svelte-released" });
+		expect(build.ok).toBe(false);
+		const text = build.error + build.messages;
+		expect(text).toMatch(/The installed Svelte \(5\.\d+\.\d+, [^)]+\) has no custom renderers\./);
+		expect(text).toContain("https://sohedra.com/e/svelte_without_renderers");
+	});
+});
