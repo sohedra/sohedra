@@ -26,6 +26,10 @@
 		"./env": "./src/env/index.ts",
 		"./experimental": "./src/gesture/experimental.ts",
 		"./gesture": "./src/gesture/index.ts",
+		"./host": {
+			"worker": "./src/first-frame/host-entry.ts",
+			"default": "./src/background/host-entry.ts"
+		},
 		"./internal/renderer": "./src/background/renderer/entry.ts",
 		"./internal/main-thread-functions": {
 			"worker": "./src/first-frame/functions-entry.ts",
@@ -65,6 +69,11 @@
 			"./gesture": {
 				"types": "./lib/gesture/index.d.ts",
 				"default": "./lib/gesture/index.js"
+			},
+			"./host": {
+				"types": "./lib/background/host-entry.d.ts",
+				"worker": "./lib/first-frame/host-entry.js",
+				"default": "./lib/background/host-entry.js"
 			},
 			"./internal/renderer": {
 				"types": "./lib/background/renderer/entry.d.ts",

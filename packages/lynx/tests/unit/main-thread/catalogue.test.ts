@@ -32,6 +32,7 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 		event: "layoutchange",
 		change: "setStyleProperty(height)",
 	},
+	lazy_bundle_not_on_main_thread: { url: "https://cdn.example/lazy-bundle/Chart.bundle" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

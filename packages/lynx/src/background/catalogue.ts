@@ -96,6 +96,12 @@ export interface BackgroundDetails {
 	static_copy_container_not_empty: { tag: string };
 	static_copy_list: Record<string, never>;
 	static_copy_page_root: Record<string, never>;
+	/** `url` is the bundle's; `code` and `reason` what Lynx answered. */
+	lazy_bundle_not_loaded: { url: string; code: number; reason?: string | undefined };
+	/** `seconds` is how long it waited. */
+	lazy_bundle_timed_out: { url: string; seconds: number };
+	/** `url` is the bundle's address as the build wrote it. */
+	lazy_bundle_address_not_full: { url: string };
 }
 
 /** What a code of the background names. */
@@ -309,6 +315,24 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 		fix: () =>
 			"Copy the element that holds the page's content instead, such as the top element of the page's root component.",
 		docs: "static_copy_page_root",
+	},
+	lazy_bundle_not_loaded: {
+		message: ({ url, code, reason }) =>
+			`The lazy bundle ${url} did not load: Lynx answered with the code ${code}${reason ? ` (${reason})` : ""}.`,
+		fix: () =>
+			"Check that the bundle is served at that address and that the device reaches it: Lynx's own report of the failure says why it failed.",
+		docs: "lazy_bundle_not_loaded",
+	},
+	lazy_bundle_timed_out: {
+		message: ({ url, seconds }) => `The lazy bundle ${url} did not load within ${seconds} seconds.`,
+		fix: () => "Check that the bundle is served at that address and that the device reaches it.",
+		docs: "lazy_bundle_timed_out",
+	},
+	lazy_bundle_address_not_full: {
+		message: ({ url }) =>
+			`The lazy bundle ${url} has no full address, and the page's own address, to resolve it against, is unknown.`,
+		fix: () => "Set output.assetPrefix to the full address the bundles are served from.",
+		docs: "lazy_bundle_address_not_full",
 	},
 };
 

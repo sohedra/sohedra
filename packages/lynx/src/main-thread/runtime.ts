@@ -12,6 +12,7 @@
 //   - answers the calls a patch carries (./calls.ts);
 //   - sends the elements' events to the background;
 //   - runs main-thread functions (./functions/): the engine's `runWorklet`, and the page's calls;
+//   - takes the lazy bundles the background loads (./lazy-bundle.ts);
 //   - starts the page over when it reloads, and lets go of it when its life ends.
 
 import {
@@ -23,12 +24,14 @@ import {
 	encodeError,
 	encodeToBackground,
 	keepsMessage,
+	LAZY_BUNDLE_METHOD,
 	OpCode,
 	PATCH_METHOD,
 	ROOT_ID,
 	RUN_FUNCTION,
 } from "../wire/index.ts";
 import type {
+	LazyBundleParams,
 	Op,
 	Patch,
 	PatchItem,
@@ -58,6 +61,7 @@ import {
 } from "./globals.ts";
 import type { EngineMessage, LynxElement } from "./globals.ts";
 import { hydrate, replayEarly, sentMismatch } from "./hydrate/hydrate.ts";
+import { installLazyBundles, takeLazyBundle } from "./lazy-bundle.ts";
 import { clearPrevious, createMainThreadPage } from "./page.ts";
 import type { MainThreadPage } from "./page.ts";
 import { afterFirstPaint } from "./paint.ts";
@@ -511,6 +515,11 @@ export function startMainThread(): MainThreadRuntime {
 	// The page's end comes from the native side (core/shell/lynx_shell.cc), not from the engine.
 	native.addEventListener("__DestroyLifetime", onDestroyLifetime);
 	setGlobalFunction(PATCH_METHOD, onPatch);
+	// A lazy bundle the background loaded, for the life of the view: no page drops it.
+	setGlobalFunction(LAZY_BUNDLE_METHOD, (params: LazyBundleParams) =>
+		takeLazyBundle(params, report),
+	);
+	installLazyBundles();
 	// The functions the engine calls by name when nothing listens for its event
 	// (core/renderer/template_assembler.cc): `removeComponents` at a reload, before the page is
 	// updated with `reloadTemplate`; `updateGlobalProps` with new global props, which the

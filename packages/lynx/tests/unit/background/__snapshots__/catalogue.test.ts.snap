@@ -82,6 +82,27 @@ Check that the element is still on the page when its value changes, and that it 
 https://sohedra.com/e/input_value_not_written"
 `;
 
+exports[`the background's catalogue > lazy_bundle_address_not_full: the message 1`] = `
+"The lazy bundle /lazy-bundle/Chart.bundle has no full address, and the page's own address, to resolve it against, is unknown.
+
+Set output.assetPrefix to the full address the bundles are served from.
+https://sohedra.com/e/lazy_bundle_address_not_full"
+`;
+
+exports[`the background's catalogue > lazy_bundle_not_loaded: the message 1`] = `
+"The lazy bundle https://cdn.example/lazy-bundle/Chart.bundle did not load: Lynx answered with the code 1601 (Failed to connect).
+
+Check that the bundle is served at that address and that the device reaches it: Lynx's own report of the failure says why it failed.
+https://sohedra.com/e/lazy_bundle_not_loaded"
+`;
+
+exports[`the background's catalogue > lazy_bundle_timed_out: the message 1`] = `
+"The lazy bundle https://cdn.example/lazy-bundle/Chart.bundle did not load within 30 seconds.
+
+Check that the bundle is served at that address and that the device reaches it.
+https://sohedra.com/e/lazy_bundle_timed_out"
+`;
+
 exports[`the background's catalogue > list_item_defer_needs_async_list: the message 1`] = `
 "A <list-item defer> is in a <list> without custom-list-name="list-container", so its row renders now instead of waiting until Lynx asks for it.
 src/Feed.svelte:9:3

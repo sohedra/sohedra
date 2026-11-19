@@ -6,6 +6,7 @@ import structuredCloneFill, { deserialize, serialize } from "@ungap/structured-c
 
 import { fillEngineGaps } from "../../../src/background/engine-gaps.ts";
 import type { BackgroundGlobals } from "../../../src/background/globals.ts";
+import { installGlobals } from "../../../src/testing/globals.ts";
 
 // In Node, `@ungap/event-target` and `@ungap/structured-clone` hand back Node's own `EventTarget`
 // and `structuredClone`, so these tests check where the fills go and what reaches them; the
@@ -177,16 +178,23 @@ describe("on a background that has them", () => {
 });
 
 describe("the background's start", () => {
-	it("fills the thread's own global object, and leaves what this one has", async () => {
-		const read = () => [
-			globalThis.queueMicrotask,
-			globalThis.setTimeout,
-			globalThis.EventTarget,
-			globalThis.structuredClone,
-			String.prototype.replaceAll,
-		];
-		const own = read();
-		await import("../../../src/background/start-up.ts");
-		expect(read()).toEqual(own);
+	it("fills the thread's own global object, leaves what this one has, and installs the lazy-bundle loader", async () => {
+		const lynx: { loadLazyBundle?: unknown } = {};
+		const restore = installGlobals({ lynx });
+		try {
+			const read = () => [
+				globalThis.queueMicrotask,
+				globalThis.setTimeout,
+				globalThis.EventTarget,
+				globalThis.structuredClone,
+				String.prototype.replaceAll,
+			];
+			const own = read();
+			await import("../../../src/background/start-up.ts");
+			expect(read()).toEqual(own);
+			expect(typeof lynx.loadLazyBundle).toBe("function");
+		} finally {
+			restore();
+		}
 	});
 });

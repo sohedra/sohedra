@@ -73,6 +73,13 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	static_copy_container_not_empty: { tag: "view" },
 	static_copy_list: {},
 	static_copy_page_root: {},
+	lazy_bundle_not_loaded: {
+		url: "https://cdn.example/lazy-bundle/Chart.bundle",
+		code: 1601,
+		reason: "Failed to connect",
+	},
+	lazy_bundle_timed_out: { url: "https://cdn.example/lazy-bundle/Chart.bundle", seconds: 30 },
+	lazy_bundle_address_not_full: { url: "/lazy-bundle/Chart.bundle" },
 };
 
 // Boundary: the keys of the catalogue are its codes.

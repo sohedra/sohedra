@@ -76,6 +76,18 @@ describe("exports", () => {
 		expect(Object.keys(manifest.exports)).not.toContain("./internal/page");
 	});
 
+	it("gives the host's data and events through an entry that resolves by thread", () => {
+		expect(manifest.exports["./host"]).toEqual({
+			worker: "./src/first-frame/host-entry.ts",
+			default: "./src/background/host-entry.ts",
+		});
+		expect(manifest.publishConfig.exports["./host"]).toEqual({
+			types: "./lib/background/host-entry.d.ts",
+			worker: "./lib/first-frame/host-entry.js",
+			default: "./lib/background/host-entry.js",
+		});
+	});
+
 	it("publishes the same entries as it exports", () => {
 		expect(Object.keys(manifest.publishConfig.exports).toSorted()).toEqual(
 			Object.keys(manifest.exports).toSorted(),

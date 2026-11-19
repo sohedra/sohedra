@@ -57,6 +57,13 @@ Keep code only the background can run, such as a native module or the background
 https://sohedra.com/e/first_frame_threw"
 `;
 
+exports[`the main thread's catalogue > lazy_bundle_not_on_main_thread: the message 1`] = `
+"The lazy bundle https://cdn.example/lazy-bundle/Chart.bundle reached the background but not the main thread, so its main-thread functions and styles are missing.
+
+Check that the bundle is served at that address and that the device reaches it: the main thread takes the bundle again only when the page is opened again.
+https://sohedra.com/e/lazy_bundle_not_on_main_thread"
+`;
+
 exports[`the main thread's catalogue > main_thread_attribute_unknown: the message 1`] = `
 "The attribute main-thread:bindtap-later binds nothing: a main-thread attribute is main-thread:ref, main-thread:gesture or a main-thread event.
 

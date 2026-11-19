@@ -60,7 +60,6 @@ describe("the folders scanned", () => {
 			"src/wire",
 			"src/svelte/runtime",
 			"src/gesture",
-			"src/host",
 			"src/env",
 		]);
 	});

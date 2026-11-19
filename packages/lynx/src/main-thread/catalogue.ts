@@ -45,6 +45,8 @@ export interface MainThreadDetails {
 		event?: string | undefined;
 		change?: string | undefined;
 	};
+	/** `url` is the bundle's. */
+	lazy_bundle_not_on_main_thread: { url: string };
 }
 
 /** What a code of the main thread names. */
@@ -168,6 +170,13 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		fix: () =>
 			"Change the element only when the value differs, as a layout handler that sets a size or a scroll handler that sets a scroll position must. Until the main thread's next turn, what main-thread functions change is not shown.",
 		docs: "main_thread_update_loop",
+	},
+	lazy_bundle_not_on_main_thread: {
+		message: ({ url }) =>
+			`The lazy bundle ${url} reached the background but not the main thread, so its main-thread functions and styles are missing.`,
+		fix: () =>
+			"Check that the bundle is served at that address and that the device reaches it: the main thread takes the bundle again only when the page is opened again.",
+		docs: "lazy_bundle_not_on_main_thread",
 	},
 };
 

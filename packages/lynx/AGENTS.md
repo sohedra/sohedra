@@ -16,7 +16,7 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
   | `first-frame/`              | the page's script   | `wire/`                      |
   | `svelte/build/`, `runtime/` | Node, a thread      | nothing; `runtime/`: `wire/` |
   | `testing/`                  | Node                | every thread's folder        |
-  | `gesture/`, `host/`, `env/` | their entries       | `wire/`                      |
+  | `gesture/`, `env/`          | their entries       | `wire/`                      |
 
 - **A thread's globals** (`lynx`, timers, Lynx's element functions, `process`) are reached only
   through the folder's `globals.ts`, typed for that thread. Never name them elsewhere, declare them

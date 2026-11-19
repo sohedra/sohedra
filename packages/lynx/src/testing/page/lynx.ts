@@ -6,6 +6,8 @@
 import type { Lifecycle, LifecycleProxy } from "../engine/lifecycle.ts";
 import { afterDelay, queueMicrotaskAs, readGlobal } from "../globals.ts";
 import type { Bridge } from "./bridge.ts";
+import type { createBundles, FetchAnswer } from "./bundles.ts";
+import type { TestEmitter } from "./host.ts";
 
 /** A thread of the page. */
 export type Thread = "main-thread" | "background";
@@ -41,8 +43,12 @@ export interface NativeApp {
 interface SharedLynx {
 	/** The page's initial data. */
 	readonly __initData: Record<string, unknown>;
-	/** The host's global props. */
-	readonly __globalProps: Record<string, unknown>;
+	/** The host's global props: each thread has its own, which the page or the engine replaces. */
+	__globalProps: Record<string, unknown>;
+	/** What the bundler's chunk loader calls for an `import()`: the page's runtime puts it here. */
+	loadLazyBundle?: (url: string) => Promise<unknown>;
+	/** Runs `section` of the fetched bundle `bundleName` and answers what it returns. */
+	loadScript(section: string, options: { bundleName: string }): unknown;
 	/**
 	 * Reports an error into Lynx, at the `level` given: `"error"`, the default, or `"warning"`
 	 * (lynx-core's lynx.ts, reportError). The test page keeps it.
@@ -56,7 +62,12 @@ interface SharedLynx {
  */
 export interface TestApp {
 	[hook: string]: unknown;
-	_params: { initData: Record<string, unknown>; updateData: Record<string, unknown> };
+	_params: {
+		initData: Record<string, unknown>;
+		updateData: Record<string, unknown>;
+		/** The page's own URL. */
+		srcName?: string;
+	};
 }
 
 /** The main thread's `lynx`. */
@@ -78,6 +89,13 @@ export interface MainThreadLynx extends SharedLynx {
 	 * Cancels a timer by its number, if it has not run; Lynx's takes a number only (ClearTimeout).
 	 */
 	clearTimeout(timer: number): void;
+	/** What Lynx says about the device: on `lynx` here, not a global. */
+	readonly SystemInfo: Record<string, unknown>;
+	/**
+	 * Fetches a bundle: `wait` answers at once, as for a bundle the background already fetched
+	 * (core/runtime/lepus/bindings/renderer_functions.cc, FetchBundle).
+	 */
+	fetchBundle(url: string, options: object): { wait(seconds: number): FetchAnswer };
 }
 
 /** The background's `lynx`. */
@@ -93,6 +111,16 @@ export interface BackgroundLynx extends SharedLynx {
 	 * engine's own queue).
 	 */
 	queueMicrotask(callback: () => void): void;
+	/** lynx-core's modules: `GlobalEventEmitter` only. */
+	getJSModule(name: string): TestEmitter;
+	/**
+	 * Fetches a bundle: the engine answers on a later task. A bundle that does not arrive is
+	 * reported by Lynx itself, and its answer has its code.
+	 */
+	fetchBundle(
+		url: string,
+		options: object,
+	): { then(callback: (answer: FetchAnswer) => void): void };
 }
 
 /** What may cross between the threads, to be checked: anything else is named in the error. */
@@ -159,13 +187,19 @@ export function createLynx(options: {
 	warnings: unknown[];
 	/** The app of the background. */
 	app: TestApp;
+	/** lynx-core's `getJSModule`, which answers its `GlobalEventEmitter`. */
+	getJSModule: (name: string) => TestEmitter;
+	/** The lazy bundles the page serves. */
+	bundles: ReturnType<typeof createBundles>;
+	/** What Lynx says about the device. */
+	systemInfo: Record<string, unknown>;
 	/**
 	 * Puts a thread's `lynx` in place: it runs before that thread's code does. Returns the thread
 	 * whose globals were in place before, if any.
 	 */
 	enter: (thread: Thread) => Thread | undefined;
 }): { mainThread: MainThreadLynx; background: BackgroundLynx } {
-	const { bridge, lifecycle, errors, warnings, app, enter } = options;
+	const { bridge, lifecycle, errors, warnings, app, enter, bundles } = options;
 	const mainThread = createSide();
 	const background = createSide();
 	/** The main thread's timers that have not run, and how to stop one that waits out a delay. */
@@ -202,6 +236,8 @@ export function createLynx(options: {
 		__globalProps: options.globalProps,
 		reportError: (error, reportOptions) =>
 			void (reportOptions?.level === "warning" ? warnings : errors).push(error),
+		loadScript: (section, loadOptions) =>
+			bundles.load(section === "background" ? "background" : "main-thread", loadOptions.bundleName),
 	});
 	const jsContext = context({
 		from: mainThread,
@@ -267,6 +303,11 @@ export function createLynx(options: {
 				timers.get(timer)?.();
 				timers.delete(timer);
 			},
+			SystemInfo: options.systemInfo,
+			fetchBundle: (url) => {
+				const answer = bundles.answer(url);
+				return { wait: () => answer };
+			},
 		},
 		background: {
 			...shared(),
@@ -282,6 +323,24 @@ export function createLynx(options: {
 						if (before) enter(before);
 					};
 				}, callback),
+			getJSModule: options.getJSModule,
+			fetchBundle: (url) => {
+				const answer = bundles.answer(url);
+				return {
+					// oxlint-disable-next-line unicorn/no-thenable -- Lynx's fetch answers a thenable, not a promise
+					then(callback) {
+						bridge.send(() => {
+							enter("background");
+							// Lynx reports a bundle that did not arrive itself.
+							if (answer.code !== 0)
+								errors.push(
+									new Error(`Lynx could not load the bundle ${url}: ${answer.error_msg}`),
+								);
+							callback(answer);
+						});
+					},
+				};
+			},
 		},
 	};
 }

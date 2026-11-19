@@ -15,6 +15,10 @@ import {
 	setActiveSession,
 } from "../globals.ts";
 import { createBridge } from "./bridge.ts";
+import { createBundles } from "./bundles.ts";
+import type { TestBundle } from "./bundles.ts";
+import { createHostEvents } from "./host.ts";
+import type { HostEventsLog } from "./host.ts";
 import { createLynx } from "./lynx.ts";
 import type { BackgroundLynx, MainThreadLynx, TestApp, Thread } from "./lynx.ts";
 
@@ -30,6 +34,15 @@ export interface TestPageOptions {
 	templateData?: Record<string, unknown>;
 	/** The host's global props. */
 	globalProps?: Record<string, unknown>;
+	/**
+	 * What Lynx says about the device: the background's global `SystemInfo` and the main thread's
+	 * `lynx.SystemInfo`. An iPhone's by default.
+	 */
+	systemInfo?: Record<string, unknown>;
+	/** The page's own URL, which lynx-core's app keeps as `srcName`. */
+	url?: string;
+	/** The lazy bundles the page can fetch, by URL. */
+	bundles?: Record<string, TestBundle>;
 	/** The main thread's script: it runs first, before the engine renders the page. */
 	mainThread?: () => void;
 	/** The background's script, the app: it runs once the engine has rendered the page. */
@@ -65,6 +78,19 @@ export interface TestPage {
 	 */
 	updateData(data: Record<string, unknown>, options?: { type?: number }): void;
 	/**
+	 * The host updates its global props, which the platform merges into the ones it has: the engine
+	 * gives the main thread all of them and calls its `updateGlobalProps`, then posts them to the
+	 * app's `updateGlobalProps` (lynx-core's app.ts, `__NotifyGlobalPropsUpdated`).
+	 */
+	updateGlobalProps(props: Record<string, unknown>): void;
+	/**
+	 * The host sends a global event: lynx-core's `GlobalEventEmitter` emits it on the background, on
+	 * a later task. What a listener throws, lynx-core reports.
+	 */
+	emitHostEvent(name: string, args: unknown[]): void;
+	/** What the page asked of lynx-core's `GlobalEventEmitter`. */
+	readonly hostEvents: HostEventsLog;
+	/**
 	 * The host reloads the page, with data to add: the engine removes the main thread's components,
 	 * posts the data to the app's `onAppReload` (js_app.cc, OnAppReload), then updates the main
 	 * thread's page with `reloadTemplate`, in one task (core/renderer/template_assembler.cc,
@@ -85,6 +111,18 @@ export interface TestPage {
 	/** Ends the page: its end is said, its elements leave the document, the globals are put back. */
 	dispose(): void;
 }
+
+/** What an iPhone's Lynx says about it. */
+const IPHONE: Readonly<Record<string, unknown>> = {
+	platform: "iOS",
+	osVersion: "18.0",
+	engineVersion: "3.2",
+	lynxSdkVersion: "3.2",
+	pixelWidth: 1170,
+	pixelHeight: 2532,
+	pixelRatio: 3,
+	runtimeType: "quickjs",
+};
 
 /** The globals a page's own code sets while it runs, put back when the page ends. */
 const PAGE_GLOBALS = [
@@ -134,10 +172,10 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		}
 		current = thread;
 		if (thread === "main-thread") {
-			installGlobals({ ...engine.functions, lynx: lynx.mainThread });
+			installGlobals({ ...engine.functions, lynx: lynx.mainThread, SystemInfo: systemInfo });
 			return before;
 		}
-		installGlobals({ lynx: lynx.background });
+		installGlobals({ lynx: lynx.background, SystemInfo: systemInfo });
 		removeGlobals(elementFunctions);
 		return before;
 	};
@@ -153,7 +191,18 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	const hostData = options.initData ?? {};
 	// The data the engine renders the page with (core/renderer/template_assembler.cc).
 	const initData = { ...templateData, ...hostData };
-	const app: TestApp = { _params: { initData: { ...templateData }, updateData: { ...hostData } } };
+	const app: TestApp = {
+		_params: {
+			initData: { ...templateData },
+			updateData: { ...hostData },
+			...(options.url !== undefined && { srcName: options.url }),
+		},
+	};
+	const systemInfo = options.systemInfo ?? IPHONE;
+	const hostEvents = createHostEvents();
+	const bundles = options.bundles ?? {};
+	for (const [url, bundle] of Object.entries(bundles))
+		if (bundle.styles !== undefined) engine.provideStyleSheet(url, bundle.styles);
 	const lynx = createLynx({
 		bridge,
 		lifecycle: engine.lifecycle,
@@ -163,6 +212,9 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		warnings,
 		app,
 		enter,
+		getJSModule: hostEvents.getJSModule,
+		bundles: createBundles(bundles),
+		systemInfo,
 	});
 	/**
 	 * Calls a hook of the app, as the engine does: a missing one is skipped (js_app.cc, which
@@ -177,7 +229,7 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		bridge.send(() => callApp(name, ...args));
 	// On a device, Lynx's element functions are the main thread's globals.
 	const restoreGlobals = installGlobals(
-		{ ...engine.functions, lynx: lynx.mainThread },
+		{ ...engine.functions, lynx: lynx.mainThread, SystemInfo: systemInfo },
 		PAGE_GLOBALS,
 	);
 
@@ -191,6 +243,27 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 			engine.lifecycle.update(data, {});
 			toBackground("updateCardData", data, { type: updateOptions.type ?? 0 });
 		},
+		updateGlobalProps(props) {
+			const merged = { ...lynx.mainThread.__globalProps, ...props };
+			enter("main-thread");
+			lynx.mainThread.__globalProps = merged;
+			// The engine calls the main thread's function by name (core/renderer/template_assembler.cc).
+			const update = readGlobal("updateGlobalProps");
+			if (typeof update === "function") update(merged, {});
+			toBackground("updateGlobalProps", merged);
+		},
+		emitHostEvent(name, args) {
+			bridge.send(() => {
+				enter("background");
+				// lynx-core calls the emitter through `callFunction`, which reports what it throws.
+				try {
+					hostEvents.emitter.emit(name, args);
+				} catch (error) {
+					errors.push(error);
+				}
+			});
+		},
+		hostEvents: hostEvents.log,
 		reload(data = {}) {
 			engine.lifecycle.removeComponents();
 			toBackground("onAppReload", data);

@@ -3,6 +3,9 @@
 // renderer outside its effects, after an `{#await}` block settles too. So this `on()` makes the
 // page's renderer current while it calls Svelte's, and while it stops listening: `on()` listens
 // through the renderer wherever it is called, in a handler, a timer or code after an `await`.
+// With no page running (module-level code, before `mountPage`), a renderer that hands the call to
+// the target is current instead: with none, Svelte would treat the target as a DOM node and read
+// the listener's first argument as a DOM event.
 
 import { on as svelteOn } from "svelte/events";
 // @ts-expect-error -- Svelte publishes no types for its internal modules; the cast below gives this one's.
@@ -10,12 +13,26 @@ import { push_renderer } from "svelte/internal/client";
 
 const pushRenderer = push_renderer as (renderer: object | null) => () => void;
 
-/** The renderer `on()` listens through; null when no page runs, and then `on()` is Svelte's. */
-let pageRenderer: object | null = null;
+/** A target of `on()` that keeps its own listeners: the host, or the page's root before a page. */
+interface Target {
+	addEventListener(type: string, handler: unknown, options?: unknown): void;
+	removeEventListener(type: string, handler: unknown, options?: unknown): void;
+}
 
-/** Makes `renderer` the one `on()` listens through, or none. */
+/** The renderer while no page runs: it hands each listener to the target, as given. */
+const passThrough = {
+	addEventListener: (target: Target, type: string, handler: unknown, options?: unknown): void =>
+		target.addEventListener(type, handler, options),
+	removeEventListener: (target: Target, type: string, handler: unknown, options?: unknown): void =>
+		target.removeEventListener(type, handler, options),
+};
+
+/** The renderer `on()` listens through: the page's, or the pass-through one when none runs. */
+let pageRenderer: object = passThrough;
+
+/** Makes `renderer` the one `on()` listens through; `null` when no page runs. */
 export function listenThrough(renderer: object | null): void {
-	pageRenderer = renderer;
+	pageRenderer = renderer ?? passThrough;
 }
 
 /** Runs `run` with `renderer` current. */
@@ -30,7 +47,6 @@ function withRenderer<T>(renderer: object, run: () => T): T {
 
 function listen(...args: Parameters<typeof svelteOn>): () => void {
 	const renderer = pageRenderer;
-	if (renderer === null) return svelteOn(...args);
 	const off = withRenderer(renderer, () => svelteOn(...args));
 	return () => withRenderer(renderer, off);
 }

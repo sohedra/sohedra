@@ -34,7 +34,6 @@ export const SHIPPED_DIRS: string[] = [
 	"src/wire",
 	"src/svelte/runtime",
 	"src/gesture",
-	"src/host",
 	"src/env",
 ];
 

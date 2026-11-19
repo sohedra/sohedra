@@ -17,7 +17,6 @@ const THREAD_FOLDERS = [
 	"first-frame",
 	"svelte/runtime",
 	"gesture",
-	"host",
 	"env",
 ];
 
