@@ -4,6 +4,11 @@
 	"private": true,
 	"description": "Svelte on Lynx",
 	"license": "Apache-2.0",
+	"files": [
+		"lib",
+		"types",
+		"NOTICE"
+	],
 	"type": "module",
 	"sideEffects": [
 		"./src/background/background-only.ts",
