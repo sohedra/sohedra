@@ -171,7 +171,8 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 		types: [],
 	});
 	const checker = program.getTypeChecker();
-	const scanned = new Set(files);
+	// TypeScript names files with `/`, which Windows' paths have not.
+	const scanned = new Set(files.map((file) => file.split(path.sep).join("/")));
 	const sources = program.getSourceFiles().filter((source) => scanned.has(source.fileName));
 
 	// 1. The code that runs only in development, from the guards.

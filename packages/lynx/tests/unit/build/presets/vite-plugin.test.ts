@@ -17,6 +17,8 @@ import { APP_ROOT } from "../app.ts";
 const library = path.join(APP_ROOT, "tests/fixtures/library");
 const vitest = path.join(APP_ROOT, "tests/vitest/fixtures");
 const MAIN = "?lynx-main-thread";
+/** A path as Vite names a file: with `/` between folders, which Windows' paths have not. */
+const slashed = (file: string): string => file.replaceAll("\\", "/");
 
 let server: ViteDevServer;
 let environment: DevEnvironment;
@@ -62,7 +64,7 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 		const code = await transform(component);
 		expect(code).toContain("Counter.svelte?first-frame");
 		const copy = await resolve("./Counter.svelte?first-frame", component);
-		expect(copy).toBe(`${component}?first-frame`);
+		expect(copy).toBe(`${slashed(component)}?first-frame`);
 		const source = await transform(copy!);
 		expect(source).toContain(`Counter.svelte${MAIN}`);
 		expect(source).toContain("mountPage");
@@ -77,14 +79,14 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 			/background[\\/]root-entry\.ts$/,
 		);
 		expect(await resolve("./counted.ts", importer)).toBe(
-			`${path.join(library, "counted.ts")}${MAIN}`,
+			`${slashed(path.join(library, "counted.ts"))}${MAIN}`,
 		);
 		expect(await resolve("svelte/internal/server", importer)).toMatch(
 			new RegExp(`${escape(MAIN)}$`),
 		);
 		// Named by its path from the root, as a module from Vitest's cache names it.
 		expect(await resolve(`/tests/fixtures/library/counted.ts${MAIN}`, importer)).toBe(
-			`${path.join(library, "counted.ts")}${MAIN}`,
+			`${slashed(path.join(library, "counted.ts"))}${MAIN}`,
 		);
 	});
 
@@ -124,7 +126,7 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 
 	it("leaves a style sheet of the main thread's copies unmarked, and names a file outside the root", async () => {
 		const importer = `${path.join(library, "Styled.svelte")}${MAIN}`;
-		expect(await resolve("./styled.css", importer)).toBe(path.join(library, "styled.css"));
+		expect(await resolve("./styled.css", importer)).toBe(slashed(path.join(library, "styled.css")));
 		const outside = RUNTIME_FILES.firstFrameEntry;
 		expect(await resolve(`/@fs${outside}${MAIN}`, importer)).toBe(`${outside}${MAIN}`);
 	});
@@ -166,7 +168,8 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 	it("names a module that is neither at its path nor under the root as its path", async () => {
 		const importer = `${path.join(library, "Counter.svelte")}${MAIN}`;
 		await expect(resolve(`/nowhere/at/all.ts${MAIN}`, importer)).resolves.toBe(
-			`/nowhere/at/all.ts${MAIN}`,
+			// On Windows, on the drive of the root.
+			`${slashed(path.resolve("/nowhere/at/all.ts"))}${MAIN}`,
 		);
 	});
 

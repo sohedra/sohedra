@@ -3,6 +3,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { afterAll, describe, expect, it } from "@rstest/core";
 
@@ -27,7 +28,10 @@ function appWith(files: Record<string, string>): string {
 	return folder;
 }
 
-const helper = path.resolve(import.meta.dirname, "../../../../src/build/svelte-config/index.ts");
+// A URL: Node imports a path that starts with a drive letter as a URL of that scheme.
+const helper = pathToFileURL(
+	path.resolve(import.meta.dirname, "../../../../src/build/svelte-config/index.ts"),
+).href;
 
 describe("findSvelteConfig", () => {
 	it("finds svelte.config.js, .mjs, .ts and .mts in that order", () => {
@@ -38,7 +42,9 @@ describe("findSvelteConfig", () => {
 	});
 
 	it("takes the file the app names, from its folder", () => {
-		expect(findSvelteConfig("/app", "config/svelte.js")).toBe("/app/config/svelte.js");
+		expect(findSvelteConfig("/app", "config/svelte.js")).toBe(
+			path.resolve("/app/config/svelte.js"),
+		);
 	});
 
 	it("is none for an app without one", () => {

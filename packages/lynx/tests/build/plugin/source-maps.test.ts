@@ -2,6 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
@@ -10,22 +11,29 @@ import { bindingSourceIndexes, isBindingSource } from "../../../src/build/plugin
 import { buildApp, cleanBuild } from "../build-app.ts";
 import type { AppBuild } from "../build-app.ts";
 
+/** An absolute path on this system: `/app/…` here, `D:\\app\\…` on Windows. */
+const absolute = (file: string): string => path.resolve("/", file);
+/** The `file:` URL of an absolute path on this system. */
+const url = (file: string): string => pathToFileURL(file).href;
+
 describe("which sources are the binding's", () => {
 	it("takes the files of the package's own folders and of the installed package", () => {
-		expect(isBindingSource(`file://${PACKAGE_ROOT}/src/env/index.ts`)).toBe(true);
-		expect(isBindingSource(`file://${PACKAGE_ROOT}/lib/env/index.js`)).toBe(true);
-		expect(isBindingSource("file:///app/node_modules/@sohedra/lynx/lib/env/index.js")).toBe(true);
-		expect(isBindingSource("/app/node_modules/.pnpm/x/node_modules/@sohedra/lynx/lib/a.js")).toBe(
+		expect(isBindingSource(url(path.join(PACKAGE_ROOT, "src/env/index.ts")))).toBe(true);
+		expect(isBindingSource(url(path.join(PACKAGE_ROOT, "lib/env/index.js")))).toBe(true);
+		expect(isBindingSource(url(absolute("app/node_modules/@sohedra/lynx/lib/env/index.js")))).toBe(
 			true,
 		);
+		expect(
+			isBindingSource(absolute("app/node_modules/.pnpm/x/node_modules/@sohedra/lynx/lib/a.js")),
+		).toBe(true);
 	});
 
 	it("leaves out the app's files, other packages and what is no path", () => {
-		expect(isBindingSource("file:///app/src/index.ts")).toBe(false);
-		expect(isBindingSource(`file://${PACKAGE_ROOT}/tests/fixtures/build/apps/app/index.ts`)).toBe(
-			false,
-		);
-		expect(isBindingSource("file:///app/node_modules/svelte/src/index.js")).toBe(false);
+		expect(isBindingSource(url(absolute("app/src/index.ts")))).toBe(false);
+		expect(
+			isBindingSource(url(path.join(PACKAGE_ROOT, "tests/fixtures/build/apps/app/index.ts"))),
+		).toBe(false);
+		expect(isBindingSource(url(absolute("app/node_modules/svelte/src/index.js")))).toBe(false);
 		expect(isBindingSource("webpack://app/./src/index.ts")).toBe(false);
 		expect(isBindingSource("file://app/../src/index.ts")).toBe(false);
 	});
@@ -33,9 +41,9 @@ describe("which sources are the binding's", () => {
 	it("lists the indexes of the binding's sources", () => {
 		expect(
 			bindingSourceIndexes([
-				"file:///app/src/index.ts",
-				`file://${PACKAGE_ROOT}/src/env/index.ts`,
-				"file:///app/node_modules/@sohedra/lynx/lib/a.js",
+				url(absolute("app/src/index.ts")),
+				url(path.join(PACKAGE_ROOT, "src/env/index.ts")),
+				url(absolute("app/node_modules/@sohedra/lynx/lib/a.js")),
 			]),
 		).toEqual([1, 2]);
 	});
@@ -77,12 +85,13 @@ describe("a build with source maps", () => {
 			(map.ignoreList ?? []).map((index) => map.sources[index]!),
 		);
 		expect(listed.length).toBeGreaterThan(0);
-		for (const source of listed) expect(source).toContain("/src/");
+		// Windows names the files with `\\`.
+		for (const source of listed) expect(source.replaceAll("\\", "/")).toContain("/src/");
 		for (const source of listed) expect(isBindingSource(source)).toBe(true);
 		const ignored = new Set(listed);
 		const app = maps
 			.flatMap((map) => map.sources)
-			.filter((source) => source.endsWith("/app/branches.ts"));
+			.filter((source) => source.replaceAll("\\", "/").endsWith("/app/branches.ts"));
 		expect(app.length).toBeGreaterThan(0);
 		for (const source of app) expect(ignored.has(source)).toBe(false);
 	});

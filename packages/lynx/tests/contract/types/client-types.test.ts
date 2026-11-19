@@ -37,7 +37,8 @@ function check(rootNames: string[]): { files: string[]; diagnostics: string[] } 
 	const host = ts.createCompilerHost(options);
 	const getSourceFile = host.getSourceFile.bind(host);
 	host.getSourceFile = (file, ...rest) =>
-		file === appFile
+		// TypeScript names files with `/`, which Windows' paths have not.
+		path.normalize(file) === appFile
 			? ts.createSourceFile(file, app, ts.ScriptTarget.ESNext)
 			: getSourceFile(file, ...rest);
 	const program = ts.createProgram({ rootNames: [...rootNames, appFile], options, host });

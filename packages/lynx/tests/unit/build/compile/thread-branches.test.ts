@@ -194,7 +194,8 @@ describe("a test that is not a branch only one thread renders", () => {
 			const { warnings, messages } = await compiledWith(source, { development: true });
 			expect(warnings, test).toEqual(["thread_branch_test"]);
 			expect(messages[0]).toContain(`{#if ${test}}`);
-			expect(messages[0]).toContain("src/Component.svelte:3:1");
+			// Windows names the file with `\\`.
+			expect(messages[0]!.replaceAll("\\", "/")).toContain("src/Component.svelte:3:1");
 		}
 		// The else of a flag joined by &&: it renders on the main thread, and on the background too.
 		const joined = withScript("{#if background && x}<Card />{:else}<Card />{/if}");

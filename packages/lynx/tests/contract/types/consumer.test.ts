@@ -195,8 +195,8 @@ function svelteCheck(): string[] {
 		.map((line) => {
 			const [, file, position, message] = /ERROR "([^"]+)" (\d+):\d+ "(.*)"$/.exec(line)!;
 			// The whole message: with overloads, the first line only says none matched. Windows
-			// names the file with `\\`.
-			return `${file!.replaceAll("\\", "/")}:${position} ${JSON.parse(`"${message}"`).replace(/\s+/g, " ")}`;
+			// names the file with `\\`, escaped.
+			return `${file!.replace(/\\+/g, "/")}:${position} ${JSON.parse(`"${message}"`).replace(/\s+/g, " ")}`;
 		});
 }
 
