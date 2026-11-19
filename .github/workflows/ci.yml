@@ -13,7 +13,8 @@
 #
 # The repository allows only GitHub's own actions and pnpm/setup at one commit. No job runs an
 # agent or reads a secret, so the pnpm store is cached; the app jobs, whose installs have no
-# lockfile, only restore it. `pnpm lint` checks this file's rules (scripts/workflows.ts).
+# lockfile, only restore it. zizmor audits this file in the fast and Linux checks, and `pnpm lint`
+# checks the repository's own rules for it (scripts/workflows.ts).
 
 name: CI
 
@@ -47,6 +48,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # GitHub Actions' security linter, run as a command: the repository allows no action but
+      # GitHub's own and pnpm/setup. Offline: its online audits need a token.
+      - name: zizmor
+        run: pipx run zizmor==1.32.0 --offline .github/workflows
       # The repository check compares recorded coverage with main's.
       - name: Fetch main
         run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
@@ -77,6 +82,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # GitHub Actions' security linter, run as a command: the repository allows no action but
+      # GitHub's own and pnpm/setup. Offline: its online audits need a token.
+      - name: zizmor
+        if: runner.os == 'Linux'
+        run: pipx run zizmor==1.32.0 --offline .github/workflows
       - name: Fetch main
         run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
       - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0

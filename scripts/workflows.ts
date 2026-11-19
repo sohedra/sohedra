@@ -1,9 +1,9 @@
-// The repository's GitHub Actions workflows keep the rules of AGENTS.md § Git and GitHub: no
-// `pull_request_target`, read-only permissions unless a job asks for more, only the actions the
-// repository allows, each pinned by its commit with the version in a comment, no pull request text
-// or input written into a shell command, a time limit on every job, and npm publishing only through
-// trusted publishing, without a token. And CI runs every Node.js line a package claims in
-// `engines.node`, and the oldest version it claims exactly.
+// The repository's GitHub Actions workflows keep the rules of AGENTS.md § Git and GitHub that
+// zizmor, which CI runs on them, does not check: read-only permissions at the top unless a job asks
+// for more, only the actions the repository allows, each pinned by its commit with the version in a
+// comment, a time limit on every job, and npm publishing only through trusted publishing, without a
+// token. And CI runs every Node.js line a package claims in `engines.node`, and the oldest version it
+// claims exactly. zizmor refuses `pull_request_target` and a pull request's text in a shell command.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,32 +20,16 @@ const NPM_TOKENS = /\b(?:NPM_TOKEN|NODE_AUTH_TOKEN)\b/;
  * these, each at its commit. GitHub refuses a run that names any other before a job starts.
  */
 const ALLOWED = [/^actions\//, /^github\//, "pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1"];
-/** Text a pull request's author or a caller chooses, which a shell would run as code. */
-const UNTRUSTED = /\$\{\{[^}]*\b(?:github\.event\.|github\.head_ref|inputs\.)/;
-
-interface Step {
-	uses?: string;
-	run?: string;
-}
 
 interface Job {
 	"timeout-minutes"?: unknown;
 	uses?: string;
 	strategy?: { matrix?: Record<string, unknown> };
-	steps?: Step[];
 }
 
 interface Workflow {
-	on?: unknown;
 	permissions?: unknown;
 	jobs?: Record<string, Job>;
-}
-
-/** The events of a workflow's `on`, in any of its forms. */
-function eventsOf(on: unknown): string[] {
-	if (typeof on === "string") return [on];
-	if (Array.isArray(on)) return on.map(String);
-	return on !== null && typeof on === "object" ? Object.keys(on) : [];
 }
 
 /** Whether `permissions` reads at most the repository's contents. */
@@ -100,11 +84,6 @@ export function checkWorkflows(root: string): string[] {
 		// Boundary: YAML has no type; a workflow has this shape.
 		const workflow = (parse(text) ?? {}) as Workflow;
 
-		if (eventsOf(workflow.on).includes("pull_request_target")) {
-			problems.push(
-				`${file} runs on pull_request_target, which gives a fork's code the repository's secrets and write access. Use pull_request.`,
-			);
-		}
 		if (!readOnly(workflow.permissions)) {
 			problems.push(
 				`${file} needs "permissions: contents: read" at its top. A job that needs more asks for it itself.`,
@@ -131,13 +110,6 @@ export function checkWorkflows(root: string): string[] {
 			// A job that calls another workflow takes that workflow's time limits.
 			if (job.uses === undefined && typeof job["timeout-minutes"] !== "number") {
 				problems.push(`${file}: give job "${id}" a timeout-minutes.`);
-			}
-			for (const step of job.steps ?? []) {
-				if (typeof step.run === "string" && UNTRUSTED.test(step.run)) {
-					problems.push(
-						`${file}: job "${id}" writes a pull request's text or an input into a shell command, where it can run as code. Pass it through env: and quote the variable.`,
-					);
-				}
 			}
 			for (const version of nodeVersionsOf(job)) versionsRun.add(version);
 		}

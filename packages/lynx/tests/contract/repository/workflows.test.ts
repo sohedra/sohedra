@@ -44,19 +44,6 @@ describe("a workflow", () => {
 		expect(problemsOf(workflow())).toEqual([]);
 	});
 
-	it("never runs on pull_request_target, in any form of `on`", () => {
-		for (const on of [
-			"on: pull_request_target\n",
-			"on: [push, pull_request_target]\n",
-			"on:\n  pull_request_target:\n    types: [opened]\n",
-		]) {
-			const [problem, ...rest] = problemsOf(workflow({ on }));
-			expect(rest).toEqual([]);
-			expect(problem).toContain(".github/workflows/ci.yml");
-			expect(problem).toContain("pull_request_target");
-		}
-	});
-
 	it("sets read-only permissions at its top", () => {
 		for (const permissions of [
 			"",
@@ -109,25 +96,6 @@ describe("a workflow", () => {
 			expect(problem).toContain(uses.split(" ")[0]!);
 			expect(problem).toContain("not among the actions this repository allows");
 		}
-	});
-
-	it("never writes a pull request's text or an input into a shell command", () => {
-		for (const value of [
-			"github.event.pull_request.title",
-			"github.head_ref",
-			"inputs.name",
-			" github.event.issue.body ",
-		]) {
-			const job = `    timeout-minutes: 10\n    steps:\n      - run: echo "\${{${value}}}"\n`;
-			const [problem, ...rest] = problemsOf(workflow({ job }));
-			expect(rest).toEqual([]);
-			expect(problem).toContain("env:");
-		}
-	});
-
-	it("may pass a pull request's text to a shell command through env", () => {
-		const job = `    timeout-minutes: 10\n    steps:\n      - run: echo "$TITLE"\n        env:\n          TITLE: \${{ github.event.pull_request.title }}\n`;
-		expect(problemsOf(workflow({ job }))).toEqual([]);
 	});
 
 	it("gives every job a time limit", () => {
