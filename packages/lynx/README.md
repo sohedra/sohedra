@@ -42,6 +42,14 @@ Your code sees the fills too, and `EventTarget` and `structuredClone` are smalle
   the web's refuses, such as a `Promise` or a `WeakMap`, as an empty object, gives an array's holes
   the value `undefined`, and ignores `transfer`.
 
+`@sohedra/lynx/testing` tests components without a phone, in `@testing-library/svelte`'s shape:
+`await render(Component, { props, context, lynx })` draws the page on both threads, the first frame
+then the background, on an engine fake that has only what a device has and the binding's fills.
+`fireEvent`, `act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a
+list's cells, a gesture's callbacks) are awaited. Run the tests with `withSvelteLynx()` from
+`@sohedra/lynx/config/rstest` or `svelteLynx()` from `@sohedra/lynx/config/vitest`, and install
+`jsdom`, `@testing-library/dom` and the runner.
+
 Run its tests and type check from the repository root with `pnpm -F @sohedra/lynx test` and
 `pnpm -F @sohedra/lynx check`. Read [CONTRIBUTING.md](../../CONTRIBUTING.md) § Code before you
 change it.
