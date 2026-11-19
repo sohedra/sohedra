@@ -21,7 +21,8 @@ export const LONG_ROWS: number = ROWS + 2 * 2;
  * An element's opening tag. One with a main-thread tap handler, as an attribute or a spread, also
  * says with `data-one-thread` whether only one thread renders it, as `outer` does: before
  * hydration, such an element is the first frame's alone, and a call of a background function from
- * it has no answer by design (`first_frame_call_unanswered`), so no step taps it then.
+ * it has no answer by design (`first_frame_call_unanswered`), so no step taps it then. The mark is
+ * part of the page: both threads render it the same way, and the trees compare it.
  */
 function opening(tag: string, attributes: readonly string[], outer: string): string {
 	const taps = attributes.some((written) => written.includes("main-thread:ontap"));

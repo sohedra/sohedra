@@ -333,7 +333,7 @@ function tap(page: SveltePage, pick: number, early: boolean): void {
 }
 
 /** Does `step` to the page. Nothing happens when what it picks is not there. */
-export function apply(running: GeneratedPage, done: Step): void {
+function apply(running: GeneratedPage, done: Step): void {
 	const { page, handles } = running;
 	switch (done.kind) {
 		case "set":
