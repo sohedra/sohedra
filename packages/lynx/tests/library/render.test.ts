@@ -49,3 +49,17 @@ it("ends the page with cleanup, after which an event has no page to go to", asyn
 	);
 	expect(await act(() => "no page")).toBe("no page");
 });
+
+it("says the page has ended to a call that would change it", async () => {
+	const { rerender, lynx, unmount } = await render(Themed);
+	cleanup();
+	await expect(rerender({})).rejects.toThrow("Nothing is rendered, so rerender() has no page");
+	await expect(lynx.reload()).rejects.toThrow("Nothing is rendered, so lynx.reload() has no page");
+	await expect(lynx.sendHostEvent("anything")).rejects.toThrow(
+		"Nothing is rendered, so lynx.sendHostEvent() has no page",
+	);
+	await expect(lynx.updateInitData({})).rejects.toThrow("lynx.updateInitData() has no page");
+	await expect(lynx.updateGlobalProps({})).rejects.toThrow("lynx.updateGlobalProps() has no page");
+	expect(() => lynx.gesture(document.body)).toThrow("lynx.gesture() has no page");
+	await unmount();
+});

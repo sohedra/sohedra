@@ -39,6 +39,11 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	main_thread_ref_read_on_background: {},
 	main_thread_ref_set_on_background: {},
 	background_function_missing: {},
+	main_thread_ref_not_a_ref: {
+		value: "the string box",
+		tag: "view",
+		where: "src/Sheet.svelte:9:2",
+	},
 	plain_function_under_main_thread: {
 		name: "main-thread:ontap",
 		tag: "view",

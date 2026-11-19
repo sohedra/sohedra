@@ -44,10 +44,13 @@ it("sends what was queued before the call first, so a new element can be called 
 it("answers boundingClientRect with the box a test gives the element", async () => {
 	const { lynx, results, byClass } = await setup();
 	lynx.respondInvoke(() => ({ code: 0, data: "not this" }));
-	lynx.setBoundingClientRect(byClass("add"), { left: 0, top: 0, width: 1, height: 1 });
+	lynx.setBoundingClientRect(byClass("measure"), { left: 4, top: 8, width: 100, height: 40 });
+	await fireEvent.tap(byClass("measure"));
+	expect(results.at(-1)).toEqual({
+		ok: { left: 4, top: 8, width: 100, height: 40, right: 104, bottom: 48 },
+	});
+	// Another element, or another method, gets what respondInvoke answers.
 	await fireEvent.tap(byClass("add"));
-	lynx.setBoundingClientRect(byClass("fresh"), { left: 4, top: 8, width: 100, height: 40 });
-	await fireEvent.tap(byClass("hide"));
 	expect(results.at(-1)).toEqual({ ok: "not this" });
 });
 

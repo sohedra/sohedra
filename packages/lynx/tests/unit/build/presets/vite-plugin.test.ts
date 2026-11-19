@@ -11,6 +11,7 @@ import type { DevEnvironment, ViteDevServer } from "vite";
 import { RUNTIME_FILES } from "../../../../src/build/plugin/layers.ts";
 import { resolveOptions } from "../../../../src/build/plugin/options.ts";
 import { vitePlugins } from "../../../../src/build/presets/vite-plugin.ts";
+import type { VitePlugins } from "../../../../src/build/presets/vite-plugin.ts";
 import { APP_ROOT } from "../app.ts";
 
 const library = path.join(APP_ROOT, "tests/fixtures/library");
@@ -19,6 +20,7 @@ const MAIN = "?lynx-main-thread";
 
 let server: ViteDevServer;
 let environment: DevEnvironment;
+let run: VitePlugins;
 
 /** What `source`, imported from `importer`, resolves to. */
 async function resolve(source: string, importer: string): Promise<string | undefined> {
@@ -33,22 +35,23 @@ async function transform(id: string): Promise<string> {
 
 describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 	beforeAll(async () => {
+		run = vitePlugins(
+			resolveOptions({
+				define: {
+					mainThread: { __WHERE__: '"main"' },
+					background: { __WHERE__: '"background"' },
+				},
+				singleCopy: ["fast-check"],
+			}),
+			{ given: {} },
+		);
 		server = await createServer({
 			root: APP_ROOT,
 			configFile: false,
 			logLevel: "silent",
 			appType: "custom",
 			server: { middlewareMode: true, ws: false, watch: null },
-			plugins: vitePlugins(
-				resolveOptions({
-					define: {
-						mainThread: { __WHERE__: '"main"' },
-						background: { __WHERE__: '"background"' },
-					},
-					singleCopy: ["fast-check"],
-				}),
-				{ given: {} },
-			),
+			plugins: run.plugins,
 		});
 		environment = server.environments.ssr;
 	});
@@ -133,7 +136,7 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 			logLevel: "silent",
 			appType: "custom",
 			server: { middlewareMode: true, ws: false, watch: null },
-			plugins: vitePlugins(resolveOptions({ firstFrame: false }), { given: {} }),
+			plugins: vitePlugins(resolveOptions({ firstFrame: false }), { given: {} }).plugins,
 		});
 		try {
 			const result = await plain.environments.ssr.transformRequest(
@@ -151,6 +154,27 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 			"src/internal/client/reactivity/props.js",
 		);
 		expect(await transform(props)).not.toBe("");
+	});
+
+	it("gives the cache key what the compile read: the Svelte options and the installed Svelte", () => {
+		const inputs = JSON.parse(run.compileInputs()) as { svelte: string; version: string };
+		expect(inputs.svelte).toMatch(/[\\/]svelte[\\/]package\.json$/);
+		expect(inputs.version).toContain('"name": "svelte"');
+		expect(run.compileInputs()).toContain("compilerOptions");
+	});
+
+	it("names a module that is neither at its path nor under the root as its path", async () => {
+		const importer = `${path.join(library, "Counter.svelte")}${MAIN}`;
+		await expect(resolve(`/nowhere/at/all.ts${MAIN}`, importer)).resolves.toBe(
+			`/nowhere/at/all.ts${MAIN}`,
+		);
+	});
+
+	it("says where Svelte's text moved when a patch no longer finds its place", async () => {
+		const [main] = run.plugins;
+		const handler = main!.transform as (code: string, id: string) => Promise<unknown>;
+		const props = "/x/node_modules/svelte/src/internal/client/reactivity/props.js";
+		await expect(handler.call({}, "export const nothing = 1;", props)).rejects.toThrow(/props\.js/);
 	});
 });
 

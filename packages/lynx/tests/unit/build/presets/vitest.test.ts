@@ -63,9 +63,14 @@ describe("the Vitest preset", () => {
 			configureVitest(context: { defineCacheKeyGenerator(generator: () => string): void }): void;
 		};
 		plugin.configureVitest({ defineCacheKeyGenerator: (generator) => keys.push(generator()) });
-		expect(keys).toEqual([cacheKey({})]);
+		expect(keys).toHaveLength(1);
 		expect(cacheKey({})).toMatch(/^@sohedra\/lynx:[0-9a-f]{16}$/);
 		expect(cacheKey({ firstFrame: false })).not.toBe(cacheKey({}));
+		// What the compile read: the Svelte config's options and the installed Svelte.
+		expect(cacheKey({}, '{"compilerOptions":{}}')).not.toBe(
+			cacheKey({}, '{"compilerOptions":{"experimental":{"async":true}}}'),
+		);
+		expect(cacheKey({}, '{"version":"5.57.3"}')).not.toBe(cacheKey({}, '{"version":"5.58.0"}'));
 		expect(cacheKey({ svelte: { configFile: "a.config.js" } })).not.toBe(
 			cacheKey({ svelte: { configFile: "b.config.js" } }),
 		);

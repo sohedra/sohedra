@@ -6,7 +6,7 @@ import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
-import { withSvelteLynx } from "../../../../src/build/presets/rstest.ts";
+import { withSvelteLynx, withSvelteLynxFromConfig } from "../../../../src/build/presets/rstest.ts";
 import { checkTestPeers, TEST_PEERS } from "../../../../src/build/presets/test-peers.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "../../../..");
@@ -64,5 +64,15 @@ describe("the test presets' peers", () => {
 		} finally {
 			process.chdir(cwd);
 		}
+	});
+
+	it("ask an app's config preset for the Rsbuild adapter it reads the config with", () => {
+		const root = app("adapter", TEST_PEERS.rstest);
+		expect(() => withSvelteLynx).not.toThrow();
+		expect(() => withSvelteLynxFromConfig({ rootPath: root })).toThrow(
+			"`withSvelteLynxFromConfig()` runs the tests with @rstest/adapter-rsbuild, which is not installed",
+		);
+		app("adapter", ["@rstest/adapter-rsbuild"]);
+		expect(() => withSvelteLynxFromConfig({ rootPath: root })).not.toThrow();
 	});
 });

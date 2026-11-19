@@ -14,6 +14,22 @@ it("takes a DOM event: a bubbling tap reaches the button's handler", async () =>
 	expect(screen.getByText("Count: 1")).toBeTruthy();
 });
 
+it("keeps a DOM event's fields, a CustomEvent's detail among them", async () => {
+	const { container } = await render(Input);
+	const field = container.querySelector(".field")!;
+	await fireEvent(field, new CustomEvent("input", { detail: { value: "typed" } }));
+	expect(container.querySelector(".echo")!.textContent).toBe("typed");
+	const event = Object.assign(new Event("input"), { detail: { value: "own" } });
+	await fireEvent(field, event);
+	expect(container.querySelector(".echo")!.textContent).toBe("own");
+});
+
+it("keeps a DOM event that does not bubble on its element, as the DOM would", async () => {
+	await render(Counter);
+	await fireEvent(screen.getByText("Add 1"), new Event("tap"));
+	expect(screen.getByText("Count: 0")).toBeTruthy();
+});
+
 it("sends a custom event only to an element that listens to it", async () => {
 	const { container } = await render(Input);
 	expect(await fireEvent.scroll(container.querySelector(".echo")!)).toBe(true);

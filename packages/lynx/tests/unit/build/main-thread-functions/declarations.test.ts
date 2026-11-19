@@ -4,7 +4,9 @@
 // build says so.
 
 import { describe, expect, it } from "@rstest/core";
+import { parseExpressionAt } from "acorn";
 
+import { readAtOnce } from "../../../../src/build/main-thread-functions/hoisting.ts";
 import { compileScript, component } from "../compiling.ts";
 import { evaluate, readOutput } from "./output.ts";
 
@@ -96,5 +98,62 @@ describe("a main-thread function declaration", () => {
 	it("is no error for a use in a function that runs later", () => {
 		const source = `export function later() {\n  return onScroll;\n}\nconst scale = 2;\nfunction onScroll() {\n  "main thread";\n  return scale;\n}\n`;
 		expect(failure(source)).toBeUndefined();
+	});
+});
+
+/** Where the declaration's object is made in the background's code, against `name`'s line. */
+function madeBelow(source: string, name: string): boolean {
+	const { code } = compileScript(source, { thread: "background" });
+	return code.indexOf(`const ${name}`) < code.indexOf("let onTap = {");
+}
+
+const HANDS = `import { runOnBackground } from "@sohedra/lynx";\n`;
+
+describe("a main-thread function declaration that hands a function to runOnBackground", () => {
+	it.each([
+		["a name", "save"],
+		["a member", "store.save"],
+		["a computed member", "store[key]"],
+		["a call's result", "make(key)"],
+	])("is made below what %s reads", (_kind, handed) => {
+		const source = `${HANDS}const key = "save";\nconst save = () => {};\nconst store = { save };\nconst make = () => save;\nfunction onTap() {\n  "main thread";\n  runOnBackground(${handed})();\n}\nexport const made = onTap;\n`;
+		const names = handed.match(/[a-z]+/g)!;
+		for (const name of names.filter((each) => each !== "save" || handed === "save"))
+			expect(madeBelow(source, name), name).toBe(true);
+	});
+
+	it("is made below inside a function too", () => {
+		const source = `${HANDS}export function make() {\n  const save = () => {};\n  function onTap() {\n    "main thread";\n    runOnBackground(save)();\n  }\n  return onTap;\n}\n`;
+		const { code } = compileScript(source, { thread: "background" });
+		expect(code.indexOf("const save")).toBeLessThan(code.indexOf("let onTap = {"));
+	});
+
+	it("is made at the top when the handle reads nothing yet: an inline function reads later", () => {
+		const source = `${HANDS}export const made = onTap;\nfunction onTap() {\n  "main thread";\n  runOnBackground(() => later)();\n}\nconst later = 1;\n`;
+		const { code } = compileScript(source, { thread: "background" });
+		expect(code.indexOf("let onTap = {")).toBeLessThan(code.indexOf("export const made"));
+	});
+
+	it("is an error where it is used above its line and hands on what is set below that use", () => {
+		const source = `${HANDS}const handlers = { onTap };\nconst save = () => {};\nfunction onTap() {\n  "main thread";\n  runOnBackground(save)();\n}\n`;
+		expect(failure(source)?.code).toBe("main_thread_function_used_early");
+	});
+});
+
+describe("what a handle reads as it is made", () => {
+	const read = (code: string) => readAtOnce(parseExpressionAt(code, 0, { ecmaVersion: "latest" }));
+
+	it("is each name read where it stands", () => {
+		expect(read("save")).toEqual(["save"]);
+		expect(read("store.save")).toEqual(["store"]);
+		expect(read("store[key]")).toEqual(["store", "key"]);
+		expect(read("make(key)")).toEqual(["make", "key"]);
+		expect(read("[a, { b: c, [d]: e }]")).toEqual(["a", "c", "d", "e"]);
+	});
+
+	it("is nothing a function inside it reads only when it runs", () => {
+		expect(read("() => later")).toEqual([]);
+		expect(read("(function () { return later; })")).toEqual([]);
+		expect(read("[save, () => later]")).toEqual(["save"]);
 	});
 });

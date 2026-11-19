@@ -42,8 +42,10 @@ function packageOptions(): ts.CompilerOptions {
 
 describe("the binding's thread code", { timeout: 60_000 }, () => {
 	it("leaves the DOM out of the base tsconfig an app extends", () => {
-		const { lib } = baseOptions();
+		const { lib, skipLibCheck } = baseOptions();
 		expect(lib).toEqual(["lib.es2021.d.ts"]);
+		// Svelte's and Rsbuild's declarations name the DOM's types, which the base leaves out.
+		expect(skipLibCheck).toBe(true);
 	});
 
 	it("type-checks with the base tsconfig's built-ins, no DOM and no Node", () => {
