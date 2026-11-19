@@ -105,9 +105,10 @@ const EVERY_SCRIPT = /\.(?:js|mjs|cjs|ts|mts|cts)$/;
  * The Rsbuild plugin that builds a Svelte app for Lynx, on top of Lynx's own build plugins. Throws
  * when an option is unknown or has a wrong value: one error lists every mistake.
  *
- * It runs on the Node.js versions rspeedy and Rsbuild run on. A component's main-thread functions
- * written in TypeScript need Node.js 22.13 or later, whose `module.stripTypeScriptTypes` takes out
- * their types; only types: an `enum` or a `namespace` there is a build error.
+ * It runs on the Node.js versions the package's `engines` names (22.22.2, 24.15 and 26, each line
+ * from that version). A component's main-thread functions written in TypeScript have their types
+ * taken out by Node's `module.stripTypeScriptTypes`; only types: an `enum` or a `namespace` there is
+ * a build error.
  *
  * The background's script may be split into chunks (`splitChunks`, `performance.chunkSplit`); the
  * main thread's never is. The chunks go into the bundle (`output.inlineScripts`, on by default) or
