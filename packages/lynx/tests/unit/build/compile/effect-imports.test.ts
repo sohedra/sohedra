@@ -54,3 +54,35 @@ describe("the effects' imports on the main thread", () => {
 		expect(code).toContain('import("./a\\u003cb\\u003e\\u2028.ts")');
 	});
 });
+
+// A package that says it has no side effects is left out of a production build where nothing reads
+// its exports, and with it the main-thread functions it registers as it loads.
+const dropped = `<script lang="ts">
+	import { triple } from "lib-effect";
+	import { act } from "lib-action";
+	import { attach } from "lib-attach";
+	import { shown } from "lib-shown";
+	import type { Kind } from "lib-type";
+	import { type Other, other } from "lib-other";
+	const kind: Kind | Other = "a";
+	$effect(() => { triple(kind); });
+</script>
+<view use:act {@attach attach}><text>{shown}{other}</text></view>`;
+
+/** The body of the function that never runs, in a copy's code. */
+const keeper = (code: string): string =>
+	/function __svelteLynxEffectImports\(\) \{([^}]*)\}/.exec(code)?.[1] ?? "";
+
+describe("the imports Svelte's server copy drops, on the main thread", () => {
+	it("are read in the function that never runs: an effect's, an action's and an attachment's", async () => {
+		const { code } = await component(dropped, { thread: "main-thread" });
+		for (const name of ["triple", "act", "attach"])
+			expect(keeper(code)).toMatch(new RegExp(`\\b${name}\\b`));
+	});
+
+	it("leave out a type, and an import the server copy reads itself", async () => {
+		const { code } = await component(dropped, { thread: "main-thread" });
+		for (const name of ["Kind", "Other", "shown", "other"])
+			expect(keeper(code)).not.toMatch(new RegExp(`\\b${name}\\b`));
+	});
+});
