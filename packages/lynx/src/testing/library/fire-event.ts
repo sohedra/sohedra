@@ -76,15 +76,21 @@ export type LynxEventName = keyof typeof EVENTS;
 /** `fireEvent` and its shortcuts. */
 export type FireEvent = {
 	/**
-	 * Fires the Lynx event `event` with `init`, or a DOM event's type and own fields, on `element`,
-	 * then waits until both threads are idle. Resolves with `true`: a Lynx event cannot be canceled.
+	 * Fires the Lynx event `event` with `init` on `element`, or a DOM event as the Lynx event it
+	 * stands for (its type, its own fields, and a `CustomEvent`'s `detail`), then waits until both
+	 * threads are idle. A DOM event bubbles as it was made: `new Event("tap")` does not, and reaches
+	 * its element only. Resolves with `true`: a Lynx event cannot be canceled.
 	 */
 	(element: Element, event: Event | string, init?: LynxEventInit): Promise<boolean>;
 } & { [Name in LynxEventName]: (element: Element, init?: LynxEventInit) => Promise<boolean> };
 
-/** A DOM event as the Lynx event it stands for: its type, whether it bubbles, and its own fields. */
+/**
+ * A DOM event as the Lynx event it stands for: its type, whether it bubbles, its own fields, and
+ * its `detail`, which a `CustomEvent` keeps on its prototype.
+ */
 function fromDom(event: Event): { name: string; init: LynxEventInit } {
 	const fields: Record<string, unknown> = {};
+	if ("detail" in event) fields["detail"] = event.detail;
 	for (const key of Object.keys(event))
 		if (key !== "isTrusted") fields[key] = Reflect.get(event, key);
 	return { name: event.type, init: { ...fields, bubbles: event.bubbles } };
