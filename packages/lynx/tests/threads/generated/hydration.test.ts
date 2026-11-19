@@ -114,4 +114,9 @@ describe("a generated page's first frame, tapped before hydration", () => {
 			],
 		]);
 	});
+
+	it("ends the tap's task on the main thread before the background runs a step", async () => {
+		// The tap's handler changes its element, which the main thread flushes at its task's end.
+		await checkPages([[page(root([tapped])), [{ kind: "tap", pick: 0 }, { kind: "layer" }]]]);
+	});
 });
