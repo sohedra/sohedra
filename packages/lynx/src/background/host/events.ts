@@ -1,11 +1,12 @@
 // `host`: the target for the host's events, which reach the background through lynx-core's
 // `GlobalEventEmitter`, for Svelte's `on()`. The emitter has one listener of ours per event name
 // while anything listens to it, which runs the page's listeners itself:
-//   - a listener that throws is reported, and the others still run;
-//   - a listener removed while another of its name is left never reaches the emitter, as lynx-core
-//     stops Android's keyboard detection at any removal of a `keyboardstatuschanged` listener;
+//   - a listener that throws is reported, and the others still run: lynx-core's emitter would stop
+//     at it;
+//   - a listener removed while another of its name is left never reaches the emitter;
 //   - the page's end removes what is left.
-// A page that never listens never asks lynx-core for the emitter.
+// A page that never listens never asks lynx-core for the emitter. Adding a `keyboardstatuschanged`
+// listener starts Android's keyboard detection; removing one sends a stop that Android ignores.
 
 import { background } from "../globals.ts";
 import type { EmitterListener, GlobalEventEmitter } from "../globals.ts";
@@ -34,7 +35,7 @@ export interface HostEvents {
 	onWindowResize: [width: number, height: number];
 	/** The device's font scale changed. */
 	onFontScaleChanged: [change: { scale: number }];
-	/** A bundle Lynx was asked for did not load; Lynx has already reported it. */
+	/** Lynx says a bundle it was asked for did not load, which it has already reported. */
 	onDynamicComponentEvent: [
 		event: {
 			code: number;
@@ -50,6 +51,7 @@ export type HostListener = (...args: never[]) => unknown;
 export interface Host {
 	/** Listens to the host's event `type`; the listener gets the event's arguments. */
 	addEventListener(type: string, listener: HostListener): void;
+	/** Stops a listener `addEventListener` added. */
 	removeEventListener(type: string, listener: HostListener): void;
 }
 

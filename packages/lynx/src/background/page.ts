@@ -40,7 +40,6 @@ import { closeHostEvents, openHostEvents } from "./host/events.ts";
 import { resetKeyboard } from "./host/keyboard.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
 import { closeLayers, openLayers, unmountLayers } from "./layers.ts";
-import { installLazyBundles } from "./lazy-bundle.ts";
 import { bumpPage, clearPageState, currentPage, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { numberInput } from "./renderer/input.ts";
@@ -131,8 +130,6 @@ export function mountPage<Props extends Bag>(
 	startGeneration();
 	openLayers();
 	openHostEvents();
-	resetKeyboard();
-	installLazyBundles();
 	// `on()` listens through the page's renderer wherever it is called.
 	listenThrough(pageRenderer);
 	let instance: Record<string, unknown> | undefined;
@@ -360,11 +357,11 @@ export function mountPage<Props extends Bag>(
 	}
 
 	/**
-	 * The host's global props, all of them (the platform merges an update into them before the
-	 * engine sends them). lynx-core sets `lynx.__globalProps` only as the page starts.
+	 * The host's global props, all of them: the platform merges an update into the ones it has
+	 * before the engine sends them. lynx-core sets `lynx.__globalProps` only as the page starts.
 	 */
 	function updateGlobalProps(props: unknown): void {
-		if (isRecord(props)) lynx.__globalProps = { ...lynx.__globalProps, ...props };
+		if (isRecord(props)) lynx.__globalProps = props;
 		handle(globalPropsChanged);
 	}
 

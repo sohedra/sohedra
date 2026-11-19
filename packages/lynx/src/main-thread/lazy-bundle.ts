@@ -23,7 +23,9 @@ const taken = new Set<string>();
 
 /**
  * Takes the lazy bundle the background loaded: runs its main-thread code and adopts its styles,
- * once per bundle. What fails is reported, and the next import tries again.
+ * once per bundle. What fails is reported, and the background's `import()` resolves all the same:
+ * the bundle's main-thread part stays missing while the view lives, since the bundler does not ask
+ * for a chunk it has again.
  */
 export function takeLazyBundle(params: LazyBundleParams, report: (error: unknown) => void): void {
 	const { url } = params;
@@ -52,6 +54,8 @@ export function takeLazyBundle(params: LazyBundleParams, report: (error: unknown
  * The bundle's main-thread section, or none. A bundle the first frame's build never saw an
  * `import()` of (one whose specifier is not a string) has no main-thread code, and Lynx throws for
  * its empty section; its styles are still adopted.
+ *
+ * @workaround empty-main-thread-section kind=lynx-limit delete-when="Lynx's loadScript answers nothing for an empty section instead of throwing, or the build writes a main-thread section into every lazy bundle"
  */
 function mainThreadSection(bundleName: string): ((entry: string) => BundlerChunk) | undefined {
 	try {

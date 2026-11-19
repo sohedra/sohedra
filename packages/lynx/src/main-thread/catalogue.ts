@@ -175,7 +175,7 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		message: ({ url }) =>
 			`The lazy bundle ${url} reached the background but not the main thread, so its main-thread functions and styles are missing.`,
 		fix: () =>
-			"Import it again: the main thread takes it at the next import. If it keeps failing, check that the bundle is served at that address.",
+			"Check that the bundle is served at that address and that the device reaches it: the main thread takes the bundle again only when the page is opened again.",
 		docs: "lazy_bundle_not_on_main_thread",
 	},
 };

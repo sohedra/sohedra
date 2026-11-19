@@ -19,7 +19,10 @@ const CLOSED: KeyboardState = { open: false, height: 0 };
 /**
  * The keyboard as one `keyboardstatuschanged` event gives it, on either platform: iOS sends
  * `("on", height)` and `("off", 0)`, Android `("on" | "off", height, height)`. The height is Lynx's
- * number as it came.
+ * number as it came while the keyboard is open, and 0 once it closes: Android measures even a
+ * closed keyboard to the Lynx view's bottom, which is not 0 when something sits below the view.
+ *
+ * @workaround keyboard-closed-height kind=lynx-gap delete-when="Lynx sends a height of 0 with every off status of keyboardstatuschanged, on Android too"
  */
 export function keyboardState(status: unknown, height: unknown): KeyboardState {
 	if (status !== "on") return CLOSED;
@@ -27,7 +30,6 @@ export function keyboardState(status: unknown, height: unknown): KeyboardState {
 }
 
 const state = signal(CLOSED);
-let listening = false;
 
 function update(...args: unknown[]): void {
 	const next = keyboardState(args[0], args[1]);
@@ -56,16 +58,13 @@ function update(...args: unknown[]): void {
  */
 export const keyboard: { readonly current: KeyboardState } = {
 	get current() {
-		if (!listening) {
-			listening = true;
-			host.addEventListener("keyboardstatuschanged", update);
-		}
+		// The host keeps one listener added twice: only the first read adds it.
+		host.addEventListener("keyboardstatuschanged", update);
 		return state.read();
 	},
 };
 
-/** The page has ended: the next read listens again, from closed. */
+/** The page has ended, and its listener with it: the next read listens again, from closed. */
 export function resetKeyboard(): void {
-	listening = false;
 	state.write(CLOSED);
 }

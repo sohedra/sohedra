@@ -60,6 +60,7 @@ export const globalPropsChanged: () => void = globalPropsChanges.bump;
  * ```
  *
  * On the main thread, as a component draws the first frame, it is the data the frame is drawn from.
+ * Read it in a component: there, module-level code gets `{}`.
  */
 export const initData: { readonly current: InitData } = {
 	get current() {

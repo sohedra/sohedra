@@ -7,7 +7,10 @@ import { firstFrameError } from "./catalogue.ts";
 import { drawingData } from "./drawing.ts";
 import { firstFrame } from "./globals.ts";
 
-/** The page's data the first frame is drawn from. */
+/**
+ * The page's data the first frame is drawn from. Read it in a component: module-level code runs
+ * before the frame is drawn, and gets `{}` here while the background gets the page's data.
+ */
 export const initData: { readonly current: Record<string, unknown> } = {
 	get current() {
 		return drawingData();

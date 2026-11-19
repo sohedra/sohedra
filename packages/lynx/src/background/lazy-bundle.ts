@@ -59,21 +59,24 @@ function pageUrl(): string | undefined {
  * no timeout of its own, so one timer covers the whole load. 30 seconds: longer than a slow mobile
  * connection takes for a bundle of tens of kilobytes, and short enough that a `{#await}` does not
  * wait for a lost request for minutes.
+ *
+ * @workaround lazy-bundle-timeout kind=lynx-gap delete-when="lynx.fetchBundle answers a request that never completes with a failure of its own"
  */
 const LOAD_TIMEOUT_MS = 30_000;
 
 /** The error of a bundle Lynx did not deliver, with Lynx's answer as its `cause`. */
-function notLoaded(url: string, bundle: FetchedBundle | undefined): Error {
+function notLoaded(url: string, bundle: FetchedBundle): Error {
 	const error = backgroundError({
 		code: "lazy_bundle_not_loaded",
-		details: { url, code: bundle?.code ?? -1, reason: bundle?.error_msg || undefined },
+		details: { url, code: bundle.code, reason: bundle.error_msg },
 	});
 	return Object.assign(error, { cause: bundle });
 }
 
 /**
  * Loads the lazy bundle at `path`: resolves with the bundler's chunk once both threads have it, and
- * rejects when it does not arrive.
+ * rejects when it does not arrive. The chunk loader also passes a load mode and its own entry,
+ * which ReactLynx reads for synchronous loads; the build writes no mode, so every load is this one.
  */
 export function loadLazyBundle(path: string): Promise<unknown> {
 	const { lynx } = background;
@@ -100,7 +103,7 @@ export function loadLazyBundle(path: string): Promise<unknown> {
 			reject(error);
 		}
 		function done(chunk: unknown): void {
-			if (settled) return;
+			// After a failure the promise has settled, and resolving it does nothing.
 			settled = true;
 			background.clearTimeout(timer);
 			resolve(chunk);
@@ -108,7 +111,7 @@ export function loadLazyBundle(path: string): Promise<unknown> {
 		try {
 			lynx.fetchBundle(url, {}).then((bundle) => {
 				if (settled) return;
-				if (!bundle || bundle.code !== 0) {
+				if (bundle.code !== 0) {
 					fail(notLoaded(url, bundle));
 					return;
 				}

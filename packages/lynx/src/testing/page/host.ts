@@ -7,13 +7,14 @@ type Listener = (...args: unknown[]) => void;
 /** lynx-core's `GlobalEventEmitter` (lynx-core's modules/event/eventEmitter.ts). */
 export interface TestEmitter {
 	/**
-	 * Adds a listener of `name`; the same one twice is called twice. A `keyboardstatuschanged`
-	 * listener starts Android's keyboard detection (`switchKeyBoardDetect(true)`).
+	 * Adds a listener of `name`; the same one twice is called twice. For a `keyboardstatuschanged`
+	 * listener lynx-core sends `switchKeyBoardDetect(true)`, which starts Android's detection.
 	 */
 	addListener(name: string, listener: Listener, context?: object): void;
 	/**
-	 * Removes the first entry of `listener` under `name`. Any removal of a `keyboardstatuschanged`
-	 * listener stops the detection, whether others are left or not.
+	 * Removes the first entry of `listener` under `name`. At any removal of a
+	 * `keyboardstatuschanged` listener lynx-core sends `switchKeyBoardDetect(false)`, which Android
+	 * ignores (LynxSetModule.java).
 	 */
 	removeListener(name: string, listener: Listener): void;
 	/** Calls the listeners of `name` with `args`, in the order they were added. */
@@ -26,7 +27,7 @@ export interface HostEventsLog {
 	readonly asked: number;
 	/** The emitter's listeners of `name` now. */
 	listeners(name: string): number;
-	/** Each start (`true`) and stop (`false`) of Android's keyboard detection, in order. */
+	/** Each `switchKeyBoardDetect` lynx-core sent, `true` or `false`, in order. */
 	readonly keyboardDetection: readonly boolean[];
 }
 

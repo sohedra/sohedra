@@ -31,4 +31,4 @@ This product includes software adapted from Lynx
 licensed under the Apache License, Version 2.0:
 
 - src/background/host/system-info.ts, the type of SystemInfo from @lynx-js/types
-  (js_libraries/types/types/common/system-info.d.ts)
+  4.4.7 (js_libraries/types/types/common/system-info.d.ts)
