@@ -13,6 +13,8 @@ interface Manifest {
 	publishConfig: { exports: Record<string, string | Record<string, string>> };
 	sideEffects: string[];
 	dependencies: Record<string, string>;
+	peerDependencies: Record<string, string>;
+	engines: Record<string, string>;
 }
 
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")) as Manifest;
@@ -142,5 +144,22 @@ describe("dependencies", () => {
 				file.endsWith(".ts") && fs.readFileSync(path.join(ROOT, "src", file), "utf8").includes(pin),
 		);
 		expect(naming).toEqual([]);
+	});
+});
+
+describe("peerDependencies", () => {
+	it("run from the version tested to the end of its major (for 0.x, its minor), Svelte's build aside", () => {
+		const peers = Object.entries(manifest.peerDependencies).filter(([name]) => name !== "svelte");
+		expect(peers.filter(([, range]) => !/^\^\d+\.\d+\.\d+$/.test(range))).toEqual([]);
+	});
+});
+
+describe("engines", () => {
+	it("names the Node.js lines in Active or Maintenance LTS, each from its tested floor, as the README does", () => {
+		expect(manifest.engines["node"]).toMatch(
+			/^\^\d*[02468]\.\d+\.\d+(?: \|\| \^\d*[02468]\.\d+\.\d+)*$/,
+		);
+		const readme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8").replace(/\s+/g, " ");
+		expect(readme).toContain(`Node.js \`${manifest.engines["node"]}\``);
 	});
 });
