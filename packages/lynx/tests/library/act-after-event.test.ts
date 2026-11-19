@@ -5,6 +5,7 @@ import { expect, it } from "@rstest/core";
 import { act, fireEvent, render } from "@sohedra/lynx/testing";
 
 import TapFaded from "../fixtures/library/TapFaded.svelte";
+import TapLater from "../fixtures/library/TapLater.svelte";
 
 /** What `run` left rejected with no handler, once the process had a moment to say so. */
 async function unhandledDuring(run: () => Promise<void>): Promise<unknown[]> {
@@ -41,4 +42,20 @@ it("ends a main-thread handler's task when rerender follows the event with no aw
 	expect(unhandled).toEqual([]);
 	expect(box.style.opacity).toBe("0.5");
 	expect(box.dataset["step"]).toBe("2");
+});
+
+it("ends the task with what the handler chained when act runs from a macrotask's own code", async () => {
+	const { container } = await render(TapLater);
+	const box = container.querySelector<HTMLElement>(".box")!;
+	const unhandled = await unhandledDuring(
+		() =>
+			new Promise<void>((resolve, reject) => {
+				setImmediate(() => {
+					void fireEvent.tap(box);
+					act().then(() => resolve(), reject);
+				});
+			}),
+	);
+	expect(unhandled).toEqual([]);
+	expect(box.style.opacity).toBe("0.5");
 });
