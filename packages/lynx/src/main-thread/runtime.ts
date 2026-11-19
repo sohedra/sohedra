@@ -118,7 +118,7 @@ export function startMainThread(): MainThreadRuntime {
 				if (state.element) mainThread.__FlushElementTree(state.element);
 			},
 			afterLayout: (run) => calls.afterLayout(run),
-			// The main thread has no `queueMicrotask`; a promise's reaction runs at the end of the task.
+			// Lynx's main thread has no `queueMicrotask` of its own; a promise's reaction runs at the end of the task.
 			soon: (callback) => void Promise.resolve().then(callback),
 			nextTurn(callback) {
 				lynx.setTimeout(callback, 0);

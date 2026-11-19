@@ -86,7 +86,7 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 	function sendSoon(): void {
 		if (sending) return;
 		sending = true;
-		// The main thread has no `queueMicrotask`; a promise's reaction runs at the end of the task.
+		// Lynx's main thread has no `queueMicrotask` of its own; a promise's reaction runs at the end of the task.
 		void Promise.resolve().then(sendRows);
 	}
 

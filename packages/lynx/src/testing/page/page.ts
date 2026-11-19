@@ -9,6 +9,7 @@ import type { Engine } from "../engine/create-engine.ts";
 import {
 	activeSession,
 	installGlobals,
+	processQueueMicrotask,
 	readGlobal,
 	removeGlobals,
 	setActiveSession,
@@ -125,6 +126,7 @@ const IPHONE: Readonly<Record<string, unknown>> = {
 
 /** The globals a page's own code sets while it runs, put back when the page ends. */
 const PAGE_GLOBALS = [
+	"queueMicrotask",
 	"runWorklet",
 	"renderPage",
 	"updatePage",
@@ -149,9 +151,25 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	 * one there fails as it would.
 	 */
 	let current: Thread | undefined;
+	/**
+	 * Each thread's global `queueMicrotask`. Lynx's main thread has none (the device check of the
+	 * page's entry: `queueMicrotask is not defined` on the main thread of Lynx 4.2 on Android), so
+	 * there it is only what the page's own code puts there; the background keeps the process's.
+	 */
+	const microtasks: Record<Thread, unknown> = {
+		"main-thread": undefined,
+		background: processQueueMicrotask,
+	};
 	const enter = (thread: Thread): Thread | undefined => {
 		const before = current;
 		if (ended) return before;
+		if (thread !== current) {
+			// What the thread's own code left there stays its own.
+			if (current) microtasks[current] = readGlobal("queueMicrotask");
+			const own = microtasks[thread];
+			if (own === undefined) removeGlobals(["queueMicrotask"]);
+			else installGlobals({ queueMicrotask: own });
+		}
 		current = thread;
 		if (thread === "main-thread") {
 			installGlobals({ ...engine.functions, lynx: lynx.mainThread, SystemInfo: systemInfo });
