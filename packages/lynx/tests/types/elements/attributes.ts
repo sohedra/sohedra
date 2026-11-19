@@ -40,8 +40,14 @@ element("view", {
 	},
 });
 
+// A tag only known at run time, as `<svelte:element this={tag}>` with a `string`, takes the
+// attributes every element has.
+declare const tag: string;
+element(tag, { class: "part", ontap: () => {} });
 // @ts-expect-error `<div>` is not a Lynx element.
 element("div", {});
+// @ts-expect-error a misspelled tag is no element either.
+element("veiw", {});
 // @ts-expect-error `<frame>` is left out until a device shows one drawn.
 element("frame", {});
 // @ts-expect-error a reuse identifier is text.

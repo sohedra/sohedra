@@ -15,10 +15,11 @@ const ROOT = path.resolve(import.meta.dirname, "../../..");
 const FIXTURES = path.join(ROOT, "tests/fixtures/types/budget");
 
 /**
- * The most instantiations checking the reference component may make: measured at 15,448 on
+ * The most instantiations checking the reference component may make: measured at 14,443 on
  * TypeScript 6.0, about 5,700 of it for the page and the rest for the component generic over the
- * tag. The room left is for the types to grow, not for a mapped or conditional type per element,
- * which costs tens of thousands for each tag a component writes.
+ * tag. The room left is for the types to grow, not for a conditional or key-remapping type per
+ * element, which costs tens of thousands for each tag a component writes; the generated-file test
+ * catches a plain mapped type, which costs less.
  */
 const BUDGET = 20_000;
 

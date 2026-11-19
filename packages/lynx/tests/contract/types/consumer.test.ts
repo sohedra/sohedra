@@ -185,7 +185,8 @@ function svelteCheck(): string[] {
 		.filter((line) => / ERROR /.test(line))
 		.map((line) => {
 			const [, file, position, message] = /ERROR "([^"]+)" (\d+):\d+ "(.*)"$/.exec(line)!;
-			return `${file}:${position} ${JSON.parse(`"${message}"`).split("\n")[0]}`;
+			// The whole message: with overloads, the first line only says none matched.
+			return `${file}:${position} ${JSON.parse(`"${message}"`).replace(/\s+/g, " ")}`;
 		});
 }
 
@@ -215,7 +216,7 @@ describe("the types an app gets", { timeout: 120_000 }, () => {
 	it("let svelte-check pass what an app writes and name each mistake in its elements", () => {
 		// One mistake on each line of the wrong component, and nothing else.
 		const expected: [line: number, says: string][] = [
-			[8, `'"div"' is not assignable`],
+			[8, "No overload matches this call"],
 			[9, `'"ontpa"' does not exist in type 'ViewAttributes'`],
 			[10, `'"bindtap"' does not exist in type 'ViewAttributes'`],
 			[11, "'(event: LynxScrollEvent) => undefined' is not assignable"],
@@ -225,7 +226,9 @@ describe("the types an app gets", { timeout: 120_000 }, () => {
 			[15, "Property 'preventDefault' does not exist on type 'MainThreadEvent<"],
 			[16, "No overload matches this call"],
 			[17, "Type '7' is not assignable"],
-			[18, `'"frame"' is not assignable`],
+			[18, "No overload matches this call"],
+			[19, "No overload matches this call"],
+			[20, "No overload matches this call"],
 		];
 		const found = svelteCheck();
 		expect(found.map((error) => error.split(" ")[0])).toEqual(

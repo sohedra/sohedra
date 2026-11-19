@@ -16,3 +16,5 @@
 <scroll-view {@attach (node) => void node.invoke("setValue", { value: "a" })}></scroll-view>
 <overlay level={7}></overlay>
 <frame src="a"></frame>
+<svelte:element this={"veiw"}></svelte:element>
+<viewx></viewx>

@@ -79,3 +79,20 @@ element("view", { "global-bindtap": () => {} });
 element("view", { ontap: (event: LynxScrollEvent) => void event });
 // @ts-expect-error a `<view>` sends no `scroll`.
 element("view", { onscroll: () => {} });
+
+// Lynx's types give an image's `load` and `error` an event as their detail: the detail has its
+// fields, not an event's.
+element("image", {
+	onload: (event) => {
+		// @ts-expect-error the detail is not an event: it has no functions.
+		event.detail.preventDefault();
+		// @ts-expect-error nor targets.
+		void event.detail.target;
+	},
+	onerror: (event) => {
+		const message: string = event.detail.errMsg;
+		void message;
+		// @ts-expect-error the detail is not an event.
+		void event.detail.currentTarget;
+	},
+});

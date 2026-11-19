@@ -131,7 +131,7 @@
 		"svelte-check": "^4.7.8",
 		"svelte2tsx": "^0.7.63",
 		"typescript": "^6.0.3",
-		"typescript-5.9": "npm:typescript@5.9.3"
+		"typescript-5.9": "npm:typescript@^5.9.3"
 	},
 	"peerDependencies": {
 		"@lynx-js/rspeedy": "^0.18.0",

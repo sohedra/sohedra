@@ -6,7 +6,7 @@
 	import { PanGesture } from "@sohedra/lynx/gesture";
 	import { on } from "svelte/events";
 
-	let { rows }: { rows: { id: string; label: string }[] } = $props();
+	let { rows, tag = "view" }: { rows: { id: string; label: string }[]; tag?: string } = $props();
 	let text = $state("");
 	let scroller: LynxNode<"scroll-view"> | undefined;
 	const box = mainThreadRef<MainThread.Element | null>(null);
@@ -60,6 +60,7 @@
 	></overlay>
 	<image src="a.png" onload={(event) => void [event.detail.width, event.detail.height]} />
 	<view ontap={() => scroller?.invoke("scrollTo", { offset: 0, smooth: true })}></view>
+	<svelte:element this={tag} class="part" ontap={() => {}}></svelte:element>
 	<svelte:boundary onerror={() => {}}>
 		<view></view>
 	</svelte:boundary>

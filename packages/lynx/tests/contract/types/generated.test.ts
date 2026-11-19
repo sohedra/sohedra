@@ -49,6 +49,24 @@ describe("the generated types", { timeout: 60_000 }, () => {
 		expect(text).not.toContain('from "@lynx-js/types');
 	});
 
+	it("say the binding's event spellings and American English in their doc comments", () => {
+		const text = fs.readFileSync(path.join(ROOT, "types/generated/elements.d.ts"), "utf8");
+		const docs = text.match(/\/\*\*[\s\S]*?\*\//g)!.join("\n");
+		expect(
+			docs.match(/\b(?:bind|catch|capture-bind|capture-catch|global-bind)[a-z]+\b/gi) ?? [],
+		).toEqual([]);
+		expect(docs.match(/\bcancell\w+/gi) ?? []).toEqual([]);
+	});
+
+	it("give SystemInfo's every field a doc comment, and its deprecated one a replacement", () => {
+		const text = fs.readFileSync(path.join(ROOT, "src/background/host/system-info.ts"), "utf8");
+		const fields = text.match(/^\t(?:\/\*\*.*| \*\/|readonly .*)$/gm)!;
+		fields.forEach((line, index) => {
+			if (line.startsWith("\treadonly")) expect(fields[index - 1], line).toMatch(/\*\/$/);
+		});
+		expect(text).toMatch(/@deprecated Use `engineVersion`/);
+	});
+
 	it("stop generating once Lynx's types declare what the binding adds for them", () => {
 		const model = readLynxTypes(OMITTED_TAGS);
 		const overlay = model.elements.find((element) => element.tag === "overlay")!;
