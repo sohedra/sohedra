@@ -1,6 +1,6 @@
 // Apps built as apps build them, through a CLI in a process of its own (cli-build.ts), beside the
-// playground (playground.test.ts): Rsbuild's CLI with only the binding's plugin, for production;
-// and rspeedy's, for development.
+// playground (playground.test.ts): Rsbuild's CLI with only the binding's plugin, for production,
+// also twice with its build cache; and rspeedy's, for development.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -70,6 +70,52 @@ describe("an app built with Rsbuild's CLI and the binding's plugin alone", () =>
 			await page.settle();
 			expect(page.errors.map(String)).toEqual([]);
 			expect(page.engine.texts()).toContain("Tripled 6");
+		} finally {
+			page.dispose();
+		}
+	});
+});
+
+describe("an app built twice with Rsbuild's build cache", () => {
+	let app: string;
+	const builds: CliBuild[] = [];
+	const styles: string[] = [];
+	beforeAll(async () => {
+		app = cliApp("rsbuild", ["press-lib"]);
+		const config = path.join(app, "rsbuild.config.ts");
+		fs.writeFileSync(
+			config,
+			fs
+				.readFileSync(config, "utf8")
+				.replace("plugins:", "performance: { buildCache: true },\n\tplugins:"),
+		);
+		for (const round of [0, 1]) {
+			// The second build restores the component from the cache, and builds the entry again.
+			if (round === 1) fs.appendFileSync(path.join(app, "index.ts"), "\n// Changed.\n");
+			const build = await cliBuild({ cli: "rsbuild", cwd: app });
+			builds.push(build);
+			if (build.ok) styles.push(JSON.stringify(JSON.parse(script(build, "tasm.json"))["css"]));
+		}
+	}, 360_000);
+	afterAll(() => fs.rmSync(path.dirname(app), { recursive: true, force: true }));
+
+	it("builds both times, the second from the cache", () => {
+		for (const build of builds) expect(build.ok, build.output).toBe(true);
+		expect(fs.existsSync(path.join(app, "node_modules/.cache"))).toBe(true);
+	});
+
+	it("never restores a component without its styles", async () => {
+		expect(styles).toHaveLength(2);
+		expect(styles[0]).toContain("margin-top");
+		expect(styles[1]).toBe(styles[0]);
+		const { page } = startDevicePage({
+			mainThread: script(builds[1]!, "main-thread.js"),
+			background: script(builds[1]!, "background.js"),
+		});
+		try {
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts()).toContain("Press");
 		} finally {
 			page.dispose();
 		}

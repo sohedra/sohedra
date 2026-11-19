@@ -136,6 +136,7 @@
 		"@rsbuild/core": "^2.3.2",
 		"@rsbuild/plugin-less": "^2.0.1",
 		"@rsbuild/plugin-sass": "^2.0.1",
+		"@rsdoctor/rspack-plugin": "^1.6.5",
 		"@rstest/adapter-rsbuild": "^0.12.6",
 		"@rstest/core": "^0.12.6",
 		"@rstest/coverage-istanbul": "^0.12.6",

@@ -18,3 +18,9 @@
 <view class="ask" ontap={() => (asked = 2)}>
 	<text>Tripled {tripled}</text>
 </view>
+
+<style>
+	.press {
+		margin-top: 7px;
+	}
+</style>
