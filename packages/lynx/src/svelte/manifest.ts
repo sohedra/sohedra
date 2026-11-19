@@ -383,6 +383,25 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 			"making a renderer current turns Svelte's own hydration off only while it is on, and the way back turns it on again: the background never runs Svelte's `hydrate` (the first frame is adopted on the main thread, and the entry mounts), so the renderer made current around effects, handlers and `on()` never meets it",
 		test: RUNTIME,
 	},
+	// The globals Svelte's runtime reads that Lynx's threads lack, which the binding fills on both
+	{
+		id: "runtime-reads-event-target",
+		program: "runtime",
+		file: "src/internal/shared/clone.js",
+		anchor: "if (value instanceof EventTarget) {",
+		reliesOn:
+			"only copying state (`$state.snapshot`, `$inspect`, `{@debug}`) and walking an action's object read the global `EventTarget`, unguarded, which the binding fills on both threads",
+		test: SOURCE,
+	},
+	{
+		id: "runtime-reads-structured-clone",
+		program: "runtime",
+		file: "src/internal/shared/clone.js",
+		anchor: "structuredClone(value)",
+		reliesOn:
+			"only copying state calls the global `structuredClone`, unguarded, for each value that is not an array, a plain object, a `Map` or a `Set`, which the binding fills on both threads",
+		test: SOURCE,
+	},
 	// Svelte's modules that read the window or the DOM when they load
 	{
 		id: "disclose-version-window-guard",

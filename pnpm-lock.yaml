@@ -214,6 +214,12 @@ importers:
       '@lynx-js/webpack-dev-transport':
         specifier: ^0.4.1
         version: 0.4.1
+      '@ungap/event-target':
+        specifier: ^0.2.4
+        version: 0.2.4
+      '@ungap/structured-clone':
+        specifier: ^1.4.0
+        version: 1.4.0
       es-module-lexer:
         specifier: ^3.0.5
         version: 3.0.5
@@ -239,6 +245,9 @@ importers:
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
+      '@types/ungap__structured-clone':
+        specifier: ^1.2.0
+        version: 1.2.0
       acorn:
         specifier: ^8.19.0
         version: 8.19.0
@@ -1067,11 +1076,17 @@ packages:
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
 
+  '@types/ungap__structured-clone@1.2.0':
+    resolution: {integrity: sha512-ZoaihZNLeZSxESbk9PUAPZOlSpcKx81I1+4emtULDVmBLkYutTcMlCj2K9VNlf9EWODxdO6gkAqEaLorXwZQVA==}
+
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
 
   '@types/yargs@17.0.35':
     resolution: {integrity: sha512-qUHkeCyQFxMXg79wQfTtfndEC+N9ZZg76HJftDJp+qH2tV7Gj4OJi7l+PiWwJ+pWtW8GwSmqsDj/oymhrTWXjg==}
+
+  '@ungap/event-target@0.2.4':
+    resolution: {integrity: sha512-u9Fd3k2qfMtn+0dxbCn/y0pzQ9Ucw6lWR984CrHcbxc+WzcMkJE4VjWHWSb9At40MjwMyHCkJNXroS55Osshhw==}
 
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
@@ -3130,11 +3145,15 @@ snapshots:
   '@types/trusted-types@2.0.7':
     optional: true
 
+  '@types/ungap__structured-clone@1.2.0': {}
+
   '@types/yargs-parser@21.0.3': {}
 
   '@types/yargs@17.0.35':
     dependencies:
       '@types/yargs-parser': 21.0.3
+
+  '@ungap/event-target@0.2.4': {}
 
   '@ungap/structured-clone@1.4.0': {}
 

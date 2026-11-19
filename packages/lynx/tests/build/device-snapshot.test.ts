@@ -1,0 +1,165 @@
+// Svelte's paths that copy or walk state read the globals `EventTarget` and `structuredClone`
+// (svelte/src/internal/shared/clone.js, internal/client/runtime.js), which neither of a device's
+// threads has: a page built for production and for development, run on threads shaped like a
+// device's (device-threads.ts).
+
+import vm from "node:vm";
+
+import { afterAll, afterEach, beforeAll, describe, expect, it, rs } from "@rstest/core";
+
+import type { LynxElement, TestPage } from "../../src/testing/index.ts";
+import { buildApp, cleanBuild, scriptsOf } from "./build-app.ts";
+import type { AppBuild } from "./build-app.ts";
+import { startDevicePage } from "./device-threads.ts";
+
+const MODES = ["production", "development"] as const;
+const builds = new Map<(typeof MODES)[number], AppBuild>();
+let actionBuild: AppBuild;
+
+beforeAll(async () => {
+	for (const mode of MODES)
+		builds.set(
+			mode,
+			await buildApp("snapshot", {
+				development: mode === "development",
+				rsbuild: { dev: { hmr: false, liveReload: false } },
+			}),
+		);
+	actionBuild = await buildApp("snapshot", { entry: "./action.ts" });
+}, 480_000);
+afterAll(() => {
+	for (const build of builds.values()) cleanBuild(build);
+	cleanBuild(actionBuild);
+});
+afterEach(() => {
+	rs.restoreAllMocks();
+});
+
+/** The first element with this class token. */
+function byClass(page: TestPage, token: string): LynxElement {
+	const found = page.engine
+		.all()
+		.find((element) => page.engine.state(element).classes.split(" ").includes(token));
+	if (!found) throw new Error(`No element has the class ${token}.`);
+	return found;
+}
+
+describe.each(MODES)("a page built for %s, on threads shaped like a device's", (mode) => {
+	let scripts: ReturnType<typeof scriptsOf>;
+	beforeAll(() => {
+		const build = builds.get(mode)!;
+		expect(build.error + build.messages).toBe("");
+		scripts = scriptsOf(build);
+	});
+
+	/** Starts the page with the console's logs kept, and settles it. */
+	async function start() {
+		const logs: unknown[][] = [];
+		rs.spyOn(console, "log").mockImplementation((...args: unknown[]) => void logs.push(args));
+		const device = startDevicePage(scripts);
+		await device.page.settle();
+		return { ...device, logs };
+	}
+
+	it("has a global EventTarget and structuredClone on both threads", async () => {
+		const { page, mainThread, background } = await start();
+		try {
+			const kinds = "[typeof EventTarget, typeof structuredClone]";
+			expect(vm.runInContext(kinds, mainThread)).toEqual(["function", "function"]);
+			expect(vm.runInContext(kinds, background)).toEqual(["function", "function"]);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("copies a primitive as it is, and refuses a symbol and a function as @ungap/structured-clone does", async () => {
+		const { page, mainThread, background } = await start();
+		try {
+			const probe = `[
+				[undefined, null, true, 0, -0, NaN, 10n, "text"].every((value) => Object.is(structuredClone(value), value)),
+				[Symbol("unique"), () => {}].map((value) => {
+					try {
+						structuredClone(value);
+					} catch (error) {
+						return error instanceof TypeError && error.message;
+					}
+				}),
+			]`;
+			const answer = [true, ["unable to serialize symbol", "unable to serialize function"]];
+			expect(vm.runInContext(probe, mainThread)).toEqual(answer);
+			expect(vm.runInContext(probe, background)).toEqual(answer);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("draws a snapshot of state with a date, a map and nested arrays on both threads", async () => {
+		const { page } = await start();
+		try {
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts()).toEqual(["0 1 [[1,2],[3,[4]]] true", "Updated with none"]);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("takes a snapshot in a tap, and calls an action's update with an object", async () => {
+		const { page } = await start();
+		try {
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts()).toEqual(["0 1 [[1,2,1],[3,[4]]] true", "Updated with 1"]);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it("logs the value of {@debug} as a copy", async () => {
+		const { page, logs } = await start();
+		try {
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(logs).toContainEqual([{ taps: 0 }]);
+			expect(logs).toContainEqual([{ taps: 1 }]);
+		} finally {
+			page.dispose();
+		}
+	});
+
+	it.runIf(mode === "development")("logs $inspect's value as a copy", async () => {
+		const { page, logs } = await start();
+		try {
+			expect(page.errors.map(String)).toEqual([]);
+			expect(logs).toContainEqual([
+				{
+					when: new Date(0),
+					sizes: new Map([["a", 1]]),
+					rows: [
+						[1, 2],
+						[3, [4]],
+					],
+				},
+			]);
+		} finally {
+			page.dispose();
+		}
+	});
+});
+
+describe("a page whose only read of EventTarget is an action's object, on threads shaped like a device's", () => {
+	it("calls the action's update", async () => {
+		expect(actionBuild.error + actionBuild.messages).toBe("");
+		const { page } = startDevicePage(scriptsOf(actionBuild));
+		try {
+			await page.settle();
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.engine.texts()).toEqual(["Updated with 1"]);
+		} finally {
+			page.dispose();
+		}
+	});
+});

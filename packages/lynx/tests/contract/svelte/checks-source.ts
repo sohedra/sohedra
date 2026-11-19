@@ -254,6 +254,28 @@ export const checks: Checks = {
 		);
 	},
 
+	"runtime-reads-event-target": () => {
+		// Where the binding's global `EventTarget` is read: copying state, and walking an action's value.
+		expect(filesWith("src", "instanceof EventTarget")).toEqual([
+			"src/internal/client/runtime.js",
+			"src/internal/shared/clone.js",
+		]);
+		// Unguarded: once Svelte checks for the global first, the fills can go.
+		for (const file of ["src/internal/client/runtime.js", "src/internal/shared/clone.js"])
+			expect(readSvelte(file)).not.toMatch(/typeof (globalThis\.)?EventTarget\b/);
+	},
+
+	"runtime-reads-structured-clone": () => {
+		// Where the binding's global `structuredClone` is called: a `Date`, and every other leaf.
+		expect(filesWith("src", "structuredClone(")).toEqual(["src/internal/shared/clone.js"]);
+		expect(occurrences(readSvelte("src/internal/shared/clone.js"), "structuredClone(value)")).toBe(
+			2,
+		);
+		// Unguarded: once Svelte checks for the global first, the fills can go.
+		for (const file of ["src/internal/client/runtime.js", "src/internal/shared/clone.js"])
+			expect(readSvelte(file)).not.toMatch(/typeof (globalThis\.)?structuredClone\b/);
+	},
+
 	"disclose-version-window-guard": () => {
 		// Every component imports it, on a thread with no window.
 		expect(readSvelte("src/internal/disclose-version.js")).toContain(
