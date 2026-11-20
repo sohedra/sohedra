@@ -4,12 +4,7 @@
 -->
 <script lang="ts">
 	import { runOnBackground } from "@sohedra/lynx";
-	import {
-		continueWith,
-		FlingGesture,
-		LongPressGesture,
-		NativeGesture,
-	} from "@sohedra/lynx/experimental";
+	import { FlingGesture, LongPressGesture, NativeGesture } from "@sohedra/lynx/experimental";
 	import type { GestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
 	import { PanGesture } from "@sohedra/lynx/gesture";
 
@@ -28,7 +23,7 @@
 	const fling = $derived(new FlingGesture({ onUpdate: heard }));
 	const native = $derived(new NativeGesture({ onBegin: heard }));
 	const press = $derived(new LongPressGesture({ minDuration: 300, onStart: heard }));
-	const handsOn = $derived(continueWith(new PanGesture({ onEnd: heard }), [fling]));
+	const handsOn = $derived(new PanGesture({ onEnd: heard, continueWith: [fling] }));
 </script>
 
 <view class="fling" main-thread:gesture={fling}></view>

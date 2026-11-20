@@ -14,6 +14,20 @@ Give it the gestures themselves, as made with new: new RaceGesture(pan, tap).
 https://sohedra.com/e/gesture_member_not_gesture"
 `;
 
+exports[`the gestures' catalogue > gesture_relation_experimental: the message 1`] = `
+"The waitFor of a TapGesture is experimental: on Android, a gesture that waits for one on an element around it never runs.
+
+Check the gesture on iOS and Android before you rely on waitFor, or leave waitFor out.
+https://sohedra.com/e/gesture_relation_experimental"
+`;
+
+exports[`the gestures' catalogue > gesture_relation_experimental: the message for continueWith, which no device has run 1`] = `
+"The continueWith of a PanGesture is experimental: no device has shown it working yet.
+
+Check the gesture on iOS and Android before you rely on continueWith, or leave continueWith out.
+https://sohedra.com/e/gesture_relation_experimental"
+`;
+
 exports[`the gestures' catalogue > gesture_relation_not_a_list: the message 1`] = `
 "The simultaneousWith of a PanGesture is not a list of gestures.
 
@@ -26,11 +40,4 @@ exports[`the gestures' catalogue > gesture_relation_not_gesture: the message 1`]
 
 Give simultaneousWith the gestures themselves, as made with new: simultaneousWith: [pan], where pan is a PanGesture or another gesture.
 https://sohedra.com/e/gesture_relation_not_gesture"
-`;
-
-exports[`the gestures' catalogue > relation_call_not_gestures: the message 1`] = `
-"The list given to waitFor holds a value that is not a gesture, so it cannot name it.
-
-Give it a gesture, then a list of gestures: waitFor(pan, [tap]).
-https://sohedra.com/e/relation_call_not_gestures"
 `;

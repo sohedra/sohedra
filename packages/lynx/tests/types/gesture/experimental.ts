@@ -1,15 +1,13 @@
-// Checked by `pnpm check`, not run. `@sohedra/lynx/experimental`: the gestures and calls that wait
-// for a device probe, each made from one options object, composed and related as the stable ones.
+// Checked by `pnpm check`, not run. `@sohedra/lynx/experimental`: the gestures that wait for a
+// device probe, each made from one options object, composed and related as the stable ones.
 
 import {
-	continueWith,
 	ExclusiveGesture,
 	FlingGesture,
 	LongPressGesture,
 	NativeGesture,
 	RaceGesture,
 	SimultaneousGesture,
-	waitFor,
 } from "@sohedra/lynx/experimental";
 import type {
 	ExperimentalStateManager,
@@ -18,7 +16,7 @@ import type {
 	LongPressGestureOptions,
 	NativeGestureChangeEvent,
 } from "@sohedra/lynx/experimental";
-import type { GestureKind, StateManager } from "@sohedra/lynx/gesture";
+import type { Gesture, StateManager } from "@sohedra/lynx/gesture";
 
 const onEnd = (event: FlingGestureChangeEvent, state: StateManager): void => {
 	const velocity: number = event.params.deltaX;
@@ -33,8 +31,8 @@ const press: LongPressGesture = new LongPressGesture({
 const native = new NativeGesture({
 	onUpdate: (event: NativeGestureChangeEvent) => void event.params.scrollY,
 });
-const related: FlingGesture = continueWith(waitFor(fling, [press]), [native]);
-const composed: GestureKind[] = [
+const related = new FlingGesture({ onEnd, waitFor: [press], continueWith: [native] });
+const composed: Gesture[] = [
 	new RaceGesture(fling, press),
 	new SimultaneousGesture(press, native),
 	new ExclusiveGesture(related, press),
@@ -44,4 +42,4 @@ void composed;
 // @ts-expect-error the press's duration is a number of milliseconds.
 void new LongPressGesture({ minDuration: "300ms" });
 // @ts-expect-error a gesture waits for gestures, not for elements.
-waitFor(fling, ["view"]);
+void new LongPressGesture({ waitFor: ["view"] });

@@ -134,6 +134,29 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
+	it("sends a gesture's waitFor to the engine, and warns once that it is experimental in development only", async () => {
+		const { page } = startDevicePage(scripts);
+		try {
+			await page.settle();
+			const [pan] = page.engine.detectors(byClass(page, "drag"));
+			const [wait] = page.engine.detectors(byClass(page, "wait"));
+			expect(wait!.relations).toEqual({ waitFor: [pan!.id], simultaneous: [], continueWith: [] });
+			expect(page.errors.map(String)).toEqual([]);
+			expect(page.warnings).toEqual(
+				mode === "development"
+					? [
+							expect.objectContaining({
+								code: "gesture_relation_experimental",
+								message: expect.stringMatching(/^The waitFor of a TapGesture is experimental/),
+							}),
+						]
+					: [],
+			);
+		} finally {
+			page.dispose();
+		}
+	});
+
 	it("fills in the background's global queueMicrotask from lynx, and no timers", () => {
 		const { page, background } = startDevicePage(scripts);
 		try {

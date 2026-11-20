@@ -6,7 +6,6 @@
 -->
 <script lang="ts">
 	import { background, mainThread } from "@sohedra/lynx/env";
-	import { waitFor } from "@sohedra/lynx/experimental";
 	import { PanGesture, TapGesture } from "@sohedra/lynx/gesture";
 	import type { PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
 
@@ -25,7 +24,7 @@
 	}
 
 	const pan = $derived(new PanGesture({ onBegin }));
-	const waits = $derived(waitFor(new TapGesture(), [pan]));
+	const waits = $derived(new TapGesture({ waitFor: [pan] }));
 	const rowPan = $derived(new PanGesture({ minDistance: 2, onBegin: onRow }));
 	const differs = $derived(new PanGesture({ minDistance: mainThread ? 0 : 4, onBegin }));
 	api["add"] = () => (items = [0, ...items]);

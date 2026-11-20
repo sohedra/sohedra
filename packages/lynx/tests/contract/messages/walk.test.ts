@@ -142,6 +142,7 @@ const NAMES: Record<string, Resolves> = {
 	animate: { kind: "a method of the background's element nodes" },
 	setStyleProperty: { kind: "a method of an element in a main-thread function" },
 	"lynx.reload": { kind: "Lynx's own API on the background" },
+	iOS: { kind: "a platform" },
 	pluginLynx: { kind: "Lynx's Rsbuild plugin, @lynx-js/rsbuild-plugin" },
 	// The settings of Rsbuild, Svelte and the plugin, named as written in a config file.
 	"output.assetPrefix": { kind: "an Rsbuild setting" },

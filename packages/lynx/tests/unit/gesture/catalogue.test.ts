@@ -11,8 +11,8 @@ const SAMPLES: { [Code in GestureCode]: GestureDetails[Code] } = {
 	gesture_callback_not_main_thread: { gesture: "PanGesture", name: "onUpdate" },
 	gesture_relation_not_gesture: { gesture: "PanGesture", name: "simultaneousWith" },
 	gesture_relation_not_a_list: { gesture: "PanGesture", name: "simultaneousWith" },
+	gesture_relation_experimental: { gesture: "TapGesture", name: "waitFor" },
 	gesture_member_not_gesture: { composition: "RaceGesture" },
-	relation_call_not_gestures: { call: "waitFor", given: "member" },
 };
 
 const CODES = Object.keys(GESTURE_CATALOGUE) as GestureCode[];
@@ -34,6 +34,15 @@ describe("the gestures' catalogue", () => {
 		expect(error.code).toBe(code);
 		expect(error.message.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
 		expect(error.message).not.toMatch(INTERNAL_WORDS);
+		expect(error.message).toMatchSnapshot();
+	});
+
+	it("gesture_relation_experimental: the message for continueWith, which no device has run", () => {
+		const error = gestureError({
+			code: "gesture_relation_experimental",
+			details: { gesture: "PanGesture", name: "continueWith" },
+		});
+		expect(error.message.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
 		expect(error.message).toMatchSnapshot();
 	});
 });

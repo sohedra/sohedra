@@ -6,16 +6,16 @@
 	a composition whose members each wait for those before them; `right` may run with `left`.
 -->
 <script lang="ts">
-	import { ExclusiveGesture, LongPressGesture, waitFor } from "@sohedra/lynx/experimental";
+	import { ExclusiveGesture, LongPressGesture } from "@sohedra/lynx/experimental";
 	import { DefaultScrollGesture, PanGesture, TapGesture } from "@sohedra/lynx/gesture";
 
 	let { api }: { api: Record<string, unknown> } = $props();
 	let distance = $state(0);
 	let shown = $state(true);
 	const outer = $derived(new PanGesture({ minDistance: distance }));
-	const inner = $derived(waitFor(new TapGesture(), [outer]));
+	const inner = $derived(new TapGesture({ waitFor: [outer] }));
 	const scroll = new DefaultScrollGesture();
-	const sheet = $derived(waitFor(new PanGesture({ minDistance: distance }), [scroll]));
+	const sheet = $derived(new PanGesture({ minDistance: distance, waitFor: [scroll] }));
 	const three = new ExclusiveGesture(new PanGesture(), new TapGesture(), new LongPressGesture());
 	const left = new PanGesture();
 	const right = new PanGesture({ simultaneousWith: [left] });
