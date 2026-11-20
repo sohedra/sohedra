@@ -7,7 +7,7 @@ import Counter from "../fixtures/threads/Counter.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 
 describe("the patches of a counter page", () => {
-	it("are its first screen, a tap, new data and a reload", async () => {
+	it("are its first render, a tap, new data and a reload", async () => {
 		const page = startSveltePage(Counter);
 		await page.settle();
 		page.engine.dispatch(page.byClass("button"), { type: "tap" });

@@ -1,4 +1,4 @@
-// A list's first screen, counted as the rows render: (10 + preload-buffer-count) × span-count rows,
+// A list's initial rows, counted as the rows render: (10 + preload-buffer-count) × span-count rows,
 // or initial-item-count, a full-span row taking a whole line; the rows up to initial-scroll-index
 // too, to a cap; each list its own count, the innermost open counting; and no row a branch only
 // one thread renders draws.
@@ -7,17 +7,17 @@ import { describe, expect, it } from "@rstest/core";
 
 import { ThreadBranch } from "../../../../src/svelte/runtime/client-internals.ts";
 import {
-	endFirstScreens,
-	FirstScreens,
+	endInitialRows,
+	InitialRows,
 	SCROLL_INDEX_CAP,
-	startFirstScreens,
-	startingScreens,
-} from "../../../../src/svelte/runtime/first-screen.ts";
-import type { ListAttributes } from "../../../../src/svelte/runtime/first-screen.ts";
+	startInitialRows,
+	startingInitialRows,
+} from "../../../../src/svelte/runtime/initial-rows.ts";
+import type { ListAttributes } from "../../../../src/svelte/runtime/initial-rows.ts";
 
 /** Which of `rows` rows (each full-span or not) a list with `attributes` draws whole. */
 function drawn(attributes: ListAttributes, rows: number | boolean[]): boolean[] {
-	const screens = new FirstScreens();
+	const screens = new InitialRows();
 	screens.open(attributes);
 	const spans = typeof rows === "number" ? Array.from({ length: rows }, () => false) : rows;
 	return spans.map((fullSpan) => screens.row(fullSpan));
@@ -25,7 +25,7 @@ function drawn(attributes: ListAttributes, rows: number | boolean[]): boolean[] 
 
 const count = (rows: boolean[]): number => rows.filter(Boolean).length;
 
-describe("a list's first screen", () => {
+describe("a list's initial rows", () => {
 	it("is ten rows, and as many more as preload-buffer-count, times span-count", () => {
 		expect(count(drawn({}, 40))).toBe(10);
 		expect(count(drawn({ "preload-buffer-count": 5 }, 40))).toBe(15);
@@ -54,7 +54,7 @@ describe("a list's first screen", () => {
 
 	it("is the default for an initial-item-count that is not a count, and says so", () => {
 		for (const value of [-1, 2.5, "three", " 3", "-1", true, Number.NaN]) {
-			const screens = new FirstScreens();
+			const screens = new InitialRows();
 			screens.open({ "initial-item-count": value }, "src/Feed.svelte:3:0");
 			const rows = Array.from({ length: 40 }, () => screens.row(false));
 			expect(count(rows), String(value)).toBe(10);
@@ -81,14 +81,14 @@ describe("a list's first screen", () => {
 		);
 	});
 
-	it("is only the first screen past the cap, and says so once", () => {
-		const screens = new FirstScreens();
+	it("stops at the cap, and says so once", () => {
+		const screens = new InitialRows();
 		screens.open({ "initial-scroll-index": SCROLL_INDEX_CAP + 1 }, "src/Feed.svelte:3:0");
 		const rows = Array.from({ length: 200 }, () => screens.row(false));
 		expect(count(rows)).toBe(10);
 		expect(screens.notes).toEqual([
 			{
-				code: "initial_scroll_index_past_first_screen",
+				code: "initial_scroll_index_past_initial_rows",
 				index: SCROLL_INDEX_CAP + 1,
 				where: "src/Feed.svelte:3:0",
 			},
@@ -96,14 +96,14 @@ describe("a list's first screen", () => {
 	});
 
 	it("says nothing of a list that counts no row: one with no deferred row", () => {
-		const screens = new FirstScreens();
+		const screens = new InitialRows();
 		screens.open({ "initial-scroll-index": 150, "initial-item-count": "three" });
 		screens.close();
 		expect(screens.notes).toEqual([]);
 	});
 
 	it("is counted by the list open innermost, each list its own", () => {
-		const screens = new FirstScreens();
+		const screens = new InitialRows();
 		screens.open({ "initial-item-count": 2 });
 		expect(screens.row(false)).toBe(true);
 		screens.open({ "initial-item-count": 1 });
@@ -116,7 +116,7 @@ describe("a list's first screen", () => {
 	});
 
 	it("draws no row of a branch only one thread renders, and counts none there", () => {
-		const screens = new FirstScreens();
+		const screens = new InitialRows();
 		screens.open({ "initial-item-count": 1 });
 		let inBranch: boolean | undefined;
 		ThreadBranch(undefined, {
@@ -132,14 +132,14 @@ describe("a list's first screen", () => {
 
 describe("the background's count", () => {
 	it("is there only while the page starts", () => {
-		expect(startingScreens()).toBeUndefined();
-		startFirstScreens();
-		startingScreens()!.open({ "initial-scroll-index": 500 });
-		startingScreens()!.row(false);
-		expect(endFirstScreens()).toEqual([
-			{ code: "initial_scroll_index_past_first_screen", index: 500, where: undefined },
+		expect(startingInitialRows()).toBeUndefined();
+		startInitialRows();
+		startingInitialRows()!.open({ "initial-scroll-index": 500 });
+		startingInitialRows()!.row(false);
+		expect(endInitialRows()).toEqual([
+			{ code: "initial_scroll_index_past_initial_rows", index: 500, where: undefined },
 		]);
-		expect(startingScreens()).toBeUndefined();
-		expect(endFirstScreens()).toEqual([]);
+		expect(startingInitialRows()).toBeUndefined();
+		expect(endInitialRows()).toEqual([]);
 	});
 });

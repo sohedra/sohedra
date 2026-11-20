@@ -19,7 +19,7 @@ export type MarkupNode =
 	| {
 			kind: "list";
 			attributes: string[];
-			/** The attributes that set the first screen of a list with deferred rows. */
+			/** The attributes that set the initial rows of a list with deferred rows. */
 			screen: string[];
 			items: ListChild[];
 	  }
@@ -259,7 +259,7 @@ const wrapped: fc.Arbitrary<string | undefined> = fc.oneof(
 );
 
 /**
- * The attributes that set a list's first screen, on about half the lists: lines of two rows, a
+ * The attributes that set a list's initial rows, on about half the lists: lines of two rows, a
  * screen that grows with the state, a count of its own, a start further down.
  */
 const screen: fc.Arbitrary<string[]> = fc.oneof(

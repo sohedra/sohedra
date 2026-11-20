@@ -3,7 +3,7 @@
 
 	// A feed of deferred rows on Lynx's async list, in an `{#if}`, with what may stand around them: a
 	// header and a footer with no `defer`, a deferred row that spans the line, a second `{#each}`,
-	// and the list's attributes that set its first screen.
+	// and the list's attributes that set its initial rows.
 	let {
 		handles,
 		count = 30,

@@ -32,7 +32,7 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 		where: "src/Field.svelte:8:1",
 	},
 	list_item_defer_needs_async_list: { where: "src/Feed.svelte:9:3" },
-	initial_scroll_index_past_first_screen: { index: 150, cap: 100, where: "src/Feed.svelte:7:0" },
+	initial_scroll_index_past_initial_rows: { index: 150, cap: 100, where: "src/Feed.svelte:7:0" },
 	initial_item_count_not_a_count: { value: '"three"', where: "src/Feed.svelte:7:0" },
 	not_a_main_thread_function: { name: "measure" },
 	run_on_background_outside_main_thread: { name: "save" },

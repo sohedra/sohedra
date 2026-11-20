@@ -1,5 +1,5 @@
 <script lang="ts">
-	// No row in either list's first screen unless `initial` says: every row waits to be asked for.
+	// No row in either list's initial rows unless `initial` says: every row waits to be asked for.
 	let {
 		rows,
 		mark = "",

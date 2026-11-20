@@ -1,19 +1,19 @@
 // A reload draws no first frame: every deferred row of the new page waits until Lynx asks for it,
-// the rows of the old page's first screen too, and comes when Lynx does. The row's `{#if}` must
+// the rows of the old page's initial rows too, and comes when Lynx does. The row's `{#if}` must
 // subscribe to the row's state as the row renders, whether or not the page is starting.
 
 import { expect, it } from "@rstest/core";
 
-import FirstScreen from "../../fixtures/threads/FirstScreen.svelte";
-import drawFirstScreen from "../../fixtures/threads/FirstScreen.svelte?first-frame";
+import InitialRows from "../../fixtures/threads/InitialRows.svelte";
+import drawInitialRows from "../../fixtures/threads/InitialRows.svelte?first-frame";
 import { expectInSyncOnceAsked } from "../released-rows.ts";
 import { startSveltePage } from "../svelte-page.ts";
 
-it("renders a row of the first screen when Lynx asks for it after a reload", async () => {
+it("renders a row among the initial rows when Lynx asks for it after a reload", async () => {
 	let handles: Record<string, unknown> = {};
-	const page = startSveltePage(FirstScreen, {
+	const page = startSveltePage(InitialRows, {
 		props: () => ({ handles: (handles = {}) }),
-		firstFrame: { draw: drawFirstScreen, props: { handles: {} } },
+		firstFrame: { draw: drawInitialRows, props: { handles: {} } },
 	});
 	await page.settle();
 	page.reload();
