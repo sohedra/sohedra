@@ -1,5 +1,5 @@
 // The Lynx around a rendered page, as a test drives it: the host's data and events, a reload, the
-// answers of the elements' UI methods, a list's cells and an element's gestures.
+// answers of the elements' UI methods, a list's rows and an element's gestures.
 
 import type { HostEvents } from "../../background/index.ts";
 import { GestureType } from "../../wire/index.ts";
@@ -58,12 +58,12 @@ export interface TestGesture {
 	fire(name: string, event?: TestGestureEvent): Promise<void>;
 }
 
-/** A native `<list>`, as Lynx asks it for its cells while it scrolls. */
+/** A native `<list>`, as Lynx asks it for its rows while it scrolls. */
 export interface TestList {
 	/** Lynx shows the item at `index`; returns its `<list-item>`. */
 	show(index: number): LynxTestElement;
-	/** Lynx hands a shown cell back: it scrolled away, and the list may reuse it. */
-	hide(cell: LynxTestElement): void;
+	/** Lynx hands a shown row back: it scrolled away, and the list may reuse it. */
+	hide(row: LynxTestElement): void;
 }
 
 /** The Lynx around the page: what a test drives, or answers, in Lynx's place. */
@@ -77,7 +77,7 @@ export interface TestLynx {
 	 * `respondInvoke` answers.
 	 */
 	setBoundingClientRect(element: Element, rect: TestRect): void;
-	/** A native `<list>`, to show and hide its cells as Lynx does while it scrolls. */
+	/** A native `<list>`, to show and hide its rows as Lynx does while it scrolls. */
 	list(element: Element): TestList;
 	/** The gesture of an element; `kind` names which, when it has several. */
 	gesture(element: Element, kind?: GestureKind): TestGesture;
@@ -153,9 +153,9 @@ export function createTestLynx(session: Rendered): TestLynx {
 				throw testingError({ code: "not_a_list", details: { tag: element.localName } });
 			const handle = engine.list(target);
 			return {
-				// Boundary: a list's cells are DOM elements.
+				// Boundary: a list's rows are DOM elements.
 				show: (index) => handle.show(index) as LynxTestElement,
-				hide: (cell) => handle.hide(cell),
+				hide: (row) => handle.hide(row),
 			};
 		},
 		gesture(element, kind) {
