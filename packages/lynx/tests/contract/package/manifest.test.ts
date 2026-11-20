@@ -7,6 +7,7 @@ import path from "node:path";
 
 import { describe, expect, it } from "@rstest/core";
 
+import { DECLARED_ENTRIES } from "../../../scripts/declarations/index.ts";
 import { isPeerRange } from "../../../scripts/floor.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "../../..");
@@ -62,12 +63,13 @@ describe("exports", () => {
 		}
 	});
 
-	it("is published as built files with their types, an entry each", () => {
+	it("is published as built files, each public entry typed by its bundled declarations", () => {
 		for (const entry of ENTRIES) {
 			const source = manifest.exports[entry] as string;
 			const built = source.replace("./src/", "./lib/").replace(/\.ts$/, "");
+			const declared = DECLARED_ENTRIES[entry]?.declarations;
 			expect(manifest.publishConfig.exports[entry]).toEqual({
-				types: `${built}.d.ts`,
+				types: declared ? `./${declared}` : `${built}.d.ts`,
 				default: `${built}.js`,
 			});
 		}
@@ -86,7 +88,7 @@ describe("exports", () => {
 			default: "./src/background/root-entry.ts",
 		});
 		expect(manifest.publishConfig.exports["."]).toEqual({
-			types: "./lib/background/root-entry.d.ts",
+			types: "./types/bundled/index.d.ts",
 			worker: "./lib/first-frame/root-entry.js",
 			default: "./lib/background/root-entry.js",
 		});
@@ -99,7 +101,7 @@ describe("exports", () => {
 			default: "./src/background/host-entry.ts",
 		});
 		expect(manifest.publishConfig.exports["./host"]).toEqual({
-			types: "./lib/background/host-entry.d.ts",
+			types: "./types/bundled/host.d.ts",
 			worker: "./lib/first-frame/host-entry.js",
 			default: "./lib/background/host-entry.js",
 		});
