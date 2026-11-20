@@ -13,7 +13,7 @@
 		"build": "pnpm -r build",
 		"check": "pnpm -r check",
 		"test": "pnpm -r test",
-		"lint": "oxlint --no-error-on-unmatched-pattern && node scripts/check-repo.ts",
+		"lint": "oxlint --no-error-on-unmatched-pattern && node scripts/check-repo.ts && pipx run typos==1.52.2",
 		"lint:fix": "oxlint --fix --no-error-on-unmatched-pattern",
 		"labels:sync": "node scripts/sync-labels.ts",
 		"format": "oxfmt",

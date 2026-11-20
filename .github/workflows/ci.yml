@@ -1,6 +1,6 @@
 # Every claim the packages make, run on every pull request and every push to main:
 #
-# - fast: lint, format and type checks, on Linux. A draft pull request runs only these
+# - fast: lint (spelling too), format and type checks, on Linux. A draft pull request runs only these
 #   (CONTRIBUTING.md § Pull requests); marking it ready runs the rest.
 # - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
 #   own Node.js (devEngines in package.json).

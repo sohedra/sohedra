@@ -21,6 +21,14 @@
 			"matchStrings": ["pipx run zizmor==(?<currentValue>\\S+)"],
 			"depNameTemplate": "zizmor",
 			"datasourceTemplate": "pypi"
+		},
+		{
+			"description": "typos, the spelling check `pnpm lint` runs with pipx.",
+			"customType": "regex",
+			"managerFilePatterns": ["/^package\\.json$/"],
+			"matchStrings": ["pipx run typos==(?<currentValue>[\\w.]+)"],
+			"depNameTemplate": "typos",
+			"datasourceTemplate": "pypi"
 		}
 	],
 	"packageRules": [
