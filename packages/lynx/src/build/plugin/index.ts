@@ -43,6 +43,7 @@ import {
 	mainThreadScriptWhole,
 } from "./main-thread-script.ts";
 import { checkPluginOptions } from "./option-checks.ts";
+import { PLUGIN_OPTIONS } from "./option-names.ts";
 import { entryFirstFrames, resolveOptions } from "./options.ts";
 import { applyLynxConfig, resolvePageConfig } from "./page-config.ts";
 import {
@@ -87,12 +88,6 @@ const SWC_DEFAULTS = {
 	},
 	// Boundary: SWC's type of the parser asks for the syntax, which `detectSyntax` picks per file.
 } as ToolsConfig["swc"];
-
-/**
- * The registry key under which the plugin keeps the options it was given, for the Vitest preset to
- * read from an app's config.
- */
-export const PLUGIN_OPTIONS: unique symbol = Symbol.for("@sohedra/lynx:plugin-options");
 
 /**
  * The scripts a build or a test run compiles: node_modules too (Svelte ships ES2022, and packages
