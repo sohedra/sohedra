@@ -19,6 +19,16 @@ describe("a peer range", () => {
 		}
 	});
 
+	it("may run to the end of its minor instead, widened by hand to later minors", () => {
+		for (const range of [
+			"~5.59.0",
+			"~5.59.0 || ~5.60.0",
+			"~0.12.6 || ~0.13.0",
+			"~5.59.0 || ~6.0.0",
+		])
+			expect(isPeerRange(range)).toBe(true);
+	});
+
 	it("is anything else: no caret, an open end, or parts that don't each start a later line", () => {
 		for (const range of [
 			"31.0.1",
@@ -30,6 +40,9 @@ describe("a peer range", () => {
 			"^32.0.0 || ^31.0.1",
 			"^31.0.1 || ^31.2.0",
 			"^0.12.6 || ^0.12.9",
+			"~5.59.0 || ~5.59.3",
+			"~5.59.0 || ^5.60.0",
+			"~5",
 		]) {
 			expect(isPeerRange(range)).toBe(false);
 		}
@@ -40,6 +53,7 @@ describe("the floor of a range", () => {
 	it("is the version a caret range or an exact version starts from", () => {
 		expect(floorOf("jsdom", "^31.0.1")).toBe("31.0.1");
 		expect(floorOf("@lynx-js/tasm", "0.0.53")).toBe("0.0.53");
+		expect(floorOf("svelte", "~5.59.0 || ~5.60.0")).toBe("5.59.0");
 	});
 
 	it("is the lowest of a range widened to a new major or 0.x minor", () => {

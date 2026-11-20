@@ -45,7 +45,7 @@ describe("requestsOf", () => {
 });
 
 describe("configureResolve", { timeout: 30_000 }, () => {
-	it("resolves Svelte's custom-renderer build on the background, and its server build on the main thread", async () => {
+	it("resolves Svelte's custom-renderer entries on the background, and its server build on the main thread", async () => {
 		const rsbuild = await createRsbuild({
 			cwd: APP_ROOT,
 			rsbuildConfig: { tools: { bundlerChain: (chain) => configureResolve(chain, false) } },

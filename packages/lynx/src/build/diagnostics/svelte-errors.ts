@@ -1,6 +1,6 @@
 // What Svelte's compiler throws and warns, written as the build's messages: the plain sentence
-// first, then the place, the code frame and Svelte's own docs link. A feature the custom-renderer
-// build refuses gets the build's message, which says what exists instead.
+// first, then the place, the code frame and Svelte's own docs link. A feature Svelte refuses under
+// a custom renderer gets the build's message, which says what exists instead.
 
 import { bannedFeature, isDiagnostic, splitLink } from "../../svelte/build/index.ts";
 import type { Diagnostic } from "../../svelte/build/index.ts";
@@ -23,7 +23,7 @@ function placeOf(diagnostic: Diagnostic, context: SourceContext): Place | undefi
 	return placeAt(context.source, context.locate(character));
 }
 
-/** The build's error for a feature the custom-renderer build refuses, or `undefined` for one it does not know. */
+/** The build's error for a feature Svelte refuses under a custom renderer, or `undefined` for one it does not know. */
 function refusedFeatureError(
 	feature: string,
 	place: Place | undefined,

@@ -11,7 +11,7 @@
 		"dev": "rspeedy dev"
 	},
 	"dependencies": {
-		"svelte": "https://pkg.svelte.dev/svelte/c/105775fbca512e1968383c6a761b209344ee85be"
+		"svelte": "~5.59.0"
 	},
 	"devDependencies": {
 		"@lynx-js/qrcode-rsbuild-plugin": "^0.7.3",
