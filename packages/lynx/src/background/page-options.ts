@@ -1,8 +1,11 @@
 // The options of `mountPage` on the background: how the page's root component mounts, and who
 // hears its errors.
 
+// By the entry's name: an app's augmentation of `@sohedra/lynx/host` reaches the declarations
+// bundled for each entry only through it.
+import type { GlobalProps, InitData } from "@sohedra/lynx/host";
+
 import type { ErrorHandler } from "./errors.ts";
-import type { GlobalProps, InitData } from "./host/data.ts";
 
 // oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
 export type Bag = Record<string, any>;

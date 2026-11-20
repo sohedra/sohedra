@@ -56,48 +56,48 @@
 	"publishConfig": {
 		"exports": {
 			".": {
-				"types": "./lib/background/root-entry.d.ts",
+				"types": "./types/bundled/index.d.ts",
 				"worker": "./lib/first-frame/root-entry.js",
 				"default": "./lib/background/root-entry.js"
 			},
 			"./config/rsbuild": {
-				"types": "./lib/build/plugin/index.d.ts",
+				"types": "./types/bundled/config/rsbuild.d.ts",
 				"default": "./lib/build/plugin/index.js"
 			},
 			"./config/rstest": {
-				"types": "./lib/build/presets/rstest.d.ts",
+				"types": "./types/bundled/config/rstest.d.ts",
 				"default": "./lib/build/presets/rstest.js"
 			},
 			"./config/vitest": {
-				"types": "./lib/build/presets/vitest.d.ts",
+				"types": "./types/bundled/config/vitest.d.ts",
 				"default": "./lib/build/presets/vitest.js"
 			},
 			"./config/svelte": {
-				"types": "./lib/build/svelte-config/index.d.ts",
+				"types": "./types/bundled/config/svelte.d.ts",
 				"default": "./lib/build/svelte-config/index.js"
 			},
 			"./elements": {
 				"types": "./types/elements.d.ts"
 			},
 			"./env": {
-				"types": "./lib/env/index.d.ts",
+				"types": "./types/bundled/env.d.ts",
 				"default": "./lib/env/index.js"
 			},
 			"./experimental": {
-				"types": "./lib/gesture/experimental.d.ts",
+				"types": "./types/bundled/experimental.d.ts",
 				"default": "./lib/gesture/experimental.js"
 			},
 			"./gesture": {
-				"types": "./lib/gesture/index.d.ts",
+				"types": "./types/bundled/gesture.d.ts",
 				"default": "./lib/gesture/index.js"
 			},
 			"./host": {
-				"types": "./lib/background/host-entry.d.ts",
+				"types": "./types/bundled/host.d.ts",
 				"worker": "./lib/first-frame/host-entry.js",
 				"default": "./lib/background/host-entry.js"
 			},
 			"./testing": {
-				"types": "./lib/testing/library-entry.d.ts",
+				"types": "./types/bundled/testing.d.ts",
 				"default": "./lib/testing/library-entry.js"
 			},
 			"./internal/renderer": {
@@ -119,6 +119,7 @@
 	"scripts": {
 		"build": "tsc -p tsconfig.build.json",
 		"check": "tsc -p tsconfig.json --noEmit",
+		"declarations": "node scripts/declarations/write.ts",
 		"generate": "node scripts/types/generate.ts",
 		"test": "rstest"
 	},
@@ -147,6 +148,7 @@
 		"@types/node": "^26.6.6",
 		"@types/ungap__structured-clone": "^1.2.0",
 		"acorn": "^8.19.0",
+		"dts-buddy": "^0.8.3",
 		"fast-check": "^4.10.2",
 		"jsdom": "^31.0.1",
 		"oxfmt": "^0.78.0",

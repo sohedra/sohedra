@@ -41,9 +41,13 @@ import type {
 	TapGestureChangeEvent,
 } from "./types.ts";
 
-/** What every gesture class extends: marked as a gesture, which the main thread reads. */
+/**
+ * What every gesture class extends: marked as a gesture, which the main thread reads. The mark is
+ * public, so a gesture is one to every entry's declarations, which each declare the classes they
+ * export.
+ */
 export abstract class GestureBase {
-	private readonly __isSerialized: true = true;
+	readonly __isSerialized: true = true;
 }
 
 /**
@@ -247,6 +251,7 @@ abstract class PlainGesture extends GestureBase {
 	private readonly simultaneousWith: GestureRef[];
 	private readonly continueWith: GestureRef[];
 
+	/** @internal */
 	protected constructor({ gesture, type, config, options }: PlainParts) {
 		super();
 		this.id = nextId();

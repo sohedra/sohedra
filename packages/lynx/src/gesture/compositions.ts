@@ -40,6 +40,7 @@ abstract class ComposedGesture extends GestureBase {
 	private readonly type: typeof GestureType.COMPOSED;
 	private readonly gestures: SerializedGesture[];
 
+	/** @internal */
 	protected constructor(composition: string, gestures: readonly Gesture[], relate: Relate) {
 		super();
 		const members = gestures.map((gesture) => {

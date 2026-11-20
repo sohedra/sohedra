@@ -1,7 +1,10 @@
 // The Lynx around a rendered page, as a test drives it: the host's data and events, a reload, the
 // answers of the elements' UI methods, a list's rows and an element's gestures.
 
-import type { HostEvents } from "../../background/index.ts";
+// By the entry's name: an app's augmentation of `@sohedra/lynx/host` reaches the declarations
+// bundled for each entry only through it.
+import type { HostEvents } from "@sohedra/lynx/host";
+
 import { GestureType } from "../../wire/index.ts";
 import { testingError } from "../catalogue.ts";
 import type { Detector } from "../engine/state.ts";
