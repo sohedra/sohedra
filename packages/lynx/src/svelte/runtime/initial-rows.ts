@@ -1,4 +1,4 @@
-// A list's first screen: the rows a page renders whole as it starts, deferred or not, so that the
+// A list's initial rows: the rows a page renders whole as it starts, deferred or not, so that the
 // first frame shows them and the background renders the same ones before its first patch.
 //
 // Lynx has no initial count: it asks a list for rows until its layout fills the screen, then for
@@ -16,7 +16,7 @@
 // What counts: a `<list-item defer>` with contents, wherever it is written; and a row with no
 // `defer` only in a list written in the same component as a deferred row, so a plain row from a
 // child component takes no place. A list fed by `{#await}` starts with its pending branch, and its
-// rows come after the start: it has no first screen, and its rows wait for Lynx.
+// rows come after the start: it has no initial rows, and its rows wait for Lynx.
 
 import { untrack } from "svelte";
 
@@ -33,7 +33,7 @@ export const SCREEN_ROWS = 10;
 export const SCROLL_INDEX_CAP = 100;
 
 /**
- * What a `<list>`'s first screen reads of its attributes. Lynx's own count only as numbers, as Lynx
+ * What the count of a `<list>`'s initial rows reads of its attributes. Lynx's own count only as numbers, as Lynx
  * reads them: `span-count={2}`, not `span-count="2"`.
  */
 export interface ListAttributes {
@@ -58,7 +58,7 @@ export interface ListAttributes {
  * deferred row says nothing. `where` is the list's `file:line:col`, in development builds.
  */
 export type ListNote =
-	| { code: "initial_scroll_index_past_first_screen"; index: number; where?: string | undefined }
+	| { code: "initial_scroll_index_past_initial_rows"; index: number; where?: string | undefined }
 	| { code: "initial_item_count_not_a_count"; value: string; where?: string | undefined };
 
 interface ListScreen {
@@ -91,8 +91,8 @@ function itemCount(value: unknown): number | undefined {
 	return undefined;
 }
 
-/** The first screens of the lists one render draws, innermost last. */
-export class FirstScreens {
+/** The initial rows of the lists one render draws, innermost last. */
+export class InitialRows {
 	private readonly lists: ListScreen[] = [];
 	/** What the lists that counted a row say. */
 	readonly notes: ListNote[] = [];
@@ -113,7 +113,7 @@ export class FirstScreens {
 		}
 		let start = Math.max(0, numberOf(attributes["initial-scroll-index"]) ?? 0);
 		if (start > SCROLL_INDEX_CAP) {
-			notes.push({ code: "initial_scroll_index_past_first_screen", index: start, where });
+			notes.push({ code: "initial_scroll_index_past_initial_rows", index: start, where });
 			start = 0;
 		}
 		this.lists.push({ start, count, span, rows: 0, used: 0, notes });
@@ -141,19 +141,19 @@ export const listAttributes = (read: (() => ListAttributes) | undefined): ListAt
 	read === undefined ? {} : untrack(read);
 
 /** The background's count while the page starts, and none after. */
-let starting: FirstScreens | undefined;
+let starting: InitialRows | undefined;
 
-/** The page starts on the background: its lists count their first screens until it has mounted. */
-export function startFirstScreens(): void {
-	starting = new FirstScreens();
+/** The page starts on the background: its lists count their initial rows until it has mounted. */
+export function startInitialRows(): void {
+	starting = new InitialRows();
 }
 
 /** The page has mounted: what follows waits as before. Returns what its lists say. */
-export function endFirstScreens(): ListNote[] {
+export function endInitialRows(): ListNote[] {
 	const notes = starting?.notes ?? [];
 	starting = undefined;
 	return notes;
 }
 
 /** The background's count of the page that is starting, if one is. */
-export const startingScreens = (): FirstScreens | undefined => starting;
+export const startingInitialRows = (): InitialRows | undefined => starting;

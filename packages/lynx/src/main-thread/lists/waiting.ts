@@ -108,7 +108,7 @@ export function askAhead(
  * The rows ahead of the one Lynx asked for last, in the way it was asking, that have no text are
  * asked of the background. At hydration, the rows Lynx asked for before were answered from the
  * first frame, and none waits: their rows ahead are asked for here, or a fling would find the
- * list ending at the first screen.
+ * list ending after its initial rows.
  */
 export function askAheadOfLast(
 	list: ListState,

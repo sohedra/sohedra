@@ -40,7 +40,7 @@ export interface BackgroundDetails {
 	/** `where` is the row's `file:line:col`, in development builds. */
 	list_item_defer_needs_async_list: { where?: string | undefined };
 	/** `index` is the list's `initial-scroll-index`; `where` the list's `file:line:col`. */
-	initial_scroll_index_past_first_screen: {
+	initial_scroll_index_past_initial_rows: {
 		index: number;
 		cap: number;
 		where?: string | undefined;
@@ -205,12 +205,12 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 			'Give the list custom-list-name="list-container", the list that waits for a row Lynx asked for. Or remove defer.',
 		docs: "list_item_defer_needs_async_list",
 	},
-	initial_scroll_index_past_first_screen: {
+	initial_scroll_index_past_initial_rows: {
 		message: ({ index, cap }) =>
 			`A <list> starts at initial-scroll-index ${index}, more than ${cap} rows down, so its first frame draws only its first rows, and the deferred rows it starts at are empty until the background renders them.`,
 		fix: ({ cap }) =>
 			`Start the list at most ${cap} rows down, or take defer off the rows it starts at.`,
-		docs: "initial_scroll_index_past_first_screen",
+		docs: "initial_scroll_index_past_initial_rows",
 	},
 	initial_item_count_not_a_count: {
 		message: ({ value }) =>

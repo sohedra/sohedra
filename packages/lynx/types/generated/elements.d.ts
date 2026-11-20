@@ -3771,7 +3771,7 @@ export interface ListItemAttributes
 	 * @workaround list-item-reuse-identifier kind=lynx-gap delete-when="@lynx-js/types declares reuse-identifier on <list-item>: remove it from scripts/types/additions.ts"
 	 */
 	"reuse-identifier"?: string | null;
-	/** Renders the row's contents only once Lynx asks for the row, unless it is in its list's first screen. With `unmountRecycled`, the contents unmount when the page lets go of the row, and render afresh when it shows again. */
+	/** Renders the row's contents only once Lynx asks for the row, unless it is among its list's initial rows. With `unmountRecycled`, the contents unmount when the page lets go of the row, and render afresh when it shows again. */
 	defer?: boolean | { unmountRecycled?: boolean } | null;
 }
 

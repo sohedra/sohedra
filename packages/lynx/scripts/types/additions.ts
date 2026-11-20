@@ -76,7 +76,7 @@ export const ADDED_ATTRIBUTES: readonly AddedAttribute[] = [
 		name: "defer",
 		type: "boolean | { unmountRecycled?: boolean }",
 		doc: [
-			"Renders the row's contents only once Lynx asks for the row, unless it is in its list's first screen. With `unmountRecycled`, the contents unmount when the page lets go of the row, and render afresh when it shows again.",
+			"Renders the row's contents only once Lynx asks for the row, unless it is among its list's initial rows. With `unmountRecycled`, the contents unmount when the page lets go of the row, and render afresh when it shows again.",
 		],
 	},
 	{
