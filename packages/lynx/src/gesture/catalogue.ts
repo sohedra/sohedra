@@ -13,13 +13,10 @@ export interface GestureDetails {
 	gesture_relation_not_gesture: { gesture: string; name: string };
 	/** `gesture` is the class, `name` the option (`simultaneousWith`). */
 	gesture_relation_not_a_list: { gesture: string; name: string };
+	/** `gesture` is the class, `name` the experimental option. */
+	gesture_relation_experimental: { gesture: string; name: "waitFor" | "continueWith" };
 	/** `composition` is the class (`RaceGesture`). */
 	gesture_member_not_gesture: { composition: string };
-	/** `call` is the function; `given` what was wrong: the gesture, the list, or a value in it. */
-	relation_call_not_gestures: {
-		call: "continueWith" | "waitFor";
-		given: "gesture" | "list" | "member";
-	};
 }
 
 /** What a code of the gestures names. */
@@ -46,23 +43,21 @@ export const GESTURE_CATALOGUE: Catalogue<GestureDetails> = {
 		fix: ({ name }) => `Give ${name} a list, also for one gesture: ${name}: [pan].`,
 		docs: "gesture_relation_not_a_list",
 	},
+	gesture_relation_experimental: {
+		message: ({ gesture, name }) =>
+			name === "waitFor"
+				? `The waitFor of a ${gesture} is experimental: on Android, a gesture that waits for one on an element around it never runs.`
+				: `The continueWith of a ${gesture} is experimental: no device has shown it working yet.`,
+		fix: ({ name }) =>
+			`Check the gesture on iOS and Android before you rely on ${name}, or leave ${name} out.`,
+		docs: "gesture_relation_experimental",
+	},
 	gesture_member_not_gesture: {
 		message: ({ composition }) =>
 			`A ${composition} was given a value that is not a gesture, so it cannot hold it.`,
 		fix: ({ composition }) =>
 			`Give it the gestures themselves, as made with new: new ${composition}(pan, tap).`,
 		docs: "gesture_member_not_gesture",
-	},
-	relation_call_not_gestures: {
-		message: ({ call, given }) =>
-			given === "gesture"
-				? `The gesture given to ${call} is not a gesture, so it has nothing to add the relation to.`
-				: given === "list"
-					? `The gestures given to ${call} are not in a list.`
-					: `The list given to ${call} holds a value that is not a gesture, so it cannot name it.`,
-		fix: ({ call }) =>
-			`Give it a gesture, then a list of gestures: ${call}(pan, [${call === "waitFor" ? "tap" : "fling"}]).`,
-		docs: "relation_call_not_gestures",
 	},
 };
 

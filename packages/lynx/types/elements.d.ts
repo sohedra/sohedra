@@ -11,7 +11,7 @@
 // interfaces, so the editor reads them as written.
 
 import type { MainThreadRef } from "@sohedra/lynx";
-import type { GestureKind } from "@sohedra/lynx/gesture";
+import type { Gesture } from "@sohedra/lynx/gesture";
 import type { Snippet } from "svelte";
 
 import type {
@@ -109,7 +109,7 @@ export interface LynxElementAttributes<Tag extends string = string> {
 		// oxlint-disable-next-line typescript/no-explicit-any -- a ref of any element type
 		MainThreadRef<any> | ((element: MainThread.Element) => unknown) | null;
 	/** A gesture of `@sohedra/lynx/gesture`, run on the main thread from the first frame. */
-	"main-thread:gesture"?: GestureKind | null;
+	"main-thread:gesture"?: Gesture | null;
 }
 
 /** Options of `node.animate()`, with the web's names. */
