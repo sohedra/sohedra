@@ -24,6 +24,8 @@ import type { ConfigFileOptions } from "./config-file.ts";
 import { checkTestPeers } from "./test-peers.ts";
 import { vitePlugins } from "./vite-plugin.ts";
 
+export type { ConfigFileOptions };
+
 /** What the Vitest preset's plugin hears of the run: the hook that keys Vitest's module cache. */
 interface CacheKeyContext {
 	defineCacheKeyGenerator?: (generator: () => string) => void;

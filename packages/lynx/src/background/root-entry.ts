@@ -9,7 +9,7 @@ export { mount, unmount } from "./layers.ts";
 export type { MountOptions } from "./layers.ts";
 export { mountPage } from "./page.ts";
 export type { MountPageOptions } from "./page-options.ts";
-export type { ErrorContext } from "./errors.ts";
+export type { ErrorContext, ErrorHandler } from "./errors.ts";
 export { reportError } from "./report.ts";
 export { root } from "./root.ts";
 export { createStaticCopy } from "./static-copy.ts";

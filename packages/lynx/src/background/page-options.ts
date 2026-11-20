@@ -2,6 +2,7 @@
 // hears its errors.
 
 import type { ErrorHandler } from "./errors.ts";
+import type { GlobalProps, InitData } from "./host/data.ts";
 
 // oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
 export type Bag = Record<string, any>;
@@ -11,11 +12,10 @@ export interface MountPageOptions<Props extends Bag> {
 	/**
 	 * The root component's props: an object, or a function of the page's data and the host's global
 	 * props, called at the page's start and at each reload. The first frame is drawn with the same,
-	 * so both threads draw the same page.
+	 * so both threads draw the same page. The function's arguments are typed as the app augments
+	 * `InitData` and `GlobalProps` of `@sohedra/lynx/host`.
 	 */
-	props?:
-		| Props
-		| ((initData: Record<string, unknown>, globalProps: Record<string, unknown>) => Props);
+	props?: Props | ((initData: InitData, globalProps: GlobalProps) => Props);
 	/**
 	 * The contexts the root component gets, as Svelte's `mount` takes them: on the first frame and
 	 * on the background alike.

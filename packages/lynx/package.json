@@ -50,7 +50,8 @@
 		"./client": {
 			"types": "./types/client.d.ts"
 		},
-		"./tsconfig": "./types/tsconfig.base.json"
+		"./tsconfig": "./types/tsconfig.base.json",
+		"./package.json": "./package.json"
 	},
 	"publishConfig": {
 		"exports": {
@@ -111,7 +112,8 @@
 			"./client": {
 				"types": "./types/client.d.ts"
 			},
-			"./tsconfig": "./types/tsconfig.base.json"
+			"./tsconfig": "./types/tsconfig.base.json",
+			"./package.json": "./package.json"
 		}
 	},
 	"scripts": {
