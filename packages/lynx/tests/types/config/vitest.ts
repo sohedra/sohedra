@@ -2,6 +2,7 @@
 // tests under Vitest, with the plugin's options or from the app's build config file.
 
 import { svelteLynx, svelteLynxFromConfig } from "@sohedra/lynx/config/vitest";
+import type { ConfigFileOptions } from "@sohedra/lynx/config/vitest";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
@@ -13,6 +14,8 @@ export async function fromConfig(): Promise<void> {
 	const found: Promise<Plugin[]> = svelteLynxFromConfig({ configPath: "lynx.config.ts" });
 	defineConfig({ plugins: await found });
 	defineConfig({ plugins: await svelteLynxFromConfig() });
+	const options: ConfigFileOptions = { rootPath: "apps/shop" };
+	defineConfig({ plugins: await svelteLynxFromConfig(options) });
 }
 
 // @ts-expect-error the preset takes the plugin's options, not Vitest's.

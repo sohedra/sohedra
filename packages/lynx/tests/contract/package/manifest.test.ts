@@ -2,6 +2,7 @@
 // and which versions it pins.
 
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
 import { describe, expect, it } from "@rstest/core";
@@ -107,6 +108,13 @@ describe("exports", () => {
 	it("names the renderer's entry in one file of the source, which the others import", () => {
 		const naming = sources.filter(({ code }) => /["'`][^"'`\n]*\/internal\/renderer/.test(code));
 		expect(naming.map(({ file }) => file)).toEqual(["src/wire/names.ts"]);
+	});
+
+	it("exports its manifest, which tools read, as it is and as published", () => {
+		expect(manifest.exports["./package.json"]).toBe("./package.json");
+		expect(manifest.publishConfig.exports["./package.json"]).toBe("./package.json");
+		const require = createRequire(path.join(ROOT, "package.json"));
+		expect(require.resolve("@sohedra/lynx/package.json")).toBe(path.join(ROOT, "package.json"));
 	});
 
 	it("publishes the same entries as it exports", () => {
