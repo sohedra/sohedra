@@ -32,8 +32,8 @@ function repository(names: string[], peers: Record<string, string>): string {
 }
 
 describe("Renovate's peer list", () => {
-	it("passes when it names each peer of @sohedra/lynx but Svelte", () => {
-		const root = repository(["vite", "jsdom"], { jsdom: "^31.0.1", svelte: "*", vite: "^8.3.8" });
+	it("passes when it names each peer of @sohedra/lynx", () => {
+		const root = repository(["vite", "jsdom"], { jsdom: "^31.0.1", vite: "^8.3.8" });
 		expect(checkRenovate(root)).toEqual([]);
 	});
 

@@ -22,8 +22,8 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
   through the folder's `globals.ts`, typed for that thread. Never name them elsewhere, declare them
   ambiently, or write `globalThis` outside a `globals.ts`: lint enforces it.
 - **Svelte's internals** are touched only in `src/svelte/`, and every touch is a row of
-  `src/svelte/manifest.ts` that `tests/contract/svelte/` checks. To upgrade Svelte, bump the pinned
-  URL and run the tests: the failing row names what to revisit.
+  `src/svelte/manifest.ts` that `tests/contract/svelte/` checks. To upgrade Svelte, bump its dev
+  copy and run the tests: the failing row names what to revisit.
 - **The compile step** (`src/build/compile/`): `compileComponent` parses a component once, every
   pass returns edits against the source as written, and they are applied once with one map.
   Main-thread function ids come from the script as written. Every message the build throws or warns

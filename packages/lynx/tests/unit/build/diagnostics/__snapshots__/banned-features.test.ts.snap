@@ -1,6 +1,6 @@
 // Rstest Snapshot v1
 
-exports[`a feature the custom-renderer build does not support > <svelte:body>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > <svelte:body>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`<svelte:body>\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:1:1
 
@@ -11,7 +11,7 @@ Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_body"
 `;
 
-exports[`a feature the custom-renderer build does not support > <svelte:document>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > <svelte:document>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`<svelte:document>\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:1:1
 
@@ -22,7 +22,7 @@ Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_document"
 `;
 
-exports[`a feature the custom-renderer build does not support > <svelte:head>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > <svelte:head>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`<svelte:head>\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:1:1
 
@@ -33,7 +33,7 @@ Remove it: a Lynx page has no head.
 https://sohedra.com/e/svelte_head"
 `;
 
-exports[`a feature the custom-renderer build does not support > <svelte:window>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > <svelte:window>: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`<svelte:window>\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:1:1
 
@@ -44,7 +44,7 @@ Read the screen's size, which does not change as the page runs, from \`systemInf
 https://sohedra.com/e/svelte_window"
 `;
 
-exports[`a feature the custom-renderer build does not support > {@html}: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > {@html}: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`@html\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:1
 
@@ -56,7 +56,7 @@ Write the elements in the markup: a Lynx page has no HTML to parse.
 https://sohedra.com/e/html_tag"
 `;
 
-exports[`a feature the custom-renderer build does not support > animate:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > animate:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`animate:\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:3:25
 
@@ -68,7 +68,7 @@ Animate the element with its \`animate()\` method from an attachment (\`{@attach
 https://sohedra.com/e/animate_directive"
 `;
 
-exports[`a feature the custom-renderer build does not support > bind:clientWidth: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > bind:clientWidth: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`bind:clientWidth\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:7
 
@@ -80,7 +80,7 @@ Read the value in an event handler, and set it with an attribute.
 https://sohedra.com/e/bind_directive"
 `;
 
-exports[`a feature the custom-renderer build does not support > bind:this: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > bind:this: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`bind:this\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:7
 
@@ -92,7 +92,7 @@ Get the element with \`{@attach}\`.
 https://sohedra.com/e/bind_directive"
 `;
 
-exports[`a feature the custom-renderer build does not support > bind:value: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > bind:value: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`bind:value\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:8
 
@@ -104,7 +104,7 @@ Set \`value\` and handle the \`oninput\` event instead.
 https://sohedra.com/e/bind_directive"
 `;
 
-exports[`a feature the custom-renderer build does not support > in:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > in:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`in:\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:7
 
@@ -116,7 +116,7 @@ Animate the element with its \`animate()\` method from an attachment (\`{@attach
 https://sohedra.com/e/in_directive"
 `;
 
-exports[`a feature the custom-renderer build does not support > on:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > on:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`on:\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:7
 
@@ -128,7 +128,7 @@ Write an event attribute instead, such as \`ontap={…}\`.
 https://sohedra.com/e/on_directive"
 `;
 
-exports[`a feature the custom-renderer build does not support > out:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > out:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`out:\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:7
 
@@ -140,7 +140,7 @@ Animate the element with its \`animate()\` method from an attachment (\`{@attach
 https://sohedra.com/e/out_directive"
 `;
 
-exports[`a feature the custom-renderer build does not support > transition:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
+exports[`a feature that custom renderers do not support > transition:: says it is not available in Svelte on Lynx, and what to use instead 1`] = `
 "\`transition:\` is not available in Svelte on Lynx.
 /app/src/Component.svelte:2:7
 

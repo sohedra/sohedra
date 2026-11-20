@@ -1,6 +1,6 @@
 // Renovate keeps each peer of @sohedra/lynx on the Dependency Dashboard, by a list of names written
 // by hand in .github/renovate.json. A peer missing from it would have its dev copy merged past the
-// peer range, so the list must equal the binding's peers, Svelte aside (its build is pinned by URL).
+// peer range, so the list must equal the binding's peers.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -21,11 +21,10 @@ export function checkRenovate(root: string): string[] {
 		config.packageRules?.find((rule) => rule.matchFileNames?.includes(BINDING))?.matchPackageNames,
 	);
 	const peers = new Set(Object.keys(manifest.peerDependencies ?? {}));
-	peers.delete("svelte");
 	const missing = [...peers].filter((name) => !listed.has(name));
 	const extra = [...listed].filter((name) => !peers.has(name));
 	if (missing.length === 0 && extra.length === 0) return [];
 	return [
-		`Renovate's peer list in ${CONFIG} doesn't match the peers of ${BINDING} (missing: ${missing.join(", ") || "none"}; not peers: ${extra.join(", ") || "none"}). Make the peer rule's matchPackageNames list each peer but svelte.`,
+		`Renovate's peer list in ${CONFIG} doesn't match the peers of ${BINDING} (missing: ${missing.join(", ") || "none"}; not peers: ${extra.join(", ") || "none"}). Make the peer rule's matchPackageNames list each peer.`,
 	];
 }
