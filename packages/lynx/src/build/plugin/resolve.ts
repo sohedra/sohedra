@@ -89,6 +89,43 @@ export function configureSvelteEvents(chain: RspackChain): void {
 	chain.plugin(`${PACKAGE_NAME}:svelte-events`).use(SvelteEventsPlugin);
 }
 
+/** What the free name `queueMicrotask` becomes a request for, until its thread's file replaces it. */
+const QUEUE_MICROTASK_REQUEST = `${PACKAGE_NAME}/queue-microtask`;
+
+/** Points the request for the page's `queueMicrotask` at the issuing thread's own file. */
+class QueueMicrotaskPlugin {
+	apply(compiler: Rspack.Compiler): void {
+		const name = `${PACKAGE_NAME}:queue-microtask`;
+		compiler.hooks.normalModuleFactory.tap(name, (factory) => {
+			factory.hooks.beforeResolve.tap(name, (data) => {
+				if (data.request !== QUEUE_MICROTASK_REQUEST) return;
+				const mainThread = data.contextInfo.issuerLayer === LAYERS["main-thread"];
+				data.request = RUNTIME_FILES.queueMicrotask[mainThread ? "main-thread" : "background"];
+			});
+		});
+	}
+}
+
+/**
+ * Every module's free `queueMicrotask` and `globalThis.queueMicrotask`, Svelte's included, become
+ * the page's own (background/queue-microtask.ts, main-thread/queue-microtask.ts). Pages of a
+ * `LynxGroup` share one background realm, whose global is the first page's: Svelte's work for a
+ * later page queued on the first page's app, and was dropped once that page closed. lynx-stack's
+ * motion package provides its `queueMicrotask` the same way.
+ */
+export function configureQueueMicrotask(
+	chain: RspackChain,
+	bundler: ModifyBundlerChainUtils["bundler"],
+): void {
+	const provided = [QUEUE_MICROTASK_REQUEST, "queueMicrotask"];
+	chain
+		.plugin(`${PACKAGE_NAME}:provide-queue-microtask`)
+		.use(bundler.ProvidePlugin, [
+			{ queueMicrotask: provided, "globalThis.queueMicrotask": provided },
+		]);
+	chain.plugin(`${PACKAGE_NAME}:queue-microtask`).use(QueueMicrotaskPlugin);
+}
+
 /**
  * `import 'background-only'` keeps a module off the main thread: there the module becomes a stub
  * with the same exports. The import resolves to this package's own empty module, so apps need not
