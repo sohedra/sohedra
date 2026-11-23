@@ -3,7 +3,9 @@
 
 // @ts-expect-error the plugin's registry key is the Vitest preset's, not an app's.
 import { PLUGIN_OPTIONS } from "@sohedra/lynx/config/rsbuild";
+// @ts-expect-error the Svelte config's function is `defineConfig`, as the ecosystem names it.
+import { svelteConfig } from "@sohedra/lynx/config/svelte";
 // @ts-expect-error the key of Vitest's module cache is the preset's own.
 import { cacheKey } from "@sohedra/lynx/config/vitest";
 
-void [PLUGIN_OPTIONS, cacheKey];
+void [PLUGIN_OPTIONS, cacheKey, svelteConfig];

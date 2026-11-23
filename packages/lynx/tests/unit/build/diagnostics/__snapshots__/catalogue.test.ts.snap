@@ -537,7 +537,7 @@ exports[`the build's catalogue > svelte_config_invalid: the message 1`] = `
 2:   let a = 1;
      ^
 
-Export the config as the default export: \`export default svelteConfig({ … })\` from @sohedra/lynx/config/svelte.
+Export the config as the default export: \`export default defineConfig({ … })\` from @sohedra/lynx/config/svelte.
 https://sohedra.com/e/svelte_config_invalid"
 `;
 

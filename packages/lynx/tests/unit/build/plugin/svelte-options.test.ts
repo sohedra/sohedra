@@ -13,7 +13,7 @@ import {
 	pickCompilerOptions,
 	readSvelteOptions,
 } from "../../../../src/build/plugin/svelte-options.ts";
-import { svelteConfig } from "../../../../src/build/svelte-config/index.ts";
+import { defineConfig } from "../../../../src/build/svelte-config/index.ts";
 
 const made: string[] = [];
 afterAll(() => {
@@ -94,8 +94,8 @@ describe("pickCompilerOptions", () => {
 		]);
 	});
 
-	it("does not warn about what `svelteConfig()` sets itself", () => {
-		const { compilerOptions } = svelteConfig();
+	it("does not warn about what `defineConfig()` sets itself", () => {
+		const { compilerOptions } = defineConfig();
 		expect(pickCompilerOptions({ ...compilerOptions }).warnings).toEqual([]);
 	});
 
@@ -138,13 +138,33 @@ describe("readSvelteOptions", () => {
 
 	it("reads the config's compiler options and preprocessors", async () => {
 		const root = appWith({
-			"svelte.config.js": `import { svelteConfig } from ${JSON.stringify(helper)};
-export default svelteConfig({ compilerOptions: { experimental: { async: true } }, preprocess: [{ name: "mine" }] });`,
+			"svelte.config.js": `import { defineConfig } from ${JSON.stringify(helper)};
+export default defineConfig({ compilerOptions: { experimental: { async: true } }, preprocess: [{ name: "mine" }] });`,
 		});
 		const options = await readSvelteOptions(root);
 		expect(options.compilerOptions.experimental).toEqual({ async: true });
 		expect(options.preprocess).toEqual([{ name: "mine" }]);
 		expect(options.warnings).toEqual([]);
+	});
+
+	it("reads a plain object as the same config wrapped in `defineConfig()`", async () => {
+		const config = `{ compilerOptions: { rootDir: "/x", experimental: { async: true } }, preprocess: [{ name: "mine" }] }`;
+		const plain = await readSvelteOptions(
+			appWith({ "svelte.config.js": `export default ${config};` }),
+		);
+		const wrapped = await readSvelteOptions(
+			appWith({
+				"svelte.config.js": `import { defineConfig } from ${JSON.stringify(helper)};
+export default defineConfig(${config});`,
+			}),
+		);
+		const { warningFilter: plainFilter, ...plainOptions } = plain.compilerOptions;
+		const { warningFilter: wrappedFilter, ...wrappedOptions } = wrapped.compilerOptions;
+		expect(plainOptions).toEqual(wrappedOptions);
+		expect(plain.preprocess).toEqual(wrapped.preprocess);
+		expect([plain.warnings, wrapped.warnings]).toEqual([[], []]);
+		const colon = { code: "attribute_illegal_colon" } as never;
+		expect([plainFilter!(colon), wrappedFilter!(colon)]).toEqual([false, false]);
 	});
 
 	it("reads a config that is a plain object, and warns about what it ignores", async () => {
