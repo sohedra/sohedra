@@ -30,7 +30,7 @@ export const SETUP_CATALOGUE: Catalogue<SetupDetails> = {
 		fix: ({ name, suggestion }) => {
 			// People write these from habit with other Svelte plugins.
 			if (SVELTE_OPTIONS.test(name))
-				return "Set it in svelte.config.js: `export default svelteConfig({ compilerOptions, preprocess })`.";
+				return "Set it in svelte.config.js: `export default defineConfig({ compilerOptions, preprocess })`.";
 			return suggestion === undefined
 				? `The options are ${LIST.slice(0, -1).join(", ")} and ${LIST.at(-1)}.`
 				: `Did you mean \`${suggestion}\`?`;

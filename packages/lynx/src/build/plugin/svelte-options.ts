@@ -69,7 +69,7 @@ export function findSvelteConfig(root: string, configFile?: string): string | un
 	return CONFIG_FILES.map((name) => path.join(root, name)).find((file) => existsSync(file));
 }
 
-/** What `svelteConfig()` itself sets, which is no reason to warn. */
+/** What `defineConfig()` itself sets, which is no reason to warn. */
 const isSetByConfigHelper = (key: string, value: unknown): boolean =>
 	(key === "runes" && value === true) ||
 	(key === "experimental.customRenderer" && value === RENDERER_ENTRY);
@@ -120,7 +120,7 @@ export function moduleCompilerOptions(compilerOptions: CompileOptions): ModuleCo
 
 /**
  * Read the Svelte options of the app in `root`. Without a config file, the defaults of
- * `svelteConfig()`. A file that cannot be read, or does not export a config, is the build's error.
+ * `defineConfig()`. A file that cannot be read, or does not export a config, is the build's error.
  */
 export async function readSvelteOptions(root: string, configFile?: string): Promise<SvelteOptions> {
 	const file = findSvelteConfig(root, configFile);

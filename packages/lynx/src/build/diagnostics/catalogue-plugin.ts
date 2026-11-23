@@ -64,7 +64,7 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 	svelte_config_invalid: {
 		message: ({ file, reason }) => `The Svelte config ${file} could not be read: ${reason}.`,
 		fix: () =>
-			"Export the config as the default export: `export default svelteConfig({ … })` from @sohedra/lynx/config/svelte.",
+			"Export the config as the default export: `export default defineConfig({ … })` from @sohedra/lynx/config/svelte.",
 		docs: "svelte_config_invalid",
 	},
 	svelte_config_option_owned: {

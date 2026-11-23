@@ -19,7 +19,7 @@ export type SvelteLynxCompilerOptions = Pick<
 > & {
 	experimental?: Pick<NonNullable<CompileOptions["experimental"]>, "async">;
 };
-/** What `svelteConfig()` takes: the app's own Svelte options. */
+/** What `defineConfig()` takes: the app's own Svelte options, in Svelte's config shape. */
 export interface SvelteConfigOptions {
 	compilerOptions?: SvelteLynxCompilerOptions;
 	/** Svelte preprocessors, run on each `.svelte` file before it compiles. */
@@ -31,16 +31,19 @@ export interface SvelteConfig {
 	preprocess: PreprocessorGroup[];
 }
 /**
- * The Svelte config of a Lynx app: your options, with runes and the custom renderer on. Async
- * support is Svelte's own (off); set `compilerOptions.experimental.async` to turn it on.
+ * The Svelte config of a Lynx app: your regular Svelte config, with runes, the custom renderer and
+ * Lynx's warning filter on, so the editor and `svelte-check` check a component as the build
+ * compiles it. A plain object builds the same, since the build sets those itself; only the editor
+ * would miss Lynx's errors and warn on `main-thread:` attributes. Async support is Svelte's own
+ * (off); set `compilerOptions.experimental.async` to turn it on.
  *
  * ```js
  * // svelte.config.js
- * import { svelteConfig } from "@sohedra/lynx/config/svelte";
+ * import { defineConfig } from "@sohedra/lynx/config/svelte";
  *
- * export default svelteConfig();
+ * export default defineConfig({ compilerOptions: {}, preprocess: [] });
  * ```
  */
-export function svelteConfig(options?: SvelteConfigOptions): SvelteConfig;
+export function defineConfig(options?: SvelteConfigOptions): SvelteConfig;
 
 export {};
