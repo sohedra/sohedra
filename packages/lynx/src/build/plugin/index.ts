@@ -48,6 +48,7 @@ import { entryFirstFrames, resolveOptions } from "./options.ts";
 import { applyLynxConfig, resolvePageConfig } from "./page-config.ts";
 import {
 	configureBackgroundOnly,
+	configureQueueMicrotask,
 	configureResolve,
 	configureSingleCopies,
 	configureSvelteEvents,
@@ -249,6 +250,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 					configureSvelteEvents(chain);
 					configureBackgroundOnly(chain, loaderPath("background-only"));
 					configureResolve(chain, isDev);
+					configureQueueMicrotask(chain, bundler);
 					ignoreUnusedSvelteServerCode(chain, bundler);
 					const mainThreadFiles = addPageEntries(chain, {
 						rootPath: root,

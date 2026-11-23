@@ -375,10 +375,29 @@ export function mountPage<Props extends Bag>(
 			}
 		};
 
-	app["updateCardData"] = guard(updateData);
-	app["updateGlobalProps"] = guard(updateGlobalProps);
-	app["onAppReload"] = guard(reload);
-	app["callDestroyLifetimeFun"] = guard(destroy);
+	/**
+	 * Sets the app's hook `name` to the page's own, which runs first and then calls the hook that was
+	 * there, with the same arguments, on the app: code that ran before the page, such as a library
+	 * that binds the page as the entry's modules load, keeps its hook, as lynx-stack's lynx-runtime
+	 * keeps the one it finds. The page's own work goes first: the engine frees the runtime as
+	 * `callDestroyLifetimeFun` returns (Android, Lynx 4.2), and a throw in the earlier hook goes to
+	 * Lynx as it would without the page.
+	 */
+	const setHook = (name: string, hook: (...args: never[]) => void): void => {
+		const earlier = app[name];
+		const own = guard(hook);
+		app[name] =
+			typeof earlier === "function"
+				? function (this: unknown, ...args: never[]): void {
+						own(...args);
+						Reflect.apply(earlier, this, args);
+					}
+				: own;
+	};
+	setHook("updateCardData", updateData);
+	setHook("updateGlobalProps", updateGlobalProps);
+	setHook("onAppReload", reload);
+	setHook("callDestroyLifetimeFun", destroy);
 	for (const name of QUIET_HOOKS) if (typeof app[name] !== "function") app[name] = () => {};
 
 	try {

@@ -54,6 +54,8 @@ export const RUNTIME_FILES: Readonly<{
 	svelteEvents: string;
 	/** The binding's part of Lynx's dev client, in a development build. */
 	devClient: string;
+	/** What the free name `queueMicrotask` is on each thread: the page's own queue. */
+	queueMicrotask: Readonly<Record<Thread, string>>;
 }> = {
 	backgroundStartUp: programFile("background/start-up"),
 	mainThread: programFile("main-thread/entry"),
@@ -64,6 +66,10 @@ export const RUNTIME_FILES: Readonly<{
 	clientInternals: programFile("svelte/runtime/client-internals"),
 	svelteEvents: programFile("svelte/runtime/events"),
 	devClient: programFile("background/dev-client"),
+	queueMicrotask: {
+		"main-thread": programFile("main-thread/queue-microtask"),
+		background: programFile("background/queue-microtask"),
+	},
 };
 
 /** Rstest's setup file for the test preset: it ends the page each test started. */

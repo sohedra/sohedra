@@ -5,9 +5,8 @@
 import EventTargetFill from "@ungap/event-target";
 import { deserialize, serialize } from "@ungap/structured-clone";
 
-import { runSvelte } from "./errors.ts";
 import type { BackgroundGlobals } from "./globals.ts";
-import { report } from "./report.ts";
+import { queueOn } from "./queue-microtask.ts";
 
 /** Where the fills go. */
 export interface FillTargets {
@@ -28,28 +27,16 @@ export function fillEngineGaps(targets: FillTargets): void {
 }
 
 /**
- * Svelte schedules its work with the global `queueMicrotask`, which the background lacks.
- * lynx-core's `lynx.queueMicrotask` is the engine's microtask queue itself. The bundle's `Promise`
- * is lynx-core's, which ticks on that same queue in the pages this plugin builds (it turns on
- * `enableMicrotaskPromisePolyfill`; lynx-core's setup-promise.ts): a promise would only add a step
- * in between, and make a throw a rejection.
- *
- * What a callback throws is reported, into Lynx and to the page's `onError`: Svelte runs the
- * effects of a change made in a timer or a promise from here, and rethrows what one throws outside
- * every boundary. Lynx would report it too, as its own internal error, which `onError` never hears.
+ * Svelte schedules its work with the global `queueMicrotask`, which the background lacks. The build
+ * points the page's own uses of the name at the page's own queue (queue-microtask.ts), which pages
+ * sharing a realm need; this global, the first page's in a shared realm, is for code the build does
+ * not see.
  *
  * @workaround background-queue-microtask kind=lynx-gap delete-when="Lynx's background thread has a global queueMicrotask and gives the binding a hook for what its callbacks throw"
  */
 function fillQueueMicrotask({ scope, globals }: FillTargets): void {
 	if (typeof scope["queueMicrotask"] === "function") return;
-	scope["queueMicrotask"] = (callback: () => void) =>
-		globals.lynx.queueMicrotask(() => {
-			try {
-				runSvelte(callback);
-			} catch (error) {
-				report(error);
-			}
-		});
+	scope["queueMicrotask"] = (callback: () => void) => queueOn(globals.lynx, callback);
 }
 
 /**

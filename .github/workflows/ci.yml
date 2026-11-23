@@ -29,9 +29,13 @@ permissions:
   contents: read
 
 concurrency:
-  # A new push to a pull request cancels its older run; each push to main runs to the end.
+  # A new push to a pull request cancels its older run; each push to main runs to the end. A draft's
+  # runs and a ready pull request's are apart: marking a pull request ready right after a push starts
+  # both at once, and the draft's must not cancel the ready one's.
   group:
-    ci-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.sha }}
+    ci-${{ github.event_name == 'pull_request' && format('{0}-{1}',
+    github.event.pull_request.number, github.event.pull_request.draft && 'draft' || 'ready') ||
+    github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
