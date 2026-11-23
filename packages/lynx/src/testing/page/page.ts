@@ -128,10 +128,10 @@ export const IPHONE: Readonly<Record<string, unknown>> = {
 
 /**
  * What neither of Lynx's threads has (the device checks: `queueMicrotask is not defined` on Lynx
- * 4.2's main thread, and Svelte's `EventTarget` and `structuredClone` missing on both): each thread
- * has only what its own code puts there, the binding's fills.
+ * 4.2's main thread, and Svelte's `EventTarget` and `structuredClone` missing on both, as are `atob`
+ * and `btoa`): each thread has only what its own code puts there, the binding's fills.
  */
-const THREAD_FILLED = ["queueMicrotask", "EventTarget", "structuredClone"];
+const THREAD_FILLED = ["queueMicrotask", "EventTarget", "structuredClone", "atob", "btoa"];
 
 /** The globals a page's own code sets while it runs, put back when the page ends. */
 const PAGE_GLOBALS = [

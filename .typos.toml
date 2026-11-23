@@ -1,6 +1,10 @@
 # The spelling check CI runs (crate-ci/typos; locally `pipx run typos`). Each entry allows one exact word or
 # identifier that is spelled as it must be, with the reason.
 
+[files]
+# The npm packages the binding's polyfill folder bundles, spelled as their authors wrote them.
+extend-exclude = ["packages/lynx/src/polyfill/vendor/*.js"]
+
 [default.extend-identifiers]
 # Lynx's own option of its template plugin, which the build tests pass on as Lynx names it.
 globComponentRegistPath = "globComponentRegistPath"

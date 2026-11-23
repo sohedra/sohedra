@@ -35,3 +35,10 @@ licensed under the Apache License, Version 2.0:
   src/background/host/system-info.ts, generated from @lynx-js/types 4.4.2
   (js_libraries/types): Lynx's elements, their attributes, events and UI
   methods, SystemInfo, and their doc comments
+
+This product bundles the following npm packages into src/polyfill/vendor/
+(scripts/polyfill/bundle.ts), each under its own license, whose full text
+heads its vendored module:
+
+- @ungap/structured-clone 1.4.0, Copyright (c) 2021 Andrea Giammarchi,
+  licensed under the ISC License: src/polyfill/vendor/structured-clone.js

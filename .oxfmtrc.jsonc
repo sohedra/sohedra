@@ -4,6 +4,9 @@
 	"proseWrap": "always",
 	"sortImports": true,
 	"svelte": true,
+	// The npm packages the binding's polyfill folder bundles, kept byte for byte as the bundle step
+	// writes them (a test bundles again and compares).
+	"ignorePatterns": ["packages/lynx/src/polyfill/vendor/**"],
 	"overrides": [
 		{
 			// YAML forbids tabs; GitHub shows them eight wide in Markdown

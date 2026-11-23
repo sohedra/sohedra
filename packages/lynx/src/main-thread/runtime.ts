@@ -15,6 +15,7 @@
 //   - takes the lazy bundles the background loads (./lazy-bundle.ts);
 //   - starts the page over when it reloads, and lets go of it when its life ends.
 
+import { fillMainThread, setErrorHook } from "../polyfill/main-thread.ts";
 import {
 	asError,
 	checkMessage,
@@ -50,7 +51,6 @@ import { createCalls } from "./calls.ts";
 import { mainThreadError } from "./catalogue.ts";
 import { createCells } from "./cells.ts";
 import type { CodeStyles } from "./code-styles.ts";
-import { fillEngineGaps } from "./engine-gaps.ts";
 import type { Flattening } from "./flatten.ts";
 import { drawRecordedFrame } from "./frame/recorded.ts";
 import { createFunctionsPage } from "./functions/page.ts";
@@ -69,7 +69,9 @@ import { installLazyBundles, takeLazyBundle } from "./lazy-bundle.ts";
 import { clearPrevious, createMainThreadPage } from "./page.ts";
 import type { MainThreadPage } from "./page.ts";
 import { afterFirstPaint } from "./paint.ts";
+import { fillQueueMicrotask } from "./queue-microtask.ts";
 import { isRecord, toSentEvent } from "./sent-event.ts";
+import { fillSystemInfo } from "./system-info.ts";
 
 /**
  * Lynx's code of an error on the main thread, as the engine itself reports one: its sub-code
@@ -105,7 +107,11 @@ export interface MainThreadRuntime {
  */
 export function startMainThread(): MainThreadRuntime {
 	const { lynx } = mainThread;
-	fillEngineGaps({ scope: globalScope, strings: String.prototype, lynx });
+	fillQueueMicrotask(globalScope);
+	fillMainThread();
+	fillSystemInfo({ scope: globalScope, lynx });
+	// What the fills catch (a microtask's throw, `reportError`) is the page's error.
+	setErrorHook((error) => report(error));
 	const engine = lynx.getEngine();
 	const native = lynx.getNative();
 	const state = createMainThreadPage((scope) => newFunctions(scope, 0));
