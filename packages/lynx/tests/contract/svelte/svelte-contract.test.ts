@@ -1,4 +1,4 @@
-// What @sohedra/lynx assumes about the pinned Svelte custom-renderer build (sveltejs/svelte#18042).
+// What @sohedra/lynx assumes about Svelte's custom renderers, in the Svelte installed here.
 // Not about our code: when an upgrade changes one of these, the failing case is named for the row of
 // src/svelte/manifest.ts to revisit. The test walks the manifest, so a row without a check fails,
 // and a check without a row does too.

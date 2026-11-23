@@ -21,8 +21,7 @@ The components and the router keep one API on the web and in native apps.
    and a first native module (haptics).
 4. **The router,** then a development client and over-the-air updates.
 
-The first npm release waits for Svelte's custom-renderer pull request
-([#18042](https://github.com/sveltejs/svelte/pull/18042)). Planned breaking changes are announced in
+Planned breaking changes are announced in
 [Discussions](https://github.com/sohedra/sohedra/discussions/categories/announcements).
 
 ## Contributing

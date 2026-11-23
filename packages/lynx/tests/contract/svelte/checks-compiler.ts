@@ -20,7 +20,7 @@ function thrown(run: () => unknown): (Error & { code?: string }) | undefined {
 	return undefined;
 }
 
-/** Every feature the custom-renderer build refuses, how it is written, and how Svelte names it. */
+/** Every feature Svelte refuses under a custom renderer, how it is written, and how Svelte names it. */
 const BANNED = [
 	["`bind:`", "<view bind:this={el}></view>"],
 	["`bind:`", "<input bind:value={x} />"],

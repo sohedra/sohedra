@@ -1,4 +1,4 @@
-// The Svelte the app installed must be the build with custom renderers: checked once, when the
+// The Svelte the app installed must have custom renderers (5.59 or newer): checked once, when the
 // plugin is set up, so the mistake shows as one message and not as an error in every component.
 
 import { svelteCompiler } from "../../svelte/build/index.ts";

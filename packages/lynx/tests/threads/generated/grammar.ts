@@ -24,7 +24,7 @@
 // A page's source is compact or indented, compiled for development or production, and its data
 // comes partly from the template and partly from the host.
 //
-// Never what Svelte's custom-renderer build leaves out (element `bind:`, transitions, animations,
+// Never what Svelte's custom renderers leave out (element `bind:`, transitions, animations,
 // `{@html}`, `on:`, `<svelte:window>` and its kin).
 
 import fc from "fast-check";

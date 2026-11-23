@@ -1,4 +1,4 @@
-// What a build says when Svelte refuses a feature the custom-renderer build does not support
+// What a build says when Svelte refuses a feature that custom renderers do not support
 // (Svelte's `incompatible_with_custom_renderer` error): the build's message says what exists
 // instead. One case for each message Svelte can put in that error.
 
@@ -43,7 +43,7 @@ const cases: Record<string, [string, string, string]> = {
 	"<svelte:head>": ["<svelte:head></svelte:head>", "svelte_head", "1:1"],
 };
 
-describe("a feature the custom-renderer build does not support", () => {
+describe("a feature that custom renderers do not support", () => {
 	for (const [name, [source, code, position]] of Object.entries(cases)) {
 		it(`${name}: says it is not available in Svelte on Lynx, and what to use instead`, async () => {
 			const error = (await component(source).catch((thrown: Error) => thrown)) as Error & {

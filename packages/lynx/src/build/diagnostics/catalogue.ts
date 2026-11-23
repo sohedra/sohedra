@@ -13,7 +13,7 @@ import type { SetupDetails } from "./catalogue-setup.ts";
 /** A message that needs nothing to be written. */
 type Plain = Record<string, never>;
 
-/** A feature that Svelte's custom-renderer build refuses, as Svelte names it ("`{@html}`"). */
+/** A feature that Svelte refuses under a custom renderer, as Svelte names it ("`{@html}`"). */
 interface Refused {
 	feature: string;
 }
