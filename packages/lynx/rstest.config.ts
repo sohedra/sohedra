@@ -36,6 +36,7 @@ const onTheTestTree = [
 	"tests/unit/first-frame/**",
 	"tests/unit/globals/**",
 	"tests/unit/main-thread/**",
+	"tests/unit/polyfill/**",
 	"tests/contract/engine/**",
 	"tests/threads/**",
 	"tests/library/**",

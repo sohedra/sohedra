@@ -11,7 +11,7 @@
 // not.
 //
 // Both threads lack what their engine (PrimJS) lacks, listed below, and the web's globals that no
-// Lynx engine has: `EventTarget`, `structuredClone` and `performance`. Each realm starts without
+// Lynx engine has: `EventTarget`, `structuredClone`, `performance`, `atob` and `btoa`. Each realm starts without
 // them, as a device's threads do, so whatever the page's scripts need of them, they bring.
 //
 // What a thread hands the other crosses as text, and is made again in the receiving realm. What the
@@ -93,7 +93,7 @@ const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
  * away keeps it so.
  */
 const NOT_ON_LYNX: Readonly<Record<string, readonly string[]>> = {
-	globalThis: ["EventTarget", "structuredClone", "performance"],
+	globalThis: ["EventTarget", "structuredClone", "performance", "atob", "btoa"],
 };
 
 /** Takes away, in a realm, the built-ins a device lacks. */

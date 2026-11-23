@@ -302,6 +302,9 @@ describe("the binding's messages", () => {
 			const text = fs.readFileSync(file, "utf8");
 			for (const match of text.matchAll(/new (?:Type|Range|Syntax)?Error\(\s*(["'`])([^"'`$]*)/g)) {
 				if (LANGUAGE_MESSAGES.some((message) => match[2]!.startsWith(message))) continue;
+				// The polyfill folder throws the standards' own TypeError, RangeError and SyntaxError where
+				// the standard says to, as an engine would; a message of its own is still a catalogue's.
+				if (relative.startsWith("polyfill") && !match[0].startsWith("new Error")) continue;
 				written.push(`${relative}: ${match[0]}`);
 			}
 		}

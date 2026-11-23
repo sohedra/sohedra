@@ -62,6 +62,18 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
+	it("has atob and btoa on both threads, which refuse what the standard refuses", async () => {
+		const { page, mainThread, background } = await start();
+		try {
+			const probe = `[btoa("\\xff"), atob(" YQ\\n"), (() => { try { atob("!"); } catch (error) { return error.name; } })()]`;
+			const answer = ["/w==", "a", "InvalidCharacterError"];
+			expect(vm.runInContext(probe, mainThread)).toEqual(answer);
+			expect(vm.runInContext(probe, background)).toEqual(answer);
+		} finally {
+			page.dispose();
+		}
+	});
+
 	it("copies a primitive as it is, and refuses a symbol and a function as @ungap/structured-clone does", async () => {
 		const { page, mainThread, background } = await start();
 		try {

@@ -18,6 +18,7 @@ const THREAD_FOLDERS = [
 	"svelte/runtime",
 	"gesture",
 	"env",
+	"polyfill",
 ];
 
 const NAMES = {
@@ -68,7 +69,7 @@ describe("globals by folder", () => {
 
 	// The engine's objects refuse `Reflect.get` on Android: code that runs on the main thread reads
 	// properties plainly.
-	for (const folder of ["main-thread", "first-frame", "wire", "gesture"]) {
+	for (const folder of ["main-thread", "first-frame", "wire", "gesture", "polyfill"]) {
 		it(`${folder} may not use Reflect`, () => {
 			expect(restricted.has(`${SRC}/${folder}/probe-reflect.ts`)).toBe(true);
 		});
