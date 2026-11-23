@@ -43,7 +43,6 @@ export interface MainThreadRef<T> {
 export function mainThreadRef<T>(initial: T): MainThreadRef<T>;
 /** Makes a main-thread ref that starts as `undefined`: see the first overload. */
 export function mainThreadRef<T = undefined>(): MainThreadRef<T | undefined>;
-type Bag = Record<string, any>;
 /** What `mount` takes: where the layer goes, its props and its context. */
 export interface MountOptions<Props extends Bag = Bag> {
 	/**
@@ -118,13 +117,13 @@ export function unmount(component: Bag): void;
  * mountPage(App, { props: (initData) => ({ route: String(initData.route ?? "/") }) });
  * ```
  */
-export function mountPage<Props extends Bag_1>(
+export function mountPage<Props extends Bag>(
 	App: Component<Props>,
 	options?: MountPageOptions<NoInfer<Props>>,
 ): void;
-type Bag_1 = Record<string, any>;
+type Bag = Record<string, any>;
 /** How `mountPage` mounts the page's root component. */
-export interface MountPageOptions<Props extends Bag_1> {
+export interface MountPageOptions<Props extends Bag> {
 	/**
 	 * The root component's props: an object, or a function of the page's data and the host's global
 	 * props, called at the page's start and at each reload. The first frame is drawn with the same,

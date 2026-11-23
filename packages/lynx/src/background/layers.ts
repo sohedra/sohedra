@@ -7,10 +7,9 @@ import { mount as svelteMount, unmount as svelteUnmount } from "svelte";
 import type { Component } from "svelte";
 
 import { backgroundError } from "./catalogue.ts";
+import type { Bag } from "./page-options.ts";
 import { pageRenderer } from "./renderer/page-renderer.ts";
 import { reportError } from "./report.ts";
-// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props and exports
-type Bag = Record<string, any>;
 
 /** What `mount` takes: where the layer goes, its props and its context. */
 export interface MountOptions<Props extends Bag = Bag> {

@@ -7,7 +7,7 @@ import type { GlobalProps, InitData } from "@sohedra/lynx/host";
 
 import type { ErrorHandler } from "./errors.ts";
 
-// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
+// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props and exports
 export type Bag = Record<string, any>;
 
 /** How `mountPage` mounts the page's root component. */
