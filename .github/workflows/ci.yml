@@ -1,6 +1,6 @@
 # Every claim the packages make, run on every pull request and every push to main:
 #
-# - fast: lint (spelling too), format and type checks, on Linux. A draft pull request runs only these
+# - fast: lint, spelling, format and type checks, on Linux. A draft pull request runs only these
 #   (CONTRIBUTING.md § Pull requests); marking it ready runs the rest.
 # - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
 #   own Node.js (devEngines in package.json).
@@ -13,8 +13,9 @@
 #
 # The repository allows only GitHub's own actions and pnpm/setup at one commit. No job runs an
 # agent or reads a secret, so the pnpm store is cached; the app jobs, whose installs have no
-# lockfile, only restore it. zizmor audits this file in the fast and Linux checks, and `pnpm lint`
-# checks the repository's own rules for it (scripts/workflows.ts).
+# lockfile, only restore it. zizmor audits this file and typos checks the repository's spelling in
+# the fast and Linux checks, and `pnpm lint` checks the repository's own rules for this file
+# (scripts/workflows.ts).
 
 name: CI
 
@@ -52,6 +53,10 @@ jobs:
       # GitHub's own and pnpm/setup. Offline: its online audits need a token.
       - name: zizmor
         run: pipx run zizmor==1.32.0 --offline .github/workflows
+      # The spelling check, run as a command for the same reason; .typos.toml allows the words
+      # spelled as they must be.
+      - name: typos
+        run: pipx run typos==1.52.2
       # The repository check compares recorded coverage with main's.
       - name: Fetch main
         run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
@@ -87,6 +92,9 @@ jobs:
       - name: zizmor
         if: runner.os == 'Linux'
         run: pipx run zizmor==1.32.0 --offline .github/workflows
+      - name: typos
+        if: runner.os == 'Linux'
+        run: pipx run typos==1.52.2
       - name: Fetch main
         run: git fetch --no-tags --depth=1 origin +refs/heads/main:refs/remotes/origin/main
       - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0

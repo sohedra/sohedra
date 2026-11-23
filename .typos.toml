@@ -1,4 +1,4 @@
-# The spelling check `pnpm lint` runs (crate-ci/typos). Each entry allows one exact word or
+# The spelling check CI runs (crate-ci/typos; locally `pipx run typos`). Each entry allows one exact word or
 # identifier that is spelled as it must be, with the reason.
 
 [default.extend-identifiers]

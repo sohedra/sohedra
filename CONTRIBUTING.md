@@ -66,9 +66,9 @@ pnpm test
 
 `pnpm -F <package> test` runs one package's tests. `pnpm lint:fix` and `pnpm format` fix most
 problems automatically. `pnpm lint` also checks the repository itself (labels, agent files and
-package setup) and its spelling, with [typos](https://github.com/crate-ci/typos) run by
-[pipx](https://pipx.pypa.io): a word it flags that is spelled as it must be goes in `.typos.toml`,
-with the reason.
+package setup). CI also checks spelling with [typos](https://github.com/crate-ci/typos); with
+[pipx](https://pipx.pypa.io) installed, `pipx run typos` runs it locally. A word it flags that is
+spelled as it must be goes in `.typos.toml`, with the reason.
 
 ## Pull requests
 
