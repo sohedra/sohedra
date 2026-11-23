@@ -2,8 +2,10 @@
 // zizmor, which CI runs on them, does not check: read-only permissions at the top unless a job asks
 // for more, only the actions the repository allows, each pinned by its commit with the version in a
 // comment, a time limit on every job, and npm publishing only through trusted publishing, without a
-// token. And CI runs every Node.js line a package claims in `engines.node`, and the oldest version it
-// claims exactly. zizmor refuses `pull_request_target` and a pull request's text in a shell command.
+// token. A workflow that runs some jobs only for a draft and cancels older runs keys its concurrency
+// group on the draft flag: marking a pull request ready right after a push starts a draft's run and
+// a ready one's at once, and in one group the later cancels the other. And CI runs every Node.js line
+// a package claims in `engines.node`, and the oldest version it claims exactly. zizmor refuses `pull_request_target` and a pull request's text in a shell command.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -15,6 +17,8 @@ const FOLDER = ".github/workflows";
 const PINNED = /^[\w.-]+\/[\w.-]+(?:\/[\w./-]+)?@[0-9a-f]{40}$/;
 const VERSION_COMMENT = /#\s*v\d/;
 const NPM_TOKENS = /\b(?:NPM_TOKEN|NODE_AUTH_TOKEN)\b/;
+/** What a job's `if` reads to run only for a draft, or only for a ready pull request. */
+const DRAFT = "github.event.pull_request.draft";
 /**
  * The actions the repository's settings allow (Settings → Actions → General): GitHub's own, and
  * these, each at its commit. GitHub refuses a run that names any other before a job starts.
@@ -22,6 +26,7 @@ const NPM_TOKENS = /\b(?:NPM_TOKEN|NODE_AUTH_TOKEN)\b/;
 const ALLOWED = [/^actions\//, /^github\//, "pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1"];
 
 interface Job {
+	if?: unknown;
 	"timeout-minutes"?: unknown;
 	uses?: string;
 	strategy?: { matrix?: Record<string, unknown> };
@@ -29,6 +34,7 @@ interface Job {
 
 interface Workflow {
 	permissions?: unknown;
+	concurrency?: unknown;
 	jobs?: Record<string, Job>;
 }
 
@@ -112,6 +118,22 @@ export function checkWorkflows(root: string): string[] {
 				problems.push(`${file}: give job "${id}" a timeout-minutes.`);
 			}
 			for (const version of nodeVersionsOf(job)) versionsRun.add(version);
+		}
+		// Boundary: YAML has no type; `concurrency` is a group's name or an object.
+		const concurrency = (workflow.concurrency ?? {}) as {
+			group?: unknown;
+			"cancel-in-progress"?: unknown;
+		};
+		const cancel = concurrency["cancel-in-progress"];
+		const cancels = cancel !== undefined && cancel !== false && cancel !== "false";
+		const byDraft = Object.values(workflow.jobs ?? {}).some(
+			(job) => typeof job.if === "string" && job.if.includes(DRAFT),
+		);
+		const group = typeof concurrency.group === "string" ? concurrency.group : "";
+		if (cancels && byDraft && !group.includes(DRAFT)) {
+			problems.push(
+				`${file} runs some jobs only for a draft and cancels older runs, but its concurrency group doesn't include ${DRAFT}: marking a pull request ready right after a push starts both runs, and the draft's can cancel the ready one's. Add the draft flag to the group, as ci.yml does.`,
+			);
 		}
 		if (NPM_TOKENS.test(text)) {
 			problems.push(
