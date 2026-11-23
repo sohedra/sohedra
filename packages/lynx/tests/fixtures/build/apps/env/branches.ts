@@ -1,4 +1,4 @@
-import { svelteConfig } from "@sohedra/lynx/config/svelte";
+import { defineConfig } from "@sohedra/lynx/config/svelte";
 import { dev } from "@sohedra/lynx/env";
 import { BROWSER, DEV } from "esm-env";
 
@@ -17,6 +17,6 @@ marks.push(DEV ? "esm-dev-branch" : "esm-prod-branch");
 marks.push(dev ? "env-dev-branch" : "env-prod-branch");
 
 // Some code of the binding itself in the bundle, for the source maps.
-marks.push(String(svelteConfig().preprocess.length));
+marks.push(String(defineConfig().preprocess.length));
 
 export { marks };

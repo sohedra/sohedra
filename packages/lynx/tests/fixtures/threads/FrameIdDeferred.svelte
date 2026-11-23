@@ -3,7 +3,7 @@
 
 	import FrameLabeled from "./FrameLabeled.svelte";
 
-	// No row in the first screen unless `initial` says: every row waits to be asked for.
+	// No row among the initial rows unless `initial` says: every row waits to be asked for.
 	let { async = true, initial = 0 }: { async?: boolean; initial?: number } = $props();
 </script>
 

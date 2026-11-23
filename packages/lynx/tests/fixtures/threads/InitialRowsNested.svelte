@@ -1,5 +1,5 @@
 <script lang="ts">
-	// Deferred rows that each hold a list of deferred rows: each list counts its own first screen.
+	// Deferred rows that each hold a list of deferred rows: each list counts its own initial rows.
 	let { outer = 12, inner = 5 }: { outer?: number; inner?: number } = $props();
 	const range = (length: number) => Array.from({ length }, (_, index) => index + 1);
 </script>

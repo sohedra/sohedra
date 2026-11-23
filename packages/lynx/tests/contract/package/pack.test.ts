@@ -91,7 +91,12 @@ describe("the packed package", () => {
 	it("exports the built files, each of which it holds", () => {
 		const named = Object.values(manifest.exports).flatMap(targets);
 		expect(
-			named.filter((target) => !target.startsWith("./lib/") && !target.startsWith("./types/")),
+			named.filter(
+				(target) =>
+					!target.startsWith("./lib/") &&
+					!target.startsWith("./types/") &&
+					target !== "./package.json",
+			),
 		).toEqual([]);
 		expect(named.filter((target) => !files.includes(target.slice(2)))).toEqual([]);
 	});

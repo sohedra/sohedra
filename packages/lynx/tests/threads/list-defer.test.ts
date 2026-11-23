@@ -201,7 +201,7 @@ describe("the rows ahead", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("keep ahead of a scroll, so only the first screen waits for the background", async () => {
+	it("keep ahead of a scroll, so only the initial rows wait for the background", async () => {
 		const { page, list } = await deferredRows({ count: 100 });
 		const scroll = scroller(page.engine, page.byClass("list"));
 		let waited = 0;

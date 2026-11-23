@@ -6,11 +6,11 @@ import path from "node:path";
 import { describe, expect, it } from "@rstest/core";
 import type { Plugin } from "vite";
 
-import {
-	cacheKey,
-	svelteLynx,
-	svelteLynxFromConfig,
-} from "../../../../src/build/presets/vitest.ts";
+import * as rsbuildEntry from "../../../../src/build/plugin/index.ts";
+import { pluginSvelteLynx } from "../../../../src/build/plugin/index.ts";
+import { cacheKey } from "../../../../src/build/presets/cache-key.ts";
+import * as vitestEntry from "../../../../src/build/presets/vitest.ts";
+import { svelteLynx, svelteLynxFromConfig } from "../../../../src/build/presets/vitest.ts";
 
 const configs = path.resolve(import.meta.dirname, "../../../fixtures/build/configs");
 
@@ -74,5 +74,12 @@ describe("the Vitest preset", () => {
 		expect(cacheKey({ svelte: { configFile: "a.config.js" } })).not.toBe(
 			cacheKey({ svelte: { configFile: "b.config.js" } }),
 		);
+	});
+
+	it("reads the plugin's options under the registry key the plugin keeps them, which neither entry exports", () => {
+		const plugin = pluginSvelteLynx({ firstFrame: false }) as unknown as Record<symbol, unknown>;
+		expect(plugin[Symbol.for("@sohedra/lynx:plugin-options")]).toEqual({ firstFrame: false });
+		expect(Object.keys(rsbuildEntry)).toEqual(["pluginSvelteLynx"]);
+		expect(Object.keys(vitestEntry).toSorted()).toEqual(["svelteLynx", "svelteLynxFromConfig"]);
 	});
 });

@@ -9,13 +9,14 @@
 // that changes only the callbacks or what they captured (see `PanGesture`). This entry ran on an
 // Android phone (Lynx 4.2); iOS is checked on an iPhone later, and what fails there moves to
 // `@sohedra/lynx/experimental`, with the gestures and calls that wait for a device probe to pass.
+// The relation options `waitFor` and `continueWith` are experimental (see `GestureRelations`).
 
 export { DefaultScrollGesture, PanGesture, TapGesture } from "./gestures.ts";
 export type {
 	ContinuousGestureCallbacks,
 	DefaultScrollGestureOptions,
+	Gesture,
 	GestureCallbacks,
-	GestureKind,
 	GestureRelations,
 	PanGestureOptions,
 	TapGestureOptions,

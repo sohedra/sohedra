@@ -3,16 +3,15 @@
 	pan turned off and on again (`on ? pan : undefined`), as an app turns a gesture off.
 -->
 <script lang="ts">
-	import { waitFor } from "@sohedra/lynx/experimental";
 	import { DefaultScrollGesture, PanGesture } from "@sohedra/lynx/gesture";
-	import type { GestureKind } from "@sohedra/lynx/gesture";
+	import type { Gesture } from "@sohedra/lynx/gesture";
 
 	let { api }: { api: Record<string, unknown> } = $props();
-	let shown = $state.raw<GestureKind>(new DefaultScrollGesture());
-	let named = $state.raw<GestureKind>(shown);
+	let shown = $state.raw<Gesture>(new DefaultScrollGesture());
+	let named = $state.raw<Gesture>(shown);
 	let on = $state(true);
-	let next: GestureKind | undefined;
-	const sheet = $derived(waitFor(new PanGesture(), [named]));
+	let next: Gesture | undefined;
+	const sheet = $derived(new PanGesture({ waitFor: [named] }));
 	const toggled = new PanGesture({ minDistance: 3 });
 	api["name"] = () => {
 		next = new DefaultScrollGesture();

@@ -1,5 +1,5 @@
 // A gesture's detectors go with their element: a list row the main thread lets go of, a deferred
-// row's contents, a row of the first screen, a part only the first frame draws, a part the page
+// row's contents, a row among the initial rows, a part only the first frame draws, a part the page
 // takes away, and the page itself. What goes is removed from the engine, and the page forgets it.
 
 import { describe, expect, it } from "@rstest/core";
@@ -86,7 +86,7 @@ describe("a row's gesture", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("of a row of the first screen is set from the first frame, and not again at hydration", async () => {
+	it("of a row among the initial rows is set from the first frame, and not again at hydration", async () => {
 		const { page, made, through } = await rows({
 			async: true,
 			defer: true,

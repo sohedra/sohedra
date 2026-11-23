@@ -1,13 +1,13 @@
 // `<list-item defer>`: on the background, the row's contents go in an `{#if}` on the row's state,
 // made once per row and linked to the element; the first frame draws the row empty and keeps
-// `defer` in its markup, unless the row is in its list's first screen. Each list counts its first
-// screen, from where it opens to where it closes.
+// `defer` in its markup, unless the row is among its list's initial rows. Each list counts its initial
+// rows, from where it opens to where it closes.
 
 import { describe, expect, it } from "@rstest/core";
 
 import { component, SERVER_INTERNALS } from "../compiling.ts";
 
-/** The background's copy, with the binding's runtime, which the first screen's helpers come from. */
+/** The background's copy, with the binding's runtime, which the initial rows' helpers come from. */
 const CLIENT_INTERNALS = "/binding/svelte/client-internals.ts";
 const background = (source: string, options: { development?: boolean } = {}) =>
 	component(source, { clientInternals: CLIENT_INTERNALS, ...options });
@@ -33,12 +33,12 @@ describe("a deferred row", () => {
 		expect(code).not.toContain("if (true)");
 	});
 
-	it("in the first frame, writes its defer as its first screen says, and its contents when drawn", async () => {
+	it("in the first frame, writes its defer as its list's initial rows say, and its contents when drawn", async () => {
 		const { code } = await mainThread(each("<list-item defer><text>{row.id}</text></list-item>"));
 		expect(code).toContain("$.attr('defer', __sohedraLynxDefer(true), true)");
 		expect(code).toContain("if (!__sohedraLynxWaits()) {");
-		expect(code).toContain("firstScreenDefer as __sohedraLynxDefer");
-		expect(code).toContain("firstScreenWaits as __sohedraLynxWaits");
+		expect(code).toContain("initialRowDefer as __sohedraLynxDefer");
+		expect(code).toContain("initialRowWaits as __sohedraLynxWaits");
 		expect(code).toContain(`} from "${SERVER_INTERNALS}";`);
 	});
 
@@ -126,7 +126,7 @@ describe("a deferred row", () => {
 	});
 });
 
-describe("a list's first screen", () => {
+describe("a list's initial rows", () => {
 	const list = (attributes: string, rows: string) =>
 		`<script>let rows = $state([1]); let preload = 5;</script>\n<list custom-list-name="list-container" ${attributes}>${rows}</list>`;
 	const deferred =
@@ -167,7 +167,7 @@ describe("a list's first screen", () => {
 		expect(drawn.code).toContain("$.attr('sohedra-lynx-count', __sohedraLynxCount())");
 	});
 
-	it("gives a deferred row its full-span, a whole line of the first screen", async () => {
+	it("gives a deferred row its full-span, a whole line among the initial rows", async () => {
 		const rows =
 			"{#each rows as row (row)}<list-item defer full-span={row > 1}><text>{row}</text></list-item>{/each}";
 		const { code } = await background(list("", rows));

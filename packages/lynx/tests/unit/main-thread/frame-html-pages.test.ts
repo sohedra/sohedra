@@ -9,10 +9,6 @@ import drawCssVariables from "../../fixtures/threads/CssVariables.svelte?first-f
 import drawDeferredNested from "../../fixtures/threads/DeferredNested.svelte?first-frame";
 import drawDeferredRows from "../../fixtures/threads/DeferredRows.svelte?first-frame";
 import drawEmptyClassSpread from "../../fixtures/threads/EmptyClassSpread.svelte?first-frame";
-import drawFirstScreen from "../../fixtures/threads/FirstScreen.svelte?first-frame";
-import drawFirstScreenNested from "../../fixtures/threads/FirstScreenNested.svelte?first-frame";
-import drawFirstScreenSnippet from "../../fixtures/threads/FirstScreenSnippet.svelte?first-frame";
-import drawFirstScreenTwoLists from "../../fixtures/threads/FirstScreenTwoLists.svelte?first-frame";
 import drawFrameAttributes from "../../fixtures/threads/FrameAttributes.svelte?first-frame";
 import drawFrameBlocks from "../../fixtures/threads/FrameBlocks.svelte?first-frame";
 import drawFrameBranchList from "../../fixtures/threads/FrameBranchList.svelte?first-frame";
@@ -27,6 +23,10 @@ import drawFrameMarkupValue from "../../fixtures/threads/FrameMarkupValue.svelte
 import drawFrameTextInBlock from "../../fixtures/threads/FrameTextInBlock.svelte?first-frame";
 import drawFrameTexts from "../../fixtures/threads/FrameTexts.svelte?first-frame";
 import drawHydrate from "../../fixtures/threads/functions/Hydrate.svelte?first-frame";
+import drawInitialRows from "../../fixtures/threads/InitialRows.svelte?first-frame";
+import drawInitialRowsNested from "../../fixtures/threads/InitialRowsNested.svelte?first-frame";
+import drawInitialRowsSnippet from "../../fixtures/threads/InitialRowsSnippet.svelte?first-frame";
+import drawInitialRowsTwoLists from "../../fixtures/threads/InitialRowsTwoLists.svelte?first-frame";
 import drawLongFeed from "../../fixtures/threads/LongFeed.svelte?first-frame";
 import drawStaticCards from "../../fixtures/threads/StaticCards.svelte?first-frame";
 import { drawnTree } from "./drawn-tree.ts";
@@ -39,10 +39,10 @@ const PAGES: [name: string, draw: Draw, props: Record<string, unknown>][] = [
 	["DeferredNested", drawDeferredNested, { rows: ["a", "b"] }],
 	["DeferredRows", drawDeferredRows, { handles: {} }],
 	["EmptyClassSpread", drawEmptyClassSpread, { tone: "" }],
-	["FirstScreen", drawFirstScreen, { handles: {} }],
-	["FirstScreenNested", drawFirstScreenNested, {}],
-	["FirstScreenSnippet", drawFirstScreenSnippet, {}],
-	["FirstScreenTwoLists", drawFirstScreenTwoLists, {}],
+	["InitialRows", drawInitialRows, { handles: {} }],
+	["InitialRowsNested", drawInitialRowsNested, {}],
+	["InitialRowsSnippet", drawInitialRowsSnippet, {}],
+	["InitialRowsTwoLists", drawInitialRowsTwoLists, {}],
 	["FrameAttributes", drawFrameAttributes, {}],
 	["FrameBlocks", drawFrameBlocks, { tone: "drawn", log: [] }],
 	["FrameBranchList", drawFrameBranchList, {}],

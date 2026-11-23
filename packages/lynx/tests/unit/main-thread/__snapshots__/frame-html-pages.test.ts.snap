@@ -120,7 +120,201 @@ exports[`the first frame's parser, on the pages the thread tests draw > reads Em
   3 <view> {"data-k":"v","class":""}"
 `;
 
-exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreen as before 1`] = `
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameAttributes as before 1`] = `
+"2 <view> {"class":"camel","customName":"x","catchphrase":"y","spreadName":"z","maxLength":4,"autoPlay":true,"data-info":{"a":1}} bindEvent:tap
+3 <view> {"class":"typed","span-count":2,"sticky-top":false,"accessibility-actions":["a","b"],"data-quote":"it's <5>"}
+4 <input> {"class":"field","default-value":"typed"}
+5 <view> {"class":"after-input"}
+  6 <text>
+    7 "after"
+8 <textarea> {"class":"area","default-value":"area text"}
+9 <text> {"class":"sibling"}
+  10 "sibling""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameBlocks as before 1`] = `
+"2 <view> {"class":"top"}
+  3 <text>
+    4 "top"
+[block]
+[block]
+  5 <view> {"class":"tone"}
+    6 <text>
+      7 "plain"
+[block]
+  8 <view> {"class":"badge"}
+    9 <text>
+      10 "."
+11 <view> {"class":"bottom","data-mounted":false}
+  12 <text>
+    13 "drawn""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameBranchList as before 1`] = `
+"[block]
+  2 <list> {"class":"list"}
+    3 cell {"item-key":"a","class":"row drawn"} "<text class=\\"label drawn\\">a</text>"
+      6 <text> {"class":"label drawn"}
+        7 "a"
+    4 cell {"item-key":"b","class":"row drawn"} "<text class=\\"label drawn\\">b</text>"
+      8 <text> {"class":"label drawn"}
+        9 "b"
+    5 cell {"item-key":"c","class":"row drawn"} "<text class=\\"label drawn\\">c</text>"
+      10 <text> {"class":"label drawn"}
+        11 "c""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameCounter as before 1`] = `
+"2 <view> {"class":"root","style":"padding: 24px;"}
+  3 <text> {"class":"count"}
+    4 "Taps: 0 (drawn)"
+  5 <view> {"class":"button"} bindEvent:tap
+    6 <text> {"class":"label"}
+      7 "Tap me""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameEvents as before 1`] = `
+"2 <scroll-view> {"class":"scroller"} bindEvent:scroll
+  3 <view> {"class":"outer"} bindEvent:tap
+    4 <view> {"class":"caught"} catchEvent:tap
+      5 <text> {"class":"inside"}
+        6 "inside"
+    7 <view> {"class":"bubbles"} bindEvent:tap
+      8 <text> {"class":"leaf"}
+        9 "leaf""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameFeed as before 1`] = `
+"2 <list> {"class":"feed"}
+  3 cell {"item-key":"row-1"} "<list class=\\"carousel\\" scroll-orientation=\\"horizontal\\"><!--[--><list-item item-key=\\"one\\"><text class=\\"card\\" bindtap>one</text></list-item><list-item item-key=\\"two\\"><text class=\\"card\\" bindtap>two</text></list-item><!--]--></list>"
+    4 <list> {"class":"carousel","scroll-orientation":"horizontal"}
+      5 <list-item> {"item-key":"one"}
+        6 <text> {"class":"card"} bindEvent:tap
+          7 "one"
+      8 <list-item> {"item-key":"two"}
+        9 <text> {"class":"card"} bindEvent:tap
+          10 "two""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIdBranches as before 1`] = `
+"2 <view> {"class":"part"}
+  [block]
+    3 <view> {"class":"labeled","id":"lynx-m1","accessibility-label":"label-lynx-m1"}
+      4 <text>
+        5 "lynx-m1"
+  6 <view> {"class":"labeled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
+    7 <text>
+      8 "lynx-s1"
+9 <view> {"class":"part"}
+  [block]
+  [block]
+  10 <view> {"class":"labeled","id":"lynx-s2","accessibility-label":"label-lynx-s2"}
+    11 <text>
+      12 "lynx-s2"
+13 <view> {"class":"slot"}
+  [block]
+    14 <view> {"class":"labeled","id":"lynx-m2","accessibility-label":"label-lynx-m2"}
+      15 <text>
+        16 "lynx-m2"
+  17 <view> {"class":"labeled","id":"lynx-s3","accessibility-label":"label-lynx-s3"}
+    18 <text>
+      19 "lynx-s3"
+20 <view> {"class":"part"}
+  [block]
+  [block]
+    21 <view> {"class":"labeled","id":"lynx-m3","accessibility-label":"label-lynx-m3"}
+      22 <text>
+        23 "lynx-m3"
+  24 <view> {"class":"labeled","id":"lynx-s4","accessibility-label":"label-lynx-s4"}
+    25 <text>
+      26 "lynx-s4"
+27 <view> {"class":"part"}
+  [block]
+  28 <view> {"class":"labeled","id":"lynx-s5","accessibility-label":"label-lynx-s5"}
+    29 <text>
+      30 "lynx-s5""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIdDeferred as before 1`] = `
+"2 <view> {"class":"labeled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
+  3 <text>
+    4 "lynx-s1"
+5 <list> {"class":"list","custom-list-name":"list-container","initial-item-count":0}
+  6 cell {"item-key":"a"} deferred "<!--[-1--><!--]-->"
+    [block]
+  7 cell {"item-key":"b"} deferred "<!--[-1--><!--]-->"
+    [block]
+8 <view> {"class":"labeled","id":"lynx-s2","accessibility-label":"label-lynx-s2"}
+  9 <text>
+    10 "lynx-s2""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIds as before 1`] = `
+"2 <view> {"class":"labelled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
+  3 <text>
+    4 "lynx-s1""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameList as before 1`] = `
+"2 <list> {"class":"list"}
+  3 cell {"item-key":"a","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>a</text>"
+    6 <text> {"class":"row"} bindEvent:tap
+      7 "a"
+  4 cell {"item-key":"b","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>b</text>"
+    8 <text> {"class":"row"} bindEvent:tap
+      9 "b"
+  5 cell {"item-key":"c","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>c</text>"
+    10 <text> {"class":"row"} bindEvent:tap
+      11 "c""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameMarkupValue as before 1`] = `
+"2 <list> {"class":"list"}
+  3 cell {"item-key":"a","data-raw":{"markup":"<list-item>a</list-item></list>"}} "<text class=\\"row\\">a</text>"
+    5 <text> {"class":"row"}
+      6 "a"
+  4 cell {"item-key":"b","data-raw":{"markup":"<list-item>b</list-item></list>"}} "<text class=\\"row\\">b</text>"
+    7 <text> {"class":"row"}
+      8 "b""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameTextInBlock as before 1`] = `
+"2 <view> {"class":"root"}
+  3 <text> {"class":"t"}
+    [block]
+      4 "B"
+      5 <text> {"class":"f"}
+        6 "f"
+      7 <text> {"class":"f"}
+        8 "f"
+      9 "A""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads FrameTexts as before 1`] = `
+"2 <view> {"class":"root"}
+  3 <text> {"class":"message"}
+  4 <text> {"class":"mixed"}
+    5 <text> {"class":"inline"}
+      6 "inline"
+    7 "end"
+  8 <view> {"class":"after"}
+    9 <text>
+      10 "after""
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads Hydrate as before 1`] = `
+"2 <view> {"class":"outer","main-thread:ref":{"_wvid":-3,"_initValue":null}}
+  3 <view> {"class":"tap","main-thread:bindtap":{"_c":{"bump":{"_c":{"taps":{"_wvid":-1,"_initValue":0}},"_wkltId":"4b32:60fe3:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}},"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:2","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
+  4 <view> {"class":"saved","main-thread:bindtap":{"_c":{"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:3"}}
+  5 <view> {"class":"plain"} bindEvent:tap
+  6 <view> {"class":"once","main-thread:ref":{"_wkltId":"4b32:60fe3:4","_jsFn":{"_jsFn1":{"_isFirstScreen":true},"_jsFn2":{"_isFirstScreen":true}}}}
+  7 <view> {"class":"where","main-thread:ref":{"_c":{"where":"frame","outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:5"}}
+  8 <view> {"class":"frame-only","main-thread:bindtap":{"_wkltId":"4b32:60fe3:9"}}
+  [block]
+    9 <text> {"class":"else","main-thread:ref":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:6"},"main-thread:bindtap":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:7","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}"
+`;
+
+exports[`the first frame's parser, on the pages the thread tests draw > reads InitialRows as before 1`] = `
 "2 <list> {"class":"list","custom-list-name":"list-container"}
   3 cell {"item-key":"r1"} "<!--[0--><view class=\\"row row-1\\" bindtap><text class=\\"label\\">Row 1: 0</text></view><!--]-->"
     [block]
@@ -214,7 +408,7 @@ exports[`the first frame's parser, on the pages the thread tests draw > reads Fi
     [block]"
 `;
 
-exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreenNested as before 1`] = `
+exports[`the first frame's parser, on the pages the thread tests draw > reads InitialRowsNested as before 1`] = `
 "2 <list> {"class":"outer","custom-list-name":"list-container"}
   3 cell {"item-key":"o1"} "<!--[0--><text class=\\"outer-1\\">Outer 1</text> <list class=\\"inner-1\\" custom-list-name=\\"list-container\\" initial-item-count='3'><!--[--><list-item item-key=\\"i1\\"><!--[0--><text class=\\"inner-1-1\\">Inner 1</text><!--]--></list-item><list-item item-key=\\"i2\\"><!--[0--><text class=\\"inner-1-2\\">Inner 2</text><!--]--></list-item><list-item item-key=\\"i3\\"><!--[0--><text class=\\"inner-1-3\\">Inner 3</text><!--]--></list-item><list-item item-key=\\"i4\\" defer='true'><!--[-1--><!--]--></list-item><list-item item-key=\\"i5\\" defer='true'><!--[-1--><!--]--></list-item><!--]--> <!--[-1--><!--]--></list><!--]-->"
     [block]
@@ -442,7 +636,7 @@ exports[`the first frame's parser, on the pages the thread tests draw > reads Fi
     [block]"
 `;
 
-exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreenSnippet as before 1`] = `
+exports[`the first frame's parser, on the pages the thread tests draw > reads InitialRowsSnippet as before 1`] = `
 "2 <list> {"class":"list","custom-list-name":"list-container"}
   3 cell {"item-key":"s1"} "<!--[0--><text class=\\"s-1\\">s 1</text><!--]-->"
     [block]
@@ -506,7 +700,7 @@ exports[`the first frame's parser, on the pages the thread tests draw > reads Fi
     [block]"
 `;
 
-exports[`the first frame's parser, on the pages the thread tests draw > reads FirstScreenTwoLists as before 1`] = `
+exports[`the first frame's parser, on the pages the thread tests draw > reads InitialRowsTwoLists as before 1`] = `
 "2 <list> {"class":"first","custom-list-name":"list-container"}
   3 cell {"item-key":"a1"} "<!--[0--><text class=\\"a-1\\">a 1</text><!--]-->"
     [block]
@@ -629,200 +823,6 @@ exports[`the first frame's parser, on the pages the thread tests draw > reads Fi
     [block]
   43 cell {"item-key":"b20"} deferred "<!--[-1--><!--]-->"
     [block]"
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameAttributes as before 1`] = `
-"2 <view> {"class":"camel","customName":"x","catchphrase":"y","spreadName":"z","maxLength":4,"autoPlay":true,"data-info":{"a":1}} bindEvent:tap
-3 <view> {"class":"typed","span-count":2,"sticky-top":false,"accessibility-actions":["a","b"],"data-quote":"it's <5>"}
-4 <input> {"class":"field","default-value":"typed"}
-5 <view> {"class":"after-input"}
-  6 <text>
-    7 "after"
-8 <textarea> {"class":"area","default-value":"area text"}
-9 <text> {"class":"sibling"}
-  10 "sibling""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameBlocks as before 1`] = `
-"2 <view> {"class":"top"}
-  3 <text>
-    4 "top"
-[block]
-[block]
-  5 <view> {"class":"tone"}
-    6 <text>
-      7 "plain"
-[block]
-  8 <view> {"class":"badge"}
-    9 <text>
-      10 "."
-11 <view> {"class":"bottom","data-mounted":false}
-  12 <text>
-    13 "drawn""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameBranchList as before 1`] = `
-"[block]
-  2 <list> {"class":"list"}
-    3 cell {"item-key":"a","class":"row drawn"} "<text class=\\"label drawn\\">a</text>"
-      6 <text> {"class":"label drawn"}
-        7 "a"
-    4 cell {"item-key":"b","class":"row drawn"} "<text class=\\"label drawn\\">b</text>"
-      8 <text> {"class":"label drawn"}
-        9 "b"
-    5 cell {"item-key":"c","class":"row drawn"} "<text class=\\"label drawn\\">c</text>"
-      10 <text> {"class":"label drawn"}
-        11 "c""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameCounter as before 1`] = `
-"2 <view> {"class":"root","style":"padding: 24px;"}
-  3 <text> {"class":"count"}
-    4 "Taps: 0 (drawn)"
-  5 <view> {"class":"button"} bindEvent:tap
-    6 <text> {"class":"label"}
-      7 "Tap me""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameEvents as before 1`] = `
-"2 <scroll-view> {"class":"scroller"} bindEvent:scroll
-  3 <view> {"class":"outer"} bindEvent:tap
-    4 <view> {"class":"caught"} catchEvent:tap
-      5 <text> {"class":"inside"}
-        6 "inside"
-    7 <view> {"class":"bubbles"} bindEvent:tap
-      8 <text> {"class":"leaf"}
-        9 "leaf""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameFeed as before 1`] = `
-"2 <list> {"class":"feed"}
-  3 cell {"item-key":"row-1"} "<list class=\\"carousel\\" scroll-orientation=\\"horizontal\\"><!--[--><list-item item-key=\\"one\\"><text class=\\"card\\" bindtap>one</text></list-item><list-item item-key=\\"two\\"><text class=\\"card\\" bindtap>two</text></list-item><!--]--></list>"
-    4 <list> {"class":"carousel","scroll-orientation":"horizontal"}
-      5 <list-item> {"item-key":"one"}
-        6 <text> {"class":"card"} bindEvent:tap
-          7 "one"
-      8 <list-item> {"item-key":"two"}
-        9 <text> {"class":"card"} bindEvent:tap
-          10 "two""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIdBranches as before 1`] = `
-"2 <view> {"class":"part"}
-  [block]
-    3 <view> {"class":"labeled","id":"lynx-m1","accessibility-label":"label-lynx-m1"}
-      4 <text>
-        5 "lynx-m1"
-  6 <view> {"class":"labeled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
-    7 <text>
-      8 "lynx-s1"
-9 <view> {"class":"part"}
-  [block]
-  [block]
-  10 <view> {"class":"labeled","id":"lynx-s2","accessibility-label":"label-lynx-s2"}
-    11 <text>
-      12 "lynx-s2"
-13 <view> {"class":"slot"}
-  [block]
-    14 <view> {"class":"labeled","id":"lynx-m2","accessibility-label":"label-lynx-m2"}
-      15 <text>
-        16 "lynx-m2"
-  17 <view> {"class":"labeled","id":"lynx-s3","accessibility-label":"label-lynx-s3"}
-    18 <text>
-      19 "lynx-s3"
-20 <view> {"class":"part"}
-  [block]
-  [block]
-    21 <view> {"class":"labeled","id":"lynx-m3","accessibility-label":"label-lynx-m3"}
-      22 <text>
-        23 "lynx-m3"
-  24 <view> {"class":"labeled","id":"lynx-s4","accessibility-label":"label-lynx-s4"}
-    25 <text>
-      26 "lynx-s4"
-27 <view> {"class":"part"}
-  [block]
-  28 <view> {"class":"labeled","id":"lynx-s5","accessibility-label":"label-lynx-s5"}
-    29 <text>
-      30 "lynx-s5""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIdDeferred as before 1`] = `
-"2 <view> {"class":"labeled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
-  3 <text>
-    4 "lynx-s1"
-5 <list> {"class":"list","custom-list-name":"list-container","initial-item-count":0}
-  6 cell {"item-key":"a"} deferred "<!--[-1--><!--]-->"
-    [block]
-  7 cell {"item-key":"b"} deferred "<!--[-1--><!--]-->"
-    [block]
-8 <view> {"class":"labeled","id":"lynx-s2","accessibility-label":"label-lynx-s2"}
-  9 <text>
-    10 "lynx-s2""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameIds as before 1`] = `
-"2 <view> {"class":"labelled","id":"lynx-s1","accessibility-label":"label-lynx-s1"}
-  3 <text>
-    4 "lynx-s1""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameList as before 1`] = `
-"2 <list> {"class":"list"}
-  3 cell {"item-key":"a","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>a</text>"
-    6 <text> {"class":"row"} bindEvent:tap
-      7 "a"
-  4 cell {"item-key":"b","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>b</text>"
-    8 <text> {"class":"row"} bindEvent:tap
-      9 "b"
-  5 cell {"item-key":"c","reuse-identifier":"row"} "<text class=\\"row\\" bindtap>c</text>"
-    10 <text> {"class":"row"} bindEvent:tap
-      11 "c""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameMarkupValue as before 1`] = `
-"2 <list> {"class":"list"}
-  3 cell {"item-key":"a","data-raw":{"markup":"<list-item>a</list-item></list>"}} "<text class=\\"row\\">a</text>"
-    5 <text> {"class":"row"}
-      6 "a"
-  4 cell {"item-key":"b","data-raw":{"markup":"<list-item>b</list-item></list>"}} "<text class=\\"row\\">b</text>"
-    7 <text> {"class":"row"}
-      8 "b""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameTextInBlock as before 1`] = `
-"2 <view> {"class":"root"}
-  3 <text> {"class":"t"}
-    [block]
-      4 "B"
-      5 <text> {"class":"f"}
-        6 "f"
-      7 <text> {"class":"f"}
-        8 "f"
-      9 "A""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads FrameTexts as before 1`] = `
-"2 <view> {"class":"root"}
-  3 <text> {"class":"message"}
-  4 <text> {"class":"mixed"}
-    5 <text> {"class":"inline"}
-      6 "inline"
-    7 "end"
-  8 <view> {"class":"after"}
-    9 <text>
-      10 "after""
-`;
-
-exports[`the first frame's parser, on the pages the thread tests draw > reads Hydrate as before 1`] = `
-"2 <view> {"class":"outer","main-thread:ref":{"_wvid":-3,"_initValue":null}}
-  3 <view> {"class":"tap","main-thread:bindtap":{"_c":{"bump":{"_c":{"taps":{"_wvid":-1,"_initValue":0}},"_wkltId":"4b32:60fe3:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}},"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:2","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
-  4 <view> {"class":"saved","main-thread:bindtap":{"_c":{"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:3"}}
-  5 <view> {"class":"plain"} bindEvent:tap
-  6 <view> {"class":"once","main-thread:ref":{"_wkltId":"4b32:60fe3:4","_jsFn":{"_jsFn1":{"_isFirstScreen":true},"_jsFn2":{"_isFirstScreen":true}}}}
-  7 <view> {"class":"where","main-thread:ref":{"_c":{"where":"frame","outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:5"}}
-  8 <view> {"class":"frame-only","main-thread:bindtap":{"_wkltId":"4b32:60fe3:9"}}
-  [block]
-    9 <text> {"class":"else","main-thread:ref":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:6"},"main-thread:bindtap":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:7","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}"
 `;
 
 exports[`the first frame's parser, on the pages the thread tests draw > reads LongFeed plain as before 1`] = `

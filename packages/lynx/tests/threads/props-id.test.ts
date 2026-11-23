@@ -168,7 +168,7 @@ describe("$props.id() in a deferred list row", () => {
 		expect(page.warnings).toEqual([]);
 	});
 
-	it("in its list's first screen, takes the first frame's ids, where the first frame drew it", async () => {
+	it("among its list's initial rows, takes the first frame's ids, where the first frame drew it", async () => {
 		const props = { initial: 2 };
 		const page = startSveltePage(FrameIdDeferred, {
 			props: () => props,

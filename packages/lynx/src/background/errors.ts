@@ -21,7 +21,7 @@ export interface ErrorContext {
 	code: string | undefined;
 }
 
-/** A page's `onError`. */
+/** What `mountPage`'s `onError` takes: it hears each error with where it came from. */
 export type ErrorHandler = (error: Error, context: ErrorContext) => void;
 
 /** What is known of where an error came from, beside its text. */

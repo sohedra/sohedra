@@ -29,7 +29,7 @@ import type {
 	SerializedPlainGesture,
 } from "../wire/index.ts";
 import { gestureError } from "./catalogue.ts";
-import { MAIN_THREAD } from "./globals.ts";
+import { DEV, MAIN_THREAD, reportWarning } from "./globals.ts";
 import type {
 	DefaultScrollGestureChangeEvent,
 	FlingGestureChangeEvent,
@@ -41,24 +41,45 @@ import type {
 	TapGestureChangeEvent,
 } from "./types.ts";
 
-/** What every gesture is: marked as one, which the main thread reads. */
-export abstract class Gesture {
-	private readonly __isSerialized: true = true;
+/**
+ * What every gesture class extends: marked as a gesture, which the main thread reads. The mark is
+ * public, so a gesture is one to every entry's declarations, which each declare the classes they
+ * export.
+ */
+export abstract class GestureBase {
+	readonly __isSerialized: true = true;
 }
 
 /**
- * A gesture: what `main-thread:gesture` takes, and what `simultaneousWith` names.
- * Only the gesture classes make one.
+ * A gesture: what `main-thread:gesture` takes, and what a gesture's relations name. Only the
+ * gesture classes make one.
  */
-export interface GestureKind extends Gesture {}
+export interface Gesture extends GestureBase {}
 
-/** What every gesture takes besides its own options. */
+/** What every gesture takes besides its own options: the gestures it relates to. */
 export interface GestureRelations {
 	/**
 	 * Gestures this one may run together with, on another element around or inside this one: a
 	 * drag on this element runs both. One that names nothing runs alone.
 	 */
-	simultaneousWith?: readonly GestureKind[];
+	simultaneousWith?: readonly Gesture[];
+	/**
+	 * Gestures this one waits for: it begins only once they failed.
+	 *
+	 * @experimental On Android a gesture that waits for one on an element around it never runs,
+	 * since that one fails only when the finger lifts, and waiting for a scroll view inside a
+	 * dragged element, or for a sibling, changes nothing; within one element, as `ExclusiveGesture`
+	 * uses it, it works. iOS is not checked yet. A development build warns the first time a gesture
+	 * is given it.
+	 */
+	waitFor?: readonly Gesture[];
+	/**
+	 * Gestures this one hands the touch to when it ends.
+	 *
+	 * @experimental No device has shown it working yet, on iOS or Android. A development build warns
+	 * the first time a gesture is given it.
+	 */
+	continueWith?: readonly Gesture[];
 }
 
 /** The callbacks every gesture takes, each a main-thread function. */
@@ -150,9 +171,9 @@ function nextId(): number {
 	return MAIN_THREAD ? -made : made;
 }
 
-/** `kind` as it crosses, or `undefined` when it is no gesture. */
-export function crossing(kind: unknown): SerializedGesture | undefined {
-	return isGesture(kind) ? kind : undefined;
+/** `gesture` as it crosses, or `undefined` when it is no gesture. */
+export function crossing(gesture: unknown): SerializedGesture | undefined {
+	return isGesture(gesture) ? gesture : undefined;
 }
 
 /** `refs` with the plain gestures of `more` it lacks, leaving out `self`: `refs` if none. */
@@ -171,16 +192,43 @@ export function refsOf(gestures: readonly SerializedGesture[]): GestureRef[] {
 	return gestures.flatMap((gesture) => plainGestures(gesture).map((plain) => ({ id: plain.id })));
 }
 
-/** The gestures a relation option holds; throws, naming the option, when it holds something else. */
-function relation(kinds: unknown, place: { gesture: string; name: string }): SerializedGesture[] {
-	if (kinds === undefined) return [];
-	if (!Array.isArray(kinds))
+/** A relation option of every gesture. */
+type RelationName = keyof GestureRelations;
+
+/** The relation options no device has shown working: each warns once, in a development build. */
+const EXPERIMENTAL_RELATIONS = ["waitFor", "continueWith"] as const;
+
+const warned = new Set<RelationName>();
+
+/**
+ * Warns, in a development build, the first time a gesture is given the experimental relation
+ * `name`. Only the background warns: it builds every gesture the first frame built, so the
+ * warning comes once.
+ */
+function warnExperimental(place: {
+	gesture: string;
+	name: (typeof EXPERIMENTAL_RELATIONS)[number];
+}): void {
+	if (!DEV || MAIN_THREAD || warned.has(place.name)) return;
+	warned.add(place.name);
+	reportWarning(gestureError({ code: "gesture_relation_experimental", details: place }));
+}
+
+/** The refs a relation option names; throws, naming the option, when it holds something else. */
+function relation(
+	gestures: unknown,
+	place: { gesture: string; name: RelationName },
+	self: number,
+): GestureRef[] {
+	if (gestures === undefined) return [];
+	if (!Array.isArray(gestures))
 		throw gestureError({ code: "gesture_relation_not_a_list", details: place });
-	return kinds.map((kind) => {
-		const value = crossing(kind);
+	const values = gestures.map((gesture) => {
+		const value = crossing(gesture);
 		if (!value) throw gestureError({ code: "gesture_relation_not_gesture", details: place });
 		return value;
 	});
+	return merge([], refsOf(values), self);
 }
 
 /** What a plain gesture is made from. */
@@ -193,7 +241,7 @@ interface PlainParts {
 }
 
 /** One gesture: one detector of Lynx's on its element. */
-abstract class PlainGesture extends Gesture {
+abstract class PlainGesture extends GestureBase {
 	// The fields are the gesture as it crosses, in the order it is written.
 	private readonly id: number;
 	private readonly type: SerializedPlainGesture["type"];
@@ -203,6 +251,7 @@ abstract class PlainGesture extends Gesture {
 	private readonly simultaneousWith: GestureRef[];
 	private readonly continueWith: GestureRef[];
 
+	/** @internal */
 	protected constructor({ gesture, type, config, options }: PlainParts) {
 		super();
 		this.id = nextId();
@@ -219,13 +268,15 @@ abstract class PlainGesture extends Gesture {
 				});
 			this.callbacks[name] = callback;
 		}
-		this.waitFor = [];
-		this.simultaneousWith = merge(
-			[],
-			refsOf(relation(options.simultaneousWith, { gesture, name: "simultaneousWith" })),
+		this.waitFor = relation(options.waitFor, { gesture, name: "waitFor" }, this.id);
+		this.simultaneousWith = relation(
+			options.simultaneousWith,
+			{ gesture, name: "simultaneousWith" },
 			this.id,
 		);
-		this.continueWith = [];
+		this.continueWith = relation(options.continueWith, { gesture, name: "continueWith" }, this.id);
+		for (const name of EXPERIMENTAL_RELATIONS)
+			if (options[name] !== undefined) warnExperimental({ gesture, name });
 	}
 }
 

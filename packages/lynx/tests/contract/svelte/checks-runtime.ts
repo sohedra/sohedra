@@ -157,7 +157,7 @@ export const checks: Checks = {
 		// The first frame's components write elements with these.
 		expect(compileServer("<view id={x} {...el}>{x}</view>")).toMatch(/\$\.attributes\(/);
 		// An element's attributes, a spread's too, are read before its children, in the order
-		// written: a list's first screen opens in an attribute and its rows count after.
+		// written: a list's count of initial rows opens in an attribute and its rows count after.
 		const page = (
 			await serverComponents(
 				{

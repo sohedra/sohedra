@@ -1,11 +1,11 @@
 // Deferred list rows: a `<list-item defer>` renders its contents only once Lynx first asks for the
-// row, or as the page starts when the row is in its list's first screen. The build gives the row's
+// row, or as the page starts when the row is among its list's initial rows. The build gives the row's
 // contents an `{#if}` on the row's state (`deferredRow`) and links the state to the element
 // (`DEFERRED_ROW`). On a list of the page, a row whose contents have not rendered sends no text: the
 // main thread asks for it when Lynx does (a show message), and the background renders the contents
 // and writes the whole row. Anywhere else, a row renders in the next patch.
 
-import { signal, sourceLocation, startingScreens } from "../../svelte/runtime/index.ts";
+import { signal, sourceLocation, startingInitialRows } from "../../svelte/runtime/index.ts";
 import type { Signal } from "../../svelte/runtime/index.ts";
 import { ASYNC_LIST } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
@@ -26,9 +26,9 @@ export interface DeferOptions {
 
 /** Where a deferred row is, as the build reads it from the row's markup. */
 export interface RowPlace {
-	/** The value of the row's `full-span`: it takes a whole line of its list's first screen. */
+	/** The value of the row's `full-span`: it takes a whole line of its list's initial rows. */
 	fullSpan?: () => unknown;
-	/** In a branch only one thread renders: it never takes a place in a first screen. */
+	/** In a branch only one thread renders: it never takes a place among a list's initial rows. */
 	oneThread?: boolean;
 }
 
@@ -38,13 +38,13 @@ export class DeferredRow {
 	readonly option: () => unknown;
 	private readonly place: RowPlace;
 	/**
-	 * Whether its contents are asked for: Lynx asked for the row, it renders where it is, or it is in
-	 * its list's first screen. Made with the row, not as its `{#if}` first reads it: an effect does
+	 * Whether its contents are asked for: Lynx asked for the row, it renders where it is, or it is
+	 * among its list's initial rows. Made with the row, not as its `{#if}` first reads it: an effect does
 	 * not subscribe to a signal it made itself.
 	 */
 	private readonly opened: Signal<boolean> = signal(false);
 	private open: boolean = false;
-	/** Whether the row rendered yet: it takes its place in its list's first screen then. */
+	/** Whether the row rendered yet: it takes its place among its list's initial rows then. */
 	private placed: boolean = false;
 	/** `defer` was false while the row rendered: it renders from then on, as if never deferred. */
 	private always: boolean = false;
@@ -58,10 +58,10 @@ export class DeferredRow {
 	get ready(): boolean {
 		if (!this.placed) {
 			this.placed = true;
-			// As the page starts, the row takes its place in its list's first screen, in the order the
+			// As the page starts, the row takes its place among its list's initial rows, in the order the
 			// first frame counted it.
-			const screens = this.place.oneThread ? undefined : startingScreens();
-			if (screens?.row(this.place.fullSpan?.()) === true) this.show();
+			const initial = this.place.oneThread ? undefined : startingInitialRows();
+			if (initial?.row(this.place.fullSpan?.()) === true) this.show();
 		}
 		if (this.opened.read() || this.always) return true;
 		if (!this.option()) this.always = true;

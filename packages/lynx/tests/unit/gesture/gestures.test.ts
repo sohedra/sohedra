@@ -1,28 +1,27 @@
 // The gesture classes: each instance is the gesture as it crosses to the main thread, made from one
-// options object. Relations name gestures by their own ids; a composition gives its members the
-// relations it means, on copies.
+// options object, its relations among them. Relations name gestures by their own ids; a composition
+// gives its members the relations it means, on copies.
 
 import { describe, expect, it } from "@rstest/core";
 
+import * as experimental from "../../../src/gesture/experimental.ts";
 import {
-	continueWith,
 	ExclusiveGesture,
 	FlingGesture,
 	LongPressGesture,
 	NativeGesture,
 	RaceGesture,
 	SimultaneousGesture,
-	waitFor,
 } from "../../../src/gesture/experimental.ts";
 import { DefaultScrollGesture, PanGesture, TapGesture } from "../../../src/gesture/index.ts";
-import type { GestureKind } from "../../../src/gesture/index.ts";
+import type { Gesture } from "../../../src/gesture/index.ts";
 import { isGesture, plainGestures } from "../../../src/wire/index.ts";
 import type { SerializedGesture, SerializedPlainGesture } from "../../../src/wire/index.ts";
 
 // A main-thread function as the compile step makes it.
 const fn = (id: string) => ({ _wkltId: id }) as unknown as () => void;
-const sent = (gesture: GestureKind) => JSON.parse(JSON.stringify(gesture)) as SerializedGesture;
-const plain = (gesture: GestureKind) => sent(gesture) as SerializedPlainGesture;
+const sent = (gesture: Gesture) => JSON.parse(JSON.stringify(gesture)) as SerializedGesture;
+const plain = (gesture: Gesture) => sent(gesture) as SerializedPlainGesture;
 const ids = (refs: { id: number }[]) => refs.map((ref) => ref.id);
 
 describe("a gesture", () => {
@@ -85,46 +84,32 @@ describe("a gesture", () => {
 		expect(() => new TapGesture({ onEnd: () => {} })).toThrow(/The onEnd given to a TapGesture/);
 	});
 
-	it("refuses a relation that is not a gesture, or not a list, through its catalogue", () => {
-		const fake = { id: 1 } as unknown as GestureKind;
-		expect(() => new PanGesture({ simultaneousWith: [fake] })).toThrow(
-			expect.objectContaining({ code: "gesture_relation_not_gesture" }),
-		);
-		const scroll = new DefaultScrollGesture();
-		expect(() => new PanGesture({ simultaneousWith: scroll as unknown as GestureKind[] })).toThrow(
-			expect.objectContaining({ code: "gesture_relation_not_a_list" }),
-		);
-		expect(() => new TapGesture({ simultaneousWith: scroll as never })).toThrow(
-			/^The simultaneousWith of a TapGesture is not a list of gestures\./,
-		);
-	});
+	it.each(["simultaneousWith", "waitFor", "continueWith"] as const)(
+		"refuses a %s that is not a list of gestures, through its catalogue, naming the option",
+		(name) => {
+			const fake = { id: 1 } as unknown as Gesture;
+			expect(() => new PanGesture({ [name]: [fake] })).toThrow(
+				expect.objectContaining({
+					code: "gesture_relation_not_gesture",
+					message: expect.stringMatching(new RegExp(`^The ${name} of a PanGesture holds a value`)),
+				}),
+			);
+			const scroll = new DefaultScrollGesture();
+			expect(() => new PanGesture({ [name]: scroll as unknown as Gesture[] })).toThrow(
+				expect.objectContaining({ code: "gesture_relation_not_a_list" }),
+			);
+			expect(() => new TapGesture({ [name]: scroll as never })).toThrow(
+				new RegExp(`^The ${name} of a TapGesture is not a list of gestures\\.`),
+			);
+		},
+	);
 
-	it("refuses a composition's member, or waitFor's or continueWith's gestures, that are no gestures", () => {
-		const fake = { id: 1 } as unknown as GestureKind;
+	it("refuses a composition's member that is no gesture", () => {
+		const fake = { id: 1 } as unknown as Gesture;
 		expect(() => new RaceGesture(new PanGesture(), fake)).toThrow(
 			expect.objectContaining({
 				code: "gesture_member_not_gesture",
 				message: expect.stringMatching(/^A RaceGesture was given a value that is not a gesture/),
-			}),
-		);
-		// Each names the argument that is wrong.
-		expect(() => continueWith(fake, [])).toThrow(
-			expect.objectContaining({
-				code: "relation_call_not_gestures",
-				message: expect.stringMatching(/^The gesture given to continueWith is not a gesture/),
-			}),
-		);
-		expect(() => continueWith(new PanGesture(), [fake])).toThrow(
-			expect.objectContaining({
-				code: "relation_call_not_gestures",
-				message: expect.stringMatching(/^The list given to continueWith holds a value that/),
-			}),
-		);
-		expect(() => waitFor(new PanGesture(), [fake])).toThrow(/^The list given to waitFor holds/);
-		expect(() => continueWith(new PanGesture(), new FlingGesture() as never)).toThrow(
-			expect.objectContaining({
-				code: "relation_call_not_gestures",
-				message: expect.stringMatching(/^The gestures given to continueWith are not in a list/),
 			}),
 		);
 	});
@@ -133,7 +118,7 @@ describe("a gesture", () => {
 		const tap = new TapGesture();
 		const scroll = new DefaultScrollGesture();
 		const race = new RaceGesture(tap, scroll);
-		const pan = waitFor(new PanGesture({ simultaneousWith: [scroll] }), [tap, tap, race]);
+		const pan = new PanGesture({ simultaneousWith: [scroll], waitFor: [tap, tap, race] });
 		const tapId = plain(tap).id;
 		const scrollId = plain(scroll).id;
 		expect(ids(plain(pan).waitFor)).toEqual([tapId, scrollId]);
@@ -178,43 +163,40 @@ describe("a composition", () => {
 	});
 });
 
-describe("waitFor", () => {
-	it("is a copy of the gesture, of its class, that waits for the plain gestures given", () => {
-		const pan = new PanGesture();
-		const tap = new TapGesture();
-		const waiting = waitFor(pan, [tap]);
-		expect(waiting).toBeInstanceOf(PanGesture);
-		expect(ids(plain(waiting).waitFor)).toEqual([plain(tap).id]);
-		expect(plain(waiting).id).toBe(plain(pan).id);
-		expect(plain(pan).waitFor).toEqual([]);
-	});
-
-	it("is no option of the classes: a waitFor given as one is left out", () => {
-		const tap = new TapGesture();
-		const options = { waitFor: [tap] } as unknown as ConstructorParameters<typeof PanGesture>[0];
-		expect(plain(new PanGesture(options)).waitFor).toEqual([]);
-	});
-});
-
-describe("continueWith", () => {
-	it("is a copy of the gesture, of its class, that hands the touch to the next ones", () => {
-		const pan = new PanGesture({ onUpdate: fn("a:update") });
-		const fling = new FlingGesture();
-		const next = continueWith(pan, [fling]);
-		expect(next).toBeInstanceOf(PanGesture);
-		expect(ids(plain(next).continueWith)).toEqual([plain(fling).id]);
-		expect(plain(next).id).toBe(plain(pan).id);
-		expect(plain(pan).continueWith).toEqual([]);
-	});
-
-	it("of a composition hands each member's touch on", () => {
-		const fling = new FlingGesture();
-		const members = plainGestures(
-			sent(continueWith(new RaceGesture(new PanGesture(), new TapGesture()), [fling])),
-		);
-		expect(members.map((member) => ids(member.continueWith))).toEqual([
-			[plain(fling).id],
-			[plain(fling).id],
+describe("the relation options", () => {
+	it("send each relation as Lynx's gesture runtime serializes it: the ids, in order", () => {
+		const [pan, fling, scroll] = [new PanGesture(), new FlingGesture(), new DefaultScrollGesture()];
+		const tap = new TapGesture({
+			waitFor: [pan],
+			simultaneousWith: [scroll],
+			continueWith: [fling],
+		});
+		const value = plain(tap);
+		expect([value.waitFor, value.simultaneousWith, value.continueWith]).toEqual([
+			[{ id: plain(pan).id }],
+			[{ id: plain(scroll).id }],
+			[{ id: plain(fling).id }],
 		]);
+		// Built after the gestures it names, with an id of its own.
+		expect(value.id).toBe(plain(scroll).id + 1);
+	});
+
+	it("name a gesture given twice once", () => {
+		const pan = new PanGesture();
+		const press = new LongPressGesture({ continueWith: [pan, pan] });
+		expect(ids(plain(press).continueWith)).toEqual([plain(pan).id]);
+	});
+
+	it("keep a composition's members' own relations beside the composition's", () => {
+		const [pan, fling] = [new PanGesture(), new FlingGesture()];
+		const tap = new TapGesture({ waitFor: [fling], continueWith: [fling] });
+		const members = plainGestures(sent(new ExclusiveGesture(pan, tap)));
+		expect(ids(members[1]!.waitFor)).toEqual([plain(fling).id, plain(pan).id]);
+		expect(ids(members[1]!.continueWith)).toEqual([plain(fling).id]);
+	});
+
+	it("are no functions of the experimental entry", () => {
+		expect(Object.keys(experimental)).not.toContain("waitFor");
+		expect(Object.keys(experimental)).not.toContain("continueWith");
 	});
 });

@@ -47,7 +47,7 @@ describe("a counter page", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("renders the first screen with one patch, raw text only under text", async () => {
+	it("renders the page with one patch, raw text only under text", async () => {
 		const page = await counter();
 		expect(page.engine.texts()).toEqual(["Taps: 0 (even)", "Tap me"]);
 		expect(page.patches).toHaveLength(1);

@@ -14,7 +14,7 @@
 		async?: boolean;
 		defer?: boolean | { unmountRecycled?: boolean };
 		preload?: number;
-		/** How many rows the first screen renders whole: none, so every row waits to be asked for. */
+		/** How many rows render whole as the page starts: none, so every row waits to be asked for. */
 		initial?: number | null;
 	} = $props();
 	const feed = $state({

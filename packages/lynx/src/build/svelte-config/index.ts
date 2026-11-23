@@ -1,6 +1,8 @@
-// The one line of an app's `svelte.config.js`: `export default svelteConfig()`. The plugin reads
-// the file, and so do the editor and `svelte-check`, so they compile a component as the build
-// does. This file is loaded by editors, so it imports no build code.
+// What wraps an app's `svelte.config.js`: `export default defineConfig({ … })`, a regular Svelte
+// config. The plugin reads the file and sets what a Lynx page needs itself, so a plain object builds
+// the same; the editor and `svelte-check` read only the file, and `defineConfig()` gives them those
+// settings, so they check a component as the build compiles it. This file is loaded by editors, so
+// it imports no build code.
 
 import type { CompileOptions, PreprocessorGroup } from "../../svelte/build/index.ts";
 import { RENDERER_ENTRY } from "../../wire/index.ts";
@@ -24,7 +26,7 @@ export type SvelteLynxCompilerOptions = Pick<
 	experimental?: Pick<NonNullable<CompileOptions["experimental"]>, "async">;
 };
 
-/** What `svelteConfig()` takes: the app's own Svelte options. */
+/** What `defineConfig()` takes: the app's own Svelte options, in Svelte's config shape. */
 export interface SvelteConfigOptions {
 	compilerOptions?: SvelteLynxCompilerOptions;
 	/** Svelte preprocessors, run on each `.svelte` file before it compiles. */
@@ -38,17 +40,20 @@ export interface SvelteConfig {
 }
 
 /**
- * The Svelte config of a Lynx app: your options, with runes and the custom renderer on. Async
- * support is Svelte's own (off); set `compilerOptions.experimental.async` to turn it on.
+ * The Svelte config of a Lynx app: your regular Svelte config, with runes, the custom renderer and
+ * Lynx's warning filter on, so the editor and `svelte-check` check a component as the build
+ * compiles it. A plain object builds the same, since the build sets those itself; only the editor
+ * would miss Lynx's errors and warn on `main-thread:` attributes. Async support is Svelte's own
+ * (off); set `compilerOptions.experimental.async` to turn it on.
  *
  * ```js
  * // svelte.config.js
- * import { svelteConfig } from "@sohedra/lynx/config/svelte";
+ * import { defineConfig } from "@sohedra/lynx/config/svelte";
  *
- * export default svelteConfig();
+ * export default defineConfig({ compilerOptions: {}, preprocess: [] });
  * ```
  */
-export function svelteConfig(options: SvelteConfigOptions = {}): SvelteConfig {
+export function defineConfig(options: SvelteConfigOptions = {}): SvelteConfig {
 	const { compilerOptions = {}, preprocess = [] } = options;
 	return {
 		compilerOptions: {

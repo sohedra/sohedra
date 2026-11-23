@@ -1,5 +1,5 @@
 // `<list-item defer>`: the row's contents render only once Lynx first asks for the row, unless the
-// row is in its list's first screen, which renders whole as the page starts.
+// row is among its list's initial rows, which render whole as the page starts.
 //
 // On the background, each such row gets its state (`deferredRow`, from the renderer's module),
 // made once per row by a `{@const}`, linked to the element by an attribute the renderer takes, and
@@ -12,9 +12,9 @@
 //
 // A `{@const}` goes only in a block, a snippet or a component's children, so a row anywhere else
 // is wrapped in `{#if true}`. The first frame draws a deferred row empty, and writes its `defer`,
-// which the main thread reads there; a row of the first screen it draws whole, with no `defer`.
+// which the main thread reads there; a row among the initial rows it draws whole, with no `defer`.
 //
-// The first screen (`src/svelte/runtime/first-screen.ts`): each `<list>` that may hold a deferred row
+// The initial rows (`src/svelte/runtime/initial-rows.ts`): each `<list>` that may hold a deferred row
 // (one written among its rows, or a component, a snippet or a slot there that may render one) opens
 // its count before its rows and closes it after them, and each row that waits asks for its place
 // where both threads reach it in the same order: the background in the `{#if}` on its state, which
@@ -48,20 +48,20 @@ const ROW = "__sohedraLynxRow";
 const FACTORY = "__sohedraLynxDeferredRow";
 const FULL_SPAN = "full-span";
 
-/** The first screen's helpers, from the thread's runtime, by the names the markup calls them. */
+/** The initial rows' helpers, from the thread's runtime, by the names the markup calls them. */
 const SCREEN = {
-	list: ["firstScreenList", "__sohedraLynxList"],
-	end: ["firstScreenEnd", "__sohedraLynxListEnd"],
-	count: ["firstScreenRow", "__sohedraLynxCount"],
-	defer: ["firstScreenDefer", "__sohedraLynxDefer"],
-	waits: ["firstScreenWaits", "__sohedraLynxWaits"],
+	list: ["initialRowsList", "__sohedraLynxList"],
+	end: ["initialRowsEnd", "__sohedraLynxListEnd"],
+	count: ["initialRow", "__sohedraLynxCount"],
+	defer: ["initialRowDefer", "__sohedraLynxDefer"],
+	waits: ["initialRowWaits", "__sohedraLynxWaits"],
 } as const;
 
 /** The attributes the first frame never writes: their values are always `undefined`. */
 const LIST_HOOK = "sohedra-lynx-list";
 const COUNT_HOOK = "sohedra-lynx-count";
 
-/** The attributes of a `<list>` its first screen reads. */
+/** The attributes of a `<list>` the count of its initial rows reads. */
 const SCREEN_ATTRIBUTES = new Set([
 	"span-count",
 	"column-count",
@@ -185,7 +185,7 @@ function fullSpanText(source: string, element: AnyNode): string | undefined {
 	return attribute && valueText(source, attribute);
 }
 
-/** What a list's first screen reads of its attributes, spreads included, in the order written. */
+/** What the count of a list's initial rows reads of its attributes, spreads included, in the order written. */
 function listAttributesText(source: string, list: AnyNode): string | undefined {
 	const parts: string[] = [];
 	for (const attribute of attributesOf(list)) {
@@ -247,13 +247,13 @@ function ignoredDefer(element: AnyNode): string | undefined {
 		: undefined;
 }
 
-/** The edits that defer the contents of each `<list-item defer>`, and count each list's first screen. */
+/** The edits that defer the contents of each `<list-item defer>`, and count each list's initial rows. */
 export const deferredRows: Pass = (context) => {
 	const { source, filename, ast, thread, development, internals, warnings } = context;
 	const background = thread === "background";
 	const places = background ? constPlaces(ast.fragment) : new Set<AnyNode>();
-	// The first screen's helpers come from the thread's runtime: a build that gives none counts none.
-	const screens = internals !== undefined;
+	// The initial rows' helpers come from the thread's runtime: a build that gives none counts none.
+	const countsRows = internals !== undefined;
 	const placed = [
 		...placedNodes(
 			ast.fragment,
@@ -285,7 +285,7 @@ export const deferredRows: Pass = (context) => {
 
 	function openList(list: AnyNode): void {
 		const children = childrenOf(list);
-		if (!screens || children.length === 0 || !counting.has(list)) return;
+		if (!countsRows || children.length === 0 || !counting.has(list)) return;
 		const read = listAttributesText(source, list) ?? "";
 		// Counted from 0, as the places of Svelte's development build are.
 		const [line, column] = position(source, list.start!);
@@ -342,8 +342,8 @@ export const deferredRows: Pass = (context) => {
 		const children = childrenOf(element);
 		const first = children[0];
 		const last = children[children.length - 1];
-		// A row only one thread renders takes no place in the first screen, on either thread.
-		const counts = screens && !oneThread;
+		// A row only one thread renders takes no place among the initial rows, on either thread.
+		const counts = countsRows && !oneThread;
 		if (counts && list !== undefined && withDeferred.has(list) && !(defer && first))
 			countRow(element);
 		if (!defer) continue;

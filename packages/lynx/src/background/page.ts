@@ -15,10 +15,10 @@ import type { Component } from "svelte";
 
 import {
 	componentOfError,
-	endFirstScreens,
+	endInitialRows,
 	listenThrough,
 	SCROLL_INDEX_CAP,
-	startFirstScreens,
+	startInitialRows,
 	startPropsIds,
 	withRenderer,
 } from "../svelte/runtime/index.ts";
@@ -260,7 +260,7 @@ export function mountPage<Props extends Bag>(
 	});
 
 	/**
-	 * Mounts the app. At the page's start, its lists render their first screens, as the first frame
+	 * Mounts the app. At the page's start, its lists render their initial rows, as the first frame
 	 * drew them, and what it rendered before its effects ran is marked: the main thread hydrates its
 	 * first frame from it.
 	 */
@@ -272,7 +272,7 @@ export function mountPage<Props extends Bag>(
 			({} as Props);
 		// The ids of `$props.id()` are the first frame's: a reload draws no frame, and starts them too.
 		startPropsIds();
-		if (starting) startFirstScreens();
+		if (starting) startInitialRows();
 		try {
 			instance = runSvelte(() =>
 				mount(App, {
@@ -284,9 +284,9 @@ export function mountPage<Props extends Bag>(
 				}),
 			);
 		} finally {
-			for (const note of endFirstScreens())
+			for (const note of endInitialRows())
 				warnOnce(`${note.code}:${note.where ?? ""}`, () =>
-					note.code === "initial_scroll_index_past_first_screen"
+					note.code === "initial_scroll_index_past_initial_rows"
 						? backgroundError({ code: note.code, details: { ...note, cap: SCROLL_INDEX_CAP } })
 						: backgroundError({ code: note.code, details: note }),
 				);

@@ -2,7 +2,7 @@
 // the thread, the component and the binding's code, each known or `undefined`.
 
 import { mountPage } from "@sohedra/lynx";
-import type { ErrorContext } from "@sohedra/lynx";
+import type { ErrorContext, ErrorHandler } from "@sohedra/lynx";
 import type { Component } from "svelte";
 
 declare const App: Component<{ title: string }>;
@@ -19,6 +19,9 @@ mountPage(App, {
 
 const context: ErrorContext = { thread: "main-thread", component: undefined, code: undefined };
 void context;
+// A handler written apart, as a crash reporter exports it.
+const reporter: ErrorHandler = (error, { thread }) => send({ message: error.message, thread });
+mountPage(App, { props: { title: "Inbox" }, onError: reporter });
 
 // @ts-expect-error a thread is one of the two.
 const wrong: ErrorContext = { thread: "ui", component: undefined, code: undefined };

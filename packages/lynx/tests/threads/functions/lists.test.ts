@@ -2,7 +2,7 @@
 // request and before the row's flush, so a row that scrolls back is never shown without what they
 // set. A row the main thread lets go of lets go of its bindings with it: its refs hold nothing, its
 // function refs' cleanups run, and everything binds again when the row is made again. A deferred
-// row binds when its contents come, and a row of the first screen from the first frame on.
+// row binds when its contents come, and a row among the initial rows from the first frame on.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -134,7 +134,7 @@ describe("a deferred row's function ref", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("runs in the first frame for a row of the first screen, and not again at hydration", async () => {
+	it("runs in the first frame for a row among the initial rows, and not again at hydration", async () => {
 		const { page, read } = await rows({ async: true, defer: true, initial: 9, firstFrame: true });
 		expect(await read()).toEqual({ runs: 9, cleanups: 0, first: 1 });
 		expect(page.errors).toEqual([]);

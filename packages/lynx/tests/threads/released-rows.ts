@@ -137,7 +137,7 @@ export interface RowsPage {
 	tap(id: number): Promise<void>;
 }
 
-/** Starts the page, and Lynx shows its first screen of rows. */
+/** Starts the page, and Lynx shows a screen of rows. */
 export async function releasedRows(
 	options: { count?: number; preload?: number; screen?: number; fixed?: number } = {},
 ): Promise<RowsPage> {

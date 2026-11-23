@@ -1,10 +1,10 @@
 <script lang="ts">
 	// What a first page uses: state, a tap, a keyed list, a `style` with a `style:` directive, state
-	// with an effect made as its modules load, and a main-thread handler that keeps a ref, reads
-	// state, and calls the background.
+	// with an effect made as its modules load, a main-thread handler that keeps a ref, reads state,
+	// and calls the background, and a gesture that waits for the pan around it.
 	// The page itself uses nothing a device's engine lacks.
 	import { mainThreadRef, runOnBackground } from "@sohedra/lynx";
-	import { PanGesture } from "@sohedra/lynx/gesture";
+	import { PanGesture, TapGesture } from "@sohedra/lynx/gesture";
 	import type { PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
 
 	import { clock } from "./clock.svelte.ts";
@@ -42,6 +42,7 @@
 	}
 
 	const pan = $derived(new PanGesture({ minDistance: 4, onUpdate: drag }));
+	const wait = $derived(new TapGesture({ waitFor: [pan] }));
 
 	function tap() {
 		count++;
@@ -57,7 +58,9 @@
 	<view class="press" main-thread:ontap={press}>
 		<text>Pressed {presses}{pressedOn}</text>
 	</view>
-	<view class="drag" main-thread:gesture={pan}></view>
+	<view class="drag" main-thread:gesture={pan}>
+		<view class="wait" main-thread:gesture={wait}></view>
+	</view>
 	{#each fruits as fruit (fruit.id)}
 		<text>{fruit.name}</text>
 	{/each}

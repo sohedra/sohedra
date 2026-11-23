@@ -1,9 +1,13 @@
 // The options of `mountPage` on the background: how the page's root component mounts, and who
 // hears its errors.
 
+// By the entry's name: an app's augmentation of `@sohedra/lynx/host` reaches the declarations
+// bundled for each entry only through it.
+import type { GlobalProps, InitData } from "@sohedra/lynx/host";
+
 import type { ErrorHandler } from "./errors.ts";
 
-// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
+// oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props and exports
 export type Bag = Record<string, any>;
 
 /** How `mountPage` mounts the page's root component. */
@@ -11,11 +15,10 @@ export interface MountPageOptions<Props extends Bag> {
 	/**
 	 * The root component's props: an object, or a function of the page's data and the host's global
 	 * props, called at the page's start and at each reload. The first frame is drawn with the same,
-	 * so both threads draw the same page.
+	 * so both threads draw the same page. The function's arguments are typed as the app augments
+	 * `InitData` and `GlobalProps` of `@sohedra/lynx/host`.
 	 */
-	props?:
-		| Props
-		| ((initData: Record<string, unknown>, globalProps: Record<string, unknown>) => Props);
+	props?: Props | ((initData: InitData, globalProps: GlobalProps) => Props);
 	/**
 	 * The contexts the root component gets, as Svelte's `mount` takes them: on the first frame and
 	 * on the background alike.

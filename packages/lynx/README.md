@@ -55,8 +55,8 @@ Your code sees the fills too, and `EventTarget` and `structuredClone` are smalle
 that has only what a device has and the binding's fills. The background draws it; with
 `lynx: { firstFrame: true }` the main thread draws the first frame first, and the background
 hydrates it: turn that on to test what the first frame shows, or that the two agree. `fireEvent`,
-`act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a list's cells,
-a gesture's callbacks) are awaited. Run the tests with `withSvelteLynx()` from
+`act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a list's rows, a
+gesture's callbacks) are awaited. Run the tests with `withSvelteLynx()` from
 `@sohedra/lynx/config/rstest` or `svelteLynx()` from `@sohedra/lynx/config/vitest`, and install
 `jsdom`, `@testing-library/dom` and the runner (Vitest needs `vite` too).
 

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"description": "Renovate opens pull requests that merge themselves once CI passes for dev dependencies' minor and patch updates and for the workflows' actions, zizmor and Bun, and pull requests that wait for a person for pnpm/setup and lockfile maintenance. Everything else waits on the Dependency Dashboard: peers of @sohedra/lynx and their dev copies, Lynx, majors, runtime dependencies, pnpm, Node.js. svelte-without-renderers never updates. Security fixes keep Renovate's default: they open a pull request at once, whatever the rule; only a dev dependency's merges itself.",
+	"description": "Renovate opens pull requests that merge themselves once CI passes for dev dependencies' minor and patch updates and for the workflows' actions, zizmor, typos and Bun, and pull requests that wait for a person for pnpm/setup and lockfile maintenance. Everything else waits on the Dependency Dashboard: peers of @sohedra/lynx and their dev copies, Lynx, majors, runtime dependencies, pnpm, Node.js. svelte-without-renderers never updates. Security fixes keep Renovate's default: they open a pull request at once, whatever the rule; only a dev dependency's merges itself.",
 	"extends": ["github>sohedra/.github:renovate-preset"],
 	"dependencyDashboardApproval": true,
 	"dependencyDashboard": {
@@ -21,6 +21,14 @@
 			"matchStrings": ["pipx run zizmor==(?<currentValue>\\S+)"],
 			"depNameTemplate": "zizmor",
 			"datasourceTemplate": "pypi"
+		},
+		{
+			"description": "typos, the spelling check CI runs with pipx, not as an action.",
+			"customType": "regex",
+			"managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+			"matchStrings": ["pipx run typos==(?<currentValue>[\\w.]+)"],
+			"depNameTemplate": "typos",
+			"datasourceTemplate": "pypi"
 		}
 	],
 	"packageRules": [
@@ -32,7 +40,7 @@
 			"automerge": true
 		},
 		{
-			"description": "The workflows' actions, zizmor, and Bun (read from pnpm/setup's runtime input) update in one pull request that merges itself once CI passes, except a major.",
+			"description": "The workflows' actions, zizmor, typos, and Bun (read from pnpm/setup's runtime input) update in one pull request that merges itself once CI passes, except a major.",
 			"matchFileNames": [".github/workflows/**"],
 			"matchUpdateTypes": ["minor", "patch", "digest"],
 			"groupName": "GitHub Actions",

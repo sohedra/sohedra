@@ -59,7 +59,7 @@ function mtMove(event, state) {
 	event.currentTarget.setAttribute("mt-moves", mtTaps.current);
 }
 const mtPan = $derived(new PanGesture({ minDistance: st.n0, onUpdate: mtMove }));
-const mtWait = $derived(waitFor(new TapGesture({ onEnd: mtMove }), [mtPan]));`;
+const mtWait = $derived(new TapGesture({ onEnd: mtMove, waitFor: [mtPan] }));`;
 
 /** Whether an `{#if}` with this test has branches that only one thread renders. */
 const isThreadTest = (condition: string): boolean =>
@@ -178,7 +178,6 @@ export function componentSource(
 		'import { background, mainThread } from "@sohedra/lynx/env";',
 		'import { mainThreadRef, runOnBackground } from "@sohedra/lynx";',
 		'import { PanGesture, TapGesture } from "@sohedra/lynx/gesture";',
-		'import { waitFor } from "@sohedra/lynx/experimental";',
 	];
 	if (component.uid) imports.push(`import { recordId } from "${IDS}";`);
 	for (const name of new Set(usedComponents(component)))

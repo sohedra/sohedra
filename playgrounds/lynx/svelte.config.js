@@ -1,3 +1,3 @@
-import { svelteConfig } from "@sohedra/lynx/config/svelte";
+import { defineConfig } from "@sohedra/lynx/config/svelte";
 
-export default svelteConfig();
+export default defineConfig();

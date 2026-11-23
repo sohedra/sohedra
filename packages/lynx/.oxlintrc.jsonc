@@ -5,7 +5,8 @@
 	"extends": ["../../.oxlintrc.jsonc"],
 	// The app the type tests check against the package as published: its tsconfig.json extends the
 	// package's base by name, which resolves only once the package is installed (consumer.test.ts).
-	"ignorePatterns": ["tests/fixtures/types/app/**"],
+	// The declarations bundled from the source, whose source is linted.
+	"ignorePatterns": ["tests/fixtures/types/app/**", "types/bundled/**"],
 	"overrides": [
 		{
 			"files": ["src/**"],

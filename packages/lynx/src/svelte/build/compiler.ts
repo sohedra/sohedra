@@ -5,15 +5,16 @@ import { createRequire } from "node:module";
 import path from "node:path";
 
 import type * as Compiler from "svelte/compiler";
-import type { AST } from "svelte/compiler";
-
-export type {
+import type {
 	AST,
 	CompileOptions,
 	ModuleCompileOptions,
 	PreprocessorGroup,
 	Warning,
 } from "svelte/compiler";
+
+// Imported, then exported: a bundle of declarations keeps only the names its entry uses.
+export type { AST, CompileOptions, ModuleCompileOptions, PreprocessorGroup, Warning };
 
 /** Svelte's compiler, as the module `svelte/compiler`. */
 export type SvelteCompiler = typeof Compiler;
