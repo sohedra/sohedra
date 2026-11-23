@@ -597,7 +597,7 @@ exports[`the build's catalogue > svelte_missing: the message 1`] = `
 2:   let a = 1;
      ^
 
-Add the Svelte build with custom renderers (sveltejs/svelte#18042) to the app's package.json dependencies.
+Add Svelte 5.59 or newer to the app's package.json dependencies.
 https://sohedra.com/e/svelte_missing"
 `;
 
@@ -621,7 +621,7 @@ exports[`the build's catalogue > svelte_without_renderers: the message 1`] = `
 2:   let a = 1;
      ^
 
-Install the Svelte build with custom renderers (sveltejs/svelte#18042), which @sohedra/lynx is built for.
+Install Svelte 5.59 or newer, the first release with custom renderers.
 https://sohedra.com/e/svelte_without_renderers"
 `;
 

@@ -69,10 +69,10 @@ root before a change lands (`pnpm -F <package> test` for one package).
 
 ## Svelte on Lynx
 
-- Packages that run on Lynx use Svelte's custom-renderer build (sveltejs/svelte#18042, pinned to a
-  `pkg.svelte.dev` URL); web packages and the docs use released Svelte. Each side keeps its own
-  version: never force one Svelte version across the workspace, for example with a pnpm override.
-- The custom-renderer build does not support element `bind:`, `transition:`, `in:`, `out:`,
+- Packages that run on Lynx use Svelte's custom renderers, released in Svelte 5.59. The API is
+  experimental and its minors may break it, so a Lynx package's peer range on Svelte runs to the end
+  of a minor (`~5.59.0`), and is widened (`~5.59.0 || ~5.60.0`) once the tests pass on the next.
+- Svelte's custom renderers do not support element `bind:`, `transition:`, `in:`, `out:`,
   `animate:`, `{@html}`, `on:`, `<svelte:window>`, `<svelte:document>`, `<svelte:body>`,
   `<svelte:head>` or `css: 'injected'`. Don't use them, offer them, or build stand-ins for them.
 - Lynx runs an app on two threads. A file both threads load reaches thread-specific code only

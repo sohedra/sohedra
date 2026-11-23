@@ -56,11 +56,10 @@ describe("an option that does not exist", () => {
 	});
 });
 
-// The newest released Svelte the lockfile has: once one has custom renderers, this fails, and the
-// peer range on Svelte can name it.
-describe("an app that installed a released Svelte", () => {
+// Svelte 5.58.0, from before custom renderers.
+describe("an app that installed a Svelte without custom renderers", () => {
 	it("fails as the plugin is set up, with the setup check's message", async () => {
-		build = await buildApp("broken", { svelte: "svelte-released" });
+		build = await buildApp("broken", { svelte: "svelte-without-renderers" });
 		expect(build.ok).toBe(false);
 		const text = build.error + build.messages;
 		expect(text).toMatch(/The installed Svelte \(5\.\d+\.\d+, [^)]+\) has no custom renderers\./);

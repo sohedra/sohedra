@@ -160,8 +160,8 @@ describe("dependencies", () => {
 });
 
 describe("peerDependencies", () => {
-	it("run from the version tested to the end of its major (for 0.x, its minor), or of a later one after a widening, Svelte's build aside", () => {
-		const peers = Object.entries(manifest.peerDependencies).filter(([name]) => name !== "svelte");
+	it("run from the version tested to the end of its major (for 0.x or a tilde range, its minor), or of a later one after a widening", () => {
+		const peers = Object.entries(manifest.peerDependencies);
 		expect(peers.filter(([, range]) => !isPeerRange(range))).toEqual([]);
 	});
 });

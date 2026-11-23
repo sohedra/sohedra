@@ -26,7 +26,7 @@ function listOf(names: readonly string[]): string {
 	return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 }
 
-const SVELTE_BUILD = "the Svelte build with custom renderers (sveltejs/svelte#18042)";
+const SVELTE_BUILD = "Svelte 5.59 or newer";
 
 /** The messages of the plugin. */
 export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
@@ -38,7 +38,7 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 	svelte_without_renderers: {
 		message: ({ version, where }) =>
 			`The installed Svelte (${version}, ${where}) has no custom renderers.`,
-		fix: () => `Install ${SVELTE_BUILD}, which @sohedra/lynx is built for.`,
+		fix: () => `Install ${SVELTE_BUILD}, the first release with custom renderers.`,
 		docs: "svelte_without_renderers",
 	},
 	lynx_engine_missing: {

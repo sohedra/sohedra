@@ -58,7 +58,6 @@ const MANAGERS: Record<string, Manager> = {
 interface Manifest {
 	name: string;
 	dependencies: Record<string, string>;
-	devDependencies: Record<string, string>;
 	peerDependencies: Record<string, string>;
 }
 
@@ -101,7 +100,7 @@ function tarballIn(folder: string): string {
 	return path.join(folder, tarballs[0]!);
 }
 
-/** The app's manifest: the fixture's, with the packed package, Svelte, and every peer the app needs. */
+/** The app's manifest: the fixture's, with the packed package and every peer the app needs. */
 function appManifest(options: {
 	own: Manifest;
 	tarball: string;
@@ -112,14 +111,10 @@ function appManifest(options: {
 	const fixture = JSON.parse(
 		fs.readFileSync(path.join(APP_FIXTURE, "package.json"), "utf8"),
 	) as Record<string, unknown> & { devDependencies: Record<string, string> };
-	const peers = Object.entries(own.peerDependencies).filter(([name]) => name !== "svelte");
+	const peers = Object.entries(own.peerDependencies);
 	return {
 		...fixture,
-		dependencies: {
-			[own.name]: `file:${tarball}`,
-			// The custom-renderer build is not on npm's registry yet: an app installs it by its URL.
-			svelte: own.devDependencies["svelte"],
-		},
+		dependencies: { [own.name]: `file:${tarball}` },
 		devDependencies: {
 			// What the app has besides the package's peers: TypeScript, for its config files.
 			...fixture.devDependencies,
@@ -157,9 +152,7 @@ function versionFrom(folder: string, name: string): string | undefined {
 function checkFloors(own: Manifest, app: string): void {
 	const installed = fs.realpathSync(path.join(app, "node_modules", own.name));
 	const wanted = [
-		...Object.entries(own.peerDependencies)
-			.filter(([name]) => name !== "svelte")
-			.map(([name, range]) => ({ name, range, from: app })),
+		...Object.entries(own.peerDependencies).map(([name, range]) => ({ name, range, from: app })),
 		...Object.entries(own.dependencies).map(([name, range]) => ({ name, range, from: installed })),
 	];
 	const off = wanted.flatMap(({ name, range, from }) => {
