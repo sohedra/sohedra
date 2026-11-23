@@ -13,9 +13,6 @@ trustPolicy: no-downgrade
 # Fail instead of quietly adding a `minimumReleaseAgeExclude` entry when a version is under a day
 # old. Exceptions are added by hand.
 minimumReleaseAgeStrict: true
-minimumReleaseAgeExclude:
-  # The first release with custom renderers, which @sohedra/lynx moved to the day it shipped.
-  - svelte@5.59.0
 
 # Install scripts of dependencies run only when listed here. The git hook is installed by the root
 # `prepare` script instead, so simple-git-hooks' own install script stays off.
