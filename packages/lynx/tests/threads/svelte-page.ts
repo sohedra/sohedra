@@ -62,6 +62,11 @@ export interface SveltePageOptions {
 	/** The page's `onError`, as `mountPage` takes it. */
 	onError?: MountPageOptions<Record<string, unknown>>["onError"];
 	/**
+	 * Runs on the background before `mountPage`, with lynx-core's app: as a module the page's entry
+	 * imports runs, such as another library that binds the page.
+	 */
+	beforeMount?: (app: Record<string, unknown>) => void;
+	/**
 	 * The first frame: the markup Svelte's server would write, from the page's data, or a
 	 * component's first-frame copy (`./App.svelte?first-frame`) with the props and the context it
 	 * draws with, as the main thread's `mountPage` takes them.
@@ -138,6 +143,7 @@ export function startSveltePage(
 				if (name === PATCH_METHOD) patches.push(decodePatch(params as PatchParams));
 				send(name, params, callback);
 			};
+			options.beforeMount?.(lynx.getApp() as Record<string, unknown>);
 			mountPage(App, {
 				...(options.props && { props: options.props }),
 				...(options.context && { context: options.context }),

@@ -167,6 +167,25 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
+	// Pages of a LynxGroup share one background realm (Lynx's js_realm_manager.cc): the first page's
+	// fill stays the realm's queueMicrotask, queues on that page's app, and drops what it is given
+	// once that page is gone (js_app.cc).
+	it("queues Svelte's work on its own page, not on a queueMicrotask an earlier page left in the realm", async () => {
+		const queued: unknown[] = [];
+		const earlierPage = (callback: () => void) => void queued.push(callback);
+		const { page } = startDevicePage(scripts, { globals: { queueMicrotask: earlierPage } });
+		try {
+			await page.settle();
+			page.engine.dispatch(byClass(page, "button"), { type: "tap" });
+			await page.settle();
+			expect(page.errors.map(String)).toEqual([]);
+			expect(drawn(page).texts).toEqual(["Tapped 1, seen 1", "Pressed 0", "Banana", "Apple"]);
+			expect(queued).toEqual([]);
+		} finally {
+			page.dispose();
+		}
+	});
+
 	it("fills in the main thread's global queueMicrotask, which a device lacks, with one that runs", async () => {
 		const { page, mainThread } = startDevicePage(scripts);
 		try {

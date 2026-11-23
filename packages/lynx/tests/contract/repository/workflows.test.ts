@@ -114,6 +114,41 @@ describe("a workflow", () => {
 	});
 });
 
+describe("a workflow that runs some jobs only for a draft and cancels older runs", () => {
+	const on = "on:\n  pull_request:\n    types: [synchronize, ready_for_review]\n";
+	const job = `    if: github.event.pull_request.draft == true\n    timeout-minutes: 10\n    steps:\n      - uses: ${CHECKOUT}\n`;
+	/** A GitHub Actions expression, `${{ code }}`, as a workflow writes it. */
+	const expression = (code: string) => "$" + `{{ ${code} }}`;
+	const number = expression("github.event.pull_request.number");
+	/** The workflow with a concurrency group `group` that cancels older runs. */
+	const withGroup = (group: string) =>
+		workflow({ on, job }).replace(
+			"jobs:\n",
+			`concurrency:\n  group: ${group}\n  cancel-in-progress: true\n` + "jobs:\n",
+		);
+
+	it("passes when its concurrency group tells a draft's run from a ready one's", () => {
+		const draft = expression("github.event.pull_request.draft && 'draft' || 'ready'");
+		const group = `ci-${number}-${draft}`;
+		expect(problemsOf(withGroup(group))).toEqual([]);
+	});
+
+	it("fails when a draft's run shares the group of a ready one's, and so can cancel it", () => {
+		const [problem, ...rest] = problemsOf(withGroup(`ci-${number}`));
+		expect(rest).toEqual([]);
+		expect(problem).toContain("concurrency");
+		expect(problem).toContain("github.event.pull_request.draft");
+	});
+
+	it("passes when it cancels no run", () => {
+		const text = withGroup(`ci-${number}`).replace(
+			"cancel-in-progress: true",
+			"cancel-in-progress: false",
+		);
+		expect(problemsOf(text)).toEqual([]);
+	});
+});
+
 describe("the Node.js lines a package claims", () => {
 	const manifest = JSON.stringify({
 		name: "@sohedra/x",
