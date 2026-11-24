@@ -90,6 +90,19 @@ describe("an error for a global Lynx lacks", () => {
 		expect(hinted.message).toContain('Import "@sohedra/lynx-polyfill/fetch"');
 	});
 
+	it.each([
+		["URL", "background", "global_not_filled"],
+		["crypto", "background", "global_not_on_lynx"],
+		["ReadableStream", "main-thread", "global_background_only"],
+	] as const)(
+		"carries the code of its message for %s on the %s, as onError's context gives it",
+		(name, thread, code) => {
+			const hinted = withMissingGlobalHint(notDefined(name), thread) as Error & { code?: unknown };
+			expect(hinted.code).toBe(code);
+			expect(hinted.message).toContain(`https://sohedra.com/e/${code}`);
+		},
+	);
+
 	it("keeps the original's stack frames", () => {
 		const original = new ReferenceError("Blob is not defined");
 		original.stack = "ReferenceError: Blob is not defined\n    at page (app.js:1:2)";
