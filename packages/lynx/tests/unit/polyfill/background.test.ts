@@ -1,5 +1,6 @@
-// The background's fills, run before the page loads: on a global object and a strings' prototype
-// shaped like a device's, and never over what the engine has.
+// The background's fills, run before the page loads: on a global object and a `lynx` shaped like a
+// device's, and never over what the engine has. The language fills go on this process's own
+// built-ins, which have them all: their own tests take them away (language/*.test.ts).
 
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -22,17 +23,29 @@ afterEach(() => {
 	setErrorHook(undefined);
 });
 
-/** A device's background: `lynx` alone has the microtask queue. */
+/** lynx-core's `Promise`: the engine's, without ES2021's to ES2025's statics. */
+function lynxCorePromise(): PromiseConstructor {
+	class LynxPromise<T> extends Promise<T> {}
+	for (const name of ["any", "allSettled", "withResolvers", "try"])
+		void Object.defineProperty(LynxPromise, name, {
+			value: undefined,
+			configurable: true,
+			writable: true,
+		});
+	return LynxPromise;
+}
+
+/** A device's background: `lynx` alone has the microtask queue, and lynx-core's `Promise`. */
 function device() {
 	const calls: unknown[][] = [];
 	const lynx: ThreadLynx = {
+		Promise: lynxCorePromise(),
 		queueMicrotask: (callback: () => void) => void calls.push(["queueMicrotask", callback]),
 		reportError: (error: unknown) => void calls.push(["reportError", error]),
 	};
 	const scope: Record<string, unknown> = {};
-	const strings: Record<string, unknown> = {};
-	fillBackground({ scope, strings, readLynx: () => lynx });
-	return { calls, scope, strings };
+	fillBackground({ scope, readLynx: () => lynx });
+	return { calls, scope, lynx };
 }
 
 describe("on a background that lacks them", () => {
@@ -94,14 +107,12 @@ describe("on a background that lacks them", () => {
 		expect(copy.rows[0]).not.toBe(value.rows[0]);
 	});
 
-	it("gives strings a replaceAll that is not enumerable, as the built-in is", () => {
-		const { strings } = device();
-		expect(Object.getOwnPropertyDescriptor(strings, "replaceAll")).toEqual({
-			value: expect.any(Function),
-			writable: true,
-			enumerable: false,
-			configurable: true,
-		});
+	it("gives lynx-core's Promise, which the bundle names, the statics it lacks", () => {
+		const { lynx } = device();
+		// Boundary: ES2024's and ES2025's statics, which this package's types leave out.
+		const statics = lynx.Promise as unknown as Record<string, unknown>;
+		for (const name of ["any", "allSettled", "withResolvers", "try"])
+			expect(statics[name], name).toBeTypeOf("function");
 	});
 });
 
@@ -134,57 +145,8 @@ describe("the structuredClone it gives", () => {
 	});
 });
 
-describe("the replaceAll it gives", () => {
-	const { strings } = device();
-	const fill = strings["replaceAll"] as (
-		this: unknown,
-		search: unknown,
-		replacement: unknown,
-	) => string;
-
-	it.each([
-		["a.b.a", "a", "x"],
-		["aaaa", "aa", "b"],
-		["abc", "", "-"],
-		["", "", "-"],
-		["", "a", "-"],
-		["no match", "z", "-"],
-		["a.b.a", ".", "$$"],
-		["a.b.a", "b", "[$&]"],
-		["a.b.a", "b", "[$`]"],
-		["a.b.a", "b", "[$']"],
-		["a.b.a", "b", "$1$<n>$"],
-		["a/*x*/b/*y*/", /\/\*.*?\*\//g, ""],
-		["aXbX", /x/gi, "$&$&"],
-		["C:\\a\\b", "\\", "/"],
-		["<p><!----></p>", "<!---->", ""],
-	])("replaces in %j every %s with %j as the built-in does", (text, search, replacement) => {
-		expect(fill.call(text, search, replacement)).toBe(
-			text.replaceAll(search as string, replacement),
-		);
-	});
-
-	it("calls a function for each match with the match, its position and the text", () => {
-		const seen: unknown[][] = [];
-		const result = fill.call("a-b-a", "a", (...args: unknown[]) => {
-			seen.push(args);
-			return "A";
-		});
-		expect(result).toBe("A-b-A");
-		expect(seen).toEqual([
-			["a", 0, "a-b-a"],
-			["a", 4, "a-b-a"],
-		]);
-	});
-
-	it("refuses a regular expression that is not global, and a missing string", () => {
-		expect(() => fill.call("a", /a/, "b")).toThrow(TypeError);
-		expect(() => fill.call(undefined, "a", "b")).toThrow(TypeError);
-	});
-});
-
 describe("on a background that has them", () => {
-	it("leaves the engine's own, and reads nothing of lynx", () => {
+	it("leaves the engine's own, and lynx-core's Promise's own statics", () => {
 		const own = () => {};
 		const scope: Record<string, unknown> = {
 			queueMicrotask: own,
@@ -194,16 +156,13 @@ describe("on a background that has them", () => {
 			btoa: (data: string) => globalThis.btoa(data),
 		};
 		const before = { ...scope };
-		const strings = { replaceAll: own };
-		fillBackground({
-			scope,
-			strings,
-			readLynx: () => {
-				throw new Error("lynx was read");
-			},
-		});
+		const statics = { any: own, allSettled: own, withResolvers: own, try: own };
+		const PromiseClass = Object.assign(lynxCorePromise(), statics);
+		fillBackground({ scope, readLynx: () => ({ Promise: PromiseClass, reportError: own }) });
 		expect(scope).toEqual(before);
-		expect(strings.replaceAll).toBe(own);
+		// Boundary: the statics, read by name.
+		const kept = PromiseClass as unknown as Record<string, unknown>;
+		for (const name of Object.keys(statics)) expect(kept[name], name).toBe(own);
 	});
 });
 
@@ -218,7 +177,6 @@ describe("the binding's fill of the background", () => {
 			const scope: Record<string, unknown> = {};
 			fillEngineGaps({
 				scope,
-				strings: {},
 				readLynx: () => ({ queueMicrotask: (run) => queued.push(run), reportError: () => {} }),
 			});
 			const failure = new Error("a microtask threw");
