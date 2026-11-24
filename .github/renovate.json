@@ -107,11 +107,6 @@
 			"allowedVersions": "<7"
 		},
 		{
-			"description": "The type tests' older TypeScript stays on 5.x.",
-			"matchDepNames": ["typescript-5.9"],
-			"allowedVersions": "<6"
-		},
-		{
 			"description": "Tailwind CSS 4 is not supported (support policy S8).",
 			"matchDepNames": ["tailwindcss"],
 			"allowedVersions": "<4"
