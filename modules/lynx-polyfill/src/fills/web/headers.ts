@@ -148,17 +148,12 @@ export function createHeaders(): { Headers: HeadersClass; freeze: (headers: Head
  */
 function recordOf(init: object): [string, string][] {
 	const record: [string, string][] = [];
-	// Its keys once and each one's descriptor, in order, as Web IDL reads them: what
-	// `getOwnPropertyDescriptors` does, into a plain object whose own keys are then free to read.
-	const descriptors = Object.getOwnPropertyDescriptors(init) as Record<
-		PropertyKey,
-		PropertyDescriptor
-	>;
-	for (const key of [
-		...Object.getOwnPropertyNames(descriptors),
-		...Object.getOwnPropertySymbols(descriptors),
-	]) {
-		const descriptor = descriptors[key];
+	// The record's keys from one `ownKeys`, then each key's descriptor and its value in turn, as Web
+	// IDL reads them (WPT's headers-record.any.js counts each step of a `Proxy`): only
+	// `Reflect.ownKeys` gives the strings and the symbols at once.
+	// oxlint-disable-next-line no-restricted-globals -- the app's own object, never an engine's
+	for (const key of Reflect.ownKeys(init)) {
+		const descriptor = Object.getOwnPropertyDescriptor(init, key);
 		if (descriptor === undefined || !descriptor.enumerable) continue;
 		if (typeof key === "symbol") throw new TypeError("Headers can't take a symbol as a name.");
 		// Web IDL's ByteString: the key is converted, and refused, before its value is read.
