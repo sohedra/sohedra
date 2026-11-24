@@ -154,7 +154,8 @@ changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed
   header's bytes), past which the stream errors with a `RangeError`; a gzip header longer than 64
   KiB is refused with a `TypeError`.
 - **`URLPattern`**: a pattern you write with `\p{…}` fails at run time, as PrimJS has no Unicode
-  property tables.
+  property tables. With `ignoreCase: true`, PrimJS's case-insensitive matching misses some case
+  foldings: `ΐ` (U+0390) doesn't match `ΐ` (U+1FD3), nor `ﬅ` (U+FB05) `ﬆ` (U+FB06).
 - **`String.prototype.normalize`**: Unicode's data as of 8.0.
 - **`self` and `navigator`** on the background are parameters of Lynx's script wrapper, bound to
   `undefined`; Sohedra's build renames them so your code reads these. A build that doesn't reads
