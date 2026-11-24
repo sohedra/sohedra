@@ -5,8 +5,9 @@
 # - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
 #   own Node.js (devEngines in package.json).
 # - generated: the generated pages, many more of them than a local run tries, on Linux.
-# - primjs: the polyfill folder's WPT and test262 suites on the PrimJS of each Lynx the binding
-#   supports, built from source with the phone's flags (packages/lynx/scripts/primjs/), on Linux.
+# - primjs: @sohedra/lynx-polyfill's WPT and test262 suites on the PrimJS of each Lynx Sohedra
+#   supports, built from source with the phone's flags (modules/lynx-polyfill/scripts/primjs/), on
+#   Linux.
 # - apps: @sohedra/lynx packed as it is published, installed into a fresh app and built and tested
 #   with both test presets (packages/lynx/scripts/consumer.ts): pnpm on each Node.js line, the other
 #   package managers on the newest, pnpm on Windows, and every range at its floor on the oldest
@@ -152,11 +153,11 @@ jobs:
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
-            packages/lynx/.cache/primjs/*/primjs
-            packages/lynx/.cache/primjs/*/build-key
-          key: primjs-${{ runner.os }}-${{ hashFiles('packages/lynx/scripts/primjs/**') }}
-      - run: node packages/lynx/scripts/primjs/build.ts
-      - run: pnpm -F @sohedra/lynx test:primjs
+            modules/lynx-polyfill/.cache/primjs/*/primjs
+            modules/lynx-polyfill/.cache/primjs/*/build-key
+          key: primjs-${{ runner.os }}-${{ hashFiles('modules/lynx-polyfill/scripts/primjs/**') }}
+      - run: node modules/lynx-polyfill/scripts/primjs/build.ts
+      - run: pnpm -F @sohedra/lynx-polyfill test:primjs
 
   apps:
     name:

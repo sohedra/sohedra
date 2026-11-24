@@ -4,9 +4,13 @@
 	"proseWrap": "always",
 	"sortImports": true,
 	"svelte": true,
-	// The npm packages the binding's polyfill folder bundles, kept byte for byte as the bundle step
-	// writes them (a test bundles again and compares).
-	"ignorePatterns": ["packages/lynx/src/polyfill/vendor/**"],
+	// The npm packages @sohedra/lynx-polyfill bundles, kept byte for byte as the bundle step
+	// writes them (a test bundles again and compares); and the feature table as its generator
+	// writes it, whose Markdown table formatting would pad to five times its size.
+	"ignorePatterns": [
+		"modules/lynx-polyfill/src/fills/vendor/**",
+		"modules/lynx-polyfill/scripts/feature-table/feature-table.*",
+	],
 	"overrides": [
 		{
 			// YAML forbids tabs; GitHub shows them eight wide in Markdown

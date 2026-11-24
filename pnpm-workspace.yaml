@@ -19,6 +19,6 @@ minimumReleaseAgeStrict: true
 allowBuilds:
   # Sass's file watcher, for its own CLI's --watch: the build tests never watch.
   "@parcel/watcher": false
-  # Prints a funding message; the polyfill folder bundles its modules at our build.
+  # Prints a funding message; @sohedra/lynx-polyfill bundles its modules at our build.
   core-js: false
   simple-git-hooks: false

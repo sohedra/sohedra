@@ -1,0 +1,42 @@
+// The fills, and what installs them: the package's entries (src/background/, src/main-thread/) call
+// these with the thread's own global object.
+
+export { globalScope, readConsole, readLynx, readTimers } from "./globals.ts";
+export type { Scope, Thread, ThreadConsole, ThreadLynx, ThreadTimers } from "./globals.ts";
+export { fillBackground } from "./background.ts";
+export type { BackgroundTargets } from "./background.ts";
+export { fillMainThread } from "./main-thread.ts";
+export type { MainThreadTargets } from "./main-thread.ts";
+export { fillArrayMethods } from "./language/array-methods.ts";
+export { fillBigIntAsUintN } from "./language/bigint-as-uint-n.ts";
+export { fillErrorCause } from "./language/error-cause.ts";
+export { fillFloat16 } from "./language/float16.ts";
+export { fillIteratorHelpers } from "./language/iterator-helpers.ts";
+export { fillLynxPromise } from "./language/lynx-promise.ts";
+export { fillNormalize } from "./language/normalize.ts";
+export { fillObjectMethods } from "./language/object-methods.ts";
+export { fillPromiseStatics } from "./language/promise-statics.ts";
+export { fillReflectToStringTag } from "./language/reflect-to-string-tag.ts";
+export { fillRegExpEscape } from "./language/regexp-escape.ts";
+export { fillSetMethods } from "./language/set-methods.ts";
+export { fillStringMethods } from "./language/string-methods.ts";
+export { fillWrongBuiltIns } from "./language/wrong-built-ins.ts";
+export { fillAbort } from "./web/abort.ts";
+export { fillAtob } from "./web/atob.ts";
+export { fillBlob } from "./web/blob.ts";
+export { fillCompression } from "./web/compression.ts";
+export { fillDOMException } from "./web/dom-exception.ts";
+export { fillEncodingStreams } from "./web/encoding-streams.ts";
+export { fillTextEncoding } from "./web/encoding.ts";
+export { fillEventSource } from "./web/event-source.ts";
+export { fillEvents } from "./web/events.ts";
+export { fillFetch, fillMainThreadFetch } from "./web/fetch.ts";
+export { fillFormData } from "./web/form-data.ts";
+export { fillGlobalEvents } from "./web/global-events.ts";
+export { fillMessaging } from "./web/messaging.ts";
+export { fillNavigator } from "./web/navigator.ts";
+export { fillPerformance } from "./web/performance.ts";
+export { fillStreams } from "./web/streams.ts";
+export { fillStructuredClone } from "./web/structured-clone.ts";
+export { fillUrlPattern } from "./web/url-pattern.ts";
+export { fillUrl } from "./web/url.ts";

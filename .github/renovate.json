@@ -75,7 +75,8 @@
 			"automerge": false
 		},
 		{
-			"description": "The npm packages @sohedra/lynx bundles into every app's polyfills update in one pull request that waits for a person: the vendored modules are bundled again and the web platform tests run on both PrimJS builds before it merges. Pinned exactly.",
+			"description": "The npm packages @sohedra/lynx-polyfill bundles into an app's fills update in one pull request that waits for a person: the vendored modules are bundled again (pnpm -F @sohedra/lynx-polyfill vendor) and WPT and test262 run on both PrimJS builds before it merges. Pinned exactly.",
+			"matchFileNames": ["modules/lynx-polyfill/package.json"],
 			"matchPackageNames": [
 				"@ungap/structured-clone",
 				"core-js",
@@ -93,7 +94,7 @@
 			"dependencyDashboardApproval": false,
 			"automerge": false,
 			"prBodyNotes": [
-				"Run `pnpm -F @sohedra/lynx vendor` and commit the vendored modules, then the web platform tests on both PrimJS builds and the phone check, before merging."
+				"Run `pnpm -F @sohedra/lynx-polyfill vendor` and commit the vendored modules, then `pnpm -F @sohedra/lynx-polyfill test:primjs` (WPT and test262 on both PrimJS builds) and the phone check, before merging."
 			]
 		},
 		{

@@ -1,0 +1,251 @@
+{
+	"name": "@sohedra/lynx-polyfill",
+	"version": "0.0.0",
+	"private": true,
+	"description": "The web's standard APIs and the language through ES2025, on both of Lynx's threads",
+	"license": "Apache-2.0",
+	"files": [
+		"lib",
+		"types",
+		"NOTICE"
+	],
+	"type": "module",
+	"sideEffects": [
+		"./src/background/*.ts",
+		"./src/main-thread/*.ts",
+		"./lib/background/*.js",
+		"./lib/main-thread/*.js"
+	],
+	"exports": {
+		".": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/index.ts",
+			"default": "./src/background/index.ts"
+		},
+		"./abort": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/abort.ts",
+			"default": "./src/background/abort.ts"
+		},
+		"./base64": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/base64.ts",
+			"default": "./src/background/base64.ts"
+		},
+		"./compression": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/compression.ts",
+			"default": "./src/background/compression.ts"
+		},
+		"./encoding": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/encoding.ts",
+			"default": "./src/background/encoding.ts"
+		},
+		"./event-source": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/event-source.ts",
+			"default": "./src/background/event-source.ts"
+		},
+		"./events": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/events.ts",
+			"default": "./src/background/events.ts"
+		},
+		"./fetch": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/fetch.ts",
+			"default": "./src/background/fetch.ts"
+		},
+		"./float16": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/float16.ts",
+			"default": "./src/background/float16.ts"
+		},
+		"./iterator-helpers": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/iterator-helpers.ts",
+			"default": "./src/background/iterator-helpers.ts"
+		},
+		"./language": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/language.ts",
+			"default": "./src/background/language.ts"
+		},
+		"./messaging": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/messaging.ts",
+			"default": "./src/background/messaging.ts"
+		},
+		"./normalize": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/normalize.ts",
+			"default": "./src/background/normalize.ts"
+		},
+		"./performance": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/performance.ts",
+			"default": "./src/background/performance.ts"
+		},
+		"./set-methods": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/set-methods.ts",
+			"default": "./src/background/set-methods.ts"
+		},
+		"./streams": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/streams.ts",
+			"default": "./src/background/streams.ts"
+		},
+		"./structured-clone": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/structured-clone.ts",
+			"default": "./src/background/structured-clone.ts"
+		},
+		"./url": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/url.ts",
+			"default": "./src/background/url.ts"
+		},
+		"./url-pattern": {
+			"types": "./types/entry.d.ts",
+			"worker": "./src/main-thread/url-pattern.ts",
+			"default": "./src/background/url-pattern.ts"
+		},
+		"./package.json": "./package.json"
+	},
+	"publishConfig": {
+		"exports": {
+			".": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/index.js",
+				"default": "./lib/background/index.js"
+			},
+			"./abort": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/abort.js",
+				"default": "./lib/background/abort.js"
+			},
+			"./base64": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/base64.js",
+				"default": "./lib/background/base64.js"
+			},
+			"./compression": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/compression.js",
+				"default": "./lib/background/compression.js"
+			},
+			"./encoding": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/encoding.js",
+				"default": "./lib/background/encoding.js"
+			},
+			"./event-source": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/event-source.js",
+				"default": "./lib/background/event-source.js"
+			},
+			"./events": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/events.js",
+				"default": "./lib/background/events.js"
+			},
+			"./fetch": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/fetch.js",
+				"default": "./lib/background/fetch.js"
+			},
+			"./float16": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/float16.js",
+				"default": "./lib/background/float16.js"
+			},
+			"./iterator-helpers": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/iterator-helpers.js",
+				"default": "./lib/background/iterator-helpers.js"
+			},
+			"./language": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/language.js",
+				"default": "./lib/background/language.js"
+			},
+			"./messaging": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/messaging.js",
+				"default": "./lib/background/messaging.js"
+			},
+			"./normalize": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/normalize.js",
+				"default": "./lib/background/normalize.js"
+			},
+			"./performance": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/performance.js",
+				"default": "./lib/background/performance.js"
+			},
+			"./set-methods": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/set-methods.js",
+				"default": "./lib/background/set-methods.js"
+			},
+			"./streams": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/streams.js",
+				"default": "./lib/background/streams.js"
+			},
+			"./structured-clone": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/structured-clone.js",
+				"default": "./lib/background/structured-clone.js"
+			},
+			"./url": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/url.js",
+				"default": "./lib/background/url.js"
+			},
+			"./url-pattern": {
+				"types": "./types/entry.d.ts",
+				"worker": "./lib/main-thread/url-pattern.js",
+				"default": "./lib/background/url-pattern.js"
+			},
+			"./package.json": "./package.json"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json && node scripts/vendor/copy.ts",
+		"check": "tsc -p tsconfig.json --noEmit",
+		"feature-table": "node scripts/feature-table/make-table.ts --out scripts/feature-table",
+		"test": "rstest",
+		"test:primjs": "rstest -c tests/primjs/rstest.config.ts",
+		"test:test262": "rstest -c tests/primjs/rstest.config.ts tests/primjs/test262",
+		"test:wpt": "rstest -c tests/primjs/rstest.config.ts tests/primjs/wpt",
+		"vendor": "node scripts/vendor/bundle.ts"
+	},
+	"devDependencies": {
+		"@rsbuild/core": "^2.3.2",
+		"@rstest/core": "^0.12.6",
+		"@rstest/coverage-istanbul": "^0.12.6",
+		"@types/node": "^26.6.6",
+		"@ungap/structured-clone": "1.4.0",
+		"acorn": "^8.19.0",
+		"core-js": "3.51.0",
+		"event-target-shim": "6.0.2",
+		"eventsource-parser": "4.1.3",
+		"fast-check": "^4.10.2",
+		"fflate": "0.8.3",
+		"publint": "^0.3.25",
+		"regexpu-core": "6.5.4",
+		"svelte": "~5.59.0",
+		"typescript": "^6.0.3",
+		"unorm": "1.6.0",
+		"urlpattern-polyfill": "10.1.0",
+		"web-streams-polyfill": "4.5.1",
+		"whatwg-url-minimum": "0.2.0"
+	},
+	"engines": {
+		"node": "^22.22.2 || ^24.15.0 || ^26.0.0"
+	}
+}

@@ -197,6 +197,66 @@ importers:
         specifier: ^2.9.1
         version: 2.9.1
 
+  modules/lynx-polyfill:
+    devDependencies:
+      '@rsbuild/core':
+        specifier: ^2.3.2
+        version: 2.3.2(core-js@3.51.0)
+      '@rstest/core':
+        specifier: ^0.12.6
+        version: 0.12.6(core-js@3.51.0)(jsdom@31.0.1)
+      '@rstest/coverage-istanbul':
+        specifier: ^0.12.6
+        version: 0.12.6(@rstest/core@0.12.6(core-js@3.51.0)(jsdom@31.0.1))(supports-color@7.2.0)
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@ungap/structured-clone':
+        specifier: 1.4.0
+        version: 1.4.0
+      acorn:
+        specifier: ^8.19.0
+        version: 8.19.0
+      core-js:
+        specifier: 3.51.0
+        version: 3.51.0
+      event-target-shim:
+        specifier: 6.0.2
+        version: 6.0.2
+      eventsource-parser:
+        specifier: 4.1.3
+        version: 4.1.3
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
+      publint:
+        specifier: ^0.3.25
+        version: 0.3.25
+      regexpu-core:
+        specifier: 6.5.4
+        version: 6.5.4
+      svelte:
+        specifier: ~5.59.0
+        version: 5.59.0
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      unorm:
+        specifier: 1.6.0
+        version: 1.6.0
+      urlpattern-polyfill:
+        specifier: 10.1.0
+        version: 10.1.0
+      web-streams-polyfill:
+        specifier: 4.5.1
+        version: 4.5.1
+      whatwg-url-minimum:
+        specifier: 0.2.0
+        version: 0.2.0
+
   packages/lynx:
     dependencies:
       '@lynx-js/rsbuild-plugin':
@@ -214,6 +274,12 @@ importers:
       '@lynx-js/webpack-dev-transport':
         specifier: ^0.4.1
         version: 0.4.1
+      '@ungap/event-target':
+        specifier: ^0.2.4
+        version: 0.2.4
+      '@ungap/structured-clone':
+        specifier: ^1.4.0
+        version: 1.4.0
       es-module-lexer:
         specifier: ^3.0.5
         version: 3.0.5
@@ -257,30 +323,15 @@ importers:
       '@types/ungap__structured-clone':
         specifier: ^1.2.0
         version: 1.2.0
-      '@ungap/structured-clone':
-        specifier: 1.4.0
-        version: 1.4.0
       acorn:
         specifier: ^8.19.0
         version: 8.19.0
-      core-js:
-        specifier: 3.51.0
-        version: 3.51.0
       dts-buddy:
         specifier: ^0.8.3
         version: 0.8.3(typescript@6.0.3)
-      event-target-shim:
-        specifier: 6.0.2
-        version: 6.0.2
-      eventsource-parser:
-        specifier: 4.1.3
-        version: 4.1.3
       fast-check:
         specifier: ^4.10.2
         version: 4.10.2
-      fflate:
-        specifier: 0.8.3
-        version: 0.8.3
       jsdom:
         specifier: ^31.0.1
         version: 31.0.1
@@ -290,9 +341,6 @@ importers:
       publint:
         specifier: ^0.3.25
         version: 0.3.25
-      regexpu-core:
-        specifier: 6.5.4
-        version: 6.5.4
       svelte:
         specifier: ~5.59.0
         version: 5.59.0
@@ -311,24 +359,12 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      unorm:
-        specifier: 1.6.0
-        version: 1.6.0
-      urlpattern-polyfill:
-        specifier: 10.1.0
-        version: 10.1.0
       vite:
         specifier: ^8.3.8
         version: 8.3.8(@types/node@26.6.6)(jiti@1.21.7)(less@4.9.1(supports-color@7.2.0))(sass-embedded@1.108.2)(sass@1.108.2)(terser@5.51.2)(yaml@2.9.1)
       vitest:
         specifier: ^5.1.1
         version: 5.1.1(@types/node@26.6.6)(jsdom@31.0.1)(vite@8.3.8(@types/node@26.6.6)(jiti@1.21.7)(less@4.9.1(supports-color@7.2.0))(sass-embedded@1.108.2)(sass@1.108.2)(terser@5.51.2)(yaml@2.9.1))
-      web-streams-polyfill:
-        specifier: 4.5.1
-        version: 4.5.1
-      whatwg-url-minimum:
-        specifier: 0.2.0
-        version: 0.2.0
 
   playgrounds/lynx:
     dependencies:
@@ -345,6 +381,9 @@ importers:
       '@sohedra/lynx':
         specifier: workspace:*
         version: link:../../packages/lynx
+      '@sohedra/lynx-polyfill':
+        specifier: workspace:*
+        version: link:../../modules/lynx-polyfill
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -1529,6 +1568,9 @@ packages:
 
   '@types/yargs@17.0.35':
     resolution: {integrity: sha512-qUHkeCyQFxMXg79wQfTtfndEC+N9ZZg76HJftDJp+qH2tV7Gj4OJi7l+PiWwJ+pWtW8GwSmqsDj/oymhrTWXjg==}
+
+  '@ungap/event-target@0.2.4':
+    resolution: {integrity: sha512-u9Fd3k2qfMtn+0dxbCn/y0pzQ9Ucw6lWR984CrHcbxc+WzcMkJE4VjWHWSb9At40MjwMyHCkJNXroS55Osshhw==}
 
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
@@ -4992,6 +5034,8 @@ snapshots:
   '@types/yargs@17.0.35':
     dependencies:
       '@types/yargs-parser': 21.0.3
+
+  '@ungap/event-target@0.2.4': {}
 
   '@ungap/structured-clone@1.4.0': {}
 

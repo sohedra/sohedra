@@ -2,8 +2,8 @@
 # identifier that is spelled as it must be, with the reason.
 
 [files]
-# The npm packages the binding's polyfill folder bundles, spelled as their authors wrote them.
-extend-exclude = ["packages/lynx/src/polyfill/vendor/*.js"]
+# The npm packages @sohedra/lynx-polyfill bundles, spelled as their authors wrote them.
+extend-exclude = ["modules/lynx-polyfill/src/fills/vendor/*.js"]
 
 [default.extend-identifiers]
 # Lynx's own option of its template plugin, which the build tests pass on as Lynx names it.
