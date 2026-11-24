@@ -25,6 +25,7 @@ interface TreeRenderer {
 interface Client {
 	mount(component: unknown, options: { target: TreeNode; renderer: object }): object;
 	unmount(app: object): Promise<void>;
+	flushSync(): void;
 }
 
 /** What a test gets back from `mountComponent`. */
@@ -48,10 +49,29 @@ export async function treeRenderer(): Promise<TreeRenderer> {
 	)) as unknown as TreeRenderer;
 }
 
-/** Svelte's client `mount` and `unmount`, from the same files compiled components import. */
+/** Svelte's client `mount`, `unmount` and `flushSync`, from the same files compiled components import. */
 export async function svelteClient(): Promise<Client> {
 	// Boundary: Svelte's modules are loaded by Node, so their type is declared here.
 	return (await importSvelte("src/index-client.js")) as unknown as Client;
+}
+
+/**
+ * Compiles `markup` for the renderer module into this run's folder, and loads it. `dev` compiles
+ * it as a development build does.
+ */
+export async function loadComponent(
+	markup: string,
+	dev = false,
+): Promise<{ component: unknown; file: string }> {
+	const { js } = compile(markup, {
+		...clientOptions({}, pathToFileURL(path.join(import.meta.dirname, "tree-renderer.ts")).href),
+		filename: `Fixture${count}.svelte`,
+		dev,
+	});
+	folder ??= fs.mkdtempSync(path.join(PACKAGE_ROOT, "node_modules", ".contract-fixtures-"));
+	const file = path.join(folder, `fixture-${count++}.mjs`);
+	fs.writeFileSync(file, js.code);
+	return { component: (await importNative(file))["default"], file };
 }
 
 /**
@@ -61,15 +81,7 @@ export async function svelteClient(): Promise<Client> {
 export async function mountComponent(markup: string, dev = false): Promise<Mounted> {
 	const renderer = await treeRenderer();
 	const client = await svelteClient();
-	const { js } = compile(markup, {
-		...clientOptions({}, pathToFileURL(path.join(import.meta.dirname, "tree-renderer.ts")).href),
-		filename: `Fixture${count}.svelte`,
-		dev,
-	});
-	folder ??= fs.mkdtempSync(path.join(PACKAGE_ROOT, "node_modules", ".contract-fixtures-"));
-	const file = path.join(folder, `fixture-${count++}.mjs`);
-	fs.writeFileSync(file, js.code);
-	const component = (await importNative(file))["default"];
+	const { component, file } = await loadComponent(markup, dev);
 	const target = renderer.createRoot();
 	const app = client.mount(component, { target, renderer: renderer.default });
 	renderer.log.length = 0;

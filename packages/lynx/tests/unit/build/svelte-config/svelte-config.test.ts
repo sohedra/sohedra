@@ -16,9 +16,10 @@ describe("defineConfig()", () => {
 		expect(preprocess).toEqual([]);
 	});
 
-	it("has no async default: Svelte's own is off, and the app's setting turns it on", () => {
+	it("passes on `experimental.async` from a config in JavaScript, for the build to refuse", () => {
 		expect(defineConfig().compilerOptions.experimental?.async).toBeUndefined();
-		const config = defineConfig({ compilerOptions: { experimental: { async: true } } });
+		// Boundary: the option is not in the type; a config in JavaScript sets it all the same.
+		const config = defineConfig({ compilerOptions: { experimental: { async: true } } } as never);
 		expect(config.compilerOptions.experimental).toEqual({
 			async: true,
 			customRenderer: "@sohedra/lynx/internal/renderer",

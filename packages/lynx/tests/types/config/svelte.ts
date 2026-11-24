@@ -8,7 +8,6 @@ const config: SvelteConfig = defineConfig();
 const options: SvelteConfigOptions = {
 	compilerOptions: {
 		cssHash: ({ hash, css }) => `s-${hash(css)}`,
-		experimental: { async: true },
 		warningFilter: (warning) => warning.code !== "a11y_missing_attribute",
 	},
 	preprocess: [{ name: "none" }],
@@ -20,6 +19,8 @@ void config;
 defineConfig({ compilerOptions: { runes: false } });
 // @ts-expect-error CSS goes to Lynx's own style sheet, never injected.
 defineConfig({ compilerOptions: { css: "injected" } });
+// @ts-expect-error Svelte's async mode is not supported.
+defineConfig({ compilerOptions: { experimental: { async: true } } });
 // @ts-expect-error the renderer is the binding's.
 defineConfig({ compilerOptions: { experimental: { customRenderer: "./renderer.js" } } });
 // @ts-expect-error Svelte 4's options do not apply.
