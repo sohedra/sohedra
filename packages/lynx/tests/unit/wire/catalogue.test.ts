@@ -11,6 +11,7 @@ const SAMPLES: { [Code in WireCode]: WireDetails[Code] } = {
 	page_reloaded_on_one_thread: { thread: "main-thread", received: 2, page: 1 },
 	value_not_copyable: { thread: "main-thread", reason: "Do not know how to serialize a BigInt" },
 	global_not_filled: { name: "URL", module: "@sohedra/lynx-polyfill/url" },
+	global_background_only: { name: "ReadableStream" },
 	global_not_on_lynx: {
 		name: "crypto",
 		instead: "For hashes, use a library in plain JavaScript such as @noble/hashes.",
