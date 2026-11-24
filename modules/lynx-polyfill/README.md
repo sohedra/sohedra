@@ -145,6 +145,9 @@ changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed
 - **`FormData`**: there is no form element to read from.
 - **`EventSource`**: no relative URL, as a thread has no document to resolve it against.
 - **`MessageChannel`**: within one thread; across Lynx's threads, use your framework's calls.
+- **`DecompressionStream`**: untrusted data is held to 64 MiB per stream (its output and a gzip
+  header's bytes), past which the stream errors with a `RangeError`; a gzip header longer than 64
+  KiB is refused with a `TypeError`.
 - **`URLPattern`**: a pattern you write with `\p{…}` fails at run time, as PrimJS has no Unicode
   property tables.
 - **`String.prototype.normalize`**: Unicode's data as of 8.0.
