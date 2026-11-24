@@ -4,7 +4,10 @@
 // no `EventTarget`, has none of the statics and aborts with a plain `Error`. Both threads get these,
 // over the thread's `EventTarget`, where the thread's own fails the check. lynx-core's `fetch`
 // reads only `aborted`, `reason` and `addEventListener("abort", …)` of the signal it is given
-// (lynx/lynx.ts, `fetch`), which these have. Leaves out nothing.
+// (lynx/lynx.ts, `fetch`), which these have. A source holds the signals `any` made from it as
+// `WeakRef`s, as DOM's weak sets do, so a long-lived controller doesn't keep every request's signal.
+// Leaves out DOM's rule that keeps a signal of `any` with `abort` listeners alive while a source can
+// still abort: one that nothing else holds may be collected with its listeners.
 
 import type { Scope } from "../globals.ts";
 import { readTimers } from "../globals.ts";
@@ -62,8 +65,13 @@ interface SignalState {
 	/** Whether `any` made it: it follows its sources, and is never another's source. */
 	dependent: boolean;
 	sources: Set<AbortSignal>;
-	dependents: Set<AbortSignal>;
+	dependents: Set<{ deref(): AbortSignal | undefined }>;
+	/** The count of `dependents` past which the collected ones are pruned. */
+	pruneAt: number;
 }
+
+/** The fewest dependents a source holds before it prunes the collected ones. */
+const PRUNE_FROM = 16;
 
 /** The thread's `AbortController` and `AbortSignal`, over its `EventTarget`. */
 export function createAbort(scope: Scope): {
@@ -91,14 +99,29 @@ export function createAbort(scope: Scope): {
 				? domException(scope, "This operation was aborted.", "AbortError")
 				: reason;
 		const followers: AbortSignal[] = [];
-		for (const dependent of state.dependents) {
+		for (const reference of state.dependents) {
+			const dependent = reference.deref();
+			if (!dependent) continue;
 			const followed = stateOf(dependent);
 			if (followed.aborted) continue;
 			followed.aborted = true;
 			followed.reason = state.reason;
 			followers.push(dependent);
 		}
+		state.dependents.clear();
 		for (const each of [signal, ...followers]) each.dispatchEvent(new EventClass("abort"));
+	};
+
+	/** Adds `signal` to `root`'s dependents, pruning the collected ones as their count doubles. */
+	const follow = (root: SignalState, signal: AbortSignal): void => {
+		root.dependents.add(
+			// An engine without `WeakRef` (JavaScriptCore before iOS 14.5) holds it strongly.
+			typeof WeakRef === "function" ? new WeakRef(signal) : { deref: () => signal },
+		);
+		if (root.dependents.size < root.pruneAt) return;
+		for (const reference of root.dependents)
+			if (!reference.deref()) root.dependents.delete(reference);
+		root.pruneAt = Math.max(PRUNE_FROM, root.dependents.size * 2);
 	};
 
 	const newSignal = (): AbortSignal => {
@@ -122,6 +145,7 @@ export function createAbort(scope: Scope): {
 				dependent: false,
 				sources: new Set(),
 				dependents: new Set(),
+				pruneAt: PRUNE_FROM,
 			});
 		}
 
@@ -157,7 +181,7 @@ export function createAbort(scope: Scope): {
 				const source = stateOf(each);
 				for (const root of source.dependent ? source.sources : [each]) {
 					state.sources.add(root);
-					stateOf(root).dependents.add(signal);
+					follow(stateOf(root), signal);
 				}
 			}
 			return signal;

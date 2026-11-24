@@ -217,6 +217,11 @@ export function createFetch(
 	const responses = new WeakMap<object, ResponseState>();
 	/** The pullers of fetched responses' bodies, which an abort stops. */
 	const pullers = new WeakMap<object, ReturnType<typeof corePuller>>();
+	/**
+	 * The signal each puller follows, held while the puller is: `AbortSignal.any` holds a request's
+	 * signal weakly, and an abort must still reach a body being read.
+	 */
+	const followed = new WeakMap<object, AbortSignal>();
 	/** Whether lynx-core's `fetch` is making its request: `new Request` gives it lynx-core's own. */
 	let coreCalling = false;
 	/** How many requests wait for lynx-core's answer: until then, it may make a `Response`. */
@@ -618,8 +623,10 @@ export function createFetch(
 						const puller = pullers.get(response);
 						if (puller && signal) {
 							if (signal.aborted) puller.abort(signal.reason);
-							else
+							else {
+								followed.set(puller, signal);
 								signal.addEventListener("abort", () => puller.abort(signal.reason), { once: true });
+							}
 						}
 						resolve(response as unknown as Response);
 					},
