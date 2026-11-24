@@ -15,6 +15,8 @@ export interface CheckDetails {
 	background_api_in_main_thread_function: { api: string };
 	/** `api` as the code reads it: `__CreateView`, `lynx.querySelector`. */
 	main_thread_api_in_background: { api: string };
+	/** `selector` as written; `part`, the part of it Lynx doesn't support. */
+	css_selector_unsupported: { selector: string; part: string };
 }
 
 const THROWS = "so this code throws where it runs";
@@ -53,5 +55,12 @@ export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
 		fix: () =>
 			"Reach the element with `main-thread:ref`, and use its methods in a main-thread function: a function whose body starts with 'main thread'.",
 		docs: "main_thread_api_in_background",
+	},
+	css_selector_unsupported: {
+		message: ({ selector, part }) =>
+			`The selector \`${selector}\` uses ${part}, which is not among the selectors Lynx supports, so the rule may never apply.`,
+		fix: () =>
+			"Select the element by its type, a class or an id, and set the class from the component's state.",
+		docs: "css_selector_unsupported",
 	},
 };

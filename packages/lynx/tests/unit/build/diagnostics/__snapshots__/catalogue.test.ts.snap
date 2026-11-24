@@ -96,6 +96,18 @@ Delete node_modules/.cache and build again.
 https://sohedra.com/e/css_not_stored"
 `;
 
+exports[`the build's catalogue > css_selector_unsupported: the message 1`] = `
+"The selector \`a[href] > .b\` uses the attribute selector \`[href]\`, which is not among the selectors Lynx supports, so the rule may never apply.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Select the element by its type, a class or an id, and set the class from the component's state.
+https://sohedra.com/e/css_selector_unsupported"
+`;
+
 exports[`the build's catalogue > define_key_invalid: the message 1`] = `
 "\`define.mainThread.a.b\` is not a plain identifier.
 /app/src/App.svelte:2:3
