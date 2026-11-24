@@ -71,3 +71,16 @@ describe.each(subpaths())(`import "${PACKAGE_NAME}%s"`, (subpath) => {
 		60_000,
 	);
 });
+
+describe(`import "${PACKAGE_NAME}/fetch" on the main thread alone`, () => {
+	it("makes a Response with a body, and a Request of a URL it parses", async () => {
+		const code = await bundleEntry({ subpath: "/fetch", thread: "main-thread", minimize: true });
+		const { context } = threadRealm("main-thread");
+		vm.runInContext(code, context);
+		const read = vm.runInContext(
+			`new Response("x").text().then((text) => [text, new Request("https://a.example/b/../c").url])`,
+			context,
+		) as Promise<unknown>;
+		expect(await read).toEqual(["x", "https://a.example/c"]);
+	}, 60_000);
+});
