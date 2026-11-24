@@ -145,7 +145,8 @@ changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed
 - **`performance`**: the clock is `Date.now()`'s, in whole milliseconds, never going back; there is
   no `PerformanceObserver`.
 - **`structuredClone`**: no `transfer`. A value nested deeper than the engine's stack fails as a
-  `DataCloneError`.
+  `DataCloneError`. An array's holes come back as `undefined` elements
+  (`1 in structuredClone([1, , 3])` is `true`), as in the bundled `@ungap/structured-clone`.
 - **`TextEncoder` and `TextDecoder`**: UTF-8 only; another label is a `RangeError`.
 - **`FormData`**: there is no form element to read from.
 - **`EventSource`**: no relative URL, as a thread has no document to resolve it against.
