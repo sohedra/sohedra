@@ -36,6 +36,18 @@ both threads load can name it.
 When your code reads a global that no import put there, Sohedra's report names the import that fills
 it: `The global \`URL\` is not defined: … Import "@sohedra/lynx-polyfill/url" …`.
 
+## Types
+
+Each import brings the types of the globals it installs: after
+`import "@sohedra/lynx-polyfill/url"`, `URL` and `URLSearchParams` type-check, and without an import
+that installs them they are a type error, as they would be on the device. The types are TypeScript's
+own for the web without the DOM (`lib.webworker.d.ts`), cut to what the package fills, so your
+tsconfig needs no `"DOM"` in `lib`. They name each global as the standard has it: what a fill leaves
+out is under [Known limits](#known-limits). The language's types come from your tsconfig's `lib`.
+
+With the DOM's types or Node's (`@types/node`) in the same check, both declare some of the same
+globals: `skipLibCheck`, which Sohedra's base tsconfig sets, leaves their declarations to them.
+
 ## What each import fills
 
 | Import              | Fills                                                                                                                                                                                                                                                                                                                              | Threads                                                                                                                                   |
@@ -193,4 +205,5 @@ too, which must keep every built-in it has.
 
 ## License
 
-Apache-2.0. The npm packages it bundles keep their own licenses; `NOTICE` lists them.
+Apache-2.0. The npm packages it bundles, and TypeScript's declarations its types are written from,
+keep their own licenses; `NOTICE` lists them.
