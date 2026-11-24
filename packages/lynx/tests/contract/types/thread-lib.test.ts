@@ -59,12 +59,19 @@ describe("the binding's thread code", { timeout: 60_000 }, () => {
 			rootNames: [...files, path.join(ROOT, "types/client.d.ts")],
 			options: { ...packageOptions(), lib: baseOptions().lib, types: [] },
 		});
-		const found = ts.getPreEmitDiagnostics(program).map((diagnostic) => {
-			const where = diagnostic.file
-				? `${path.relative(ROOT, diagnostic.file.fileName)}:${diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line + 1}`
-				: "";
-			return `${where} TS${diagnostic.code} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, " ")}`;
-		});
+		// The polyfill folder writes the web's interfaces, typed as TypeScript's DOM library types
+		// them: it names the DOM's types, and lint (`no-undef`) keeps it from reading a global.
+		const found = ts
+			.getPreEmitDiagnostics(program)
+			.filter(
+				(diagnostic) => !diagnostic.file?.fileName.startsWith(path.join(ROOT, "src/polyfill/")),
+			)
+			.map((diagnostic) => {
+				const where = diagnostic.file
+					? `${path.relative(ROOT, diagnostic.file.fileName)}:${diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line + 1}`
+					: "";
+				return `${where} TS${diagnostic.code} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, " ")}`;
+			});
 		expect(found).toEqual([]);
 		// A program that found none of them would pass too.
 		expect(

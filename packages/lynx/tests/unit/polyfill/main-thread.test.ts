@@ -14,20 +14,52 @@ afterEach(() => {
 function device() {
 	const scope: Record<string, unknown> = {};
 	const strings: Record<string, unknown> = {};
-	fillMainThread({ scope, strings });
+	fillMainThread({ scope, strings, console: {} as never });
 	return { scope, strings };
 }
 
+/** What the main thread's fills put on its global object. */
+const MAIN_THREAD_GLOBALS = [
+	"AbortController",
+	"AbortSignal",
+	"CustomEvent",
+	"DOMException",
+	"ErrorEvent",
+	"Event",
+	"EventTarget",
+	"Headers",
+	"Performance",
+	"PerformanceEntry",
+	"PerformanceMark",
+	"PerformanceMeasure",
+	"PromiseRejectionEvent",
+	"Request",
+	"Response",
+	"TextDecoder",
+	"TextEncoder",
+	"URL",
+	"URLSearchParams",
+	"addEventListener",
+	"atob",
+	"btoa",
+	"dispatchEvent",
+	"fetch",
+	"navigator",
+	"onerror",
+	"onrejectionhandled",
+	"onunhandledrejection",
+	"performance",
+	"queueMicrotask",
+	"removeEventListener",
+	"reportError",
+	"self",
+	"structuredClone",
+];
+
 describe("on a main thread that lacks them", () => {
-	it("puts the same globals as the background, and gives strings replaceAll", () => {
+	it("puts the background's globals but the streams, Blob, File, FormData and the timers, and gives strings replaceAll", () => {
 		const { scope, strings } = device();
-		expect(Object.getOwnPropertyNames(scope).sort()).toEqual([
-			"EventTarget",
-			"atob",
-			"btoa",
-			"queueMicrotask",
-			"structuredClone",
-		]);
+		expect(Object.getOwnPropertyNames(scope).sort()).toEqual(MAIN_THREAD_GLOBALS);
 		expect(typeof strings["replaceAll"]).toBe("function");
 	});
 
@@ -64,19 +96,16 @@ describe("on a main thread that lacks them", () => {
 
 describe("on a main thread that has them", () => {
 	it("leaves the engine's own", () => {
-		const own = () => "";
-		const scope: Record<string, unknown> = {
-			EventTarget: own,
-			structuredClone: own,
-			queueMicrotask: own,
-			atob: (data: string) => globalThis.atob(data),
-			btoa: (data: string) => globalThis.btoa(data),
-		};
+		// The test page's globals, which follow the standards.
+		const own = globalThis as unknown as Record<string, unknown>;
+		const scope: Record<string, unknown> = Object.fromEntries(
+			MAIN_THREAD_GLOBALS.map((name) => [name, own[name]]),
+		);
 		const before = { ...scope };
-		const strings = { replaceAll: own };
-		fillMainThread({ scope, strings });
+		const strings = { replaceAll: String.prototype.replaceAll };
+		fillMainThread({ scope, strings, console });
 		expect(scope).toEqual(before);
-		expect(strings.replaceAll).toBe(own);
+		expect(strings.replaceAll).toBe(String.prototype.replaceAll);
 	});
 });
 

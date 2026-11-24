@@ -11,7 +11,8 @@
 // not.
 //
 // Both threads lack what their engine (PrimJS) lacks, listed below, and the web's globals that no
-// Lynx engine has: `EventTarget`, `structuredClone`, `performance`, `atob` and `btoa`. Each realm starts without
+// Lynx engine has: `EventTarget`, `structuredClone`, `performance`, `atob`, `btoa`, `URL` and the rest of
+// the polyfill folder's globals (`NOT_ON_LYNX`). Each realm starts without
 // them, as a device's threads do, so whatever the page's scripts need of them, they bring.
 //
 // What a thread hands the other crosses as text, and is made again in the receiving realm. What the
@@ -93,7 +94,59 @@ const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
  * away keeps it so.
  */
 const NOT_ON_LYNX: Readonly<Record<string, readonly string[]>> = {
-	globalThis: ["EventTarget", "structuredClone", "performance", "atob", "btoa"],
+	globalThis: [
+		"EventTarget",
+		"Event",
+		"CustomEvent",
+		"ErrorEvent",
+		"PromiseRejectionEvent",
+		"reportError",
+		"addEventListener",
+		"removeEventListener",
+		"dispatchEvent",
+		"onerror",
+		"onunhandledrejection",
+		"onrejectionhandled",
+		"DOMException",
+		"structuredClone",
+		"atob",
+		"btoa",
+		"self",
+		"navigator",
+		"TextEncoder",
+		"TextDecoder",
+		"URL",
+		"URLSearchParams",
+		"performance",
+		"Performance",
+		"PerformanceEntry",
+		"PerformanceMark",
+		"PerformanceMeasure",
+		"AbortController",
+		"AbortSignal",
+		"Headers",
+		"Request",
+		"Response",
+		"fetch",
+		"ReadableStream",
+		"ReadableStreamDefaultReader",
+		"ReadableStreamBYOBReader",
+		"ReadableStreamDefaultController",
+		"ReadableByteStreamController",
+		"ReadableStreamBYOBRequest",
+		"WritableStream",
+		"WritableStreamDefaultWriter",
+		"WritableStreamDefaultController",
+		"TransformStream",
+		"TransformStreamDefaultController",
+		"ByteLengthQueuingStrategy",
+		"CountQueuingStrategy",
+		"TextEncoderStream",
+		"TextDecoderStream",
+		"Blob",
+		"File",
+		"FormData",
+	],
 };
 
 /** Takes away, in a realm, the built-ins a device lacks. */
