@@ -13,16 +13,16 @@ import drawStartThrows from "../../fixtures/threads/errors/StartThrows.svelte?fi
 import { startSveltePage } from "../svelte-page.ts";
 import type { SveltePage } from "../svelte-page.ts";
 
-type Throws = "script" | "template" | "child" | "effect";
+type Throws = "script" | "template" | "child" | "effect" | "global" | "none";
 
 function starting(throws: Throws) {
 	const log: unknown[] = [];
-	const props = { log, throws };
+	const props: { log: unknown[]; throws: Throws } = { log, throws };
 	const page = startSveltePage(StartThrows, {
 		props: () => props,
 		firstFrame: { draw: drawStartThrows, props },
 	});
-	return { page, log };
+	return { page, log, props };
 }
 
 const codes = (page: SveltePage): unknown[] =>
@@ -46,14 +46,21 @@ describe.each(["script", "template", "child"] as const)(
 			const [error] = page.errors as (Error & { cause?: unknown })[];
 			expect(error!.message).toContain(`the ${throws} threw at start`);
 			expect((error!.cause as Error).message).toMatch(new RegExp(`^the ${throws} threw at start`));
+			// The app's own frames, where it threw: LogBox shows this error, not its cause.
+			expect(error!.stack).toMatch(/^Error: The page did not start/);
+			expect(error!.stack).toContain(
+				throws === "child" ? "StartThrowsChild.svelte" : "StartThrows.svelte",
+			);
+			expect(error!.stack).not.toContain("reportNotStarted");
 		});
 
-		it("stops logging taps, and rejects the calls held before and made after with a code", async () => {
+		it("stops logging taps, rejects the calls it held with a code, and runs no main-thread function after", async () => {
 			const { page, log } = starting(throws);
 			page.engine.dispatch(page.byClass("tap"), { type: "tap" });
 			page.engine.dispatch(page.byClass("call"), { type: "tap" });
 			await page.settle();
 			expect(page.engine.state(page.byClass("call")).attrs["refused"]).toBe("page_not_started");
+			expect(page.engine.state(page.byClass("call")).attrs["runs"]).toBe(1);
 			page.engine.dispatch(page.byClass("call"), { type: "tap" });
 			for (let tap = 0; tap < 5; tap++) page.engine.dispatch(page.byClass("tap"), { type: "tap" });
 			await page.settle();
@@ -61,6 +68,7 @@ describe.each(["script", "template", "child"] as const)(
 			expect(page.messages.filter((message) => message.t !== "error")).toEqual([]);
 			expect(log).toEqual([]);
 			expect(page.engine.state(page.byClass("call")).attrs["answered"]).toBeUndefined();
+			expect(page.engine.state(page.byClass("call")).attrs["runs"]).toBe(1);
 			expect(codes(page)).toEqual(["page_not_started"]);
 		});
 
@@ -91,6 +99,53 @@ describe.each(["script", "template", "child"] as const)(
 		});
 	},
 );
+
+describe("a reload after a root that threw at start", () => {
+	it("mounts the page, which answers taps, with no error after the start's", async () => {
+		const { page, log, props } = starting("script");
+		await page.settle();
+		props.throws = "none";
+		page.reload();
+		await page.settle();
+		expect(page.engine.texts()).toEqual(DRAWN);
+		page.engine.dispatch(page.byClass("tap"), { type: "tap" });
+		await page.settle();
+		expect(log).toEqual(["tap"]);
+		expect(codes(page)).toEqual(["page_not_started"]);
+	});
+});
+
+describe("a root that reads a global Lynx lacks at start", () => {
+	it("names the import that fills it, in the error that says the page did not start", async () => {
+		const { page } = starting("global");
+		await page.settle();
+		expect(codes(page)).toEqual(["page_not_started"]);
+		const [error] = page.errors as (Error & { cause?: Error & { code?: string } })[];
+		expect(error!.message.split("\n")[0]).toContain(
+			"(The global `URL` is not defined: Lynx's engine doesn't have it, and no import put it there.)",
+		);
+		expect(error!.cause!.code).toBe("global_not_filled");
+	});
+});
+
+describe("a props function that throws at start", () => {
+	it("is reported as the page not started, with its throw as the reason, and the frame kept", async () => {
+		const log: unknown[] = [];
+		const page = startSveltePage(StartThrows, {
+			props: () => {
+				throw new Error("the props threw at start");
+			},
+			firstFrame: { draw: drawStartThrows, props: { log, throws: "none" } },
+		});
+		await page.settle();
+		expect(page.engine.texts()).toEqual(DRAWN);
+		expect(codes(page)).toEqual(["page_not_started"]);
+		const [error] = page.errors as Error[];
+		expect(error!.message.split("\n")[0]).toBe(
+			"The page did not start: the background threw as it mounted the root component (the props threw at start), so its first frame stays and answers nothing.",
+		);
+	});
+});
 
 describe("a root that throws at start with no first frame", () => {
 	it("leaves the page empty, and draws nothing when data comes later", async () => {

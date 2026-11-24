@@ -40,6 +40,13 @@ describe("a background function's result that cannot be copied", () => {
 });
 
 describe("a main-thread function's result that cannot be copied", () => {
+	it("is reported on the main thread when nobody awaits the call", async () => {
+		const { page, api, heard } = await calls();
+		page.asBackground(() => void api["bigResult"]!());
+		await page.settle();
+		expect(heard).toEqual([["value_not_copyable", "main-thread"]]);
+	});
+
 	it("is reported on the main thread, and rejects the call", async () => {
 		const { page, api, heard } = await calls();
 		const answer = page.asBackground(() => api["bigResult"]!());

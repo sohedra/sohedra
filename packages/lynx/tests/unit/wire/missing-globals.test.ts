@@ -19,6 +19,13 @@ describe("an error for a global Lynx lacks", () => {
 		expect(hinted.cause).toBe(original);
 	});
 
+	it("names it under Svelte's lines, which a development build adds to the message", () => {
+		const original = new ReferenceError("URL is not defined\n\n\tin <App>\n");
+		const hinted = withMissingGlobalHint(original, "background") as Error;
+		expect(hinted.message).toContain('Import "@sohedra/lynx-polyfill/url"');
+		expect(hinted.cause).toBe(original);
+	});
+
 	it("names the catch-all import for the global object's own names", () => {
 		const hinted = withMissingGlobalHint(
 			new ReferenceError("navigator is not defined"),
