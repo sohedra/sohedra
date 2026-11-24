@@ -146,7 +146,7 @@ export function createEventSource(
 			Accept: "text/event-stream",
 			"Cache-Control": "no-store",
 		};
-		if (state.lastEventId !== "") headers["Last-Event-ID"] = state.lastEventId;
+		if (state.lastEventId !== "") headers["Last-Event-ID"] = headerValueOf(state.lastEventId);
 		const parser = createParser({
 			maxBufferSize: maxEventSize,
 			onId: (id) => {
@@ -282,4 +282,31 @@ export function createEventSource(
 		Object.defineProperty(EventSourceFill.prototype, `on${type}`, eventHandlerProperty(type));
 	// Boundary: the class above, as TypeScript's DOM library types it.
 	return named(EventSourceFill, "EventSource") as unknown as EventSourceClass;
+}
+
+/**
+ * `text` as a header's value: its UTF-8 bytes, one character each, as browsers send an event ID
+ * (HTML § 9.2.4 "Last-Event-ID" is UTF-8 encoded). A header's value holds only Latin-1.
+ */
+function headerValueOf(text: string): string {
+	let value = "";
+	for (const character of text) {
+		const point = character.codePointAt(0)!;
+		if (point < 0x80) value += character;
+		else if (point < 0x800) value += String.fromCharCode(0xc0 | (point >> 6), 0x80 | (point & 63));
+		else if (point < 0x10000)
+			value += String.fromCharCode(
+				0xe0 | (point >> 12),
+				0x80 | ((point >> 6) & 63),
+				0x80 | (point & 63),
+			);
+		else
+			value += String.fromCharCode(
+				0xf0 | (point >> 18),
+				0x80 | ((point >> 12) & 63),
+				0x80 | ((point >> 6) & 63),
+				0x80 | (point & 63),
+			);
+	}
+	return value;
 }
