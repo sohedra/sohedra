@@ -7,11 +7,11 @@
 import type { Component } from "svelte";
 import { render } from "svelte/server";
 
-import { FIRST_FRAME_GLOBAL, PROPS_ID_PREFIX } from "../wire/index.ts";
+import { FIRST_FRAME_GLOBAL, PROPS_ID_PREFIX, wireError } from "../wire/index.ts";
 import type { Thread } from "../wire/index.ts";
 import { firstFrameError } from "./catalogue.ts";
 import { whileDrawing } from "./drawing.ts";
-import { DEV, DRAWS, firstFrame, setGlobalFunction } from "./globals.ts";
+import { DEV, DRAWS, firstFrame, hasGlobal, setGlobalFunction } from "./globals.ts";
 
 // oxlint-disable-next-line typescript/no-explicit-any -- Svelte's own bound on props
 type Bag = Record<string, any>;
@@ -38,13 +38,22 @@ const AWAIT_INVALID = "await_invalid";
 /**
  * Records how to draw the page's first frame: its markup, from the initial data and the host's
  * global props, or `null` when the page has none (a component awaits outside a `pending` boundary,
- * as on Svelte's server).
+ * as on Svelte's server). A second call keeps the first's record, and is reported.
  */
 export function mountPage<Props extends Bag>(
 	App: Component<Props>,
-	options: MountPageOptions<NoInfer<Props>> = {},
+	...[options = {}]: {} extends Props
+		? [options?: MountPageOptions<NoInfer<Props>>]
+		: // `props` given: what it holds, `MountPageOptions` checks.
+			[options: MountPageOptions<NoInfer<Props>> & { props: {} }]
 ): void {
 	if (!DRAWS) return;
+	if (hasGlobal(FIRST_FRAME_GLOBAL)) {
+		firstFrame.lynx.reportError(
+			wireError({ code: "page_already_mounted", details: { thread: "main-thread" } }),
+		);
+		return;
+	}
 	let warned = false;
 	setGlobalFunction(FIRST_FRAME_GLOBAL, (initData: Record<string, unknown>): string | null => {
 		const { props, context } = options;
