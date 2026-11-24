@@ -82,6 +82,7 @@
 				"event-target-shim",
 				"eventsource-parser",
 				"fflate",
+				"regexpu-core",
 				"urlpattern-polyfill",
 				"web-streams-polyfill",
 				"whatwg-url-minimum"

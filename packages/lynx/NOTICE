@@ -42,3 +42,17 @@ heads its vendored module:
 
 - @ungap/structured-clone 1.4.0, Copyright (c) 2021 Andrea Giammarchi,
   licensed under the ISC License: src/polyfill/vendor/structured-clone.js
+- event-target-shim 6.0.2, Copyright (c) 2015 Toru Nagashima, licensed under
+  the MIT License: src/polyfill/vendor/events.js
+- eventsource-parser 4.1.3, Copyright (c) 2026 Espen Hovlandsdal, licensed
+  under the MIT License: src/polyfill/vendor/event-source-parser.js
+- fflate 0.8.3, Copyright (c) 2026 Arjun Barrett, licensed under the MIT
+  License: src/polyfill/vendor/compression.js
+- urlpattern-polyfill 10.1.0, Copyright 2020 Intel Corporation, licensed under
+  the MIT License: src/polyfill/vendor/url-pattern.js
+- web-streams-polyfill 4.5.1, Copyright (c) 2026 Mattias Buelens and
+  Copyright (c) 2016 Diwank Singh Tomer, licensed under the MIT License:
+  src/polyfill/vendor/streams.js
+- whatwg-url-minimum 0.2.0, Copyright (c) Phil Pluckthun, 650 Industries, Inc.
+  (aka Expo) and Sebastian Mayr, licensed under the MIT License:
+  src/polyfill/vendor/url.js
