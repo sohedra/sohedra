@@ -132,6 +132,14 @@ describe("moduleCompilerOptions", () => {
 			"warningFilter",
 		]);
 	});
+
+	it("passes on async mode, which a module that awaits needs, and not the custom renderer", () => {
+		const options = moduleCompilerOptions({
+			experimental: { async: true, customRenderer: "@sohedra/lynx/internal/renderer" },
+		});
+		expect(options.experimental).toEqual({ async: true });
+		expect(moduleCompilerOptions({}).experimental).toBeUndefined();
+	});
 });
 
 describe("readSvelteOptions", () => {

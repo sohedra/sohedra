@@ -162,6 +162,7 @@ const NAMES: Record<string, Resolves> = {
 	define: { kind: "an option of the plugin" },
 	"dev: { hmr: false }": { kind: "an Rsbuild setting" },
 	"tools.swc: false": { kind: "an Rsbuild setting" },
+	"--bun": { kind: "a flag of Bun's command line" },
 	"export default defineConfig({ … })": { kind: "the line of an app's svelte.config.js" },
 	"export { a, b } from 'sample'": { kind: "JavaScript's syntax" },
 	true: { kind: "a value" },

@@ -1,6 +1,8 @@
 // A test page: the engine fake as the main thread's globals, a `lynx` for each thread, and the two
 // places where the page's own scripts start. No runtime runs in their place.
 
+import { promiseHooks } from "node:v8";
+
 import { afterEach, describe, expect, it, rs } from "@rstest/core";
 
 import { installGlobals, readGlobal } from "../../../../src/testing/globals.ts";
@@ -151,6 +153,37 @@ describe("a test page", () => {
 		expect(readGlobal("lynx")).toBe(before);
 		expect(readGlobal("__CreateView")).toBeUndefined();
 		expect(document.body.childNodes).toHaveLength(0);
+	});
+
+	it("leaves no hook on the process's promises when it cannot start", () => {
+		const onInit = rs.spyOn(promiseHooks, "onInit");
+		try {
+			const noBody = {
+				get body(): never {
+					throw new Error("no body");
+				},
+			};
+			expect(() => startTestPage({ document: noBody as unknown as Document })).toThrow("no body");
+			expect(onInit).not.toHaveBeenCalled();
+		} finally {
+			onInit.mockRestore();
+		}
+	});
+
+	it("says it needs Node.js where the runtime has no promise hooks, as Bun's own has not", () => {
+		const onInit = rs.spyOn(promiseHooks, "onInit").mockImplementation(() => {
+			throw new Error("node:v8 onInit is not yet implemented in Bun");
+		});
+		try {
+			expect(() => startTestPage()).toThrow(
+				expect.objectContaining({
+					code: "promise_hooks_missing",
+					message: expect.stringContaining("node:v8 onInit is not yet implemented in Bun"),
+				}),
+			);
+		} finally {
+			onInit.mockRestore();
+		}
 	});
 
 	it("ends the page before it when a test starts another", () => {
