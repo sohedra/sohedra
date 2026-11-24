@@ -10,7 +10,10 @@ credits in `NOTICE`. Private.
   subpath of `package.json`'s `exports`, which resolve by thread (`worker` is the main thread); an
   entry imports only `../fills/index.ts`. `.oxlintrc.jsonc` enforces both.
 - **A thread's globals** (`lynx`, the timers, `console`, `process`) and `globalThis` are named only
-  in `src/fills/globals.ts`. Never `Reflect` in `src/`: Android's engine objects refuse it.
+  in `src/fills/globals.ts`. Never `Reflect` in `src/`: Android's engine objects refuse it. One
+  exception: `Reflect.ownKeys` on an app's own object in `src/fills/web/headers.ts`, as Web IDL's
+  record conversion needs the strings and the symbols from one `ownKeys` call; it carries the one
+  line's `oxlint-disable-next-line`. An engine's object never gets `Reflect`.
 - **A fill** installs with `installEager` or `installLazy` (`src/fills/install.ts`) behind a check
   of the global's behavior, never over one that works. Its file's header gives the spec section and
   what it leaves out; its function carries a `@workaround` tag. What it catches goes to
