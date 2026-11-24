@@ -9,7 +9,11 @@ import path from "node:path";
 import { describe, expect, it } from "@rstest/core";
 
 import { ANSWERS } from "../../scripts/feature-table/fills.ts";
-import { BINDING_FILLS, makeTable } from "../../scripts/feature-table/make-table.ts";
+import {
+	BINDING_FILLS,
+	makeTable,
+	renderMarkdown,
+} from "../../scripts/feature-table/make-table.ts";
 import type { FeatureTable, Run, ThreadReport } from "../../scripts/feature-table/make-table.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
@@ -137,6 +141,20 @@ describe("the generator", () => {
 		});
 		expect(cell("fetch", "primjs-4.2-lynx-4.2-android-mt")?.status).toBe("yes");
 		expect(cell("async.bundle.try")?.status).toBe("no");
+	});
+
+	it("escapes a cell's backslash before its bar, so the bar can't close the Markdown cell", () => {
+		const syntax = {
+			"syn.class-static-block": { edition: "ES2022", parses: false, error: "a\\|b" },
+		};
+		const escaped = makeTable(
+			runs.map((run) => ({ ...run, bg: { ...run.bg, syntax } })),
+			{ generated: "now" },
+		);
+		const line = renderMarkdown(escaped, 2)
+			.split("\n")
+			.find((text) => text.startsWith("| `syn.class-static-block`"));
+		expect(line).toContain("a\\\\\\|b");
 	});
 
 	it("lists a cell that differs between the runs of its column", () => {
