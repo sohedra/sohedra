@@ -12,8 +12,11 @@ export interface WireDetails {
 	page_reloaded_on_one_thread: { thread: Thread; received: number; generation: number };
 	/** `thread` is the thread the value was sent to. */
 	value_not_copyable: { thread: Thread; reason: string };
-	/** `name`: a global the app read; `module`: the import of @sohedra/lynx-polyfill that fills it. */
-	global_not_filled: { name: string; module: string };
+	/**
+	 * `name`: a global the app read; `module`: the import of @sohedra/lynx-polyfill that fills it;
+	 * `baseline`: whether the catch-all import fills it too.
+	 */
+	global_not_filled: { name: string; module: string; baseline: boolean };
 	/** `name`: a global the main thread read, which only the background has. */
 	global_background_only: { name: string };
 	/** `name`: a global the app read, which no fill gives; `instead`: what to use. */
@@ -56,8 +59,8 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 	global_not_filled: {
 		message: ({ name }) =>
 			`The global \`${name}\` is not defined: Lynx's engine doesn't have it, and no import put it there.`,
-		fix: ({ module }) =>
-			`Import "${module}" in the first line of the app's entry, or "@sohedra/lynx-polyfill" for every fill.`,
+		fix: ({ module, baseline }) =>
+			`Import "${module}" in the first line of the app's entry${baseline ? ', or "@sohedra/lynx-polyfill", which holds it too' : ""}.`,
 		docs: "global_not_filled",
 	},
 	global_background_only: {

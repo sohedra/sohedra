@@ -163,7 +163,14 @@ function missingGlobal(name: string, thread: Thread): WireReport<WireCode> | und
 		return { code: "global_background_only", details: { name } };
 	for (const subpath of Object.keys(FILLED))
 		if (FILLED[subpath]!.includes(name))
-			return { code: "global_not_filled", details: { name, module: `${POLYFILL}${subpath}` } };
+			return {
+				code: "global_not_filled",
+				details: {
+					name,
+					module: `${POLYFILL}${subpath}`,
+					baseline: !OUTSIDE_BASELINE.includes(subpath),
+				},
+			};
 	return undefined;
 }
 
@@ -184,16 +191,11 @@ export function globalGap(name: string, thread: Thread): GlobalGap | undefined {
 	const report = missingGlobal(name, thread);
 	if (report === undefined) return undefined;
 	// Boundary: each code's details, by the code.
-	const details = report.details as { instead?: string; module?: string };
+	const details = report.details as { instead?: string; module?: string; baseline?: boolean };
 	if (report.code === "global_not_on_lynx")
 		return { kind: "not_on_lynx", instead: details.instead! };
 	if (report.code === "global_background_only") return { kind: "background_only" };
-	const module = details.module!;
-	return {
-		kind: "fill",
-		module,
-		baseline: !OUTSIDE_BASELINE.includes(module.slice(POLYFILL.length)),
-	};
+	return { kind: "fill", module: details.module!, baseline: details.baseline! };
 }
 
 /**
