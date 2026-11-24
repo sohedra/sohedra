@@ -1,8 +1,0 @@
-{
-	"cause-property.js": {
-		"fail": {
-			"note": "PrimJS's AggregateError takes no cause option.",
-			"expected": ["non-strict", "strict"]
-		}
-	}
-}

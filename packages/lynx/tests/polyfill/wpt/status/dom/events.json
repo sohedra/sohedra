@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "The thread's EventTarget is @ungap/event-target's, without Event or CustomEvent: the events fill replaces this row with its results."
-	}
-}

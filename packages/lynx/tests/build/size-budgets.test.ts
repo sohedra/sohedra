@@ -33,21 +33,19 @@ describe("the size of a thread's script", () => {
 		}
 	});
 
-	// Raised for the polyfill folder: its install helpers, atob and btoa, on both threads; then for
-	// the web fills each thread's baseline carries (events, DOMException, URL, encoding, Performance,
-	// AbortController, and the main thread's Headers, Request and Response), about 98 KB minified.
-	it("is within budget for the main thread's runtime: an entry with no page (181,625 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(185_300);
+	// Raised by about 3.4 KB on each thread for the reports that name the import of
+	// @sohedra/lynx-polyfill a missing global needs, or what to use instead, and for hearing the
+	// error events a polyfill fires; the background also for Svelte's `performance.now()`.
+	it("is within budget for the main thread's runtime: an entry with no page (84,372 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(86_100);
 	});
 
-	it("is within budget for a minimal page's main thread, with its first frame (207,907 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(212_100);
+	it("is within budget for a minimal page's main thread, with its first frame (110,586 bytes measured)", () => {
+		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(112_800);
 	});
 
-	it("is within budget for a minimal page's background: Svelte, the renderer and the page (281,795 bytes measured)", () => {
-		// Raised from 96,500 by Svelte's newest renderer build: its batching rewrite and crossing code;
-		// then by about 172 KB for the background's web fills (streams, fetch, Blob, FormData and the
-		// main thread's set).
-		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(287_500);
+	it("is within budget for a minimal page's background: Svelte, the renderer and the page (111,037 bytes measured)", () => {
+		// Raised from 96,500 by Svelte's newest renderer build: its batching rewrite and crossing code.
+		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(113_300);
 	});
 });

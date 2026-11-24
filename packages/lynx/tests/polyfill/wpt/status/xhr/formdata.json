@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "No FormData on the thread yet: its fill replaces this row with its results."
-	}
-}

@@ -1,8 +1,0 @@
-{
-	"target-Array.js": {
-		"fail": {
-			"note": "PrimJS's Object.assign onto an array doesn't shrink it when it sets a short length before a high index.",
-			"expected": ["non-strict", "strict"]
-		}
-	}
-}

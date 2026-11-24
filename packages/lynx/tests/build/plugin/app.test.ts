@@ -47,9 +47,12 @@ describe("the output", () => {
 	it("marks the main thread's script, which the template encodes as lepus code", () => {
 		expect(template["lepusCode"]).toBeDefined();
 	});
-	it("points the code's own fetch at the global object's, where the fill puts it", () => {
+	it("points the code's own fetch at the global object's when a fill put one there, else lynx-core's", () => {
 		// The wrapper reads its `fetch` parameter itself, so the parameter keeps its name.
-		expect(scripts.background).toContain("typeof globalThis.fetch");
+		// The wrapper's `lynx` parameter, minified to a short name.
+		expect(scripts.background).toMatch(
+			/typeof\s*\(\s*globalThis\.fetch\s*\|\|\s*[\w$]+\.fetch\s*\)/,
+		);
 		expect(scripts.background).not.toMatch(/typeof fetch\b/);
 	});
 });

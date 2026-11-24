@@ -1,8 +1,0 @@
-{
-	"primitive-string.js": {
-		"fail": {
-			"note": "PrimJS's Object.getOwnPropertyDescriptor gives no descriptor for a primitive string's index or length.",
-			"expected": ["non-strict", "strict"]
-		}
-	}
-}

@@ -157,14 +157,11 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
-	it("fills in the background's global queueMicrotask from lynx, and the timers the wrapper passes", () => {
+	it("fills in the background's global queueMicrotask from lynx, and no timers", () => {
 		const { page, background } = startDevicePage(scripts);
 		try {
-			const kinds = vm.runInContext(
-				"[typeof queueMicrotask, typeof globalThis.setTimeout]",
-				background,
-			);
-			expect(kinds).toEqual(["function", "function"]);
+			const kinds = vm.runInContext("[typeof queueMicrotask, typeof setTimeout]", background);
+			expect(kinds).toEqual(["function", "undefined"]);
 		} finally {
 			page.dispose();
 		}
@@ -254,14 +251,10 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 	it("hands the main thread the element functions' answers as its own", () => {
 		const { page, mainThread } = startDevicePage(scripts);
 		try {
-			// An array of this process's would not be one of the realm's arrays.
-			const own = page.asMainThread(() =>
-				vm.runInContext(
-					"Object.getPrototypeOf(__QuerySelectorAll(__GetPageElement(), 'view', {})) === Array.prototype",
-					mainThread,
-				),
+			const at = page.asMainThread(() =>
+				vm.runInContext("typeof __QuerySelectorAll(__GetPageElement(), 'view', {}).at", mainThread),
 			);
-			expect(own).toBe(true);
+			expect(at).toBe("undefined");
 		} finally {
 			page.dispose();
 		}

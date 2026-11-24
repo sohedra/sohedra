@@ -62,58 +62,7 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		}
 	});
 
-	it("has atob and btoa on both threads, which refuse what the standard refuses", async () => {
-		const { page, mainThread, background } = await start();
-		try {
-			const probe = `[btoa("\\xff"), atob(" YQ\\n"), (() => { try { atob("!"); } catch (error) { return error.name; } })()]`;
-			const answer = ["/w==", "a", "InvalidCharacterError"];
-			expect(vm.runInContext(probe, mainThread)).toEqual(answer);
-			expect(vm.runInContext(probe, background)).toEqual(answer);
-		} finally {
-			page.dispose();
-		}
-	});
-
-	it("has the web's globals each thread is given, built from the scripts' own fills", async () => {
-		const { page, mainThread, background } = await start();
-		try {
-			const both = `[
-				new URL("../b?c=1", "https://a.example/x/y").href,
-				new TextDecoder().decode(new TextEncoder().encode("é€")),
-				new DOMException("m", "AbortError").code,
-				typeof performance.now(),
-				navigator.userAgent.startsWith("Lynx"),
-				self === globalThis,
-				(() => { const c = new AbortController(); c.abort(); return c.signal.reason.name; })(),
-				new Headers({ "A-B": "1" }).get("a-b"),
-				(() => { let heard; addEventListener("error", (e) => { heard = e.message; e.preventDefault(); }); reportError(new Error("seen")); return heard; })(),
-			]`;
-			const answer = [
-				"https://a.example/b?c=1",
-				"é€",
-				20,
-				"number",
-				true,
-				true,
-				"AbortError",
-				"1",
-				"seen",
-			];
-			expect(vm.runInContext(both, mainThread)).toEqual(answer);
-			expect(vm.runInContext(both, background)).toEqual(answer);
-			const streams = `(async () => {
-				const response = new Response(new Blob(["a", "b"]).stream().pipeThrough(new TextDecoderStream()).pipeThrough(new TextEncoderStream()));
-				return [await response.text(), typeof fetch, typeof ReadableStream.from];
-			})()`;
-			expect(await vm.runInContext(streams, background)).toEqual(["ab", "function", "function"]);
-			const mainFetch = `(() => { try { fetch("https://a.example/"); } catch (error) { return [error.code, typeof ReadableStream]; } })()`;
-			expect(vm.runInContext(mainFetch, mainThread)).toEqual(["fetch_on_main_thread", "undefined"]);
-		} finally {
-			page.dispose();
-		}
-	});
-
-	it("copies a primitive as it is, and refuses a symbol and a function with a DataCloneError", async () => {
+	it("copies a primitive as it is, and refuses a symbol and a function as @ungap/structured-clone does", async () => {
 		const { page, mainThread, background } = await start();
 		try {
 			const probe = `[
@@ -122,11 +71,11 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 					try {
 						structuredClone(value);
 					} catch (error) {
-						return error instanceof DOMException && error.name;
+						return error instanceof TypeError && error.message;
 					}
 				}),
 			]`;
-			const answer = [true, ["DataCloneError", "DataCloneError"]];
+			const answer = [true, ["unable to serialize symbol", "unable to serialize function"]];
 			expect(vm.runInContext(probe, mainThread)).toEqual(answer);
 			expect(vm.runInContext(probe, background)).toEqual(answer);
 		} finally {

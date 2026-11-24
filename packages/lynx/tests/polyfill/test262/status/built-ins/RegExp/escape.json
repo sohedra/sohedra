@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no RegExp.escape: its fill replaces this row with its results."
-	}
-}

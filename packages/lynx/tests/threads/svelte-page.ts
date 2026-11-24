@@ -7,7 +7,7 @@
 import type { Component } from "svelte";
 
 import { fillEngineGaps, mountPage } from "../../src/background/index.ts";
-import type { MountPageOptions } from "../../src/background/index.ts";
+import type { BackgroundGlobals, MountPageOptions } from "../../src/background/index.ts";
 import { startMainThread } from "../../src/main-thread/index.ts";
 import type { MainThreadRuntime } from "../../src/main-thread/index.ts";
 import { globalScope, installGlobals, readGlobal } from "../../src/testing/globals.ts";
@@ -98,7 +98,12 @@ function recordFirstFrame(firstFrame: SveltePageOptions["firstFrame"]): void {
  */
 export function startUp(): void {
 	const lynx = readGlobal("lynx") as BackgroundLynx;
-	fillEngineGaps({ scope: globalScope(), readLynx: () => lynx });
+	// Boundary: the fill reads only `lynx` of the background's globals.
+	fillEngineGaps({
+		scope: globalScope(),
+		strings: String.prototype,
+		globals: { lynx } as unknown as BackgroundGlobals,
+	});
 }
 
 /** Starts `App` as a page on both threads. */

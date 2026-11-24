@@ -1,11 +1,10 @@
-// The binding's eight catalogues of messages, one for each program, for the checks that walk them all.
+// The binding's seven catalogues of messages, one for each program, for the checks that walk them all.
 
 import { BACKGROUND_CATALOGUE } from "../../../src/background/catalogue.ts";
 import { BUILD_CATALOGUE } from "../../../src/build/diagnostics/catalogue.ts";
 import { FIRST_FRAME_CATALOGUE } from "../../../src/first-frame/catalogue.ts";
 import { GESTURE_CATALOGUE } from "../../../src/gesture/catalogue.ts";
 import { MAIN_THREAD_CATALOGUE } from "../../../src/main-thread/catalogue.ts";
-import { POLYFILL_CATALOGUE } from "../../../src/polyfill/catalogue.ts";
 import { TESTING_CATALOGUE } from "../../../src/testing/catalogue.ts";
 import { WIRE_CATALOGUE } from "../../../src/wire/index.ts";
 import type { Entry } from "../../../src/wire/index.ts";
@@ -20,7 +19,6 @@ export const CATALOGUES: Readonly<Record<string, Readonly<Record<string, AnyEntr
 	"first-frame": FIRST_FRAME_CATALOGUE,
 	gesture: GESTURE_CATALOGUE,
 	"main-thread": MAIN_THREAD_CATALOGUE,
-	polyfill: POLYFILL_CATALOGUE,
 	testing: TESTING_CATALOGUE,
 	wire: WIRE_CATALOGUE,
 };

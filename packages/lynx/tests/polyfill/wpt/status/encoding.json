@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "No TextEncoder or TextDecoder on the thread yet: the encoding fills replace this row with their results."
-	}
-}

@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no String.prototype.at: its fill replaces this row with its results."
-	}
-}

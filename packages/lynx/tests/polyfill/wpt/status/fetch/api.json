@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "No fetch wrapper yet: it replaces this row with its results, and a local server for the tests that need one."
-	}
-}

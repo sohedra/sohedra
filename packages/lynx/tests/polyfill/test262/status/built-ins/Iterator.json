@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no Iterator and its helpers: its fill replaces this row with its results."
-	}
-}

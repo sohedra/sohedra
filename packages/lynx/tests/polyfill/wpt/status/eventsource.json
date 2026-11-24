@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "No EventSource yet: its fill replaces this row with its results."
-	}
-}

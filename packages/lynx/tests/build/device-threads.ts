@@ -11,8 +11,7 @@
 // not.
 //
 // Both threads lack what their engine (PrimJS) lacks, listed below, and the web's globals that no
-// Lynx engine has: `EventTarget`, `structuredClone`, `performance`, `atob`, `btoa`, `URL` and the rest of
-// the polyfill folder's globals (`NOT_ON_LYNX`). Each realm starts without
+// Lynx engine has: `EventTarget`, `structuredClone` and `performance`. Each realm starts without
 // them, as a device's threads do, so whatever the page's scripts need of them, they bring.
 //
 // What a thread hands the other crosses as text, and is made again in the receiving realm. What the
@@ -35,9 +34,6 @@ import { LAZY_BUNDLE_METHOD, PATCH_METHOD, RUN_FUNCTION } from "../../src/wire/i
 import { readTemplate } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
 
-/** `%TypedArray%.prototype`, which every typed array inherits from. */
-const TYPED_ARRAY_PROTOTYPE = "Object.getPrototypeOf(Int8Array.prototype)";
-
 /** The built-ins seen missing on a device, on both threads, by the object that would hold them. */
 const SEEN_MISSING: Readonly<Record<string, readonly string[]>> = {
 	"Array.prototype": [
@@ -52,11 +48,8 @@ const SEEN_MISSING: Readonly<Record<string, readonly string[]>> = {
 	Array: ["fromAsync"],
 	Object: ["hasOwn", "groupBy"],
 	"String.prototype": ["at"],
-	[TYPED_ARRAY_PROTOTYPE]: ["at", "toReversed", "toSorted", "with"],
 	Promise: ["withResolvers"],
-	Math: ["f16round"],
-	"DataView.prototype": ["getFloat16", "setFloat16"],
-	globalThis: ["Intl", "Float16Array"],
+	globalThis: ["Intl"],
 };
 
 /** `%IteratorPrototype%`, which every iterator inherits from. */
@@ -64,6 +57,7 @@ const ITERATOR_PROTOTYPE = "Object.getPrototypeOf(Object.getPrototypeOf([][Symbo
 
 /** The built-ins PrimJS's tables of built-ins lack (`js_array_proto_funcs` and the rest). */
 const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
+	"String.prototype": ["replaceAll", "isWellFormed", "toWellFormed"],
 	Map: ["groupBy"],
 	"Set.prototype": [
 		"union",
@@ -90,9 +84,7 @@ const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
 	Promise: ["try"],
 	Error: ["isError"],
 	RegExp: ["escape"],
-	Reflect: ["[Symbol.toStringTag]"],
 	Math: ["sumPrecise"],
-	"String.prototype": ["replaceAll", "isWellFormed", "toWellFormed", "normalize"],
 	globalThis: ["Iterator"],
 };
 
@@ -101,67 +93,13 @@ const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
  * away keeps it so.
  */
 const NOT_ON_LYNX: Readonly<Record<string, readonly string[]>> = {
-	globalThis: [
-		"EventTarget",
-		"Event",
-		"CustomEvent",
-		"ErrorEvent",
-		"PromiseRejectionEvent",
-		"reportError",
-		"addEventListener",
-		"removeEventListener",
-		"dispatchEvent",
-		"onerror",
-		"onunhandledrejection",
-		"onrejectionhandled",
-		"DOMException",
-		"structuredClone",
-		"atob",
-		"btoa",
-		"self",
-		"navigator",
-		"TextEncoder",
-		"TextDecoder",
-		"URL",
-		"URLSearchParams",
-		"performance",
-		"Performance",
-		"PerformanceEntry",
-		"PerformanceMark",
-		"PerformanceMeasure",
-		"AbortController",
-		"AbortSignal",
-		"Headers",
-		"Request",
-		"Response",
-		"fetch",
-		"ReadableStream",
-		"ReadableStreamDefaultReader",
-		"ReadableStreamBYOBReader",
-		"ReadableStreamDefaultController",
-		"ReadableByteStreamController",
-		"ReadableStreamBYOBRequest",
-		"WritableStream",
-		"WritableStreamDefaultWriter",
-		"WritableStreamDefaultController",
-		"TransformStream",
-		"TransformStreamDefaultController",
-		"ByteLengthQueuingStrategy",
-		"CountQueuingStrategy",
-		"TextEncoderStream",
-		"TextDecoderStream",
-		"Blob",
-		"File",
-		"FormData",
-	],
+	globalThis: ["EventTarget", "structuredClone", "performance"],
 };
 
 /** Takes away, in a realm, the built-ins a device lacks. */
 const WITHOUT_MISSING = [SEEN_MISSING, ABSENT_FROM_PRIMJS, NOT_ON_LYNX]
 	.flatMap((missing) => Object.entries(missing))
-	.flatMap(([owner, names]) =>
-		names.map((name) => `delete ${owner}${name.startsWith("[") ? name : `.${name}`};`),
-	)
+	.flatMap(([owner, names]) => names.map((name) => `delete ${owner}.${name};`))
 	.join("\n");
 
 /**
@@ -282,29 +220,6 @@ interface ScriptHolder {
 	init(inject: { tt: unknown }): unknown;
 }
 
-/**
- * lynx-core's `Promise`, made in a realm: it has `all`, `allSettled` and `race`, none of `any`,
- * `withResolvers` and `try`, no `Symbol.species` (lynx-promise's es6-extensions.js), and a `finally`
- * that calls what it is given, a function or not (the same file).
- */
-const LYNX_CORE_PROMISE = `(() => {
-	class LynxPromise extends Promise {}
-	for (const name of ["any", "withResolvers", "try"])
-		Object.defineProperty(LynxPromise, name, { value: undefined, writable: true, configurable: true });
-	Object.defineProperty(LynxPromise, Symbol.species, { value: undefined });
-	Object.defineProperty(LynxPromise.prototype, "finally", {
-		value(onFinally) {
-			return this.then(
-				(value) => LynxPromise.resolve(onFinally()).then(() => value),
-				(reason) => LynxPromise.resolve(onFinally()).then(() => { throw reason; }),
-			);
-		},
-		writable: true,
-		configurable: true,
-	});
-	return LynxPromise;
-})()`;
-
 /** The background's realm, and how lynx-core runs a script there: the page's or a bundle's. */
 interface BackgroundRealm {
 	context: vm.Context;
@@ -356,12 +271,11 @@ function runBackground(
 			throw new Error(`The page's script loaded ${path}, which the build did not write.`);
 		return evaluate(source, path);
 	};
-	// lynx-core's `lynx` also has the timers, and its own `Promise` (the `then/promise` library),
-	// which the wrapper takes as the script's own (lynx-core's lynx.ts): a class of the realm's,
-	// without the statics it lacks; and loads a script by path, once (its `requireModule`,
+	// lynx-core's `lynx` also has the timers, and the engine's `Promise`, which the wrapper takes as
+	// the script's own (lynx-core's lynx.ts); and loads a script by path, once (its `requireModule`,
 	// `requireModuleAsync`).
 	const deviceLynx = Object.assign(lynx, {
-		Promise: vm.runInContext(LYNX_CORE_PROMISE, context),
+		Promise: vm.runInContext("Promise", context),
 		setTimeout,
 		clearTimeout,
 		setInterval,
@@ -439,8 +353,6 @@ export interface DevicePage {
 	readonly page: TestPage;
 	readonly mainThread: vm.Context;
 	readonly background: vm.Context;
-	/** The `lynx` lynx-core gives the background's script. */
-	readonly backgroundLynx: BackgroundLynx;
 }
 
 /** What a page on threads shaped like a device's starts with. */
@@ -467,7 +379,6 @@ export function startDevicePage(
 	const { window } = new JSDOM("<!doctype html><body></body>");
 	let mainThread: vm.Context | undefined;
 	let background: BackgroundRealm | undefined;
-	let backgroundLynx: BackgroundLynx | undefined;
 	// Each section runs in its thread's realm, as the engine runs it there.
 	const bundles: Record<string, TestBundle> = {};
 	for (const [url, bundle] of Object.entries(options.bundles ?? {}))
@@ -495,7 +406,6 @@ export function startDevicePage(
 		},
 		background: () => {
 			const lynx = readGlobal("lynx") as BackgroundLynx;
-			backgroundLynx = lynx;
 			// lynx-core reports a script that throws as it loads ("loadCard failed").
 			try {
 				background = runBackground(scripts.background, lynx, {
@@ -507,10 +417,5 @@ export function startDevicePage(
 			}
 		},
 	});
-	return {
-		page,
-		mainThread: mainThread!,
-		background: background!.context,
-		backgroundLynx: backgroundLynx!,
-	};
+	return { page, mainThread: mainThread!, background: background!.context };
 }

@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "No CompressionStream or DecompressionStream yet: their fill replaces this row with its results."
-	}
-}

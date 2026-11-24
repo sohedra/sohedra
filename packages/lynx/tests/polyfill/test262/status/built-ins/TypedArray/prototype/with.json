@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no %TypedArray%.prototype.with: its fill replaces this row with its results."
-	}
-}

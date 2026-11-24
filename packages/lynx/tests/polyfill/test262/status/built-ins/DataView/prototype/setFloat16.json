@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no DataView.prototype.setFloat16: its fill replaces this row with its results."
-	}
-}

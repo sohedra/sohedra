@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no String.prototype.normalize (Lynx builds it without the Unicode tables): its fill replaces this row with its results."
-	}
-}

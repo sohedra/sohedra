@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "No streams on the thread yet: the streams fill replaces this row with its results."
-	}
-}

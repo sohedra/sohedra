@@ -24,14 +24,6 @@ const MAY_IMPORT: Record<string, string[]> = {
 	testing: ["wire", "background", "main-thread", "first-frame", "svelte/runtime"],
 	gesture: ["wire"],
 	env: ["wire"],
-	// Has no index.ts: reached only through its thread entries (below).
-	polyfill: [],
-};
-
-/** The polyfill folder's thread entries, and the folders that may import each. */
-const POLYFILL_ENTRIES: Record<string, string[]> = {
-	"background.ts": ["background", "testing"],
-	"main-thread.ts": ["main-thread", "testing"],
 };
 
 const FOLDERS = Object.keys(MAY_IMPORT);
@@ -97,51 +89,6 @@ describe("imports between the binding's folders", () => {
 		expect(refused.has(`${presets}/probe-background.ts`)).toBe(true);
 		expect(refused.has(`${presets}/probe-wire-folder.ts`)).toBe(true);
 		expect(refused.has(`${presets}/probe-wire-wandering.ts`)).toBe(true);
-	});
-});
-
-describe("the polyfill folder's thread entries", () => {
-	const files: Record<string, string> = {};
-	const FROM = FOLDERS.filter((folder) => folder !== "polyfill");
-	for (const from of FROM) {
-		for (const entry of Object.keys(POLYFILL_ENTRIES)) {
-			const relative = path.posix.relative(`${SRC}/${from}`, `${SRC}/polyfill`);
-			files[`${SRC}/${from}/probe-polyfill-${entry}`] = `import "${relative}/${entry}";\n`;
-		}
-	}
-	// Deeper in a folder, as the binding's files are.
-	files[`${SRC}/background/inner/probe-polyfill-deep.ts`] =
-		'import "../../polyfill/background.ts";\n';
-	const inside: Record<string, string> = {
-		[`${SRC}/polyfill/probe-wire.ts`]: 'import "../wire/index.ts";\n',
-		[`${SRC}/polyfill/web/probe-background.ts`]: 'import "../../background/index.ts";\n',
-		[`${SRC}/polyfill/probe-svelte.ts`]: 'import "svelte";\n',
-		[`${SRC}/polyfill/probe-lynx.ts`]: 'import "@lynx-js/types";\n',
-		[`${SRC}/polyfill/web/probe-own.ts`]: 'import "../install.ts";\n',
-		[`${SRC}/polyfill/web/probe-package.ts`]: 'import "fflate";\n',
-	};
-	const refused = reported(lint({ ...files, ...inside }), RULE);
-
-	for (const from of FROM) {
-		for (const [entry, importers] of Object.entries(POLYFILL_ENTRIES)) {
-			const allowed = importers.includes(from);
-			it(`${from} ${allowed ? "may" : "may not"} import polyfill/${entry}`, () => {
-				expect(refused.has(`${SRC}/${from}/probe-polyfill-${entry}`)).toBe(!allowed);
-			});
-		}
-	}
-
-	it("are reached from deeper in a folder too", () => {
-		expect(refused.has(`${SRC}/background/inner/probe-polyfill-deep.ts`)).toBe(false);
-	});
-
-	it("lets the polyfill folder import its own files and npm packages, and nothing of the binding, Svelte or Lynx", () => {
-		expect(refused.has(`${SRC}/polyfill/probe-wire.ts`)).toBe(true);
-		expect(refused.has(`${SRC}/polyfill/web/probe-background.ts`)).toBe(true);
-		expect(refused.has(`${SRC}/polyfill/probe-svelte.ts`)).toBe(true);
-		expect(refused.has(`${SRC}/polyfill/probe-lynx.ts`)).toBe(true);
-		expect(refused.has(`${SRC}/polyfill/web/probe-own.ts`)).toBe(false);
-		expect(refused.has(`${SRC}/polyfill/web/probe-package.ts`)).toBe(false);
 	});
 });
 

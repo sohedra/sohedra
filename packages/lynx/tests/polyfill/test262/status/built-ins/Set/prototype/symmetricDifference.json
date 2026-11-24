@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no Set.prototype.symmetricDifference: its fill replaces this row with its results."
-	}
-}

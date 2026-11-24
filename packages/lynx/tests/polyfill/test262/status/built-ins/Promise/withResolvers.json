@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no Promise.withResolvers: its fill replaces this row with its results."
-	}
-}

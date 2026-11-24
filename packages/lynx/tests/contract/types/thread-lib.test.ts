@@ -19,7 +19,6 @@ const ON_LYNX = [
 	"gesture",
 	"env",
 	"svelte/runtime",
-	"polyfill",
 ];
 
 /** The base tsconfig an app extends. */
@@ -44,7 +43,8 @@ function packageOptions(): ts.CompilerOptions {
 describe("the binding's thread code", { timeout: 60_000 }, () => {
 	it("leaves the DOM out of the base tsconfig an app extends", () => {
 		const { lib, skipLibCheck } = baseOptions();
-		// The language through ES2025: the binding's fills and the build's lowering give it.
+		// The language through ES2025: the build lowers its syntax, and @sohedra/lynx-polyfill fills its
+		// built-ins, which the app template imports.
 		expect(lib).toEqual(["lib.es2025.d.ts"]);
 		// Svelte's and Rsbuild's declarations name the DOM's types, which the base leaves out.
 		expect(skipLibCheck).toBe(true);
@@ -61,19 +61,12 @@ describe("the binding's thread code", { timeout: 60_000 }, () => {
 			rootNames: [...files, path.join(ROOT, "types/client.d.ts")],
 			options: { ...packageOptions(), lib: baseOptions().lib, types: [] },
 		});
-		// The polyfill folder writes the web's interfaces, typed as TypeScript's DOM library types
-		// them: it names the DOM's types, and lint (`no-undef`) keeps it from reading a global.
-		const found = ts
-			.getPreEmitDiagnostics(program)
-			.filter(
-				(diagnostic) => !diagnostic.file?.fileName.startsWith(path.join(ROOT, "src/polyfill/")),
-			)
-			.map((diagnostic) => {
-				const where = diagnostic.file
-					? `${path.relative(ROOT, diagnostic.file.fileName)}:${diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line + 1}`
-					: "";
-				return `${where} TS${diagnostic.code} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, " ")}`;
-			});
+		const found = ts.getPreEmitDiagnostics(program).map((diagnostic) => {
+			const where = diagnostic.file
+				? `${path.relative(ROOT, diagnostic.file.fileName)}:${diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!).line + 1}`
+				: "";
+			return `${where} TS${diagnostic.code} ${ts.flattenDiagnosticMessageText(diagnostic.messageText, " ")}`;
+		});
 		expect(found).toEqual([]);
 		// A program that found none of them would pass too.
 		expect(

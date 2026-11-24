@@ -1,5 +1,0 @@
-{
-	"*": {
-		"skip": "PrimJS has no Math.f16round: its fill replaces this row with its results."
-	}
-}
