@@ -108,9 +108,10 @@ export function unmount(component: Bag): void;
  * Mounts `App` as the page of this Lynx view: the page's entry calls it once, on both threads. On
  * the main thread it draws the first frame from the page's data; on the background it mounts the
  * component over that frame, then answers the page's events, and mounts it again when the host
- * reloads the page. An error while the page starts is reported into Lynx, not thrown. A component
- * with required props needs `props`. A second call while the page runs is reported, and does
- * nothing.
+ * reloads the page. An error while the page starts is reported into Lynx, not thrown; when the root
+ * component throws as it mounts, the page did not start (`page_not_started`), and its first frame
+ * stays on the screen, answering nothing, until a reload. A component with required props needs
+ * `props`. A second call while the page runs is reported, and does nothing.
  *
  * ```ts
  * import { mountPage } from "@sohedra/lynx";

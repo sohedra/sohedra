@@ -32,6 +32,7 @@ import {
 	PATCH_METHOD,
 	ROOT_ID,
 	RUN_FUNCTION,
+	wireError,
 	withCount,
 	withMissingGlobalHint,
 } from "../wire/index.ts";
@@ -363,11 +364,27 @@ export function startMainThread(): MainThreadRuntime {
 		};
 	}
 
+	/**
+	 * The page did not start: what it shows stays, the first frame stops listening, and the calls of
+	 * background functions reject, those it held included. The background reported why.
+	 */
+	function notStarted(): void {
+		state.notStarted = true;
+		state.frame?.stop();
+		state.frame = undefined;
+		state.functions.silence(wireError({ code: "page_not_started", details: {} }));
+	}
+
 	/** Applies a patch of the page it shows, then flushes the tree once. */
 	function applyPatch(params: PatchParams): void {
 		const patch = decodePatch(params);
 		if (DEV) checkMessage(patch, { thread: "main-thread", generation: state.generation });
-		if (!keepsMessage(patch, state.generation)) return;
+		// A page that did not start is not hydrated or drawn over by what comes after.
+		if (!keepsMessage(patch, state.generation) || state.notStarted) return;
+		if (patch.notStarted) {
+			notStarted();
+			return;
+		}
 		// The new page replaces the old one in the same flush, with no empty frame between.
 		if (!state.rewriting) clearPrevious(state);
 		let replay: (() => void) | undefined;
@@ -496,6 +513,7 @@ export function startMainThread(): MainThreadRuntime {
 				state.cells.clear();
 				state.cellContexts.clear();
 				state.shown = false;
+				state.notStarted = false;
 			}
 			if (state.element) mainThread.__FlushElementTree(state.element, options);
 		} catch (error) {

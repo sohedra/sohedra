@@ -23,6 +23,11 @@ export interface WireDetails {
 	global_not_on_lynx: { name: string; instead: string };
 	/** `thread`: the thread that refused the call. */
 	page_already_mounted: { thread: Thread };
+	/**
+	 * `reason` is what the root component threw, on the background, whose error has the thrown value
+	 * as its `cause`; a call the main thread refuses has none.
+	 */
+	page_not_started: { reason?: string | undefined };
 }
 
 /** What a code of the wire names. */
@@ -84,6 +89,13 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 		fix: () =>
 			"Call `mountPage` once, in the page's entry. To show a component over the page, call `mount`; to show another page, change what the root component shows.",
 		docs: "page_already_mounted",
+	},
+	page_not_started: {
+		message: ({ reason }) =>
+			`The page did not start: its root component threw as the background mounted it${reason === undefined ? "" : ` (${reason.split("\n")[0]!.trim()})`}. Its first frame stays on the screen, and answers no taps or calls.`,
+		fix: () =>
+			"Fix the throw the page reported as it started, or wrap the part that can throw in a <svelte:boundary> with a failed snippet, which shows in its place.",
+		docs: "page_not_started",
 	},
 };
 

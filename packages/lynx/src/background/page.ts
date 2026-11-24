@@ -22,7 +22,14 @@ import {
 	startPropsIds,
 	withRenderer,
 } from "../svelte/runtime/index.ts";
-import { decodeError, encodeError, hearErrorEvents, ROOT_ID, wireError } from "../wire/index.ts";
+import {
+	asError,
+	decodeError,
+	encodeError,
+	hearErrorEvents,
+	ROOT_ID,
+	wireError,
+} from "../wire/index.ts";
 import type {
 	CallMessage,
 	ErrorMessage,
@@ -96,9 +103,10 @@ const failure = (error: unknown): Result => ({ ok: false, error: encodeError(err
  * Mounts `App` as the page of this Lynx view: the page's entry calls it once, on both threads. On
  * the main thread it draws the first frame from the page's data; on the background it mounts the
  * component over that frame, then answers the page's events, and mounts it again when the host
- * reloads the page. An error while the page starts is reported into Lynx, not thrown. A component
- * with required props needs `props`. A second call while the page runs is reported, and does
- * nothing.
+ * reloads the page. An error while the page starts is reported into Lynx, not thrown; when the root
+ * component throws as it mounts, the page did not start (`page_not_started`), and its first frame
+ * stays on the screen, answering nothing, until a reload. A component with required props needs
+ * `props`. A second call while the page runs is reported, and does nothing.
  *
  * ```ts
  * import { mountPage } from "@sohedra/lynx";
@@ -429,10 +437,30 @@ export function mountPage<Props extends Bag>(
 		root = pageRenderer.attachRoot();
 		anchor = pageRenderer.createComment("");
 		pageRenderer.insert(root, anchor, null);
-		render(true);
+		try {
+			render(true);
+		} catch (error) {
+			// An effect's throw comes once the page rendered, and its patch is on its way.
+			if (instance !== undefined) throw error;
+			reportNotStarted(error);
+			channel.notStarted();
+			return;
+		}
 		// Even when the page shows nothing: the main thread keeps a first frame until this patch.
 		channel.send(true);
 	} catch (error) {
 		reportError(error);
 	}
+}
+
+/**
+ * The root threw as it mounted at the page's start, so there is no page: one error says so, with the
+ * throw as its cause.
+ */
+function reportNotStarted(error: unknown): void {
+	const reason = asError(error).message;
+	const thrown = wireError({ code: "page_not_started", details: { reason } });
+	report(Object.assign(thrown, { cause: error }), {
+		component: componentOfError(reason, {}),
+	});
 }

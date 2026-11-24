@@ -32,6 +32,11 @@ export interface MainThreadPage {
 	/** Whether the background's page is shown: a patch of it was applied. */
 	shown: boolean;
 	/**
+	 * The page did not start (its root threw on the background): what it shows stays, and no patch
+	 * of it is applied, until a reload.
+	 */
+	notStarted: boolean;
+	/**
 	 * The ops of each list cell that has no elements, as they came: one Lynx never showed, or one
 	 * let go of, whose text the background wrote again.
 	 */
@@ -73,6 +78,7 @@ export function createMainThreadPage(
 		painting: false,
 		destroyed: false,
 		shown: false,
+		notStarted: false,
 		cells: new Map(),
 		cellContexts: new Map(),
 		frame: undefined,
