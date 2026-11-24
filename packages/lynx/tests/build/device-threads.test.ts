@@ -251,10 +251,14 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 	it("hands the main thread the element functions' answers as its own", () => {
 		const { page, mainThread } = startDevicePage(scripts);
 		try {
-			const at = page.asMainThread(() =>
-				vm.runInContext("typeof __QuerySelectorAll(__GetPageElement(), 'view', {}).at", mainThread),
+			// An array of this process's would not be one of the realm's arrays.
+			const own = page.asMainThread(() =>
+				vm.runInContext(
+					"Object.getPrototypeOf(__QuerySelectorAll(__GetPageElement(), 'view', {})) === Array.prototype",
+					mainThread,
+				),
 			);
-			expect(at).toBe("undefined");
+			expect(own).toBe(true);
 		} finally {
 			page.dispose();
 		}

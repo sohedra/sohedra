@@ -174,3 +174,92 @@ describe("the statics it gives", () => {
 		).toEqual({ reason: failure });
 	});
 });
+
+/**
+ * lynx-core's `finally` (the `then/promise` library's): it calls what it is given whatever it is,
+ * and settles through the library's own `Promise.resolve`.
+ */
+function finallyAsLynxCore(this: Promise<unknown>, onFinally: unknown): Promise<unknown> {
+	return this.then(
+		(value) => Promise.resolve((onFinally as () => unknown)()).then(() => value),
+		(reason: unknown) =>
+			Promise.resolve((onFinally as () => unknown)()).then(() => {
+				throw reason;
+			}),
+	);
+}
+
+/** A class shaped like lynx-core's `Promise`, with lynx-core's `finally`, filled. */
+function withLynxCoreFinally(): PromiseConstructor {
+	const PromiseClass = lynxCorePromise();
+	void Object.defineProperty(PromiseClass.prototype, "finally", {
+		value: finallyAsLynxCore,
+		writable: true,
+		configurable: true,
+	});
+	fillLynxPromise(() => ({ Promise: PromiseClass, reportError: () => {} }));
+	return PromiseClass;
+}
+
+describe("the finally it gives", () => {
+	const ownFinally = Promise.prototype.finally;
+
+	it("replaces lynx-core's, which calls what is not a function, and leaves one that passes it on", () => {
+		const PromiseClass = withLynxCoreFinally();
+		const filled = Object.getOwnPropertyDescriptor(PromiseClass.prototype, "finally");
+		expect(filled?.value).not.toBe(finallyAsLynxCore);
+		expect(filled).toMatchObject({ writable: true, enumerable: false, configurable: true });
+		expect(filled?.value.name).toBe("finally");
+		expect(filled?.value.length).toBe(1);
+		expect(isConstructor(filled?.value)).toBe(false);
+		const Spec = lynxCorePromise();
+		fillLynxPromise(() => ({ Promise: Spec, reportError: () => {} }));
+		expect(Spec.prototype.finally).toBe(ownFinally);
+	});
+
+	it.each([
+		["a value, with a function", () => Promise.resolve(1), () => 2],
+		["a reason, with a function", () => Promise.reject(new Error("first")), () => 2],
+		["a value, with what is not a function", () => Promise.resolve(1), 7],
+		["a reason, with what is not a function", () => Promise.reject(new Error("first")), undefined],
+		[
+			"a value, with a function that throws",
+			() => Promise.resolve(1),
+			() => {
+				throw new Error("from finally");
+			},
+		],
+		[
+			"a value, with a function that rejects",
+			() => Promise.resolve(1),
+			() => Promise.reject(new Error("later")),
+		],
+	])("settles as V8's for %s", async (_, make: () => Promise<unknown>, onFinally: unknown) => {
+		const PromiseClass = withLynxCoreFinally();
+		const mine = PromiseClass.prototype.finally;
+		const outcome = async (run: () => Promise<unknown>) => {
+			try {
+				return { value: await run() };
+			} catch (reason) {
+				return { reason: (reason as Error).message };
+			}
+		};
+		const source = make();
+		const again = make();
+		source.catch(() => {});
+		again.catch(() => {});
+		expect(
+			await outcome(() => mine.call(PromiseClass.resolve(source), onFinally as () => void)),
+		).toEqual(await outcome(() => ownFinally.call(again, onFinally as () => void)));
+	});
+
+	it("calls the function with no arguments, once, and makes a promise of the class it is called on", async () => {
+		const PromiseClass = withLynxCoreFinally();
+		const calls: unknown[][] = [];
+		const result = PromiseClass.resolve(1).finally((...args: unknown[]) => void calls.push(args));
+		expect(result).toBeInstanceOf(PromiseClass);
+		await result;
+		expect(calls).toEqual([[]]);
+		expect(() => PromiseClass.prototype.finally.call(1 as never)).toThrow(TypeError);
+	});
+});

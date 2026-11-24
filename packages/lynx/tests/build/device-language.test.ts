@@ -44,6 +44,7 @@ const PROBES: [call: string, gives: unknown][] = [
 	["Promise.try(() => 1) instanceof Promise", true],
 	["RegExp.escape('a.b')", "\\x61\\.b"],
 	["typeof [].at", "function"],
+	["Object.prototype.toString.call(Reflect)", "[object Reflect]"],
 ];
 
 /** The heavy fills' globals and methods: a page that names none of them has none. */
@@ -97,5 +98,7 @@ describe.each(MODES)("a page built for %s, on threads shaped like a device's", (
 		resolve(3);
 		await expect(promise).resolves.toBe(3);
 		await expect(LynxPromise.try(() => 4)).resolves.toBe(4);
+		// lynx-core's own `finally` would call 5, and reject.
+		await expect(LynxPromise.try(() => 6).finally(5 as never)).resolves.toBe(6);
 	});
 });

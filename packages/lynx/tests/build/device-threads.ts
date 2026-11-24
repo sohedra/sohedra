@@ -89,6 +89,7 @@ const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
 	Promise: ["try"],
 	Error: ["isError"],
 	RegExp: ["escape"],
+	Reflect: ["[Symbol.toStringTag]"],
 	Math: ["sumPrecise"],
 	"String.prototype": ["replaceAll", "isWellFormed", "toWellFormed", "normalize"],
 	globalThis: ["Iterator"],
@@ -105,7 +106,9 @@ const NOT_ON_LYNX: Readonly<Record<string, readonly string[]>> = {
 /** Takes away, in a realm, the built-ins a device lacks. */
 const WITHOUT_MISSING = [SEEN_MISSING, ABSENT_FROM_PRIMJS, NOT_ON_LYNX]
 	.flatMap((missing) => Object.entries(missing))
-	.flatMap(([owner, names]) => names.map((name) => `delete ${owner}.${name};`))
+	.flatMap(([owner, names]) =>
+		names.map((name) => `delete ${owner}${name.startsWith("[") ? name : `.${name}`};`),
+	)
 	.join("\n");
 
 /**
@@ -228,13 +231,24 @@ interface ScriptHolder {
 
 /**
  * lynx-core's `Promise`, made in a realm: it has `all`, `allSettled` and `race`, none of `any`,
- * `withResolvers` and `try`, and no `Symbol.species` (lynx-promise's es6-extensions.js).
+ * `withResolvers` and `try`, no `Symbol.species` (lynx-promise's es6-extensions.js), and a `finally`
+ * that calls what it is given, a function or not (the same file).
  */
 const LYNX_CORE_PROMISE = `(() => {
 	class LynxPromise extends Promise {}
 	for (const name of ["any", "withResolvers", "try"])
 		Object.defineProperty(LynxPromise, name, { value: undefined, writable: true, configurable: true });
 	Object.defineProperty(LynxPromise, Symbol.species, { value: undefined });
+	Object.defineProperty(LynxPromise.prototype, "finally", {
+		value(onFinally) {
+			return this.then(
+				(value) => LynxPromise.resolve(onFinally()).then(() => value),
+				(reason) => LynxPromise.resolve(onFinally()).then(() => { throw reason; }),
+			);
+		},
+		writable: true,
+		configurable: true,
+	});
 	return LynxPromise;
 })()`;
 
