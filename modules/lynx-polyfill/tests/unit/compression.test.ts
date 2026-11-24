@@ -10,6 +10,7 @@ import {
 	createCompression,
 	fillCompression,
 	MAX_DECOMPRESSED_SIZE,
+	MAX_GZIP_HEADER_SIZE,
 } from "../../src/fills/web/compression.ts";
 
 const scope = { TransformStream } as Record<string, unknown>;
@@ -261,15 +262,64 @@ describe("the untrusted-input limit", () => {
 		},
 	);
 
-	it("reads data up to the limit exactly", async () => {
+	it("reads data up to the limit exactly, a gzip header's bytes counted", async () => {
 		const { DecompressionStream: Limited } = createCompression(scope, {
-			maxDecompressedSize: 1000,
+			maxDecompressedSize: 1010,
 		});
 		const data = new Uint8Array(1000).fill(7);
 		const decompressed = await run(new Limited("gzip") as unknown as TransformStream, [
 			new Uint8Array(zlib.gzipSync(data)),
 		]);
 		expect(decompressed.length).toBe(1000);
+	});
+
+	/** A gzip header whose file name never ends: its fixed part, then `size` bytes of name. */
+	const endlessHeader = function* (size: number, chunk: number): Generator<Uint8Array> {
+		yield new Uint8Array([0x1f, 0x8b, 8, 8, 0, 0, 0, 0, 0, 3]);
+		for (let sent = 0; sent < size; sent += chunk) yield new Uint8Array(chunk).fill(0x61);
+	};
+
+	/** What a stream given `chunks` fails with, and how many bytes it took before it did. */
+	const failure = async (stream: TransformStream, chunks: Iterable<Uint8Array>) => {
+		const writer = stream.writable.getWriter();
+		void stream.readable
+			.getReader()
+			.read()
+			.catch(() => {});
+		let written = 0;
+		try {
+			for (const chunk of chunks) {
+				await writer.write(chunk);
+				written += chunk.length;
+			}
+		} catch (error) {
+			return { error, written };
+		}
+		return { error: undefined, written };
+	};
+
+	it("refuses a gzip header longer than 64 KiB with a TypeError, holding no more of it", async () => {
+		expect(MAX_GZIP_HEADER_SIZE).toBe(64 * 1024);
+		const { error, written } = await failure(
+			new Decompression("gzip") as unknown as TransformStream,
+			endlessHeader(16 * 1024 * 1024, 256),
+		);
+		expect(error).toBeInstanceOf(TypeError);
+		expect((error as Error).message.split("\n")[0]).toBe(
+			"DecompressionStream was given data that is not gzip: its header is longer than 65536 bytes.",
+		);
+		expect(written).toBeLessThanOrEqual(MAX_GZIP_HEADER_SIZE);
+	});
+
+	it("counts a gzip header's bytes toward the limit", async () => {
+		const { DecompressionStream: Limited } = createCompression(scope, {
+			maxDecompressedSize: 1000,
+		});
+		const { error } = await failure(
+			new Limited("gzip") as unknown as TransformStream,
+			endlessHeader(2000, 100),
+		);
+		expect(error).toBeInstanceOf(RangeError);
 	});
 });
 
