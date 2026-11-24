@@ -4,6 +4,7 @@
 // imports nothing of the package: this is a table of names.
 
 import { wireMessage } from "./catalogue.ts";
+import type { WireCode, WireReport } from "./catalogue.ts";
 import type { Thread } from "./names.ts";
 
 const POLYFILL = "@sohedra/lynx-polyfill";
@@ -110,29 +111,30 @@ const NOT_DEFINED = /^(?:([\w$]+) is not defined|Can't find variable: ([\w$]+))$
 /**
  * The page's error as it should be reported: for a `ReferenceError` naming a global that a fill gives
  * on `thread`, that only the background has, or that Lynx lacks for good, a `ReferenceError` whose
- * message says so and what to do, with the original's stack and the original as its `cause`.
- * Anything else as it is.
+ * message says so and what to do, with the message's `code`, the original's stack and the original
+ * as its `cause`. Anything else as it is.
  */
 export function withMissingGlobalHint(error: unknown, thread: Thread): unknown {
 	if (!(error instanceof ReferenceError)) return error;
 	const match = NOT_DEFINED.exec(error.message);
 	const name = match?.[1] ?? match?.[2];
 	if (name === undefined) return error;
-	let text: string | undefined;
+	let report: WireReport<WireCode> | undefined;
 	const instead = NOT_ON_LYNX[name];
-	if (instead !== undefined)
-		text = wireMessage({ code: "global_not_on_lynx", details: { name, instead } });
+	if (instead !== undefined) report = { code: "global_not_on_lynx", details: { name, instead } };
 	else if (thread === "main-thread" && BACKGROUND_ONLY.includes(name))
-		text = wireMessage({ code: "global_background_only", details: { name } });
+		report = { code: "global_background_only", details: { name } };
 	else
 		for (const [subpath, names] of Object.entries(FILLED))
 			if (names.includes(name))
-				text = wireMessage({
+				report = {
 					code: "global_not_filled",
 					details: { name, module: `${POLYFILL}${subpath}` },
-				});
-	if (text === undefined) return error;
-	const hinted = new ReferenceError(text, { cause: error });
+				};
+	if (report === undefined) return error;
+	const text = wireMessage(report);
+	// The code beside the message, as every catalogue's error carries it: onError's context reads it.
+	const hinted = Object.assign(new ReferenceError(text, { cause: error }), { code: report.code });
 	if (typeof error.stack === "string")
 		hinted.stack = `ReferenceError: ${text}\n${stackFrames(error.stack)}`;
 	return hinted;
