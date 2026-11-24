@@ -180,9 +180,13 @@ export async function buildInto({
 	options,
 }: BuildInto): Promise<Omit<AppBuild, "entry">> {
 	// `DEBUG=lynx` keeps each thread's script in `.lynx/<entry>/`, where the tests read them; and
-	// `process.env.DEBUG` in the fixtures is replaced by it.
-	const previous = process.env["DEBUG"];
+	// `process.env.DEBUG` in the fixtures is replaced by it. `NODE_ENV` is the one the build's caller
+	// sets, not the shell's: Rstest's for a test run, the CLI's for the mode otherwise. The plugin
+	// and Lynx's runtime wrapper read it.
+	const previous = { DEBUG: process.env["DEBUG"], NODE_ENV: process.env["NODE_ENV"] };
 	process.env["DEBUG"] = "lynx";
+	process.env["NODE_ENV"] =
+		options.callerName === "rstest" ? "test" : options.development ? "development" : "production";
 	try {
 		const rsbuild = await createRsbuild({
 			cwd,
@@ -219,8 +223,10 @@ export async function buildInto({
 			dist,
 		};
 	} finally {
-		if (previous === undefined) delete process.env["DEBUG"];
-		else process.env["DEBUG"] = previous;
+		for (const [name, value] of Object.entries(previous)) {
+			if (value === undefined) delete process.env[name];
+			else process.env[name] = value;
+		}
 	}
 }
 
