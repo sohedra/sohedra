@@ -7,7 +7,7 @@
 # - generated: the generated pages, many more of them than a local run tries, on Linux.
 # - primjs: @sohedra/lynx-polyfill's WPT and test262 suites on the PrimJS of each Lynx Sohedra
 #   supports, built from source with the phone's flags (modules/lynx-polyfill/scripts/primjs/), on
-#   Linux.
+#   Linux: on main, and on a pull request that changes the polyfill or what it is built with.
 # - apps: @sohedra/lynx packed as it is published, installed into a fresh app and built and tested
 #   with both test presets (packages/lynx/scripts/consumer.ts): pnpm on each Node.js line, the other
 #   package managers on the newest, pnpm on Windows, and every range at its floor on the oldest
@@ -134,9 +134,39 @@ jobs:
           # push to main, so the pages tried grow over time. A failure prints its seed.
           GENERATED_SEED: ${{ github.event_name == 'push' && github.run_number || 2026 }}
 
+  # Whether the PrimJS job has anything to check: on main always; on a pull request when it changes
+  # the polyfill, the lockfile (the bundler and the npm packages the fills bundle) or this file.
+  # The pull request's merge commit has its base as first parent, so one commit of history is all
+  # the diff needs.
+  polyfill:
+    name: Polyfill changes
+    if: github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'pull_request'
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT" != pull_request ] ||
+            git diff --name-only HEAD^1 HEAD |
+            grep -qE '^(modules/lynx-polyfill/|pnpm-lock\.yaml$|\.github/workflows/ci\.yml$)'; then
+            echo changed=true >> "$GITHUB_OUTPUT"
+          else
+            echo changed=false >> "$GITHUB_OUTPUT"
+          fi
+
   primjs:
     name: Polyfills on PrimJS
-    if: github.event.pull_request.draft != true
+    needs: polyfill
+    if: needs.polyfill.outputs.changed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -219,7 +249,7 @@ jobs:
   ci-passed:
     name: CI passed
     if: always()
-    needs: [fast, checks, generated, primjs, apps]
+    needs: [fast, checks, generated, polyfill, primjs, apps]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
