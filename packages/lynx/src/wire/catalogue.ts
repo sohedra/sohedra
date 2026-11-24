@@ -24,8 +24,9 @@ export interface WireDetails {
 	/** `thread`: the thread that refused the call. */
 	page_already_mounted: { thread: Thread };
 	/**
-	 * `reason` is what the root component threw, on the background, whose error has the thrown value
-	 * as its `cause`; a call the main thread refuses has none.
+	 * `reason` is what the background threw as it mounted the root component (the component, or the
+	 * `props` function), whose error has the thrown value as its `cause`; a call the main thread
+	 * refuses has none.
 	 */
 	page_not_started: { reason?: string | undefined };
 }
@@ -92,9 +93,9 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 	},
 	page_not_started: {
 		message: ({ reason }) =>
-			`The page did not start: its root component threw as the background mounted it${reason === undefined ? "" : ` (${reason.split("\n")[0]!.trim()})`}. Its first frame stays on the screen, and answers no taps or calls.`,
+			`The page did not start: the background threw as it mounted the root component${reason === undefined ? "" : ` (${reason.split("\n")[0]!.trim()})`}, so its first frame stays and answers nothing.`,
 		fix: () =>
-			"Fix the throw the page reported as it started, or wrap the part that can throw in a <svelte:boundary> with a failed snippet, which shows in its place.",
+			"Fix what threw (the cause of the page_not_started error), or wrap the part that can throw in a <svelte:boundary> with a failed snippet.",
 		docs: "page_not_started",
 	},
 };
