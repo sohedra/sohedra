@@ -66,6 +66,10 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	background_api_in_main_thread_function: { api: "NativeModules" },
 	main_thread_api_in_background: { api: "__CreateView" },
 	css_selector_unsupported: { selector: "a[href] > .b", part: "the attribute selector `[href]`" },
+	main_thread_handler_in_thread_branch: {
+		attribute: "main-thread:ontap",
+		branch: "`{#if background}`",
+	},
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",
