@@ -18,6 +18,41 @@ interface Refused {
 	feature: string;
 }
 
+/** Why Lynx's engine refuses a regular expression. */
+export type RegExpSyntax = "v_flag" | "d_flag" | "modifier" | "duplicate_group";
+
+/** What each refused syntax is, and how to write the expression without it. */
+const REGEXP_SYNTAX: Record<RegExpSyntax, { what: string; instead: string }> = {
+	v_flag: {
+		what: "the `v` flag",
+		instead:
+			"Use the `u` flag, and write a class's set operations (`--`, `&&`) out as the characters they leave, or as a lookahead: `(?![a-z])\\p{L}`.",
+	},
+	d_flag: {
+		what: "the `d` flag",
+		instead:
+			"Leave out the `d` flag, and work out a group's place from `match.index` and the lengths of the groups before it.",
+	},
+	modifier: {
+		what: "a modifier group (`(?i:…)`)",
+		instead: "Give the flag to the whole expression, or write the cases out: `[Aa]` for `(?i:a)`.",
+	},
+	duplicate_group: {
+		what: "two groups of the same name",
+		instead: "Give each group a name of its own, and read the one that matched.",
+	},
+};
+
+/** What `syntax` is, and how to write without it; a name it does not know, as it is. */
+function syntaxOf(syntax: string): { what: string; instead: string } {
+	return (
+		REGEXP_SYNTAX[syntax as RegExpSyntax] ?? {
+			what: syntax,
+			instead: "Write the expression without it.",
+		}
+	);
+}
+
 /** The details each of the build's messages is written from. */
 export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails {
 	preprocess_failed: { reason: string };
@@ -45,6 +80,8 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	typescript_stripper_missing: { version: string };
 	plain_function_in_main_thread_function: { name: string };
 	script_syntax_error: { reason: string };
+	/** `regexp` is the expression as the code has it: a literal, or a `RegExp` call. */
+	regexp_refused: { regexp: string; syntax: RegExpSyntax };
 	event_attribute_renamed: { attribute: string; replacement: string; spelling: string };
 	global_event_attribute: { attribute: string; event: string };
 	list_item_without_key: Plain;
@@ -202,6 +239,12 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		message: ({ reason }) => `A script has a syntax error: ${reason}.`,
 		fix: () => "Fix the syntax at this place.",
 		docs: "script_syntax_error",
+	},
+	regexp_refused: {
+		message: ({ regexp, syntax }) =>
+			`The regular expression \`${regexp}\` uses ${syntaxOf(syntax).what}, which Lynx's engine does not have: the thread's whole script would fail to load.`,
+		fix: ({ syntax }) => syntaxOf(syntax).instead,
+		docs: "regexp_refused",
 	},
 	event_attribute_renamed: {
 		message: ({ attribute, spelling }) =>

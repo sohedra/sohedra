@@ -28,7 +28,8 @@ interface Entries {
 		| "snapshot"
 		| "snapshot-action"
 		| "device"
-		| "syntax";
+		| "syntax"
+		| "lowering";
 	development: "snapshot" | "device";
 }
 
@@ -45,6 +46,7 @@ const ENTRIES: { [Mode in SharedMode]: Record<Entries[Mode], string> } = {
 		"snapshot-action": "./snapshot/action.ts",
 		device: "./device/index.ts",
 		syntax: "./syntax/index.ts",
+		lowering: "./lowering/index.ts",
 	},
 	development: {
 		snapshot: "./snapshot/index.ts",

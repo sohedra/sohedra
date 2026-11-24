@@ -1,5 +1,6 @@
-// The main thread's fills, run as its runtime starts: on a global object and a strings' prototype
-// shaped like a device's, and never over what the engine has.
+// The main thread's fills, run as its runtime starts: on a global object shaped like a device's, and
+// never over what the engine has. The language fills go on this process's own built-ins, which have
+// them all: their own tests take them away (language/*.test.ts).
 
 import { afterEach, describe, expect, it } from "@rstest/core";
 
@@ -10,17 +11,16 @@ afterEach(() => {
 	setErrorHook(undefined);
 });
 
-/** A device's main thread: the global object and strings have none of the fills. */
+/** A device's main thread: the global object has none of the fills. */
 function device() {
 	const scope: Record<string, unknown> = {};
-	const strings: Record<string, unknown> = {};
-	fillMainThread({ scope, strings });
-	return { scope, strings };
+	fillMainThread({ scope });
+	return { scope };
 }
 
 describe("on a main thread that lacks them", () => {
-	it("puts the same globals as the background, and gives strings replaceAll", () => {
-		const { scope, strings } = device();
+	it("puts the same globals as the background", () => {
+		const { scope } = device();
 		expect(Object.getOwnPropertyNames(scope).sort()).toEqual([
 			"EventTarget",
 			"atob",
@@ -28,7 +28,6 @@ describe("on a main thread that lacks them", () => {
 			"queueMicrotask",
 			"structuredClone",
 		]);
-		expect(typeof strings["replaceAll"]).toBe("function");
 	});
 
 	it("queues a microtask as a promise's reaction, and sends what it throws to the error hook", async () => {
@@ -73,10 +72,8 @@ describe("on a main thread that has them", () => {
 			btoa: (data: string) => globalThis.btoa(data),
 		};
 		const before = { ...scope };
-		const strings = { replaceAll: own };
-		fillMainThread({ scope, strings });
+		fillMainThread({ scope });
 		expect(scope).toEqual(before);
-		expect(strings.replaceAll).toBe(own);
 	});
 });
 

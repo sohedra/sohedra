@@ -98,7 +98,7 @@ function recordFirstFrame(firstFrame: SveltePageOptions["firstFrame"]): void {
  */
 export function startUp(): void {
 	const lynx = readGlobal("lynx") as BackgroundLynx;
-	fillEngineGaps({ scope: globalScope(), strings: String.prototype, readLynx: () => lynx });
+	fillEngineGaps({ scope: globalScope(), readLynx: () => lynx });
 }
 
 /** Starts `App` as a page on both threads. */

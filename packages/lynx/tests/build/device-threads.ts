@@ -34,6 +34,9 @@ import { LAZY_BUNDLE_METHOD, PATCH_METHOD, RUN_FUNCTION } from "../../src/wire/i
 import { readTemplate } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
 
+/** `%TypedArray%.prototype`, which every typed array inherits from. */
+const TYPED_ARRAY_PROTOTYPE = "Object.getPrototypeOf(Int8Array.prototype)";
+
 /** The built-ins seen missing on a device, on both threads, by the object that would hold them. */
 const SEEN_MISSING: Readonly<Record<string, readonly string[]>> = {
 	"Array.prototype": [
@@ -48,8 +51,11 @@ const SEEN_MISSING: Readonly<Record<string, readonly string[]>> = {
 	Array: ["fromAsync"],
 	Object: ["hasOwn", "groupBy"],
 	"String.prototype": ["at"],
+	[TYPED_ARRAY_PROTOTYPE]: ["at", "toReversed", "toSorted", "with"],
 	Promise: ["withResolvers"],
-	globalThis: ["Intl"],
+	Math: ["f16round"],
+	"DataView.prototype": ["getFloat16", "setFloat16"],
+	globalThis: ["Intl", "Float16Array"],
 };
 
 /** `%IteratorPrototype%`, which every iterator inherits from. */
@@ -57,7 +63,6 @@ const ITERATOR_PROTOTYPE = "Object.getPrototypeOf(Object.getPrototypeOf([][Symbo
 
 /** The built-ins PrimJS's tables of built-ins lack (`js_array_proto_funcs` and the rest). */
 const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
-	"String.prototype": ["replaceAll", "isWellFormed", "toWellFormed"],
 	Map: ["groupBy"],
 	"Set.prototype": [
 		"union",
@@ -84,7 +89,9 @@ const ABSENT_FROM_PRIMJS: Readonly<Record<string, readonly string[]>> = {
 	Promise: ["try"],
 	Error: ["isError"],
 	RegExp: ["escape"],
+	Reflect: ["[Symbol.toStringTag]"],
 	Math: ["sumPrecise"],
+	"String.prototype": ["replaceAll", "isWellFormed", "toWellFormed", "normalize"],
 	globalThis: ["Iterator"],
 };
 
@@ -99,7 +106,9 @@ const NOT_ON_LYNX: Readonly<Record<string, readonly string[]>> = {
 /** Takes away, in a realm, the built-ins a device lacks. */
 const WITHOUT_MISSING = [SEEN_MISSING, ABSENT_FROM_PRIMJS, NOT_ON_LYNX]
 	.flatMap((missing) => Object.entries(missing))
-	.flatMap(([owner, names]) => names.map((name) => `delete ${owner}.${name};`))
+	.flatMap(([owner, names]) =>
+		names.map((name) => `delete ${owner}${name.startsWith("[") ? name : `.${name}`};`),
+	)
 	.join("\n");
 
 /**
@@ -220,6 +229,29 @@ interface ScriptHolder {
 	init(inject: { tt: unknown }): unknown;
 }
 
+/**
+ * lynx-core's `Promise`, made in a realm: it has `all`, `allSettled` and `race`, none of `any`,
+ * `withResolvers` and `try`, no `Symbol.species` (lynx-promise's es6-extensions.js), and a `finally`
+ * that calls what it is given, a function or not (the same file).
+ */
+const LYNX_CORE_PROMISE = `(() => {
+	class LynxPromise extends Promise {}
+	for (const name of ["any", "withResolvers", "try"])
+		Object.defineProperty(LynxPromise, name, { value: undefined, writable: true, configurable: true });
+	Object.defineProperty(LynxPromise, Symbol.species, { value: undefined });
+	Object.defineProperty(LynxPromise.prototype, "finally", {
+		value(onFinally) {
+			return this.then(
+				(value) => LynxPromise.resolve(onFinally()).then(() => value),
+				(reason) => LynxPromise.resolve(onFinally()).then(() => { throw reason; }),
+			);
+		},
+		writable: true,
+		configurable: true,
+	});
+	return LynxPromise;
+})()`;
+
 /** The background's realm, and how lynx-core runs a script there: the page's or a bundle's. */
 interface BackgroundRealm {
 	context: vm.Context;
@@ -271,11 +303,12 @@ function runBackground(
 			throw new Error(`The page's script loaded ${path}, which the build did not write.`);
 		return evaluate(source, path);
 	};
-	// lynx-core's `lynx` also has the timers, and the engine's `Promise`, which the wrapper takes as
-	// the script's own (lynx-core's lynx.ts); and loads a script by path, once (its `requireModule`,
+	// lynx-core's `lynx` also has the timers, and its own `Promise` (the `then/promise` library),
+	// which the wrapper takes as the script's own (lynx-core's lynx.ts): a class of the realm's,
+	// without the statics it lacks; and loads a script by path, once (its `requireModule`,
 	// `requireModuleAsync`).
 	const deviceLynx = Object.assign(lynx, {
-		Promise: vm.runInContext("Promise", context),
+		Promise: vm.runInContext(LYNX_CORE_PROMISE, context),
 		setTimeout,
 		clearTimeout,
 		setInterval,
@@ -353,6 +386,8 @@ export interface DevicePage {
 	readonly page: TestPage;
 	readonly mainThread: vm.Context;
 	readonly background: vm.Context;
+	/** The `lynx` lynx-core gives the background's script. */
+	readonly backgroundLynx: BackgroundLynx;
 }
 
 /** What a page on threads shaped like a device's starts with. */
@@ -379,6 +414,7 @@ export function startDevicePage(
 	const { window } = new JSDOM("<!doctype html><body></body>");
 	let mainThread: vm.Context | undefined;
 	let background: BackgroundRealm | undefined;
+	let backgroundLynx: BackgroundLynx | undefined;
 	// Each section runs in its thread's realm, as the engine runs it there.
 	const bundles: Record<string, TestBundle> = {};
 	for (const [url, bundle] of Object.entries(options.bundles ?? {}))
@@ -406,6 +442,7 @@ export function startDevicePage(
 		},
 		background: () => {
 			const lynx = readGlobal("lynx") as BackgroundLynx;
+			backgroundLynx = lynx;
 			// lynx-core reports a script that throws as it loads ("loadCard failed").
 			try {
 				background = runBackground(scripts.background, lynx, {
@@ -417,5 +454,10 @@ export function startDevicePage(
 			}
 		},
 	});
-	return { page, mainThread: mainThread!, background: background!.context };
+	return {
+		page,
+		mainThread: mainThread!,
+		background: background!.context,
+		backgroundLynx: backgroundLynx!,
+	};
 }

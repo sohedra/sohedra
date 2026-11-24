@@ -82,6 +82,7 @@
 				"event-target-shim",
 				"eventsource-parser",
 				"fflate",
+				"unorm",
 				"urlpattern-polyfill",
 				"web-streams-polyfill",
 				"whatwg-url-minimum"
@@ -105,11 +106,6 @@
 			"description": "TypeScript 7 waits for a decision.",
 			"matchDepNames": ["typescript"],
 			"allowedVersions": "<7"
-		},
-		{
-			"description": "The type tests' older TypeScript stays on 5.x.",
-			"matchDepNames": ["typescript-5.9"],
-			"allowedVersions": "<6"
 		},
 		{
 			"description": "Tailwind CSS 4 is not supported (support policy S8).",

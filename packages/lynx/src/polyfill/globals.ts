@@ -6,6 +6,11 @@ export type Scope = Record<PropertyKey, unknown>;
 
 /** What the fills use of a thread's `lynx`. */
 export interface ThreadLynx {
+	/**
+	 * lynx-core's `Promise`, which the background's bundle names as `Promise`; the main thread has
+	 * none.
+	 */
+	Promise?: PromiseConstructor;
 	/** The engine's microtask queue: the background has it, the main thread does not. */
 	queueMicrotask?(callback: () => void): void;
 	/** Reports an error into Lynx: LogBox shows it. */

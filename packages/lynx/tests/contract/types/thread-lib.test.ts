@@ -19,6 +19,7 @@ const ON_LYNX = [
 	"gesture",
 	"env",
 	"svelte/runtime",
+	"polyfill",
 ];
 
 /** The base tsconfig an app extends. */
@@ -43,7 +44,8 @@ function packageOptions(): ts.CompilerOptions {
 describe("the binding's thread code", { timeout: 60_000 }, () => {
 	it("leaves the DOM out of the base tsconfig an app extends", () => {
 		const { lib, skipLibCheck } = baseOptions();
-		expect(lib).toEqual(["lib.es2021.d.ts"]);
+		// The language through ES2025: the binding's fills and the build's lowering give it.
+		expect(lib).toEqual(["lib.es2025.d.ts"]);
 		// Svelte's and Rsbuild's declarations name the DOM's types, which the base leaves out.
 		expect(skipLibCheck).toBe(true);
 	});
