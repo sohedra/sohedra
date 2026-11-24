@@ -61,7 +61,7 @@ const LIST_INSERT: PatchItem[] = [
 	],
 ];
 
-const PATCHES: [name: string, page: number, items: PatchItem[]][] = [
+const PATCHES: [name: string, generation: number, items: PatchItem[]][] = [
 	["a counter's first patch", 0, [["ops", COUNTER]]],
 	["a counter's update", 0, [["ops", [[OpCode.SetText, 4, "Count: 1"]]]]],
 	["a list's insert", 0, LIST_INSERT],
@@ -150,7 +150,7 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 		{
 			t: "event",
 			handler: 1,
-			event: { type: "tap", timestamp: 1700, target: { id: "", uid: 21, dataset: {}, node: 2 } },
+			event: { type: "tap", timestamp: 1700, target: { id: "", uid: 21, dataset: {}, element: 2 } },
 		},
 	],
 	[
@@ -171,18 +171,18 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 		"the page asked for again after a refused hydration",
 		{
 			t: "rewrite",
-			nodes: [ROOT_ID],
-			mismatch: { kind: "attribute", node: 2, name: "class", expected: "counter", got: "open" },
+			elements: [ROOT_ID],
+			mismatch: { kind: "attribute", element: 2, name: "class", expected: "counter", got: "open" },
 		},
 	],
-	["list rows asked for again", { t: "rewrite", nodes: [30, 40] }],
-	["deferred rows Lynx asked for", { t: "show", nodes: [30, 40] }],
-	["deferred rows let go of, text and all", { t: "hide", nodes: [30] }],
+	["list rows asked for again", { t: "rewrite", elements: [30, 40] }],
+	["deferred rows Lynx asked for", { t: "show", elements: [30, 40] }],
+	["deferred rows let go of, text and all", { t: "hide", elements: [30] }],
 	[
 		"ids of $props.id() written over the first frame's, in a development build",
 		{
 			t: "props-ids",
-			differences: [{ node: 4, name: "aria-labelledby", expected: "lynx-s2", got: "lynx-s1" }],
+			differences: [{ element: 4, name: "aria-labelledby", expected: "lynx-s2", got: "lynx-s1" }],
 		},
 	],
 	[
@@ -196,10 +196,10 @@ const MESSAGES: [name: string, message: ToBackground][] = [
 ];
 
 describe("golden patches", () => {
-	it.each(PATCHES)("%s", (_, page, items) => {
-		const { data } = encodePatch({ page, items });
+	it.each(PATCHES)("%s", (_, generation, items) => {
+		const { data } = encodePatch({ generation, items });
 		expect(data).toMatchSnapshot();
-		expect(decodePatch({ data })).toEqual({ v: PROTOCOL_VERSION, page, items });
+		expect(decodePatch({ data })).toEqual({ v: PROTOCOL_VERSION, generation, items });
 	});
 
 	it("say how many items hold the page as it rendered, at its start", () => {
@@ -207,14 +207,19 @@ describe("golden patches", () => {
 			["ops", COUNTER],
 			["ops", [[OpCode.SetText, 4, "Count: 1"]]],
 		];
-		const { data } = encodePatch({ page: 0, items, rendered: 1 });
+		const { data } = encodePatch({ generation: 0, items, rendered: 1 });
 		expect(data).toMatchSnapshot();
-		expect(decodePatch({ data })).toEqual({ v: PROTOCOL_VERSION, page: 0, items, rendered: 1 });
+		expect(decodePatch({ data })).toEqual({
+			v: PROTOCOL_VERSION,
+			generation: 0,
+			items,
+			rendered: 1,
+		});
 	});
 
 	it("drop the page before a reload", () => {
 		const before = decodePatch(
-			encodePatch({ page: 0, items: [["ops", [[OpCode.SetText, 4, "Count: 2"]]]] }),
+			encodePatch({ generation: 0, items: [["ops", [[OpCode.SetText, 4, "Count: 2"]]]] }),
 		);
 		expect(keepsMessage(before, 1)).toBe(false);
 	});
@@ -224,6 +229,6 @@ describe("golden messages to the background", () => {
 	it.each(MESSAGES)("%s", (_, message) => {
 		const event = encodeToBackground(message, 0);
 		expect(event).toMatchSnapshot();
-		expect(decodeToBackground(event)).toEqual({ ...message, v: PROTOCOL_VERSION, page: 0 });
+		expect(decodeToBackground(event)).toEqual({ ...message, v: PROTOCOL_VERSION, generation: 0 });
 	});
 });

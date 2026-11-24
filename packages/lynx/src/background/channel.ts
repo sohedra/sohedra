@@ -46,7 +46,7 @@ import { contextsIn, createContexts } from "./functions/contexts.ts";
 import { takeCollectedRefs } from "./functions/refs.ts";
 import { background, DEV } from "./globals.ts";
 import type { CoreMessage } from "./globals.ts";
-import { currentPage } from "./page-state.ts";
+import { currentGeneration } from "./page-state.ts";
 import type { OpQueue } from "./renderer/queue.ts";
 import { reportError } from "./report.ts";
 import { cellItem, createSplitter } from "./split.ts";
@@ -79,7 +79,7 @@ export interface ChannelOptions {
 /** The page's way to the main thread. */
 export interface Channel {
 	/** Sends what is queued now, as one patch; with `always`, a patch even with nothing in it. */
-	flush(always?: boolean): void;
+	send(always?: boolean): void;
 	/**
 	 * Asks the main thread something about an element (0 for none), in line with the ops made
 	 * before: resolves with the answer. Rejects with the `page_is_gone` error when the page reloads
@@ -235,7 +235,7 @@ export function openChannel(options: ChannelOptions): Channel {
 		for (const item of splitter.split(queue.take())) items.push(item);
 	}
 
-	function flush(always = false): void {
+	function send(always = false): void {
 		scheduled = false;
 		if (!open) return;
 		takeOps();
@@ -245,7 +245,7 @@ export function openChannel(options: ChannelOptions): Channel {
 		if (items.length === 0 && !dataUpdated && !always) return;
 		const given: number[] = [];
 		for (const item of items) if (item[0] === "ops") giveContexts(item[1], given);
-		const patch = { page: currentPage(), items, dataUpdated, rendered };
+		const patch = { generation: currentGeneration(), items, dataUpdated, rendered };
 		items = [];
 		dataUpdated = false;
 		rendered = undefined;
@@ -266,7 +266,7 @@ export function openChannel(options: ChannelOptions): Channel {
 		if (scheduled || !open) return;
 		scheduled = true;
 		background.lynx.queueMicrotask(() => {
-			if (scheduled) flush();
+			if (scheduled) send();
 		});
 	}
 
@@ -276,11 +276,11 @@ export function openChannel(options: ChannelOptions): Channel {
 		backgroundError({ code: "page_is_gone", details: { call: callName(request) } });
 
 	function onMessage(message: CoreMessage): void {
-		const page = currentPage();
+		const page = currentGeneration();
 		let received;
 		try {
 			received = decodeToBackground(message);
-			if (DEV) checkMessage(received, { thread: "background", page });
+			if (DEV) checkMessage(received, { thread: "background", generation: page });
 		} catch (error) {
 			reportError(error);
 			return;
@@ -350,7 +350,7 @@ export function openChannel(options: ChannelOptions): Channel {
 	}
 
 	return {
-		flush,
+		send,
 		call(element, request) {
 			if (!open) return Promise.reject(gone(request));
 			const given: number[] = [];
@@ -383,7 +383,7 @@ export function openChannel(options: ChannelOptions): Channel {
 		},
 		rewritePage(write) {
 			if (!open) return;
-			flush();
+			send();
 			// The main thread applied nothing since it asked for the page again, and lets go of all it
 			// had: only the calls that wait for the page hold what it will read.
 			const read = new Set<number>();
@@ -393,7 +393,7 @@ export function openChannel(options: ChannelOptions): Channel {
 			splitter = createSplitter(encode, waits);
 			items.push(["rewrite", ROOT_ID]);
 			write();
-			flush(true);
+			send(true);
 		},
 		rewriteCells(ids, write) {
 			if (!open) return;
@@ -406,7 +406,7 @@ export function openChannel(options: ChannelOptions): Channel {
 				items.push(cellItem(id, encode(ops), written));
 				splitter.written(id);
 			}
-			flush();
+			send();
 		},
 		holds: (id) => splitter.holds(id),
 		holdCells(ids) {

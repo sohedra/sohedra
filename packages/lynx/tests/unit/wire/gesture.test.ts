@@ -35,7 +35,7 @@ describe("a gesture", () => {
 	it("crosses in an attribute's value and is known by its mark", () => {
 		const { items } = decodePatch(
 			encodePatch({
-				page: 0,
+				generation: 0,
 				items: [["ops", [[OpCode.SetAttr, 3, "main-thread:gesture", RACE]]]],
 			}),
 		);

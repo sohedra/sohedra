@@ -9,7 +9,7 @@ import type { Thread } from "./names.ts";
 /** The details each of the wire's messages is written from. */
 export interface WireDetails {
 	threads_from_different_builds: { thread: Thread; received: number; expected: number };
-	page_reloaded_on_one_thread: { thread: Thread; received: number; page: number };
+	page_reloaded_on_one_thread: { thread: Thread; received: number; generation: number };
 	/** `thread` is the thread the value was sent to. */
 	value_not_copyable: { thread: Thread; reason: string };
 	/** `name`: a global the app read; `module`: the import of @sohedra/lynx-polyfill that fills it. */
@@ -39,9 +39,9 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 		docs: "threads_from_different_builds",
 	},
 	page_reloaded_on_one_thread: {
-		message: ({ thread, received, page }) =>
+		message: ({ thread, received, generation }) =>
 			"This page reloaded on one of its threads only.\n" +
-			`Seen on ${THREAD_NAMES[thread]}: it shows page ${page} and got a message of page ${received}.`,
+			`Seen on ${THREAD_NAMES[thread]}: it shows load ${generation} of the page and got a message of load ${received}.`,
 		fix: () =>
 			"Reload the page through Lynx, with `lynx.reload()` or the host's reload, so both threads start the new page together.",
 		docs: "page_reloaded_on_one_thread",

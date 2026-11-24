@@ -11,7 +11,7 @@
 // no longer shows it.
 //
 // A list of the page keeps about a screen of the cells Lynx handed back with their elements, and
-// lets go of the others' (./lists/release.ts). A deferred row comes only once Lynx asks for it
+// lets go of the others' (./lists/let-go.ts). A deferred row comes only once Lynx asks for it
 // (./lists/waiting.ts). The first frame's lists hand theirs to the page's at hydration
 // (./lists/adopt.ts).
 //
@@ -26,8 +26,8 @@ import type { ComponentAtIndex, LynxElement } from "./globals.ts";
 import { adoptedList, heldCells, waitingCells } from "./lists/adopt.ts";
 import type { AdoptedItems, HeldCell } from "./lists/adopt.ts";
 import { listCallbacks } from "./lists/callbacks.ts";
-import { createRelease } from "./lists/release.ts";
-import type { Rewritten } from "./lists/release.ts";
+import { createLetGo } from "./lists/let-go.ts";
+import type { Rewritten } from "./lists/let-go.ts";
 import { newCell, newList } from "./lists/state.ts";
 import type { Cell, ListState } from "./lists/state.ts";
 import { answerWaiting, askAheadOfLast, request } from "./lists/waiting.ts";
@@ -101,7 +101,7 @@ export interface Lists extends WaitingCells {
 	ask(id: number): void;
 	/**
 	 * The background wrote a cell again. `ignore`: not asked for, or Lynx asked for it since, and it
-	 * keeps what it has. `keep`: its new text replaces what was kept. `release`: as `keep`, and the
+	 * keeps what it has. `keep`: its new text replaces what was kept. `let-go`: as `keep`, and the
 	 * cell, which Lynx handed back, has left its list; its elements are the caller's to let go of.
 	 */
 	rewritten(id: number): Rewritten;
@@ -131,7 +131,7 @@ export function createLists(scope: ListsScope): Lists {
 	// The lists inside a cell whose items changed since the last flush.
 	const dirty = new Set<ListState>();
 	// Without a way to ask on a later task, every cell is kept.
-	const release = scope.schedule && createRelease(lists, scope.schedule);
+	const letGo = scope.schedule && createLetGo(lists, scope.schedule);
 	// A cell of a list inside a cell has its element from its ops before Lynx asks for it.
 	const writtenText = scope.written ?? (() => true);
 	const written = (id: number): boolean => writtenText(id) || scope.elementOf(id) !== undefined;
@@ -204,7 +204,7 @@ export function createLists(scope: ListsScope): Lists {
 		waiting: waitingScope,
 		handedBack(list, cell) {
 			if (cell.removed) drop(list, cell);
-			else if (list.releases) release!.handedBack(list, cell);
+			else if (list.letsGo) letGo!.handedBack(list, cell);
 		},
 		report: scope.report,
 	});
@@ -264,7 +264,7 @@ export function createLists(scope: ListsScope): Lists {
 		},
 		update(listId, { info, items, added, removed }) {
 			const list = lists.get(listId)!;
-			list.releases = release !== undefined;
+			list.letsGo = letGo !== undefined;
 			for (const id of added) {
 				const cell = list.cells.get(id);
 				if (cell) cell.removed = false;
@@ -303,7 +303,7 @@ export function createLists(scope: ListsScope): Lists {
 			dirty.clear();
 			infos.clear();
 			listOf.clear();
-			release?.clear();
+			letGo?.clear();
 		},
 		flush,
 		setPreload(id, value) {
@@ -311,9 +311,9 @@ export function createLists(scope: ListsScope): Lists {
 			const count = Number(value);
 			if (list) list.preload = Number.isFinite(count) && count > 0 ? count : 0;
 		},
-		takeRewrites: (max) => release?.takeRewrites(max) ?? [],
-		ask: (id) => release?.ask(id),
-		rewritten: (id) => release?.rewritten(id) ?? "ignore",
+		takeRewrites: (max) => letGo?.takeRewrites(max) ?? [],
+		ask: (id) => letGo?.ask(id),
+		rewritten: (id) => letGo?.rewritten(id) ?? "ignore",
 		heldCells: (id) => heldCells(lists.get(id)),
 		waitingCells: (id) => waitingCells(lists.get(id)),
 		firstText(id) {
@@ -354,7 +354,7 @@ export function createLists(scope: ListsScope): Lists {
 		},
 		adopt(id, adopted) {
 			const { state, items, committed = items, infos: itemInfos } = adopted;
-			const list = adoptedList(adopted, itemInfos === undefined && release !== undefined);
+			const list = adoptedList(adopted, itemInfos === undefined && letGo !== undefined);
 			if (itemInfos) {
 				for (const itemId of items) {
 					listOf.set(itemId, id);

@@ -23,7 +23,7 @@ export const pageRenderer: LynxRenderer = createLynxRenderer({
 export function withNodes(event: SentEvent): Record<string, unknown> {
 	const node = (sent: SentTarget | undefined): unknown => {
 		if (!sent) return sent;
-		const found = sent.node === 0 ? undefined : pageRenderer.nodeById(sent.node);
+		const found = sent.element === 0 ? undefined : pageRenderer.nodeById(sent.element);
 		return found ? pageRenderer.eventTarget(found, sent) : sent;
 	};
 	return { ...event, target: node(event.target), currentTarget: node(event.currentTarget) };

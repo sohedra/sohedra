@@ -15,7 +15,7 @@ const FIXTURES = path.join(ROOT, "tests/fixtures/build");
 
 /** What a CLI build is asked for. */
 export interface CliBuildOptions {
-	/** The CLI: rspeedy (the Lynx build engine's) or Rsbuild's. */
+	/** The CLI: rspeedy (Lynx's build plugin's) or Rsbuild's. */
 	cli: "rspeedy" | "rsbuild";
 	/** The app's folder, which has the CLI's config file. */
 	cwd: string;

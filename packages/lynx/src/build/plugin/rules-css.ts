@@ -1,4 +1,4 @@
-// Style rules, split by thread.
+// Style rules, sorted by thread.
 
 import type { ChainIdentifier, CSSLoaderOptions, RspackChain } from "@rsbuild/core";
 

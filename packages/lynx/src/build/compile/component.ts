@@ -1,8 +1,8 @@
 // Compiles one `.svelte` component, for the background thread (the app, through the custom
 // renderer) or for the main thread's first frame (Svelte's server renderer: markup only, no
-// effects). The component is preprocessed and parsed once, `prepare` rewrites it, and Svelte
-// compiles the result. What a tool wraps around the result (the CSS import, the first frame's
-// twin, the hot-reload footer) is that tool's.
+// effects). The component is preprocessed and parsed once, `prepare` edits it, and Svelte
+// compiles the result. What a tool wraps around the result (the CSS import, the first-frame
+// copy, the hot-reload footer) is that tool's.
 //
 // `experimental.customRenderer` makes every component import and push the renderer itself, and
 // stops the compiler from emitting the DOM-only `svelte/internal/init-operations` import.

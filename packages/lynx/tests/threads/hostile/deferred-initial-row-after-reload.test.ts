@@ -6,7 +6,7 @@ import { expect, it } from "@rstest/core";
 
 import InitialRows from "../../fixtures/threads/InitialRows.svelte";
 import drawInitialRows from "../../fixtures/threads/InitialRows.svelte?first-frame";
-import { expectInSyncOnceAsked } from "../released-rows.ts";
+import { expectInSyncOnceAsked } from "../rows-let-go.ts";
 import { startSveltePage } from "../svelte-page.ts";
 
 it("renders a row among the initial rows when Lynx asks for it after a reload", async () => {

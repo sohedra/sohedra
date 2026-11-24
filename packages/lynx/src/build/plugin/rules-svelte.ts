@@ -1,4 +1,4 @@
-// Svelte components and rune modules, and the patches to Svelte's own text.
+// Svelte components and rune modules, and the edits to Svelte's own source.
 
 import type { RspackChain } from "@rsbuild/core";
 
@@ -138,7 +138,7 @@ export function splitSvelteRules(
 	}
 }
 
-/** The two patches to Svelte's own text, which run before anything else reads it. */
+/** The two edits to Svelte's own source, which run before anything else reads it. */
 export function patchSvelteSource(chain: RspackChain): void {
 	for (const rewrite of PRIMJS_REGEX_REWRITES) {
 		chain.module

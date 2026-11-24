@@ -18,7 +18,7 @@ import { MAIN_THREAD_ENTRY_SUFFIX } from "./main-thread-script.ts";
 import { NEW_PATH_COMPILER_OPTIONS, NEW_PATH_PAGE_CONFIG } from "./page-config.ts";
 import type { PageConfig } from "./page-config.ts";
 
-/** What the Lynx build engine exposes (`Symbol.for('@lynx-js/rsbuild-plugin:config')`), as far as this plugin uses it. */
+/** What Lynx's build plugin exposes (`Symbol.for('@lynx-js/rsbuild-plugin:config')`), as far as this plugin uses it. */
 export interface LynxEngineConfig {
 	resolveIntermediateDir(options?: { entryName?: string }): string;
 	resolveBundleFilename(options: { entryName: string; platform: string }): string;
@@ -225,7 +225,7 @@ class EnginePathsPlugin {
  * This package carries its own copies of the encode and runtime-wrapper plugins, because the
  * engine exposes only its template plugin to others.
  *
- * @workaround carried-engine-plugins kind=tooling delete-when="the Lynx build engine exposes its encode and runtime-wrapper plugins to DSL plugins"
+ * @workaround carried-engine-plugins kind=tooling delete-when="Lynx's build plugin exposes its encode and runtime-wrapper plugins to DSL plugins"
  */
 export function addBundlePlugins(
 	chain: RspackChain,

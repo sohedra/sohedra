@@ -334,7 +334,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 				const node = value instanceof Entry ? idOf(value.element) : undefined;
 				reportBody(error, {
 					mainThreadFunction: fn[FUNCTION_FIELDS.id],
-					...(node !== undefined && { node }),
+					...(node !== undefined && { element: node }),
 				});
 				return undefined;
 			}

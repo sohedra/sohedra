@@ -10,7 +10,7 @@ import DeferredNested from "../fixtures/threads/DeferredNested.svelte";
 import drawDeferredNested from "../fixtures/threads/DeferredNested.svelte?first-frame";
 import DeferredRows from "../fixtures/threads/DeferredRows.svelte";
 import drawDeferredRows from "../fixtures/threads/DeferredRows.svelte?first-frame";
-import { expectInSyncOnceAsked, holdRequests, range } from "./released-rows.ts";
+import { expectInSyncOnceAsked, holdRequests, range } from "./rows-let-go.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
 import type { SveltePage } from "./svelte-page.ts";
@@ -40,9 +40,9 @@ function withPage(page: SveltePage, handles: Record<string, unknown>) {
 	const unmounted = () => handles["unmounted"] as number[];
 	/** The ids the main thread asked the background to render, message by message. */
 	const shows = () =>
-		page.messages.flatMap((message) => (message.t === "show" ? [message.nodes] : []));
+		page.messages.flatMap((message) => (message.t === "show" ? [message.elements] : []));
 	const hides = () =>
-		page.messages.flatMap((message) => (message.t === "hide" ? message.nodes : []));
+		page.messages.flatMap((message) => (message.t === "hide" ? message.elements : []));
 	const firstTexts = () =>
 		page.patches
 			.flatMap((patch) => patch.items)
@@ -223,7 +223,7 @@ describe("the rows ahead", () => {
  * on purpose. The patch is the list, its `initial-item-count={0}` and its update, whose item info
  * is most of it; no row's contents render, and no row's text is sent.
  */
-const START_BUDGET = { ops: 6, bytes: 328_033 };
+const START_BUDGET = { ops: 6, bytes: 328_039 };
 
 describe("5,000 deferred rows", () => {
 	it("render none of their contents, and send only the list's update, before Lynx asks", async () => {

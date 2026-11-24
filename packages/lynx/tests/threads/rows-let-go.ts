@@ -1,11 +1,11 @@
-// A page of 40 released rows (../fixtures/threads/ReleasedRows.svelte) on both threads, and what
+// A page of 40 let-go rows (../fixtures/threads/LetGoRows.svelte) on both threads, and what
 // the release tests do to it: scroll it as Lynx does, change its rows on the background, and hold
 // what the main thread sends or schedules, to run it later.
 
 import type { LynxElement } from "../../src/testing/index.ts";
 import { decodeToBackground } from "../../src/wire/index.ts";
 import type { CellItem, ThreadEvent } from "../../src/wire/index.ts";
-import ReleasedRows from "../fixtures/threads/ReleasedRows.svelte";
+import LetGoRows from "../fixtures/threads/LetGoRows.svelte";
 import { backgroundTree, engineTree, expectSameTree } from "./generated/trees.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import type { Scroller } from "./scroll.ts";
@@ -115,9 +115,9 @@ export const rewrittenCells = (page: SveltePage): CellItem[] =>
 
 /** The ids the main thread asked the background to write again. */
 export const askedFor = (page: SveltePage): number[] =>
-	page.messages.flatMap((message) => (message.t === "rewrite" ? message.nodes : []));
+	page.messages.flatMap((message) => (message.t === "rewrite" ? message.elements : []));
 
-/** The page of released rows, and what a test does to it. */
+/** The page of let-go rows, and what a test does to it. */
 export interface RowsPage {
 	page: SveltePage;
 	handles: Record<string, unknown>;
@@ -138,12 +138,12 @@ export interface RowsPage {
 }
 
 /** Starts the page, and Lynx shows a screen of rows. */
-export async function releasedRows(
+export async function rowsLetGo(
 	options: { count?: number; preload?: number; screen?: number; fixed?: number } = {},
 ): Promise<RowsPage> {
 	const handles: Record<string, unknown> = {};
 	const { screen, fixed, ...props } = options;
-	const page = startSveltePage(ReleasedRows, { props: () => ({ handles, ...props }) });
+	const page = startSveltePage(LetGoRows, { props: () => ({ handles, ...props }) });
 	await page.settle();
 	const feed = handles["feed"] as Feed;
 	if (fixed !== undefined) {

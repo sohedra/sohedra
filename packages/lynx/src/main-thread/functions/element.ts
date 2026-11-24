@@ -208,13 +208,13 @@ export class MainThreadElement {
 
 	/**
 	 * The element as it crosses to the background, as an event's target does: the background's id
-	 * of it (`node`, 0 once gone), its `id`, Lynx's id of it and its dataset.
+	 * of it (`element`, 0 once gone), its `id`, Lynx's id of it and its dataset.
 	 */
 	toJSON(): SentTarget {
-		if (this.gone) return { node: 0 };
+		if (this.gone) return { element: 0 };
 		const id = mainThread.__GetID(this.node);
 		return {
-			node: this.scope.idOf(this.node) ?? 0,
+			element: this.scope.idOf(this.node) ?? 0,
 			id: typeof id === "string" ? id : "",
 			uid: mainThread.__GetElementUniqueID(this.node),
 			dataset: this.dataset,

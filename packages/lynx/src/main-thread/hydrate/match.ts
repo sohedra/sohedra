@@ -187,15 +187,21 @@ export function matchFrame(options: {
 			if (asNone(name, value) && asNone(name, got)) continue;
 			if (!inBlock) {
 				if (typeof value !== "string" || typeof got !== "string" || !sameButIds(value, got))
-					throw new Mismatch({ kind: "attribute", node: id, name, expected: value, got });
-				plan.propsIds.push({ node: id, name, expected: value, got });
+					throw new Mismatch({ kind: "attribute", element: id, name, expected: value, got });
+				plan.propsIds.push({ element: id, name, expected: value, got });
 			}
 			plan.writes.push({ id, name, value });
 		}
 		for (const [name, value] of drawn.attrs) {
 			if (!compared(name) || built.attrs.has(name) || asNone(name, value)) continue;
 			if (!inBlock)
-				throw new Mismatch({ kind: "attribute", node: id, name, expected: undefined, got: value });
+				throw new Mismatch({
+					kind: "attribute",
+					element: id,
+					name,
+					expected: undefined,
+					got: value,
+				});
 			plan.writes.push({ id, name, value: null });
 		}
 		if (drawn.cells) {
@@ -212,7 +218,7 @@ export function matchFrame(options: {
 		const keys = (built.list?.keys ?? []).map(keyText);
 		const got = keysOf(drawn);
 		if (keys.join("\n") !== got.join("\n"))
-			throw new Mismatch({ kind: "list-keys", node: id, expected: keys, got });
+			throw new Mismatch({ kind: "list-keys", element: id, expected: keys, got });
 		const items = built.list?.items ?? [];
 		const held = lists.held(drawn.id);
 		const cells: (number | undefined)[] = [];
@@ -226,7 +232,7 @@ export function matchFrame(options: {
 			}
 			const item = items[index]!;
 			if (readCell(rendered, item)?.tag !== "list-item")
-				throw new Mismatch({ kind: "extra", node: id, got: "list-item" });
+				throw new Mismatch({ kind: "extra", element: id, got: "list-item" });
 			cells.push(cell.id);
 			plan.adoptedCells.add(item);
 			pair(item, cell.node, inBlock);
@@ -305,11 +311,11 @@ export function matchFrame(options: {
 		if (free < 0 || (runs === 0 && free > 0)) {
 			const extra = free < 0;
 			const at = extra ? undefined : built[fixed];
-			if (inBlock) throw new Mismatch({ kind: "tag", node: id });
+			if (inBlock) throw new Mismatch({ kind: "tag", element: id });
 			throw new Mismatch(
 				extra
-					? { kind: "extra", node: id, got: firstFixedBeyond(parts, built, node) }
-					: { kind: "missing", node: at!, expected: node(at!).tag },
+					? { kind: "extra", element: id, got: firstFixedBeyond(parts, built, node) }
+					: { kind: "missing", element: at!, expected: node(at!).tag },
 			);
 		}
 		let index = 0;
@@ -317,10 +323,10 @@ export function matchFrame(options: {
 			if (!Array.isArray(part)) {
 				const builtId = built[index++]!;
 				if (node(builtId).tag !== part.tag) {
-					if (inBlock) throw new Mismatch({ kind: "tag", node: builtId });
+					if (inBlock) throw new Mismatch({ kind: "tag", element: builtId });
 					throw new Mismatch({
 						kind: "tag",
-						node: builtId,
+						element: builtId,
 						expected: node(builtId).tag,
 						got: part.tag,
 					});

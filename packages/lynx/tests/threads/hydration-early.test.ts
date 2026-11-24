@@ -38,8 +38,8 @@ describe("a patch that comes before the first frame", () => {
 					[FIRST_FRAME_GLOBAL]: () => `<view class="box"><text>drawn</text></view>`,
 				});
 				const patch = readGlobal(PATCH_METHOD) as (params: PatchParams) => void;
-				patch(encodePatch({ page: 0, items: [["ops", FIRST]], rendered: 1 }));
-				patch(encodePatch({ page: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
+				patch(encodePatch({ generation: 0, items: [["ops", FIRST]], rendered: 1 }));
+				patch(encodePatch({ generation: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
 			},
 		});
 		await page.settle();
@@ -57,10 +57,10 @@ describe("a rewrite item", () => {
 			mainThread: () => {
 				startMainThread();
 				const patch = readGlobal(PATCH_METHOD) as (params: PatchParams) => void;
-				patch(encodePatch({ page: 0, items: [["ops", FIRST]] }));
+				patch(encodePatch({ generation: 0, items: [["ops", FIRST]] }));
 				patch(
 					encodePatch({
-						page: 0,
+						generation: 0,
 						items: [
 							["rewrite", 2],
 							["ops", [[OpCode.SetText, 4, "x"]]],
@@ -92,19 +92,19 @@ describe("a rewrite item for another element while the page waits to be written 
 		page.asBackground(() =>
 			page.lynx.background.getCoreContext().addEventListener(TO_BACKGROUND.replies, (event) => {
 				const message = decodeToBackground(event);
-				if (message.t === "rewrite") asked.push(message.nodes);
+				if (message.t === "rewrite") asked.push(message.elements);
 			}),
 		);
 		page.asMainThread(() => {
-			patch(encodePatch({ page: 0, items: [["ops", FIRST]], rendered: 1 }));
-			patch(encodePatch({ page: 0, items: [["rewrite", 2]] }));
+			patch(encodePatch({ generation: 0, items: [["ops", FIRST]], rendered: 1 }));
+			patch(encodePatch({ generation: 0, items: [["rewrite", 2]] }));
 		});
 		await page.settle();
 		expect(asked).toEqual([[ROOT_ID], [ROOT_ID]]);
 		page.asMainThread(() =>
 			patch(
 				encodePatch({
-					page: 0,
+					generation: 0,
 					items: [
 						["rewrite", ROOT_ID],
 						["ops", FIRST],

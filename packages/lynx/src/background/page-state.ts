@@ -1,15 +1,15 @@
 // What the background keeps of the page it runs: its generation, and what other modules let go
 // of when the page ends.
 //
-// The generation is the page that the content made now belongs to (src/wire/page.ts). It starts
-// at 0 and is bumped synchronously, first thing, when the app reloads and when the page is
-// destroyed, before any teardown: what the old page's teardown sends is then stamped with a page
-// the main thread no longer shows, or not sent at all.
+// The generation tells this life of the page from the next (src/wire/page.ts). It starts at 0 and
+// is bumped synchronously, first thing, when the app reloads and when the page is destroyed,
+// before any teardown: what the old page's teardown sends is then stamped with a generation the
+// main thread no longer shows, or not sent at all.
 
 let generation = 0;
 
-/** The page the content made now belongs to. */
-export function currentPage(): number {
+/** The generation the content made now belongs to. */
+export function currentGeneration(): number {
 	return generation;
 }
 
@@ -19,7 +19,7 @@ export function startGeneration(): void {
 }
 
 /** The page reloads or is destroyed: a new generation starts. */
-export function bumpPage(): void {
+export function bumpGeneration(): void {
 	generation++;
 }
 

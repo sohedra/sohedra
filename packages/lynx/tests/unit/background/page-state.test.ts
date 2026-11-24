@@ -3,9 +3,9 @@
 import { describe, expect, it } from "@rstest/core";
 
 import {
-	bumpPage,
+	bumpGeneration,
 	clearPageState,
-	currentPage,
+	currentGeneration,
 	onPageDestroy,
 	runAll,
 	startGeneration,
@@ -14,12 +14,12 @@ import {
 describe("the page's generation", () => {
 	it("starts at 0, and is bumped by one each time", () => {
 		startGeneration();
-		expect(currentPage()).toBe(0);
-		bumpPage();
-		bumpPage();
-		expect(currentPage()).toBe(2);
+		expect(currentGeneration()).toBe(0);
+		bumpGeneration();
+		bumpGeneration();
+		expect(currentGeneration()).toBe(2);
 		startGeneration();
-		expect(currentPage()).toBe(0);
+		expect(currentGeneration()).toBe(0);
 	});
 });
 

@@ -108,9 +108,9 @@ describe("hydration's part of the channel", () => {
 			queue.push([OpCode.Insert, ROOT_ID, 2, 0]);
 			opened.markRendered();
 			queue.push([OpCode.SetAttr, 2, "class", "after"]);
-			opened.flush();
+			opened.send();
 			queue.push([OpCode.SetAttr, 2, "class", "later"]);
-			opened.flush();
+			opened.send();
 		});
 		expect(sent.map((patch) => patch.rendered)).toEqual([1, undefined]);
 		expect(sent[0]!.items).toHaveLength(2);
@@ -121,15 +121,15 @@ describe("hydration's part of the channel", () => {
 		page.asMainThread(() =>
 			page.lynx.mainThread
 				.getJSContext()
-				.dispatchEvent(encodeToBackground({ t: "rewrite", nodes: [ROOT_ID] }, 0)),
+				.dispatchEvent(encodeToBackground({ t: "rewrite", elements: [ROOT_ID] }, 0)),
 		);
 		await page.settle();
-		expect(rewrites).toEqual([expect.objectContaining({ t: "rewrite", nodes: [ROOT_ID] })]);
+		expect(rewrites).toEqual([expect.objectContaining({ t: "rewrite", elements: [ROOT_ID] })]);
 	});
 
 	it("hands the main thread's ids written over the first frame's on", async () => {
 		const { page, propsIds } = channel();
-		const differences = [{ node: 4, name: "id", expected: "lynx-s2", got: "lynx-s1" }];
+		const differences = [{ element: 4, name: "id", expected: "lynx-s2", got: "lynx-s1" }];
 		page.asMainThread(() =>
 			page.lynx.mainThread
 				.getJSContext()

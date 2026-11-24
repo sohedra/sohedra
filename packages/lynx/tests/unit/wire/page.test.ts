@@ -31,20 +31,27 @@ const toBackground = (message: ToBackground) => (page: number) =>
 const DROPPED: [kind: string, received: (page: number) => Received][] = [
 	[
 		"a patch",
-		(page) => decodePatch(encodePatch({ page, items: [["ops", [[OpCode.SetText, 4, "1"]]]] })),
+		(page) =>
+			decodePatch(encodePatch({ generation: page, items: [["ops", [[OpCode.SetText, 4, "1"]]]] })),
 	],
 	[
 		"a patch with a call",
 		(page) =>
 			decodePatch(
-				encodePatch({ page, items: [["call", 1, 0, encodeCall(["run", FUNCTION, []])]] }),
+				encodePatch({
+					generation: page,
+					items: [["call", 1, 0, encodeCall(["run", FUNCTION, []])]],
+				}),
 			),
 	],
 	[
 		"a patch with a reply",
 		(page) =>
 			decodePatch(
-				encodePatch({ page, items: [["reply", 1, encodeResult({ ok: true, value: 2 })]] }),
+				encodePatch({
+					generation: page,
+					items: [["reply", 1, encodeResult({ ok: true, value: 2 })]],
+				}),
 			),
 	],
 	["an event", toBackground({ t: "event", handler: 3, event: { type: "tap" } })],
@@ -89,7 +96,7 @@ describe("a reload, in the engine's order", () => {
 		let background = 0;
 		// The old app flushed a patch as the reload began: the main thread gets it after its bump.
 		const late = decodePatch(
-			encodePatch({ page: 0, items: [["ops", [[OpCode.Create, 50, "view"]]]] }),
+			encodePatch({ generation: 0, items: [["ops", [[OpCode.Create, 50, "view"]]]] }),
 		);
 		mainThread++;
 		expect(keepsMessage(late, mainThread)).toBe(false);
@@ -104,7 +111,7 @@ describe("a reload, in the engine's order", () => {
 		expect(keepsMessage(tap, background)).toBe(true);
 		expect(keepsMessage(reply, background)).toBe(false);
 		// The new app's first patch.
-		const first = decodePatch(encodePatch({ page: background, items: [["ops", []]] }));
+		const first = decodePatch(encodePatch({ generation: background, items: [["ops", []]] }));
 		expect(keepsMessage(first, mainThread)).toBe(true);
 	});
 });
@@ -112,29 +119,34 @@ describe("a reload, in the engine's order", () => {
 describe("a development build's check of a message", () => {
 	it.each(KINDS)("passes %s of this page or an earlier one", (_, received) => {
 		expect(received(0).v).toBe(PROTOCOL_VERSION);
-		expect(() => checkMessage(received(3), { thread: "main-thread", page: 3 })).not.toThrow();
-		expect(() => checkMessage(received(2), { thread: "background", page: 3 })).not.toThrow();
+		expect(() => checkMessage(received(3), { thread: "main-thread", generation: 3 })).not.toThrow();
+		expect(() => checkMessage(received(2), { thread: "background", generation: 3 })).not.toThrow();
 	});
 
 	it.each(DROPPED)(
 		"reports %s of a later page, as the page reloaded on one thread",
 		(_, received) => {
-			const thrown = catchError(() => checkMessage(received(4), { thread: "background", page: 3 }));
+			const thrown = catchError(() =>
+				checkMessage(received(4), { thread: "background", generation: 3 }),
+			);
 			expect(thrown.code).toBe("page_reloaded_on_one_thread");
 			expect(thrown.message).toMatch(/^This page reloaded on one of its threads only\./);
 			expect(thrown.message).toContain(
-				"Seen on the background: it shows page 3 and got a message of page 4.",
+				"Seen on the background: it shows load 3 of the page and got a message of load 4.",
 			);
 		},
 	);
 
 	it("does not report an error of a later page, which may come from the main thread's teardown", () => {
-		expect(() => checkMessage(ERROR(4), { thread: "background", page: 3 })).not.toThrow();
+		expect(() => checkMessage(ERROR(4), { thread: "background", generation: 3 })).not.toThrow();
 	});
 
 	it("reports another version, as threads from different builds", () => {
 		const thrown = catchError(() =>
-			checkMessage({ v: PROTOCOL_VERSION + 1, page: 0 }, { thread: "background", page: 0 }),
+			checkMessage(
+				{ v: PROTOCOL_VERSION + 1, generation: 0 },
+				{ thread: "background", generation: 0 },
+			),
 		);
 		expect(thrown.code).toBe("threads_from_different_builds");
 		expect(thrown.message).toMatch(

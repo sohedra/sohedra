@@ -223,7 +223,7 @@ export interface StaticCopy {
 }
 /**
  * Copies drawn elements, with everything under them, into an element: a lifeless copy that keeps
- * outgoing content on screen, or a hidden twin to measure. The copies are nodes of the page:
+ * outgoing content on screen, or a hidden copy to measure. The copies are nodes of the page:
  * `invoke`, `setAttribute`, `setStyleProperty`, `contains` and `isConnected` work on them as on
  * any node, and a call and the changes made to its copies in the same tick reach the screen
  * together.

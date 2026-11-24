@@ -36,22 +36,22 @@ const ON_TAP: MainThreadFunction = { _wkltId: "a1b2:onTap", _c: { step: 2 }, _ex
 describe("a patch", () => {
 	it("is text in the params of the main thread's patch function, stamped with the version", () => {
 		const items: PatchItem[] = [["ops", [[OpCode.Create, 2, "view"]]]];
-		const params = encodePatch({ page: 0, items });
+		const params = encodePatch({ generation: 0, items });
 		expect(Object.keys(params)).toEqual(["data"]);
 		expect(typeof params.data).toBe("string");
-		expect(decodePatch(params)).toEqual({ v: PROTOCOL_VERSION, page: 0, items });
+		expect(decodePatch(params)).toEqual({ v: PROTOCOL_VERSION, generation: 0, items });
 		expect(PATCH_METHOD).toMatch(/^[A-Za-z_$][\w$]*$/);
 	});
 
 	it("says when it shows the page's new data, and only then", () => {
-		expect(decodePatch(encodePatch({ page: 2, items: [], dataUpdated: true }))).toEqual({
+		expect(decodePatch(encodePatch({ generation: 2, items: [], dataUpdated: true }))).toEqual({
 			v: PROTOCOL_VERSION,
-			page: 2,
+			generation: 2,
 			items: [],
 			dataUpdated: true,
 		});
 		expect(
-			"dataUpdated" in decodePatch(encodePatch({ page: 2, items: [], dataUpdated: false })),
+			"dataUpdated" in decodePatch(encodePatch({ generation: 2, items: [], dataUpdated: false })),
 		).toBe(false);
 	});
 
@@ -70,13 +70,13 @@ describe("a patch", () => {
 			["reply", 3, encodeResult({ ok: true, value: { x: 1 } })],
 			["call", 0, 0, encodeCall(["unref", [4, 5]])],
 		];
-		expect(decodePatch(encodePatch({ page: 1, items })).items).toEqual(items);
+		expect(decodePatch(encodePatch({ generation: 1, items })).items).toEqual(items);
 	});
 
 	it("carries a main-thread function's call as an item, with the function and its arguments", () => {
 		const request: CallRequest = ["run", ON_TAP, [{ y: 3 }]];
 		const { items } = decodePatch(
-			encodePatch({ page: 0, items: [["call", 9, 0, encodeCall(request)]] }),
+			encodePatch({ generation: 0, items: [["call", 9, 0, encodeCall(request)]] }),
 		);
 		const [kind, id, element, text] = items[0] as ["call", number, number, string];
 		expect([kind, id, element]).toEqual(["call", 9, 0]);
@@ -86,7 +86,7 @@ describe("a patch", () => {
 	it("carries a call that wants no answer with the id 0", () => {
 		const request: CallRequest = ["unref", [4, 5]];
 		const { items } = decodePatch(
-			encodePatch({ page: 0, items: [["call", 0, 3, encodeCall(request)]] }),
+			encodePatch({ generation: 0, items: [["call", 0, 3, encodeCall(request)]] }),
 		);
 		expect(items[0]).toEqual(["call", 0, 3, encodeCall(request)]);
 	});
@@ -98,7 +98,7 @@ describe("a patch", () => {
 		];
 		const { items } = decodePatch(
 			encodePatch({
-				page: 0,
+				generation: 0,
 				items: results.map((result, index): PatchItem => ["reply", index, encodeResult(result)]),
 			}),
 		);
@@ -151,7 +151,7 @@ describe("a list cell's ops", () => {
 		];
 		const cell = encodeCell(ops);
 		expect(typeof cell).toBe("string");
-		const { items } = decodePatch(encodePatch({ page: 0, items: [["cell", 10, cell]] }));
+		const { items } = decodePatch(encodePatch({ generation: 0, items: [["cell", 10, cell]] }));
 		expect(items).toEqual([["cell", 10, cell]]);
 		expect(decodeCell(cell)).toEqual(ops);
 	});

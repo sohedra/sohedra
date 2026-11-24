@@ -1,4 +1,4 @@
-// The template plugin the Lynx build engine runs with must be one this package works with: the
+// The template plugin Lynx's build plugin runs with must be one this package works with: the
 // versions the range in its package.json allows.
 
 import fs from "node:fs";
@@ -146,7 +146,7 @@ describe("checkTemplatePlugin", () => {
 
 	it("refuses a version outside the range, naming the engine's, this package's and the range", () => {
 		expect(() => checkTemplatePlugin({ engine: "0.15.4", own: "0.16.8", range })).toThrow(
-			"The Lynx build engine uses @lynx-js/template-webpack-plugin 0.15.4, and @sohedra/lynx needs ^0.16.8 (it installs 0.16.8).",
+			"Lynx's build plugin uses @lynx-js/template-webpack-plugin 0.15.4, and @sohedra/lynx needs ^0.16.8 (it installs 0.16.8).",
 		);
 		expect(() => checkTemplatePlugin({ engine: "0.17.0", own: "0.16.8", range })).toThrow(
 			expect.objectContaining({ code: "template_plugin_versions" }),

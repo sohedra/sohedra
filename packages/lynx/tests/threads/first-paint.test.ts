@@ -72,8 +72,8 @@ describe("a first patch that comes before the first paint", () => {
 					[FIRST_FRAME_GLOBAL]: () => `<view class="box"><text>drawn</text></view>`,
 				});
 				const patch = patchMethod();
-				patch(encodePatch({ page: 0, items: [["ops", FIRST]], rendered: 1 }));
-				patch(encodePatch({ page: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
+				patch(encodePatch({ generation: 0, items: [["ops", FIRST]], rendered: 1 }));
+				patch(encodePatch({ generation: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
 				const frame = readGlobal("requestAnimationFrame") as (callback: () => void) => number;
 				frame(() => seen.push(...page.engine.texts()));
 			},
@@ -166,8 +166,8 @@ describe("a first patch that comes before the first paint", () => {
 					throw new Error("no timers");
 				};
 				const patch = patchMethod();
-				patch(encodePatch({ page: 0, items: [["ops", FIRST]], rendered: 1 }));
-				patch(encodePatch({ page: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
+				patch(encodePatch({ generation: 0, items: [["ops", FIRST]], rendered: 1 }));
+				patch(encodePatch({ generation: 0, items: [["ops", [[OpCode.SetText, 4, "changed"]]]] }));
 			},
 		});
 		await page.settle();
@@ -201,7 +201,7 @@ describe("a first patch that comes after the first paint", () => {
 			const patch = patchMethod();
 			patch(
 				encodePatch({
-					page: 0,
+					generation: 0,
 					items: [
 						["ops", FIRST],
 						["ops", [[OpCode.SetText, 4, "changed"]]],

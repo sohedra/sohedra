@@ -25,8 +25,8 @@ const MESSAGES: [kind: string, message: ToBackground, type: string][] = [
 				type: "tap",
 				timestamp: 1700,
 				detail: { x: 1, y: 2 },
-				target: { id: "", uid: 12, dataset: { index: 0 }, node: 4 },
-				currentTarget: { id: "row", uid: 11, dataset: {}, node: 3 },
+				target: { id: "", uid: 12, dataset: { index: 0 }, element: 4 },
+				currentTarget: { id: "row", uid: 11, dataset: {}, element: 3 },
 			},
 		},
 		TO_BACKGROUND.events,
@@ -80,7 +80,7 @@ describe("a message to the background", () => {
 			expect(decodeToBackground(encodeToBackground(message, 2))).toEqual({
 				...message,
 				v: PROTOCOL_VERSION,
-				page: 2,
+				generation: 2,
 			});
 		},
 	);

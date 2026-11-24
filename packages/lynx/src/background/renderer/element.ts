@@ -7,9 +7,9 @@ import type { LynxEventType } from "../../wire/index.ts";
 import { startAnimation } from "./animation.ts";
 import type { AnimationOptions, Keyframe, LynxAnimation } from "./animation.ts";
 import type { Handler, HandlerRegistry } from "./handlers.ts";
-import type { RendererHost } from "./host.ts";
 import { elementMethods, notOnPage, pageGone } from "./methods.ts";
 import { TreeNode } from "./node.ts";
+import type { PageLink } from "./page-link.ts";
 import { compareNodes, topOf } from "./tree.ts";
 import { attrValue, isFunction, textOf } from "./values.ts";
 
@@ -88,8 +88,8 @@ export interface ElementScope {
 	setStyles(element: TreeNode, styles: Record<string, string | number | null>): void;
 	/** Sends `__ElementAnimate`'s arguments to the node's Lynx element, if it has one. */
 	animate(element: TreeNode, args: unknown[]): void;
-	/** The page's host; null when no page runs. */
-	host(): RendererHost | null;
+	/** The link to the page; null when no page runs. */
+	pageLink(): PageLink | null;
 	/** The element node with this id, while it is on the page. */
 	nodeById(id: number): ElementNode | undefined;
 }
@@ -210,14 +210,14 @@ export function elementClass(scope: ElementScope): ElementClass {
 			keyframes: Keyframe[],
 			options: number | AnimationOptions = {},
 		): LynxAnimation<ElementNode> {
-			const host = scope.host();
-			if (host && this.lynxId === 0) throw notOnPage(this, "animate");
+			const pageLink = scope.pageLink();
+			if (pageLink && this.lynxId === 0) throw notOnPage(this, "animate");
 			return startAnimation<ElementNode>({
 				node: this,
 				tag: this.tag ?? "",
 				keyframes,
 				options: typeof options === "number" ? { duration: options } : options,
-				send: host ? (args) => scope.animate(this, args) : undefined,
+				send: pageLink ? (args) => scope.animate(this, args) : undefined,
 				gone: () => pageGone("animate"),
 				listen: (type, handler) => this.addEventListener(type, handler),
 				unlisten: (type, handler) => this.removeEventListener(type, handler),

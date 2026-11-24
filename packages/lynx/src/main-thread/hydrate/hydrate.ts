@@ -71,5 +71,5 @@ export function hydrate(options: {
  * and where, and none of the values, which may be the app's data.
  */
 export function sentMismatch(mismatch: HydrationMismatch, development: boolean): HydrationMismatch {
-	return development ? mismatch : { kind: mismatch.kind, node: mismatch.node };
+	return development ? mismatch : { kind: mismatch.kind, element: mismatch.element };
 }

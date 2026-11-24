@@ -28,19 +28,19 @@ import { report, reportOnce, warnOnce } from "../report.ts";
 import { elementClass, svelteListener } from "./element.ts";
 import type { ElementNode, ListenerChange } from "./element.ts";
 import type { HandlerRegistry } from "./handlers.ts";
-import type { RendererHost } from "./host.ts";
 import { setInputValue } from "./input.ts";
-import type { InputHost } from "./input.ts";
+import type { InputScope } from "./input.ts";
 import { itemKey } from "./item-key.ts";
 import { lateLayouts } from "./layout.ts";
 import { TreeNode } from "./node.ts";
+import type { PageLink } from "./page-link.ts";
 import type { OpQueue } from "./queue.ts";
 import { linkRow, rowOf } from "./rows.ts";
 import { link, nextRealAnchor, realContainer, topReals, unlink } from "./tree.ts";
 import { attrValue, isFunction, isRecord, textOf } from "./values.ts";
 
 export type { ElementNode } from "./element.ts";
-export type { RendererHost } from "./host.ts";
+export type { PageLink } from "./page-link.ts";
 
 /** The renderer's nodes, as Svelte's renderer type takes them: one class for every kind. */
 export interface LynxNodes {
@@ -67,7 +67,7 @@ export interface LynxRenderer extends Renderer<LynxNodes> {
 	/** The node as an event's target: it keeps the `uid` the event gave it. */
 	eventTarget(node: ElementNode, target: { uid?: unknown }): ElementNode;
 	/** Where element methods reach the main thread; null when no page runs. */
-	setHost(host: RendererHost | null): void;
+	setPageLink(pageLink: PageLink | null): void;
 	/** The page heard a `layoutchange` on `target`, with `detail`: a late listener gets it. */
 	sawLayout(target: unknown, detail: unknown): void;
 	/**
@@ -149,7 +149,7 @@ function afterTemplate(report: () => void): void {
 /** Makes the renderer, writing its ops into `queue` and its handlers into `handlers`. */
 export function createLynxRenderer({ queue, handlers }: RendererState): LynxRenderer {
 	let nextId = ROOT_ID + 1;
-	let host: RendererHost | null = null;
+	let pageLink: PageLink | null = null;
 	/** The root while a page runs. */
 	let root: ElementNode | undefined;
 	const elementsById = new Map<number, ElementNode>();
@@ -171,12 +171,12 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		animate(element, args) {
 			if (element.lynxId !== 0) queue.push([OpCode.Animate, element.lynxId, args]);
 		},
-		host: () => host,
+		pageLink: () => pageLink,
 		nodeById: (id) => elementsById.get(id),
 	});
 	const pageRoot = new Element("page");
 	const answerLateLayout = lateLayouts({
-		host: () => host,
+		pageLink: () => pageLink,
 		sent: () => queue.sent,
 		listening: (node, handler) => {
 			const id = node.events?.get(LAYOUT_SLOT);
@@ -392,19 +392,19 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (element.lynxId !== 0) queue.push([OpCode.SetEvent, element.lynxId, type, name, 0]);
 	}
 
-	const inputHost: InputHost = {
+	const inputScope: InputScope = {
 		listen: (element, name, handler) =>
 			setEvent(element, { type: "bindEvent", name, handler, add: true }),
 		setAttribute: (element, key, value) => setAttribute(element, key, value),
 		setValue(element, params, answers) {
-			if (!host || element.lynxId === 0)
+			if (!pageLink || element.lynxId === 0)
 				return Promise.reject(
 					backgroundError({
 						code: "element_not_on_page",
 						details: { method: "setValue", tag: element.tag ?? "", where: sourceLocation(element) },
 					}),
 				);
-			return host.call(
+			return pageLink.call(
 				element.lynxId,
 				answers === undefined
 					? ["invoke", "setValue", params]
@@ -469,7 +469,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (key === DEFER && element.tag === "list-item") return;
 		if (unchangedClassOrStyle(element, key, value)) return;
 		if (key === "value" && (element.tag === "input" || element.tag === "textarea")) {
-			setInputValue(inputHost, element, value);
+			setInputValue(inputScope, element, value);
 			return;
 		}
 		if (value == null) {
@@ -518,14 +518,14 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			if (typeof target.uid === "number") uids.set(node, target.uid);
 			return node;
 		},
-		setHost(next) {
-			host = next;
+		setPageLink(next) {
+			pageLink = next;
 		},
 		sawLayout(target, detail) {
 			if (target instanceof Element && isRecord(detail)) target.layout = detail;
 		},
 		retire() {
-			host = null;
+			pageLink = null;
 			if (!root) return;
 			// What the page left under the root, such as the anchor it was mounted at.
 			while (root.first) {

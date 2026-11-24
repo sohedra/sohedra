@@ -1,7 +1,7 @@
 // The main thread's copy of a page's entry, for the first frame: imports the entry named in the
 // resource query, as written in the app's config (the bundler resolves it from the app's folder).
-// Going through this module puts the entry's own imports in the main-thread layer's resolution (an
-// entry module itself has no issuer, so layer rules would not apply to it).
+// Going through this module puts the entry's own imports in the main-thread bundler layer's
+// resolution (an entry module itself has no issuer, so layer rules would not apply to it).
 //
 // An entry that does not draw its first frame (`firstFrame` as a function of the entry's name)
 // says `firstFrame=off` in the query: the page's `mountPage` has recorded how to draw it by the
