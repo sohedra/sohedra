@@ -120,7 +120,7 @@ exports[`import "@sohedra/lynx-polyfill/abort" > on the background: its globals,
 exports[`import "@sohedra/lynx-polyfill/abort" > on the background: its globals, and its size within budget 2`] = `
 {
   "gzip": 6000,
-  "minified": 17000,
+  "minified": 18000,
 }
 `;
 
@@ -138,7 +138,7 @@ exports[`import "@sohedra/lynx-polyfill/abort" > on the main-thread: its globals
 exports[`import "@sohedra/lynx-polyfill/abort" > on the main-thread: its globals, and its size within budget 2`] = `
 {
   "gzip": 6000,
-  "minified": 17000,
+  "minified": 18000,
 }
 `;
 
@@ -280,7 +280,7 @@ exports[`import "@sohedra/lynx-polyfill/event-source" > on the background: its g
 exports[`import "@sohedra/lynx-polyfill/event-source" > on the background: its globals, and its size within budget 2`] = `
 {
   "gzip": 53000,
-  "minified": 178000,
+  "minified": 179000,
 }
 `;
 
@@ -396,14 +396,18 @@ exports[`import "@sohedra/lynx-polyfill/fetch" > on the main-thread: its globals
   "Headers",
   "Request",
   "Response",
+  "TextDecoder",
+  "TextEncoder",
+  "URL",
+  "URLSearchParams",
   "fetch",
 ]
 `;
 
 exports[`import "@sohedra/lynx-polyfill/fetch" > on the main-thread: its globals, and its size within budget 2`] = `
 {
-  "gzip": 14000,
-  "minified": 39000,
+  "gzip": 32000,
+  "minified": 96000,
 }
 `;
 
