@@ -9,7 +9,8 @@ import { createRequire } from "node:module";
 import path from "node:path";
 
 import { buildError } from "../diagnostics/messages.ts";
-import { PACKAGE_ROOT } from "./layers.ts";
+import { ownManifest } from "./layers.ts";
+import { satisfiesRange } from "./version-range.ts";
 
 const PLUGIN = "@lynx-js/template-webpack-plugin";
 const ENGINE = "@lynx-js/rsbuild-plugin";
@@ -39,32 +40,7 @@ export function ownTemplateVersion(): string {
 
 /** The range of template plugin versions this package declares, from its `package.json`. */
 export function ownTemplateRange(): string {
-	// Boundary: this package's package.json, read at run time.
-	const manifest = createRequire(import.meta.url)(path.join(PACKAGE_ROOT, "package.json")) as {
-		dependencies: Record<string, string>;
-	};
-	return manifest.dependencies[PLUGIN] ?? "unknown";
-}
-
-/** `major.minor.patch` as numbers, or `undefined` for a version with a prerelease or any other shape. */
-function release(version: string): [number, number, number] | undefined {
-	const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
-	return match === null ? undefined : [Number(match[1]), Number(match[2]), Number(match[3])];
-}
-
-/**
- * Whether `version` is in the caret range `range` (`^0.16.8`): at or above it, and below the next
- * version that changes the leftmost number that is not zero. Only released versions are in a range.
- */
-export function satisfiesRange(version: string, range: string): boolean {
-	const found = release(version);
-	const floor = release(range.replace(/^\^/, ""));
-	if (found === undefined || floor === undefined) return false;
-	const [major, minor, patch] = floor;
-	const [foundMajor, foundMinor, foundPatch] = found;
-	if (foundMajor !== major) return false;
-	if (major === 0) return foundMinor === minor && foundPatch >= patch;
-	return foundMinor > minor || (foundMinor === minor && foundPatch >= patch);
+	return ownManifest().dependencies[PLUGIN] ?? "unknown";
 }
 
 /**

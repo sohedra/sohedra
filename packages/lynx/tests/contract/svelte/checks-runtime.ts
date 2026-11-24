@@ -8,7 +8,13 @@ import { compile } from "svelte/compiler";
 
 import type { Checks } from "./check.ts";
 import { compileClient, compileServer } from "./compile.ts";
-import { mountComponent, serverComponents, treeRenderer } from "./runtime-fixture.ts";
+import {
+	loadComponent,
+	mountComponent,
+	serverComponents,
+	svelteClient,
+	treeRenderer,
+} from "./runtime-fixture.ts";
 import { SVELTE_ROOT, importNative, importSvelte } from "./svelte-package.ts";
 
 interface RendererState {
@@ -331,6 +337,40 @@ export const checks: Checks = {
 		const view = nodes.find((node) => node.name === "view");
 		const fixture = path.basename(file).replace(/^fixture-(\d+)\.mjs$/, "Fixture$1.svelte");
 		expect(view?.__svelte_meta?.loc).toMatchObject({ file: fixture, line: 1, column: 0 });
+	},
+
+	"mount-renders-whole-tree": async () => {
+		const runs: string[] = [];
+		// Boundary: the component records on a global, which the check reads.
+		(globalThis as { __mountRuns?: string[] }).__mountRuns = runs;
+		try {
+			const { component } = await loadComponent(
+				"<script>const runs = globalThis.__mountRuns; const draw = (name) => (runs.push(name), name);" +
+					'let items = [1, 2]; const later = new Promise(() => {}); $effect(() => { runs.push("effect"); });</script>' +
+					'{#if items.length}<view name={draw("if")} {@attach () => { runs.push("attach"); }}>' +
+					'{#each items as item}<text name={draw("each " + item)}>{item}</text>{/each}' +
+					'<svelte:boundary><view name={draw("boundary")}>' +
+					'{#key items}<view name={draw("key")}></view>{/key}</view></svelte:boundary>' +
+					"</view>{/if}" +
+					'<view>{#await later}<view name={draw("pending")}></view>{:then}<view></view>{/await}</view>',
+			);
+			const renderer = await treeRenderer();
+			const client = await svelteClient();
+			const app = client.mount(component, {
+				target: renderer.createRoot(),
+				renderer: renderer.default,
+			});
+			// The first branch of `{#if}`, `{#each}`, `{#key}` and `<svelte:boundary>` is drawn by the
+			// time `mount` returns, and no effect has run.
+			expect(runs.toSorted()).toEqual(["boundary", "each 1", "each 2", "if", "key"]);
+			// `{#await}` draws its pending branch only in a microtask it queues (a flush runs it),
+			// which hydration does not handle yet: when this changes, such a first frame can be adopted.
+			client.flushSync();
+			expect(runs.slice(5).toSorted()).toEqual(["attach", "effect", "pending"]);
+			await client.unmount(app);
+		} finally {
+			delete (globalThis as { __mountRuns?: string[] }).__mountRuns;
+		}
 	},
 
 	"unmount-synchronous": async () => {

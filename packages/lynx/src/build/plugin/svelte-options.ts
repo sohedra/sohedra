@@ -41,7 +41,6 @@ const APP_OPTIONS = [
 	"discloseVersion",
 	"cssHash",
 ];
-const APP_EXPERIMENTAL_OPTIONS = ["async"];
 // Of those, the ones `compileModule` (`.svelte.ts` files) takes as well.
 const MODULE_OPTIONS = ["warningFilter", "rootDir"];
 // What the build decides: Lynx needs these values.
@@ -74,7 +73,10 @@ const isSetByConfigHelper = (key: string, value: unknown): boolean =>
 	(key === "runes" && value === true) ||
 	(key === "experimental.customRenderer" && value === RENDERER_ENTRY);
 
-/** The options of the app, and a warning for each that the build ignores. */
+/**
+ * The options of the app, and a warning for each that the build ignores. Throws the build's message
+ * when they turn on Svelte's async mode.
+ */
 export function pickCompilerOptions(input: Record<string, unknown>): {
 	compilerOptions: CompileOptions;
 	warnings: BuildWarning[];
@@ -93,12 +95,11 @@ export function pickCompilerOptions(input: Record<string, unknown>): {
 	const picked: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(input)) {
 		if (key === "experimental" && isObject(value)) {
-			const experimental: Record<string, unknown> = {};
+			// Svelte's async mode is refused until the binding's thread tests pass with it on.
 			for (const [name, flag] of Object.entries(value)) {
-				if (APP_EXPERIMENTAL_OPTIONS.includes(name)) experimental[name] = flag;
-				else ignore(`experimental.${name}`, flag);
+				if (name !== "async") ignore(`experimental.${name}`, flag);
+				else if (flag) throw buildError({ code: "svelte_async_unsupported", details: {} });
 			}
-			picked["experimental"] = experimental;
 		} else if (APP_OPTIONS.includes(key)) picked[key] = value;
 		else ignore(key, value);
 	}

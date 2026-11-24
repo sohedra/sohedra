@@ -13,9 +13,9 @@ import {
 	engineFolder,
 	ownTemplateRange,
 	ownTemplateVersion,
-	satisfiesRange,
 	templateVersionOf,
 } from "../../../../src/build/plugin/template-plugin.ts";
+import { satisfiesRange } from "../../../../src/build/plugin/version-range.ts";
 
 const made: string[] = [];
 
@@ -51,30 +51,6 @@ function tree(packages: Record<string, string>): string {
 	}
 	return root;
 }
-
-describe("satisfiesRange", () => {
-	it("takes a version of the same minor at or above the floor, for a 0.x range", () => {
-		expect(satisfiesRange("0.16.8", "^0.16.8")).toBe(true);
-		expect(satisfiesRange("0.16.9", "^0.16.8")).toBe(true);
-		expect(satisfiesRange("0.16.20", "^0.16.8")).toBe(true);
-	});
-
-	it("refuses a 0.x version of another minor, or below the floor", () => {
-		for (const version of ["0.15.9", "0.16.7", "0.17.0", "1.0.0"])
-			expect(satisfiesRange(version, "^0.16.8"), version).toBe(false);
-	});
-
-	it("takes any later minor and patch of the same major, for a range from 1.0", () => {
-		expect(satisfiesRange("2.3.1", "^2.1.0")).toBe(true);
-		expect(satisfiesRange("2.1.0", "^2.1.0")).toBe(true);
-		expect(satisfiesRange("2.0.9", "^2.1.0")).toBe(false);
-		expect(satisfiesRange("3.0.0", "^2.1.0")).toBe(false);
-	});
-
-	it("refuses a prerelease of the range's floor or above: only released versions are meant", () => {
-		expect(satisfiesRange("0.16.9-beta.1", "^0.16.8")).toBe(false);
-	});
-});
 
 describe("this package's own template plugin", () => {
 	it("has the version installed, and the range its package.json states", () => {

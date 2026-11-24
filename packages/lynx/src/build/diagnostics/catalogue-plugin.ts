@@ -5,14 +5,23 @@ import type { Catalogue } from "../../wire/index.ts";
 
 /** The details each plugin message is written from. */
 export interface PluginDetails {
-	svelte_missing: { root: string };
-	svelte_without_renderers: { version: string; where: string };
+	// `range` is the Svelte this package was tested with, as its package.json writes it.
+	svelte_missing: { root: string; range: string };
+	svelte_without_renderers: { version: string; where: string; range: string };
+	/** `above`: a release newer than the range, which a newer @sohedra/lynx may support. */
+	svelte_version_untested: {
+		version: string;
+		where: string;
+		range: string;
+		direction: "above" | "other";
+	};
 	lynx_engine_missing: Record<string, never>;
 	template_plugin_versions: { engine: string; own: string; range: string };
 	encoder_not_handed_over: { reason: string };
 	svelte_config_invalid: { file: string; reason: string };
 	svelte_config_option_owned: { key: string };
 	svelte_config_option_unsupported: { key: string };
+	svelte_async_unsupported: Record<string, never>;
 	iife_ignored: { value: string };
 	main_thread_asset_missing: { file: string };
 	rsbuild_swc_missing: Record<string, never>;
@@ -26,20 +35,28 @@ function listOf(names: readonly string[]): string {
 	return names.length < 2 ? names.join("") : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 }
 
-const SVELTE_BUILD = "Svelte 5.59 or newer";
-
 /** The messages of the plugin. */
 export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 	svelte_missing: {
 		message: ({ root }) => `Svelte is not installed in ${root}.`,
-		fix: () => `Add ${SVELTE_BUILD} to the app's package.json dependencies.`,
+		fix: ({ range }) => `Add Svelte ${range} to the app's package.json dependencies.`,
 		docs: "svelte_missing",
 	},
 	svelte_without_renderers: {
 		message: ({ version, where }) =>
 			`The installed Svelte (${version}, ${where}) has no custom renderers.`,
-		fix: () => `Install ${SVELTE_BUILD}, the first release with custom renderers.`,
+		fix: ({ range }) =>
+			`Install Svelte ${range}: custom renderers came in 5.59, and @sohedra/lynx is tested with that range.`,
 		docs: "svelte_without_renderers",
+	},
+	svelte_version_untested: {
+		message: ({ version, where, range }) =>
+			`The installed Svelte (${version}, ${where}) is outside the range @sohedra/lynx is tested with, ${range}.`,
+		fix: ({ version, range, direction }) =>
+			direction === "above"
+				? `Install Svelte ${range}, or update @sohedra/lynx to a version tested with Svelte ${version}.`
+				: `Install Svelte ${range}.`,
+		docs: "svelte_version_untested",
 	},
 	lynx_engine_missing: {
 		message: () => "Lynx's build plugin is not set up, so there is no template to build.",
@@ -78,6 +95,12 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 			`\`compilerOptions.${key}\` in svelte.config.js is not supported on Lynx, so it is ignored.`,
 		fix: ({ key }) => `Remove \`${key}\` from the compiler options.`,
 		docs: "svelte_config_option_unsupported",
+	},
+	svelte_async_unsupported: {
+		message: () =>
+			"`compilerOptions.experimental.async` in svelte.config.js turns on Svelte's async mode, which @sohedra/lynx does not support.",
+		fix: () => "Remove `experimental.async` from the compiler options.",
+		docs: "svelte_async_unsupported",
 	},
 	iife_ignored: {
 		message: ({ value }) =>

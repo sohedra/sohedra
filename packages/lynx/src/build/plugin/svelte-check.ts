@@ -1,17 +1,27 @@
-// The Svelte the app installed must have custom renderers (5.59 or newer): checked once, when the
-// plugin is set up, so the mistake shows as one message and not as an error in every component.
+// The Svelte the app installed must have custom renderers (5.59 or newer), and be in the range this
+// package was tested with: checked once, when the plugin is set up, so the mistake shows as one
+// message and not as an error in every component, or as a page that breaks on a device. The range
+// is the one this package's package.json gives `svelte` as a peer, so it is written in one place.
 
 import { svelteCompiler } from "../../svelte/build/index.ts";
 import { RENDERER_ENTRY } from "../../wire/index.ts";
 import { buildError } from "../diagnostics/messages.ts";
+import { ownManifest } from "./layers.ts";
+import { aboveRange, satisfiesRange } from "./version-range.ts";
 
-/** Throws the build's message when the app in `root` has no Svelte, or a Svelte without custom renderers. */
+/**
+ * Throws the build's message when the app in `root` has no Svelte, a Svelte without custom
+ * renderers, or a Svelte outside the range this package was tested with (a prerelease is outside
+ * every range).
+ */
 export function checkSvelte(root: string): void {
+	// The range of Svelte versions this package was tested with: its peer range for `svelte`.
+	const range = ownManifest().peerDependencies["svelte"] ?? "unknown";
 	let compiler: ReturnType<typeof svelteCompiler>;
 	try {
 		compiler = svelteCompiler(root);
 	} catch {
-		throw buildError({ code: "svelte_missing", details: { root } });
+		throw buildError({ code: "svelte_missing", details: { root, range } });
 	}
 	try {
 		compiler.compile("<view></view>", { experimental: { customRenderer: RENDERER_ENTRY } });
@@ -20,7 +30,17 @@ export function checkSvelte(root: string): void {
 		if ((error as { code?: unknown } | null)?.code !== "options_unrecognised") throw error;
 		throw buildError({
 			code: "svelte_without_renderers",
-			details: { version: compiler.VERSION, where: root },
+			details: { version: compiler.VERSION, where: root, range },
 		});
 	}
+	if (satisfiesRange(compiler.VERSION, range)) return;
+	throw buildError({
+		code: "svelte_version_untested",
+		details: {
+			version: compiler.VERSION,
+			where: root,
+			range,
+			direction: aboveRange(compiler.VERSION, range) ? "above" : "other",
+		},
+	});
 }
