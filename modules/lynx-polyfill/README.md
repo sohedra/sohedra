@@ -63,7 +63,7 @@ it: `The global \`URL\` is not defined: … Import "@sohedra/lynx-polyfill/url" 
 The heavy language fills (`/iterator-helpers`, `/set-methods`, `/float16`, `/normalize`) are not in
 the baseline for their size: import them when your code or a library uses them.
 
-The baseline costs about 71 KB gzip (228 KB minified) on the background and about 52 KB gzip (151 KB
+The baseline costs about 70 KB gzip (228 KB minified) on the background and about 52 KB gzip (152 KB
 minified) on the main thread. Each import's size, per thread, is a budget in the package's tests
 (`tests/package/entries.test.ts`).
 
