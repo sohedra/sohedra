@@ -172,6 +172,11 @@ describe("the types an app gets", () => {
 			.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, " "));
 		expect(diagnostics).toEqual([]);
 		const entry = fs.realpathSync(path.join(unpacked, "types/entry.d.ts"));
-		expect(program.getSourceFiles().some((source) => source.fileName === entry)).toBe(true);
+		// TypeScript names files with `/` on every platform; `path.normalize` compares them as Windows writes them too.
+		expect(
+			program
+				.getSourceFiles()
+				.some((source) => path.normalize(source.fileName) === path.normalize(entry)),
+		).toBe(true);
 	});
 });
