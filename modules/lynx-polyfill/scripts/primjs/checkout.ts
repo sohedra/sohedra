@@ -21,6 +21,17 @@ export interface Checkout {
 	paths?: readonly string[];
 }
 
+/** The checkout's stamp, or nothing before the first checkout: read once, so no check runs ahead of it. */
+function readStamp(stamp: string): string | undefined {
+	try {
+		return fs.readFileSync(stamp, "utf8");
+	} catch (error) {
+		// Boundary: Node's file errors carry their code.
+		if ((error as { code?: string }).code === "ENOENT") return undefined;
+		throw error;
+	}
+}
+
 function git(folder: string, args: string[]): void {
 	execFileSync("git", ["-c", "advice.detachedHead=false", ...args], {
 		cwd: folder,
@@ -35,7 +46,7 @@ function git(folder: string, args: string[]): void {
 export function checkOut(folder: string, checkout: Checkout): string {
 	const stamp = path.join(folder, ".git", "sohedra-checkout.json");
 	const wanted = JSON.stringify({ commit: checkout.commit, paths: checkout.paths ?? null });
-	if (fs.existsSync(stamp) && fs.readFileSync(stamp, "utf8") === wanted) return folder;
+	if (readStamp(stamp) === wanted) return folder;
 	if (!fs.existsSync(path.join(folder, ".git"))) {
 		fs.mkdirSync(folder, { recursive: true });
 		git(folder, ["init", "--quiet"]);
