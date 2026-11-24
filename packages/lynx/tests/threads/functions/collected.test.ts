@@ -20,13 +20,18 @@ setFlagsFromString("--expose-gc");
 // Boundary: a context made after the flag has V8's `gc`.
 const gc = runInNewContext("gc") as () => void;
 
-/** Collects what nothing refers to, and runs what the collector found gone. */
-async function collect(): Promise<void> {
-	for (let round = 0; round < 3; round++) {
+/**
+ * Collects what nothing refers to, and runs what the collector found gone, until `done` (at most
+ * 50 rounds): V8 runs the callbacks of what it collected on a later task of its choosing, later on a
+ * busy machine, so a fixed number of rounds passes here and fails on a loaded CI runner.
+ */
+async function collect(done: () => boolean | Promise<boolean>): Promise<void> {
+	for (let round = 0; round < 50; round++) {
 		await new Promise((resolve) => setTimeout(resolve, 0));
 		gc();
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		if (await done()) return;
 	}
-	await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 it("lets the background drop the context of a handler built again, once its copy is collected", async () => {
@@ -37,8 +42,10 @@ it("lets the background drop the context of a handler built again, once its copy
 	page.asBackground(() => api["next"]!());
 	await page.settle();
 	expect(page.asBackground(keptContexts)).toHaveLength(before.length + 1);
-	await collect();
-	await page.settle();
+	await collect(async () => {
+		await page.settle();
+		return page.asBackground(keptContexts).length === before.length;
+	});
 	const after = page.asBackground(keptContexts);
 	expect(after).toHaveLength(before.length);
 	expect(after).not.toEqual(before);
@@ -57,8 +64,10 @@ it("forgets on the main thread a ref the background let go of, with the next pat
 	})();
 	expect(used).toBe(7);
 	expect(page.runtime.page.functions.sizes().refs).toBe(1);
-	await collect();
-	page.asBackground(() => api["tick"]!());
-	await page.settle();
+	await collect(async () => {
+		page.asBackground(() => api["tick"]!());
+		await page.settle();
+		return page.runtime.page.functions.sizes().refs === 0;
+	});
 	expect(page.runtime.page.functions.sizes().refs).toBe(0);
 });
