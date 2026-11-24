@@ -9,7 +9,7 @@
 // the line after it. Svelte's own `svelte-ignore` is left to Svelte's warnings.
 
 /** The comment's word. */
-export const IGNORE_COMMENT = "svelte-lynx-ignore";
+const IGNORE_COMMENT = "svelte-lynx-ignore";
 
 /** The comment, after a comment's opening, and the codes it names, to the comment's end. */
 const IGNORE = new RegExp(

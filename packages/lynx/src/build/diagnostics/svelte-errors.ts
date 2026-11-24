@@ -9,7 +9,7 @@ import { buildError, placeAt } from "./messages.ts";
 import type { BuildError, BuildWarning, Place, SourceText } from "./messages.ts";
 
 /** The text a compile read, and where it came from. */
-export interface SourceContext {
+interface SourceContext {
 	/** The text the passes read, which the places of a message point into. */
 	source: SourceText;
 	/** Where an offset in the text Svelte compiled is in `source`. */

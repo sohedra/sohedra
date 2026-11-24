@@ -112,16 +112,13 @@ export const TESTING_CATALOGUE: Catalogue<TestingDetails> = {
 };
 
 /** One message of the test library: its code and the details it is written from. */
-export interface TestingReport<Code extends TestingCode> {
+interface TestingReport<Code extends TestingCode> {
 	code: Code;
 	details: TestingDetails[Code];
 }
 
 /** The text of a message of the test library. */
-export function testingMessage<Code extends TestingCode>({
-	code,
-	details,
-}: TestingReport<Code>): string {
+function testingMessage<Code extends TestingCode>({ code, details }: TestingReport<Code>): string {
 	const entry = TESTING_CATALOGUE[code];
 	return formatMessage({
 		sentence: entry.message(details),

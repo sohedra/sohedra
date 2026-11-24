@@ -23,7 +23,7 @@ export interface ConfigFileOptions {
 }
 
 /** Who loads the file: rspeedy for `lynx.config.*`, Rsbuild for anything else. */
-export type ConfigLoader = "rspeedy" | "rsbuild";
+type ConfigLoader = "rspeedy" | "rsbuild";
 
 const EXTENSIONS = ["ts", "js", "mts", "mjs", "cts", "cjs"];
 const NAMES = ["lynx.config", "rsbuild.config"];

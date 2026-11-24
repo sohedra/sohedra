@@ -8,7 +8,7 @@ import type { Scope, ThreadLynx } from "../globals.ts";
 import { installEager } from "../install.ts";
 
 /** Queues a callback as the thread's microtask. */
-export type Enqueue = (run: () => void) => void;
+type Enqueue = (run: () => void) => void;
 
 /** @workaround web-queue-microtask kind=lynx-gap delete-when="both of Lynx's threads have a global queueMicrotask" */
 export function fillQueueMicrotask(scope: Scope, enqueue: Enqueue): void {
@@ -18,7 +18,7 @@ export function fillQueueMicrotask(scope: Scope, enqueue: Enqueue): void {
 const isFunction = (existing: unknown): boolean => typeof existing === "function";
 
 /** `queueMicrotask` over the thread's own queue. */
-export function createQueueMicrotask(enqueue: Enqueue): (callback: () => void) => void {
+function createQueueMicrotask(enqueue: Enqueue): (callback: () => void) => void {
 	return function queueMicrotask(callback: () => void): void {
 		if (typeof callback !== "function")
 			throw new TypeError("queueMicrotask takes a function, and was given something else.");

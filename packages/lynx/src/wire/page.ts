@@ -38,7 +38,7 @@ export interface Stamp {
 }
 
 /** A message as a receiver checks it: its stamp, and its kind when it is a message to the background. */
-export type Stamped = Stamp & { t?: string };
+type Stamped = Stamp & { t?: string };
 
 /**
  * Whether a receiver keeps a message: one of the generation it shows now. Every receiver asks this of
@@ -50,7 +50,7 @@ export function keepsMessage(message: Stamped, generation: number): boolean {
 }
 
 /** The thread that received a message, and the generation of the page it shows. */
-export interface Receiver {
+interface Receiver {
 	thread: Thread;
 	generation: number;
 }

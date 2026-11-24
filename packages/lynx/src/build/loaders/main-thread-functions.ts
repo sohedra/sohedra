@@ -22,7 +22,7 @@ import { DECLINE } from "./hot-reload.ts";
 import { isSvelteSource } from "./svelte-skip.ts";
 
 /** What the plugin tells the loader. */
-export interface MainThreadFunctionsLoaderOptions {
+interface MainThreadFunctionsLoaderOptions {
 	thread: Thread;
 	hot?: boolean;
 	/** Check the app's own modules for what fails on Lynx (checks/module-checks.ts). */

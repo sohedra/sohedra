@@ -53,7 +53,7 @@ import { cellItem, createSplitter } from "./split.ts";
 import type { CellText } from "./split.ts";
 
 /** What a channel is opened with. */
-export interface ChannelOptions {
+interface ChannelOptions {
 	/** Where the renderer puts its ops. */
 	queue: OpQueue;
 	/** Runs the handlers of an event the main thread sent. */

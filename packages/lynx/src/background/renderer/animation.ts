@@ -55,7 +55,7 @@ const CANCEL = 3;
 const FINISH = 4;
 
 /** What an animation needs of its element. */
-export interface AnimationTarget<Target> {
+interface AnimationTarget<Target> {
 	node: Target;
 	/** The element's tag, for the error of a canceled animation. */
 	tag: string;

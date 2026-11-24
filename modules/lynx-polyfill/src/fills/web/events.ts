@@ -77,7 +77,7 @@ function loadEvents<T>(load: () => T): () => T {
 }
 
 /** DOM's `CustomEvent`, an `Event` of the thread's with its `detail`. */
-export function createCustomEvent(scope: Scope): CustomEventClass {
+function createCustomEvent(scope: Scope): CustomEventClass {
 	// Boundary: the thread's `Event`, this fill's or an engine's.
 	const Base = scope["Event"] as EventClass;
 	const details = new WeakMap<object, unknown>();

@@ -29,7 +29,7 @@ import { threadBranchHandlers } from "./thread-branch-handlers.ts";
 import { threadBranches } from "./thread-branches.ts";
 
 /** What `prepare` reads. */
-export interface PrepareOptions {
+interface PrepareOptions {
 	/** The component as written, after its preprocessors. */
 	source: string;
 	filename: string;

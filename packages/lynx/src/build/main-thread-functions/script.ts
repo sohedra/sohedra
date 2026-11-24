@@ -22,7 +22,7 @@ import { COMPILED_NAMES } from "./names.ts";
 import type { Node } from "./node.ts";
 
 /** What compiling main-thread functions reads, besides the text. */
-export interface FunctionOptions {
+interface FunctionOptions {
 	filename: string;
 	thread: Thread;
 	/** A development build: a called capture that is a plain function is an error. */
@@ -32,7 +32,7 @@ export interface FunctionOptions {
 }
 
 /** The main-thread functions of a component. */
-export interface ComponentFunctions {
+interface ComponentFunctions {
 	/** Against the component as written. */
 	edits: Edit[];
 	/** The registrations of the bodies with the footer around them, to follow the compiled module (main thread). */

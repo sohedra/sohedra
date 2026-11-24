@@ -41,7 +41,7 @@ export const MAX_DECOMPRESSED_SIZE: number = 64 * 1024 * 1024;
 export const MAX_GZIP_HEADER_SIZE: number = 64 * 1024;
 
 /** The limits a thread's classes hold untrusted data to. */
-export interface CompressionLimits {
+interface CompressionLimits {
 	/** The most bytes one `DecompressionStream` gives: `MAX_DECOMPRESSED_SIZE` when left out. */
 	maxDecompressedSize?: number;
 }

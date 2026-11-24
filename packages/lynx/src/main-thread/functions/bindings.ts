@@ -127,7 +127,7 @@ export interface GestureDetectors {
 }
 
 /** What one kind of binding does. */
-export interface BindingKind {
+interface BindingKind {
 	/** The element takes a value of this kind. */
 	bind(binding: Binding, scope: BindingScope): void;
 	/** The value changes. */
@@ -274,7 +274,7 @@ const gestureKind: BindingKind = {
 };
 
 /** Where an attribute binds: its kind, and the key of its slot on the element. */
-export interface Slot {
+interface Slot {
 	kind: BindingKind;
 	/** One slot holds one binding: the two spellings of one event share it. */
 	key: string;

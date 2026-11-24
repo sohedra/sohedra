@@ -14,7 +14,7 @@ import { FIRST_FRAME_COPY_KEY } from "../../wire/index.ts";
 import { stringLiteral } from "../string-literal.ts";
 
 /** What the copy's loader is told. */
-export interface FirstFrameCopyOptions {
+interface FirstFrameCopyOptions {
 	/** The main thread's `@sohedra/lynx`, which exports `mountPage`. */
 	entry: string;
 }

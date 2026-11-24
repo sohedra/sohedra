@@ -24,7 +24,7 @@ const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 const USED = "\u0000used\u0000";
 
 /** What the stub reads. */
-export interface StubOptions {
+interface StubOptions {
 	source: string;
 	/** The module's file. */
 	resourcePath: string;

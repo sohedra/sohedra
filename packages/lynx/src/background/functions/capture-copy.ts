@@ -20,7 +20,7 @@ import { TreeNode } from "../renderer/node.ts";
 const MAX_DEPTH = 500;
 
 /** What a development build tells the copy of a capture, for its errors. */
-export interface CaptureSource {
+interface CaptureSource {
 	/** The captured value, as the function reads it: `items`, `settings.size`. */
 	name: string;
 	/** The function's `file:line:col`. */
@@ -48,7 +48,7 @@ type CaptureReport =
 const REPORTS = new WeakMap<Error, CaptureReport>();
 
 /** The attribute a main-thread function is bound to, and its element's tag. */
-export interface Bound {
+interface Bound {
 	attribute: string;
 	owner: string;
 }

@@ -8,7 +8,7 @@ import { backgroundOnlyStub } from "./background-only-stub.ts";
 import { isSvelteSource } from "./svelte-skip.ts";
 
 /** What the plugin tells the loader. */
-export interface BackgroundOnlyLoaderOptions {
+interface BackgroundOnlyLoaderOptions {
 	/** The file `background-only` resolves to. */
 	marker: string;
 }

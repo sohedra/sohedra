@@ -39,7 +39,7 @@ export type Source =
 	| { stream: ReadableStream };
 
 /** What extracting a body gives: its source, and the `Content-Type` it implies. */
-export interface Extracted {
+interface Extracted {
 	source: Source;
 	type: string | null;
 }

@@ -13,7 +13,7 @@ import type {
 } from "./types.ts";
 
 /** A listener added with `__AddEventListener`. */
-export interface RegisteredListener {
+interface RegisteredListener {
 	name: string;
 	listener: ListenerFunction;
 	options: ListenerOptions;
@@ -22,7 +22,7 @@ export interface RegisteredListener {
 }
 
 /** A main-thread function bound to an element's event with `__AddEvent`. */
-export interface BoundFunction {
+interface BoundFunction {
 	/** `bindEvent`, `catchEvent`, `capture-bind`, `capture-catch` or `global-bindEvent`. */
 	eventType: string;
 	eventName: string;
@@ -33,7 +33,7 @@ export interface BoundFunction {
 }
 
 /** A handler name bound to an element's event with `__AddEvent`: the engine sends it the event. */
-export interface BoundHandler {
+interface BoundHandler {
 	/** `bindEvent`, `catchEvent`, `capture-bind`, `capture-catch` or `global-bindEvent`. */
 	eventType: string;
 	eventName: string;
@@ -58,7 +58,7 @@ export interface Detector {
 }
 
 /** An animation started with `__ElementAnimate`, until it is canceled. */
-export interface RunningAnimation {
+interface RunningAnimation {
 	keyframes: unknown;
 	options: unknown;
 	state: "running" | "paused";
@@ -188,7 +188,7 @@ export type GestureCallLog =
 	| { op: "remove"; element: LynxElement; id: number };
 
 /** What the page asked of the engine, in order. */
-export interface EngineLogs {
+interface EngineLogs {
 	/** The options of each `__FlushElementTree`. */
 	flushes: unknown[];
 	invocations: InvocationLog[];
@@ -271,7 +271,7 @@ export interface EngineState {
 }
 
 /** Which argument of which function: `{ fn: "__AppendElement", index: 1 }`. */
-export interface ArgumentPlace {
+interface ArgumentPlace {
 	fn: string;
 	index: number;
 }

@@ -2,13 +2,11 @@
 // outside this folder spells a message between the threads.
 
 export { WIRE_CATALOGUE, wireError, wireMessage } from "./catalogue.ts";
-export type { WireCode, WireDetails, WireError, WireReport } from "./catalogue.ts";
+export type { WireCode, WireDetails } from "./catalogue.ts";
 export { describeOp } from "./describe-op.ts";
 export { escapeJsonText } from "./escape.ts";
 export { hearErrorEvents } from "./error-events.ts";
 export { engineHas, globalGap, withMissingGlobalHint } from "./missing-globals.ts";
-export type { GlobalGap } from "./missing-globals.ts";
-export type { TagOf } from "./describe-op.ts";
 export {
 	eventOf,
 	listenerEvent,
@@ -16,22 +14,11 @@ export {
 	removedEventSpelling,
 	sentNames,
 } from "./events.ts";
-export type { LynxEvent, LynxEventType, LynxListener, RemovedEventSpelling } from "./events.ts";
+export type { LynxEventType, LynxListener } from "./events.ts";
 export { GestureState, GestureType, isGesture, plainGestures } from "./gesture.ts";
-export type {
-	GestureRef,
-	SerializedComposedGesture,
-	SerializedGesture,
-	SerializedPlainGesture,
-} from "./gesture.ts";
+export type { GestureRef, SerializedGesture, SerializedPlainGesture } from "./gesture.ts";
 export { LIST_ITEM_INFO, listUpdateInfo, Order, unmoved } from "./list-diff.ts";
-export type {
-	ListChange,
-	ListInsertion,
-	ListItemInfo,
-	ListUpdate,
-	ListUpdateInfo,
-} from "./list-diff.ts";
+export type { ListItemInfo, ListUpdateInfo } from "./list-diff.ts";
 export {
 	FIRST_FRAME_HANDLE,
 	FUNCTION_FIELDS,
@@ -55,7 +42,7 @@ export type {
 	MainThreadRefHandle,
 } from "./main-thread-functions.ts";
 export { DOCS_BASE, docsLink, formatMessage } from "./messages.ts";
-export type { Catalogue, Entry, MessageParts } from "./messages.ts";
+export type { Catalogue, Entry } from "./messages.ts";
 export {
 	ASYNC_LIST,
 	DEFER,
@@ -77,8 +64,7 @@ export { OpCode, ROOT_ID } from "./ops.ts";
 export type { AttrValue, Op } from "./ops.ts";
 export { checkMessage, keepsMessage, PROTOCOL_VERSION } from "./page.ts";
 export { createRepeats, withCount } from "./repeats.ts";
-export type { Repeats } from "./repeats.ts";
-export type { Receiver, Stamp, Stamped } from "./page.ts";
+export type { Stamp } from "./page.ts";
 export {
 	asError,
 	decodeCall,
@@ -91,7 +77,6 @@ export {
 	encodeError,
 	encodePatch,
 	encodeResult,
-	thrownText,
 } from "./patch.ts";
 export type {
 	CallItem,
@@ -101,26 +86,20 @@ export type {
 	OpsItem,
 	Patch,
 	PatchItem,
-	PatchOf,
 	PatchParams,
-	ReplyItem,
 	Result,
 	RewriteItem,
-	ThrownError,
 } from "./patch.ts";
 export { decodeToBackground, encodeToBackground } from "./to-background.ts";
 export type {
 	CallMessage,
 	ErrorMessage,
 	ErrorPlace,
-	EventMessage,
 	HideMessage,
 	HydrationMismatch,
 	PropsIdDifference,
 	PropsIdsMessage,
 	ReceivedByBackground,
-	ReleaseMessage,
-	ReplyMessage,
 	RewriteMessage,
 	SentEvent,
 	SentTarget,

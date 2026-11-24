@@ -9,7 +9,6 @@ export {
 	startInitialRows,
 	startingInitialRows,
 } from "./initial-rows.ts";
-export type { ListNote } from "./initial-rows.ts";
 export { listenThrough } from "./events.ts";
 export {
 	componentInMessage,

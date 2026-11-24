@@ -22,7 +22,7 @@ export interface Lifetimes {
 }
 
 /** What a page's lifetimes tell the background with, and when. */
-export interface LifetimesOptions {
+interface LifetimesOptions {
 	/** Tells the background these contexts are let go of. */
 	release(ids: number[]): void;
 	/** Runs `callback` at the end of the task. */

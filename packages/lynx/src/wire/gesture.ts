@@ -52,7 +52,7 @@ export interface SerializedPlainGesture {
 }
 
 /** Several gestures on one element. */
-export interface SerializedComposedGesture {
+interface SerializedComposedGesture {
 	type: typeof GestureType.COMPOSED;
 	gestures: SerializedGesture[];
 	__isSerialized: true;

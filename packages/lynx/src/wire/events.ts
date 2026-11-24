@@ -89,7 +89,7 @@ export function lynxEventName(attribute: string): string {
 }
 
 /** An event attribute written in Lynx's own spelling, which a component no longer writes. */
-export interface RemovedEventSpelling {
+interface RemovedEventSpelling {
 	/** The event's name, as written after the prefix. */
 	event: string;
 	/** What to write instead, or `undefined` when no attribute replaces it. */

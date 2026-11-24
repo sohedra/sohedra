@@ -23,7 +23,7 @@ export interface HeldCall {
 }
 
 /** The calls of background functions of one page. */
-export interface BackgroundCalls {
+interface BackgroundCalls {
 	/** `runOnBackground(handle)(...params)` from a main-thread function. */
 	runOnBackground(handle: unknown, params: unknown[]): Promise<unknown>;
 	/** The background answered a call. */

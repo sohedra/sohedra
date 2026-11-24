@@ -46,13 +46,13 @@ function textOf(value: unknown): string {
 export type Dispatch = (handler: number, event: unknown, input?: number) => void;
 
 /** One op the applier could not apply, and why. */
-export interface FailedOp {
+interface FailedOp {
 	op: Op;
 	error: unknown;
 }
 
 /** An element as one applier lets go of it and another takes it: hydration moves it. */
-export interface TakenElement {
+interface TakenElement {
 	element: LynxElement;
 	/** Its `data-*` values. */
 	dataset: Record<string, unknown> | undefined;
@@ -110,7 +110,7 @@ export interface Applier extends WaitingCells {
 }
 
 /** What an applier is made with. */
-export interface ApplierOptions {
+interface ApplierOptions {
 	/** The page element. */
 	page: LynxElement;
 	/** Sends an element's event to the background. */

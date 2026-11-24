@@ -21,7 +21,7 @@ export const LIST_ITEM_INFO: ReadonlySet<string> = new Set([
 ]);
 
 /** An item that joins the list at `position`, with its info. */
-export interface ListInsertion extends ListItemInfo {
+interface ListInsertion extends ListItemInfo {
 	position: number;
 	type: string;
 }
@@ -42,7 +42,7 @@ export interface ListUpdateInfo {
 }
 
 /** What a list update is written from. */
-export interface ListChange {
+interface ListChange {
 	/** The item ids as the list last heard of them. */
 	committed: number[];
 	/** The item ids now. */

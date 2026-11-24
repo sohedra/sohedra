@@ -45,11 +45,7 @@ const ENTRIES = [
 ];
 
 /** The internal entries: what compiled code and the build import by name. */
-const INTERNAL = [
-	"./internal/renderer",
-	"./internal/main-thread-functions",
-	"./internal/window-size",
-];
+const INTERNAL = ["./internal/renderer", "./internal/main-thread-functions"];
 
 describe("exports", () => {
 	it("has the public entries, pointing at source files", () => {
@@ -75,11 +71,11 @@ describe("exports", () => {
 		}
 	});
 
-	it("has no internal entry but the ones compiled code and the build import", () => {
+	it("has exactly the internal entries compiled code and the build import", () => {
 		const internal = Object.keys(manifest.exports).filter((entry) =>
 			entry.startsWith("./internal/"),
 		);
-		expect(internal.filter((entry) => !INTERNAL.includes(entry))).toEqual([]);
+		expect(internal.toSorted()).toEqual(INTERNAL.toSorted());
 	});
 
 	it("starts the page through the package's own entry, which resolves by thread", () => {

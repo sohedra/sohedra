@@ -61,7 +61,7 @@ export const FIRST_FRAME_CATALOGUE: Catalogue<FirstFrameDetails> = {
 };
 
 /** One message of the first frame: its code and the details it is written from. */
-export interface FirstFrameReport<Code extends FirstFrameCode> {
+interface FirstFrameReport<Code extends FirstFrameCode> {
 	code: Code;
 	details: FirstFrameDetails[Code];
 }

@@ -96,7 +96,7 @@ function localNames(fn: Node): Set<string> {
 }
 
 /** A main-thread function written in the markup. */
-export interface InlineFunction {
+interface InlineFunction {
 	/** Where it is written, as the developer reads it: the attribute, `{...}` for a spread, or the tag. */
 	where: string;
 	/** The function. */

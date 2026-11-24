@@ -10,7 +10,7 @@
 import { readLynx } from "./globals.ts";
 
 /** Fires an `error` event for `error`, and answers whether its default (the report) should run. */
-export type ErrorDispatch = (error: unknown) => boolean;
+type ErrorDispatch = (error: unknown) => boolean;
 
 let dispatch: ErrorDispatch | undefined;
 /** Whether an `error` event is being dispatched: what its listeners throw is reported, not fired. */

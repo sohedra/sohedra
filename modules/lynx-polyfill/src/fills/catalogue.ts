@@ -18,7 +18,7 @@ export interface PolyfillDetails {
 export type PolyfillCode = keyof PolyfillDetails;
 
 /** One message: its sentence and fix for the details it needs, and its docs page. */
-export interface PolyfillEntry<Details> {
+interface PolyfillEntry<Details> {
 	message: (details: Details) => string;
 	fix: (details: Details) => string;
 	docs: string;

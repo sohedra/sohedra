@@ -12,7 +12,7 @@ import type { SvelteRuleOptions } from "./rules-svelte.ts";
 import { threadDefines } from "./thread-defines.ts";
 
 /** What a test run says to its rules. */
-export interface TestRuleOptions extends SvelteRuleOptions {
+interface TestRuleOptions extends SvelteRuleOptions {
 	chain: RspackChain;
 	CHAIN_ID: ChainIdentifier;
 	/** The app's `define` constants for each thread, as code. */

@@ -189,7 +189,7 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 };
 
 /** One message of the main thread: its code and the details it is written from. */
-export interface MainThreadReport<Code extends MainThreadCode> {
+interface MainThreadReport<Code extends MainThreadCode> {
 	code: Code;
 	details: MainThreadDetails[Code];
 }
@@ -208,7 +208,7 @@ export function mainThreadMessage<Code extends MainThreadCode>({
 }
 
 /** An error of the main thread: its text is the message, and `code` the message's stable code. */
-export type MainThreadError = Error & { code: MainThreadCode };
+type MainThreadError = Error & { code: MainThreadCode };
 
 /** The error for a message of the main thread. */
 export function mainThreadError<Code extends MainThreadCode>(

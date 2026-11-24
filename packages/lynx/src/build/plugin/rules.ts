@@ -18,7 +18,7 @@ import type { SvelteRuleOptions } from "./rules-svelte.ts";
 import { pluginDefines } from "./thread-defines.ts";
 
 /** What a build says about itself to its rules. */
-export interface BuildRuleOptions extends SvelteRuleOptions {
+interface BuildRuleOptions extends SvelteRuleOptions {
 	chain: RspackChain;
 	CHAIN_ID: ChainIdentifier;
 	/** The app's `define` constants for each thread, as code. */

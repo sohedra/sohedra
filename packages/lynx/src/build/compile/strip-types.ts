@@ -14,7 +14,7 @@ import type { SourceText } from "../diagnostics/messages.ts";
 import { nodeVersion, withoutWarnings } from "../globals.ts";
 
 /** Node's `module.stripTypeScriptTypes`, as far as this calls it. */
-export type TypeStripper = (code: string, options: { mode: "strip" }) => string;
+type TypeStripper = (code: string, options: { mode: "strip" }) => string;
 
 /** Node's stripper, or `undefined` on a Node without it (older than 22.13). */
 export function nodeTypeStripper(): TypeStripper | undefined {
@@ -49,7 +49,7 @@ export interface Unsupported {
 }
 
 /** What the copied text of a component's main-thread functions holds, by its tree. */
-export interface CopiedTypeScript {
+interface CopiedTypeScript {
 	/** Whether it holds TypeScript at all. */
 	typed: boolean;
 	/** The TypeScript in it that is more than a type, in the order it is written. */

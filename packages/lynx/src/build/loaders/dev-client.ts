@@ -59,7 +59,7 @@ export interface DevClientLoaderOptions {
 }
 
 /** `source` with the binding's calls put in, or `undefined` for a file it has no patch for. */
-export function patchDevClient(
+function patchDevClient(
 	source: string,
 	file: string,
 	devClient: string,

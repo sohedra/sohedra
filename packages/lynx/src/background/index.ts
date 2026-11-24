@@ -4,4 +4,3 @@ export { fillEngineGaps } from "./engine-gaps.ts";
 export type { BackgroundGlobals } from "./globals.ts";
 export { mountPage, pageExports } from "./page.ts";
 export type { MountPageOptions } from "./page-options.ts";
-export type { HostEvents } from "./host/events.ts";

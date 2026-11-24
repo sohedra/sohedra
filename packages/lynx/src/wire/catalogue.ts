@@ -95,7 +95,7 @@ export function wireMessage<Code extends WireCode>({ code, details }: WireReport
 }
 
 /** An error of the wire: its text is the message, and `code` the message's stable code. */
-export type WireError = Error & { code: WireCode };
+type WireError = Error & { code: WireCode };
 
 /** The error for a message of the wire. */
 export function wireError<Code extends WireCode>(report: WireReport<Code>): WireError {

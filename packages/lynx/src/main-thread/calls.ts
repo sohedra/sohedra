@@ -26,7 +26,7 @@ import type { InvokeResult, LynxElement } from "./globals.ts";
 const NO_UI = 6;
 
 /** What the calls need of the page. */
-export interface CallsScope {
+interface CallsScope {
 	/** The applier of the page being shown. */
 	applier(): Applier;
 	/** Sends a call's result: its reply, or the report of a failed call that wants none. */

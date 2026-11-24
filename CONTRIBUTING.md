@@ -208,10 +208,10 @@ fixed) and says which workaround can go.
 - Every package runs `publint` on its packed package, in its tests.
 - Every public entry has type tests, run against the packed package on TypeScript 6.0 and later, the
   last two minors once there are two.
-- The binding (`@sohedra/lynx`) has size budgets as tests for its per-thread scripts: the
-  main-thread runtime and a minimal page's first-frame script. Growth there usually means code
-  leaking from one thread to the other, so raising a budget is a deliberate change, explained in its
-  pull request.
+- The binding (`@sohedra/lynx`) has size budgets as tests for its per-thread scripts: each thread's
+  runtime alone, and a minimal page's main-thread script (with its first frame) and background
+  script. Growth there usually means code leaking from one thread to the other, so raising a budget
+  is a deliberate change, explained in its pull request.
 
 ## Releases, deprecation and support
 

@@ -51,7 +51,7 @@ interface ListState {
 }
 
 /** Turns batches of ops into a patch's items. */
-export interface Splitter {
+interface Splitter {
 	split(ops: Op[]): SplitItem[];
 	/** Whether the cell is held back: none of its ops is sent. */
 	holds(id: number): boolean;

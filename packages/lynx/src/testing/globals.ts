@@ -18,7 +18,7 @@ const environment: EnvironmentGlobals = globalThis as unknown as EnvironmentGlob
  * The process's own microtask queue, as it was when this module loaded: a thread's global
  * `queueMicrotask` is that thread's, and the main thread's is the page's own or none.
  */
-export const processQueueMicrotask: (callback: () => void) => void =
+const processQueueMicrotask: (callback: () => void) => void =
 	globalThis.queueMicrotask.bind(globalThis);
 
 /**
@@ -137,7 +137,7 @@ export function queueMicrotaskAs(enter: () => () => void, callback: () => void):
 }
 
 /** What the test setup needs of the page it cleans up. */
-export interface ActiveSession {
+interface ActiveSession {
 	dispose(): void;
 }
 
@@ -158,7 +158,7 @@ export function setActiveSession(session: ActiveSession | undefined): void {
 }
 
 /** The runners a test library's setup file names. */
-export type TestRunner = "rstest" | "vitest";
+type TestRunner = "rstest" | "vitest";
 
 // A symbol from the registry, as for the active session: the setup file says it, the test reads it.
 const RUNNER = Symbol.for("@sohedra/lynx/testing:runner");

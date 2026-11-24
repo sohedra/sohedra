@@ -1,9 +1,6 @@
 // Builds a fixture app in this process, through Rsbuild and `pluginSvelteLynx`, and reads what the
 // build leaves. One build at a time in a checkout: a lock keeps two test files from building at
 // once, and every build test goes through here or through shared-build.ts.
-//
-// The parts of the runtime not in this package yet (the window's size) are aliased to the stubs in
-// tests/fixtures/build/stubs: they let the build resolve; nothing runs.
 
 import fs from "node:fs";
 import { createRequire } from "node:module";
@@ -15,7 +12,6 @@ import type { Rspack, RsbuildConfig } from "@rsbuild/core";
 
 import { pluginSvelteLynx } from "../../src/build/plugin/index.ts";
 import type { PluginSvelteLynxOptions } from "../../src/build/plugin/index.ts";
-import { PACKAGE_NAME } from "../../src/wire/index.ts";
 
 const FIXTURES = path.resolve(import.meta.dirname, "../fixtures/build");
 
@@ -59,11 +55,6 @@ export interface AppBuild {
 	/** The output folder. */
 	dist: string;
 }
-
-const STUBS = path.join(FIXTURES, "stubs");
-const ALIASES: Record<string, string> = {
-	[`${PACKAGE_NAME}/internal/window-size`]: path.join(STUBS, "window-size.ts"),
-};
 
 // The lock lives in this package's own cache folder: one checkout's test files take turns, and
 // nothing goes in the shared temporary folder, where another user could make or link the path first.
@@ -180,9 +171,13 @@ export async function buildInto({
 	options,
 }: BuildInto): Promise<Omit<AppBuild, "entry">> {
 	// `DEBUG=lynx` keeps each thread's script in `.lynx/<entry>/`, where the tests read them; and
-	// `process.env.DEBUG` in the fixtures is replaced by it.
-	const previous = process.env["DEBUG"];
+	// `process.env.DEBUG` in the fixtures is replaced by it. `NODE_ENV` is the one a real build of the
+	// mode gets (`createCompiler()` sets none, unlike `build()`), and Rstest's `test` for a test run,
+	// not the shell's: the plugin and Lynx's runtime wrapper read it.
+	const previous = { DEBUG: process.env["DEBUG"], NODE_ENV: process.env["NODE_ENV"] };
 	process.env["DEBUG"] = "lynx";
+	process.env["NODE_ENV"] =
+		options.callerName === "rstest" ? "test" : options.development ? "development" : "production";
 	try {
 		const rsbuild = await createRsbuild({
 			cwd,
@@ -192,7 +187,6 @@ export async function buildInto({
 				...options.rsbuild,
 				plugins: [pluginSvelteLynx(options.plugin), ...(options.rsbuild?.plugins ?? [])],
 				source: { entry: entries, ...options.rsbuild?.source },
-				resolve: { alias: ALIASES, ...options.rsbuild?.resolve },
 				output: {
 					distPath: { root: path.join(dist, "out") },
 					cleanDistPath: false,
@@ -219,8 +213,10 @@ export async function buildInto({
 			dist,
 		};
 	} finally {
-		if (previous === undefined) delete process.env["DEBUG"];
-		else process.env["DEBUG"] = previous;
+		for (const [name, value] of Object.entries(previous)) {
+			if (value === undefined) delete process.env[name];
+			else process.env[name] = value;
+		}
 	}
 }
 

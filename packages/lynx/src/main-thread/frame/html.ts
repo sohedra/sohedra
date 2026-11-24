@@ -55,7 +55,7 @@ export interface DrawnNode {
 }
 
 /** A Svelte block: its content may differ between the first frame and the background. */
-export interface DrawnBlock {
+interface DrawnBlock {
 	block: true;
 	children: DrawnChild[];
 }
@@ -353,7 +353,7 @@ function scanCells(html: string, start: number, list: DrawnNode, nextId: NextId)
  * Parses `html` into `parent`'s children. A list's cells are scanned, not parsed, unless `inCell`:
  * a list inside a cell gets its items as children, as the background sends them.
  */
-export function parseInto(
+function parseInto(
 	html: string,
 	parent: DrawnNode,
 	options: { nextId: NextId; inCell: boolean },

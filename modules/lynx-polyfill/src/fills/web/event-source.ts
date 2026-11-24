@@ -40,7 +40,7 @@ import type {
 export const MAX_EVENT_SIZE: number = 4 * 1024 * 1024;
 
 /** The limits a thread's `EventSource` holds untrusted data to. */
-export interface EventSourceLimits {
+interface EventSourceLimits {
 	/** The most characters of an unfinished event or line: `MAX_EVENT_SIZE` when left out. */
 	maxEventSize?: number;
 }

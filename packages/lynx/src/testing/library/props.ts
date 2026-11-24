@@ -5,7 +5,7 @@
 import { signal } from "../../svelte/runtime/index.ts";
 
 /** The props a component is mounted with, and how a test changes them. */
-export interface TestProps<Props extends Record<string, unknown>> {
+interface TestProps<Props extends Record<string, unknown>> {
 	/** What the component is mounted with: each read follows the latest change. */
 	readonly props: Props;
 	/** Merges `next` into the props: the component reads the new values. */

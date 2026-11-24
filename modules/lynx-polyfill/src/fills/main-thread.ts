@@ -32,7 +32,7 @@ import { fillUrl } from "./web/url.ts";
  * Where the main thread's web fills go: the thread's own unless a test gives its own. The language fills
  * go on the thread's own built-ins, where core-js's modules put them.
  */
-export interface MainThreadTargets {
+interface MainThreadTargets {
 	/** The thread's global object. */
 	scope: Scope;
 	/** The thread's `lynx`, read when a fill uses it: the thread's own by default. */

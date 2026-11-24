@@ -22,7 +22,7 @@ const STYLES_KEY = "svelteLynxStyles";
 const RELOAD = "__svelteLynxReloadPage";
 
 /** What the footer is written from. */
-export interface HotFooterOptions {
+interface HotFooterOptions {
 	/** The component compiled with `hmr: true`. */
 	code: string;
 	/** The component's compiled styles: a later version with different styles reloads the page. */

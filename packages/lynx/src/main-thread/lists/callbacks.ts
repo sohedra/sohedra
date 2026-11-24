@@ -9,7 +9,7 @@ import { askAhead, waitFor } from "./waiting.ts";
 import type { WaitingScope } from "./waiting.ts";
 
 /** What the callbacks need of the page's lists. */
-export interface CallbacksScope {
+interface CallbacksScope {
 	/** The list with this id, while it is the page's. */
 	list(id: number): ListState | undefined;
 	/** The cell of a list's item at an index, as Lynx last heard of the items. */
@@ -25,7 +25,7 @@ export interface CallbacksScope {
 }
 
 /** The callbacks Lynx calls for each list. */
-export interface ListCallbacks {
+interface ListCallbacks {
 	componentAtIndex: ComponentAtIndex;
 	componentAtIndexes: ComponentAtIndexes;
 	enqueueComponent: EnqueueComponent;

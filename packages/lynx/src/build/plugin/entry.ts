@@ -27,7 +27,7 @@ export interface LynxEngineConfig {
 }
 
 /** What the entries are made from. */
-export interface PageEntryOptions {
+interface PageEntryOptions {
 	rootPath: string;
 	lynx: LynxEngineConfig;
 	LynxTemplatePlugin: typeof TemplatePlugin;

@@ -1,9 +1,6 @@
 # Build output (anchored: a bare lib/ would also hide SvelteKit's src/lib/)
 /lib/
 
-# PrimJS's builds and the WPT and test262 checkouts the polyfill suites run (scripts/primjs/)
-/.cache/
-
 # SWC plugin cache that coverage instrumentation writes
 /.swc/
 

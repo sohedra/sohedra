@@ -3,7 +3,7 @@
 import type { Thread } from "../../wire/index.ts";
 
 /** What a build says about itself to the constants. */
-export interface DefineFlags {
+interface DefineFlags {
 	/** A development build. */
 	development: boolean;
 	/** Whether any entry draws its first frame. */
