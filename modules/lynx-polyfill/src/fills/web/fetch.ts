@@ -590,9 +590,12 @@ export function createFetch(
 			void (state.body ? state.body.bytes() : Promise.resolve(undefined)).then((loaded) => {
 				const bytes = loaded?.bytes;
 				if (signal?.aborted) return reject(signal.reason);
-				const headers: Record<string, string> = {};
+				// No prototype: a header may be named `constructor` or `__proto__`.
+				const headers = Object.create(null) as Record<string, string>;
 				for (const [name, value] of state.headers)
-					headers[name] = name in headers ? `${headers[name]}, ${value}` : value;
+					headers[name] = Object.prototype.hasOwnProperty.call(headers, name)
+						? `${headers[name]}, ${value}`
+						: value;
 				const agent = userAgent();
 				if (!state.headers.has("user-agent") && agent !== undefined) headers["user-agent"] = agent;
 				const lynxFetch = readLynx().fetch;
