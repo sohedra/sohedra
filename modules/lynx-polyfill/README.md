@@ -176,9 +176,12 @@ changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed
 - **PrimJS's `Object.assign`** copies a property that a getter on the source made non-enumerable
   during the same copy, which the standard skips: after
   `s = Object.defineProperty({}, "a", { enumerable: true, get() { Object.defineProperty(this, "b", { value: 3, enumerable: false }); } }); s.b = 2;`,
-  `Object.assign({}, s).b` is `3`, not `undefined`. Onto an array, from a `Proxy` whose `ownKeys`
-  lists keys its target lacks, it copies nothing: `[]` where the standard gives `[, 9]`. It stays
-  for speed: core-js's is 5 to 7.5 times slower on PrimJS.
+  `Object.assign({}, s).b` is `3`, not `undefined`. It stays for speed: core-js's is 5 to 7.5 times
+  slower on PrimJS.
+- **A `Proxy`'s `ownKeys` order:** PrimJS moves the integer keys a trap returns to the front, so
+  with `ownKeys() { return ["b", "1", "a"]; }`, `Reflect.ownKeys(proxy)` gives `["1", "b", "a"]`.
+  `Object.keys`, `for…in`, spread, `Object.assign` and `JSON.stringify` of such a proxy follow that
+  order. It shows only when a trap lists integer keys after other keys.
 - **Pages of a `LynxGroup`** share one background realm: the first page's fills serve them all.
 
 ## Tested
