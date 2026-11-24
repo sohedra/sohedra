@@ -10,6 +10,7 @@ import { fillErrorCause } from "./language/error-cause.ts";
 import { fillLynxPromise } from "./language/lynx-promise.ts";
 import { fillObjectMethods } from "./language/object-methods.ts";
 import { fillPromiseStatics } from "./language/promise-statics.ts";
+import { fillReflectToStringTag } from "./language/reflect-to-string-tag.ts";
 import { fillRegExpEscape } from "./language/regexp-escape.ts";
 import { fillStringMethods } from "./language/string-methods.ts";
 import { fillWrongBuiltIns } from "./language/wrong-built-ins.ts";
@@ -46,6 +47,7 @@ export function fillBackground(
 	fillPromiseStatics();
 	fillLynxPromise(targets.readLynx);
 	fillRegExpEscape();
+	fillReflectToStringTag();
 	fillBigIntAsUintN();
 	fillEventTarget(scope);
 	fillStructuredClone(scope);

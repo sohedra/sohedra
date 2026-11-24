@@ -9,6 +9,7 @@ import { fillBigIntAsUintN } from "./language/bigint-as-uint-n.ts";
 import { fillErrorCause } from "./language/error-cause.ts";
 import { fillObjectMethods } from "./language/object-methods.ts";
 import { fillPromiseStatics } from "./language/promise-statics.ts";
+import { fillReflectToStringTag } from "./language/reflect-to-string-tag.ts";
 import { fillRegExpEscape } from "./language/regexp-escape.ts";
 import { fillStringMethods } from "./language/string-methods.ts";
 import { fillWrongBuiltIns } from "./language/wrong-built-ins.ts";
@@ -40,6 +41,7 @@ export function fillMainThread(targets: MainThreadTargets = { scope: globalScope
 	fillStringMethods();
 	fillPromiseStatics();
 	fillRegExpEscape();
+	fillReflectToStringTag();
 	fillBigIntAsUintN();
 	fillEventTarget(scope);
 	fillStructuredClone(scope);

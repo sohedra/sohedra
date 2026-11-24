@@ -7,13 +7,13 @@ import { forceCoreJs, loadCoreJs } from "../vendor/core-js.js";
 import type { CoreJsModule } from "../vendor/core-js.js";
 
 /** A method a core-js module fills: the module, the object the method goes on, and its name. */
-export type CoreJsFill = readonly [module: CoreJsModule, owner: object, name: string];
+export type CoreJsFill = readonly [module: CoreJsModule, owner: object, name: PropertyKey];
 
 /** Loads the module of each fill whose object lacks its method. */
 export function fillFromCoreJs(fills: readonly CoreJsFill[]): void {
 	for (const [module, owner, name] of fills)
 		// Boundary: a built-in's method, read by name.
-		if ((owner as Record<string, unknown>)[name] === undefined) loadCoreJs(module);
+		if ((owner as Record<PropertyKey, unknown>)[name] === undefined) loadCoreJs(module);
 }
 
 /**

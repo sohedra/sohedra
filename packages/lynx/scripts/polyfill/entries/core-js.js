@@ -22,6 +22,7 @@ const MODULES = {
 	"es.promise.try": () => require("core-js/modules/es.promise.try.js"),
 	"es.promise.with-resolvers": () => require("core-js/modules/es.promise.with-resolvers.js"),
 	"es.reflect.apply": () => require("core-js/modules/es.reflect.apply.js"),
+	"es.reflect.to-string-tag": () => require("core-js/modules/es.reflect.to-string-tag.js"),
 	"es.regexp.escape": () => require("core-js/modules/es.regexp.escape.js"),
 	"es.string.at-alternative": () => require("core-js/modules/es.string.at-alternative.js"),
 	"es.string.is-well-formed": () => require("core-js/modules/es.string.is-well-formed.js"),

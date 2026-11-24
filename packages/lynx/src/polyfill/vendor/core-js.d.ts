@@ -19,6 +19,7 @@ export type CoreJsModule =
 	| "es.promise.try"
 	| "es.promise.with-resolvers"
 	| "es.reflect.apply"
+	| "es.reflect.to-string-tag"
 	| "es.regexp.escape"
 	| "es.string.at-alternative"
 	| "es.string.is-well-formed"

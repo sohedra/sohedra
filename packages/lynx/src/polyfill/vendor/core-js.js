@@ -3570,6 +3570,22 @@ $({
 
 
 },
+3918(__unused_rspack_module, __unused_rspack_exports, __webpack_require__) {
+
+var $ = __webpack_require__(1924);
+var globalThis = __webpack_require__(8218);
+var setToStringTag = __webpack_require__(3813);
+$({
+    global: true
+}, {
+    Reflect: {}
+});
+// Reflect[@@toStringTag] property
+// https://tc39.es/ecma262/#sec-reflect-@@tostringtag
+setToStringTag(globalThis.Reflect, 'Reflect', true);
+
+
+},
 4487(__unused_rspack_module, __unused_rspack_exports, __webpack_require__) {
 
 var $ = __webpack_require__(1924);
@@ -4051,6 +4067,7 @@ const MODULES = {
     "es.promise.try": ()=>__webpack_require__(6411),
     "es.promise.with-resolvers": ()=>__webpack_require__(5266),
     "es.reflect.apply": ()=>__webpack_require__(562),
+    "es.reflect.to-string-tag": ()=>__webpack_require__(3918),
     "es.regexp.escape": ()=>__webpack_require__(4487),
     "es.string.at-alternative": ()=>__webpack_require__(8987),
     "es.string.is-well-formed": ()=>__webpack_require__(8657),

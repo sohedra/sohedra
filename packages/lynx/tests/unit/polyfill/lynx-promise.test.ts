@@ -253,11 +253,12 @@ describe("the finally it gives", () => {
 		).toEqual(await outcome(() => ownFinally.call(again, onFinally as () => void)));
 	});
 
-	it("calls the function with no arguments, once, and makes a promise of the class it is called on", async () => {
+	it("calls the function with no arguments, once, and gives what the promise's then gives", async () => {
 		const PromiseClass = withLynxCoreFinally();
 		const calls: unknown[][] = [];
 		const result = PromiseClass.resolve(1).finally((...args: unknown[]) => void calls.push(args));
-		expect(result).toBeInstanceOf(PromiseClass);
+		// lynx-core's `then` makes its own class; this one's, without species, the engine's.
+		expect(result).toBeInstanceOf(Promise);
 		await result;
 		expect(calls).toEqual([[]]);
 		expect(() => PromiseClass.prototype.finally.call(1 as never)).toThrow(TypeError);
