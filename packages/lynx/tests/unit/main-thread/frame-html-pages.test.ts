@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { readGlobal } from "../../../src/testing/globals.ts";
+import { readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
 import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
 import drawCssVariables from "../../fixtures/threads/CssVariables.svelte?first-frame";
 import drawDeferredNested from "../../fixtures/threads/DeferredNested.svelte?first-frame";
@@ -64,6 +64,8 @@ const PAGES: [name: string, draw: Draw, props: Record<string, unknown>][] = [
 
 describe("the first frame's parser, on the pages the thread tests draw", () => {
 	it.each(PAGES)("reads %s as before", (_name, draw, props) => {
+		// A main thread records one page's first frame: the one drawn before goes first.
+		removeGlobals([FIRST_FRAME_GLOBAL]);
 		draw(props);
 		const markup = (readGlobal(FIRST_FRAME_GLOBAL) as (data: object) => string)({});
 		expect(drawnTree(markup)).toMatchSnapshot();

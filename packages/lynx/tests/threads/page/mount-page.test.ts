@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import { mountPage } from "../../../src/background/index.ts";
 import Titled from "../../fixtures/threads/page/Titled.svelte";
 import drawTitled from "../../fixtures/threads/page/Titled.svelte?first-frame";
 import { startSveltePage } from "../svelte-page.ts";
@@ -97,5 +98,52 @@ describe("mountPage's context", () => {
 		page.reload();
 		await page.settle();
 		expect(shown(page)[2]).toBe("dark");
+	});
+});
+
+describe("a second mountPage", () => {
+	/** The codes of the page's errors. */
+	const codes = (page: ReturnType<typeof startSveltePage>) =>
+		page.errors.map((error) => (error as { code?: string }).code);
+
+	it("is refused on the background: one page runs, with one channel and one set of hooks", async () => {
+		const page = startSveltePage(Titled, { props: { title: "Inbox" } });
+		await page.settle();
+		page.asBackground(() => mountPage(Titled, { props: { title: "Sent" } }));
+		await page.settle();
+		expect(codes(page)).toEqual(["page_already_mounted"]);
+		expect(shown(page)[0]).toBe("Inbox");
+		expect(shown(page)).toEqual(["Inbox", "", "none"]);
+		// The hooks the first call set run once: a reload mounts one root component, and the main
+		// thread is sent one patch for it.
+		const sent = page.patches.length;
+		page.reload();
+		await page.settle();
+		expect(shown(page)).toEqual(["Inbox", "", "none"]);
+		expect(page.patches.length - sent).toBe(1);
+		expect(codes(page)).toEqual(["page_already_mounted"]);
+	});
+
+	it("is refused on the main thread: the first frame is the first call's", async () => {
+		const page = titled({ props: { title: "Inbox" } });
+		page.asMainThread(() => drawTitled({ title: "Sent" }));
+		expect(codes(page)).toEqual(["page_already_mounted"]);
+		await page.settle();
+		expect(shown(page)[0]).toBe("Inbox");
+		page.reload();
+		await page.settle();
+		expect(shown(page)[0]).toBe("Inbox");
+		expect(codes(page)).toEqual(["page_already_mounted"]);
+	});
+
+	it("is the next page's own once the page before it was destroyed", async () => {
+		const first = startSveltePage(Titled, { props: { title: "Inbox" } });
+		await first.settle();
+		first.destroy();
+		await first.settle();
+		const next = titled({ props: { title: "Sent" } });
+		await next.settle();
+		expect(shown(next)[0]).toBe("Sent");
+		expect(next.errors).toEqual([]);
 	});
 });

@@ -70,4 +70,30 @@ describe("@sohedra/lynx/client", () => {
 			).toBeUndefined();
 		}
 	});
+
+	it("declares the globals a Lynx thread has, and not what the polyfill fills or no thread has", () => {
+		// The base tsconfig's built-ins: the language, without the DOM.
+		const checker = ts
+			.createProgram({ rootNames: [client], options: { ...options, lib: ["lib.es2025.d.ts"] } })
+			.getTypeChecker();
+		const declared = (name: string): boolean =>
+			checker.resolveName(name, undefined, ts.SymbolFlags.Value, false) !== undefined;
+		const threads = [
+			"console",
+			"setTimeout",
+			"clearTimeout",
+			"setInterval",
+			"clearInterval",
+			"requestAnimationFrame",
+			"cancelAnimationFrame",
+			"queueMicrotask",
+			"lynx",
+			"SystemInfo",
+			"NativeModules",
+		];
+		expect(threads.filter((name) => !declared(name))).toEqual([]);
+		const polyfill = ["URL", "fetch", "TextEncoder", "AbortController", "structuredClone"];
+		const nowhere = ["window", "document", "localStorage", "navigator", "self", "crypto"];
+		expect([...polyfill, ...nowhere].filter(declared)).toEqual([]);
+	});
 });

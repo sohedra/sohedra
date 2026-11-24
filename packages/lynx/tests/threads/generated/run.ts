@@ -165,6 +165,8 @@ const rootData = (initData: Record<string, unknown>): Record<string, unknown> =>
  * what it renders: no first frame is drawn.
  */
 function registerBodies(compiled: CompiledBoth, data: PageState): void {
+	// A main thread records one page's first frame: the one drawn before goes first.
+	removeGlobals([FIRST_FRAME_GLOBAL]);
 	drawGeneratedFrame({
 		page: compiled.mainThread,
 		props: { data: copy(data), handles: {} },

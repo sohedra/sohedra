@@ -46,7 +46,7 @@ describe("the function a main-thread function hands runOnBackground", () => {
 
 	it("reports the main thread's API inside it", () => {
 		const text =
-			"export function onTap() {\n\t'main thread';\n\trunOnBackground(() => __FlushElementTree())();\n}";
+			"import { runOnBackground } from \"@sohedra/lynx\";\nexport function onTap() {\n\t'main thread';\n\trunOnBackground(() => __FlushElementTree())();\n}";
 		expect(codesOf(text)).toEqual(["main_thread_api_in_background"]);
 	});
 });

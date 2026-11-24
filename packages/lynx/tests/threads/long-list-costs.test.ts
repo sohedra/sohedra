@@ -8,7 +8,7 @@ import { describe, expect, it } from "@rstest/core";
 import { mountPage } from "../../src/background/index.ts";
 import { cellInfo, parsePage } from "../../src/main-thread/frame/html.ts";
 import type { DrawnChild, DrawnNode } from "../../src/main-thread/frame/html.ts";
-import { readGlobal } from "../../src/testing/globals.ts";
+import { readGlobal, removeGlobals } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import type { BackgroundLynx } from "../../src/testing/index.ts";
 import { FIRST_FRAME_GLOBAL, ROOT_ID } from "../../src/wire/index.ts";
@@ -75,6 +75,8 @@ function listOf(children: DrawnChild[]): DrawnNode | undefined {
 describe.each([1000, 5000])("a list of %i rows", (count) => {
 	describe.each(["plain", "row"] as const)("written as %s", (shape) => {
 		it("is scanned within its budget", () => {
+			// A main thread records one page's first frame: the one drawn before goes first.
+			removeGlobals([FIRST_FRAME_GLOBAL]);
 			drawLongFeed({ count, shape });
 			const markup = (readGlobal(FIRST_FRAME_GLOBAL) as (data: object) => string)({});
 			let next = ROOT_ID;

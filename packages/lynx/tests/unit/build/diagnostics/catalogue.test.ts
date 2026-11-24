@@ -39,6 +39,8 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	},
 	typescript_stripper_missing: { version: "v20.19.0" },
 	plain_function_in_main_thread_function: { name: "save" },
+	shared_import_needed: { name: "reportError" },
+	thread_function_unclear: { written: "toBackground", name: "runOnBackground" },
 	script_syntax_error: { reason: "Unexpected token" },
 	regexp_refused: { regexp: "/(?i:a)b/", syntax: "modifier" },
 	regexp_refused_call: { regexp: 'new RegExp("[\\\\p{L}--[a-z]]", "v")', syntax: "v_flag" },
