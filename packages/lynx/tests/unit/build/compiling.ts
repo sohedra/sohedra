@@ -31,6 +31,8 @@ export interface CompileCase {
 	preprocess?: PreprocessorGroup[];
 	/** The app's folder, when a test needs another than this package's. */
 	root?: string;
+	/** Check the component as the app's own code. */
+	checks?: boolean;
 }
 
 /** A plain script's main-thread functions, for one thread. */
@@ -61,5 +63,6 @@ export function component(source: string, options: CompileCase = {}): Promise<Co
 		clientInternals: options.clientInternals,
 		renderer: "@sohedra/lynx/internal/renderer",
 		serverInternals: options.serverInternals ?? SERVER_INTERNALS,
+		checks: options.checks,
 	});
 }

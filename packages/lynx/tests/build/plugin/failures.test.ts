@@ -1,9 +1,11 @@
 // Builds that must fail, and what their messages say: the file, the place, the fix and the docs
 // link, as the catalogue writes them.
 
+import path from "node:path";
+
 import { afterEach, describe, expect, it } from "@rstest/core";
 
-import { buildApp, cleanBuild } from "../build-app.ts";
+import { appFolder, buildApp, cleanBuild } from "../build-app.ts";
 import type { AppBuild } from "../build-app.ts";
 
 let build: AppBuild | undefined;
@@ -107,5 +109,39 @@ describe("a regular expression Lynx's engine refuses", () => {
 		build = await buildApp("broken", { entry: "./guarded.ts", files: { "guarded.ts": guarded } });
 		expect(build.ok).toBe(true);
 		expect(build.error + build.messages).not.toContain("regexp_refused");
+	}, 120_000);
+});
+
+describe("the app's code that fails on Lynx", () => {
+	/** The fill, aliased to an empty module: the package is not a dependency here. */
+	const alias = {
+		resolve: {
+			alias: { "@sohedra/lynx-polyfill/encoding": path.join(appFolder("broken"), "fill-stub.ts") },
+		},
+	};
+
+	it("fails the build at a global no import fills, with the import that fills it", async () => {
+		build = await buildApp("broken", { entry: "./unfilled.ts", rsbuild: alias });
+		expect(build.ok).toBe(false);
+		const text = build.error + build.messages;
+		expect(text).toContain(
+			"Lynx's engine doesn't have the global `TextEncoder`, and the app imports nothing that fills it",
+		);
+		expect(text).toMatch(/Encode\.svelte:2:20/);
+		expect(text).toContain('Import "@sohedra/lynx-polyfill/encoding" in the first line');
+	}, 120_000);
+
+	it("builds once the app imports the fill", async () => {
+		build = await buildApp("broken", { entry: "./filled.ts", rsbuild: alias });
+		expect(build.error + build.messages).not.toContain("fill_not_imported");
+		expect(build.ok).toBe(true);
+	}, 120_000);
+
+	it("fails the build at the web's DOM in a module", async () => {
+		build = await buildApp("broken", { entry: "./dom.ts" });
+		expect(build.ok).toBe(false);
+		const text = build.error + build.messages;
+		expect(text).toContain("`document` is part of the web's DOM");
+		expect(text).toMatch(/dom\.ts:1:36/);
 	}, 120_000);
 });

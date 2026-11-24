@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { withMissingGlobalHint } from "../../../src/wire/index.ts";
+import { engineHas, globalGap, withMissingGlobalHint } from "../../../src/wire/index.ts";
 
 /** The engine's error for reading `name`, as V8 and PrimJS write it. */
 const notDefined = (name: string): ReferenceError => new ReferenceError(`${name} is not defined`);
@@ -116,9 +116,43 @@ describe("any other error", () => {
 	it.each([
 		["a name no fill gives", new ReferenceError("myHelper is not defined")],
 		["another ReferenceError", new ReferenceError("Cannot access 'x' before initialization")],
+		["a name of an object's own", new ReferenceError("constructor is not defined")],
 		["another kind of error", new TypeError("URL is not defined")],
 		["a value that is not an error", "URL is not defined"],
 	])("is left as it is: %s", (_, error) => {
 		expect(withMissingGlobalHint(error, "background")).toBe(error);
+	});
+});
+
+describe("the table the build reads", () => {
+	it("gives a global's fill, and whether the catch-all import gives it too", () => {
+		expect(globalGap("TextEncoder", "background")).toEqual({
+			kind: "fill",
+			module: "@sohedra/lynx-polyfill/encoding",
+			baseline: true,
+		});
+		expect(globalGap("EventSource", "background")).toEqual({
+			kind: "fill",
+			module: "@sohedra/lynx-polyfill/event-source",
+			baseline: false,
+		});
+	});
+
+	it("says what no fill gives, and what only the background gets", () => {
+		expect(globalGap("Intl", "background")?.kind).toBe("not_on_lynx");
+		expect(globalGap("Blob", "main-thread")).toEqual({ kind: "background_only" });
+	});
+
+	it("names no global it doesn't know, nor one of an object's own names", () => {
+		expect(globalGap("myHelper", "background")).toBeUndefined();
+		expect(globalGap("constructor", "background")).toBeUndefined();
+		expect(globalGap("toString", "main-thread")).toBeUndefined();
+	});
+
+	it("says which of the fills' globals a thread has without the package", () => {
+		expect(engineHas("URL", "background")).toBe(true);
+		expect(engineHas("URL", "main-thread")).toBe(false);
+		expect(engineHas("TextEncoder", "background")).toBe(false);
+		expect(engineHas("structuredClone", "main-thread")).toBe(true);
 	});
 });

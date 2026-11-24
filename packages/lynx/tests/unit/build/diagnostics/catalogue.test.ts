@@ -48,6 +48,23 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	thread_branch_test: { test: "background && user" },
 	thread_branch_name_taken: { name: "SohedraLynxThreadBranch" },
 	list_item_defer_ignored: { written: "in a spread" },
+	fill_not_imported: {
+		name: "TextEncoder",
+		module: "@sohedra/lynx-polyfill/encoding",
+		baseline: true,
+	},
+	global_not_in_lynx: {
+		name: "Intl",
+		instead:
+			"Format dates and numbers with a library in plain JavaScript, such as date-fns or dayjs.",
+	},
+	dom_not_on_lynx: {
+		name: "document",
+		instead:
+			"Reach an element with `{@attach}` on the background, or with `main-thread:ref` in a main-thread function, and use its methods.",
+	},
+	background_api_in_main_thread_function: { api: "NativeModules" },
+	main_thread_api_in_background: { api: "__CreateView" },
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",
