@@ -197,11 +197,71 @@ importers:
         specifier: ^2.9.1
         version: 2.9.1
 
+  modules/lynx-polyfill:
+    devDependencies:
+      '@rsbuild/core':
+        specifier: ^2.3.2
+        version: 2.3.2(core-js@3.51.0)
+      '@rstest/core':
+        specifier: ^0.12.6
+        version: 0.12.6(core-js@3.51.0)(jsdom@31.0.1)
+      '@rstest/coverage-istanbul':
+        specifier: ^0.12.6
+        version: 0.12.6(@rstest/core@0.12.6(core-js@3.51.0)(jsdom@31.0.1))(supports-color@7.2.0)
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@ungap/structured-clone':
+        specifier: 1.4.0
+        version: 1.4.0
+      acorn:
+        specifier: ^8.19.0
+        version: 8.19.0
+      core-js:
+        specifier: 3.51.0
+        version: 3.51.0
+      event-target-shim:
+        specifier: 6.0.2
+        version: 6.0.2
+      eventsource-parser:
+        specifier: 4.1.3
+        version: 4.1.3
+      fast-check:
+        specifier: ^4.10.2
+        version: 4.10.2
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
+      publint:
+        specifier: ^0.3.25
+        version: 0.3.25
+      regexpu-core:
+        specifier: 6.5.4
+        version: 6.5.4
+      svelte:
+        specifier: ~5.59.0
+        version: 5.59.0
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      unorm:
+        specifier: 1.6.0
+        version: 1.6.0
+      urlpattern-polyfill:
+        specifier: 10.1.0
+        version: 10.1.0
+      web-streams-polyfill:
+        specifier: 4.5.1
+        version: 4.5.1
+      whatwg-url-minimum:
+        specifier: 0.2.0
+        version: 0.2.0
+
   packages/lynx:
     dependencies:
       '@lynx-js/rsbuild-plugin':
         specifier: ^0.1.9
-        version: 0.1.9(@rsbuild/core@2.3.2)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+        version: 0.1.9(@rsbuild/core@2.3.2(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@lynx-js/runtime-wrapper-webpack-plugin':
         specifier: ^0.2.6
         version: 0.2.6
@@ -226,31 +286,31 @@ importers:
     devDependencies:
       '@lynx-js/rspeedy':
         specifier: ^0.18.6
-        version: 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+        version: 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(core-js@3.51.0)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@lynx-js/types':
         specifier: 4.4.2
         version: 4.4.2
       '@rsbuild/core':
         specifier: ^2.3.2
-        version: 2.3.2
+        version: 2.3.2(core-js@3.51.0)
       '@rsbuild/plugin-less':
         specifier: ^2.0.1
-        version: 2.0.1(@rsbuild/core@2.3.2)(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+        version: 2.0.1(@rsbuild/core@2.3.2(core-js@3.51.0))(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rsbuild/plugin-sass':
         specifier: ^2.0.1
-        version: 2.0.1(@rsbuild/core@2.3.2)
+        version: 2.0.1(@rsbuild/core@2.3.2(core-js@3.51.0))
       '@rsdoctor/rspack-plugin':
         specifier: ^1.6.5
-        version: 1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2)(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+        version: 1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2(core-js@3.51.0))(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rstest/adapter-rsbuild':
         specifier: ^0.12.6
-        version: 0.12.6(@rsbuild/core@2.3.2)(@rstest/core@0.12.6(jsdom@31.0.1))
+        version: 0.12.6(@rsbuild/core@2.3.2(core-js@3.51.0))(@rstest/core@0.12.6(core-js@3.51.0)(jsdom@31.0.1))
       '@rstest/core':
         specifier: ^0.12.6
-        version: 0.12.6(jsdom@31.0.1)
+        version: 0.12.6(core-js@3.51.0)(jsdom@31.0.1)
       '@rstest/coverage-istanbul':
         specifier: ^0.12.6
-        version: 0.12.6(@rstest/core@0.12.6(jsdom@31.0.1))(supports-color@7.2.0)
+        version: 0.12.6(@rstest/core@0.12.6(core-js@3.51.0)(jsdom@31.0.1))(supports-color@7.2.0)
       '@testing-library/dom':
         specifier: ^10.4.2
         version: 10.4.2
@@ -299,9 +359,6 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      typescript-5.9:
-        specifier: npm:typescript@^5.9.3
-        version: typescript@5.9.3
       vite:
         specifier: ^8.3.8
         version: 8.3.8(@types/node@26.6.6)(jiti@1.21.7)(less@4.9.1(supports-color@7.2.0))(sass-embedded@1.108.2)(sass@1.108.2)(terser@5.51.2)(yaml@2.9.1)
@@ -317,13 +374,16 @@ importers:
     devDependencies:
       '@lynx-js/qrcode-rsbuild-plugin':
         specifier: ^0.7.3
-        version: 0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)
+        version: 0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(core-js@3.51.0)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2(core-js@3.51.0))
       '@lynx-js/rspeedy':
         specifier: ^0.18.6
-        version: 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+        version: 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(core-js@3.51.0)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@sohedra/lynx':
         specifier: workspace:*
         version: link:../../packages/lynx
+      '@sohedra/lynx-polyfill':
+        specifier: workspace:*
+        version: link:../../modules/lynx-polyfill
       '@types/node':
         specifier: ^26.6.6
         version: 26.6.6
@@ -1814,6 +1874,9 @@ packages:
     resolution: {integrity: sha512-yCEafptTtb4bk7GLEQoM8KVJpxAfdBJYaXyzQEgQQQgYrZiDp8SJmGKlYza6CYjEDNstAdNdKA3UuoULlEbS6w==}
     engines: {node: '>=12.13'}
 
+  core-js@3.51.0:
+    resolution: {integrity: sha512-7bDKx/5jm5MxzsXxc93g6Z2+4ZsuT/MddrfRmTDJNAkWsYWHU8EVNEsBiIEWnMAMCHMmRfUEjkuo3jeNBOIHRw==}
+
   cors@2.8.6:
     resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
     engines: {node: '>= 0.10'}
@@ -2109,12 +2172,20 @@ packages:
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
 
+  event-target-shim@6.0.2:
+    resolution: {integrity: sha512-8q3LsZjRezbFZ2PN+uP+Q7pnHUMmAOziU2vA2OwoFaKIXxlxl38IylhSSgUorWu/rf4er67w0ikBqjBFk/pomA==}
+    engines: {node: '>=10.13.0'}
+
   eventemitter3@5.0.4:
     resolution: {integrity: sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==}
 
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
+
+  eventsource-parser@4.1.3:
+    resolution: {integrity: sha512-jZVIVilXZfAx6H20ZKKEj5dabbpD9ETmMj3uHsjMmgBzBHB6tsHrmdWB4mAiy3amtN6MOoVkfXRQu4wf1n88Rw==}
+    engines: {node: '>=22.12'}
 
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
@@ -2145,6 +2216,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   filesize@11.0.35:
     resolution: {integrity: sha512-nYIrQN/m4a0VYYoUeENvFf8mCDaB9PNbKETinw4DRdBcX5yB2nY3YtFz9iMfg/YDQWyYPOn/THVtsqLN/IH0Ag==}
@@ -2452,6 +2526,11 @@ packages:
     peerDependenciesMeta:
       '@napi-rs/canvas':
         optional: true
+
+  jsesc@3.1.0:
+    resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
+    engines: {node: '>=6'}
+    hasBin: true
 
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
@@ -3154,9 +3233,27 @@ packages:
     resolution: {integrity: sha512-00o4I+DVrefhv+nX0ulyi3biSHCPDe+yLv5o/p6d/UVlirijB8E16FtfwSAi4g3tcqrQ4lRAqQSoFEZJehYEcw==}
     engines: {node: '>= 0.4'}
 
+  regenerate-unicode-properties@10.3.0:
+    resolution: {integrity: sha512-9ns8odR8e9q3otKeHj3DE80jZYKg6zVeZKE+zQmRKXFoVUcuiTGeO6iusDhPRoIQQPVPRvH+SfBhrTud4eczuw==}
+    engines: {node: '>=4'}
+
+  regenerate@1.5.0:
+    resolution: {integrity: sha512-1s+CxXjJ71i7LNVy8nYwg47XV4y6lAnOEhsMtSKq3WpmPfhl9LuKlTqKIn/3yUpE8lBz+W+TT88Bxyhnr0U4yw==}
+
   regexp.prototype.flags@1.5.4:
     resolution: {integrity: sha512-dYqgNSZbDwkaJ2ceRd9ojCGjBq+mOm9LmtXnAnEGyHhN/5R7iDW2TRw3h+o/jCFxus3P2LfWIIiwowAjANm7IA==}
     engines: {node: '>= 0.4'}
+
+  regexpu-core@6.5.4:
+    resolution: {integrity: sha512-VpdamrZ9bw4YmvMZfTA3Yg8IHU9Guvg21bonvgjC4l3KfBkOqCPJesHakz7cQeE4Vh4zz4r4Gy6igAcnJxZv9g==}
+    engines: {node: '>=4'}
+
+  regjsgen@0.8.0:
+    resolution: {integrity: sha512-RvwtGe3d7LvWiDQXeQw8p5asZUmfU1G/l6WbUXeHta7Y2PEIvBTwH6E2EfmYUK8pxcxEdEmaomqyp0vZZ7C+3Q==}
+
+  regjsparser@0.14.1:
+    resolution: {integrity: sha512-IeYboCLG1KBNRksrZQIZ1SV5KVWZiR0ikFokOcA0n63vLvlaFvCsfxN+fd4aXwL0KW3YD+ByRzIgo9ZAHdbldw==}
+    hasBin: true
 
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
@@ -3615,11 +3712,6 @@ packages:
     resolution: {integrity: sha512-phPGCwqr2+Qo0fwniCE8e4pKnGu/yFb5nD5Y8bf0EEeiI5GklnACYA9GFy/DrAeRrKHXvHn+1SUsOWgJp6RO+g==}
     engines: {node: '>= 0.4'}
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@6.0.3:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
@@ -3639,15 +3731,38 @@ packages:
     resolution: {integrity: sha512-8Mx+uNKKER2bA4AdtedkqRbwUCIJFr2nJckXRe5yrDqzePqwLP7VNcctN8/XdmDSbF7mS+jJKIszlL+vbam1VA==}
     engines: {node: '>=22.19.0'}
 
+  unicode-canonical-property-names-ecmascript@2.0.1:
+    resolution: {integrity: sha512-dA8WbNeb2a6oQzAQ55YlT5vQAWGV9WXOsi3SskE3bcCdM0P4SDd+24zS/OCacdRq5BkdsRj9q3Pg6YyQoxIGqg==}
+    engines: {node: '>=4'}
+
+  unicode-match-property-ecmascript@2.0.0:
+    resolution: {integrity: sha512-5kaZCrbp5mmbz5ulBkDkbY0SsPOjKqVS35VpL9ulMPfSl0J0Xsm+9Evphv9CoIZFwre7aJoa94AY6seMKGVN5Q==}
+    engines: {node: '>=4'}
+
+  unicode-match-property-value-ecmascript@2.2.1:
+    resolution: {integrity: sha512-JQ84qTuMg4nVkx8ga4A16a1epI9H6uTXAknqxkGF/aFfRLw1xC/Bp24HNLaZhHSkWd3+84t8iXnp1J0kYcZHhg==}
+    engines: {node: '>=4'}
+
+  unicode-property-aliases-ecmascript@2.2.0:
+    resolution: {integrity: sha512-hpbDzxUY9BFwX+UeBnxv3Sh1q7HFxj48DTmXchNgRa46lO8uj3/1iEn3MiNUYTg1g9ctIqXCCERn8gYZhHC5lQ==}
+    engines: {node: '>=4'}
+
   universalify@2.0.1:
     resolution: {integrity: sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==}
     engines: {node: '>= 10.0.0'}
+
+  unorm@1.6.0:
+    resolution: {integrity: sha512-b2/KCUlYZUeA7JFUuRJZPUtr4gZvBh7tavtv4fvk4+KV9pfGiR6CQAQAWl49ZpR3ts2dk4FYkP7EIgDJoiOLDA==}
+    engines: {node: '>= 0.4.0'}
 
   update-browserslist-db@1.3.4:
     resolution: {integrity: sha512-t8wonIOdQyOjtPd2VktlBu6QjTVTks6v8bSi7kd0r2Vll8TK1JYDZtRRdbmCHOAMphkZgrzK+L+vXK4pyZ8t4A==}
     hasBin: true
     peerDependencies:
       browserslist: '>= 4.21.0'
+
+  urlpattern-polyfill@10.1.0:
+    resolution: {integrity: sha512-IGjKp/o0NL3Bso1PymYURCJxMPNAf/ILOpendP9f5B6e1rTJgdgiOvgfoT8VxCAdY+Wisb9uhGaJJf3yZ2V9nw==}
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
@@ -3754,6 +3869,10 @@ packages:
     resolution: {integrity: sha512-5H3Tce2GfzWbcr9VnSqyak2whFaONw4BdmI5BDnMXold4qSlCFd64XaMQESRh2vkDKmdUkv6rUo17UvZ9f9nXw==}
     engines: {node: '>=10.13.0'}
 
+  web-streams-polyfill@4.5.1:
+    resolution: {integrity: sha512-pFmV/G8K9uKW3I3xx3vqpKYLBer7K1wZej5uU66zhtjzG1bfE6e+OHNxhmGb9UsXe+geX4/lndxJDgs7wbYO9g==}
+    engines: {node: '>= 8'}
+
   webidl-conversions@8.0.1:
     resolution: {integrity: sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==}
     engines: {node: '>=20'}
@@ -3775,6 +3894,9 @@ packages:
   whatwg-mimetype@5.0.0:
     resolution: {integrity: sha512-sXcNcHOC51uPGF0P/D4NVtrkjSU2fNsm9iog4ZvZJsL3rjoDAzXZhkm2MWt1y+PUdggKAYVoMAIYcs78wJ51Cw==}
     engines: {node: '>=20'}
+
+  whatwg-url-minimum@0.2.0:
+    resolution: {integrity: sha512-BtjXU1caNcCFfETP2DhqSeVPfRDl2MTUitI107RE34rJXjR/izfUtR5IoTFOK1WqjNLXbbeqaCH/mQAOLjpc8g==}
 
   whatwg-url@17.3.0:
     resolution: {integrity: sha512-KwOAJrpf+GTgBvcBQJcP38sMF0DsQKdwtG+TxM2pW44P6E5k0hDbWrDmyuJDIF0Uef0aQq0ZoJs+5oI+k8ddhg==}
@@ -3955,38 +4077,38 @@ snapshots:
       css-tree: 3.2.1
       pathe: 2.0.3
 
-  '@lynx-js/debug-metadata-rsbuild-plugin@0.2.3(@rsbuild/core@2.2.9)':
+  '@lynx-js/debug-metadata-rsbuild-plugin@0.2.3(@rsbuild/core@2.2.9(core-js@3.51.0))':
     dependencies:
       '@lynx-js/debug-metadata': 0.1.0
     optionalDependencies:
-      '@rsbuild/core': 2.2.9
+      '@rsbuild/core': 2.2.9(core-js@3.51.0)
 
-  '@lynx-js/debug-metadata-rsbuild-plugin@0.2.3(@rsbuild/core@2.3.2)':
+  '@lynx-js/debug-metadata-rsbuild-plugin@0.2.3(@rsbuild/core@2.3.2(core-js@3.51.0))':
     dependencies:
       '@lynx-js/debug-metadata': 0.1.0
     optionalDependencies:
-      '@rsbuild/core': 2.3.2
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
 
   '@lynx-js/debug-metadata@0.1.0': {}
 
-  '@lynx-js/qrcode-rsbuild-plugin@0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2)':
+  '@lynx-js/qrcode-rsbuild-plugin@0.7.3(@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(core-js@3.51.0)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0)))(@rsbuild/core@2.3.2(core-js@3.51.0))':
     optionalDependencies:
-      '@lynx-js/rspeedy': 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
-      '@rsbuild/core': 2.3.2
+      '@lynx-js/rspeedy': 0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(core-js@3.51.0)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
 
-  '@lynx-js/rsbuild-plugin@0.1.9(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@lynx-js/rsbuild-plugin@0.1.9(@rsbuild/core@2.2.9(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
       '@lynx-js/cache-events-webpack-plugin': 0.2.3
       '@lynx-js/chunk-loading-webpack-plugin': 0.4.3
-      '@lynx-js/debug-metadata-rsbuild-plugin': 0.2.3(@rsbuild/core@2.2.9)
+      '@lynx-js/debug-metadata-rsbuild-plugin': 0.2.3(@rsbuild/core@2.2.9(core-js@3.51.0))
       '@lynx-js/runtime-wrapper-webpack-plugin': 0.2.6
       '@lynx-js/template-webpack-plugin': 0.16.8(tslib@2.9.1)
       '@lynx-js/web-rsbuild-server-middleware': 0.26.8
       '@lynx-js/webpack-dev-transport': 0.4.1
       '@lynx-js/websocket': 0.0.4
-      '@rsbuild/plugin-css-minimizer': 2.0.1(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+      '@rsbuild/plugin-css-minimizer': 2.0.1(@rsbuild/core@2.2.9(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
     optionalDependencies:
-      '@rsbuild/core': 2.2.9
+      '@rsbuild/core': 2.2.9(core-js@3.51.0)
     transitivePeerDependencies:
       - '@lynx-js/animax'
       - '@lynx-js/lynx-core'
@@ -3999,19 +4121,19 @@ snapshots:
       - tslib
       - webpack
 
-  '@lynx-js/rsbuild-plugin@0.1.9(@rsbuild/core@2.3.2)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@lynx-js/rsbuild-plugin@0.1.9(@rsbuild/core@2.3.2(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
       '@lynx-js/cache-events-webpack-plugin': 0.2.3
       '@lynx-js/chunk-loading-webpack-plugin': 0.4.3
-      '@lynx-js/debug-metadata-rsbuild-plugin': 0.2.3(@rsbuild/core@2.3.2)
+      '@lynx-js/debug-metadata-rsbuild-plugin': 0.2.3(@rsbuild/core@2.3.2(core-js@3.51.0))
       '@lynx-js/runtime-wrapper-webpack-plugin': 0.2.6
       '@lynx-js/template-webpack-plugin': 0.16.8(tslib@2.9.1)
       '@lynx-js/web-rsbuild-server-middleware': 0.26.8
       '@lynx-js/webpack-dev-transport': 0.4.1
       '@lynx-js/websocket': 0.0.4
-      '@rsbuild/plugin-css-minimizer': 2.0.1(@rsbuild/core@2.3.2)(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+      '@rsbuild/plugin-css-minimizer': 2.0.1(@rsbuild/core@2.3.2(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
     optionalDependencies:
-      '@rsbuild/core': 2.3.2
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
     transitivePeerDependencies:
       - '@lynx-js/animax'
       - '@lynx-js/lynx-core'
@@ -4024,10 +4146,10 @@ snapshots:
       - tslib
       - webpack
 
-  '@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@lynx-js/rspeedy@0.18.6(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)(core-js@3.51.0)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(typescript@6.0.3)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
-      '@lynx-js/rsbuild-plugin': 0.1.9(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
-      '@rsbuild/core': 2.2.9
+      '@lynx-js/rsbuild-plugin': 0.1.9(@rsbuild/core@2.2.9(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(tslib@2.9.1)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+      '@rsbuild/core': 2.2.9(core-js@3.51.0)
       '@rsdoctor/core': 2.0.0(@rspack/core@2.3.2(@swc/helpers@0.5.24))(@types/node@26.6.6)
     optionalDependencies:
       typescript: 6.0.3
@@ -4386,21 +4508,25 @@ snapshots:
 
   '@rolldown/pluginutils@1.1.1': {}
 
-  '@rsbuild/core@2.2.9':
+  '@rsbuild/core@2.2.9(core-js@3.51.0)':
     dependencies:
       '@rspack/core': 2.2.9(@swc/helpers@0.5.24)
       '@swc/helpers': 0.5.24
+    optionalDependencies:
+      core-js: 3.51.0
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
-  '@rsbuild/core@2.3.2':
+  '@rsbuild/core@2.3.2(core-js@3.51.0)':
     dependencies:
       '@rspack/core': 2.3.2(@swc/helpers@0.5.24)
       '@swc/helpers': 0.5.24
+    optionalDependencies:
+      core-js: 3.51.0
     transitivePeerDependencies:
       - '@module-federation/runtime-tools'
 
-  '@rsbuild/plugin-check-syntax@1.6.1(@rsbuild/core@2.3.2)':
+  '@rsbuild/plugin-check-syntax@1.6.1(@rsbuild/core@2.3.2(core-js@3.51.0))':
     dependencies:
       acorn: 8.19.0
       browserslist-to-es-version: 1.4.2
@@ -4408,14 +4534,14 @@ snapshots:
       picocolors: 1.1.1
       source-map: 0.7.6
     optionalDependencies:
-      '@rsbuild/core': 2.3.2
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
 
-  '@rsbuild/plugin-css-minimizer@2.0.1(@rsbuild/core@2.2.9)(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@rsbuild/plugin-css-minimizer@2.0.1(@rsbuild/core@2.2.9(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
       css-minimizer-webpack-plugin: 8.0.0(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       reduce-configs: 1.1.2
     optionalDependencies:
-      '@rsbuild/core': 2.2.9
+      '@rsbuild/core': 2.2.9(core-js@3.51.0)
     transitivePeerDependencies:
       - '@parcel/css'
       - '@swc/css'
@@ -4425,12 +4551,12 @@ snapshots:
       - lightningcss
       - webpack
 
-  '@rsbuild/plugin-css-minimizer@2.0.1(@rsbuild/core@2.3.2)(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@rsbuild/plugin-css-minimizer@2.0.1(@rsbuild/core@2.3.2(core-js@3.51.0))(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
       css-minimizer-webpack-plugin: 8.0.0(csso@5.0.5)(lightningcss@1.33.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       reduce-configs: 1.1.2
     optionalDependencies:
-      '@rsbuild/core': 2.3.2
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
     transitivePeerDependencies:
       - '@parcel/css'
       - '@swc/css'
@@ -4440,20 +4566,20 @@ snapshots:
       - lightningcss
       - webpack
 
-  '@rsbuild/plugin-less@2.0.1(@rsbuild/core@2.3.2)(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@rsbuild/plugin-less@2.0.1(@rsbuild/core@2.3.2(core-js@3.51.0))(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
       deepmerge: 4.3.1
       less: 4.9.1(supports-color@7.2.0)
       less-loader: 12.3.3(@rspack/core@2.3.2(@swc/helpers@0.5.24))(less@4.9.1(supports-color@7.2.0))(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       reduce-configs: 2.0.1
     optionalDependencies:
-      '@rsbuild/core': 2.3.2
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
     transitivePeerDependencies:
       - '@rspack/core'
       - supports-color
       - webpack
 
-  '@rsbuild/plugin-sass@2.0.1(@rsbuild/core@2.3.2)':
+  '@rsbuild/plugin-sass@2.0.1(@rsbuild/core@2.3.2(core-js@3.51.0))':
     dependencies:
       deepmerge: 4.3.1
       loader-utils: 2.0.4
@@ -4461,15 +4587,15 @@ snapshots:
       reduce-configs: 2.0.1
       sass-embedded: 1.108.2
     optionalDependencies:
-      '@rsbuild/core': 2.3.2
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
 
   '@rsdoctor/client@1.6.5': {}
 
   '@rsdoctor/client@2.0.0': {}
 
-  '@rsdoctor/core@1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2)(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@rsdoctor/core@1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2(core-js@3.51.0))(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
-      '@rsbuild/plugin-check-syntax': 1.6.1(@rsbuild/core@2.3.2)
+      '@rsbuild/plugin-check-syntax': 1.6.1(@rsbuild/core@2.3.2(core-js@3.51.0))
       '@rsdoctor/graph': 1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.24))(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rsdoctor/sdk': 1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rsdoctor/types': 1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.24))(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
@@ -4515,9 +4641,9 @@ snapshots:
       - '@rspack/core'
       - webpack
 
-  '@rsdoctor/rspack-plugin@1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2)(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
+  '@rsdoctor/rspack-plugin@1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2(core-js@3.51.0))(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))':
     dependencies:
-      '@rsdoctor/core': 1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2)(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
+      '@rsdoctor/core': 1.6.5(@emnapi/core@2.0.0-beta.3)(@emnapi/runtime@2.0.0-beta.3)(@rsbuild/core@2.3.2(core-js@3.51.0))(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rsdoctor/graph': 1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.24))(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rsdoctor/sdk': 1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.24))(supports-color@7.2.0)(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
       '@rsdoctor/types': 1.6.5(@rspack/core@2.3.2(@swc/helpers@0.5.24))(webpack@5.112.2(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(lightningcss@1.33.0)(postcss@8.5.33)(svgo@4.1.0))
@@ -4786,14 +4912,14 @@ snapshots:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@rstest/adapter-rsbuild@0.12.6(@rsbuild/core@2.3.2)(@rstest/core@0.12.6(jsdom@31.0.1))':
+  '@rstest/adapter-rsbuild@0.12.6(@rsbuild/core@2.3.2(core-js@3.51.0))(@rstest/core@0.12.6(core-js@3.51.0)(jsdom@31.0.1))':
     dependencies:
-      '@rsbuild/core': 2.3.2
-      '@rstest/core': 0.12.6(jsdom@31.0.1)
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
+      '@rstest/core': 0.12.6(core-js@3.51.0)(jsdom@31.0.1)
 
-  '@rstest/core@0.12.6(jsdom@31.0.1)':
+  '@rstest/core@0.12.6(core-js@3.51.0)(jsdom@31.0.1)':
     dependencies:
-      '@rsbuild/core': 2.3.2
+      '@rsbuild/core': 2.3.2(core-js@3.51.0)
       '@types/chai': 5.2.3
       cjs-module-lexer: 2.3.0
     optionalDependencies:
@@ -4802,9 +4928,9 @@ snapshots:
       - '@module-federation/runtime-tools'
       - core-js
 
-  '@rstest/coverage-istanbul@0.12.6(@rstest/core@0.12.6(jsdom@31.0.1))(supports-color@7.2.0)':
+  '@rstest/coverage-istanbul@0.12.6(@rstest/core@0.12.6(core-js@3.51.0)(jsdom@31.0.1))(supports-color@7.2.0)':
     dependencies:
-      '@rstest/core': 0.12.6(jsdom@31.0.1)
+      '@rstest/core': 0.12.6(core-js@3.51.0)(jsdom@31.0.1)
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
       istanbul-lib-source-maps: 5.0.6(supports-color@7.2.0)
@@ -5218,6 +5344,8 @@ snapshots:
     dependencies:
       is-what: 4.1.16
 
+  core-js@3.51.0: {}
+
   cors@2.8.6:
     dependencies:
       object-assign: 4.1.1
@@ -5582,9 +5710,13 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.10
 
+  event-target-shim@6.0.2: {}
+
   eventemitter3@5.0.4: {}
 
   events@3.3.0: {}
+
+  eventsource-parser@4.1.3: {}
 
   expect-type@1.4.0: {}
 
@@ -5611,6 +5743,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
+
+  fflate@0.8.3: {}
 
   filesize@11.0.35: {}
 
@@ -5958,6 +6092,8 @@ snapshots:
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - '@noble/hashes'
+
+  jsesc@3.1.0: {}
 
   json-schema-traverse@1.0.0: {}
 
@@ -6594,6 +6730,12 @@ snapshots:
       get-proto: 1.0.1
       which-builtin-type: 1.2.1
 
+  regenerate-unicode-properties@10.3.0:
+    dependencies:
+      regenerate: 1.5.0
+
+  regenerate@1.5.0: {}
+
   regexp.prototype.flags@1.5.4:
     dependencies:
       call-bind: 1.0.9
@@ -6602,6 +6744,21 @@ snapshots:
       get-proto: 1.0.1
       gopd: 1.2.0
       set-function-name: 2.0.2
+
+  regexpu-core@6.5.4:
+    dependencies:
+      regenerate: 1.5.0
+      regenerate-unicode-properties: 10.3.0
+      regjsgen: 0.8.0
+      regjsparser: 0.14.1
+      unicode-match-property-ecmascript: 2.0.0
+      unicode-match-property-value-ecmascript: 2.2.1
+
+  regjsgen@0.8.0: {}
+
+  regjsparser@0.14.1:
+    dependencies:
+      jsesc: 3.1.0
 
   require-from-string@2.0.2: {}
 
@@ -7156,8 +7313,6 @@ snapshots:
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
 
-  typescript@5.9.3: {}
-
   typescript@6.0.3: {}
 
   uc.micro@3.0.0: {}
@@ -7173,13 +7328,28 @@ snapshots:
 
   undici@8.12.4: {}
 
+  unicode-canonical-property-names-ecmascript@2.0.1: {}
+
+  unicode-match-property-ecmascript@2.0.0:
+    dependencies:
+      unicode-canonical-property-names-ecmascript: 2.0.1
+      unicode-property-aliases-ecmascript: 2.2.0
+
+  unicode-match-property-value-ecmascript@2.2.1: {}
+
+  unicode-property-aliases-ecmascript@2.2.0: {}
+
   universalify@2.0.1: {}
+
+  unorm@1.6.0: {}
 
   update-browserslist-db@1.3.4(browserslist@4.29.5):
     dependencies:
       browserslist: 4.29.5
       escalade: 3.2.0
       picocolors: 1.1.1
+
+  urlpattern-polyfill@10.1.0: {}
 
   util-deprecate@1.0.2: {}
 
@@ -7236,6 +7406,8 @@ snapshots:
     dependencies:
       graceful-fs: 4.2.12
 
+  web-streams-polyfill@4.5.1: {}
+
   webidl-conversions@8.0.1: {}
 
   webpack-sources@3.7.0: {}
@@ -7278,6 +7450,8 @@ snapshots:
       - uglify-js
 
   whatwg-mimetype@5.0.0: {}
+
+  whatwg-url-minimum@0.2.0: {}
 
   whatwg-url@17.3.0:
     dependencies:

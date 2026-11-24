@@ -1,0 +1,101 @@
+{
+	"*": {
+		"skip": "The streams fill is the background's only: Lynx runs fetch and its streams on the background thread, and the main thread has none of them.",
+		"threads": ["main-thread"]
+	},
+	"idlharness.any.js": {
+		"skip": "idlharness's checks of Web IDL bindings, which the fills' JavaScript classes don't all follow (attributes as own getters, operations' lengths), and it reads the IDL from WPT's server."
+	},
+	"piping/abort.any.js": {
+		"fail": {
+			"note": "web-streams-polyfill (vendored) makes its own DOMException as it loads, before the DOMException fill runs, so its AbortError is not the thread's.",
+			"threads": ["background"],
+			"expected": [
+				"an aborted signal should cause the writable stream to reject with an AbortError"
+			]
+		}
+	},
+	"piping/general-addition.any.js": {
+		"fail": {
+			"note": "web-streams-polyfill (vendored) runs a writable's write algorithm synchronously from enqueue().",
+			"threads": ["background"],
+			"expected": ["enqueue() must not synchronously call write algorithm"]
+		}
+	},
+	"readable-byte-streams/bad-buffers-and-views.any.js": {
+		"fail": [
+			{
+				"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved. web-streams-polyfill (vendored) can't detach a buffer it takes, and a check waiting on one never ends.",
+				"threads": ["background"],
+				"expected": [
+					"<harness>",
+					"ReadableStream with byte source: enqueuing an already-detached buffer throws",
+					"ReadableStream with byte source: read()ing from a closed stream still transfers the buffer",
+					"ReadableStream with byte source: read()ing from a stream with queued chunks still transfers the buffer",
+					"ReadableStream with byte source: respondWithNewView() throws if the supplied view's buffer is zero-length (in the closed state)"
+				]
+			},
+			{
+				"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved.",
+				"threads": ["background"],
+				"expected": [
+					"ReadableStream with byte source: enqueue() throws if the BYOB request's buffer has been detached (in the closed state)",
+					"ReadableStream with byte source: enqueue() throws if the BYOB request's buffer has been detached (in the readable state)",
+					"ReadableStream with byte source: respond() throws if the BYOB request's buffer has been detached (in the closed state)",
+					"ReadableStream with byte source: respond() throws if the BYOB request's buffer has been detached (in the readable state)",
+					"ReadableStream with byte source: respondWithNewView() throws if the supplied view's buffer has been detached (in the readable state)"
+				]
+			}
+		]
+	},
+	"readable-byte-streams/enqueue-with-detached-buffer.any.js": {
+		"fail": {
+			"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved. web-streams-polyfill (vendored) can't detach a buffer it takes.",
+			"threads": ["background"],
+			"expected": ["enqueue after detaching byobRequest.view.buffer should throw"]
+		}
+	},
+	"readable-byte-streams/general.any.js": {
+		"fail": {
+			"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved. web-streams-polyfill (vendored) can't detach a buffer it takes.",
+			"threads": ["background"],
+			"expected": [
+				"ReadableStream with byte source: read(view) with Uint32Array, then fill it by multiple enqueue() calls",
+				"ReadableStream with byte source: read(view) with Uint32Array, then fill it by multiple respond() calls"
+			]
+		}
+	},
+	"readable-byte-streams/non-transferable-buffers.any.js": {
+		"fail": {
+			"note": "Lynx has no WebAssembly.",
+			"threads": ["background"],
+			"expected": [
+				"ReadableStream with byte source: enqueue() with a non-transferable buffer",
+				"ReadableStream with byte source: fill() with a non-transferable buffer",
+				"ReadableStream with byte source: read() with a non-transferable buffer",
+				"ReadableStream with byte source: respondWithNewView() with a non-transferable buffer"
+			]
+		}
+	},
+	"readable-streams/async-iterator.any.js": {
+		"fail": {
+			"note": "web-streams-polyfill (vendored) can't reach %AsyncIteratorPrototype% on PrimJS, so its iterator's prototype is its own.",
+			"threads": ["background"],
+			"expected": ["Async iterator instances should have the correct list of properties"]
+		}
+	},
+	"readable-streams/owning-type*.tentative.any.js": {
+		"skip": "The `owning` type is a tentative addition to Streams, which web-streams-polyfill (vendored) doesn't have."
+	},
+	"readable-streams/patched-global.any.js": {
+		"fail": {
+			"note": "web-streams-polyfill (vendored) calls Promise.prototype.then as a page can patch it.",
+			"threads": ["background"],
+			"expected": [
+				"ReadableStream async iterator should use the original values of getReader() and ReadableStreamDefaultReader methods",
+				"pipeTo() should not call Promise.prototype.then()",
+				"tee() should not call Promise.prototype.then()"
+			]
+		}
+	}
+}

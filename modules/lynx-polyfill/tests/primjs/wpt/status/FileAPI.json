@@ -1,0 +1,323 @@
+{
+	"*": {
+		"skip": "Blob and File are the background's only: Lynx runs fetch and its streams on the background thread, and the main thread has none of them.",
+		"threads": ["main-thread"]
+	},
+	"blob/Blob-constructor-detached-buffer.any.js": {
+		"fail": {
+			"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved.",
+			"threads": ["background"],
+			"expected": [
+				"Blob from a detached ArrayBuffer should be empty",
+				"Blob from a detached ArrayBufferView mixed with string, detached part ignored",
+				"Blob from a detached ArrayBufferView should be empty",
+				"Blob from a detached ArrayBufferView with offset should be empty"
+			]
+		}
+	},
+	"blob/Blob-constructor.any.js": {
+		"fail": {
+			"note": "PrimJS has no Float16Array, and core-js (the float16 fill) gives only Math.f16round and DataView's methods.",
+			"threads": ["background"],
+			"expected": ["Passing a Float16Array as element of the blobParts array should work."]
+		}
+	},
+	"blob/Blob-textStream.any.js": {
+		"fail": {
+			"note": "textStream(), added to the File API and Fetch after the WinterTC baseline, is not in the fills.",
+			"threads": ["background"],
+			"expected": [
+				"Blob.textStream() basic functionality",
+				"Blob.textStream() can be called multiple times",
+				"Blob.textStream() ignores invalid type charset (invalid-charset)",
+				"Blob.textStream() ignores type charset (UTF-16LE)",
+				"Blob.textStream() ignores type charset (iso-8859-1)",
+				"Blob.textStream() with empty blob",
+				"Blob.textStream() with multi-part blob",
+				"textStream method existence"
+			]
+		}
+	},
+	"file/send-file-formdata-controls.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Upload file-for-upload-in-form-BS-[\b].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-CR-LF-[\r\n].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-CR-[\r].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-DEL-[\u007f].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-ESC-[\u001b].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-FF-[\f].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-HT-[\t].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-LF-CR-[\n\r].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-LF-[\n].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-NUL-[\u0000].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-SPACE-[ ].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-VT-[\u000b].txt (ASCII) in fetch with FormData"
+			]
+		}
+	},
+	"file/send-file-formdata-punctuation.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Upload \"file-for-upload-in-form-double-quoted.txt\" (ASCII) in fetch with FormData",
+				"Upload 'file-for-upload-in-form-single-quoted.txt' (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-AMPERSAND-[&].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-APOSTROPHE-['].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-ASTERISK-[*].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-CIRCUMFLEX-ACCENT-[^].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-COLON-[:].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-COMMA-[,].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-DOLLAR-SIGN-[$].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-EQUALS-SIGN-[=].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-EXCLAMATION-MARK-[!].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-FULL-STOP-[.].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-LEFT-CURLY-BRACKET-[{].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-LEFT-PARENTHESIS-[(].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-LEFT-SQUARE-BRACKET-[[].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-PERCENT-SIGN-[%].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-PLUS-SIGN-[+].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-QUESTION-MARK-[?].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-QUOTATION-MARK-[\"].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-REVERSE-SOLIDUS-[\\].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-RIGHT-CURLY-BRACKET-[}].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-RIGHT-PARENTHESIS-[)].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-RIGHT-SQUARE-BRACKET-[]].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-SEMICOLON-[;].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-SOLIDUS-[/].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-TILDE-[~].txt (ASCII) in fetch with FormData",
+				"Upload file-for-upload-in-form-VERTICAL-LINE-[|].txt (ASCII) in fetch with FormData"
+			]
+		}
+	},
+	"file/send-file-formdata-utf-8.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Upload file-for-upload-in-form-ABC~‾¥≈¤･・•∙·☼★星\ud83c\udf1f星★☼·∙•・･¤≈¥‾~XYZ.txt (Unicode) in fetch with FormData",
+				"Upload file-for-upload-in-form-â˜ºðŸ˜‚.txt (windows-1252) in fetch with FormData",
+				"Upload file-for-upload-in-form-★星★.txt (JIS X 0201 and JIS X 0208) in fetch with FormData",
+				"Upload file-for-upload-in-form-☺\ud83d\ude02.txt (Unicode) in fetch with FormData",
+				"Upload file-for-upload-in-form-.txt (x-user-defined) in fetch with FormData",
+				"Upload file-for-upload-in-form.txt (ASCII) in fetch with FormData"
+			]
+		}
+	},
+	"file/send-file-formdata.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Upload file-for-upload-in-form.txt (ASCII) in fetch with FormData"]
+		}
+	},
+	"fileReader.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"FileReader States -- abort",
+				"FileReader States -- events",
+				"FileReader interface object",
+				"no-argument FileReader constructor"
+			]
+		}
+	},
+	"idlharness.any.js": {
+		"skip": "idlharness's checks of Web IDL bindings, which the fills' JavaScript classes don't all follow (attributes as own getters, operations' lengths), and it reads the IDL from WPT's server."
+	},
+	"reading-data-section/Determining-Encoding.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"Blob Determing Encoding with UTF-16BE BOM",
+				"Blob Determing Encoding with UTF-16LE BOM",
+				"Blob Determing Encoding with UTF-8 BOM",
+				"Blob Determing Encoding with encoding argument",
+				"Blob Determing Encoding with type attribute",
+				"Blob Determing Encoding without anything implying charset."
+			]
+		}
+	},
+	"reading-data-section/FileReader-event-handler-attributes.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"FileReader.onabort: initial value",
+				"FileReader.onerror: initial value",
+				"FileReader.onload: initial value",
+				"FileReader.onloadend: initial value",
+				"FileReader.onloadstart: initial value",
+				"FileReader.onprogress: initial value"
+			]
+		}
+	},
+	"reading-data-section/FileReader-multiple-reads.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"A new read in a load handler suppresses the old read loadend",
+				"A new read in an abort handler before loadstart suppresses the old read",
+				"A new read in an abort handler suppresses the old read loadend",
+				"test FileReader InvalidStateError exception for readAsArrayBuffer",
+				"test FileReader InvalidStateError exception for readAsDataURL",
+				"test FileReader InvalidStateError exception for readAsText",
+				"test FileReader InvalidStateError exception in onloadstart event for readAsArrayBuffer",
+				"test FileReader no InvalidStateError exception in loadend event handler for readAsArrayBuffer",
+				"test abort and restart in onloadstart event for readAsText"
+			]
+		}
+	},
+	"reading-data-section/filereader_abort.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"Aborting a reused reader after a previous read completed",
+				"Aborting after read",
+				"Aborting before read"
+			]
+		}
+	},
+	"reading-data-section/filereader_error.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"reading-data-section/filereader_events.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"events are dispatched in the correct order for a non-empty blob",
+				"events are dispatched in the correct order for an empty blob"
+			]
+		}
+	},
+	"reading-data-section/filereader_readAsArrayBuffer.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"reading-data-section/filereader_readAsBinaryString.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"reading-data-section/filereader_readAsDataURL.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"FileReader readyState during readAsDataURL",
+				"readAsDataURL result for Blob with specified MIME type",
+				"readAsDataURL result for Blob with unspecified MIME type",
+				"readAsDataURL result for empty Blob"
+			]
+		}
+	},
+	"reading-data-section/filereader_readAsText.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"readAsText should correctly read UTF-16.",
+				"readAsText should correctly read UTF-8."
+			]
+		}
+	},
+	"reading-data-section/filereader_readAsText_blob_type_charset.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"readAsText() decodes a windows-1252 Blob body using the type's charset",
+				"readAsText() encoding argument overrides the Blob type's charset",
+				"readAsText() uses the charset parameter of the Blob's type (windows-1252)"
+			]
+		}
+	},
+	"reading-data-section/filereader_readystate.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"reading-data-section/filereader_result.any.js": {
+		"fail": {
+			"note": "The package fills no FileReader, which WinterTC doesn't list: a Blob reads with text(), arrayBuffer(), bytes() and stream().",
+			"threads": ["background"],
+			"expected": [
+				"readAsArrayBuffer",
+				"readAsBinaryString",
+				"readAsDataURL",
+				"readAsText",
+				"result is null during \"loadstart\" event for readAsArrayBuffer",
+				"result is null during \"loadstart\" event for readAsBinaryString",
+				"result is null during \"loadstart\" event for readAsDataURL",
+				"result is null during \"loadstart\" event for readAsText",
+				"result is null during \"progress\" event for readAsArrayBuffer",
+				"result is null during \"progress\" event for readAsBinaryString",
+				"result is null during \"progress\" event for readAsDataURL",
+				"result is null during \"progress\" event for readAsText"
+			]
+		}
+	},
+	"url/url-format.any.js": {
+		"fail": {
+			"note": "The package has no blob: URLs: the URL fill, whatwg-url-minimum (vendored), has no URL.createObjectURL.",
+			"threads": ["background"],
+			"expected": [
+				"Blob URL parses correctly",
+				"Blob URL starts with \"blob:\"",
+				"Blob URL starts with \"blob:\" for Files",
+				"Generated Blob URLs are unique",
+				"Origin of Blob URL matches our origin",
+				"Origin of Blob URL matches our origin for Files"
+			]
+		}
+	},
+	"url/url-with-fetch.any.js": {
+		"fail": {
+			"note": "The package has no blob: URLs: the URL fill, whatwg-url-minimum (vendored), has no URL.createObjectURL.",
+			"threads": ["background"],
+			"expected": [
+				"<harness>",
+				"Appending a path should cause fetch to fail",
+				"Appending a query string should cause fetch to fail",
+				"Blob URLs can be used in fetch",
+				"Only exact matches should revoke URLs, using fetch",
+				"fetch of a revoked URL should fail",
+				"fetch with a fragment should succeed"
+			]
+		}
+	},
+	"url/url-with-xhr.any.js": {
+		"fail": {
+			"note": "The package has no blob: URLs: the URL fill, whatwg-url-minimum (vendored), has no URL.createObjectURL.",
+			"threads": ["background"],
+			"expected": [
+				"<harness>",
+				"Appending a path should cause XHR to fail",
+				"Appending a query string should cause XHR to fail",
+				"Blob URLs can be used in XHR",
+				"Only exact matches should revoke URLs, using XHR",
+				"XHR of a revoked URL should fail",
+				"XHR with a fragment should succeed"
+			]
+		}
+	}
+}

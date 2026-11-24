@@ -1,0 +1,8 @@
+{
+	"target-Array.js": {
+		"fail": {
+			"note": "PrimJS engine bug (the README's known limits): PrimJS moves the integer keys a Proxy's ownKeys trap returns to the front, so the test's keys length, 1 are copied as 1, length and the array ends [] where the standard gives [, 9]. Object.assign itself stays PrimJS's own for speed (core-js's is 5 to 7.5 times slower), though it also copies a key a getter made non-enumerable during the copy, which no test here checks.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}

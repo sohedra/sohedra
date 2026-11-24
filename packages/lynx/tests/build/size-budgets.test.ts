@@ -33,16 +33,19 @@ describe("the size of a thread's script", () => {
 		}
 	});
 
-	it("is within budget for the main thread's runtime: an entry with no page (80,973 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(82_600);
+	// Raised by about 3.4 KB on each thread for the reports that name the import of
+	// @sohedra/lynx-polyfill a missing global needs, or what to use instead, and for hearing the
+	// error events a polyfill fires; the background also for Svelte's `performance.now()`.
+	it("is within budget for the main thread's runtime: an entry with no page (84,372 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(86_100);
 	});
 
-	it("is within budget for a minimal page's main thread, with its first frame (107,128 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(109_300);
+	it("is within budget for a minimal page's main thread, with its first frame (110,586 bytes measured)", () => {
+		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(112_800);
 	});
 
-	it("is within budget for a minimal page's background: Svelte, the renderer and the page (106,053 bytes measured)", () => {
+	it("is within budget for a minimal page's background: Svelte, the renderer and the page (111,037 bytes measured)", () => {
 		// Raised from 96,500 by Svelte's newest renderer build: its batching rewrite and crossing code.
-		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(108_200);
+		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(113_300);
 	});
 });

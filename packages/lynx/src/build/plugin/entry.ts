@@ -249,11 +249,13 @@ export function addBundlePlugins(
 		.plugin(RUNTIME_WRAPPER)
 		.use(RuntimeWrapperWebpackPlugin, [
 			{
-				// Same renames as ReactLynx: these wrapper params are unused.
+				// Same renames as ReactLynx: these wrapper params are unused. And `self` and
+				// `navigator` (`undefined` there), so the bundle reads the global object's, which
+				// `@sohedra/lynx-polyfill` fills. `fetch` keeps its name, which the wrapper's own code
+				// reads: the background's constants point the bundle's reads of `fetch` at the global
+				// object's (thread-defines.ts).
 				injectVars: (vars: string[]) =>
-					vars.map((name) =>
-						["Card", "Component", "ReactLynx", "Behavior"].includes(name) ? `__${name}` : name,
-					),
+					vars.map((name) => (RENAMED_WRAPPER_PARAMETERS.includes(name) ? `__${name}` : name)),
 				targetSdkVersion: engineVersion,
 				// Only background scripts are wrapped (`tt.define(...)`): the wrapper leaves a script
 				// MainThreadAssetsPlugin marked.
@@ -266,6 +268,16 @@ export function addBundlePlugins(
 		.plugin(`${PACKAGE_NAME}:main-thread-assets`)
 		.use(MainThreadAssetsPlugin, [mainThreadFiles, LynxTemplatePlugin]);
 }
+
+/** The parameters of the background's wrapper that the bundle's code must not read by name. */
+const RENAMED_WRAPPER_PARAMETERS = [
+	"Card",
+	"Component",
+	"ReactLynx",
+	"Behavior",
+	"self",
+	"navigator",
+];
 
 type EntryValue = string | string[] | { import: string | string[] };
 

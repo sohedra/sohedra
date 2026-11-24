@@ -4,7 +4,7 @@
 // its count; `onError` hears every one. lynx-core gives every report from this thread Lynx's code for a background error: only
 // the level is the binding's.
 
-import { asError, createRepeats, withCount } from "../wire/index.ts";
+import { asError, createRepeats, withCount, withMissingGlobalHint } from "../wire/index.ts";
 import { heard } from "./errors.ts";
 import type { ErrorSource } from "./errors.ts";
 import { background, DEV } from "./globals.ts";
@@ -21,7 +21,9 @@ export function clearRepeats(): void {
  * known of where it came from. In a development build a repeat reaches Lynx only at its counts;
  * `onError` hears every one, in every build. Never throws over the error it reports.
  */
-export function report(error: unknown, source?: ErrorSource): void {
+export function report(caught: unknown, source?: ErrorSource): void {
+	// A global the page read that Lynx lacks: the report names the import that fills it.
+	const error = withMissingGlobalHint(caught, "background");
 	const thrown = asError(error);
 	try {
 		const count = DEV ? repeats.count(thrown) : 1;

@@ -1,5 +1,5 @@
 // The types as an app gets them: from the package as it is published (its built declarations and
-// `types/`), on TypeScript's last two minor versions. An app that checks every declaration file
+// `types/`), on the TypeScript 6 the package supports. An app that checks every declaration file
 // (`skipLibCheck: false`) and has no DOM, its components checked by svelte-check too; and the
 // package's own type tests, which `pnpm check` runs on its source.
 
@@ -10,7 +10,6 @@ import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 import ts from "typescript";
-import previousTs from "typescript-5.9";
 
 const ROOT = path.resolve(import.meta.dirname, "../../..");
 // In the package, where the app finds the package's dependencies, but outside `node_modules`, whose
@@ -204,16 +203,13 @@ describe("the types an app gets", { timeout: 120_000 }, () => {
 	beforeAll(pack);
 	afterAll(() => fs.rmSync(WORK, { recursive: true, force: true }));
 
-	// Boundary: the previous minor's API is typed by its own declarations, the same for these calls.
-	for (const typescript of [ts, previousTs as unknown as typeof ts]) {
-		it(`check with every declaration file and no DOM on TypeScript ${typescript.versionMajorMinor}`, () => {
-			expect(ours(check(typescript).diagnostics)).toEqual([]);
-		});
+	it(`check with every declaration file and no DOM on TypeScript ${ts.versionMajorMinor}`, () => {
+		expect(ours(check(ts).diagnostics)).toEqual([]);
+	});
 
-		it(`pass the package's type tests on TypeScript ${typescript.versionMajorMinor}`, () => {
-			expect(checkTypeTests(typescript)).toEqual([]);
-		});
-	}
+	it(`pass the package's type tests on TypeScript ${ts.versionMajorMinor}`, () => {
+		expect(checkTypeTests(ts)).toEqual([]);
+	});
 
 	it("check with the base's skipLibCheck: nothing reported, no dependency's declarations either", () => {
 		const { diagnostics } = check(ts, { skipLibCheck: true });

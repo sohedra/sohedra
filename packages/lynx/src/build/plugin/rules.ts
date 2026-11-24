@@ -8,6 +8,7 @@ import { PACKAGE_NAME } from "../../wire/index.ts";
 import { DEV_CLIENT_FILE } from "../loaders/dev-client.ts";
 import type { DevClientLoaderOptions } from "../loaders/dev-client.ts";
 import { DevClientCheckPlugin } from "./dev-client-check.ts";
+import { EngineRegExpsPlugin } from "./engine-regexps.ts";
 import { loaderPath, RUNTIME_FILES } from "./layers.ts";
 import { configureCssRules, keepSelectorListsApart } from "./rules-css.ts";
 import { splitScriptRule, threadsOf } from "./rules-script.ts";
@@ -41,6 +42,7 @@ export function configureBuildRules(options: BuildRuleOptions): void {
 	keepSelectorListsApart(chain, CHAIN_ID);
 	splitSvelteRules({ ...options, swc, threads });
 	patchSvelteSource(chain);
+	chain.plugin(`${PACKAGE_NAME}:engine-regexps`).use(EngineRegExpsPlugin, [{ development }]);
 	if (development) patchDevClientSource(chain);
 }
 

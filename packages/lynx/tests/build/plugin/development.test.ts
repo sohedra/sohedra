@@ -24,6 +24,16 @@ describe("a component with a large <style> block", () => {
 		expect(build.ok).toBe(true);
 	});
 
+	it("renames the wrapper's self and navigator, so the code reads the global object's", () => {
+		const parameters = /define\("background\.js", function\(([^)]*)\)/
+			.exec(scripts.background)![1]!
+			.split(",")
+			.map((name) => name.trim());
+		expect(parameters).toEqual(expect.arrayContaining(["__self", "__navigator", "fetch"]));
+		expect(parameters).not.toContain("self");
+		expect(parameters).not.toContain("navigator");
+	});
+
 	it("puts its rules in the template", () => {
 		const selectors: string[] = readTemplate(build)["css"].cssMap["0"].map(
 			(rule: { selectorText: { value: string } }) => rule.selectorText.value,

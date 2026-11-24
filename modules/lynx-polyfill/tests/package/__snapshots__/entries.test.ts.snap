@@ -1,0 +1,703 @@
+// Rstest Snapshot v1
+
+exports[`import "@sohedra/lynx-polyfill" > on the background: its globals, and its size within budget 1`] = `
+[
+  "AbortController",
+  "AbortSignal",
+  "Blob",
+  "ByteLengthQueuingStrategy",
+  "CountQueuingStrategy",
+  "CustomEvent",
+  "DOMException",
+  "ErrorEvent",
+  "Event",
+  "EventTarget",
+  "File",
+  "FormData",
+  "Headers",
+  "Performance",
+  "PerformanceEntry",
+  "PerformanceMark",
+  "PerformanceMeasure",
+  "PromiseRejectionEvent",
+  "ReadableByteStreamController",
+  "ReadableStream",
+  "ReadableStreamBYOBReader",
+  "ReadableStreamBYOBRequest",
+  "ReadableStreamDefaultController",
+  "ReadableStreamDefaultReader",
+  "Request",
+  "Response",
+  "TextDecoder",
+  "TextDecoderStream",
+  "TextEncoder",
+  "TextEncoderStream",
+  "TransformStream",
+  "TransformStreamDefaultController",
+  "URL",
+  "URLSearchParams",
+  "WritableStream",
+  "WritableStreamDefaultController",
+  "WritableStreamDefaultWriter",
+  "addEventListener",
+  "atob",
+  "btoa",
+  "dispatchEvent",
+  "fetch",
+  "navigator",
+  "onerror",
+  "performance",
+  "queueMicrotask",
+  "removeEventListener",
+  "reportError",
+  "self",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 70000,
+  "minified": 228000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "AbortController",
+  "AbortSignal",
+  "CustomEvent",
+  "DOMException",
+  "ErrorEvent",
+  "Event",
+  "EventTarget",
+  "Headers",
+  "Performance",
+  "PerformanceEntry",
+  "PerformanceMark",
+  "PerformanceMeasure",
+  "PromiseRejectionEvent",
+  "Request",
+  "Response",
+  "TextDecoder",
+  "TextEncoder",
+  "URL",
+  "URLSearchParams",
+  "addEventListener",
+  "atob",
+  "btoa",
+  "dispatchEvent",
+  "fetch",
+  "navigator",
+  "onerror",
+  "performance",
+  "queueMicrotask",
+  "removeEventListener",
+  "reportError",
+  "self",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 52000,
+  "minified": 152000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/abort" > on the background: its globals, and its size within budget 1`] = `
+[
+  "AbortController",
+  "AbortSignal",
+  "CustomEvent",
+  "DOMException",
+  "Event",
+  "EventTarget",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/abort" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 6000,
+  "minified": 18000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/abort" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "AbortController",
+  "AbortSignal",
+  "CustomEvent",
+  "DOMException",
+  "Event",
+  "EventTarget",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/abort" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 6000,
+  "minified": 18000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/base64" > on the background: its globals, and its size within budget 1`] = `
+[
+  "DOMException",
+  "atob",
+  "btoa",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/base64" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 2000,
+  "minified": 4000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/base64" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "DOMException",
+  "atob",
+  "btoa",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/base64" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 2000,
+  "minified": 4000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/compression" > on the background: its globals, and its size within budget 1`] = `
+[
+  "ByteLengthQueuingStrategy",
+  "CompressionStream",
+  "CountQueuingStrategy",
+  "DOMException",
+  "DecompressionStream",
+  "ReadableByteStreamController",
+  "ReadableStream",
+  "ReadableStreamBYOBReader",
+  "ReadableStreamBYOBRequest",
+  "ReadableStreamDefaultController",
+  "ReadableStreamDefaultReader",
+  "TransformStream",
+  "TransformStreamDefaultController",
+  "WritableStream",
+  "WritableStreamDefaultController",
+  "WritableStreamDefaultWriter",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/compression" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 25000,
+  "minified": 89000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/compression" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/compression" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 1000,
+  "minified": 0,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/encoding" > on the background: its globals, and its size within budget 1`] = `
+[
+  "TextDecoder",
+  "TextEncoder",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/encoding" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 3000,
+  "minified": 6000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/encoding" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "TextDecoder",
+  "TextEncoder",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/encoding" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 3000,
+  "minified": 6000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/event-source" > on the background: its globals, and its size within budget 1`] = `
+[
+  "AbortController",
+  "AbortSignal",
+  "Blob",
+  "ByteLengthQueuingStrategy",
+  "CountQueuingStrategy",
+  "CustomEvent",
+  "DOMException",
+  "Event",
+  "EventSource",
+  "EventTarget",
+  "File",
+  "FormData",
+  "Headers",
+  "ReadableByteStreamController",
+  "ReadableStream",
+  "ReadableStreamBYOBReader",
+  "ReadableStreamBYOBRequest",
+  "ReadableStreamDefaultController",
+  "ReadableStreamDefaultReader",
+  "Request",
+  "Response",
+  "TextDecoder",
+  "TextDecoderStream",
+  "TextEncoder",
+  "TextEncoderStream",
+  "TransformStream",
+  "TransformStreamDefaultController",
+  "URL",
+  "URLSearchParams",
+  "WritableStream",
+  "WritableStreamDefaultController",
+  "WritableStreamDefaultWriter",
+  "fetch",
+  "navigator",
+  "self",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/event-source" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 53000,
+  "minified": 179000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/event-source" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/event-source" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 1000,
+  "minified": 0,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/events" > on the background: its globals, and its size within budget 1`] = `
+[
+  "CustomEvent",
+  "DOMException",
+  "ErrorEvent",
+  "Event",
+  "EventTarget",
+  "PromiseRejectionEvent",
+  "addEventListener",
+  "dispatchEvent",
+  "onerror",
+  "removeEventListener",
+  "reportError",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/events" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 6000,
+  "minified": 17000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/events" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "CustomEvent",
+  "DOMException",
+  "ErrorEvent",
+  "Event",
+  "EventTarget",
+  "PromiseRejectionEvent",
+  "addEventListener",
+  "dispatchEvent",
+  "onerror",
+  "removeEventListener",
+  "reportError",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/events" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 6000,
+  "minified": 17000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/fetch" > on the background: its globals, and its size within budget 1`] = `
+[
+  "AbortController",
+  "AbortSignal",
+  "Blob",
+  "ByteLengthQueuingStrategy",
+  "CountQueuingStrategy",
+  "CustomEvent",
+  "DOMException",
+  "Event",
+  "EventTarget",
+  "File",
+  "FormData",
+  "Headers",
+  "ReadableByteStreamController",
+  "ReadableStream",
+  "ReadableStreamBYOBReader",
+  "ReadableStreamBYOBRequest",
+  "ReadableStreamDefaultController",
+  "ReadableStreamDefaultReader",
+  "Request",
+  "Response",
+  "TextDecoder",
+  "TextDecoderStream",
+  "TextEncoder",
+  "TextEncoderStream",
+  "TransformStream",
+  "TransformStreamDefaultController",
+  "URL",
+  "URLSearchParams",
+  "WritableStream",
+  "WritableStreamDefaultController",
+  "WritableStreamDefaultWriter",
+  "fetch",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/fetch" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 50000,
+  "minified": 170000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/fetch" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "AbortController",
+  "AbortSignal",
+  "CustomEvent",
+  "DOMException",
+  "Event",
+  "EventTarget",
+  "Headers",
+  "Request",
+  "Response",
+  "TextDecoder",
+  "TextEncoder",
+  "URL",
+  "URLSearchParams",
+  "fetch",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/fetch" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 33000,
+  "minified": 96000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/float16" > on the background: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/float16" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 6000,
+  "minified": 15000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/float16" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/float16" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 6000,
+  "minified": 15000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/iterator-helpers" > on the background: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/iterator-helpers" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 9000,
+  "minified": 26000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/iterator-helpers" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/iterator-helpers" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 9000,
+  "minified": 26000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/language" > on the background: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/language" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 17000,
+  "minified": 46000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/language" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/language" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 16000,
+  "minified": 44000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/messaging" > on the background: its globals, and its size within budget 1`] = `
+[
+  "CustomEvent",
+  "DOMException",
+  "Event",
+  "EventTarget",
+  "MessageChannel",
+  "MessageEvent",
+  "MessagePort",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/messaging" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 9000,
+  "minified": 24000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/messaging" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "CustomEvent",
+  "DOMException",
+  "Event",
+  "EventTarget",
+  "MessageChannel",
+  "MessageEvent",
+  "MessagePort",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/messaging" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 9000,
+  "minified": 24000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/normalize" > on the background: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/normalize" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 38000,
+  "minified": 138000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/normalize" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/normalize" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 38000,
+  "minified": 138000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/performance" > on the background: its globals, and its size within budget 1`] = `
+[
+  "DOMException",
+  "Performance",
+  "PerformanceEntry",
+  "PerformanceMark",
+  "PerformanceMeasure",
+  "performance",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/performance" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 5000,
+  "minified": 11000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/performance" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "DOMException",
+  "Performance",
+  "PerformanceEntry",
+  "PerformanceMark",
+  "PerformanceMeasure",
+  "performance",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/performance" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 5000,
+  "minified": 11000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/set-methods" > on the background: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/set-methods" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 7000,
+  "minified": 18000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/set-methods" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/set-methods" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 7000,
+  "minified": 18000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/streams" > on the background: its globals, and its size within budget 1`] = `
+[
+  "ByteLengthQueuingStrategy",
+  "CountQueuingStrategy",
+  "DOMException",
+  "ReadableByteStreamController",
+  "ReadableStream",
+  "ReadableStreamBYOBReader",
+  "ReadableStreamBYOBRequest",
+  "ReadableStreamDefaultController",
+  "ReadableStreamDefaultReader",
+  "TextDecoder",
+  "TextDecoderStream",
+  "TextEncoder",
+  "TextEncoderStream",
+  "TransformStream",
+  "TransformStreamDefaultController",
+  "WritableStream",
+  "WritableStreamDefaultController",
+  "WritableStreamDefaultWriter",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/streams" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 20000,
+  "minified": 77000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/streams" > on the main-thread: its globals, and its size within budget 1`] = `[]`;
+
+exports[`import "@sohedra/lynx-polyfill/streams" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 1000,
+  "minified": 0,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/structured-clone" > on the background: its globals, and its size within budget 1`] = `
+[
+  "DOMException",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/structured-clone" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 3000,
+  "minified": 7000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/structured-clone" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "DOMException",
+  "structuredClone",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/structured-clone" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 3000,
+  "minified": 7000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url" > on the background: its globals, and its size within budget 1`] = `
+[
+  "URL",
+  "URLSearchParams",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 18000,
+  "minified": 54000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "URL",
+  "URLSearchParams",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 18000,
+  "minified": 54000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the background: its globals, and its size within budget 1`] = `
+[
+  "URL",
+  "URLPattern",
+  "URLSearchParams",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the background: its globals, and its size within budget 2`] = `
+{
+  "gzip": 31000,
+  "minified": 111000,
+}
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the main-thread: its globals, and its size within budget 1`] = `
+[
+  "URL",
+  "URLPattern",
+  "URLSearchParams",
+]
+`;
+
+exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the main-thread: its globals, and its size within budget 2`] = `
+{
+  "gzip": 31000,
+  "minified": 111000,
+}
+`;

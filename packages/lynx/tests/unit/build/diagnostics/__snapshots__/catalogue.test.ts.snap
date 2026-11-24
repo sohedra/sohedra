@@ -457,6 +457,51 @@ Use the Svelte version this @sohedra/lynx was built for, or update @sohedra/lynx
 https://sohedra.com/e/primjs_regex_moved"
 `;
 
+exports[`the build's catalogue > regexp_refused for /(?<y>a)|(?<y>b)/: the message 1`] = `
+"The regular expression \`/(?<y>a)|(?<y>b)/\` uses two groups of the same name, which Lynx's engine does not have: the thread's whole script would fail to load.
+
+Give each group a name of its own, and read the one that matched.
+https://sohedra.com/e/regexp_refused"
+`;
+
+exports[`the build's catalogue > regexp_refused for /[\\p{L}--[a-z]]/v: the message 1`] = `
+"The regular expression \`/[\\p{L}--[a-z]]/v\` uses the \`v\` flag, which Lynx's engine does not have: the thread's whole script would fail to load.
+
+Use the \`u\` flag, and write a class's set operations (\`--\`, \`&&\`) out as the characters they leave, or as a lookahead: \`(?![a-z])\\p{L}\`.
+https://sohedra.com/e/regexp_refused"
+`;
+
+exports[`the build's catalogue > regexp_refused for /x/d: the message 1`] = `
+"The regular expression \`/x/d\` uses the \`d\` flag, which Lynx's engine does not have: the thread's whole script would fail to load.
+
+Leave out the \`d\` flag, and work out a group's place from \`match.index\` and the lengths of the groups before it.
+https://sohedra.com/e/regexp_refused"
+`;
+
+exports[`the build's catalogue > regexp_refused: the message 1`] = `
+"The regular expression \`/(?i:a)b/\` uses a modifier group (\`(?i:…)\`), which Lynx's engine does not have: the thread's whole script would fail to load.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Give the flag to the whole expression, or write the cases out: \`[Aa]\` for \`(?i:a)\`.
+https://sohedra.com/e/regexp_refused"
+`;
+
+exports[`the build's catalogue > regexp_refused_call: the message 1`] = `
+"\`new RegExp("[\\\\p{L}--[a-z]]", "v")\` makes a regular expression with the \`v\` flag, which Lynx's engine does not have: the call throws a SyntaxError where it runs.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+If the code checks for it and catches the error, leave it. Otherwise: Use the \`u\` flag, and write a class's set operations (\`--\`, \`&&\`) out as the characters they leave, or as a lookahead: \`(?![a-z])\\p{L}\`.
+https://sohedra.com/e/regexp_refused_call"
+`;
+
 exports[`the build's catalogue > renderer_option_off: the message 1`] = `
 "\`<svelte:options customRenderer={null}>\` turns the renderer off, and a Lynx page has no DOM to draw without it.
 /app/src/App.svelte:2:3

@@ -1,0 +1,1640 @@
+{
+	"*": {
+		"skip": "fetch's fill is the background's only: Lynx runs fetch and its streams on the background thread, and the main thread has none of them.",
+		"threads": ["main-thread"]
+	},
+	"abort/cache.https.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": [
+				"Signals are not stored in the cache API",
+				"Signals are not stored in the cache API, even if they're already aborted"
+			]
+		}
+	},
+	"abort/general.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"abort/request.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Aborting a request after calling arrayBuffer()",
+				"Aborting a request after calling blob()",
+				"Aborting a request after calling formData()",
+				"Aborting a request after calling json()",
+				"Aborting a request after calling text()",
+				"Calling arrayBuffer() on an aborted consumed empty request",
+				"Calling arrayBuffer() on an aborted consumed nonempty request",
+				"Calling arrayBuffer() on an aborted request",
+				"Calling blob() on an aborted consumed empty request",
+				"Calling blob() on an aborted consumed nonempty request",
+				"Calling blob() on an aborted request",
+				"Calling formData() on an aborted consumed nonempty request",
+				"Calling formData() on an aborted request",
+				"Calling json() on an aborted consumed nonempty request",
+				"Calling json() on an aborted request",
+				"Calling text() on an aborted consumed empty request",
+				"Calling text() on an aborted consumed nonempty request",
+				"Calling text() on an aborted request"
+			]
+		}
+	},
+	"basic/accept-header.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Request through fetch should have 'accept' header with value '*/*'",
+				"Request through fetch should have 'accept' header with value 'custom/*'",
+				"Request through fetch should have 'accept-language' header with value 'bzh'",
+				"Request through fetch should have a 'accept-language' header"
+			]
+		}
+	},
+	"basic/conditional-get.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Testing conditional GET with ETags"]
+		}
+	},
+	"basic/error-after-response.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Response reader closed promise should reject after a network error happening after resolving fetch promise",
+				"Response reader read() promise should reject after a network error happening after resolving fetch promise"
+			]
+		}
+	},
+	"basic/gc.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"GC/CC should not discard a Request's FormData body Blob before it is read",
+				"GC/CC should not discard a moved FormData body's Blob before it is read"
+			]
+		}
+	},
+	"basic/header-value-combining.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"response.headers.get('content-length') expects 0",
+				"response.headers.get('content-length') expects 0, 0",
+				"response.headers.get('double-trouble') expects , ",
+				"response.headers.get('foo-test') expects 1, 2, 3",
+				"response.headers.get('heya') expects , \u000b\f, 1, , , 2",
+				"response.headers.get('www-authenticate') expects 1, 2, 3, 4"
+			]
+		}
+	},
+	"basic/http-response-code.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["Fetch on 425 response should not be retried for non TLS early data."]
+		}
+	},
+	"basic/integrity.sub.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"basic/keepalive.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"basic/mode-no-cors.sub.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Fetch ../resources/top.txt with no-cors mode",
+				"Fetch http://{{host}}:{{ports[http][0]}}/fetch/api/resources/top.txt with no-cors mode",
+				"Fetch http://{{host}}:{{ports[http][1]}}/fetch/api/resources/top.txt with no-cors mode",
+				"Fetch https://{{host}}:{{ports[https][0]}}/fetch/api/resources/top.txt with no-cors mode"
+			]
+		}
+	},
+	"basic/mode-same-origin.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"basic/referrer.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"basic/request-forbidden-headers.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Accept-Charset is a forbidden request header",
+				"Accept-Encoding is a forbidden request header",
+				"Access-Control-Request-Headers is a forbidden request header",
+				"Access-Control-Request-Method is a forbidden request header",
+				"Connection is a forbidden request header",
+				"Content-Length is a forbidden request header",
+				"Cookie is a forbidden request header",
+				"Cookie2 is a forbidden request header",
+				"DNT is a forbidden request header",
+				"Date is a forbidden request header",
+				"Expect is a forbidden request header",
+				"Host is a forbidden request header",
+				"Keep-Alive is a forbidden request header",
+				"Origin is a forbidden request header",
+				"Proxy- is a forbidden request header",
+				"Proxy-Test is a forbidden request header",
+				"Referer is a forbidden request header",
+				"Sec- is a forbidden request header",
+				"Sec-Test is a forbidden request header",
+				"TE is a forbidden request header",
+				"Trailer is a forbidden request header",
+				"Transfer-Encoding is a forbidden request header",
+				"Upgrade is a forbidden request header",
+				"Via is a forbidden request header",
+				"header X-HTTP-METHOD is allowed to use value \",TRACE\",",
+				"header X-HTTP-METHOD is allowed to use value GET",
+				"header X-HTTP-METHOD is allowed to use value GETTRACE",
+				"header X-HTTP-METHOD is forbidden to use value  connect",
+				"header X-HTTP-METHOD is forbidden to use value CONNECT",
+				"header X-HTTP-METHOD is forbidden to use value GET,track ",
+				"header X-HTTP-METHOD is forbidden to use value TRACE",
+				"header X-HTTP-METHOD is forbidden to use value TRACK",
+				"header X-HTTP-METHOD is forbidden to use value connect",
+				"header X-HTTP-METHOD is forbidden to use value trace",
+				"header X-HTTP-METHOD is forbidden to use value trace,",
+				"header X-HTTP-METHOD is forbidden to use value track",
+				"header X-HTTP-METHOD-OVERRIDE is allowed to use value \",TRACE\",",
+				"header X-HTTP-METHOD-OVERRIDE is allowed to use value GET",
+				"header X-HTTP-METHOD-OVERRIDE is allowed to use value GETTRACE",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value  connect",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value CONNECT",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value GET,track ",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value TRACE",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value TRACK",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value connect",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value trace",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value trace,",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value track",
+				"header X-METHOD-OVERRIDE is allowed to use value \",TRACE\",",
+				"header X-METHOD-OVERRIDE is allowed to use value GET",
+				"header X-METHOD-OVERRIDE is allowed to use value GETTRACE",
+				"header X-METHOD-OVERRIDE is forbidden to use value  connect",
+				"header X-METHOD-OVERRIDE is forbidden to use value CONNECT",
+				"header X-METHOD-OVERRIDE is forbidden to use value GET,track ",
+				"header X-METHOD-OVERRIDE is forbidden to use value TRACE",
+				"header X-METHOD-OVERRIDE is forbidden to use value TRACK",
+				"header X-METHOD-OVERRIDE is forbidden to use value connect",
+				"header X-METHOD-OVERRIDE is forbidden to use value trace",
+				"header X-METHOD-OVERRIDE is forbidden to use value trace,",
+				"header X-METHOD-OVERRIDE is forbidden to use value track",
+				"header x-http-method is allowed to use value \",TRACE\",",
+				"header x-http-method is allowed to use value GET",
+				"header x-http-method is allowed to use value GETTRACE",
+				"header x-http-method is forbidden to use value  connect",
+				"header x-http-method is forbidden to use value CONNECT",
+				"header x-http-method is forbidden to use value GET,track ",
+				"header x-http-method is forbidden to use value TRACE",
+				"header x-http-method is forbidden to use value TRACK",
+				"header x-http-method is forbidden to use value connect",
+				"header x-http-method is forbidden to use value trace",
+				"header x-http-method is forbidden to use value trace,",
+				"header x-http-method is forbidden to use value track",
+				"header x-http-method-override is allowed to use value \",TRACE\",",
+				"header x-http-method-override is allowed to use value GET",
+				"header x-http-method-override is allowed to use value GETTRACE",
+				"header x-http-method-override is forbidden to use value  connect",
+				"header x-http-method-override is forbidden to use value CONNECT",
+				"header x-http-method-override is forbidden to use value GET,track ",
+				"header x-http-method-override is forbidden to use value TRACE",
+				"header x-http-method-override is forbidden to use value TRACK",
+				"header x-http-method-override is forbidden to use value connect",
+				"header x-http-method-override is forbidden to use value trace",
+				"header x-http-method-override is forbidden to use value trace,",
+				"header x-http-method-override is forbidden to use value track",
+				"header x-method-override is allowed to use value \",TRACE\",",
+				"header x-method-override is allowed to use value GET",
+				"header x-method-override is allowed to use value GETTRACE",
+				"header x-method-override is forbidden to use value  connect",
+				"header x-method-override is forbidden to use value CONNECT",
+				"header x-method-override is forbidden to use value GET,track ",
+				"header x-method-override is forbidden to use value TRACE",
+				"header x-method-override is forbidden to use value TRACK",
+				"header x-method-override is forbidden to use value connect",
+				"header x-method-override is forbidden to use value trace",
+				"header x-method-override is forbidden to use value trace,",
+				"header x-method-override is forbidden to use value track"
+			]
+		}
+	},
+	"basic/request-headers-case.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Multiple headers with the same name, different case (THIS-IS-A-TEST first)",
+				"Multiple headers with the same name, different case (THIS-is-A-test first)"
+			]
+		}
+	},
+	"basic/request-headers-nonascii.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Non-ascii bytes in request headers"]
+		}
+	},
+	"basic/request-headers.any.js": {
+		"fail": [
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": ["Fetch with GET", "Fetch with HEAD"]
+			},
+			{
+				"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+				"threads": ["background"],
+				"expected": ["<harness>"]
+			}
+		]
+	},
+	"basic/request-referrer.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"basic/request-upload-421.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": [
+				"Fetch with POST with text body on 421 response should be retried once on new connection."
+			]
+		}
+	},
+	"basic/request-upload.any.js": {
+		"fail": [
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": [
+					"Fetch with POST with ArrayBuffer body",
+					"Fetch with POST with Blob body",
+					"Fetch with POST with Blob body with mime type",
+					"Fetch with POST with DataView body",
+					"Fetch with POST with Float32Array body",
+					"Fetch with POST with Float64Array body",
+					"Fetch with POST with Int8Array body",
+					"Fetch with POST with URLSearchParams body",
+					"Fetch with POST with Uint8Array body",
+					"Fetch with POST with text body",
+					"Fetch with PUT with body"
+				]
+			},
+			{
+				"note": "PrimJS has no Float16Array, and core-js (the float16 fill) gives only Math.f16round and DataView's methods.",
+				"threads": ["background"],
+				"expected": ["Fetch with POST with Float16Array body"]
+			}
+		]
+	},
+	"basic/request-upload.h2.any.js": {
+		"fail": [
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": [
+					"Feature detect for POST with ReadableStream",
+					"Fetch with POST with ReadableStream",
+					"Fetch with POST with ReadableStream on 421 response should return the response and not retry.",
+					"Fetch with POST with empty ReadableStream",
+					"Synchronous feature detect"
+				]
+			},
+			{
+				"note": "Needs WPT's HTTP/2 server, which the suite doesn't run.",
+				"threads": ["background"],
+				"expected": ["<harness>"]
+			}
+		]
+	},
+	"basic/response-null-body.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Response.body is null for responses with method=HEAD",
+				"Response.body is null for responses with status=204 (method=GET)",
+				"Response.body is null for responses with status=204 (method=OPTIONS)",
+				"Response.body is null for responses with status=204 (method=POST)",
+				"Response.body is null for responses with status=205 (method=GET)",
+				"Response.body is null for responses with status=205 (method=OPTIONS)",
+				"Response.body is null for responses with status=205 (method=POST)",
+				"Response.body is null for responses with status=304 (method=GET)",
+				"Response.body is null for responses with status=304 (method=OPTIONS)",
+				"Response.body is null for responses with status=304 (method=POST)"
+			]
+		}
+	},
+	"basic/response-url.sub.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Testing response url getter with http://{{host}}:{{ports[http][0]}}#ada",
+				"Testing response url getter with http://{{host}}:{{ports[http][0]}}/#",
+				"Testing response url getter with http://{{host}}:{{ports[http][0]}}/#ada",
+				"Testing response url getter with http://{{host}}:{{ports[http][0]}}/ada"
+			]
+		}
+	},
+	"basic/scheme-blob.sub.any.js": {
+		"fail": {
+			"note": "The package has no blob: URLs: the URL fill, whatwg-url-minimum (vendored), has no URL.createObjectURL.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"basic/scheme-data.any.js": {
+		"fail": {
+			"note": "A request over the network: the suite's shell has no lynx-core fetch, which the fill sends requests through.",
+			"threads": ["background"],
+			"expected": [
+				"Fetching [HEAD] data:,response%27s%20body is OK",
+				"Fetching [POST] data:,response%27s%20body is OK",
+				"Fetching data:,response%27s%20body is OK",
+				"Fetching data:,response%27s%20body is OK (cors)",
+				"Fetching data:,response%27s%20body is OK (same-origin)",
+				"Fetching data:image/png;base64,cmVzcG9uc2UncyBib2[...] is OK",
+				"Fetching data:text/plain;base64,cmVzcG9uc2UncyBib[...] is OK"
+			]
+		}
+	},
+	"basic/split-byte-order-mark.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"json() strips a UTF-8 byte order mark split across chunks",
+				"text() decodes a UTF-8 sequence split across chunks",
+				"text() does not strip a UTF-8 byte order mark in a later chunk",
+				"text() does not use a UTF-16LE byte order mark split across chunks",
+				"text() strips a UTF-8 byte order mark split across chunks"
+			]
+		}
+	},
+	"basic/status.h2.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"statusText over H2 for status 200 should be the empty string",
+				"statusText over H2 for status 210 should be the empty string",
+				"statusText over H2 for status 400 should be the empty string",
+				"statusText over H2 for status 404 should be the empty string",
+				"statusText over H2 for status 410 should be the empty string",
+				"statusText over H2 for status 500 should be the empty string",
+				"statusText over H2 for status 502 should be the empty string"
+			]
+		}
+	},
+	"basic/stream-response.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Stream response's body when content-type is not present",
+				"Stream response's body when content-type is present"
+			]
+		}
+	},
+	"basic/stream-safe-creation.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": [
+				"Object.prototype.highWaterMark accessor returning invalid value should not affect stream creation by 'consumeEmptyRequest'",
+				"Object.prototype.highWaterMark accessor returning invalid value should not affect stream creation by 'consumeNonEmptyRequest'",
+				"Object.prototype.highWaterMark accessor returning invalid value should not affect stream creation by 'fetch'",
+				"Object.prototype.highWaterMark accessor returning invalid value should not affect stream creation by 'request'",
+				"Object.prototype.size accessor returning invalid value should not affect stream creation by 'consumeEmptyRequest'",
+				"Object.prototype.size accessor returning invalid value should not affect stream creation by 'consumeNonEmptyRequest'",
+				"Object.prototype.size accessor returning invalid value should not affect stream creation by 'fetch'",
+				"Object.prototype.size accessor returning invalid value should not affect stream creation by 'request'",
+				"Object.prototype.start accessor returning invalid value should not affect stream creation by 'consumeEmptyRequest'",
+				"Object.prototype.start accessor returning invalid value should not affect stream creation by 'consumeNonEmptyRequest'",
+				"Object.prototype.start accessor returning invalid value should not affect stream creation by 'fetch'",
+				"Object.prototype.start accessor returning invalid value should not affect stream creation by 'request'",
+				"Object.prototype.start function which errors the stream should not affect stream creation by 'consumeEmptyRequest'",
+				"Object.prototype.start function which errors the stream should not affect stream creation by 'consumeNonEmptyRequest'",
+				"Object.prototype.start function which errors the stream should not affect stream creation by 'fetch'",
+				"Object.prototype.start function which errors the stream should not affect stream creation by 'request'",
+				"Object.prototype.type accessor returning invalid value should not affect stream creation by 'consumeEmptyRequest'",
+				"Object.prototype.type accessor returning invalid value should not affect stream creation by 'consumeNonEmptyRequest'",
+				"Object.prototype.type accessor returning invalid value should not affect stream creation by 'fetch'",
+				"Object.prototype.type accessor returning invalid value should not affect stream creation by 'request'",
+				"throwing Object.prototype.highWaterMark accessor should not affect stream creation by 'consumeEmptyRequest'",
+				"throwing Object.prototype.highWaterMark accessor should not affect stream creation by 'consumeNonEmptyRequest'",
+				"throwing Object.prototype.highWaterMark accessor should not affect stream creation by 'fetch'",
+				"throwing Object.prototype.highWaterMark accessor should not affect stream creation by 'request'",
+				"throwing Object.prototype.size accessor should not affect stream creation by 'consumeEmptyRequest'",
+				"throwing Object.prototype.size accessor should not affect stream creation by 'consumeNonEmptyRequest'",
+				"throwing Object.prototype.size accessor should not affect stream creation by 'fetch'",
+				"throwing Object.prototype.size accessor should not affect stream creation by 'request'",
+				"throwing Object.prototype.start accessor should not affect stream creation by 'consumeEmptyRequest'",
+				"throwing Object.prototype.start accessor should not affect stream creation by 'consumeNonEmptyRequest'",
+				"throwing Object.prototype.start accessor should not affect stream creation by 'fetch'",
+				"throwing Object.prototype.start accessor should not affect stream creation by 'request'",
+				"throwing Object.prototype.type accessor should not affect stream creation by 'consumeEmptyRequest'",
+				"throwing Object.prototype.type accessor should not affect stream creation by 'consumeNonEmptyRequest'",
+				"throwing Object.prototype.type accessor should not affect stream creation by 'fetch'",
+				"throwing Object.prototype.type accessor should not affect stream creation by 'request'"
+			]
+		}
+	},
+	"basic/text-utf8.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"UTF-16 without BOM decoded as UTF-8 (Request object)",
+				"UTF-16 without BOM decoded as UTF-8 with Request.text()",
+				"UTF-16 without BOM decoded as UTF-8 with fetched data (UTF-16 charset)",
+				"UTF-16 without BOM decoded as UTF-8 with fetched data (UTF-8 charset)",
+				"UTF-16BE with BOM decoded as UTF-8 (Request object)",
+				"UTF-16BE with BOM decoded as UTF-8 with Request.text()",
+				"UTF-16BE with BOM decoded as UTF-8 with fetched data (UTF-16 charset)",
+				"UTF-16BE with BOM decoded as UTF-8 with fetched data (UTF-8 charset)",
+				"UTF-16LE with BOM decoded as UTF-8 (Request object)",
+				"UTF-16LE with BOM decoded as UTF-8 with Request.text()",
+				"UTF-16LE with BOM decoded as UTF-8 with fetched data (UTF-16 charset)",
+				"UTF-16LE with BOM decoded as UTF-8 with fetched data (UTF-8 charset)",
+				"UTF-8 with BOM (Request object)",
+				"UTF-8 with BOM with Request.text()",
+				"UTF-8 with BOM with fetched data (UTF-16 charset)",
+				"UTF-8 with BOM with fetched data (UTF-8 charset)",
+				"UTF-8 without BOM (Request object)",
+				"UTF-8 without BOM with Request.text()",
+				"UTF-8 without BOM with fetched data (UTF-16 charset)",
+				"UTF-8 without BOM with fetched data (UTF-8 charset)"
+			]
+		}
+	},
+	"body/textstream.any.js": {
+		"fail": {
+			"note": "textStream(), added to the File API and Fetch after the WinterTC baseline, is not in the fills.",
+			"threads": ["background"],
+			"expected": [
+				"Request.textStream() basic functionality",
+				"Request.textStream() ignores Content-Type charset (UTF-16LE)",
+				"Request.textStream() with null body",
+				"Response.textStream() basic functionality",
+				"Response.textStream() ignores Content-Type charset (UTF-16LE)",
+				"Response.textStream() ignores invalid Content-Type charset (invalid-charset)",
+				"Response.textStream() with empty body",
+				"Response.textStream() with null body",
+				"textStream method existence",
+				"textStream() handles chunked byte stream input"
+			]
+		}
+	},
+	"cors/cors-basic.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-cookies-redirect.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-cookies.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-expose-star.sub.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-filtering.sub.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-keepalive.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-multiple-origins.sub.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-no-preflight.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-origin.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-cache-tainted.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-cache.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-not-cors-safelisted.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-redirect.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-referrer.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-response-validation.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-safelist-value-size.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-star.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-status.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-preflight-unterminated-body.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": [
+				"CORS preflight response with a body that never terminates does not stall the fetch"
+			]
+		}
+	},
+	"cors/cors-preflight.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-redirect-credentials.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-redirect-preflight.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"cors/cors-redirect.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"crashtests/huge-fetch.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["fetching a huge cacheable file but not reading it should not crash"]
+		}
+	},
+	"credentials/authentication-basic.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"User-added Authorization header with include mode",
+				"User-added Authorization header with omit mode",
+				"User-added Authorization header with same-origin mode",
+				"User-added bogus Authorization header with omit mode"
+			]
+		}
+	},
+	"credentials/authentication-redirection.any.js": {
+		"fail": [
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": [
+					"getAuthorizationHeaderValue - no redirection",
+					"getAuthorizationHeaderValue - same origin redirection"
+				]
+			},
+			{
+				"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+				"threads": ["background"],
+				"expected": ["getAuthorizationHeaderValue - cross origin redirection"]
+			}
+		]
+	},
+	"credentials/cookies.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Include mode: 1 cookie",
+				"Include mode: 2 cookies",
+				"Omit mode: discard cookies",
+				"Omit mode: no cookie is sent",
+				"Omit mode: no cookie is stored",
+				"Same-origin mode: 1 cookie",
+				"Same-origin mode: 2 cookies"
+			]
+		}
+	},
+	"headers/header-setcookie.any.js": {
+		"fail": {
+			"note": "As WinterTC's runtimes (Deno, Node) do, the fill doesn't enforce the browser's guards on headers (forbidden names, no-cors, Set-Cookie on responses): a Lynx app has no origin to protect.",
+			"threads": ["background"],
+			"expected": ["Set-Cookie is a forbidden response header"]
+		}
+	},
+	"headers/header-values-last-event-id.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["fetch() sends the bytes of a non-ASCII Last-Event-ID header value unchanged"]
+		}
+	},
+	"headers/header-values-normalize.any.js": {
+		"fail": [
+			{
+				"note": "Lynx has no XMLHttpRequest, which WinterTC doesn't ask for.",
+				"threads": ["background"],
+				"expected": [
+					"XMLHttpRequest with value %00",
+					"XMLHttpRequest with value %01",
+					"XMLHttpRequest with value %02",
+					"XMLHttpRequest with value %03",
+					"XMLHttpRequest with value %04",
+					"XMLHttpRequest with value %05",
+					"XMLHttpRequest with value %06",
+					"XMLHttpRequest with value %07",
+					"XMLHttpRequest with value %08",
+					"XMLHttpRequest with value %09",
+					"XMLHttpRequest with value %0A",
+					"XMLHttpRequest with value %0D",
+					"XMLHttpRequest with value %0E",
+					"XMLHttpRequest with value %0F",
+					"XMLHttpRequest with value %10",
+					"XMLHttpRequest with value %11",
+					"XMLHttpRequest with value %12",
+					"XMLHttpRequest with value %13",
+					"XMLHttpRequest with value %14",
+					"XMLHttpRequest with value %15",
+					"XMLHttpRequest with value %16",
+					"XMLHttpRequest with value %17",
+					"XMLHttpRequest with value %18",
+					"XMLHttpRequest with value %19",
+					"XMLHttpRequest with value %1A",
+					"XMLHttpRequest with value %1B",
+					"XMLHttpRequest with value %1C",
+					"XMLHttpRequest with value %1D",
+					"XMLHttpRequest with value %1E",
+					"XMLHttpRequest with value %1F",
+					"XMLHttpRequest with value %20"
+				]
+			},
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": [
+					"fetch() with value %01",
+					"fetch() with value %02",
+					"fetch() with value %03",
+					"fetch() with value %04",
+					"fetch() with value %05",
+					"fetch() with value %06",
+					"fetch() with value %07",
+					"fetch() with value %08",
+					"fetch() with value %09",
+					"fetch() with value %0A",
+					"fetch() with value %0D",
+					"fetch() with value %0E",
+					"fetch() with value %0F",
+					"fetch() with value %10",
+					"fetch() with value %11",
+					"fetch() with value %12",
+					"fetch() with value %13",
+					"fetch() with value %14",
+					"fetch() with value %15",
+					"fetch() with value %16",
+					"fetch() with value %17",
+					"fetch() with value %18",
+					"fetch() with value %19",
+					"fetch() with value %1A",
+					"fetch() with value %1B",
+					"fetch() with value %1C",
+					"fetch() with value %1D",
+					"fetch() with value %1E",
+					"fetch() with value %1F",
+					"fetch() with value %20"
+				]
+			}
+		]
+	},
+	"headers/header-values.any.js": {
+		"fail": [
+			{
+				"note": "Lynx has no XMLHttpRequest, which WinterTC doesn't ask for.",
+				"threads": ["background"],
+				"expected": [
+					"XMLHttpRequest with all valid values",
+					"XMLHttpRequest with value x%00x needs to throw",
+					"XMLHttpRequest with value x%0Ax needs to throw",
+					"XMLHttpRequest with value x%0Dx needs to throw"
+				]
+			},
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": ["fetch() with all valid values"]
+			}
+		]
+	},
+	"headers/headers-forbidden-override.any.js": {
+		"fail": {
+			"note": "As WinterTC's runtimes (Deno, Node) do, the fill doesn't enforce the browser's guards on headers (forbidden names, no-cors, Set-Cookie on responses): a Lynx app has no origin to protect.",
+			"threads": ["background"],
+			"expected": [
+				"header X-HTTP-METHOD is forbidden to use value \ttrack",
+				"header X-HTTP-METHOD is forbidden to use value \nconnect",
+				"header X-HTTP-METHOD is forbidden to use value \rtrace",
+				"header X-HTTP-METHOD is forbidden to use value  connect",
+				"header X-HTTP-METHOD is forbidden to use value CONNECT",
+				"header X-HTTP-METHOD is forbidden to use value GET,track ",
+				"header X-HTTP-METHOD is forbidden to use value TRACE",
+				"header X-HTTP-METHOD is forbidden to use value TRACK",
+				"header X-HTTP-METHOD is forbidden to use value connect",
+				"header X-HTTP-METHOD is forbidden to use value trace",
+				"header X-HTTP-METHOD is forbidden to use value trace,",
+				"header X-HTTP-METHOD is forbidden to use value track",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value \ttrack",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value \nconnect",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value \rtrace",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value  connect",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value CONNECT",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value GET,track ",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value TRACE",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value TRACK",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value connect",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value trace",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value trace,",
+				"header X-HTTP-METHOD-OVERRIDE is forbidden to use value track",
+				"header X-METHOD-OVERRIDE is forbidden to use value \ttrack",
+				"header X-METHOD-OVERRIDE is forbidden to use value \nconnect",
+				"header X-METHOD-OVERRIDE is forbidden to use value \rtrace",
+				"header X-METHOD-OVERRIDE is forbidden to use value  connect",
+				"header X-METHOD-OVERRIDE is forbidden to use value CONNECT",
+				"header X-METHOD-OVERRIDE is forbidden to use value GET,track ",
+				"header X-METHOD-OVERRIDE is forbidden to use value TRACE",
+				"header X-METHOD-OVERRIDE is forbidden to use value TRACK",
+				"header X-METHOD-OVERRIDE is forbidden to use value connect",
+				"header X-METHOD-OVERRIDE is forbidden to use value trace",
+				"header X-METHOD-OVERRIDE is forbidden to use value trace,",
+				"header X-METHOD-OVERRIDE is forbidden to use value track",
+				"header x-http-method is forbidden to use value \ttrack",
+				"header x-http-method is forbidden to use value \nconnect",
+				"header x-http-method is forbidden to use value \rtrace",
+				"header x-http-method is forbidden to use value  connect",
+				"header x-http-method is forbidden to use value CONNECT",
+				"header x-http-method is forbidden to use value GET,track ",
+				"header x-http-method is forbidden to use value TRACE",
+				"header x-http-method is forbidden to use value TRACK",
+				"header x-http-method is forbidden to use value connect",
+				"header x-http-method is forbidden to use value trace",
+				"header x-http-method is forbidden to use value trace,",
+				"header x-http-method is forbidden to use value track",
+				"header x-http-method-override is forbidden to use value \ttrack",
+				"header x-http-method-override is forbidden to use value \nconnect",
+				"header x-http-method-override is forbidden to use value \rtrace",
+				"header x-http-method-override is forbidden to use value  connect",
+				"header x-http-method-override is forbidden to use value CONNECT",
+				"header x-http-method-override is forbidden to use value GET,track ",
+				"header x-http-method-override is forbidden to use value TRACE",
+				"header x-http-method-override is forbidden to use value TRACK",
+				"header x-http-method-override is forbidden to use value connect",
+				"header x-http-method-override is forbidden to use value trace",
+				"header x-http-method-override is forbidden to use value trace,",
+				"header x-http-method-override is forbidden to use value track",
+				"header x-method-override is forbidden to use value \ttrack",
+				"header x-method-override is forbidden to use value \nconnect",
+				"header x-method-override is forbidden to use value \rtrace",
+				"header x-method-override is forbidden to use value  connect",
+				"header x-method-override is forbidden to use value CONNECT",
+				"header x-method-override is forbidden to use value GET,track ",
+				"header x-method-override is forbidden to use value TRACE",
+				"header x-method-override is forbidden to use value TRACK",
+				"header x-method-override is forbidden to use value connect",
+				"header x-method-override is forbidden to use value trace",
+				"header x-method-override is forbidden to use value trace,",
+				"header x-method-override is forbidden to use value track"
+			]
+		}
+	},
+	"headers/headers-no-cors.any.js": {
+		"fail": [
+			{
+				"note": "As WinterTC's runtimes (Deno, Node) do, the fill doesn't enforce the browser's guards on headers (forbidden names, no-cors, Set-Cookie on responses): a Lynx app has no origin to protect.",
+				"threads": ["background"],
+				"expected": [
+					"\"no-cors\" Headers object cannot have accept set to , sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+					"\"no-cors\" Headers object cannot have accept set to sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss, , sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+					"\"no-cors\" Headers object cannot have accept-language set to , sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+					"\"no-cors\" Headers object cannot have accept-language set to sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss, , sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+					"\"no-cors\" Headers object cannot have content-language set to , sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+					"\"no-cors\" Headers object cannot have content-language set to sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss, , sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss",
+					"\"no-cors\" Headers object cannot have content-type set to text/plain;ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss, text/plain"
+				]
+			},
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": ["Loading data…"]
+			}
+		]
+	},
+	"idlharness.https.any.js": {
+		"skip": "idlharness's checks of Web IDL bindings, which the fills' JavaScript classes don't all follow (attributes as own getters, operations' lengths), and it reads the IDL from WPT's server."
+	},
+	"redirect/redirect-back-to-original-origin.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-count.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Redirect 301 20 times",
+				"Redirect 301 21 times",
+				"Redirect 302 20 times",
+				"Redirect 302 21 times",
+				"Redirect 303 20 times",
+				"Redirect 303 21 times",
+				"Redirect 307 20 times",
+				"Redirect 307 21 times",
+				"Redirect 308 20 times",
+				"Redirect 308 21 times"
+			]
+		}
+	},
+	"redirect/redirect-empty-location.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["redirect response with empty Location, manual mode"]
+		}
+	},
+	"redirect/redirect-keepalive.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-keepalive.https.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-location-escape.tentative.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Escaping produces double-percent",
+				"Redirect to escaped UTF-8",
+				"Redirect to escaped and unescaped UTF-8",
+				"Redirect to invalid UTF-8",
+				"Redirect to unescaped UTF-8"
+			]
+		}
+	},
+	"redirect/redirect-location.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Redirect 301 in \"follow\" mode with valid location",
+				"Redirect 301 in \"follow\" mode without location",
+				"Redirect 301 in \"manual\" mode with data location",
+				"Redirect 301 in \"manual\" mode with invalid location",
+				"Redirect 301 in \"manual\" mode with valid location",
+				"Redirect 301 in \"manual\" mode without location",
+				"Redirect 302 in \"follow\" mode with valid location",
+				"Redirect 302 in \"follow\" mode without location",
+				"Redirect 302 in \"manual\" mode with data location",
+				"Redirect 302 in \"manual\" mode with invalid location",
+				"Redirect 302 in \"manual\" mode with valid location",
+				"Redirect 302 in \"manual\" mode without location",
+				"Redirect 303 in \"follow\" mode with valid location",
+				"Redirect 303 in \"follow\" mode without location",
+				"Redirect 303 in \"manual\" mode with data location",
+				"Redirect 303 in \"manual\" mode with invalid location",
+				"Redirect 303 in \"manual\" mode with valid location",
+				"Redirect 303 in \"manual\" mode without location",
+				"Redirect 307 in \"follow\" mode with valid location",
+				"Redirect 307 in \"follow\" mode without location",
+				"Redirect 307 in \"manual\" mode with data location",
+				"Redirect 307 in \"manual\" mode with invalid location",
+				"Redirect 307 in \"manual\" mode with valid location",
+				"Redirect 307 in \"manual\" mode without location",
+				"Redirect 308 in \"follow\" mode with valid location",
+				"Redirect 308 in \"follow\" mode without location",
+				"Redirect 308 in \"manual\" mode with data location",
+				"Redirect 308 in \"manual\" mode with invalid location",
+				"Redirect 308 in \"manual\" mode with valid location",
+				"Redirect 308 in \"manual\" mode without location"
+			]
+		}
+	},
+	"redirect/redirect-method.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Redirect 301 with GET",
+				"Redirect 301 with HEAD",
+				"Redirect 301 with POST",
+				"Redirect 302 with GET",
+				"Redirect 302 with HEAD",
+				"Redirect 302 with POST",
+				"Redirect 303 with GET",
+				"Redirect 303 with HEAD",
+				"Redirect 303 with POST",
+				"Redirect 303 with TESTING",
+				"Redirect 307 with GET",
+				"Redirect 307 with HEAD",
+				"Redirect 307 with POST (blob body)",
+				"Redirect 307 with POST (string body)",
+				"Response.redirected should be false on not-redirected responses"
+			]
+		}
+	},
+	"redirect/redirect-mode.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-origin.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-referrer-override.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-referrer.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-to-dataurl.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"redirect/redirect-upload.h2.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Fetch upload streaming should be accepted on 303"]
+		}
+	},
+	"request/request-bad-port.any.js": {
+		"fail": {
+			"note": "A request over the network: the suite's shell has no lynx-core fetch, which the fill sends requests through.",
+			"threads": ["background"],
+			"expected": ["Request on a port that is not bad should succeed through the proxy."]
+		}
+	},
+	"request/request-cache-default-conditional.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"RequestCache \"default\" mode with an If-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-Match header is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Match header is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Match header is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Match header is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-Modified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Modified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Modified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Modified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-Modified-Since header is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Modified-Since header is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Modified-Since header is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Modified-Since header is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-None-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-None-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-None-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-None-Match header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-None-Match header is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-None-Match header is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-None-Match header is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-None-Match header is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-Range header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Range header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Range header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Range header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-Range header is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Range header is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Range header is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Range header is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header (following a request without additional headers) is treated similarly to \"no-store\" with Last-Modified and stale response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header is treated similarly to \"no-store\" with Etag and fresh response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header is treated similarly to \"no-store\" with Etag and stale response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header is treated similarly to \"no-store\" with Last-Modified and fresh response",
+				"RequestCache \"default\" mode with an If-Unmodified-Since header is treated similarly to \"no-store\" with Last-Modified and stale response"
+			]
+		}
+	},
+	"request/request-cache-default.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"RequestCache \"default\" mode checks the cache for previously cached content and avoids going to the network if a fresh response exists with Etag and fresh response",
+				"RequestCache \"default\" mode checks the cache for previously cached content and avoids going to the network if a fresh response exists with Last-Modified and fresh response",
+				"RequestCache \"default\" mode checks the cache for previously cached content and goes to the network for stale responses with Etag and stale response",
+				"RequestCache \"default\" mode checks the cache for previously cached content and goes to the network for stale responses with Last-Modified and stale response",
+				"Responses with the \"Cache-Control: no-store\" header are not stored in the cache with Etag and fresh response",
+				"Responses with the \"Cache-Control: no-store\" header are not stored in the cache with Etag and stale response",
+				"Responses with the \"Cache-Control: no-store\" header are not stored in the cache with Last-Modified and fresh response",
+				"Responses with the \"Cache-Control: no-store\" header are not stored in the cache with Last-Modified and stale response"
+			]
+		}
+	},
+	"request/request-cache-force-cache.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and avoid revalidation for fresh responses with Etag and fresh response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and avoid revalidation for fresh responses with Last-Modified and fresh response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and avoid revalidation for stale responses with Etag and stale response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and avoid revalidation for stale responses with Last-Modified and stale response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response is not found with Etag and fresh response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response is not found with Etag and stale response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response is not found with Last-Modified and fresh response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response is not found with Last-Modified and stale response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response would vary with Etag and fresh response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response would vary with Etag and stale response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response would vary with Last-Modified and fresh response",
+				"RequestCache \"force-cache\" mode checks the cache for previously cached content and goes to the network if a cached response would vary with Last-Modified and stale response",
+				"RequestCache \"force-cache\" stores the response in the cache if it goes to the network with Etag and fresh response",
+				"RequestCache \"force-cache\" stores the response in the cache if it goes to the network with Etag and stale response",
+				"RequestCache \"force-cache\" stores the response in the cache if it goes to the network with Last-Modified and fresh response",
+				"RequestCache \"force-cache\" stores the response in the cache if it goes to the network with Last-Modified and stale response"
+			]
+		}
+	},
+	"request/request-cache-no-cache.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"RequestCache \"no-cache\" mode revalidates fresh responses found in the cache with Etag and fresh response",
+				"RequestCache \"no-cache\" mode revalidates fresh responses found in the cache with Last-Modified and fresh response",
+				"RequestCache \"no-cache\" mode revalidates stale responses found in the cache with Etag and stale response",
+				"RequestCache \"no-cache\" mode revalidates stale responses found in the cache with Last-Modified and stale response"
+			]
+		}
+	},
+	"request/request-cache-no-store.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"RequestCache \"no-store\" mode does not check the cache for previously cached content and goes to the network regardless with Etag and fresh response",
+				"RequestCache \"no-store\" mode does not check the cache for previously cached content and goes to the network regardless with Etag and stale response",
+				"RequestCache \"no-store\" mode does not check the cache for previously cached content and goes to the network regardless with Last-Modified and fresh response",
+				"RequestCache \"no-store\" mode does not check the cache for previously cached content and goes to the network regardless with Last-Modified and stale response",
+				"RequestCache \"no-store\" mode does not store the response in the cache with Etag and fresh response",
+				"RequestCache \"no-store\" mode does not store the response in the cache with Etag and stale response",
+				"RequestCache \"no-store\" mode does not store the response in the cache with Last-Modified and fresh response",
+				"RequestCache \"no-store\" mode does not store the response in the cache with Last-Modified and stale response"
+			]
+		}
+	},
+	"request/request-cache-only-if-cached.any.js": {
+		"fail": [
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": [
+					"RequestCache \"only-if-cached\" mode checks the cache for previously cached content and avoids revalidation for fresh responses with Etag and fresh response",
+					"RequestCache \"only-if-cached\" mode checks the cache for previously cached content and avoids revalidation for fresh responses with Last-Modified and fresh response",
+					"RequestCache \"only-if-cached\" mode checks the cache for previously cached content and avoids revalidation for stale responses with Etag and stale response",
+					"RequestCache \"only-if-cached\" mode checks the cache for previously cached content and avoids revalidation for stale responses with Last-Modified and stale response",
+					"RequestCache \"only-if-cached\" mode checks the cache for previously cached content and does not go to the network if a cached response is not found with Etag and fresh response",
+					"RequestCache \"only-if-cached\" mode checks the cache for previously cached content and does not go to the network if a cached response is not found with Last-Modified and fresh response"
+				]
+			},
+			{
+				"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+				"threads": ["background"],
+				"expected": [
+					"RequestCache \"only-if-cached\" (with \"same-origin\") does not follow redirects across origins and rejects with Etag and fresh response",
+					"RequestCache \"only-if-cached\" (with \"same-origin\") does not follow redirects across origins and rejects with Etag and stale response",
+					"RequestCache \"only-if-cached\" (with \"same-origin\") does not follow redirects across origins and rejects with Last-Modified and fresh response",
+					"RequestCache \"only-if-cached\" (with \"same-origin\") does not follow redirects across origins and rejects with Last-Modified and stale response",
+					"RequestCache \"only-if-cached\" (with \"same-origin\") uses cached same-origin redirects to same-origin content with Etag and fresh response",
+					"RequestCache \"only-if-cached\" (with \"same-origin\") uses cached same-origin redirects to same-origin content with Etag and stale response",
+					"RequestCache \"only-if-cached\" (with \"same-origin\") uses cached same-origin redirects to same-origin content with Last-Modified and fresh response",
+					"RequestCache \"only-if-cached\" (with \"same-origin\") uses cached same-origin redirects to same-origin content with Last-Modified and stale response"
+				]
+			}
+		]
+	},
+	"request/request-cache-reload.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"RequestCache \"reload\" mode does not check the cache for previously cached content and goes to the network regardless with Etag and fresh response",
+				"RequestCache \"reload\" mode does not check the cache for previously cached content and goes to the network regardless with Etag and stale response",
+				"RequestCache \"reload\" mode does not check the cache for previously cached content and goes to the network regardless with Last-Modified and fresh response",
+				"RequestCache \"reload\" mode does not check the cache for previously cached content and goes to the network regardless with Last-Modified and stale response",
+				"RequestCache \"reload\" mode does store the response in the cache even if a previous response is already stored with Etag and fresh response",
+				"RequestCache \"reload\" mode does store the response in the cache even if a previous response is already stored with Etag and stale response",
+				"RequestCache \"reload\" mode does store the response in the cache even if a previous response is already stored with Last-Modified and fresh response",
+				"RequestCache \"reload\" mode does store the response in the cache even if a previous response is already stored with Last-Modified and stale response",
+				"RequestCache \"reload\" mode does store the response in the cache with Etag and fresh response",
+				"RequestCache \"reload\" mode does store the response in the cache with Etag and stale response",
+				"RequestCache \"reload\" mode does store the response in the cache with Last-Modified and fresh response",
+				"RequestCache \"reload\" mode does store the response in the cache with Last-Modified and stale response"
+			]
+		}
+	},
+	"request/request-consume-empty.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Consume empty ArrayBuffer request body as text",
+				"Consume empty FormData request body as text",
+				"Consume empty URLSearchParams request body as text",
+				"Consume empty blob request body as arrayBuffer",
+				"Consume empty blob request body as text",
+				"Consume empty text request body as arrayBuffer",
+				"Consume empty text request body as text",
+				"Consume request's body as arrayBuffer",
+				"Consume request's body as blob",
+				"Consume request's body as formData with correct multipart type (error case)",
+				"Consume request's body as formData with correct urlencoded type",
+				"Consume request's body as formData without correct type (error case)",
+				"Consume request's body as json (error case)",
+				"Consume request's body as text"
+			]
+		}
+	},
+	"request/request-consume.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Consume ArrayBuffer request's body as JSON",
+				"Consume ArrayBuffer request's body as arrayBuffer",
+				"Consume ArrayBuffer request's body as blob",
+				"Consume ArrayBuffer request's body as bytes",
+				"Consume ArrayBuffer request's body as text",
+				"Consume DataView request's body as JSON",
+				"Consume DataView request's body as arrayBuffer",
+				"Consume DataView request's body as blob",
+				"Consume DataView request's body as bytes",
+				"Consume DataView request's body as text",
+				"Consume Float32Array request's body as JSON",
+				"Consume Float32Array request's body as arrayBuffer",
+				"Consume Float32Array request's body as blob",
+				"Consume Float32Array request's body as bytes",
+				"Consume Float32Array request's body as text",
+				"Consume FormData request's body as FormData",
+				"Consume Int8Array request's body as JSON",
+				"Consume Int8Array request's body as arrayBuffer",
+				"Consume Int8Array request's body as blob",
+				"Consume Int8Array request's body as bytes",
+				"Consume Int8Array request's body as text",
+				"Consume JSON from text: '\"1\"'",
+				"Consume JSON from text: '\"\\\"string\\\"\"'",
+				"Consume JSON from text: '\"null\"'",
+				"Consume JSON from text: '\"true\"'",
+				"Consume String request's body as JSON",
+				"Consume String request's body as arrayBuffer",
+				"Consume String request's body as blob",
+				"Consume String request's body as bytes",
+				"Consume String request's body as text",
+				"Consume Uint8Array request's body as JSON",
+				"Consume Uint8Array request's body as arrayBuffer",
+				"Consume Uint8Array request's body as blob",
+				"Consume Uint8Array request's body as bytes",
+				"Consume Uint8Array request's body as text",
+				"Trying to consume bad JSON text as JSON: '['",
+				"Trying to consume bad JSON text as JSON: 'a'",
+				"Trying to consume bad JSON text as JSON: 'undefined'",
+				"Trying to consume bad JSON text as JSON: '{'"
+			]
+		}
+	},
+	"request/request-disturbed.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"request/request-error.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Request should get its content-type from init headers if one is provided",
+				"Request should get its content-type from the body if none is provided",
+				"Request should get its content-type from the init request",
+				"Request should not get its content-type from the init request if init headers are provided",
+				"Request with cache mode: only-if-cached and fetch mode: same-origin"
+			]
+		}
+	},
+	"request/request-headers.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Adding invalid no-cors request header \"Content-Type: KO\"",
+				"Adding invalid no-cors request header \"Empty-Value: \"",
+				"Adding invalid no-cors request header \"Potato: KO\"",
+				"Adding invalid no-cors request header \"proxy: KO\"",
+				"Adding invalid no-cors request header \"proxya: KO\"",
+				"Adding invalid no-cors request header \"sec: KO\"",
+				"Adding invalid no-cors request header \"secb: KO\"",
+				"Adding invalid request header \"ACCEPT-ENCODING: KO\"",
+				"Adding invalid request header \"Accept-Charset: KO\"",
+				"Adding invalid request header \"Accept-Encoding: KO\"",
+				"Adding invalid request header \"Access-Control-Request-Headers: KO\"",
+				"Adding invalid request header \"Access-Control-Request-Method: KO\"",
+				"Adding invalid request header \"Connection: KO\"",
+				"Adding invalid request header \"Content-Length: KO\"",
+				"Adding invalid request header \"Cookie2: KO\"",
+				"Adding invalid request header \"Cookie: KO\"",
+				"Adding invalid request header \"DNT: KO\"",
+				"Adding invalid request header \"Date: KO\"",
+				"Adding invalid request header \"Expect: KO\"",
+				"Adding invalid request header \"Host: KO\"",
+				"Adding invalid request header \"Keep-Alive: KO\"",
+				"Adding invalid request header \"Origin: KO\"",
+				"Adding invalid request header \"Proxy-: KO\"",
+				"Adding invalid request header \"Referer: KO\"",
+				"Adding invalid request header \"Sec-: KO\"",
+				"Adding invalid request header \"Set-Cookie: KO\"",
+				"Adding invalid request header \"TE: KO\"",
+				"Adding invalid request header \"Trailer: KO\"",
+				"Adding invalid request header \"Transfer-Encoding: KO\"",
+				"Adding invalid request header \"Upgrade: KO\"",
+				"Adding invalid request header \"Via: KO\"",
+				"Adding invalid request header \"accept-charset: KO\"",
+				"Adding invalid request header \"proxy-a: KO\"",
+				"Adding invalid request header \"sec-b: KO\"",
+				"Adding valid no-cors request header \"Accept-Language: OK\"",
+				"Adding valid no-cors request header \"Accept: OK\"",
+				"Adding valid no-cors request header \"CONTENT-type: text/plain;charset=UTF-8\"",
+				"Adding valid no-cors request header \"content-TYPE: text/plain\"",
+				"Adding valid no-cors request header \"content-language: OK\"",
+				"Adding valid no-cors request header \"content-type: application/x-www-form-urlencoded\"",
+				"Adding valid no-cors request header \"content-type: application/x-www-form-urlencoded;charset=UTF-8\"",
+				"Adding valid no-cors request header \"content-type: multipart/form-data\"",
+				"Adding valid no-cors request header \"content-type: multipart/form-data;charset=UTF-8\"",
+				"Adding valid request header \"Content-Type: OK\"",
+				"Adding valid request header \"Potato: OK\"",
+				"Adding valid request header \"Set-Cookie2: OK\"",
+				"Adding valid request header \"User-Agent: OK\"",
+				"Adding valid request header \"proxy: OK\"",
+				"Adding valid request header \"proxya: OK\"",
+				"Adding valid request header \"sec: OK\"",
+				"Adding valid request header \"secb: OK\"",
+				"Check that no-cors request constructor is filtering headers provided as init parameter",
+				"Check that no-cors request constructor is filtering headers provided as part of request parameter",
+				"Check that request constructor is filtering headers provided as init parameter",
+				"Request should get its content-type from init headers if one is provided",
+				"Request should get its content-type from the body if none is provided",
+				"Request should get its content-type from the init request",
+				"Request should not get its content-type from the init request if init headers are provided",
+				"Test that Request.headers has the [SameObject] extended attribute",
+				"Testing empty Request Content-Type header",
+				"Testing request header creations with various objects"
+			]
+		}
+	},
+	"request/request-init-002.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Initialize Request with headers values",
+				"Initialize Request's body with \"This is a USVString\", text/plain;charset=UTF-8",
+				"Initialize Request's body with \"[object Blob]\", application/octet-binary",
+				"Initialize Request's body with \"[object FormData]\", multipart/form-data",
+				"Initialize Request's body with \"hi!\", text/plain;charset=UTF-8",
+				"Initialize Request's body with \"name=value\", application/x-www-form-urlencoded;charset=UTF-8",
+				"Initialize Request's body with \"null\", null",
+				"Initialize Request's body with \"undefined\", undefined"
+			]
+		}
+	},
+	"request/request-init-priority.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"fetch() with a 'auto' priority completes successfully",
+				"fetch() with a 'high' priority completes successfully",
+				"fetch() with a 'low' priority completes successfully",
+				"new Request() with a 'auto' priority does not throw an error",
+				"new Request() with a 'high' priority does not throw an error",
+				"new Request() with a 'low' priority does not throw an error"
+			]
+		}
+	},
+	"request/request-init-stream.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Constructing a Request with a Request on which body.getReader() is called",
+				"Constructing a Request with a Request on which body.getReader().read() is called",
+				"Constructing a Request with a Request on which read() and releaseLock() are called",
+				"Constructing a Request with a stream holds the original object.",
+				"It is OK to omit .duplex when the body is a Blob.",
+				"It is OK to omit .duplex when the body is a Uint8Array.",
+				"It is OK to omit .duplex when the body is a string.",
+				"It is OK to omit .duplex when the body is null.",
+				"It is OK to omit duplex when init.body is not given and input.body is given.",
+				"It is OK to set .duplex = 'half' when the body is a Blob.",
+				"It is OK to set .duplex = 'half' when the body is a ReadableStream.",
+				"It is OK to set .duplex = 'half' when the body is a Uint8Array.",
+				"It is OK to set .duplex = 'half' when the body is a string.",
+				"It is OK to set .duplex = 'half' when the body is null."
+			]
+		}
+	},
+	"request/request-keepalive.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["keepalive flag"]
+		}
+	},
+	"request/request-structure.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	},
+	"response/json.any.js": {
+		"fail": [
+			{
+				"note": "A request over the network: the suite's shell has no lynx-core fetch, which the fill sends requests through.",
+				"threads": ["background"],
+				"expected": ["Ensure the correct JSON parser is used"]
+			},
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": ["Ensure UTF-16 results in an error"]
+			}
+		]
+	},
+	"response/response-blob-realm.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["realm of the Uint8Array from Response bytes()"]
+		}
+	},
+	"response/response-cancel-stream.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Accessing .body after canceling it",
+				"Cancelling a closed Response stream",
+				"Cancelling a loading Response stream",
+				"Cancelling a starting Response stream"
+			]
+		}
+	},
+	"response/response-clone.any.js": {
+		"fail": [
+			{
+				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+				"threads": ["background"],
+				"expected": [
+					"Cancelling stream should not affect cloned one",
+					"Cloned responses should provide the same data"
+				]
+			},
+			{
+				"note": "PrimJS has no Float16Array, and core-js (the float16 fill) gives only Math.f16round and DataView's methods.",
+				"threads": ["background"],
+				"expected": [
+					"Check response clone use structureClone for teed ReadableStreams (Float16Arraychunk)"
+				]
+			}
+		]
+	},
+	"response/response-consume-stream.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Getting a redirect Response stream"]
+		}
+	},
+	"response/response-headers-guard.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Ensure response headers are immutable"]
+		}
+	},
+	"response/response-stream-disturbed-1.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Getting arrayBuffer after getting the Response body - not disturbed, not locked (body source: fetch)",
+				"Getting blob after getting the Response body - not disturbed, not locked (body source: fetch)",
+				"Getting json after getting the Response body - not disturbed, not locked (body source: fetch)",
+				"Getting text after getting the Response body - not disturbed, not locked (body source: fetch)"
+			]
+		}
+	},
+	"response/response-stream-disturbed-2.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Getting arrayBuffer after getting a locked Response body (body source: fetch)",
+				"Getting blob after getting a locked Response body (body source: fetch)",
+				"Getting json after getting a locked Response body (body source: fetch)",
+				"Getting text after getting a locked Response body (body source: fetch)"
+			]
+		}
+	},
+	"response/response-stream-disturbed-3.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Getting arrayBuffer after reading the Response body (body source: fetch)",
+				"Getting blob after reading the Response body (body source: fetch)",
+				"Getting json after reading the Response body (body source: fetch)",
+				"Getting text after reading the Response body (body source: fetch)"
+			]
+		}
+	},
+	"response/response-stream-disturbed-4.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Getting arrayBuffer after cancelling the Response body (body source: fetch)",
+				"Getting blob after cancelling the Response body (body source: fetch)",
+				"Getting json after cancelling the Response body (body source: fetch)",
+				"Getting text after cancelling the Response body (body source: fetch)"
+			]
+		}
+	},
+	"response/response-stream-disturbed-5.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"Getting a body reader after consuming as arrayBuffer (body source: fetch)",
+				"Getting a body reader after consuming as blob (body source: fetch)",
+				"Getting a body reader after consuming as json (body source: fetch)",
+				"Getting a body reader after consuming as text (body source: fetch)"
+			]
+		}
+	}
+}

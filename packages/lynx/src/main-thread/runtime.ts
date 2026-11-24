@@ -25,6 +25,7 @@ import {
 	describeOp,
 	encodeError,
 	encodeToBackground,
+	hearErrorEvents,
 	keepsMessage,
 	LAZY_BUNDLE_METHOD,
 	OpCode,
@@ -32,6 +33,7 @@ import {
 	ROOT_ID,
 	RUN_FUNCTION,
 	withCount,
+	withMissingGlobalHint,
 } from "../wire/index.ts";
 import type {
 	ErrorPlace,
@@ -147,7 +149,8 @@ export function startMainThread(): MainThreadRuntime {
 	 * with its count; the background hears every one. Never throws over the error it reports.
 	 */
 	function report(error: unknown, { op, place }: { op?: Op; place?: ErrorPlace } = {}): void {
-		const thrown = asError(error);
+		// A global the page read that Lynx lacks: the report names the import that fills it.
+		const thrown = asError(withMissingGlobalHint(error, "main-thread"));
 		try {
 			const count = DEV ? repeats.count(thrown) : 1;
 			if (count !== undefined) reportIntoLynx(withCount(thrown, count));
@@ -431,6 +434,8 @@ export function startMainThread(): MainThreadRuntime {
 	}
 
 	function onRenderPage(event: EngineMessage): void {
+		// The page's modules have loaded: what a polyfill the app imported catches is the page's error.
+		hearErrorEvents(globalScope, (error) => report(error));
 		try {
 			const page = (state.element = mainThread.__CreatePage("0", 0));
 			const functions = state.functions;

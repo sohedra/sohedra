@@ -1,7 +1,7 @@
 // What the main thread's engine lacks, filled in as its runtime starts, before the page's modules
 // load. Each fill is made only where the engine has none, and only for what Svelte's runtime reads
-// or the other thread has: an app gets no other fill, of the language or of the web's APIs, from the
-// binding.
+// or the other thread has: an app gets the language's and the web's other APIs from
+// `@sohedra/lynx-polyfill`.
 
 import EventTargetFill from "@ungap/event-target";
 import { deserialize, serialize } from "@ungap/structured-clone";

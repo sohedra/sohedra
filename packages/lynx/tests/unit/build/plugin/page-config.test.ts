@@ -43,6 +43,15 @@ describe("resolvePageConfig", () => {
 		});
 	});
 
+	it("leaves fetch's streaming as Lynx has it, so lynx-core's Response.clone() keeps working", () => {
+		expect(resolvePageConfig(undefined).pageConfig).not.toHaveProperty(
+			"enableFetchAPIStandardStreaming",
+		);
+		expect(resolvePageConfig({ enableFetchAPIStandardStreaming: true }).pageConfig).toMatchObject({
+			enableFetchAPIStandardStreaming: true,
+		});
+	});
+
 	it("leaves out a key set to undefined", () => {
 		const { pageConfig, template } = resolvePageConfig({
 			enableCSSRule: undefined,

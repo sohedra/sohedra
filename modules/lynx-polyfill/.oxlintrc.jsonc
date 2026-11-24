@@ -1,0 +1,92 @@
+{
+	"$schema": "../../node_modules/oxlint/configuration_schema.json",
+	// The root's rules, then this package's. oxlint reads every glob here, and the root's too,
+	// relative to this folder.
+	"extends": ["../../.oxlintrc.jsonc"],
+	// The npm packages the package bundles (scripts/vendor/bundle.ts), as their authors wrote them.
+	"ignorePatterns": ["src/fills/vendor/**"],
+	"overrides": [
+		{
+			// The source runs on Lynx's threads: a thread's globals are reached through
+			// src/fills/globals.ts, and Android's engine objects refuse `Reflect`.
+			"files": ["src/**"],
+			"rules": {
+				"no-console": "error",
+				"no-undef": "error",
+				"import/no-nodejs-modules": "error",
+				"no-restricted-globals": [
+					"error",
+					{ "name": "globalThis", "message": "Reach globals through src/fills/globals.ts." },
+					{
+						"name": "Reflect",
+						"message": "Read a property plainly: Android's engine objects refuse Reflect.",
+					},
+				],
+			},
+		},
+		{
+			"files": ["src/fills/globals.ts"],
+			"rules": {
+				"no-restricted-globals": [
+					"error",
+					{
+						"name": "Reflect",
+						"message": "Read a property plainly: Android's engine objects refuse Reflect.",
+					},
+				],
+			},
+		},
+		{
+			"files": ["scripts/**", "tests/**", "rstest.config.ts"],
+			"env": { "node": true },
+		},
+		// fills/ imports nothing but its own files and the vendored modules: it serves any Lynx app,
+		// so it names neither Svelte, Lynx's packages nor another package of this repository.
+		{
+			"files": ["src/fills/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**/background",
+									"../**/background/**",
+									"../**/main-thread",
+									"../**/main-thread/**",
+								],
+								"message": "The fills reach a thread only through the package's entries, which resolve by thread.",
+							},
+							{
+								"group": ["svelte", "svelte/**", "@sohedra/**", "@lynx-js/**"],
+								"message": "The package serves any Lynx app: it imports neither Svelte, Lynx's packages nor another package of this repository.",
+							},
+						],
+					},
+				],
+			},
+		},
+		// An entry (background/, main-thread/) imports only the fills' face, fills/index.ts.
+		{
+			"files": ["src/background/**", "src/main-thread/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": ["../**", "./**", "!../fills/index.ts"],
+								"message": "An entry imports only ../fills/index.ts.",
+							},
+							{
+								"group": ["svelte", "svelte/**", "@sohedra/**", "@lynx-js/**"],
+								"message": "The package serves any Lynx app: it imports neither Svelte, Lynx's packages nor another package of this repository.",
+							},
+						],
+					},
+				],
+			},
+		},
+	],
+}

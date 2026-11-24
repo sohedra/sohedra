@@ -1,0 +1,79 @@
+{
+	"urlpattern-generate.tentative.any.js": {
+		"skip": "URLPattern's generate() is a tentative addition, which urlpattern-polyfill (vendored) doesn't have."
+	},
+	"urlpattern.any.js": {
+		"fail": [
+			{
+				"note": "urlpattern-polyfill (vendored) percent-encodes a name character past the BMP that the standard keeps.",
+				"expected": [
+					"Pattern: [{\"pathname\":\":a\udb40\udd00b\"}] Inputs: []",
+					"Pattern: [{\"pathname\":\"test/:a\ud801\udc50b\"}] Inputs: [{\"pathname\":\"test/foo\"}]"
+				]
+			},
+			{
+				"note": "urlpattern-polyfill (vendored) refuses or matches these patterns otherwise than the standard: the URLPattern fill is experimental.",
+				"expected": [
+					"Pattern: [\"https://{sub.}?example{.com/}foo\"] Inputs: [\"https://example.com/foo\"]",
+					"Pattern: [{\"hostname\":\"bad#hostname\"}] Inputs: [{\"hostname\":\"bad\"}]",
+					"Pattern: [{\"hostname\":\"bad/hostname\"}] Inputs: [{\"hostname\":\"bad\"}]",
+					"Pattern: [{\"hostname\":\"bad\\\\\\\\hostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"hostname\":\"bad\\nhostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"hostname\":\"bad\\rhostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"hostname\":\"bad\\thostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"pathname\":\"*{}**?\"}] Inputs: [{\"pathname\":\"foobar\"}]",
+					"Pattern: [{\"pathname\":\"/([[a-z]--a])\"}] Inputs: [{\"pathname\":\"/a\"}]",
+					"Pattern: [{\"pathname\":\"/([[a-z]--a])\"}] Inputs: [{\"pathname\":\"/z\"}]",
+					"Pattern: [{\"pathname\":\"/([\\\\d&&[0-1]])\"}] Inputs: [{\"pathname\":\"/0\"}]",
+					"Pattern: [{\"pathname\":\"/([\\\\d&&[0-1]])\"}] Inputs: [{\"pathname\":\"/3\"}]",
+					"Pattern: [{\"pathname\":\"/:\ud840\udc00\"}] Inputs: [{\"pathname\":\"/foo\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"80?x\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"80\\\\x\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"80x\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"8\\t0\"}]",
+					"Pattern: [{\"protocol\":\"http\",\"hostname\":\"example.com#ignoredhash\"}] Inputs: [\"http://example.com/\"]",
+					"Pattern: [{\"protocol\":\"http\",\"hostname\":\"example.com/ignoredpath\"}] Inputs: [\"http://example.com/\"]",
+					"Pattern: [{\"protocol\":\"http\",\"hostname\":\"example.com\\\\?ignoredsearch\"}] Inputs: [\"http://example.com/\"]",
+					"Pattern: [{\"protocol\":\"http\",\"port\":\"80 \"}] Inputs: [{\"protocol\":\"http\",\"port\":\"80\"}]"
+				]
+			}
+		]
+	},
+	"urlpattern.https.any.js": {
+		"fail": [
+			{
+				"note": "urlpattern-polyfill (vendored) percent-encodes a name character past the BMP that the standard keeps.",
+				"expected": [
+					"Pattern: [{\"pathname\":\":a\udb40\udd00b\"}] Inputs: []",
+					"Pattern: [{\"pathname\":\"test/:a\ud801\udc50b\"}] Inputs: [{\"pathname\":\"test/foo\"}]"
+				]
+			},
+			{
+				"note": "urlpattern-polyfill (vendored) refuses or matches these patterns otherwise than the standard: the URLPattern fill is experimental.",
+				"expected": [
+					"Pattern: [\"https://{sub.}?example{.com/}foo\"] Inputs: [\"https://example.com/foo\"]",
+					"Pattern: [{\"hostname\":\"bad#hostname\"}] Inputs: [{\"hostname\":\"bad\"}]",
+					"Pattern: [{\"hostname\":\"bad/hostname\"}] Inputs: [{\"hostname\":\"bad\"}]",
+					"Pattern: [{\"hostname\":\"bad\\\\\\\\hostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"hostname\":\"bad\\nhostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"hostname\":\"bad\\rhostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"hostname\":\"bad\\thostname\"}] Inputs: [{\"hostname\":\"badhostname\"}]",
+					"Pattern: [{\"pathname\":\"*{}**?\"}] Inputs: [{\"pathname\":\"foobar\"}]",
+					"Pattern: [{\"pathname\":\"/([[a-z]--a])\"}] Inputs: [{\"pathname\":\"/a\"}]",
+					"Pattern: [{\"pathname\":\"/([[a-z]--a])\"}] Inputs: [{\"pathname\":\"/z\"}]",
+					"Pattern: [{\"pathname\":\"/([\\\\d&&[0-1]])\"}] Inputs: [{\"pathname\":\"/0\"}]",
+					"Pattern: [{\"pathname\":\"/([\\\\d&&[0-1]])\"}] Inputs: [{\"pathname\":\"/3\"}]",
+					"Pattern: [{\"pathname\":\"/:\ud840\udc00\"}] Inputs: [{\"pathname\":\"/foo\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"80?x\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"80\\\\x\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"80x\"}]",
+					"Pattern: [{\"port\":\"80\"}] Inputs: [{\"port\":\"8\\t0\"}]",
+					"Pattern: [{\"protocol\":\"http\",\"hostname\":\"example.com#ignoredhash\"}] Inputs: [\"http://example.com/\"]",
+					"Pattern: [{\"protocol\":\"http\",\"hostname\":\"example.com/ignoredpath\"}] Inputs: [\"http://example.com/\"]",
+					"Pattern: [{\"protocol\":\"http\",\"hostname\":\"example.com\\\\?ignoredsearch\"}] Inputs: [\"http://example.com/\"]",
+					"Pattern: [{\"protocol\":\"http\",\"port\":\"80 \"}] Inputs: [{\"protocol\":\"http\",\"port\":\"80\"}]"
+				]
+			}
+		]
+	}
+}

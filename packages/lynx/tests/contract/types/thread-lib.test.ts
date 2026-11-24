@@ -43,7 +43,9 @@ function packageOptions(): ts.CompilerOptions {
 describe("the binding's thread code", { timeout: 60_000 }, () => {
 	it("leaves the DOM out of the base tsconfig an app extends", () => {
 		const { lib, skipLibCheck } = baseOptions();
-		expect(lib).toEqual(["lib.es2021.d.ts"]);
+		// The language through ES2025: the build lowers its syntax, and @sohedra/lynx-polyfill fills its
+		// built-ins, which the app template imports.
+		expect(lib).toEqual(["lib.es2025.d.ts"]);
 		// Svelte's and Rsbuild's declarations name the DOM's types, which the base leaves out.
 		expect(skipLibCheck).toBe(true);
 	});

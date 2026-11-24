@@ -1,6 +1,8 @@
 // What the background's engine lacks, filled in before the page's modules load (start-up.ts). Each
 // fill is made only where the engine has none, and only for what Svelte's runtime reads or the other
-// thread has: an app gets no other fill, of the language or of the web's APIs, from the binding.
+// thread has: an app gets the language's and the web's other APIs from `@sohedra/lynx-polyfill`,
+// which replaces the fills here that are partial (`performance`, `EventTarget` without `Event`,
+// `structuredClone` without `DataCloneError`) with the standard's.
 
 import EventTargetFill from "@ungap/event-target";
 import { deserialize, serialize } from "@ungap/structured-clone";
@@ -24,6 +26,7 @@ export function fillEngineGaps(targets: FillTargets): void {
 	fillReplaceAll(targets.strings);
 	fillEventTarget(targets.scope);
 	fillStructuredClone(targets.scope);
+	fillPerformance(targets.scope);
 }
 
 /**
@@ -141,4 +144,28 @@ function substitute(
 		index++;
 	}
 	return result;
+}
+
+/**
+ * Svelte's motion (`Tween`, `Spring`, `tweened`, `spring`) reads its clock from `performance.now()`
+ * on every `set`, and `$inspect.trace()` too, unguarded on the background
+ * (svelte/src/internal/client/timing.js, dev/tracing.js); the main thread's clock is `Date.now()`.
+ * Only `now` and `timeOrigin`: Lynx has no monotonic clock in JavaScript (`lynx.performance` is its
+ * pipeline's timing), so this one counts `Date.now()`'s milliseconds, held from going back.
+ *
+ * @workaround background-performance kind=lynx-gap delete-when="Lynx's background thread has a global performance"
+ */
+function fillPerformance(scope: Record<string, unknown>): void {
+	if (typeof scope["performance"] === "object" && scope["performance"] !== null) return;
+	const timeOrigin = Date.now();
+	let last = 0;
+	Object.defineProperty(scope, "performance", {
+		value: {
+			timeOrigin,
+			now: () => (last = Math.max(last, Date.now() - timeOrigin)),
+		},
+		writable: true,
+		enumerable: false,
+		configurable: true,
+	});
 }

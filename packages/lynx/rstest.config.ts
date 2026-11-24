@@ -25,6 +25,7 @@ const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 //   contract/  rules about the source, the repository, the pinned Svelte build, and the engine
 //              behavior spec run on the fake
 //   types/     checked by `pnpm check`, not run
+//   polyfill/  the polyfill folder's WPT and test262 suites on PrimJS, run by their own config
 //   vitest/    the Vitest preset's own projects, which Vitest runs
 //   fixtures/  inputs the tests read (the app of scripts/consumer.ts has tests of its own)
 //
@@ -36,6 +37,7 @@ const onTheTestTree = [
 	"tests/unit/first-frame/**",
 	"tests/unit/globals/**",
 	"tests/unit/main-thread/**",
+	"tests/unit/polyfill/**",
 	"tests/contract/engine/**",
 	"tests/threads/**",
 	"tests/library/**",
@@ -54,12 +56,14 @@ const config: RstestConfig = defineConfig({
 			include: ["tests/**/*.test.ts"],
 			// The run's folder of the builds the build tests share.
 			globalSetup: ["tests/build/global-setup.ts"],
-			// The Vitest preset's suite runs under Vitest (tests/build/vitest-run.test.ts), and the
-			// fixture app's tests in the app that scripts/consumer.ts installs.
+			// The Vitest preset's suite runs under Vitest (tests/build/vitest-run.test.ts), the
+			// fixture app's tests in the app that scripts/consumer.ts installs, and the polyfill
+			// folder's suites on PrimJS with their own config (tests/polyfill/rstest.config.ts).
 			exclude: [
 				...onTheTestTree.map((folder) => `${folder}/*.test.ts`),
 				"tests/vitest/**",
 				"tests/fixtures/**",
+				"tests/polyfill/**",
 			],
 		},
 	],

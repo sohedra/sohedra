@@ -31,15 +31,22 @@ build error in a main-thread function, which says what to write instead.
 
 Lynx's threads lack some globals and built-ins that Svelte's runtime reads or that the other thread
 has. The binding installs these where a thread has none, never over the engine's own:
-`queueMicrotask` on the background, `SystemInfo` on the main thread, and
-`String.prototype.replaceAll`, `EventTarget`
-([`@ungap/event-target`](https://github.com/ungap/event-target)) and `structuredClone`
-([`@ungap/structured-clone`](https://github.com/ungap/structured-clone)) on both. Svelte's other
-reads of the web's globals are not filled yet: `getAbortSignal()` in a `$derived` that the first
-frame renders needs `AbortController`, `svelte/motion`'s `Tween` and `Spring` need `performance`,
-and `SvelteURL` needs a full `URL`.
+`queueMicrotask` on the background, `performance.now()` on the background (for `svelte/motion` and
+`$inspect.trace()`), `SystemInfo` on the main thread, and `String.prototype.replaceAll`,
+`EventTarget` ([`@ungap/event-target`](https://github.com/ungap/event-target)) and `structuredClone`
+([`@ungap/structured-clone`](https://github.com/ungap/structured-clone)) on both. `getAbortSignal()`
+in a `$derived` that the first frame renders still needs `AbortController` on the main thread.
 
-Your code sees the fills too, and `EventTarget` and `structuredClone` are smaller than the web's:
+Everything else of the web and the language comes from
+[`@sohedra/lynx-polyfill`](../../modules/lynx-polyfill), which an app imports in the first line of
+its entry (`import "@sohedra/lynx-polyfill"`) and which replaces the binding's smaller
+`performance`, `EventTarget` and `structuredClone` with the standard's. The binding imports nothing
+of it: it hears the errors the polyfill catches as `error` events on the global object, and sends
+them to the page's `onError`. When a page reads a global Lynx lacks, its error names the import that
+fills it, or what to use instead.
+
+Without the polyfill, your code sees the binding's fills, and `EventTarget` and `structuredClone`
+are smaller than the web's:
 
 - `EventTarget` has `addEventListener` (with `once`), `removeEventListener` and `dispatchEvent`, and
   no `Event` or `CustomEvent`: it takes any extensible object with a `type` as the event, and sets

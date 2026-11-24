@@ -1,0 +1,7713 @@
+{
+	"generated": "2026-11-24T08:01:22.792Z",
+	"statuses": {
+		"yes": "there, and its check gives the specified result",
+		"no": "missing (or only the binding's fill)",
+		"wrong": "there, but its check fails",
+		"param": "background only as a lynx-core wrapper parameter: the free name works, globalThis lacks it"
+	},
+	"columns": [
+		{
+			"id": "primjs-4.2-lynx-4.2-android-mt",
+			"engine": "primjs",
+			"engineVersion": "4.2",
+			"lynxSdkVersion": "4.2",
+			"platform": "android",
+			"thread": "mt",
+			"osVersion": "36",
+			"runtimeType": "quickjs",
+			"systemInfo": "{\"platform\":\"Android\",\"pixelRatio\":2.75,\"pixelWidth\":1080,\"pixelHeight\":2400,\"lynxSdkVersion\":\"4.2\",\"engineVersion\":\"4.2\",\"theme\":{}}",
+			"lepusVersion": "\"2.3.0\"",
+			"runs": [
+				"run2-ft-off",
+				"run3-ft-off",
+				"run4-ft-off"
+			]
+		},
+		{
+			"id": "primjs-4.2-lynx-4.2-android-bg",
+			"engine": "primjs",
+			"engineVersion": "4.2",
+			"lynxSdkVersion": "4.2",
+			"platform": "android",
+			"thread": "bg",
+			"osVersion": "36",
+			"runtimeType": "quickjs",
+			"systemInfo": "{\"platform\":\"Android\",\"pixelRatio\":2.75,\"pixelWidth\":1080,\"pixelHeight\":2400,\"lynxSdkVersion\":\"4.2\",\"engineVersion\":\"4.2\",\"theme\":{},\"osVersion\":\"36\",\"runtimeType\":\"quickjs\"}",
+			"lepusVersion": "undefined",
+			"runs": [
+				"run2-ft-off",
+				"run3-ft-off",
+				"run4-ft-off"
+			]
+		}
+	],
+	"rows": [
+		{
+			"id": "es.symbol",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.description",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.async-dispose",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'value' of undefined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'value' of undefined)"
+				}
+			}
+		},
+		{
+			"id": "es.symbol.async-iterator",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.dispose",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'value' of undefined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'value' of undefined)"
+				}
+			}
+		},
+		{
+			"id": "es.symbol.has-instance",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.is-concat-spreadable",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.iterator",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.match",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.match-all",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.replace",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.search",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.species",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.split",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.to-primitive",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.to-string-tag",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.symbol.unscopables",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.error.cause",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. error.cause.option: got undefined, want 7"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. error.cause.option: got undefined, want 7"
+				}
+			}
+		},
+		{
+			"id": "es.error.is-error",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: Error.isError is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.error.to-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.aggregate-error",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.aggregate-error.cause",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. aggregate-error.cause: got undefined, want 7"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. aggregate-error.cause: got undefined, want 7"
+				}
+			}
+		},
+		{
+			"id": "es.suppressed-error.constructor",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array.at",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array.concat",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.copy-within",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.every",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.fill",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.filter",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.find",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.find-index",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.find-last",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array.find-last-index",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array.flat",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.flat-map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.for-each",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.from",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.includes",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2016",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.index-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.is-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.iterator",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.join",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.last-index-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.push",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.reduce",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.reduce-right",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.reverse",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.slice",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.some",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.sort",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.species",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.splice",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.to-reversed",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array.to-sorted",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array.to-spliced",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array.unscopables.flat",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.unscopables.flat-map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.unshift",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array.with",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array-buffer.constructor",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array-buffer.is-view",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.array-buffer.slice",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.data-view",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.data-view.get-float16",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.data-view.set-float16",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array-buffer.detached",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array-buffer.transfer",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.array-buffer.transfer-to-fixed-length",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.date.get-year",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.date.now",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.date.set-year",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.date.to-gmt-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.date.to-iso-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.date.to-json",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.date.to-primitive",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.date.to-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.disposable-stack.constructor",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.escape",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.function.bind",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.function.has-instance",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.function.name",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.global-this",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.iterator.constructor",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.chunks",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.concat",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.dispose",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.drop",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.every",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.filter",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.find",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.flat-map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.for-each",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.from",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.includes",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.join",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.reduce",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.some",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.take",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.to-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.windows",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.zip",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.iterator.zip-keyed",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: Iterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.json.is-raw-json",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: JSON.rawJSON is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.json.parse",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 throws TypeError: cannot read property 'source' of undefined. json.parse.source: got undefined, want 9007199254740993"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 throws TypeError: cannot read property 'source' of undefined. json.parse.source: got undefined, want 9007199254740993"
+				}
+			}
+		},
+		{
+			"id": "es.json.raw-json",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: JSON.rawJSON is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.json.stringify",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 throws TypeError: not a function: function NATIVE_RAW_JSON() { var unsafeInt = '9007199254740993'; var raw = JSON.rawJSON(unsafeInt); return JSO…"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 throws TypeError: JSON.rawJSON is not a function: function NATIVE_RAW_JSON() { var unsafeInt = '9007199254740993'; var raw = JSON.rawJSON(unsafeInt); return JSO…"
+				}
+			}
+		},
+		{
+			"id": "es.json.to-string-tag",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.map.group-by",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: Map.groupBy is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.map.get-or-insert",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.map.get-or-insert-computed",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.math.acosh",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.asinh",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.atanh",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.cbrt",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.clz32",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.cosh",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.expm1",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.fround",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.f16round",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.math.hypot",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.imul",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.log10",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.log1p",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.log2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.sign",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.sinh",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.sum-precise",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: Math.sumPrecise is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.math.tanh",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.to-string-tag",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.math.trunc",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.constructor",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.epsilon",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.is-finite",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.is-integer",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.is-nan",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.is-safe-integer",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.max-safe-integer",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.min-safe-integer",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.parse-float",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.parse-int",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.to-exponential",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.to-fixed",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.number.to-precision",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.assign",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. object.assign.getter-defines: got 3, want 1"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. object.assign.getter-defines: got 3, want 1"
+				}
+			}
+		},
+		{
+			"id": "es.object.create",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.define-getter",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.define-properties",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.define-property",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.define-setter",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.entries",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.freeze",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.from-entries",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.get-own-property-descriptor",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 1 fails. object.gopd.primitive: got undefined, want {\"value\":\"q\",\"writable\":false,…"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 1 fails. object.gopd.primitive: got undefined, want {\"value\":\"q\",\"writable\":false,…"
+				}
+			}
+		},
+		{
+			"id": "es.object.get-own-property-descriptors",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.get-own-property-names",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.get-prototype-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.group-by",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: Object.groupBy is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.object.has-own",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.object.is",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.is-extensible",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.is-frozen",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.is-sealed",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.keys",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.lookup-getter",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.lookup-setter",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.prevent-extensions",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.proto",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.seal",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.set-prototype-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.to-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.object.values",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.parse-float",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.parse-int",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.promise",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 throws TypeError: not a constructor. promise.species: got THROWS TypeError: not a constructor, want true; promise.species-getter: got false, want true. checked on the bundle's Promise (lynx.Promise)"
+				}
+			}
+		},
+		{
+			"id": "es.promise.all-settled",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 throws TypeError: not a constructor. promise.species: got THROWS TypeError: not a constructor, want true. checked on the bundle's Promise (lynx.Promise)"
+				}
+			}
+		},
+		{
+			"id": "es.promise.any",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: not a constructor). checked on the bundle's Promise (lynx.Promise)"
+				}
+			}
+		},
+		{
+			"id": "es.promise.finally",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 throws TypeError: not a constructor. promise.species: got THROWS TypeError: not a constructor, want true. checked on the bundle's Promise (lynx.Promise)"
+				}
+			}
+		},
+		{
+			"id": "es.promise.try",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: not a constructor). checked on the bundle's Promise (lynx.Promise)"
+				}
+			}
+		},
+		{
+			"id": "es.promise.with-resolvers",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: not a constructor). checked on the bundle's Promise (lynx.Promise)"
+				}
+			}
+		},
+		{
+			"id": "es.array.from-async",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'call' of undefined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'call' of undefined)"
+				}
+			}
+		},
+		{
+			"id": "es.async-disposable-stack.constructor",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.async-iterator.async-dispose",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (ReferenceError: AsyncIterator is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (ReferenceError: AsyncIterator is not defined)"
+				}
+			}
+		},
+		{
+			"id": "es.reflect.apply",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. reflect.apply.no-args: got no throw, want TypeError"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. reflect.apply.no-args: got no throw, want TypeError"
+				}
+			}
+		},
+		{
+			"id": "es.reflect.construct",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.define-property",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.delete-property",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.get",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.get-own-property-descriptor",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.get-prototype-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.has",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.is-extensible",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.own-keys",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.prevent-extensions",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.set",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.set-prototype-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.reflect.to-string-tag",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.regexp.constructor",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.regexp.escape",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: RegExp.escape is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.regexp.dot-all",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.regexp.exec",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.regexp.flags",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.regexp.sticky",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.regexp.test",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.regexp.to-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.set",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.set.difference.v2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.set.intersection.v2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.set.is-disjoint-from.v2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.set.is-subset-of.v2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.set.is-superset-of.v2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.set.symmetric-difference.v2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.set.union.v2",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.string.at-alternative",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: \"𠮷\".at is not a function)"
+				}
+			}
+		},
+		{
+			"id": "es.string.code-point-at",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.ends-with",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.from-code-point",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.includes",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.is-well-formed",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.string.iterator",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.match",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.match-all",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. string.match-all.non-global: got no throw, want TypeError"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present, but core-js's check 0 fails. string.match-all.non-global: got no throw, want TypeError"
+				}
+			}
+		},
+		{
+			"id": "es.string.pad-end",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.pad-start",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.raw",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.repeat",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.replace",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "core-js's check is miscompiled by the build's minifier (it folds `/./[Symbol.replace]('a', '$0') === '$0'` to 0); each of its five conditions passes on its own"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "core-js's check is miscompiled by the build's minifier (it folds `/./[Symbol.replace]('a', '$0') === '$0'` to 0); each of its five conditions passes on its own"
+				}
+			}
+		},
+		{
+			"id": "es.string.replace-all",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "engine lacks it; the binding fills it (native name=\"ev\" function ev() { [native…)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "engine lacks it; the binding fills it (js name=\"g\" function g(e,t){if(this===nu…)"
+				}
+			}
+		},
+		{
+			"id": "es.string.search",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.split",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.starts-with",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.substr",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.to-well-formed",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'call' of undefined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (TypeError: cannot read property 'call' of undefined)"
+				}
+			}
+		},
+		{
+			"id": "es.string.trim",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.trim-end",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.trim-start",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.anchor",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.big",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.blink",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.bold",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.fixed",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.fontcolor",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.fontsize",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.italics",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.link",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.small",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.strike",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.sub",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.string.sup",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.float32-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.float64-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.int8-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.int16-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.int32-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.uint8-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.uint8-clamped-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.uint16-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.uint32-array",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.at",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.copy-within",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.every",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.fill",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.filter",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.find",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.find-index",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.find-last",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.find-last-index",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.for-each",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.from",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.includes",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2016",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.index-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.iterator",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.join",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.last-index-of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.of",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.reduce",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.reduce-right",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.reverse",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.set",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.slice",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.some",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.sort",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.subarray",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.to-locale-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.to-reversed",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.to-sorted",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.to-string",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.typed-array.with",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.uint8-array.from-base64",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.uint8-array.from-hex",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.uint8-array.set-from-base64",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.uint8-array.set-from-hex",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.uint8-array.to-base64",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.uint8-array.to-hex",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.unescape",
+			"group": "built-ins (core-js modules)",
+			"edition": "Annex B",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.weak-map",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "es.weak-map.get-or-insert",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.weak-map.get-or-insert-computed",
+			"group": "built-ins (core-js modules)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent"
+				}
+			}
+		},
+		{
+			"id": "es.weak-set",
+			"group": "built-ins (core-js modules)",
+			"edition": "ES2015 or a fix",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.string.normalize",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: \"é\".normalize is not a function)"
+				}
+			}
+		},
+		{
+			"id": "x.string.normalize.nfc",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: \"é\".normalize is not a function)"
+				}
+			}
+		},
+		{
+			"id": "x.error.cause.option",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got undefined, want 7"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got undefined, want 7"
+				}
+			}
+		},
+		{
+			"id": "x.error.cause.own",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got false, want true"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got false, want true"
+				}
+			}
+		},
+		{
+			"id": "x.atomics",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Atomics is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Atomics is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.atomics.wait-async",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Atomics is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Atomics is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.shared-array-buffer",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.shared-array-buffer.growable",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: (e=new SharedArrayBuffer(2,{maxByteLength:…)"
+				}
+			}
+		},
+		{
+			"id": "x.array-buffer.resizable",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: (e=new ArrayBuffer(2,{maxByteLength:8})).r…)"
+				}
+			}
+		},
+		{
+			"id": "x.array-buffer.transfer.smoke",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: not a function)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS TypeError: (e=new ArrayBuffer(4)).transfer is not a f…)"
+				}
+			}
+		},
+		{
+			"id": "x.weak-map.symbol-keys",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got THROWS TypeError: not an object, want 1"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got THROWS TypeError: not an object, want 1"
+				}
+			}
+		},
+		{
+			"id": "x.weak-set.symbol-keys",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got THROWS TypeError: not an object, want true"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got THROWS TypeError: not an object, want true"
+				}
+			}
+		},
+		{
+			"id": "x.weak-ref.symbol-target",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got THROWS TypeError: WeakRef: target must be an object, want symbol"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got THROWS TypeError: WeakRef: target must be an object, want symbol"
+				}
+			}
+		},
+		{
+			"id": "x.weak-ref",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.finalization-registry",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.proxy",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.bigint",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got -1, want 18446744073709551615"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got -1, want 18446744073709551615"
+				}
+			}
+		},
+		{
+			"id": "x.bigint64-array",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.error.stack",
+			"group": "built-ins (no core-js module)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.error.capture-stack-trace",
+			"group": "built-ins (no core-js module)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (undefined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (undefined)"
+				}
+			}
+		},
+		{
+			"id": "x.function.to-string",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.array.sort.stable",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.symbol.description",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.string.locale-upper-tr",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES5 + ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got I, want İ"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got I, want İ"
+				}
+			}
+		},
+		{
+			"id": "x.string.locale-compare",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES5 + ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got false, want true"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got false, want true"
+				}
+			}
+		},
+		{
+			"id": "x.number.to-locale-string-de",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES5 + ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got 1234.5, want 1.234,5"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got 1234.5, want 1.234,5"
+				}
+			}
+		},
+		{
+			"id": "x.date.to-locale-date-string-utc",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES5 + ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got 01/01/1970, want 1/1/1970"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got 01/01/1970, want 1/1/1970"
+				}
+			}
+		},
+		{
+			"id": "x.date.timezone-offset",
+			"group": "built-ins (no core-js module)",
+			"edition": "ES5",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "x.intl",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (undefined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (undefined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.number-format",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.date-time-format",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.collator",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.plural-rules",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.relative-time-format",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.list-format",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.segmenter",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.locale",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.display-names",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "x.intl.get-canonical-locales",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "why.object.assign.getter-defines",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got 3, want 1"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got 3, want 1"
+				}
+			}
+		},
+		{
+			"id": "why.object.assign.symbols",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.object.assign.order",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.object.gopd.primitive",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got undefined, want {\"value\":\"q\",\"writable\":false,\"enumerabl…"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got undefined, want {\"value\":\"q\",\"writable\":false,\"enumerabl…"
+				}
+			}
+		},
+		{
+			"id": "why.reflect.apply.no-args",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got no throw, want TypeError"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got no throw, want TypeError"
+				}
+			}
+		},
+		{
+			"id": "why.string.match-all.non-global",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got no throw, want TypeError"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got no throw, want TypeError"
+				}
+			}
+		},
+		{
+			"id": "why.string.replace.symbol-replace-object",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.string.replace.calls-exec",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.string.replace.named-groups-from-exec",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.string.replace.dollar-zero",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.string.replace.symbol-dollar-zero",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.promise.species",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got THROWS TypeError: not a constructor, want true"
+				}
+			}
+		},
+		{
+			"id": "why.promise.species-getter",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got false, want true"
+				}
+			}
+		},
+		{
+			"id": "why.promise.subclass",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.json.stringify.well-formed",
+			"group": "diagnostics (why a check fails)",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.json.stringify.symbol",
+			"group": "diagnostics (why a check fails)",
+			"edition": "-",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.json.parse.source",
+			"group": "diagnostics (why a check fails)",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got undefined, want 9007199254740993"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got undefined, want 9007199254740993"
+				}
+			}
+		},
+		{
+			"id": "why.nullish.new-function-param",
+			"group": "diagnostics (why a check fails)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.nullish.eval",
+			"group": "diagnostics (why a check fails)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.bigint.as-uint-n",
+			"group": "diagnostics (why a check fails)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got 1|-1, want 1|18446744073709551615"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got 1|-1, want 1|18446744073709551615"
+				}
+			}
+		},
+		{
+			"id": "why.bigint.as-int-n",
+			"group": "diagnostics (why a check fails)",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.error.cause.in-prototype",
+			"group": "diagnostics (why a check fails)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "why.aggregate-error.cause",
+			"group": "diagnostics (why a check fails)",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "got undefined, want 7"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "got undefined, want 7"
+				}
+			}
+		},
+		{
+			"id": "x.intl.supported-values-of",
+			"group": "built-ins (no core-js module)",
+			"edition": "ECMA-402",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "absent (THROWS ReferenceError: Intl is not defined)"
+				}
+			}
+		},
+		{
+			"id": "syn.let-const",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.arrow",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.class",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.template",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.tagged-template-raw",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.destructuring",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.default-rest-spread",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.generators",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.for-of",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.computed-shorthand",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.unicode-escape-braces",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-sticky-unicode",
+			"group": "syntax",
+			"edition": "ES2015",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.exponent",
+			"group": "syntax",
+			"edition": "ES2016",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.async-await",
+			"group": "syntax",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.trailing-commas",
+			"group": "syntax",
+			"edition": "ES2017",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.object-rest-spread",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.async-generators",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-named-groups",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-lookbehind",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-dotall",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-unicode-property-literal",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid escape sequence in regular expression"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid escape sequence in regular expression"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-unicode-property-ctor",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid escape sequence in regular expression when run"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid escape sequence in regular expression when run"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-unicode-property-script",
+			"group": "syntax",
+			"edition": "ES2018",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid escape sequence in regular expression"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid escape sequence in regular expression"
+				}
+			}
+		},
+		{
+			"id": "syn.optional-catch",
+			"group": "syntax",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.json-superset",
+			"group": "syntax",
+			"edition": "ES2019",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.optional-chaining",
+			"group": "syntax",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.nullish",
+			"group": "syntax",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.nullish-undefined",
+			"group": "syntax",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.nullish-param",
+			"group": "syntax",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.nullish-keeps-falsy",
+			"group": "syntax",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.bigint-literal",
+			"group": "syntax",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.dynamic-import-parses",
+			"group": "syntax",
+			"edition": "ES2020",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.numeric-separators",
+			"group": "syntax",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.logical-assign-nullish",
+			"group": "syntax",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: expecting ';'"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: expecting ';'"
+				}
+			}
+		},
+		{
+			"id": "syn.logical-assign-or",
+			"group": "syntax",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: unexpected token in expression: '='"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: unexpected token in expression: '='"
+				}
+			}
+		},
+		{
+			"id": "syn.logical-assign-and",
+			"group": "syntax",
+			"edition": "ES2021",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: unexpected token in expression: '='"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: unexpected token in expression: '='"
+				}
+			}
+		},
+		{
+			"id": "syn.class-public-fields",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.class-private-fields",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.class-private-methods",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.class-static-private",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.class-private-in",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: unexpected token in expression: '#x'"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: unexpected token in expression: '#x'"
+				}
+			}
+		},
+		{
+			"id": "syn.class-static-block",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid property name"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid property name"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-d-literal",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid regular expression flags"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid regular expression flags"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-d-ctor",
+			"group": "syntax",
+			"edition": "ES2022",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid regular expression flags when run"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid regular expression flags when run"
+				}
+			}
+		},
+		{
+			"id": "syn.hashbang",
+			"group": "syntax",
+			"edition": "ES2023",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-v-literal",
+			"group": "syntax",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid regular expression flags"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid regular expression flags"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-v-ctor",
+			"group": "syntax",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid regular expression flags when run"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid regular expression flags when run"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-v-ctor-simple",
+			"group": "syntax",
+			"edition": "ES2024",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid regular expression flags when run"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid regular expression flags when run"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-modifiers-literal",
+			"group": "syntax",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid group"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: invalid group"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-modifiers-ctor",
+			"group": "syntax",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid group when run"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "parses, then SyntaxError: invalid group when run"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-duplicate-named-groups-literal",
+			"group": "syntax",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: duplicate group name"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: duplicate group name"
+				}
+			}
+		},
+		{
+			"id": "syn.regexp-duplicate-named-groups-ctor",
+			"group": "syntax",
+			"edition": "ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "parses, then SyntaxError: duplicate group name when run"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "parses, then SyntaxError: duplicate group name when run"
+				}
+			}
+		},
+		{
+			"id": "syn.using",
+			"group": "syntax",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: expecting ';'"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: expecting ';'"
+				}
+			}
+		},
+		{
+			"id": "syn.await-using",
+			"group": "syntax",
+			"edition": "after ES2025",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "SyntaxError at parse: expecting ';'"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "SyntaxError at parse: expecting ';'"
+				}
+			}
+		},
+		{
+			"id": "URL",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "href: https://a.example/p?q=1#h/ (want https://a.example/p?q=1#h); pathname: undefined (want /p); search: undefined (want ?q=1); host: undefined (want a.example:8080); protocol: undefined (want https:); relative: https://a.example/b/c/d/../x (want https://a.example/b/x); invalid-throws: no throw (want TypeError); searchParams: null (want 1); from-url: THROWS TypeError: (null) is not a function (want https://a.example/p); subclass: undefined (want /p); canParse: undefined (want function)"
+				}
+			}
+		},
+		{
+			"id": "URLSearchParams",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "atob",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "btoa",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "TextEncoder",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "TextDecoder",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "latin1-label = ReferenceError"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "latin1-label = ReferenceError"
+				}
+			}
+		},
+		{
+			"id": "TextCodecHelper",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "keys = THROWS ReferenceError: TextCodecHelper is not defined; encode-kind = THROWS ReferenceError: TextCodecHelper is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "structuredClone",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (bytecode, minified name: name=\"ed\"); the fill fails function-throws: TypeError (want DataCloneError)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (its source shows: js name=\"h\" function h(e,t){var r,n,a,o,u=typeof e…); the fill fails function-throws: TypeError (want DataCloneError)"
+				}
+			}
+		},
+		{
+			"id": "DOMException",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "EventTarget",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (bytecode, minified name: name=\"o\"); the fill fails dispatch: THROWS ReferenceError: Event is not defined (want 1)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (its source shows: js name=\"i\" function i(){t.set(this,r(null))}); the fill fails dispatch: THROWS ReferenceError: Event is not defined (want 1)"
+				}
+			}
+		},
+		{
+			"id": "Event",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "CustomEvent",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "queueMicrotask",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (bytecode, minified name: name=\"\")"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (its source shows: js name=\"\" e=>t.lynx.queueMicrotask(()=>{try{(0,y.…)"
+				}
+			}
+		},
+		{
+			"id": "performance",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "mark = THROWS ReferenceError: performance is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "mark = THROWS ReferenceError: performance is not defined"
+				}
+			}
+		},
+		{
+			"id": "self",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "a wrapper parameter bound to undefined: reading a member is a TypeError, not a ReferenceError"
+				}
+			}
+		},
+		{
+			"id": "navigator",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "language = THROWS ReferenceError: navigator is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "a wrapper parameter bound to undefined: reading a member is a TypeError, not a ReferenceError. language = THROWS TypeError: cannot read property 'language' of undefined"
+				}
+			}
+		},
+		{
+			"id": "reportError",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "AbortController",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "AbortSignal",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present but hollow: timeout: undefined (want function); any: undefined (want function); abort: undefined (want function); throwIfAborted: undefined (want function)"
+				}
+			}
+		},
+		{
+			"id": "fetch",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "param",
+					"note": "free name works, globalThis lacks it"
+				}
+			}
+		},
+		{
+			"id": "Headers",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "case-insensitive-get: null (want x); case-insensitive-has: false (want true); set-merges-case: 2 (want 1); iterate-lowercase: [[\"X-A\",\"1\"]] (want [[\"x-a\",\"1\"]])"
+				}
+			}
+		},
+		{
+			"id": "Request",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "Response",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "body = THROWS ReferenceError: Response is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "json-static: undefined (want function). body = [object Null]"
+				}
+			}
+		},
+		{
+			"id": "ReadableStream",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "a stream made with new ReadableStream({ start(c) { c.enqueue('a'); c.close(); } }): getReader().read() never settles (see async.ReadableStream.read)"
+				}
+			}
+		},
+		{
+			"id": "WritableStream",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "TransformStream",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "TextEncoderStream",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "TextDecoderStream",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "CompressionStream",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "EventSource",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "lynx.EventSource",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "lynx has no such member on this thread"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "against a standard text/event-stream server it opens, delivers no event, then errors: open, error error Error: errorStreamingMalformedResponse"
+				}
+			}
+		},
+		{
+			"id": "Blob",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "File",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "FormData",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "FileReader",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "WebSocket",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "__WebSocket__",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "a wrapper parameter bound to undefined: reading a member is a TypeError, not a ReferenceError"
+				}
+			}
+		},
+		{
+			"id": "crypto",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "XMLHttpRequest",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "a wrapper parameter bound to undefined: reading a member is a TypeError, not a ReferenceError"
+				}
+			}
+		},
+		{
+			"id": "MessageChannel",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "BroadcastChannel",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "URLPattern",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "localStorage",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "a wrapper parameter bound to undefined: reading a member is a TypeError, not a ReferenceError"
+				}
+			}
+		},
+		{
+			"id": "sessionStorage",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "setImmediate",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "requestIdleCallback",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "WebAssembly",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "present but hollow: instantiate: undefined (want function)"
+				}
+			}
+		},
+		{
+			"id": "setTimeout",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "param",
+					"note": "free name works, globalThis lacks it"
+				}
+			}
+		},
+		{
+			"id": "clearTimeout",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "param",
+					"note": "free name works, globalThis lacks it"
+				}
+			}
+		},
+		{
+			"id": "setInterval",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "param",
+					"note": "free name works, globalThis lacks it. clear = number"
+				}
+			}
+		},
+		{
+			"id": "requestAnimationFrame",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "param",
+					"note": "free name works, globalThis lacks it"
+				}
+			}
+		},
+		{
+			"id": "cancelAnimationFrame",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "param",
+					"note": "free name works, globalThis lacks it"
+				}
+			}
+		},
+		{
+			"id": "console",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "wrong",
+					"note": "methods: trace,assert (want all)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "methods: trace (want all)"
+				}
+			}
+		},
+		{
+			"id": "window",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "a wrapper parameter bound to undefined: reading a member is a TypeError, not a ReferenceError"
+				}
+			}
+		},
+		{
+			"id": "document",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "a wrapper parameter bound to undefined: reading a member is a TypeError, not a ReferenceError"
+				}
+			}
+		},
+		{
+			"id": "global",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "the bundler rewrites a free `global` to its own runtime global (__webpack_require__.g)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "param",
+					"note": "the bundler rewrites a free `global` to its own runtime global (__webpack_require__.g); free name works, globalThis lacks it. is-globalThis = true"
+				}
+			}
+		},
+		{
+			"id": "onerror",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "typeof = undefined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "typeof = undefined"
+				}
+			}
+		},
+		{
+			"id": "onunhandledrejection",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "typeof = undefined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "typeof = undefined"
+				}
+			}
+		},
+		{
+			"id": "addEventListener",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "matchMedia",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "Object.hasOwn",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "call: THROWS TypeError: not a function (want true)"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "call: THROWS TypeError: Object.hasOwn is not a function (want true)"
+				}
+			}
+		},
+		{
+			"id": "String.prototype.replaceAll",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (bytecode, minified name: name=\"ev\")"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "engine lacks it; the binding's fill (its source shows: js name=\"g\" function g(e,t){if(this===null||void 0…)"
+				}
+			}
+		},
+		{
+			"id": "lynx.queueMicrotask",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "lynx has no such member on this thread"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "lynx.performance",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "keys = _generatePipelineOptions,_onPipelineStart,_markTiming,_bindPipelineIDW…"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "keys = _emitter,_generatePipelineOptions,_onPipelineStart,_markTiming,_profil…"
+				}
+			}
+		},
+		{
+			"id": "lynx.reportError",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": ""
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "lynx.Promise",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "lynx has no such member on this thread. is-bundle-Promise = false; is-global-Promise = false"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "is-bundle-Promise = true; is-global-Promise = false"
+				}
+			}
+		},
+		{
+			"id": "Date#getTimezoneOffset",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "jan = -180; jul = -180; string = Wed Jul 15 2026 12:00:00 GMT+0300"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "jan = -180; jul = -180; string = Wed Jul 15 2026 12:00:00 GMT+0300"
+				}
+			}
+		},
+		{
+			"id": "SystemInfo",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "engine lacks it; the binding copies lynx.SystemInfo to the global. json = {\"platform\":\"Android\",\"pixelRatio\":2.75,\"pixelWidth\":1080,\"pixelHeight…"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": ""
+				}
+			}
+		},
+		{
+			"id": "lynx.SystemInfo",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "json = {\"platform\":\"Android\",\"pixelRatio\":2.75,\"pixelWidth\":1080,\"pixelHeight…"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "lynx has no such member on this thread. json = undefined"
+				}
+			}
+		},
+		{
+			"id": "Intl",
+			"group": "web APIs",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "keys = THROWS ReferenceError: Intl is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "keys = THROWS ReferenceError: Intl is not defined"
+				}
+			}
+		},
+		{
+			"id": "async.bundle.any",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 2"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "THROWS TypeError: any is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.bundle.allSettled",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= rejected,fulfilled"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= rejected,fulfilled"
+				}
+			}
+		},
+		{
+			"id": "async.bundle.withResolvers",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS TypeError: not a function"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "THROWS TypeError: t.withResolvers is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.bundle.try",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS TypeError: not a function"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "THROWS TypeError: t.try is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.bundle.finally",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 5"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= 5"
+				}
+			}
+		},
+		{
+			"id": "async.bundle.all",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 1,2"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= 1,2"
+				}
+			}
+		},
+		{
+			"id": "async.bundle.race",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 6"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= 6"
+				}
+			}
+		},
+		{
+			"id": "async.global.any",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 2"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= 2"
+				}
+			}
+		},
+		{
+			"id": "async.global.allSettled",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= rejected,fulfilled"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= rejected,fulfilled"
+				}
+			}
+		},
+		{
+			"id": "async.global.withResolvers",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS TypeError: not a function"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "THROWS TypeError: t.withResolvers is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.global.try",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS TypeError: not a function"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "THROWS TypeError: t.try is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.global.finally",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 5"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= 5"
+				}
+			}
+		},
+		{
+			"id": "async.global.all",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 1,2"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= 1,2"
+				}
+			}
+		},
+		{
+			"id": "async.global.race",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= 6"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= 6"
+				}
+			}
+		},
+		{
+			"id": "async.queueMicrotask.order",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "yes",
+					"note": "= sync,queueMicrotask,promise,timeout"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= sync,queueMicrotask,promise,timeout"
+				}
+			}
+		},
+		{
+			"id": "async.lynx.queueMicrotask.order",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "REJECTS TypeError: not a function"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= sync,lynx.queueMicrotask,timeout"
+				}
+			}
+		},
+		{
+			"id": "async.AbortSignal.timeout",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "REJECTS ReferenceError: AbortSignal is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "REJECTS TypeError: AbortSignal.timeout is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.AbortSignal.any",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS ReferenceError: AbortController is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "THROWS TypeError: AbortSignal.any is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.Response.text",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS ReferenceError: Response is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "yes",
+					"note": "= x"
+				}
+			}
+		},
+		{
+			"id": "async.Response.json-static",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS ReferenceError: Response is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "no",
+					"note": "THROWS TypeError: Response.json is not a function"
+				}
+			}
+		},
+		{
+			"id": "async.ReadableStream.read",
+			"group": "async checks",
+			"edition": "",
+			"cells": {
+				"primjs-4.2-lynx-4.2-android-mt": {
+					"status": "no",
+					"note": "THROWS ReferenceError: ReadableStream is not defined"
+				},
+				"primjs-4.2-lynx-4.2-android-bg": {
+					"status": "wrong",
+					"note": "never settled within 2000 ms"
+				}
+			}
+		}
+	],
+	"variance": []
+}

@@ -1,6 +1,6 @@
 {
 	"$schema": "https://docs.renovatebot.com/renovate-schema.json",
-	"description": "Renovate opens pull requests that merge themselves once CI passes for dev dependencies' minor and patch updates and for the workflows' actions, zizmor, typos and Bun, and pull requests that wait for a person for pnpm/setup and lockfile maintenance. Everything else waits on the Dependency Dashboard: peers of @sohedra/lynx and their dev copies, Lynx, majors, runtime dependencies, pnpm, Node.js. svelte-without-renderers never updates. Security fixes keep Renovate's default: they open a pull request at once, whatever the rule; only a dev dependency's merges itself.",
+	"description": "Renovate opens pull requests that merge themselves once CI passes for dev dependencies' minor and patch updates and for the workflows' actions, zizmor, typos and Bun, and pull requests that wait for a person for pnpm/setup and lockfile maintenance. The polyfill folder's packages open one pull request that waits for a person. Everything else waits on the Dependency Dashboard: peers of @sohedra/lynx and their dev copies, Lynx, majors, runtime dependencies, pnpm, Node.js. svelte-without-renderers never updates. Security fixes keep Renovate's default: they open a pull request at once, whatever the rule; only a dev dependency's merges itself.",
 	"extends": ["github>sohedra/.github:renovate-preset"],
 	"dependencyDashboardApproval": true,
 	"dependencyDashboard": {
@@ -75,6 +75,29 @@
 			"automerge": false
 		},
 		{
+			"description": "The npm packages @sohedra/lynx-polyfill bundles into an app's fills update in one pull request that waits for a person: the vendored modules are bundled again (pnpm -F @sohedra/lynx-polyfill vendor) and WPT and test262 run on both PrimJS builds before it merges. Pinned exactly.",
+			"matchFileNames": ["modules/lynx-polyfill/package.json"],
+			"matchPackageNames": [
+				"@ungap/structured-clone",
+				"core-js",
+				"event-target-shim",
+				"eventsource-parser",
+				"fflate",
+				"regexpu-core",
+				"unorm",
+				"urlpattern-polyfill",
+				"web-streams-polyfill",
+				"whatwg-url-minimum"
+			],
+			"groupName": "polyfill",
+			"rangeStrategy": "pin",
+			"dependencyDashboardApproval": false,
+			"automerge": false,
+			"prBodyNotes": [
+				"Run `pnpm -F @sohedra/lynx-polyfill vendor` and commit the vendored modules, then `pnpm -F @sohedra/lynx-polyfill test:primjs` (WPT and test262 on both PrimJS builds) and the phone check, before merging."
+			]
+		},
+		{
 			"description": "rstest's coverage plugin moves with @rstest/core, which waits as a peer.",
 			"matchPackageNames": ["@rstest/coverage-istanbul"],
 			"groupName": null,
@@ -85,11 +108,6 @@
 			"description": "TypeScript 7 waits for a decision.",
 			"matchDepNames": ["typescript"],
 			"allowedVersions": "<7"
-		},
-		{
-			"description": "The type tests' older TypeScript stays on 5.x.",
-			"matchDepNames": ["typescript-5.9"],
-			"allowedVersions": "<6"
 		},
 		{
 			"description": "Tailwind CSS 4 is not supported (support policy S8).",

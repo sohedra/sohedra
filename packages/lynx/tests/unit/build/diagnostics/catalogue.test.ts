@@ -40,6 +40,8 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	typescript_stripper_missing: { version: "v20.19.0" },
 	plain_function_in_main_thread_function: { name: "save" },
 	script_syntax_error: { reason: "Unexpected token" },
+	regexp_refused: { regexp: "/(?i:a)b/", syntax: "modifier" },
+	regexp_refused_call: { regexp: 'new RegExp("[\\\\p{L}--[a-z]]", "v")', syntax: "v_flag" },
 	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap", spelling: "bind" },
 	global_event_attribute: { attribute: "global-bindtap", event: "tap" },
 	list_item_without_key: {},
@@ -140,6 +142,16 @@ describe("the build's catalogue", () => {
 	it.each(CODES)("%s: the message", (code) => {
 		const place = placeAt(SOURCE, SOURCE.text.indexOf("let a"));
 		expect(describeMessage({ code, details: SAMPLES[code] as never, place })).toMatchSnapshot();
+	});
+
+	it.each([
+		["/[\\p{L}--[a-z]]/v", "v_flag"],
+		["/x/d", "d_flag"],
+		["/(?<y>a)|(?<y>b)/", "duplicate_group"],
+	] as const)("regexp_refused for %s: the message", (regexp, syntax) => {
+		expect(
+			describeMessage({ code: "regexp_refused", details: { regexp, syntax } }),
+		).toMatchSnapshot();
 	});
 });
 

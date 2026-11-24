@@ -28,6 +28,20 @@ describe("a package of node_modules", () => {
 		expect(background).not.toContain("__MAIN_THREAD__");
 	}, 180_000);
 
+	it("keeps its assignment to fetch, and points only the background's reads at the global's", async () => {
+		build = await buildApp("include", { packages: ["thread-lib"] });
+		expect(build.error + build.messages).toBe("");
+		const { mainThread, background } = scriptsOf(build);
+		// The assignment is to the wrapper's `fetch` parameter, which the minifier renames.
+		expect(background).toMatch(
+			/typeof\s*\(\s*globalThis\.fetch\s*\|\|\s*[\w$]+\.fetch\s*\)\s*&&\s*\(?[\w$]+\s*=\s*function/,
+		);
+		// The main thread has no `fetch` of its own: a read stays one, whose ReferenceError the
+		// runtime's report names the import for.
+		expect(mainThread).toMatch(/typeof fetch\b/);
+		expect(mainThread).not.toContain("globalThis.fetch");
+	}, 180_000);
+
 	it("still is, when the app sets its own source.include", async () => {
 		build = await buildApp("include", {
 			packages: ["thread-lib"],

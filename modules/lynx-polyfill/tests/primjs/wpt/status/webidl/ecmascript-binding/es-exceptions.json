@@ -1,0 +1,8 @@
+{
+	"DOMException-is-error.any.js": {
+		"skip": "Error.isError is ES2026, past the ES2025 the package fills."
+	},
+	"DOMException-stack-accessor.any.js": {
+		"skip": "Error.prototype.stack as an accessor is a proposal past ES2025; PrimJS puts `stack` on each error."
+	}
+}

@@ -4,7 +4,7 @@
 //
 // The background: lynx-core loads the script, which registers a factory with `tt.define`, then
 // calls it with `lynx`, the timers and the rest as its parameters (lynx-core's app.ts, `require`).
-// The global object holds none of them, and no `queueMicrotask`.
+// The global object holds none of them, and no `queueMicrotask`; it holds the engine's `SystemInfo`.
 //
 // The main thread: Lynx's element functions and `lynx` are globals, and so are the timers, as a
 // device showed. It has no `queueMicrotask`. `lynx.SystemInfo` is there; a global `SystemInfo` is
@@ -249,6 +249,8 @@ function runBackground(
 	// The data the page was opened with, as lynx-core hands it to the page's script.
 	const app = lynx.getApp();
 	app._params = adopt(app._params) as typeof app._params;
+	// A device's background has a global `SystemInfo`, which the engine puts there.
+	context["SystemInfo"] = adopt(SYSTEM_INFO);
 	const factories = new Map<string, (...args: unknown[]) => void>();
 	// lynx-core keeps one cache for each (lynx-core's lynx/lynx.ts, `requireModule.cache` and
 	// `requireModuleAsync.cache`).

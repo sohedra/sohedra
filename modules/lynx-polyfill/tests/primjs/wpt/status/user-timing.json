@@ -1,0 +1,38 @@
+{
+	"buffered-flag.any.js": {
+		"fail": {
+			"note": "The Performance fill leaves out PerformanceObserver.",
+			"expected": [
+				"PerformanceObserver with buffered flag sees previous marks",
+				"PerformanceObserver with buffered flag sees previous measures"
+			]
+		}
+	},
+	"case-sensitivity.any.js": {
+		"fail": {
+			"note": "The Performance fill leaves out PerformanceObserver.",
+			"expected": ["getEntriesByType values are case sensitive"]
+		}
+	},
+	"idlharness.any.js": {
+		"skip": "idlharness's checks of Web IDL bindings, which the fills' JavaScript classes don't all follow (attributes as own getters, operations' lengths), and it reads the IDL from WPT's server."
+	},
+	"mark-l3.any.js": {
+		"fail": {
+			"note": "The Performance fill leaves out PerformanceObserver.",
+			"expected": ["mark entries' detail and startTime are customizable."]
+		}
+	},
+	"measure-with-dict.any.js": {
+		"fail": {
+			"note": "The Performance fill leaves out PerformanceObserver.",
+			"expected": ["measure entries' detail and start/end are customizable"]
+		}
+	},
+	"supported-usertiming-types.any.js": {
+		"fail": {
+			"note": "The Performance fill leaves out PerformanceObserver.",
+			"expected": ["<harness>", "supportedEntryTypes contains 'mark' and 'measure'."]
+		}
+	}
+}

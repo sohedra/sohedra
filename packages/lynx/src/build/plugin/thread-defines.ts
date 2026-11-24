@@ -26,11 +26,24 @@ export function threadDefines(thread: Thread, development: boolean): Record<stri
 	};
 }
 
+/**
+ * The background's reads of `fetch`: the global object's when there is one
+ * (`@sohedra/lynx-polyfill` puts it there), else lynx-core's, as before. Lynx's runtime wrapper
+ * passes the background's bundle lynx-core's `fetch` as a parameter of that name, which its own code
+ * reads (`fetch = fetch || lynx.fetch`), so the parameter can't be renamed, and a fill can't reach
+ * it. SWC replaces only reads of the free name: an assignment or a declaration stays as written.
+ * The main thread keeps its reads, whose `ReferenceError` names the import that fills `fetch`.
+ *
+ * @workaround wrapper-fetch-parameter kind=lynx-limit delete-when="Lynx's runtime wrapper no longer passes the bundle a fetch parameter"
+ */
+const BACKGROUND_FETCH = "(globalThis.fetch || lynx.fetch)";
+
 /** The constants of a build: the thread's, and the first frame's flag the runtime reads. */
 export function pluginDefines(thread: Thread, flags: DefineFlags): Record<string, string> {
 	return {
 		...threadDefines(thread, flags.development),
 		__FIRST_FRAME__: String(flags.firstFrame),
+		...(thread === "background" && { fetch: BACKGROUND_FETCH }),
 	};
 }
 

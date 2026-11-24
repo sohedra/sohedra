@@ -1,0 +1,8 @@
+{
+	"base64.any.js": {
+		"fail": {
+			"note": "A PrimJS bug: its JSON.parse ends a string at an escaped NUL (\\u0000), so base64.json's \"\\u0000nonsense\" and \"abcd\\u0000nonsense\" load as \"\" and \"abcd\", which atob takes.",
+			"expected": ["<harness>", "atob(\"\")", "atob(\"abcd\")"]
+		}
+	}
+}

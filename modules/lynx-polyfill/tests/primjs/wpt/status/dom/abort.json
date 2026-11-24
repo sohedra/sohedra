@@ -1,0 +1,8 @@
+{
+	"event.any.js": {
+		"fail": {
+			"note": "event-target-shim (vendored) has no trusted events: `isTrusted` is false on every event.",
+			"expected": ["the abort event should have the right properties"]
+		}
+	}
+}

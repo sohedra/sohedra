@@ -1,0 +1,8 @@
+{
+	"evil-spec-example.any.js": {
+		"skip": "Checks the thread's own timers with a string handler, which the package doesn't fill (it only puts the background's on the global object): the suite's realm stands in for Lynx's."
+	},
+	"type-long-*.any.js": {
+		"skip": "Checks the thread's own timers with a delay past 2^31, which the package doesn't fill (it only puts the background's on the global object): the suite's realm stands in for Lynx's."
+	}
+}

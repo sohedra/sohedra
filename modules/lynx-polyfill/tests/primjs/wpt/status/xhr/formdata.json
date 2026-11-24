@@ -1,0 +1,6 @@
+{
+	"*": {
+		"skip": "FormData is the background's only: Lynx runs fetch and its streams on the background thread, and the main thread has none of them.",
+		"threads": ["main-thread"]
+	}
+}

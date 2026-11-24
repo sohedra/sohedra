@@ -1,0 +1,14 @@
+{
+	"cross-realm": "$262.createRealm: the shell makes one realm, as each thread of Lynx has.",
+	"resizable-arraybuffer": "PrimJS has no resizable ArrayBuffer, which no fill can add.",
+	"regexp-v-flag": "PrimJS's RegExp has no v flag, which no fill can add: the build refuses it.",
+	"Error.isError": "ES2026, past the ES2025 the package fills.",
+	"error-stack-accessor": "A proposal past ES2025, which the package doesn't fill.",
+	"immutable-arraybuffer": "A proposal past ES2025 (ArrayBuffer's transferToImmutable), which the package doesn't fill.",
+	"iterator-sequencing": "ES2026's Iterator.concat, past the ES2025 the package fills.",
+	"joint-iteration": "A proposal past ES2025 (Iterator.zip and zipKeyed), which the package doesn't fill.",
+	"iterator-chunking": "A proposal past ES2025 (Iterator.prototype.chunks and windows), which the package doesn't fill.",
+	"iterator-includes": "A proposal past ES2025 (Iterator.prototype.includes), which the package doesn't fill.",
+	"Iterator.prototype.join": "A proposal past ES2025 (Iterator.prototype.join), which the package doesn't fill.",
+	"explicit-resource-management": "ES2026's using and Symbol.dispose, past the ES2025 the package fills."
+}

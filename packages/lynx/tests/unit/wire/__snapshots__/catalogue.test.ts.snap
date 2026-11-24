@@ -1,5 +1,26 @@
 // Rstest Snapshot v1
 
+exports[`the wire's catalogue > global_background_only: the message 1`] = `
+"The global \`ReadableStream\` is not defined on the main thread: Lynx has it on the background thread only.
+
+Use it in code that runs on the background, such as an effect or an event handler, or call such code from a main-thread function with \`runOnBackground\`.
+https://sohedra.com/e/global_background_only"
+`;
+
+exports[`the wire's catalogue > global_not_filled: the message 1`] = `
+"The global \`URL\` is not defined: Lynx's engine doesn't have it, and no import put it there.
+
+Import "@sohedra/lynx-polyfill/url" in the first line of the app's entry, or "@sohedra/lynx-polyfill" for every fill.
+https://sohedra.com/e/global_not_filled"
+`;
+
+exports[`the wire's catalogue > global_not_on_lynx: the message 1`] = `
+"The global \`crypto\` is not defined: Lynx's engine doesn't have it, and no fill gives it.
+
+For hashes, use a library in plain JavaScript such as @noble/hashes.
+https://sohedra.com/e/global_not_on_lynx"
+`;
+
 exports[`the wire's catalogue > page_reloaded_on_one_thread: the message 1`] = `
 "This page reloaded on one of its threads only.
 Seen on the main thread: it shows page 1 and got a message of page 2.

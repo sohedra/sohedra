@@ -1,0 +1,14 @@
+{
+	"length-property-ignored.js": {
+		"fail": {
+			"note": "core-js's %TypedArray% methods (vendored) read the array's `length` property, which a subclass can redefine, not its internal length.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"not-a-constructor.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}

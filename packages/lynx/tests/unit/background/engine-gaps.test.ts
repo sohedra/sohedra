@@ -142,6 +142,23 @@ describe("the structuredClone it gives", () => {
 	});
 });
 
+describe("the performance it gives, which Svelte's motion reads its clock from", () => {
+	it("counts milliseconds from its timeOrigin, never going back", () => {
+		const { scope } = device();
+		const performance = scope["performance"] as { now: () => number; timeOrigin: number };
+		expect(Object.keys(scope)).not.toContain("performance");
+		expect(Math.abs(performance.timeOrigin - Date.now())).toBeLessThan(1000);
+		const first = performance.now();
+		expect(first).toBeGreaterThanOrEqual(0);
+		const spy = rs.spyOn(Date, "now").mockReturnValue(performance.timeOrigin - 5000);
+		try {
+			expect(performance.now()).toBe(first);
+		} finally {
+			spy.mockRestore();
+		}
+	});
+});
+
 describe("the replaceAll it gives", () => {
 	const { strings } = device();
 	const fill = strings["replaceAll"] as (
@@ -198,9 +215,13 @@ describe("on a background that has them", () => {
 			EventTarget: own,
 			structuredClone: own,
 		};
+		const performance = { now: own };
+		scope["performance"] = performance;
 		const strings = { replaceAll: own };
 		// Boundary: nothing of `lynx` is read when the engine has every global.
 		fillEngineGaps({ scope, strings, globals: {} as BackgroundGlobals });
+		expect(scope["performance"]).toBe(performance);
+		delete scope["performance"];
 		expect(Object.values(scope).every((value) => value === own)).toBe(true);
 		expect(strings.replaceAll).toBe(own);
 	});

@@ -1,0 +1,119 @@
+{
+	"structured-clone.any.js": {
+		"fail": [
+			{
+				"note": "@ungap/structured-clone (vendored) copies -0 as 0.",
+				"expected": ["Array primitives", "Object primitives"]
+			},
+			{
+				"note": "@ungap/structured-clone (vendored) gives a copied Error a message when the original had none, and leaves out its `cause`.",
+				"expected": [
+					"Empty Error object",
+					"Error object",
+					"EvalError object",
+					"RangeError object",
+					"ReferenceError object",
+					"SyntaxError object",
+					"TypeError object",
+					"URIError object"
+				]
+			},
+			{
+				"note": "@ungap/structured-clone (vendored) copies a Blob or a File as a plain object.",
+				"threads": ["background"],
+				"expected": [
+					"A subclass instance will deserialize as its closest serializable superclass",
+					"An object whose interface is deleted from the global must still deserialize",
+					"Array Blob object, Blob NUL",
+					"Array Blob object, Blob basic",
+					"Array Blob object, Blob empty",
+					"Array Blob object, Blob paired surrogates (invalid utf-8)",
+					"Array Blob object, Blob unpaired high surrogate (invalid utf-8)",
+					"Array Blob object, Blob unpaired low surrogate (invalid utf-8)",
+					"Array Blob object, two Blobs",
+					"Blob NUL",
+					"Blob basic",
+					"Blob empty",
+					"Blob paired surrogates (invalid utf-8)",
+					"Blob unpaired high surrogate (invalid utf-8)",
+					"Blob unpaired low surrogate (invalid utf-8)",
+					"File basic",
+					"Object Blob object, Blob NUL",
+					"Object Blob object, Blob basic",
+					"Object Blob object, Blob empty",
+					"Object Blob object, Blob paired surrogates (invalid utf-8)",
+					"Object Blob object, Blob unpaired high surrogate (invalid utf-8)",
+					"Object Blob object, Blob unpaired low surrogate (invalid utf-8)"
+				]
+			},
+			{
+				"note": "@ungap/structured-clone (vendored) copies an array's elements only, not its other properties.",
+				"threads": ["background"],
+				"expected": ["Array with non-index property"]
+			},
+			{
+				"note": "PrimJS has no resizable ArrayBuffer, which no fill can add.",
+				"expected": [
+					"Length-tracking DataView is transferable",
+					"Length-tracking TypedArray is transferable",
+					"Resizable ArrayBuffer is transferable",
+					"Transferring OOB DataView throws",
+					"Transferring OOB TypedArray throws"
+				]
+			},
+			{
+				"note": "PrimJS has no resizable ArrayBuffer, which no fill can add.",
+				"threads": ["background"],
+				"expected": [
+					"Length-tracking DataView",
+					"Length-tracking TypedArray",
+					"Resizable ArrayBuffer",
+					"Serializing OOB DataView throws",
+					"Serializing OOB TypedArray throws"
+				]
+			},
+			{
+				"note": "PrimJS has no SharedArrayBuffer.",
+				"threads": ["background"],
+				"expected": ["Growable SharedArrayBuffer"]
+			},
+			{
+				"note": "The fill leaves out `transfer`: PrimJS has no ArrayBuffer transfer, so nothing can be detached, and @ungap/structured-clone (vendored) copies what it is given.",
+				"expected": [
+					"A detached ArrayBuffer cannot be transferred",
+					"A detached platform object cannot be transferred",
+					"An object whose interface is deleted from the global object must still be received",
+					"ArrayBuffer",
+					"MessagePort"
+				]
+			},
+			{
+				"note": "The fill leaves out `transfer`: PrimJS has no ArrayBuffer transfer, so nothing can be detached, and @ungap/structured-clone (vendored) copies what it is given.",
+				"threads": ["background"],
+				"expected": [
+					"A subclass instance will be received as its closest transferable superclass",
+					"Transferring a non-transferable platform object fails"
+				]
+			},
+			{
+				"note": "Lynx has no OffscreenCanvas or ImageBitmap, and PrimJS no SharedArrayBuffer.",
+				"expected": ["ImageBitmap", "OffscreenCanvas"]
+			},
+			{
+				"note": "Blob, FormData and the streams are the background's only.",
+				"threads": ["main-thread"],
+				"expected": [
+					"<harness>",
+					"A subclass instance will be received as its closest transferable superclass",
+					"Blob NUL",
+					"Blob basic",
+					"Blob empty",
+					"Blob paired surrogates (invalid utf-8)",
+					"Blob unpaired high surrogate (invalid utf-8)",
+					"Blob unpaired low surrogate (invalid utf-8)",
+					"Transferring a non-transferable platform object fails"
+				]
+			}
+		]
+	}
+}
