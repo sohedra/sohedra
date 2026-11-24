@@ -66,3 +66,23 @@ describe("an app that installed a Svelte without custom renderers", () => {
 		expect(text).toContain("https://sohedra.com/e/svelte_without_renderers");
 	});
 });
+
+describe("a regular expression Lynx's engine refuses", () => {
+	it("fails the build with the file, line and column, and how to write it instead", async () => {
+		build = await buildApp("broken", {
+			entry: "./regexps.ts",
+			files: {
+				"regexps.ts":
+					'const word = /(?i:a)b/;\nconst set = /[\\p{L}--[a-z]]/v;\n(globalThis as Record<string, unknown>)["page"] = [word, set];\n',
+			},
+		});
+		expect(build.ok).toBe(false);
+		const text = build.error + build.messages;
+		expect(text).toContain("regexps.ts:1:14");
+		expect(text).toContain("1: const word = /(?i:a)b/;");
+		expect(text).toContain("regexps.ts:2:13");
+		expect(text).toContain("https://sohedra.com/e/regexp_refused");
+		// Once, though both threads build the module.
+		expect(text.split("regexps.ts:1:14").length).toBe(2);
+	}, 120_000);
+});
