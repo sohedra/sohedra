@@ -32,8 +32,25 @@ const FILLS: [string, Messaging][] = [
 	],
 ];
 
-/** Waits for the tasks queued so far, and those they queue, to run. */
-const tasks = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 20));
+/** A turn of the event loop: the tasks queued so far run. */
+const turn = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+/**
+ * Waits until `log` holds `count` entries: Node's ports deliver through the event loop, and a
+ * loaded machine runs it late. Gives up after 10 s, and the scenario's check says what is missing.
+ */
+async function arrived(log: unknown[], count: number): Promise<void> {
+	const deadline = Date.now() + 10_000;
+	while (log.length < count && Date.now() < deadline) await turn();
+}
+
+/**
+ * Lets what was queued run, for a message that must not arrive: the fill delivers each message in a
+ * task of its own, and Node's drops a message to a closed port as it closes.
+ */
+async function drained(): Promise<void> {
+	for (let round = 0; round < 10; round++) await turn();
+}
 
 /** What `run` throws, by name, or `"none"`. */
 function thrownName(run: () => unknown): string {
@@ -55,7 +72,7 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 		log.push("sync");
 		await Promise.resolve();
 		log.push("microtask");
-		await tasks();
+		await arrived(log, 4);
 		port1.close();
 		port2.close();
 	},
@@ -67,7 +84,7 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 			port2.postMessage("pong");
 		};
 		port1.postMessage("ping");
-		await tasks();
+		await arrived(log, 2);
 		port1.close();
 		port2.close();
 	},
@@ -79,7 +96,7 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 		};
 		port1.postMessage(sent);
 		sent.list.push(2);
-		await tasks();
+		await arrived(log, 3);
 		port1.close();
 		port2.close();
 	},
@@ -89,7 +106,8 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 		port1.postMessage("last");
 		port1.close();
 		port1.postMessage("after close");
-		await tasks();
+		await arrived(log, 1);
+		await drained();
 		port2.close();
 	},
 	"drops what a closed receiver had not delivered": async ({ MessageChannel }, log) => {
@@ -97,7 +115,7 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 		port2.onmessage = (event) => log.push(event.data);
 		port1.postMessage("dropped");
 		port2.close();
-		await tasks();
+		await drained();
 		port1.close();
 		log.push("done");
 	},
@@ -106,7 +124,7 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 		port2.onmessage = (event) => log.push(event.data);
 		port2.onmessage = null;
 		port1.postMessage("unheard");
-		await tasks();
+		await drained();
 		log.push(port2.onmessage);
 		port1.close();
 		port2.close();
@@ -128,7 +146,8 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 		port1.postMessage("port", [other.port1]);
 		other.port2.postMessage("through the moved port");
 		other.port1.postMessage("from the old one, which is gone");
-		await tasks();
+		await arrived(log, 5);
+		await drained();
 		port1.close();
 		port2.close();
 		other.port2.close();
@@ -141,7 +160,7 @@ const SCENARIOS: Record<string, (classes: Messaging, log: unknown[]) => Promise<
 			event.ports[0]!.close();
 		};
 		port1.postMessage(null, { transfer: [other.port1] });
-		await tasks();
+		await arrived(log, 1);
 		port1.close();
 		port2.close();
 		other.port2.close();
@@ -191,10 +210,10 @@ describe.each(FILLS)("the fill over %s", (_name, fill) => {
 		const log: unknown[] = [];
 		port2.addEventListener("message", (event) => log.push(event.data));
 		port1.postMessage("held");
-		await tasks();
+		await drained();
 		log.push("before start");
 		port2.start();
-		await tasks();
+		await arrived(log, 2);
 		expect(log).toEqual(["before start", "held"]);
 		port1.close();
 		port2.close();
