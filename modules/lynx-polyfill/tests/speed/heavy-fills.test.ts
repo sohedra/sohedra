@@ -55,7 +55,8 @@ describe("the heavy fills' speed", () => {
 	it("gzips 16 MB in 8 KB chunks and gunzips it back in under 8 s", async () => {
 		const scope: Record<string, unknown> = { TransformStream: streams.TransformStream };
 		const { CompressionStream, DecompressionStream } = createCompression(scope, {
-			maxDecompressedSize: TOTAL,
+			// The data, and its gzip header's 10 bytes, which count toward the limit.
+			maxDecompressedSize: TOTAL + 10,
 		});
 		const took = await timed(async () => {
 			const round = source()
