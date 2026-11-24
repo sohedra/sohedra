@@ -45,6 +45,47 @@ of it: it hears the errors the polyfill catches as `error` events on the global 
 them to the page's `onError`. When a page reads a global Lynx lacks, its error names the import that
 fills it, or what to use instead.
 
+The build also checks the app's own code (the files under the app's folder, outside `node_modules`)
+for what type-checks and then fails on Lynx, at its file, line and column. Code outside every
+function (a module's top level, a component's script and markup) runs on both threads, since the
+main thread runs it for the first frame; code in a function runs on the background, and in a
+main-thread function on the main thread, but for the function it hands `runOnBackground`; code under
+a thread's flag (`if (background)`, `if (!mainThread) return;`, `{#if mainThread}`) runs on that
+thread only. These are errors:
+
+- a global the thread lacks, with the import of `@sohedra/lynx-polyfill` that fills it, when the app
+  fills it no way: no import of that fill or of the catch-all that holds it, no assignment of its
+  own (`globalThis.TextEncoder = …`, `Object.defineProperty(globalThis, "TextEncoder", …)`), and no
+  fill package it builds with. The packages counted, by the file that installs their globals:
+  `core-js` (its `modules/web.*` and `es.iterator.constructor`, which every entry such as `core-js`,
+  `core-js/stable` or `core-js/stable/url` loads), `fast-text-encoding`, `abortcontroller-polyfill`
+  (not its ponyfills), `whatwg-fetch`, `url-polyfill` and `web-streams-polyfill/polyfill`.
+  `text-encoding` and `@ungap/structured-clone` install no global under a bundler, so they don't
+  count. For a fill this list doesn't know, put the comment below on each read, or install the
+  global from the app's own code;
+- a global no fill gives (`Intl`, `crypto`…), with what to use instead;
+- the web's DOM (`document`, `window`, `HTMLElement`…);
+- an API of the other thread: `NativeModules` or `lynx.getJSModule` on the main thread, Lynx's
+  element functions on the background, and `lynx.querySelector`, which neither thread has in Svelte
+  on Lynx;
+- a plain function a main-thread function calls without `runOnBackground`.
+
+The background has lynx-core's own `URL`, `URLSearchParams`, `fetch`, `Headers`, `Request`,
+`Response` and `AbortController`, so reading them there throws nothing and the build says nothing.
+Each misses parts of the standard (lynx-core's `URL` has no `pathname` or `search`, its `Headers`
+minds case, its `AbortSignal` has no `timeout`): import `@sohedra/lynx-polyfill/url`, `/fetch` or
+`/abort`, or the catch-all, to replace them with the standard's.
+
+A read behind a feature check (`typeof X !== "undefined"`, `"X" in globalThis`, `globalThis.X`, or
+inside a `try` that has a `catch`) anywhere in the file is left alone. A development build also
+warns at a selector outside the ones Lynx lists, and at a main-thread handler inside
+`{#if background}`, `{#if mainThread}` or their `{:else}`. To silence one of these on a line, write
+a comment with its code on that line or the one above: `// svelte-lynx-ignore dom_not_on_lynx`,
+`/* svelte-lynx-ignore … */` in a style sheet, and `<!-- svelte-lynx-ignore … -->` in markup, where
+a comment above an element also silences its attributes, each on a line of its own. As it runs, a
+development build warns once for a `<scroll-view>` that holds more than 200 elements directly, which
+a `<list>` draws faster.
+
 Without the polyfill, your code sees the binding's fills, and `EventTarget` and `structuredClone`
 are smaller than the web's:
 

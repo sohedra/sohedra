@@ -1,8 +1,8 @@
 // The binding's hint for a global Lynx lacks (packages/lynx/src/wire/missing-globals.ts) is a table
 // of names written by hand, and @sohedra/lynx-polyfill's entries are what installs them. Neither
 // package may import the other, so this reads both as text: every global an entry installs has a
-// row, every row is a global its import installs, and the background-only list is what the main
-// thread never gets.
+// row, every row is a global its import installs, the background-only list is what the main
+// thread never gets, and the subpaths outside the baseline are those the catch-all import leaves out.
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -44,6 +44,7 @@ function problemsOf(root: string): string[] {
 	for (const match of constBody(source, "FILLED", "}").matchAll(/"([^"]*)":\s*\[([^\]]*)\]/g))
 		filled.set(match[1]!, namesIn(match[2]!));
 	const backgroundOnly = new Set(namesIn(constBody(source, "BACKGROUND_ONLY", "]")));
+	const outsideBaseline = new Set(namesIn(constBody(source, "OUTSIDE_BASELINE", "]")));
 	const installed = new Map<string, Set<string>>();
 	for (const match of snapshot.matchAll(
 		/exports\[`import "@sohedra\/lynx-polyfill([^"]*)" > on the ([\w-]+): its globals, and its size within budget 1`\] = `\n\[([^\]]*)\]/g,
@@ -77,6 +78,20 @@ function problemsOf(root: string): string[] {
 		if (only !== backgroundOnly.has(name))
 			problems.push(
 				`${TABLE}: \`${name}\` ${only ? "is installed on the background only, and BACKGROUND_ONLY lacks it" : "is installed on the main thread too, and BACKGROUND_ONLY lists it"}. ${fix}`,
+			);
+	}
+	const baseline = new Set([
+		...(installed.get(" background") ?? []),
+		...(installed.get(" main-thread") ?? []),
+	]);
+	for (const [subpath, names] of filled) {
+		if (subpath === "") continue;
+		const checked = names.filter((name) => !(name in IN_NODE));
+		if (checked.length === 0) continue;
+		const inBaseline = checked.every((name) => baseline.has(name));
+		if (inBaseline === outsideBaseline.has(subpath))
+			problems.push(
+				`${TABLE}: "@sohedra/lynx-polyfill${subpath}" ${inBaseline ? "is in the catch-all import, and OUTSIDE_BASELINE lists it" : "is not in the catch-all import, and OUTSIDE_BASELINE lacks it"}. ${fix}`,
 			);
 	}
 	return problems;

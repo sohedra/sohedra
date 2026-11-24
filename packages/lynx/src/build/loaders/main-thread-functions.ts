@@ -12,6 +12,8 @@
 import type { Rspack } from "@rsbuild/core";
 
 import type { Thread } from "../../wire/index.ts";
+import { NO_FILLS, recordFills } from "../checks/fills-store.ts";
+import { checkModule } from "../checks/module-checks.ts";
 import { hasMainThreadFunction } from "../main-thread-functions/directive.ts";
 import { moduleFunctions } from "../main-thread-functions/script.ts";
 import { compose } from "../source-map/maps.ts";
@@ -23,6 +25,8 @@ import { isSvelteSource } from "./svelte-skip.ts";
 export interface MainThreadFunctionsLoaderOptions {
 	thread: Thread;
 	hot?: boolean;
+	/** Check the app's own modules for what fails on Lynx (checks/module-checks.ts). */
+	checks?: boolean;
 }
 
 export default function mainThreadFunctionsLoader(
@@ -32,6 +36,17 @@ export default function mainThreadFunctionsLoader(
 ): void {
 	// Boundary: the bundler types a source map by its own shape.
 	const unchanged = (map ?? undefined) as Rspack.sources.RawSourceMap | undefined;
+	if (this.getOptions().checks === true) {
+		try {
+			recordFills(this, checkModule({ file: this.resourcePath, text: source }, this.rootContext));
+		} catch (error) {
+			// Its reads from before the error are gone with it.
+			recordFills(this, NO_FILLS);
+			// Boundary: the bundler's callback takes an `Error`; a thrown value is any.
+			this.callback(error as Error);
+			return;
+		}
+	}
 	if (!hasMainThreadFunction(source) || isSvelteSource(this.resourcePath)) {
 		this.callback(null, source, unchanged);
 		return;

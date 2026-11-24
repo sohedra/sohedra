@@ -18,10 +18,11 @@
 // development warning at its `{#if}`: the ids after it may differ. The pass reads names, not
 // scopes: an `{#each}` item named like a flag is taken for the flag, on both threads alike.
 
-import { field, identifierName, nodes, scriptProgram } from "../../svelte/build/index.ts";
+import { field, nodes, scriptProgram } from "../../svelte/build/index.ts";
 import type { AnyNode } from "../../svelte/build/index.ts";
-import { PACKAGE_NAME } from "../../wire/index.ts";
 import type { Thread } from "../../wire/index.ts";
+import { flagNames as importedFlags, flagOf } from "../checks/thread-flags.ts";
+import type { FlagNames } from "../checks/thread-flags.ts";
 import { buildError, buildWarning, placeAt } from "../diagnostics/messages.ts";
 import type { Edit } from "../source-map/edits.ts";
 import { stringLiteral } from "../string-literal.ts";
@@ -34,57 +35,9 @@ const SNIPPET = "__sohedraLynxBranch";
 /** The names the pass adds, which a component must not declare itself. */
 const OWN_NAMES = new RegExp(`\\b(${LOCAL}|${SNIPPET}\\d*)\\b`);
 
-/** The thread whose bundle a flag is `true` in. */
-type FlagThread = Thread;
-
-/** The flags each module exports, by name. */
-const FLAG_MODULES: Readonly<Record<string, Readonly<Record<string, FlagThread>>>> = {
-	[`${PACKAGE_NAME}/env`]: { background: "background", mainThread: "main-thread" },
-	"esm-env": { BROWSER: "background" },
-};
-
-/** How a component names the flags it imports. */
-interface FlagNames {
-	/** By local name. */
-	flags: Map<string, FlagThread>;
-	/** Namespace imports of a module of flags, with that module's flags. */
-	namespaces: Map<string, Readonly<Record<string, FlagThread>>>;
-}
-
 /** The flags the component imports, from its module script and its instance script. */
-function flagNames(ast: Parameters<Pass>[0]["ast"]): FlagNames {
-	const names: FlagNames = { flags: new Map(), namespaces: new Map() };
-	for (const script of [ast.module, ast.instance]) {
-		for (const statement of scriptProgram(script)?.body ?? []) {
-			// Boundary: the program's statements are read by shape.
-			const node = statement as AnyNode;
-			if (node.type !== "ImportDeclaration") continue;
-			const exported = FLAG_MODULES[String(field(node, "source")?.value)];
-			if (exported === undefined) continue;
-			for (const specifier of node.specifiers as AnyNode[]) {
-				const local = identifierName(field(specifier, "local"));
-				if (local === undefined) continue;
-				if (specifier.type === "ImportNamespaceSpecifier") names.namespaces.set(local, exported);
-				const imported = identifierName(field(specifier, "imported"));
-				const thread = imported === undefined ? undefined : exported[imported];
-				if (specifier.type === "ImportSpecifier" && thread !== undefined)
-					names.flags.set(local, thread);
-			}
-		}
-	}
-	return names;
-}
-
-/** The thread a node names as a flag, if it is one. */
-function flagOf(node: AnyNode, names: FlagNames): FlagThread | undefined {
-	const name = identifierName(node);
-	if (name !== undefined) return names.flags.get(name);
-	if (node.type !== "MemberExpression" || node.computed) return undefined;
-	const object = identifierName(field(node, "object"));
-	const property = identifierName(field(node, "property"));
-	const exported = object === undefined ? undefined : names.namespaces.get(object);
-	return property === undefined ? undefined : exported?.[property];
-}
+const flagNames = (ast: Parameters<Pass>[0]["ast"]): FlagNames =>
+	importedFlags([scriptProgram(ast.module), scriptProgram(ast.instance)]);
 
 /** The other thread. */
 const other = (thread: Thread): Thread => (thread === "background" ? "main-thread" : "background");
@@ -119,25 +72,38 @@ const fragmentNodes = (fragment: AnyNode | undefined): AnyNode[] =>
 const holdsCaller = (fragment: AnyNode | undefined): boolean =>
 	[...nodes(fragmentNodes(fragment))].some((node) => CALLERS.has(node.type as string));
 
+/** A branch only one thread renders: its `{#if}`, whether it is the `{:else}`, and its thread. */
+export interface OneThreadBranch {
+	block: AnyNode;
+	alternate: boolean;
+	thread: Thread;
+}
+
 /**
  * The fragments of the `{#if}` branches only one thread renders, as recognized here: a flag's or
  * its negation's two branches, and the consequent of a flag joined to more by `&&`.
  */
-export function oneThreadFragments(ast: Parameters<Pass>[0]["ast"]): Set<AnyNode> {
-	const fragments = new Set<AnyNode>();
+export function oneThreadFragments(ast: Parameters<Pass>[0]["ast"]): Map<AnyNode, OneThreadBranch> {
+	const fragments = new Map<AnyNode, OneThreadBranch>();
 	const names = flagNames(ast);
 	if (names.flags.size === 0 && names.namespaces.size === 0) return fragments;
-	const add = (fragment: AnyNode | undefined): void => {
-		if (fragment !== undefined) fragments.add(fragment);
+	const add = (block: AnyNode, alternate: boolean, thread: Thread): void => {
+		const fragment = field(block, alternate ? "alternate" : "consequent");
+		if (fragment !== undefined) fragments.set(fragment, { block, alternate, thread });
 	};
 	for (const block of nodes(ast.fragment)) {
 		if (block.type !== "IfBlock") continue;
 		const test = field(block, "test")!;
-		if (flagTest(test, names) !== undefined) {
-			add(field(block, "consequent"));
-			add(field(block, "alternate"));
-		} else if (conjuncts(test).some((part) => flagTest(part, names) !== undefined))
-			add(field(block, "consequent"));
+		const thread = flagTest(test, names);
+		if (thread !== undefined) {
+			add(block, false, thread);
+			add(block, true, other(thread));
+			continue;
+		}
+		const joined = conjuncts(test)
+			.map((part) => flagTest(part, names))
+			.find((found) => found !== undefined);
+		if (joined !== undefined) add(block, false, joined);
 	}
 	return fragments;
 }

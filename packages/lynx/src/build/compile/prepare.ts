@@ -8,11 +8,14 @@ import path from "node:path";
 
 import type { ComponentAst } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
+import { NO_FILLS } from "../checks/fills-store.ts";
+import type { ModuleFills } from "../checks/fills-store.ts";
 import type { BuildWarning } from "../diagnostics/messages.ts";
 import { componentFunctions } from "../main-thread-functions/script.ts";
 import { applyEdits, pieceMap, pieceText } from "../source-map/edits.ts";
 import type { Piece } from "../source-map/edits.ts";
 import type { SourceMap } from "../source-map/maps.ts";
+import { appChecks } from "./app-checks.ts";
 import { bareAttributes } from "./bare-attributes.ts";
 import { deferredRows } from "./deferred-rows.ts";
 import { effectImports } from "./effect-imports.ts";
@@ -22,6 +25,7 @@ import { listItemKeys } from "./list-item-keys.ts";
 import type { Pass, PassContext } from "./pass.ts";
 import { copiedTypeScript, nodeTypeStripper, stripMainThreadTypes } from "./strip-types.ts";
 import { svelteOptions } from "./svelte-options.ts";
+import { threadBranchHandlers } from "./thread-branch-handlers.ts";
 import { threadBranches } from "./thread-branches.ts";
 
 /** What `prepare` reads. */
@@ -41,6 +45,8 @@ export interface PrepareOptions {
 	sourceMap: boolean;
 	/** The module of the custom renderer, which background components import. */
 	renderer?: string | undefined;
+	/** Check the component as the app's own code (`PassContext.checks`). */
+	checks?: boolean | undefined;
 }
 
 /** A component ready for Svelte's compiler. */
@@ -57,6 +63,8 @@ export interface Prepared {
 	functionIds: string[];
 	/** The warnings the passes add. */
 	warnings: BuildWarning[];
+	/** The reads that wait on a fill, and the fills the component imports. */
+	fills: ModuleFills;
 }
 
 /** The checks first, then the rewrites. */
@@ -67,6 +75,8 @@ const PASSES: readonly Pass[] = [
 	firstFrameEvents,
 	effectImports,
 	listItemKeys,
+	appChecks,
+	threadBranchHandlers,
 	threadBranches,
 	deferredRows,
 ];
@@ -74,7 +84,7 @@ const PASSES: readonly Pass[] = [
 /** Run every pass over the component and apply what they return. */
 export function prepare(options: PrepareOptions): Prepared {
 	const { source, filename, sourceMap } = options;
-	const context: PassContext = { ...options, warnings: [] };
+	const context: PassContext = { ...options, warnings: [], fills: NO_FILLS };
 	const edits = PASSES.flatMap((pass) => pass(context));
 	const functions = componentFunctions(options);
 	edits.push(...(functions?.edits ?? []));
@@ -105,5 +115,6 @@ export function prepare(options: PrepareOptions): Prepared {
 		},
 		functionIds: functions?.ids ?? [],
 		warnings: context.warnings,
+		fills: context.fills,
 	};
 }

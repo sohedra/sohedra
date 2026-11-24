@@ -10,6 +10,7 @@ import type { DevClientLoaderOptions } from "../loaders/dev-client.ts";
 import { DevClientCheckPlugin } from "./dev-client-check.ts";
 import { EngineRegExpsPlugin } from "./engine-regexps.ts";
 import { loaderPath, RUNTIME_FILES } from "./layers.ts";
+import { MissingFillsPlugin } from "./missing-fills.ts";
 import { configureCssRules, keepSelectorListsApart } from "./rules-css.ts";
 import { splitScriptRule, threadsOf } from "./rules-script.ts";
 import { patchSvelteSource, splitSvelteRules } from "./rules-svelte.ts";
@@ -43,6 +44,7 @@ export function configureBuildRules(options: BuildRuleOptions): void {
 	splitSvelteRules({ ...options, swc, threads });
 	patchSvelteSource(chain);
 	chain.plugin(`${PACKAGE_NAME}:engine-regexps`).use(EngineRegExpsPlugin, [{ development }]);
+	chain.plugin(`${PACKAGE_NAME}:missing-fills`).use(MissingFillsPlugin);
 	if (development) patchDevClientSource(chain);
 }
 

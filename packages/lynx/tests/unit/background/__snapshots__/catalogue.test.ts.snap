@@ -220,6 +220,14 @@ On the background, call the function itself. Use runOnBackground inside a functi
 https://sohedra.com/e/run_on_background_outside_main_thread"
 `;
 
+exports[`the background's catalogue > scroll_view_many_children: the message 1`] = `
+"A <scroll-view> holds more than 200 elements directly, and it draws every one of them at once, which slows the page's first paint and every update.
+src/Feed.svelte:4:2
+
+Show the rows in a <list> of <list-item> elements instead: Lynx makes a list's rows as they scroll into view.
+https://sohedra.com/e/scroll_view_many_children"
+`;
+
 exports[`the background's catalogue > static_copy_container_not_empty: the message 1`] = `
 "The <view> given to createStaticCopy as the container holds something that is not a copy.
 

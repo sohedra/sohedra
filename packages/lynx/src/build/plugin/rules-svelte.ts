@@ -59,15 +59,16 @@ function useSvelteLoaders(
 	runeModule: Rule,
 	thread: Thread,
 	swc: SwcOptions,
-	options: SvelteRuleOptions & { hot: boolean },
+	options: SvelteRuleOptions & { hot: boolean; checks?: boolean | undefined },
 ): void {
-	const { compilerOptions, preprocess, hot } = options;
+	const { compilerOptions, preprocess, hot, checks } = options;
 	const componentOptions: SvelteComponentLoaderOptions = {
 		thread,
 		renderer: RENDERER_ENTRY,
 		compilerOptions,
 		preprocess,
 		hot,
+		...(checks === true && { checks }),
 		...(options.firstFrameCopies && thread === "background" && { firstFrameCopy: true }),
 		...(thread === "main-thread"
 			? { serverInternals: RUNTIME_FILES.serverInternals }
@@ -110,7 +111,7 @@ function useSvelteLoaders(
 				transform: { useDefineForClassFields: true },
 			},
 		});
-	useMainThreadFunctions(runeModule, { thread, hot });
+	useMainThreadFunctions(runeModule, { thread, hot, checks });
 }
 
 /**
@@ -133,7 +134,7 @@ export function splitSvelteRules(
 			threadRule(runeModule, rules),
 			rules.thread,
 			swc[rules.thread],
-			{ ...options, hot: rules.hot },
+			{ ...options, hot: rules.hot, checks: rules.checks },
 		);
 	}
 }

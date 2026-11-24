@@ -10,7 +10,7 @@ https://sohedra.com/e/global_background_only"
 exports[`the wire's catalogue > global_not_filled: the message 1`] = `
 "The global \`URL\` is not defined: Lynx's engine doesn't have it, and no import put it there.
 
-Import "@sohedra/lynx-polyfill/url" in the first line of the app's entry, or "@sohedra/lynx-polyfill" for every fill.
+Import "@sohedra/lynx-polyfill/url" in the first line of the app's entry, or "@sohedra/lynx-polyfill", which holds it too.
 https://sohedra.com/e/global_not_filled"
 `;
 

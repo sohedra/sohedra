@@ -10,7 +10,7 @@ const SAMPLES: { [Code in WireCode]: WireDetails[Code] } = {
 	threads_from_different_builds: { thread: "main-thread", received: 2, expected: 1 },
 	page_reloaded_on_one_thread: { thread: "main-thread", received: 2, generation: 1 },
 	value_not_copyable: { thread: "main-thread", reason: "Do not know how to serialize a BigInt" },
-	global_not_filled: { name: "URL", module: "@sohedra/lynx-polyfill/url" },
+	global_not_filled: { name: "URL", module: "@sohedra/lynx-polyfill/url", baseline: true },
 	global_background_only: { name: "ReadableStream" },
 	global_not_on_lynx: {
 		name: "crypto",

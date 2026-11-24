@@ -12,6 +12,8 @@ export interface BackgroundDetails {
 	/** `where` is the component's `file:line:col`, when Svelte's development build gives it. */
 	text_outside_text: { text: string; parent: string; where?: string | undefined };
 	list_item_key_object: { where?: string | undefined };
+	/** `limit` is how many elements; `where` the scroll view's `file:line:col`, in development builds. */
+	scroll_view_many_children: { limit: number; where?: string | undefined };
 	input_value_not_written: { tag: string; reason: string };
 	/** `name` is the attribute's. */
 	attribute_not_copyable: { name: string; tag: string; reason: string };
@@ -139,6 +141,13 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 			`The text "${text}" is inside <${parent}>, and Lynx shows text only inside <text>.`,
 		fix: ({ text }) => `Wrap it in <text>: <text>${text}</text>.`,
 		docs: "text_outside_text",
+	},
+	scroll_view_many_children: {
+		message: ({ limit }) =>
+			`A <scroll-view> holds more than ${limit} elements directly, and it draws every one of them at once, which slows the page's first paint and every update.`,
+		fix: () =>
+			"Show the rows in a <list> of <list-item> elements instead: Lynx makes a list's rows as they scroll into view.",
+		docs: "scroll_view_many_children",
 	},
 	list_item_key_object: {
 		message: () =>

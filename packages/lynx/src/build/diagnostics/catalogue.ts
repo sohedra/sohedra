@@ -3,6 +3,8 @@
 // page, and snapshots every message.
 
 import type { Catalogue } from "../../wire/index.ts";
+import { CHECK_CATALOGUE } from "./catalogue-checks.ts";
+import type { CheckDetails } from "./catalogue-checks.ts";
 import { LOADER_CATALOGUE } from "./catalogue-loaders.ts";
 import type { LoaderDetails } from "./catalogue-loaders.ts";
 import { PLUGIN_CATALOGUE } from "./catalogue-plugin.ts";
@@ -54,7 +56,7 @@ function syntaxOf(syntax: string): { what: string; instead: string } {
 }
 
 /** The details each of the build's messages is written from. */
-export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails {
+export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails, CheckDetails {
 	preprocess_failed: { reason: string };
 	renderer_option_off: Plain;
 	css_injected: Plain;
@@ -108,6 +110,7 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 	...SETUP_CATALOGUE,
 	...LOADER_CATALOGUE,
 	...PLUGIN_CATALOGUE,
+	...CHECK_CATALOGUE,
 	preprocess_failed: {
 		message: ({ reason }) => `A preprocessor failed on this file.\n${reason}`,
 		fix: () => "Fix the error the preprocessor reports, or check its options in svelte.config.js.",
