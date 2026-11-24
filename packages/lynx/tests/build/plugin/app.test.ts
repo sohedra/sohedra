@@ -7,6 +7,10 @@ import path from "node:path";
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
+import { unsupportedSelectors } from "../../../src/build/checks/css-selectors.ts";
+import { svelteCompiler } from "../../../src/svelte/build/index.ts";
+import type { AnyNode } from "../../../src/svelte/build/index.ts";
+import { APP_ROOT } from "../../unit/build/app.ts";
 import { buildApp, cleanBuild, readTemplate, scriptsOf } from "../build-app.ts";
 import type { AppBuild } from "../build-app.ts";
 
@@ -155,6 +159,16 @@ describe("a component's styles", () => {
 		const joined = selectors.join(",");
 		expect(joined).toMatch(/\.page\.svelte-[a-z0-9]+ \.label\.svelte-[a-z0-9]+/);
 		expect(joined).toMatch(/\.page\.svelte-[a-z0-9]+ \.caption\.svelte-[a-z0-9]+/);
+	});
+
+	it("are written only with selectors Lynx lists", () => {
+		const selectors: string[] = template["css"].cssMap["0"].map(
+			(rule: { selectorText: { value: string } }) => rule.selectorText.value,
+		);
+		const css = `<style>${selectors.map((selector) => `${selector} {}`).join("\n")}</style>`;
+		const sheet = svelteCompiler(APP_ROOT).parse(css, { modern: true }).css as unknown as AnyNode;
+		expect(selectors.length).toBeGreaterThan(0);
+		expect(unsupportedSelectors(sheet, css)).toEqual([]);
 	});
 
 	it("are not in the main thread's script", () => {
