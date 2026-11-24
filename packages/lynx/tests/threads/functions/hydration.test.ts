@@ -9,6 +9,8 @@ import { describe, expect, it } from "@rstest/core";
 import { keptContexts } from "../../../src/background/functions/calls.ts";
 import Adopted from "../../fixtures/threads/functions/Adopted.svelte";
 import drawAdopted from "../../fixtures/threads/functions/Adopted.svelte?first-frame";
+import BackgroundLast from "../../fixtures/threads/functions/BackgroundLast.svelte";
+import drawBackgroundLast from "../../fixtures/threads/functions/BackgroundLast.svelte?first-frame";
 import Hydrate from "../../fixtures/threads/functions/Hydrate.svelte";
 import drawHydrate from "../../fixtures/threads/functions/Hydrate.svelte?first-frame";
 import Refused from "../../fixtures/threads/functions/Refused.svelte";
@@ -222,5 +224,23 @@ describe("a main-thread handler on an element hydration adopts from the other br
 		expect(log).toEqual([]);
 		expect(page.engine.state(element).attrs["refused"]).toBe("first_frame_call_unanswered");
 		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
+	});
+});
+
+describe("a main-thread handler in a run of blocks that ends in a part only the background renders", () => {
+	it("has its held call answered, its element kept as the background's of the same handler", async () => {
+		const log: unknown[][] = [];
+		const page = startFunctionsPage(BackgroundLast, {
+			draw: drawBackgroundLast,
+			props: { log },
+			firstFrame: true,
+		});
+		const element = page.byClass("tapped");
+		page.engine.dispatch(element, { type: "tap" });
+		await page.settle();
+		expect(page.byClass("tapped")).toBe(element);
+		expect(log).toEqual([["tapped"]]);
+		expect(page.engine.state(element).attrs["refused"]).toBeUndefined();
+		expect(page.errors).toEqual([]);
 	});
 });
