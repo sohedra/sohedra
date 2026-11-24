@@ -375,6 +375,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: RUNTIME,
 	},
 	{
+		id: "mount-renders-whole-tree",
+		program: "runtime",
+		file: "src/internal/client/render.js",
+		anchor: "will be defined because the render effect runs synchronously",
+		reliesOn:
+			"`mount` draws the whole tree before it returns, with the first branch of every block (`{#if}`, `{#each}`, `{#key}`, `<svelte:boundary>`), and runs no `$effect` and no attachment until a flush: so the background's first patch, sent once `mount` returns, holds the whole page for hydration, and what an effect writes comes after it",
+		test: RUNTIME,
+	},
+	{
 		id: "unmount-synchronous",
 		program: "runtime",
 		file: "src/internal/client/render.js",
