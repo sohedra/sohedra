@@ -88,7 +88,7 @@ describe("Headers", () => {
 	it("reads a record as Web IDL does: its iterator, its keys once, each descriptor, then each value", () => {
 		const log: string[] = [];
 		const record = new Proxy(
-			{ a: "1" },
+			{ a: "1", b: "2" },
 			{
 				get: (target, key, receiver) => {
 					log.push(`get ${String(key)}`);
@@ -109,7 +109,14 @@ describe("Headers", () => {
 			},
 		);
 		expect(new Fill(record).get("a")).toBe("1");
-		expect(log).toEqual(["get Symbol(Symbol.iterator)", "ownKeys", "descriptor a", "get a"]);
+		expect(log).toEqual([
+			"get Symbol(Symbol.iterator)",
+			"ownKeys",
+			"descriptor a",
+			"get a",
+			"descriptor b",
+			"get b",
+		]);
 		expect(() => new Fill({ [Symbol("s")]: "x" } as never)).toThrow(TypeError);
 		expect(() => new Fill({ "a\uFFFF": "x" })).toThrow(TypeError);
 		expect(() => new Fill({ a: "\uFFFF" })).toThrow(TypeError);
