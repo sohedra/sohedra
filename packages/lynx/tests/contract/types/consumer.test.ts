@@ -24,7 +24,7 @@ const slashed = (from: string, to: string): string =>
 	path.relative(from, to).split(path.sep).join("/");
 
 /** The type tests that reach the source past the public entries, which a published package hides. */
-const INTERNAL_TYPE_TESTS = ["globals", "testing/test-page.ts"];
+const INTERNAL_TYPE_TESTS = ["globals", "main-thread", "testing/test-page.ts"];
 
 interface Manifest {
 	name: string;

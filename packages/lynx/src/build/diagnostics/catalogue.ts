@@ -81,8 +81,8 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	/** `version` is the Node.js that builds (`v20.19.0`). */
 	typescript_stripper_missing: { version: string };
 	plain_function_in_main_thread_function: { name: string };
-	/** `name` is the binding's function, as the script names it. */
-	shared_import_needed: { name: string };
+	/** `written` is the read as written; `name`, the binding's export it reads. */
+	shared_import_needed: { written: string; name: string };
 	/** `written` is the call as written; `name`, the binding's function it may be. */
 	thread_function_unclear: { written: string; name: string };
 	script_syntax_error: { reason: string };
@@ -245,8 +245,8 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		docs: "plain_function_in_main_thread_function",
 	},
 	shared_import_needed: {
-		message: ({ name }) =>
-			`A main-thread function calls \`${name}\` of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.`,
+		message: ({ written, name }) =>
+			`A main-thread function uses \`${written}\`${written === name ? "" : `, which is \`${name}\``} of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.`,
 		fix: ({ name }) =>
 			`Import it with \`with { runtime: "shared" }\`, which gives the main thread its own: \`import { ${name} } from "@sohedra/lynx" with { runtime: "shared" }\`.`,
 		docs: "shared_import_needed",

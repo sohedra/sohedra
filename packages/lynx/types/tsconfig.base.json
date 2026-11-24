@@ -3,9 +3,9 @@
 	// the language through ES2025, as the build lowers the syntax and `@sohedra/lynx-polyfill` (which
 	// the app template imports) fills the built-ins their engine lacks, and no DOM, so a DOM name used
 	// in a component fails the check instead of on the device. `@sohedra/lynx/client` declares the
-	// globals a thread has, and each import of the polyfill the ones it fills. The app's own tsconfig.json sets
-	// `"svelteOptions": { "namespace": "svelteLynx" }`, which the Svelte tools read from that file
-	// only.
+	// globals a thread has, and each import of the polyfill the ones it fills. The app's own
+	// tsconfig.json sets `"svelteOptions": { "namespace": "svelteLynx" }`, which the Svelte tools read
+	// from that file only.
 	"compilerOptions": {
 		"target": "ES2025",
 		"lib": ["ES2025"],

@@ -126,18 +126,45 @@ export function unclearThreadFunction(
 }
 
 /**
- * Whether the local name `name`, declared at the script's top level, is a function of the binding
- * that a main-thread function calls through a shared import (`with { runtime: "shared" }`).
+ * What `node` reads of the binding that the main thread has its own of only through an import
+ * marked `with { runtime: "shared" }` (`reportError`), read through a plain import: as written, with
+ * the binding's name for it; `undefined` when it reads no such thing.
  */
-export function needsSharedImport(name: string, names: ThreadFunctionNames): boolean {
-	const imported = names.binding.get(name);
-	return imported !== undefined && SHARED_FUNCTIONS.has(imported);
+export function sharedOnlyFunction(
+	node: Node,
+	names: ThreadFunctionNames,
+	atTop: (name: string) => boolean,
+): { written: string; name: string } | undefined {
+	const read = unwrap(node);
+	if (read?.type === "Identifier") {
+		const name = names.binding.get(read.name);
+		return name !== undefined && SHARED_FUNCTIONS.has(name) && atTop(read.name)
+			? { written: read.name, name }
+			: undefined;
+	}
+	const member = namespaceMember(read);
+	if (
+		member === undefined ||
+		!SHARED_FUNCTIONS.has(member.name) ||
+		!names.namespaces.has(member.namespace) ||
+		!atTop(member.namespace)
+	)
+		return undefined;
+	return { written: `${member.namespace}.${member.name}`, name: member.name };
 }
 
-/** A member read from a name, `namespace.name`, not computed. */
+/**
+ * A member read from a name: `namespace.name`, `namespace?.name` or `namespace["name"]`, whose key
+ * is written out.
+ */
 function namespaceMember(node: Node): { namespace: string; name: string } | undefined {
-	if (node?.type !== "MemberExpression" || node.computed || node.optional) return undefined;
+	if (node?.type !== "MemberExpression") return undefined;
 	const object = unwrap(node.object);
-	if (object?.type !== "Identifier" || node.property?.type !== "Identifier") return undefined;
-	return { namespace: object.name, name: node.property.name };
+	if (object?.type !== "Identifier") return undefined;
+	const property = node.property;
+	if (!node.computed && property?.type === "Identifier")
+		return { namespace: object.name, name: property.name };
+	if (node.computed && property?.type === "Literal" && typeof property.value === "string")
+		return { namespace: object.name, name: property.value };
+	return undefined;
 }

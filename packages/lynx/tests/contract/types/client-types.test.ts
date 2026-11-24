@@ -6,6 +6,8 @@ import path from "node:path";
 import { describe, expect, it } from "@rstest/core";
 import ts from "typescript";
 
+import { DOM_INSTEAD } from "../../../src/build/checks/dom-globals.ts";
+
 const client = path.resolve(import.meta.dirname, "../../../types/client.d.ts");
 const appFile = path.join(path.dirname(client), "app-under-test.ts");
 
@@ -33,15 +35,23 @@ import.meta.webpackHot?.accept();
 export { url, component, flags };
 `;
 
-function check(rootNames: string[]): { files: string[]; diagnostics: string[] } {
-	const host = ts.createCompilerHost(options);
+function check(
+	rootNames: string[],
+	code = app,
+	compilerOptions = options,
+): { files: string[]; diagnostics: string[] } {
+	const host = ts.createCompilerHost(compilerOptions);
 	const getSourceFile = host.getSourceFile.bind(host);
 	host.getSourceFile = (file, ...rest) =>
 		// TypeScript names files with `/`, which Windows' paths have not.
 		path.normalize(file) === appFile
-			? ts.createSourceFile(file, app, ts.ScriptTarget.ESNext)
+			? ts.createSourceFile(file, code, ts.ScriptTarget.ESNext)
 			: getSourceFile(file, ...rest);
-	const program = ts.createProgram({ rootNames: [...rootNames, appFile], options, host });
+	const program = ts.createProgram({
+		rootNames: [...rootNames, appFile],
+		options: compilerOptions,
+		host,
+	});
 	const files = program.getSourceFiles().map((file) => file.fileName.split(path.sep).join("/"));
 	const diagnostics = ts
 		.getPreEmitDiagnostics(program)
@@ -95,5 +105,15 @@ describe("@sohedra/lynx/client", () => {
 		const polyfill = ["URL", "fetch", "TextEncoder", "AbortController", "structuredClone"];
 		const nowhere = ["window", "document", "localStorage", "navigator", "self", "crypto"];
 		expect([...polyfill, ...nowhere].filter(declared)).toEqual([]);
+	});
+
+	it("type-checks each use of `lynx` the build's messages tell an app to write", () => {
+		const writes = Object.values(DOM_INSTEAD).flatMap((text) =>
+			[...text.matchAll(/`(lynx\.[^`]+)`/g)].map((match) => match[1]!),
+		);
+		expect(writes.length).toBeGreaterThan(0);
+		const app = writes.map((write, index) => `export const use${index} = ${write};`).join("\n");
+		// The base tsconfig's built-ins: the language, without the DOM.
+		expect(check([client], app, { ...options, lib: ["lib.es2025.d.ts"] }).diagnostics).toEqual([]);
 	});
 });

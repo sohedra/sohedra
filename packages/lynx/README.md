@@ -17,13 +17,14 @@ app's `tsconfig.json`, svelte-check and the editor check each element's attribut
 the binding's spellings (`ontap`, `oncatchtap`, `ontapcapture`, `main-thread:ontap`), and Svelte's
 `on()` types a node's events by name. The base config leaves out the DOM, which Lynx's threads do
 not have, and loads `@sohedra/lynx/client`, which declares what a Lynx thread has without a fill:
-`console`, the timers, `requestAnimationFrame`, `queueMicrotask`, `lynx`, `SystemInfo` and
-`NativeModules` (the background's only), with which thread has each in its doc comment. Each import
-of `@sohedra/lynx-polyfill` declares what it fills, so `URL` type-checks once the app imports
-`@sohedra/lynx-polyfill` or `/url`, and `window` or `localStorage` never does. The element types are
-generated from Lynx's own (`@lynx-js/types`), which an app does not install. For hovers and
-completions in the markup, add `node_modules/@sohedra/lynx/types/generated/html-custom-data.json` to
-the editor's `html.customData`.
+`console`, the timers, `requestAnimationFrame`, `queueMicrotask`, `SystemInfo`, `lynx` with every
+member Lynx declares for either thread, and `NativeModules`, which only the background has. Each doc
+comment says which thread has it. Each import of `@sohedra/lynx-polyfill` declares what it fills, so
+`URL` type-checks once the app imports `@sohedra/lynx-polyfill` or `/url`, and `window` or
+`localStorage` never does. The element types are generated from Lynx's own (`@lynx-js/types`), which
+an app does not install. For hovers and completions in the markup, add
+`node_modules/@sohedra/lynx/types/generated/html-custom-data.json` to the editor's
+`html.customData`.
 
 The build and the test presets run on Node.js `^22.22.2 || ^24.15.0 || ^26.0.0`, as `engines` in the
 package's manifest says: the lines in Active or Maintenance LTS, each from the version the test

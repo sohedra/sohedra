@@ -68,6 +68,16 @@ export function later() {
 		expect(registrations).toContain("return sohedra.runOnMainThread(onTap);");
 	});
 
+	it("from a namespace import, read optionally or by a written-out key: the same", () => {
+		for (const call of ["sohedra?.runOnBackground", 'sohedra["runOnBackground"]'])
+			expect(objects(handing('import * as sohedra from "@sohedra/lynx";', call)), call).toEqual([
+				{ captures: ["scale"], backgroundFunctions: 1 },
+			]);
+		expect(
+			failure(handing('import * as threads from "$lib/threads";', 'threads["runOnBackground"]')),
+		).toBe("thread_function_unclear");
+	});
+
 	it("re-exported by the app's own module under its own name: as it always was", () => {
 		const source = handing('import { runOnBackground } from "$lib/threads";', "runOnBackground");
 		expect(objects(source)).toEqual([{ captures: ["scale"], backgroundFunctions: 1 }]);
@@ -122,21 +132,57 @@ export function onTap() {
 });
 
 describe("the binding's reportError in a main-thread function", () => {
-	it("through a plain import: a development build's error says to import it as shared", () => {
-		const source = `import { reportError } from "@sohedra/lynx";
+	/** The build error compiling `source` throws in a build of `mode`, as text, or "". */
+	function message(source: string, development: boolean): string {
+		try {
+			compile(source, "background", development);
+			return "";
+		} catch (error) {
+			return (error as Error).message;
+		}
+	}
+
+	const calling = (imports: string, call: string): string => `${imports}
 export function onTap() {
   "main thread";
-  reportError(new Error("tap failed"));
+  ${call}(new Error("tap failed"));
 }`;
-		const { code } = compile(source, "background", true);
-		const message = JSON.parse((/new Error\((".*?[^\\]")\)/.exec(code) ?? [])[1]!) as string;
-		expect(message.split("\n")[0]).toBe(
-			"A main-thread function calls `reportError` of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.",
+
+	it("through a plain import: a build error in development and production, which says to import it as shared", () => {
+		const source = calling('import { reportError } from "@sohedra/lynx";', "reportError");
+		for (const development of [true, false]) {
+			const text = message(source, development);
+			expect(text.split("\n")[0]).toBe(
+				"A main-thread function uses `reportError` of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.",
+			);
+			expect(text).toContain(
+				'`import { reportError } from "@sohedra/lynx" with { runtime: "shared" }`',
+			);
+			expect(text).not.toContain("runOnBackground(reportError)");
+		}
+	});
+
+	it("under another name or from a namespace: the fix names the binding's export", () => {
+		const aliased = message(
+			calling('import { reportError as report } from "@sohedra/lynx";', "report"),
+			false,
 		);
-		expect(message).toContain(
-			'`import { reportError } from "@sohedra/lynx" with { runtime: "shared" }`',
+		expect(aliased.split("\n")[0]).toContain(
+			"uses `report`, which is `reportError` of @sohedra/lynx",
 		);
-		expect(message).not.toContain("runOnBackground(reportError)");
+		expect(aliased).toContain('`import { reportError } from "@sohedra/lynx" with');
+		expect(
+			failure(calling('import * as sohedra from "@sohedra/lynx";', "sohedra.reportError")),
+		).toBe("shared_import_needed");
+	});
+
+	it("handed to runOnBackground: the background's, no error", () => {
+		const source = `import { reportError, runOnBackground } from "@sohedra/lynx";
+export function onTap() {
+  "main thread";
+  runOnBackground(reportError)(new Error("tap failed"));
+}`;
+		expect(failure(source)).toBe("");
 	});
 
 	it("through a shared import: the main thread's own, not captured", () => {

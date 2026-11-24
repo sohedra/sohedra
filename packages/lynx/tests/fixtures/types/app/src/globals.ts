@@ -8,10 +8,17 @@ clearInterval(setInterval(() => {}, 1000));
 cancelAnimationFrame(requestAnimationFrame((time: number) => console.info(time)));
 queueMicrotask(() => console.error("next"));
 lynx.reportError(new Error("failed"), { level: "warning" });
-const emitter = lynx.getJSModule<{ addListener(name: string, listener: () => void): void }>(
-	"GlobalEventEmitter",
-);
-emitter.addListener("onWindowResize", () => {});
+lynx.getJSModule("GlobalEventEmitter").addListener("onWindowResize", () => {});
+// Lynx's API as Lynx declares it, each member on the thread Lynx gives it.
+lynx
+	.createIntersectionObserver({}, { thresholds: [0, 1] })
+	.relativeToViewport()
+	.observe("#card", () => {});
+lynx.createSelectorQuery().select("#card").invoke({ method: "scrollIntoView" }).exec();
+lynx.performance.profileStart("load");
+lynx.performance.profileEnd();
+const props: unknown = lynx.__globalProps;
+lynx.fetchBundle("https://example.com/a.bundle").then((bundle) => console.log(bundle.code));
 const storage: unknown = NativeModules["Storage"];
 
-export { storage };
+export { props, storage };

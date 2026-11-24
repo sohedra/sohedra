@@ -16,6 +16,8 @@
 /// <reference types="@rsbuild/core/types" />
 // oxlint-disable-next-line typescript/triple-slash-reference -- an import would make this file a module, which turns its `declare module`s into augmentations
 /// <reference path="./elements.d.ts" />
+// oxlint-disable-next-line typescript/triple-slash-reference -- as above
+/// <reference path="./generated/lynx.d.ts" />
 
 // The globals are `var`s and `function`s, as the DOM's and Node's types declare theirs, so that a
 // check with those too merges the declarations.
@@ -78,24 +80,6 @@ declare function cancelAnimationFrame(id: number): void;
  * the background's own, and the binding's on the main thread, which lacks one.
  */
 declare function queueMicrotask(callback: () => void): void;
-
-/**
- * Lynx's `lynx` object: the members an app calls. Add to it, as `declare global { interface Lynx {
- * … } }`, for a member of Lynx's own it does not list. Both threads have `lynx`; a member says if
- * one thread has it only.
- */
-interface Lynx {
-	/**
-	 * Reports an error into Lynx: LogBox shows it, as a warning at `level: "warning"`. Both threads.
-	 * `reportError` of `@sohedra/lynx` also sends it to the page's `onError`.
-	 */
-	reportError(error: string | Error, options?: { level?: "error" | "warning" }): void;
-	/** A module of Lynx's background runtime, by name, such as `GlobalEventEmitter`. Background only. */
-	getJSModule<Module = unknown>(name: string): Module;
-}
-
-/** Lynx's `lynx` object. Both threads. */
-declare var lynx: Lynx;
 
 /** What Lynx says about the device and itself. Both threads: the binding's on the main thread. */
 // oxlint-disable-next-line typescript/consistent-type-imports -- an import would make this file a module, which turns its globals into a module's

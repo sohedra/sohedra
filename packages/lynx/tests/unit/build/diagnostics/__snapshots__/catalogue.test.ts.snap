@@ -635,7 +635,7 @@ https://sohedra.com/e/script_syntax_error"
 `;
 
 exports[`the build's catalogue > shared_import_needed: the message 1`] = `
-"A main-thread function calls \`reportError\` of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.
+"A main-thread function uses \`report\`, which is \`reportError\` of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.
 /app/src/App.svelte:2:3
 
 1: <script>

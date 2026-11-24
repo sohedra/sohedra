@@ -95,9 +95,7 @@ function guardFor(options: EmitOptions, fn: Found): Guard | undefined {
 	/** The error for the plain function `name`, called at `at`. */
 	const error = (name: string, at: Node): string => {
 		const message = describe({
-			code: fn.sharedOnly.has(name)
-				? "shared_import_needed"
-				: "plain_function_in_main_thread_function",
+			code: "plain_function_in_main_thread_function",
 			details: { name },
 			// The path under the app, so two checkouts of one app give one development bundle.
 			place: placeAt(

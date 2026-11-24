@@ -44,9 +44,13 @@ that installs them they are a type error, as they would be on the device. The ty
 own for the web without the DOM (`lib.webworker.d.ts`), cut to what the package fills, so your
 tsconfig needs no `"DOM"` in `lib`. They name each global as the standard has it: what a fill leaves
 out is under [Known limits](#known-limits). The language's types come from your tsconfig's `lib`.
+The interfaces those globals name are known after any import, as types only: after
+`import "@sohedra/lynx-polyfill/abort"`, `let url: URL` type-checks and `new URL(…)` does not.
 
 With the DOM's types or Node's (`@types/node`) in the same check, both declare some of the same
-globals: `skipLibCheck`, which Sohedra's base tsconfig sets, leaves their declarations to them.
+globals: keep `skipLibCheck` on, as Sohedra's base tsconfig has it, which leaves their declarations
+to them; with it off, TypeScript reports the duplicates in the declaration files. With Node's types,
+the timers answer Node's `NodeJS.Timeout`, not a number.
 
 ## What each import fills
 

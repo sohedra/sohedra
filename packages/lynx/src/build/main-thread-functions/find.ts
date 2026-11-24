@@ -24,7 +24,7 @@ import {
 } from "./directive.ts";
 import type { Node } from "./node.ts";
 import {
-	needsSharedImport,
+	sharedOnlyFunction,
 	threadFunctionNames,
 	threadFunctionOf,
 	unclearThreadFunction,
@@ -101,16 +101,12 @@ export interface Found {
 	declaredIn: Scope | undefined;
 	/** The scope each captured name is declared in. */
 	capturedFrom: Map<string, Scope>;
-	/**
-	 * The captured imports of the binding that the main thread has its own of only through an
-	 * import marked `with { runtime: "shared" }` (`reportError`).
-	 */
-	sharedOnly: Set<string>;
 }
 
 /** The errors a script's walk can fail with. */
 type FailCode =
 	| "thread_function_unclear"
+	| "shared_import_needed"
 	| "main_thread_function_method"
 	| "main_thread_function_this"
 	| "main_thread_function_generator"
@@ -291,10 +287,15 @@ export function findFunctions(options: {
 		return from !== undefined && topScopes.has(from);
 	};
 
-	/** Refuses a read in a main-thread function that may be a thread function of the binding. */
+	/**
+	 * Refuses a read in a main-thread function that may be a thread function of the binding, or that
+	 * is the background's copy of a function the main thread has through a shared import.
+	 */
 	const refuseUnclear = (node: Node): void => {
 		const unclear = unclearThreadFunction(node, threadNames, atTop);
 		if (unclear) fail(node, { code: "thread_function_unclear", details: unclear });
+		const sharedOnly = sharedOnlyFunction(node, threadNames, atTop);
+		if (sharedOnly) fail(node, { code: "shared_import_needed", details: sharedOnly });
 	};
 
 	/** A name read in a main-thread function: captured if the file declares it outside the function. */
@@ -315,8 +316,6 @@ export function findFunctions(options: {
 					current.parametersRead ||= inParameters;
 				if (!inside) {
 					if (!current.capturedFrom.has(name)) current.capturedFrom.set(name, from);
-					if (topScopes.has(from) && needsSharedImport(name, threadNames))
-						current.sharedOnly.add(name);
 					path = [{ name, key: name, access: name }];
 					if ((node === callee || node === calledThrough) && !current.called.has(name))
 						current.called.set(name, node);
@@ -429,7 +428,6 @@ export function findFunctions(options: {
 						parametersRead: false,
 						declaredIn: declaration,
 						capturedFrom: new Map(),
-						sharedOnly: new Set(),
 					};
 					found.push(current);
 					ownThis = true;
@@ -552,7 +550,8 @@ export function findFunctions(options: {
 				if (current) {
 					// The binding's `lynx.runOnBackground`: read where the body runs, as an import is.
 					if (threadFunctionOf(node, threadNames, atTop) !== undefined) return;
-					refuseUnclear(node);
+					const object = unwrap(node.object);
+					if (object?.type !== "Identifier" || !shared.has(object.name)) refuseUnclear(node);
 				}
 				const object = unwrap(node.object);
 				const segment = memberSegment(node);

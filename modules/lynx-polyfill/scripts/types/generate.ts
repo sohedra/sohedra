@@ -126,6 +126,17 @@ export function installedGlobals(): Map<string, string[]> {
 		for (const name of match[2]!.matchAll(/"([^"]*)"/g)) names.add(name[1]!);
 		installed.set(match[1]!, names);
 	}
+	// A renamed test would leave nothing to read, and the types would then be checked against nothing.
+	const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")) as {
+		exports: Record<string, unknown>;
+	};
+	for (const key of Object.keys(manifest.exports)) {
+		if (key === "./package.json") continue;
+		if (!installed.has(key.slice(1)))
+			throw new Error(
+				`The entries' snapshot (${path.relative(ROOT, SNAPSHOT)}) has no globals of "@sohedra/lynx-polyfill${key.slice(1)}": run its test, or read its new titles here.`,
+			);
+	}
 	return new Map([...installed].map(([subpath, names]) => [subpath, [...names].sort()]));
 }
 
