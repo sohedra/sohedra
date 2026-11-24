@@ -53,6 +53,13 @@ describe("the regular expressions the engine refuses", () => {
 		]);
 	});
 
+	it("say which are calls, which throw only where they run", () => {
+		expect(refusedRegExps('/x/v; new RegExp("x", "v");', parse).map(({ call }) => call)).toEqual([
+			false,
+			true,
+		]);
+	});
+
 	it("give where each starts in the code", () => {
 		const code = "let a = 1;\nconst b = /x/v;";
 		expect(refusedRegExps(code, parse).map(({ start }) => start)).toEqual([code.indexOf("/x/v")]);

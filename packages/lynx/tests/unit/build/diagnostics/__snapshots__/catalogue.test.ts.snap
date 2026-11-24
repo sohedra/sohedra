@@ -490,6 +490,18 @@ Give the flag to the whole expression, or write the cases out: \`[Aa]\` for \`(?
 https://sohedra.com/e/regexp_refused"
 `;
 
+exports[`the build's catalogue > regexp_refused_call: the message 1`] = `
+"\`new RegExp("[\\\\p{L}--[a-z]]", "v")\` makes a regular expression with the \`v\` flag, which Lynx's engine does not have: the call throws a SyntaxError where it runs.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+If the code checks for it and catches the error, leave it. Otherwise: Use the \`u\` flag, and write a class's set operations (\`--\`, \`&&\`) out as the characters they leave, or as a lookahead: \`(?![a-z])\\p{L}\`.
+https://sohedra.com/e/regexp_refused_call"
+`;
+
 exports[`the build's catalogue > renderer_option_off: the message 1`] = `
 "\`<svelte:options customRenderer={null}>\` turns the renderer off, and a Lynx page has no DOM to draw without it.
 /app/src/App.svelte:2:3

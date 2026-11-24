@@ -41,6 +41,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	plain_function_in_main_thread_function: { name: "save" },
 	script_syntax_error: { reason: "Unexpected token" },
 	regexp_refused: { regexp: "/(?i:a)b/", syntax: "modifier" },
+	regexp_refused_call: { regexp: 'new RegExp("[\\\\p{L}--[a-z]]", "v")', syntax: "v_flag" },
 	event_attribute_renamed: { attribute: "bindtap", replacement: "ontap", spelling: "bind" },
 	global_event_attribute: { attribute: "global-bindtap", event: "tap" },
 	list_item_without_key: {},
