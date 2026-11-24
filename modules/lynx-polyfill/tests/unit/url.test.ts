@@ -118,6 +118,36 @@ describe("URLSearchParams", () => {
 		},
 	);
 
+	it.each([
+		["%ED%A0%80"],
+		["%ED%A0%80%ED%B0%80"],
+		["%C0%80"],
+		["%E2%82"],
+		["%E2%82%41"],
+		["%E2%82%E2%82%AC"],
+		["%F4%90%80%80"],
+		["%FF%80"],
+		["%F0%9F%98%80"],
+	])("decodes the bytes %s as Node's does, each bad sequence as one U+FFFD", (bytes) => {
+		const { URLSearchParams } = filled();
+		expect(new URLSearchParams(`a=${bytes}`).get("a")).toBe(
+			new NodeURLSearchParams(`a=${bytes}`).get("a"),
+		);
+	});
+
+	it("decodes an encoded surrogate as U+FFFD where decodeURIComponent takes it, as PrimJS's does", () => {
+		const own = globalThis.decodeURIComponent;
+		// PrimJS's: an encoded surrogate decodes to a lone one, where the standard throws.
+		globalThis.decodeURIComponent = (text: string) =>
+			text.toUpperCase() === "%ED%A0%80" ? "\ud800" : own(text);
+		try {
+			const { URLSearchParams } = filled();
+			expect(new URLSearchParams("a=%ED%A0%80").get("a")).toBe("���");
+		} finally {
+			globalThis.decodeURIComponent = own;
+		}
+	});
+
 	it("takes pairs and records, sorts stably, and answers size and has with a value", () => {
 		const { URLSearchParams } = filled();
 		const params = new URLSearchParams([
