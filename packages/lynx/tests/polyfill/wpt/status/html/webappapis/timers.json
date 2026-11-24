@@ -1,0 +1,5 @@
+{
+	"*": {
+		"skip": "Timers on the background's globalThis come with the timers fill, which replaces this row with its results."
+	}
+}

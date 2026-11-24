@@ -122,6 +122,9 @@
 		"declarations": "node scripts/declarations/write.ts",
 		"generate": "node scripts/types/generate.ts",
 		"test": "rstest",
+		"test:primjs": "rstest -c tests/polyfill/rstest.config.ts",
+		"test:test262": "rstest -c tests/polyfill/rstest.config.ts tests/polyfill/test262",
+		"test:wpt": "rstest -c tests/polyfill/rstest.config.ts tests/polyfill/wpt",
 		"vendor": "node scripts/polyfill/bundle.ts"
 	},
 	"dependencies": {

@@ -1,0 +1,5 @@
+{
+	"*": {
+		"skip": "PrimJS has no Set.prototype.isSupersetOf: its fill replaces this row with its results."
+	}
+}

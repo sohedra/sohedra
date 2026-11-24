@@ -1,0 +1,5 @@
+{
+	"*": {
+		"skip": "PrimJS has no Promise.try: its fill replaces this row with its results."
+	}
+}

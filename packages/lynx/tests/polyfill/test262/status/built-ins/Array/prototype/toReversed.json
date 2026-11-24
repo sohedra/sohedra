@@ -1,0 +1,5 @@
+{
+	"*": {
+		"skip": "PrimJS has no Array.prototype.toReversed: its fill replaces this row with its results."
+	}
+}

@@ -1,0 +1,8 @@
+{
+	"queue-microtask-exceptions.any.js": {
+		"fail": {
+			"note": "globalThis is not an EventTarget yet, so the test can't listen for the error event: the global error events' fill makes this pass.",
+			"expected": ["It rethrows exceptions"]
+		}
+	}
+}

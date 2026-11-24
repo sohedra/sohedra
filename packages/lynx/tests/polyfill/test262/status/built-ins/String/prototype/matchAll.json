@@ -1,0 +1,32 @@
+{
+	"cstm-matchall-on-bigint-primitive.js": {
+		"fail": {
+			"note": "PrimJS's matchAll calls a Symbol.matchAll method on a primitive's prototype.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"cstm-matchall-on-number-primitive.js": {
+		"fail": {
+			"note": "PrimJS's matchAll calls a Symbol.matchAll method on a primitive's prototype.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"cstm-matchall-on-string-primitive.js": {
+		"fail": {
+			"note": "PrimJS's matchAll calls a Symbol.matchAll method on a primitive's prototype.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"flags-nonglobal-throws.js": {
+		"fail": {
+			"note": "PrimJS's matchAll takes a non-global RegExp instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"flags-undefined-throws.js": {
+		"fail": {
+			"note": "PrimJS's matchAll throws a SyntaxError, not a TypeError, for a RegExp-like object whose flags are undefined.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}

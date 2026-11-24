@@ -1,0 +1,92 @@
+{
+	"getSubstitution-0x0024-0x003C.js": {
+		"fail": {
+			"note": "The own replaceAll fill (src/polyfill/language/replace-all.ts) hands a RegExp to replace, not to the search value's Symbol.replace.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"getSubstitution-0x0024N.js": {
+		"fail": {
+			"note": "The own replaceAll fill (src/polyfill/language/replace-all.ts) hands a RegExp to replace, not to the search value's Symbol.replace.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"getSubstitution-0x0024NN.js": {
+		"fail": {
+			"note": "The own replaceAll fill (src/polyfill/language/replace-all.ts) hands a RegExp to replace, not to the search value's Symbol.replace.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-tostring-regexp.js": {
+		"fail": {
+			"note": "The own replaceAll fill (src/polyfill/language/replace-all.ts) hands a RegExp to replace, not to the search value's Symbol.replace.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-flags-no-g-throws.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-flags-null-undefined-throws.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-flags-toString-abrupt.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-get-flags-abrupt.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-isRegExp-abrupt.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-replacer-before-tostring.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-replacer-call-abrupt.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-replacer-call.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"searchValue-replacer-method-abrupt.js": {
+		"fail": {
+			"note": "The own replaceAll fill checks for a RegExp with instanceof and reads its flags, not IsRegExp and Symbol.replace as the spec says.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"replaceValue-value-tostring.js": {
+		"fail": {
+			"note": "The own replaceAll fill converts the replacement to a string once per match.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"not-a-constructor.js": {
+		"fail": {
+			"note": "The own replaceAll fill is a function, which can be called with new.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}

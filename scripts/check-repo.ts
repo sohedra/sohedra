@@ -15,7 +15,8 @@ import { listIsCurrent, scanRepository } from "./workarounds.ts";
 import { checkWorkflows } from "./workflows.ts";
 
 const problems: string[] = [];
-const IGNORED_DIRS = new Set([".git", "node_modules", ".svelte-kit", "dist", "coverage"]);
+// `.cache`: a package's downloads and builds, such as the PrimJS source the binding's suites build.
+const IGNORED_DIRS = new Set([".git", "node_modules", ".svelte-kit", "dist", "coverage", ".cache"]);
 // Agent worktrees are other checkouts of this repository, checked in their own run.
 const IGNORED_PATHS = new Set([join(".claude", "worktrees")]);
 
