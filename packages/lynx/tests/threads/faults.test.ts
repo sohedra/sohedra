@@ -41,9 +41,12 @@ describe("a component that throws as the page starts", () => {
 	it("is reported, and nothing is thrown at the engine", async () => {
 		const page = startSveltePage(Fails);
 		await page.settle();
-		expect(page.errors).toContainEqual(
-			expect.objectContaining({ message: expect.stringMatching(/^the component threw/) }),
-		);
+		expect(page.errors).toEqual([
+			expect.objectContaining({
+				code: "page_not_started",
+				message: expect.stringContaining("the component threw"),
+			}),
+		]);
 	});
 });
 

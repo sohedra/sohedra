@@ -395,7 +395,8 @@ function parseInto(
 				blocks.push(into);
 				depth++;
 				if (close > lt + 5) {
-					// An `{#if}`'s branch (`[0`, `[-1`), an else (`[!`) or a failed boundary (`[?`).
+					// An `{#if}`'s branch (`[0`, `[-1`), an else (`[!`), a failed boundary (`[?`) or an
+					// `{#await}` given a promise (`[await`, the first frame's own).
 					const block: DrawnBlock = { block: true, children: [] };
 					into.push(block);
 					into = block.children;

@@ -29,6 +29,13 @@ Call \`mountPage\` once, in the page's entry. To show a component over the page,
 https://sohedra.com/e/page_already_mounted"
 `;
 
+exports[`the wire's catalogue > page_not_started: the message 1`] = `
+"The page did not start: the background threw as it mounted the root component (Cannot read properties of undefined (reading 'title')), so its first frame stays and answers nothing.
+
+Fix what threw (the cause of the page_not_started error), or wrap the part that can throw in a <svelte:boundary> with a failed snippet.
+https://sohedra.com/e/page_not_started"
+`;
+
 exports[`the wire's catalogue > page_reloaded_on_one_thread: the message 1`] = `
 "This page reloaded on one of its threads only.
 Seen on the main thread: it shows load 1 of the page and got a message of load 2.

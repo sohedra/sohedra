@@ -85,8 +85,11 @@ export interface FunctionsPage {
 	sendHeld(held: HeldCall): void;
 	/** The page let go of text that held these contexts, unread. */
 	dropUnread(ids: readonly number[]): void;
-	/** The page reloads or ends: its functions run no more, and its calls reject. */
-	silence(): void;
+	/**
+	 * The page reloads or ends: its functions run no more, and its calls reject, with `reason` when
+	 * one is given.
+	 */
+	silence(reason?: Error): void;
 	/** What the page holds, for tests. */
 	sizes(): {
 		elements: number;
@@ -385,12 +388,12 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 		dropUnread(ids) {
 			lifetimes.dropUnread(ids);
 		},
-		silence() {
+		silence(reason) {
 			silenced = true;
 			lifetimes.end();
 			pending = [];
 			gestures.silence();
-			calls.silence();
+			calls.silence(reason);
 		},
 		sizes() {
 			let bindings = 0;

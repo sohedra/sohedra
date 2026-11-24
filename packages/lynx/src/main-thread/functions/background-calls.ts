@@ -34,8 +34,11 @@ interface BackgroundCalls {
 	endFirstFrame(adopted: boolean): void;
 	/** Sends a call the log held, now that hydration named its function, or could not. */
 	sendHeld(held: HeldCall): void;
-	/** The page reloads or ends: every call waiting rejects, and so does every call after. */
-	silence(): void;
+	/**
+	 * The page reloads, ends or did not start: every call waiting rejects, and so does every call
+	 * after, with `reason` when one is given.
+	 */
+	silence(reason?: Error): void;
 }
 
 /** `promise`, marked handled: a call nobody awaits does not report its rejection a second time. */
@@ -73,6 +76,8 @@ export function createBackgroundCalls(options: {
 	let firstFrame: unknown[] | null = null;
 	let hydrated = false;
 	let silenced = false;
+	/** Why a call of a silenced page rejects. */
+	let ended: () => Error = gone;
 	/** The first frame's calls with no answer: reported once, with how many came in that task. */
 	let unansweredCount = 0;
 	let unansweredReported = false;
@@ -131,11 +136,10 @@ export function createBackgroundCalls(options: {
 				return handled(Promise.reject(error));
 			}
 			const id = handle[HANDLE_FIELDS.id];
-			if (id === undefined)
-				return handled(Promise.reject(hydrated && !silenced ? unanswered() : gone()));
+			if (silenced) return handled(Promise.reject(ended()));
+			if (id === undefined) return handled(Promise.reject(hydrated ? unanswered() : gone()));
 			const context = handle[HANDLE_FIELDS.context];
-			if (silenced || context === undefined || !lifetimes.has(context))
-				return handled(Promise.reject(gone()));
+			if (context === undefined || !lifetimes.has(context)) return handled(Promise.reject(gone()));
 			return handled(call(id, context, params));
 		},
 		reply(id, result) {
@@ -160,18 +164,20 @@ export function createBackgroundCalls(options: {
 		sendHeld({ call: held }) {
 			const id = held.handle[HANDLE_FIELDS.id];
 			const context = held.handle[HANDLE_FIELDS.context];
-			if (silenced || (context !== undefined && !lifetimes.has(context))) held.reject(gone());
+			if (silenced) held.reject(ended());
+			else if (context !== undefined && !lifetimes.has(context)) held.reject(gone());
 			else if (id === undefined || context === undefined) held.reject(unanswered());
 			else call(id, context, held.params).then(held.resolve, held.reject);
 		},
-		silence() {
+		silence(reason) {
 			silenced = true;
-			const ended = [...waiting.values()];
+			if (reason) ended = () => reason;
+			const left = [...waiting.values()];
 			waiting.clear();
-			for (const entry of ended) entry.reject(gone());
+			for (const entry of left) entry.reject(ended());
 			const log = firstFrame;
 			firstFrame = null;
-			for (const entry of log ?? []) if (isHeldCall(entry)) entry.call.reject(gone());
+			for (const entry of log ?? []) if (isHeldCall(entry)) entry.call.reject(ended());
 		},
 	};
 }

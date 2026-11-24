@@ -27,7 +27,7 @@ import { wireError } from "./catalogue.ts";
 import type { Thread } from "./names.ts";
 
 /** The version of the format. A change that a thread of an older build would misread bumps it. */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /** The stamp on every message. */
 export interface Stamp {

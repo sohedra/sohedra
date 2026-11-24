@@ -9,7 +9,9 @@
 //   - a function is the name alone, `name`, which Svelte writes for nothing: the parser binds it as
 //     an event when the name is one (`bindtap`, or `ontap` from a spread), and drops it otherwise;
 //   - a spread keeps its names' case, as the background's renderer does;
-//   - a component given `--x` props is wrapped in a `<view>`, as on the background.
+//   - a component given `--x` props is wrapped in a `<view>`, as on the background;
+//   - an `{#await}` given a promise opens with a mark of its own, `<!--[await-->`: the background
+//     draws its content only after the page rendered (`AWAIT_OPEN`).
 //
 // And `$props.id()` inside a branch only one thread renders takes the branch's own id, as on the
 // background (./thread-branches.ts); and the lists count their initial rows (./initial-rows.ts).
@@ -55,6 +57,12 @@ interface ServerInternals {
 		dynamic?: boolean,
 	): void;
 	props_id(renderer: RenderingRenderer): string;
+	await(
+		renderer: Renderer,
+		promise: unknown,
+		pending: (() => void) | null,
+		then: ((value: unknown) => void) | null,
+	): void;
 }
 
 // Boundary: Svelte's server runtime, typed by the interface above.
@@ -147,6 +155,35 @@ export function css_props(
 	};
 	svelte.css_props(wrapper, isHtml, props, component, dynamic);
 }
+
+/** Svelte's marker that opens a block. */
+const BLOCK_OPEN = "<!--[-->";
+
+/**
+ * How the first frame opens an `{#await}` given a promise. Svelte's server draws its pending branch
+ * in place; its client, on the background, draws a branch only in a task it queues as it mounts, so
+ * the branch is not among the rendered items, and the first patch brings it after them. Svelte's
+ * own opening, `<!--[-->`, is that of a component too, whose content is the same on both threads;
+ * the first frame's parser keeps this one as a block, which hydration may find empty.
+ */
+const AWAIT_OPEN = "<!--[await-->";
+
+/** An `{#await}` block: Svelte's, opened with `AWAIT_OPEN` when it is given a promise. */
+function awaitBlock(
+	renderer: Renderer,
+	promise: unknown,
+	pending: (() => void) | null,
+	then: ((value: unknown) => void) | null,
+): void {
+	// Svelte opens the block through the renderer it is given; the branches write through the one
+	// they close over.
+	const opening: Renderer = {
+		push: (html) => renderer.push(html === BLOCK_OPEN ? AWAIT_OPEN : html),
+	};
+	svelte.await(opening, promise, pending, then);
+}
+
+export { awaitBlock as await };
 
 /** The ids each render's branches that only one thread renders have given. */
 const branchCounts = new WeakMap<object, BranchCounts>();

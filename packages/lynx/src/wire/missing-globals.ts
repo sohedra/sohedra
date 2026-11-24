@@ -145,7 +145,10 @@ const NOT_ON_LYNX: Readonly<Record<string, string>> = {
 		"Keep data with a native storage module of the host app: Lynx has no storage in JavaScript.",
 };
 
-/** The global an engine's `ReferenceError` says is missing: V8's and PrimJS's, and JavaScriptCore's. */
+/**
+ * The global an engine's `ReferenceError` says is missing: V8's and PrimJS's, and JavaScriptCore's,
+ * read from the message's first line (Svelte's development build adds lines under it).
+ */
 const NOT_DEFINED = /^(?:([\w$]+) is not defined|Can't find variable: ([\w$]+))$/;
 
 /** Whether `table` has `name` as its own key, not one of `Object.prototype`'s. */
@@ -214,7 +217,7 @@ export function engineHas(name: string, thread: Thread): boolean {
  */
 export function withMissingGlobalHint(error: unknown, thread: Thread): unknown {
 	if (!(error instanceof ReferenceError)) return error;
-	const match = NOT_DEFINED.exec(error.message);
+	const match = NOT_DEFINED.exec(error.message.split("\n", 1)[0]!);
 	const name = match?.[1] ?? match?.[2];
 	if (name === undefined) return error;
 	const report = missingGlobal(name, thread);

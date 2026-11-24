@@ -363,14 +363,50 @@ export const checks: Checks = {
 			// The first branch of `{#if}`, `{#each}`, `{#key}` and `<svelte:boundary>` is drawn by the
 			// time `mount` returns, and no effect has run.
 			expect(runs.toSorted()).toEqual(["boundary", "each 1", "each 2", "if", "key"]);
-			// `{#await}` draws its pending branch only in a microtask it queues (a flush runs it),
-			// which hydration does not handle yet: when this changes, such a first frame can be adopted.
+			// `{#await}` draws its pending branch only in a task it queues, which a flush runs before
+			// the effects: it comes after the rendered items, and the first frame marks the block.
 			client.flushSync();
 			expect(runs.slice(5).toSorted()).toEqual(["attach", "effect", "pending"]);
 			await client.unmount(app);
 		} finally {
 			delete (globalThis as { __mountRuns?: string[] }).__mountRuns;
 		}
+	},
+
+	"server-await-block": async () => {
+		// Boundary: Svelte's internal modules have no types.
+		const server = (await importSvelte("src/internal/server/index.js")) as unknown as {
+			await(
+				renderer: { push(html: string): void },
+				promise: unknown,
+				pending: (() => void) | null,
+				then: ((value: unknown) => void) | null,
+			): void;
+		};
+		const pushed: string[] = [];
+		const drawn: string[] = [];
+		const renderer = { push: (html: string) => void pushed.push(html) };
+		server.await(
+			renderer,
+			new Promise(() => {}),
+			() => void drawn.push("pending"),
+			() => void drawn.push("then"),
+		);
+		server.await(
+			renderer,
+			"value",
+			() => void drawn.push("pending"),
+			(value) => {
+				drawn.push(`then ${String(value)}`);
+			},
+		);
+		expect(pushed).toEqual(["<!--[-->", "<!--[!-->"]);
+		expect(drawn).toEqual(["pending", "then value"]);
+		// The compiled component's branches write through its own renderer, not the one `await` is
+		// given.
+		const compiled = compileServer("{#await p}<text>a</text>{:then v}<text>{v}</text>{/await}");
+		expect(compiled).toMatch(/\$\.await\(\s*\$\$renderer,/);
+		expect(compiled).toMatch(/\(\) => \{\s*\$\$renderer\.push\(`<text>a<\/text>`\);/);
 	},
 
 	"unmount-synchronous": async () => {

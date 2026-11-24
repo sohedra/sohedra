@@ -95,6 +95,11 @@ export interface Channel {
 	 */
 	markRendered(): void;
 	/**
+	 * The page's root threw as it mounted: what it queued is dropped, and one patch says the page did
+	 * not start.
+	 */
+	notStarted(): void;
+	/**
 	 * Writes the whole page again, after what is queued: a patch with a rewrite item for the page's
 	 * root, then what `write` makes, from nothing.
 	 */
@@ -118,7 +123,7 @@ export interface Channel {
 	close(): void;
 	/**
 	 * Answers a main-thread function's call of a background function, in the next patch, after
-	 * what is queued. A result that cannot be sent answers with that error instead.
+	 * what is queued. A result that cannot be sent is reported, and answers with that error instead.
 	 */
 	reply(id: number, result: Result): void;
 	/** The background function `fn` that the main-thread function context `context` holds. */
@@ -161,6 +166,7 @@ export function openChannel(options: ChannelOptions): Channel {
 	let items: PatchItem[] = [];
 	let dataUpdated = false;
 	let rendered: number | undefined;
+	let notStarted = false;
 	let scheduled = false;
 	let nextCall = 1;
 	let open = true;
@@ -245,10 +251,11 @@ export function openChannel(options: ChannelOptions): Channel {
 		if (items.length === 0 && !dataUpdated && !always) return;
 		const given: number[] = [];
 		for (const item of items) if (item[0] === "ops") giveContexts(item[1], given);
-		const patch = { generation: currentGeneration(), items, dataUpdated, rendered };
+		const patch = { generation: currentGeneration(), items, dataUpdated, rendered, notStarted };
 		items = [];
 		dataUpdated = false;
 		rendered = undefined;
+		notStarted = false;
 		let params: PatchParams;
 		try {
 			params = encodePatch(patch);
@@ -381,6 +388,12 @@ export function openChannel(options: ChannelOptions): Channel {
 			takeOps();
 			rendered = items.length;
 		},
+		notStarted() {
+			if (!open) return;
+			abandon();
+			notStarted = true;
+			send(true);
+		},
 		rewritePage(write) {
 			if (!open) return;
 			send();
@@ -426,6 +439,8 @@ export function openChannel(options: ChannelOptions): Channel {
 			try {
 				text = encodeResult(result);
 			} catch (error) {
+				// As a throw of the function is: reported here, where it was written, then answered.
+				reportError(error);
 				text = encodeResult({ ok: false, error: encodeError(error) });
 			}
 			takeOps();

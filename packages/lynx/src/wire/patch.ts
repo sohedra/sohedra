@@ -114,6 +114,12 @@ export interface Patch extends Stamp {
 	 * frame from these items.
 	 */
 	rendered?: number;
+	/**
+	 * The page did not start: its root component threw as the background mounted it, and the
+	 * background has no page to send. The patch has no items. The main thread keeps what it shows,
+	 * and applies no patch of the page after it.
+	 */
+	notStarted?: true;
 }
 
 /** A patch as the background writes it: the generation its content belongs to, and its items. */
@@ -124,6 +130,8 @@ interface PatchOf {
 	dataUpdated?: boolean;
 	/** How many of the first items hold the page as it rendered (see `Patch`). */
 	rendered?: number | undefined;
+	/** Whether the page did not start (see `Patch`). */
+	notStarted?: boolean;
 }
 
 /** The params `callLepusMethod` passes the main thread's patch function: the patch as text. */
@@ -132,10 +140,17 @@ export interface PatchParams {
 }
 
 /** A patch as the params of the main thread's patch function, stamped with the format's version. */
-export function encodePatch({ generation, items, dataUpdated, rendered }: PatchOf): PatchParams {
+export function encodePatch({
+	generation,
+	items,
+	dataUpdated,
+	rendered,
+	notStarted,
+}: PatchOf): PatchParams {
 	const patch: Patch = { v: PROTOCOL_VERSION, generation, items };
 	if (dataUpdated === true) patch.dataUpdated = true;
 	if (rendered !== undefined) patch.rendered = rendered;
+	if (notStarted === true) patch.notStarted = true;
 	return { data: toText(patch, "main-thread") };
 }
 

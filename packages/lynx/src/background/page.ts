@@ -22,7 +22,15 @@ import {
 	startPropsIds,
 	withRenderer,
 } from "../svelte/runtime/index.ts";
-import { decodeError, encodeError, hearErrorEvents, ROOT_ID, wireError } from "../wire/index.ts";
+import {
+	asError,
+	decodeError,
+	encodeError,
+	hearErrorEvents,
+	ROOT_ID,
+	wireError,
+	withMissingGlobalHint,
+} from "../wire/index.ts";
 import type {
 	CallMessage,
 	ErrorMessage,
@@ -96,9 +104,11 @@ const failure = (error: unknown): Result => ({ ok: false, error: encodeError(err
  * Mounts `App` as the page of this Lynx view: the page's entry calls it once, on both threads. On
  * the main thread it draws the first frame from the page's data; on the background it mounts the
  * component over that frame, then answers the page's events, and mounts it again when the host
- * reloads the page. An error while the page starts is reported into Lynx, not thrown. A component
- * with required props needs `props`. A second call while the page runs is reported, and does
- * nothing.
+ * reloads the page. An error while the page starts is reported into Lynx, not thrown. When the
+ * root component, or `props`, throws as the page starts, the page did not start
+ * (`page_not_started`): its first frame stays on the screen, answering nothing, until a reload. A
+ * component with required props needs `props`. A second call while the page runs is reported, and
+ * does nothing.
  *
  * ```ts
  * import { mountPage } from "@sohedra/lynx";
@@ -337,6 +347,8 @@ export function mountPage<Props extends Bag>(
 		// renders, and the new app reads it as it starts.
 		initDataChanged();
 		runAll([teardown, () => channel.abandon()]);
+		// The root outlives the reload; a listener added outside the app's effects is bound again.
+		pageRenderer.writeRootEvents();
 		try {
 			render(false);
 		} finally {
@@ -429,10 +441,37 @@ export function mountPage<Props extends Bag>(
 		root = pageRenderer.attachRoot();
 		anchor = pageRenderer.createComment("");
 		pageRenderer.insert(root, anchor, null);
-		render(true);
+		try {
+			render(true);
+		} catch (error) {
+			// An effect's throw comes once the page rendered, and its patch is on its way.
+			if (instance !== undefined) throw error;
+			reportNotStarted(error);
+			channel.notStarted();
+			return;
+		}
 		// Even when the page shows nothing: the main thread keeps a first frame until this patch.
 		channel.send(true);
 	} catch (error) {
 		reportError(error);
 	}
+}
+
+/** A line of a stack that names a frame: V8's and PrimJS's `    at …`, JavaScriptCore's `fn@file:1:2`. */
+const FRAME = /^\s+at |@.*:\d+:\d+$/;
+
+/**
+ * The background threw as it mounted the root at the page's start, so there is no page: one error
+ * says so, with the throw (named by the missing-global hint, when it is one) as its cause, and its
+ * frames: LogBox shows the error's own stack, not its cause's.
+ */
+function reportNotStarted(error: unknown): void {
+	const cause = asError(withMissingGlobalHint(error, "background"));
+	const thrown = wireError({ code: "page_not_started", details: { reason: cause.message } });
+	const frames = cause.stack?.split("\n").filter((line) => FRAME.test(line));
+	if (frames?.length)
+		thrown.stack = `Error: ${thrown.message.split("\n", 1)[0]}\n${frames.join("\n")}`;
+	report(Object.assign(thrown, { cause }), {
+		component: componentOfError(asError(error).message, {}),
+	});
 }

@@ -1,6 +1,7 @@
 <!--
 	Calls between the threads: main-thread functions the background runs, and background functions
-	main-thread functions run, returning a value, a thenable, or throwing.
+	main-thread functions run, returning a value, a thenable, a value that cannot be copied, or
+	throwing.
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground, runOnMainThread } from "@sohedra/lynx";
@@ -83,6 +84,27 @@
 		return 1;
 	}
 
+	function bigAnswer() {
+		return 10n;
+	}
+
+	function bigResult() {
+		"main thread";
+		return 10n;
+	}
+
+	function onBigIgnored() {
+		"main thread";
+		void runOnBackground(bigAnswer)();
+	}
+
+	function onBigCaught() {
+		"main thread";
+		runOnBackground(bigAnswer)().catch((error: { code?: string }) =>
+			runOnBackground(note)("caught", error.code),
+		);
+	}
+
 	api["add"] = (a: number, b: number) => runOnMainThread(add)(a, b);
 	api["fail"] = () => runOnMainThread(fail)();
 	api["wait"] = (value: string) => runOnMainThread(wait)(value);
@@ -94,9 +116,12 @@
 	};
 	// An argument that cannot be sent: the call rejects, and keeps nothing on the background.
 	api["big"] = () => runOnMainThread(callsBack)(10n);
+	api["bigResult"] = () => runOnMainThread(bigResult)();
 </script>
 
 <view class="counter" data-n={n} main-thread:ref={counter}></view>
 <view class="ask" main-thread:ontap={onAsk}></view>
 <view class="ignore" main-thread:ontap={onIgnore}></view>
 <view class="nested" main-thread:ontap={onNested}></view>
+<view class="big-ignored" main-thread:ontap={onBigIgnored}></view>
+<view class="big-caught" main-thread:ontap={onBigCaught}></view>
