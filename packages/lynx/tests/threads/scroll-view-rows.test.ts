@@ -21,7 +21,7 @@ describe("a <scroll-view> with many rows", () => {
 		const [warning, ...rest] = rowWarnings(page);
 		expect(rest).toEqual([]);
 		expect(warning!.message).toMatch(
-			/^A <scroll-view> holds more than 200 elements directly, and it draws every one of them in the first frame.*\n.*ManyScrollRows\.svelte:20:\d+/,
+			/^A <scroll-view> holds more than 200 elements directly, and it draws every one of them at once.*\n.*ManyScrollRows\.svelte:20:\d+/,
 		);
 		expect(warning!.message).toContain("<list>");
 	});

@@ -52,8 +52,9 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		name: "TextEncoder",
 		module: "@sohedra/lynx-polyfill/encoding",
 		baseline: true,
+		lacks: "engine",
 	},
-	global_not_in_lynx: {
+	global_no_fill: {
 		name: "Intl",
 		instead:
 			"Format dates and numbers with a library in plain JavaScript, such as date-fns or dayjs.",
@@ -63,8 +64,9 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		instead:
 			"Reach an element with `{@attach}` on the background, or with `main-thread:ref` in a main-thread function, and use its methods.",
 	},
-	background_api_in_main_thread_function: { api: "NativeModules" },
+	background_api_on_main_thread: { api: "NativeModules", where: "function" },
 	main_thread_api_in_background: { api: "__CreateView" },
+	lynx_member_missing: { api: "lynx.querySelector" },
 	css_selector_unsupported: { selector: "a[href] > .b", part: "the attribute selector `[href]`" },
 	main_thread_handler_in_thread_branch: {
 		attribute: "main-thread:ontap",

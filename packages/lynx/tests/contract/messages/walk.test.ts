@@ -175,6 +175,7 @@ const NAMES: Record<string, Resolves> = {
 	"{#if BROWSER}": { kind: "Svelte's syntax, with BROWSER from esm-env" },
 	"{@attach}": { kind: "Svelte's syntax" },
 	"{#if}": { kind: "Svelte's syntax" },
+	"if (background)": { kind: "JavaScript's syntax, with background from @sohedra/lynx/env" },
 	"main-thread:ref": { kind: "an attribute of Lynx's elements, which the binding reads" },
 	"ontap={…}": { kind: "an event attribute of Lynx's elements" },
 	"item-key": { kind: "an attribute of Lynx's <list-item>" },

@@ -39,6 +39,12 @@ describe("a selector Lynx doesn't list", () => {
 		expect(warning!.message.split("\n")[0]).toContain("uses the `||` combinator");
 	});
 
+	it("warns at a nested rule's selector", async () => {
+		const [warning, ...rest] = await warnings(".a { color: red; &[data-on] { color: blue; } }");
+		expect(rest).toEqual([]);
+		expect(warning!.message.split("\n")[0]).toContain("uses the attribute selector `[data-on]`");
+	});
+
 	it("warns once per selector of a list, inside a media query too", async () => {
 		const found = await warnings(
 			".a, .b[x] { color: red; }\n@media (min-width: 1px) { .a:first-child { color: blue; } }",

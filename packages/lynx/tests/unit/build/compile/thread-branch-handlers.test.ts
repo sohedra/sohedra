@@ -56,6 +56,14 @@ describe("a main-thread handler in a thread branch", () => {
 		).toEqual([]);
 	});
 
+	it("is silenced by the comment above a multi-line element", async () => {
+		expect(
+			await warnings(
+				'{#if background}\n\t<!-- svelte-lynx-ignore main_thread_handler_in_thread_branch -->\n\t<view\n\t\tclass="row"\n\t\tmain-thread:ontap={tap}\n\t></view>\n{/if}',
+			),
+		).toEqual([]);
+	});
+
 	it("is development only, and silenced by the comment", async () => {
 		const markup = "{#if background}\n\t<view main-thread:ontap={tap}></view>\n{/if}";
 		expect(await warnings(markup, { development: false })).toEqual([]);

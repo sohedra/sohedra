@@ -48,7 +48,7 @@ describe("a global no fill gives", () => {
 		);
 		expect(text).toContain("util.ts:1:42");
 		expect(text).toContain("date-fns");
-		expect(codes(text)).toEqual(["global_not_in_lynx"]);
+		expect(codes(text)).toEqual(["global_no_fill"]);
 	});
 
 	it("is quiet behind a feature check, in an if or in a ternary", () => {
@@ -85,15 +85,13 @@ describe("a global no fill gives", () => {
 	});
 
 	it("is silenced on its line by the comment", () => {
-		expect(moduleError("// svelte-lynx-ignore global_not_in_lynx\nexport const c = crypto;")).toBe(
+		expect(moduleError("// svelte-lynx-ignore global_no_fill\nexport const c = crypto;")).toBe("");
+		expect(moduleError("export const c = crypto; /* svelte-lynx-ignore global_no_fill */")).toBe(
 			"",
 		);
 		expect(
-			moduleError("export const c = crypto; /* svelte-lynx-ignore global_not_in_lynx */"),
-		).toBe("");
-		expect(
 			codes(moduleError("// svelte-lynx-ignore dom_not_on_lynx\nexport const c = crypto;")),
-		).toEqual(["global_not_in_lynx"]);
+		).toEqual(["global_no_fill"]);
 	});
 });
 
@@ -117,9 +115,23 @@ describe("a global a fill gives", () => {
 		).toEqual(["@sohedra/lynx-polyfill/url-pattern"]);
 	});
 
-	it("is left alone where the background's engine has it, as lynx-core's URL", () => {
-		expect(moduleOf("export const u = new URL('https://a.b');").pending).toEqual([]);
-		expect(moduleOf("export const p = performance.now();").pending).toEqual([]);
+	it("is left alone in a function where the background's engine has it, as lynx-core's URL", () => {
+		expect(moduleOf("export const u = () => new URL('https://a.b');").pending).toEqual([]);
+		expect(moduleOf("export const p = () => performance.now();").pending).toEqual([]);
+	});
+
+	it("at the top level, waits on its fill where the main thread lacks it, for the first frame", () => {
+		const { pending } = moduleOf("export const u = new URL('https://a.b');");
+		expect(pending.map((fill) => fill.report.details.lacks)).toEqual(["main thread"]);
+		expect(pending[0]!.report.place?.where).toMatch(/util\.ts:1:22$/);
+		const both = moduleOf("export const e = new TextEncoder();").pending;
+		expect(both.map((fill) => fill.report.details.lacks)).toEqual(["engine"]);
+	});
+
+	it("at the top level, under a thread's flag, is judged on that thread only", () => {
+		const text =
+			'import { background } from "@sohedra/lynx/env";\nexport const u = background ? new URL("https://a.b") : undefined;';
+		expect(moduleOf(text).pending).toEqual([]);
 	});
 
 	it("in a main-thread function, waits on its fill where the main thread lacks it", () => {
@@ -195,9 +207,9 @@ describe("an API of the other thread", () => {
 			"export function onTap() {\n\t'main thread';\n\tNativeModules.bridge.call('x');\n\tlynx.getJSModule('GlobalEventEmitter');\n\tfetch('/x');\n}",
 		);
 		expect(codes(text)).toEqual([
-			"background_api_in_main_thread_function",
-			"background_api_in_main_thread_function",
-			"background_api_in_main_thread_function",
+			"background_api_on_main_thread",
+			"background_api_on_main_thread",
+			"background_api_on_main_thread",
 		]);
 		expect(text.split("\n")[0]).toBe(
 			"A main-thread function uses `NativeModules`, which Lynx has on the background thread only.",
@@ -210,7 +222,7 @@ describe("an API of the other thread", () => {
 		const text = moduleError(
 			"export function f() {\n\t'main thread';\n\treturn new ReadableStream();\n}",
 		);
-		expect(codes(text)).toEqual(["background_api_in_main_thread_function"]);
+		expect(codes(text)).toEqual(["background_api_on_main_thread"]);
 		expect(text).toContain("`ReadableStream`");
 	});
 
@@ -222,22 +234,28 @@ describe("an API of the other thread", () => {
 		).toBe("");
 	});
 
-	it("in background code, an element function or a main-thread member of lynx is an error", () => {
-		const text = moduleError(
-			"export const make = () => __CreateView(0);\nexport const find = () => lynx.querySelector('.a');",
-		);
-		expect(codes(text)).toEqual(["main_thread_api_in_background", "main_thread_api_in_background"]);
+	it("in background code, an element function is an error", () => {
+		const text = moduleError("export const make = () => __CreateView(0);");
+		expect(codes(text)).toEqual(["main_thread_api_in_background"]);
 		expect(text.split("\n")[0]).toBe(
 			"`__CreateView` is used outside a main-thread function, and Lynx has it on the main thread only.",
 		);
 	});
 
 	it("in a main-thread function, the main thread's API is fine", () => {
-		expect(
-			moduleError(
-				"export function f() {\n\t'main thread';\n\t__FlushElementTree();\n\tlynx.querySelector('.a');\n}",
-			),
-		).toBe("");
+		expect(moduleError("export function f() {\n\t'main thread';\n\t__FlushElementTree();\n}")).toBe(
+			"",
+		);
+	});
+
+	it("lynx.querySelector is an error on either thread: Svelte on Lynx has it on neither", () => {
+		const text = moduleError(
+			"export function f() {\n\t'main thread';\n\tlynx.querySelector('.a');\n}\nexport const g = () => lynx.querySelectorAll('.b');",
+		);
+		expect(codes(text)).toEqual(["lynx_member_missing", "lynx_member_missing"]);
+		expect(text.split("\n")[0]).toBe(
+			"`lynx.querySelector` doesn't exist on either thread in Svelte on Lynx, so this code throws where it runs.",
+		);
 	});
 
 	it("is left alone under a thread's flag, and the build's own constants are no API", () => {
@@ -247,7 +265,7 @@ describe("an API of the other thread", () => {
 		expect(moduleError("if (__DEV__ && __BACKGROUND__) console.log(1);")).toBe("");
 		expect(
 			moduleError(
-				'import { mainThread } from "@sohedra/lynx/env";\nif (mainThread) lynx.querySelector(".a");',
+				'import { mainThread } from "@sohedra/lynx/env";\nif (mainThread) __FlushElementTree();',
 			),
 		).toBe("");
 	});
@@ -264,7 +282,7 @@ describe("an API of the other thread", () => {
 		const text = await componentError(
 			"<view main-thread:ontap={() => { 'main thread'; NativeModules.x.y(); }}></view>",
 		);
-		expect(codes(text)).toEqual(["background_api_in_main_thread_function"]);
+		expect(codes(text)).toEqual(["background_api_on_main_thread"]);
 	});
 });
 
@@ -300,12 +318,12 @@ describe("a component's errors", () => {
 		const text = await componentError(
 			"<script>\n\tconst a = crypto;\n\tconst b = document;\n</script>",
 		);
-		expect(codes(text)).toEqual(["global_not_in_lynx", "dom_not_on_lynx"]);
+		expect(codes(text)).toEqual(["global_no_fill", "dom_not_on_lynx"]);
 	});
 
 	it("are not looked for without checks, as in a package or a test run", async () => {
 		const compiled = await component("<script>const a = document;</script>");
-		expect(compiled.fills).toEqual({ pending: [], imports: [] });
+		expect(compiled.fills).toEqual({ pending: [], imports: [], installs: [] });
 	});
 
 	it("give the reads that wait on a fill, and the fills the component imports", async () => {

@@ -137,6 +137,12 @@ describe("the app's code that fails on Lynx", () => {
 		expect(build.ok).toBe(true);
 	}, 120_000);
 
+	it("builds when the app installs the global itself", async () => {
+		build = await buildApp("broken", { entry: "./installed.ts" });
+		expect(build.error + build.messages).not.toContain("fill_not_imported");
+		expect(build.ok).toBe(true);
+	}, 120_000);
+
 	it("fails the build at the web's DOM in a module", async () => {
 		build = await buildApp("broken", { entry: "./dom.ts" });
 		expect(build.ok).toBe(false);
