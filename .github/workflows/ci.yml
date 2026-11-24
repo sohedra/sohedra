@@ -5,6 +5,8 @@
 # - checks: the five checks of CONTRIBUTING.md on Linux, macOS and Windows, with the repository's
 #   own Node.js (devEngines in package.json).
 # - generated: the generated pages, many more of them than a local run tries, on Linux.
+# - primjs: the polyfill folder's WPT and test262 suites on the PrimJS of each Lynx the binding
+#   supports, built from source with the phone's flags (packages/lynx/scripts/primjs/), on Linux.
 # - apps: @sohedra/lynx packed as it is published, installed into a fresh app and built and tested
 #   with both test presets (packages/lynx/scripts/consumer.ts): pnpm on each Node.js line, the other
 #   package managers on the newest, pnpm on Windows, and every range at its floor on the oldest
@@ -131,6 +133,31 @@ jobs:
           # push to main, so the pages tried grow over time. A failure prints its seed.
           GENERATED_SEED: ${{ github.event_name == 'push' && github.run_number || 2026 }}
 
+  primjs:
+    name: Polyfills on PrimJS
+    if: github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/setup@731dfb6463bbd11c11fd0ee11fe00ed0e36d48a1 # v3.2.0
+        with:
+          cache: true
+          require-lockfile: true
+      # The two PrimJS binaries, kept while their build script, shell and pinned commits stay the
+      # same: the build script makes them again when any of those changes. The runner's image has
+      # CMake and Clang.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            packages/lynx/.cache/primjs/*/primjs
+            packages/lynx/.cache/primjs/*/build-key
+          key: primjs-${{ runner.os }}-${{ hashFiles('packages/lynx/scripts/primjs/**') }}
+      - run: node packages/lynx/scripts/primjs/build.ts
+      - run: pnpm -F @sohedra/lynx test:primjs
+
   apps:
     name:
       App with ${{ matrix.manager }}, Node.js ${{ matrix.node }} (${{ matrix.versions }}${{
@@ -191,7 +218,7 @@ jobs:
   ci-passed:
     name: CI passed
     if: always()
-    needs: [fast, checks, generated, apps]
+    needs: [fast, checks, generated, primjs, apps]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
