@@ -10,6 +10,8 @@
 
 import type { Scope } from "../globals.ts";
 import { installLazy, named } from "../install.ts";
+import { record } from "./record.ts";
+import type { Loaded } from "./record.ts";
 import type { BlobClass, FileClass, FormDataClass, TextDecoderClass } from "./standard-classes.ts";
 
 /** @workaround web-form-data kind=lynx-gap delete-when="Lynx's background thread has a global FormData" */
@@ -195,7 +197,7 @@ export function multipartBoundary(): string {
  * HTML's multipart/form-data encoding of `form`, between lines of `boundary`: the body's bytes. Its
  * `Content-Type` is `multipart/form-data; boundary=${boundary}`.
  */
-export async function encodeMultipart(form: FormData, boundary: string): Promise<Uint8Array> {
+export async function encodeMultipart(form: FormData, boundary: string): Promise<Loaded> {
 	const chunks: Uint8Array[] = [];
 	for (const [name, value] of form) {
 		const disposition = `--${boundary}\r\nContent-Disposition: form-data; name="${escapeName(crlf(name))}"`;
@@ -210,14 +212,15 @@ export async function encodeMultipart(form: FormData, boundary: string): Promise
 			utf8("\r\n"),
 		);
 	}
-	chunks.push(utf8(`--${boundary}--\r\n`));
+	// A form without entries is an empty body (Fetch § 5.1 "extract a body").
+	if (chunks.length > 0) chunks.push(utf8(`--${boundary}--\r\n`));
 	const bytes = new Uint8Array(chunks.reduce((size, chunk) => size + chunk.length, 0));
 	let at = 0;
 	for (const chunk of chunks) {
 		bytes.set(chunk, at);
 		at += chunk.length;
 	}
-	return bytes;
+	return record({ bytes });
 }
 
 /** How much of an untrusted multipart body `decodeMultipart` reads before it refuses it. */

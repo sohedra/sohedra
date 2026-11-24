@@ -1555,25 +1555,6 @@
 				]
 			},
 			{
-				"note": "Open in the fetch fill (own code): clone() tees the body's stream without copying each chunk for the clone, as Fetch's tee does with StructuredClone.",
-				"threads": ["background"],
-				"expected": [
-					"Check response clone use structureClone for teed ReadableStreams (ArrayBufferchunk)",
-					"Check response clone use structureClone for teed ReadableStreams (BigInt64Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (BigUint64Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (DataViewchunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Float32Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Float64Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Int16Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Int32Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Int8Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Uint16Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Uint32Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Uint8Arraychunk)",
-					"Check response clone use structureClone for teed ReadableStreams (Uint8ClampedArraychunk)"
-				]
-			},
-			{
 				"note": "PrimJS has no Float16Array, and core-js (the float16 fill) gives only Math.f16round and DataView's methods.",
 				"threads": ["background"],
 				"expected": [
@@ -1582,27 +1563,11 @@
 			}
 		]
 	},
-	"response/response-consume-empty.any.js": {
-		"fail": {
-			"note": "Open in the fetch fill (own code): an empty FormData body is written as a multipart end line, where Fetch now gives an empty body.",
-			"threads": ["background"],
-			"expected": ["Consume empty FormData response body as text"]
-		}
-	},
 	"response/response-consume-stream.any.js": {
 		"fail": {
 			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
 			"threads": ["background"],
 			"expected": ["Getting a redirect Response stream"]
-		}
-	},
-	"response/response-from-stream.any.js": {
-		"fail": {
-			"note": "Open in the fetch fill (own code): a Response made from a stream someone has read doesn't refuse it: the fill can't see a stream's disturbed state.",
-			"threads": ["background"],
-			"expected": [
-				"Constructing a Response with a stream on which read() and releaseLock() are called"
-			]
 		}
 	},
 	"response/response-headers-guard.any.js": {
@@ -1661,63 +1626,14 @@
 		}
 	},
 	"response/response-stream-disturbed-5.any.js": {
-		"fail": [
-			{
-				"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
-				"threads": ["background"],
-				"expected": [
-					"Getting a body reader after consuming as arrayBuffer (body source: fetch)",
-					"Getting a body reader after consuming as blob (body source: fetch)",
-					"Getting a body reader after consuming as json (body source: fetch)",
-					"Getting a body reader after consuming as text (body source: fetch)"
-				]
-			},
-			{
-				"note": "Open in the fetch fill (own code): the fill can't see a body stream's disturbed state when someone else reads, cancels or pipes it, so bodyUsed stays false.",
-				"threads": ["background"],
-				"expected": [
-					"Getting a body reader after consuming as arrayBuffer (body source: string)",
-					"Getting a body reader after consuming as blob (body source: string)",
-					"Getting a body reader after consuming as json (body source: string)",
-					"Getting a body reader after consuming as text (body source: string)"
-				]
-			}
-		]
-	},
-	"response/response-stream-disturbed-6.any.js": {
 		"fail": {
-			"note": "Open in the fetch fill (own code): the fill can't see a body stream's disturbed state when someone else reads, cancels or pipes it, so bodyUsed stays false.",
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
 			"threads": ["background"],
 			"expected": [
-				"A closed stream on which read() has been called",
-				"A non-closed stream on which cancel() has been called",
-				"A non-closed stream on which read() has been called",
-				"An errored stream on which cancel() has been called",
-				"An errored stream on which read() has been called"
-			]
-		}
-	},
-	"response/response-stream-disturbed-by-pipe.any.js": {
-		"fail": {
-			"note": "Open in the fetch fill (own code): the fill can't see a body stream's disturbed state when someone else reads, cancels or pipes it, so bodyUsed stays false.",
-			"threads": ["background"],
-			"expected": [
-				"using pipeThrough on Response body should disturb it synchronously",
-				"using pipeTo on Response body should disturb it synchronously"
-			]
-		}
-	},
-	"response/response-stream-with-broken-then.any.js": {
-		"fail": {
-			"note": "Open in the fetch fill (own code): reading a body awaits plain objects, so a page's Object.prototype.then can step in.",
-			"threads": ["background"],
-			"expected": [
-				"Attempt to inject 8.2 via Object.prototype.then.",
-				"Attempt to inject undefined via Object.prototype.then.",
-				"Attempt to inject value: undefined via Object.prototype.then.",
-				"Attempt to inject {done: false, value: bye} via Object.prototype.then.",
-				"intercepting arraybuffer to body readable stream conversion via Object.prototype.then should not be possible",
-				"intercepting arraybuffer to text conversion via Object.prototype.then should not be possible"
+				"Getting a body reader after consuming as arrayBuffer (body source: fetch)",
+				"Getting a body reader after consuming as blob (body source: fetch)",
+				"Getting a body reader after consuming as json (body source: fetch)",
+				"Getting a body reader after consuming as text (body source: fetch)"
 			]
 		}
 	}

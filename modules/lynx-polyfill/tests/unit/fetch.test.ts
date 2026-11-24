@@ -6,6 +6,7 @@
 import { describe, expect, it } from "@rstest/core";
 import fc from "fast-check";
 
+import * as vendoredStreams from "../../src/fills/vendor/streams.js";
 import { createAbort } from "../../src/fills/web/abort.ts";
 import { createBlob } from "../../src/fills/web/blob.ts";
 import { createFetch, fillFetch, fillMainThreadFetch } from "../../src/fills/web/fetch.ts";
@@ -16,10 +17,16 @@ import { coreLynx, CoreHeaders, CoreRequest, CoreResponse } from "./lynx-core-fe
  * A background's global object as lynx-core leaves it, with the folder's `Blob`, `File`, `FormData`
  * and `AbortController`, and Node's for the rest.
  */
-function background(options: { streaming?: boolean } = {}) {
+function background(options: { streaming?: boolean; streams?: "node" | "fill" } = {}) {
+	const streams =
+		options.streams === "fill"
+			? vendoredStreams
+			: { ReadableStream, WritableStream, TransformStream };
 	const scope: Record<string, unknown> = {
-		ReadableStream,
-		TransformStream,
+		ReadableStream: streams.ReadableStream,
+		WritableStream: streams.WritableStream,
+		TransformStream: streams.TransformStream,
+		structuredClone,
 		TextEncoder,
 		TextDecoder,
 		URL,
@@ -405,6 +412,133 @@ describe("Response", () => {
 		void streamed.body;
 		const branch = streamed.clone();
 		expect([await streamed.text(), await branch.text()]).toEqual(["tee", "tee"]);
+	});
+});
+
+describe("Response's body, as Fetch reads and tees it", () => {
+	it("is empty for an empty FormData, which reads back as an empty form", async () => {
+		const { Response: Fill, FormData: FormDataFill } = background();
+		expect(await new Fill(new FormDataFill()).text()).toBe("");
+		expect([...(await new Fill(new FormDataFill()).formData())]).toEqual([]);
+	});
+
+	it("copies each chunk for a clone, as Fetch's tee does with StructuredClone", async () => {
+		const { Response: Fill } = background();
+		const chunks = [
+			new ArrayBuffer(4),
+			new Uint8Array([1, 2, 3]),
+			new Int16Array([1, -1]),
+			new DataView(new ArrayBuffer(8), 2, 4),
+		];
+		for (const chunk of chunks) {
+			const response = new Fill(
+				new ReadableStream({
+					start(controller) {
+						controller.enqueue(chunk);
+						controller.close();
+					},
+				}),
+			);
+			const clone = response.clone();
+			const original = (await response.body!.getReader().read()).value as unknown;
+			const copied = (await clone.body!.getReader().read()).value as ArrayBufferView;
+			expect(original).toBe(chunk);
+			expect(copied).not.toBe(chunk);
+			expect(Object.getPrototypeOf(copied)).toBe(Object.getPrototypeOf(chunk));
+			if (ArrayBuffer.isView(chunk))
+				expect([copied.byteOffset, copied.byteLength]).toEqual([
+					chunk.byteOffset,
+					chunk.byteLength,
+				]);
+		}
+	});
+
+	it("gives the stream it was made from as its body", () => {
+		const { Response: Fill } = background();
+		const stream = new ReadableStream();
+		expect(new Fill(stream).body).toBe(stream);
+	});
+
+	it("is used once someone else reads, cancels or pipes its stream", async () => {
+		const { Response: Fill, scope } = background({ streams: "fill" });
+		const Stream = scope["ReadableStream"] as typeof ReadableStream;
+		const Writable = scope["WritableStream"] as typeof WritableStream;
+		const read = new Fill(new Stream());
+		const reader = read.body!.getReader();
+		expect(read.bodyUsed).toBe(false);
+		void reader.read();
+		expect(read.bodyUsed).toBe(true);
+		const cancelled = new Fill(new Stream());
+		void cancelled.body!.getReader().cancel();
+		expect(cancelled.bodyUsed).toBe(true);
+		const piped = new Fill(new Stream());
+		void piped.body!.pipeTo(new Writable({}, { highWaterMark: 0 }));
+		expect(piped.bodyUsed).toBe(true);
+		const consumed = new Fill("text");
+		void consumed.text();
+		expect(thrown(() => consumed.body!.getReader())).toBeInstanceOf(TypeError);
+	});
+
+	it("can't be made from a stream someone has read", async () => {
+		const { Response: Fill, scope } = background({ streams: "fill" });
+		const Stream = scope["ReadableStream"] as typeof ReadableStream;
+		const stream = new Stream({ pull: (controller) => controller.enqueue(new Uint8Array()) });
+		const reader = stream.getReader();
+		await reader.read();
+		reader.releaseLock();
+		expect(thrown(() => new Fill(stream))).toBeInstanceOf(TypeError);
+	});
+
+	it("is read whole without a page's Object.prototype.then stepping in", async () => {
+		const { Response: Fill, scope } = background({ streams: "fill" });
+		const Stream = scope["ReadableStream"] as typeof ReadableStream;
+		const Writable = scope["WritableStream"] as typeof WritableStream;
+		const hello = new TextEncoder().encode("hello");
+		const inject = (value: unknown) => {
+			// oxlint-disable-next-line unicorn/no-thenable -- a page's polluted then is what this checks
+			Object.defineProperty(Object.prototype, "then", {
+				configurable: true,
+				writable: true,
+				value(onFulfilled: (value: unknown) => void) {
+					delete (Object.prototype as { then?: unknown }).then;
+					onFulfilled(value);
+				},
+			});
+		};
+		try {
+			for (const value of [
+				{ done: false, value: new TextEncoder().encode("bye") },
+				undefined,
+				8.2,
+			]) {
+				const streamed = new Fill(
+					new Stream({
+						start(controller) {
+							controller.enqueue(hello);
+							controller.close();
+						},
+					}),
+				);
+				inject(value);
+				expect(await streamed.text()).toBe("hello");
+				const given = new Fill(hello);
+				inject(value);
+				expect(await given.text()).toBe("hello");
+			}
+			const written: number[] = [];
+			const piped = new Fill(new Uint8Array([1, 2, 3]));
+			inject({ done: false, value: new Uint8Array([4, 5, 6]) });
+			await piped.body!.pipeTo(
+				new Writable({
+					write(chunk: Uint8Array) {
+						written.push(...chunk);
+					},
+				}),
+			);
+			expect(written).toEqual([1, 2, 3]);
+		} finally {
+			delete (Object.prototype as { then?: unknown }).then;
+		}
 	});
 });
 

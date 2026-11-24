@@ -33,6 +33,7 @@ export type TextDecoderStreamClass = typeof TextDecoderStream;
 export type TextEncoderClass = typeof TextEncoder;
 export type TextEncoderStreamClass = typeof TextEncoderStream;
 export type TransformStreamClass = typeof TransformStream;
+export type WritableStreamClass = typeof WritableStream;
 export type URLClass = typeof URL;
 export type URLPatternClass = typeof URLPattern;
 export type URLSearchParamsClass = typeof URLSearchParams;

@@ -39,7 +39,7 @@ describe("an experimental fill", () => {
 		expect((heard[0]!.error as Error & { code: string }).code).toBe("fill_experimental");
 	});
 
-	it("warns the first time fetch is called, not as it installs", async () => {
+	it("says nothing when fetch is called: fetch is stable", async () => {
 		const { fillBackground } = await import("../../src/fills/background.ts");
 		const heard = hearWarnings();
 		const scope: Record<string, unknown> = {};
@@ -53,16 +53,10 @@ describe("an experimental fill", () => {
 			timers: { setTimeout, clearTimeout, setInterval, clearInterval },
 			console: { log() {}, warn() {}, error() {} },
 		});
+		void (scope["fetch"] as (url: string) => Promise<unknown>)("https://a.example/").catch(
+			() => {},
+		);
 		expect(heard).toEqual([]);
-		void (scope["fetch"] as (url: string) => Promise<unknown>)("https://a.example/").catch(
-			() => {},
-		);
-		void (scope["fetch"] as (url: string) => Promise<unknown>)("https://a.example/").catch(
-			() => {},
-		);
-		expect(heard.map(({ error }) => error.message.split("\n")[0])).toEqual([
-			"`fetch` comes from the experimental fill of `@sohedra/lynx-polyfill/fetch`: it may change in any minor release, and not all of its web platform tests pass on Lynx yet.",
-		]);
 	});
 
 	it("says nothing in a production build", async () => {

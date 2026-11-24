@@ -19,12 +19,12 @@
 // with the first frame may make them) and `fetch` throws the folder's `fetch_on_main_thread`.
 
 import { polyfillError } from "../catalogue.ts";
-import { experimentalCall } from "../experimental.ts";
 import type { Scope, ThreadLynx } from "../globals.ts";
 import { holds, installEager, installLazy, named } from "../install.ts";
 import { Body, defineBodyMixin, extractBody, isReadableStream } from "./body.ts";
 import type { Puller } from "./body.ts";
 import { createHeaders, TOKEN } from "./headers.ts";
+import { record } from "./record.ts";
 import type {
 	AbortControllerClass,
 	AbortSignalClass,
@@ -43,9 +43,7 @@ export function fillFetch(scope: Scope, readLynx: () => ThreadLynx): void {
 	const made = createFetch(scope, readLynx, core);
 	for (const name of ["Headers", "Request", "Response"] as const)
 		installEager(scope, name, made[name], never);
-	// Experimental while some of its web platform tests fail on PrimJS (tests/primjs/wpt/status/
-	// fetch/api.json, the rows marked "Open").
-	installEager(scope, "fetch", experimentalCall(MODULE, "fetch", made.fetch), never);
+	installEager(scope, "fetch", made.fetch, never);
 }
 
 /** @workaround web-fetch-main-thread kind=lynx-limit delete-when="Lynx's main thread can fetch" */
@@ -56,9 +54,6 @@ export function fillMainThreadFetch(scope: Scope): void {
 		installLazy(scope, name, () => make()[name], isFunction);
 	installLazy(scope, "fetch", () => fetchOnMainThread, isFunction);
 }
-
-/** The import that installs this fill. */
-const MODULE = "@sohedra/lynx-polyfill/fetch";
 
 const never = (): boolean => false;
 const isFunction = (existing: unknown): boolean => typeof existing === "function";
@@ -137,7 +132,11 @@ function corePuller(stream: CoreStream): Puller & { abort(reason: unknown): void
 				held.read().then(
 					({ done, value }) => {
 						waiting = undefined;
-						resolve(done ? { done: true } : { done: false, value: new Uint8Array(value!) });
+						resolve(
+							done
+								? record({ done: true })
+								: record({ done: false, value: new Uint8Array(value!) }),
+						);
 					},
 					(error: unknown) => {
 						waiting = undefined;
@@ -564,7 +563,8 @@ export function createFetch(
 			statusText: `${made.statusText ?? ""}`,
 			headers: freeze(headers),
 			body: new Body(scope, {
-				load: async () => new Uint8Array((await made.arrayBuffer()) ?? new ArrayBuffer(0)),
+				load: async () =>
+					record({ bytes: new Uint8Array((await made.arrayBuffer()) ?? new ArrayBuffer(0)) }),
 			}),
 		};
 		return new ResponseFill();
@@ -582,7 +582,8 @@ export function createFetch(
 			const state = requestOf(request);
 			const { signal } = state;
 			if (signal?.aborted) return reject(signal.reason);
-			void (state.body ? state.body.bytes() : Promise.resolve(undefined)).then((bytes) => {
+			void (state.body ? state.body.bytes() : Promise.resolve(undefined)).then((loaded) => {
+				const bytes = loaded?.bytes;
 				if (signal?.aborted) return reject(signal.reason);
 				const headers: Record<string, string> = {};
 				for (const [name, value] of state.headers)

@@ -35,7 +35,7 @@ async function encode(
 ): Promise<{ bytes: Uint8Array; contentType: string }> {
 	const boundary = multipartBoundary();
 	return {
-		bytes: await encodeMultipart(form, boundary),
+		bytes: (await encodeMultipart(form, boundary)).bytes,
 		contentType: `multipart/form-data; boundary=${boundary}`,
 	};
 }
