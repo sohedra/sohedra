@@ -82,6 +82,8 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	script_syntax_error: { reason: string };
 	/** `regexp` is the expression as the code has it: a literal, or a `RegExp` call. */
 	regexp_refused: { regexp: string; syntax: RegExpSyntax };
+	/** `regexp`: a `RegExp` call, as the loaders left it. */
+	regexp_refused_call: { regexp: string; syntax: RegExpSyntax };
 	event_attribute_renamed: { attribute: string; replacement: string; spelling: string };
 	global_event_attribute: { attribute: string; event: string };
 	list_item_without_key: Plain;
@@ -245,6 +247,13 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 			`The regular expression \`${regexp}\` uses ${syntaxOf(syntax).what}, which Lynx's engine does not have: the thread's whole script would fail to load.`,
 		fix: ({ syntax }) => syntaxOf(syntax).instead,
 		docs: "regexp_refused",
+	},
+	regexp_refused_call: {
+		message: ({ regexp, syntax }) =>
+			`\`${regexp}\` makes a regular expression with ${syntaxOf(syntax).what}, which Lynx's engine does not have: the call throws a SyntaxError where it runs.`,
+		fix: ({ syntax }) =>
+			`If the code checks for it and catches the error, leave it. Otherwise: ${syntaxOf(syntax).instead}`,
+		docs: "regexp_refused_call",
 	},
 	event_attribute_renamed: {
 		message: ({ attribute, spelling }) =>

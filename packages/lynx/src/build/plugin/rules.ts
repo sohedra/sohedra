@@ -42,7 +42,7 @@ export function configureBuildRules(options: BuildRuleOptions): void {
 	keepSelectorListsApart(chain, CHAIN_ID);
 	splitSvelteRules({ ...options, swc, threads });
 	patchSvelteSource(chain);
-	chain.plugin(`${PACKAGE_NAME}:engine-regexps`).use(EngineRegExpsPlugin);
+	chain.plugin(`${PACKAGE_NAME}:engine-regexps`).use(EngineRegExpsPlugin, [{ development }]);
 	if (development) patchDevClientSource(chain);
 }
 

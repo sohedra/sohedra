@@ -125,7 +125,7 @@ changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed
 | `fetch` on the main thread                                                                | Call it on the background: in an effect or an event handler, or hand the call over from a main-thread function.                                                                       |
 | `Float16Array`                                                                            | A typed array's elements need the engine: use `Math.f16round` with a `Uint16Array` and `DataView`'s float16 methods.                                                                  |
 | Resizable `ArrayBuffer`, `transfer` and `detached`, `Atomics`, symbols as `WeakMap` keys  | Not fillable in JavaScript.                                                                                                                                                           |
-| RegExp's `v` and `d` flags, modifiers (`(?i:…)`) and duplicate named groups               | PrimJS refuses them; Sohedra's build stops at each with what to write instead.                                                                                                        |
+| RegExp's `v` and `d` flags, modifiers (`(?i:…)`) and duplicate named groups               | PrimJS refuses them; Sohedra's build stops at each literal with what to write instead, and a development build warns at each `RegExp` call that makes one.                            |
 
 ## Known limits
 

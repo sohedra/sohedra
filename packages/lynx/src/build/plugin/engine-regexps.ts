@@ -1,8 +1,9 @@
 // Regular expressions Lynx's engine refuses: PrimJS has no `v` or `d` flag, no modifiers (`(?i:…)`)
 // and no two groups of one name (ES2022 to ES2025). A literal of one fails the whole thread's
-// script as it parses, so no page shows; `RegExp` with one throws where it runs. SWC lowers none of
-// them (it writes a `v` literal as a `RegExp` call), so the build stops at each, in each module as
-// the loaders left it: the compiled output of a component too, and dependencies'.
+// script as it parses, so no page shows: the build stops at each, in each module as the loaders left
+// the module: the compiled output of a component too, and dependencies'. SWC writes a `v` literal as a
+// `RegExp` call, which counts as the literal it was. A `RegExp` call written as one throws only
+// where it runs, and a library may call it inside a check: a development build warns at it.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -13,7 +14,7 @@ import type { ScriptParser } from "../../svelte/build/index.ts";
 import { scriptParser } from "../../svelte/build/index.ts";
 import { PACKAGE_NAME } from "../../wire/index.ts";
 import type { RegExpSyntax } from "../diagnostics/catalogue.ts";
-import { buildError, placeAt } from "../diagnostics/messages.ts";
+import { buildError, buildWarning, placeAt } from "../diagnostics/messages.ts";
 import type { Place } from "../diagnostics/messages.ts";
 
 /** A regular expression the engine refuses: its text, why, and where it starts in the code. */
@@ -21,6 +22,8 @@ export interface RefusedRegExp {
 	text: string;
 	syntax: RegExpSyntax;
 	start: number;
+	/** Whether it is a `RegExp` call, in the code as the loaders left it. */
+	call: boolean;
 }
 
 /** Text that may hold one: a flag after a slash or in a string, a group's name, a modifier. */
@@ -80,14 +83,15 @@ export function refusedRegExps(code: string, parse: ScriptParser): RefusedRegExp
 		// Boundary: the parser's tree is ESTree, untyped here.
 		const node = value as Node;
 		let syntax: RegExpSyntax | undefined;
-		if (node.regex) syntax = syntaxOf(node.regex.pattern, node.regex.flags);
-		else if (
+		const call =
 			(node.type === "CallExpression" || node.type === "NewExpression") &&
 			node.callee?.type === "Identifier" &&
-			node.callee.name === "RegExp"
-		)
+			node.callee.name === "RegExp";
+		if (node.regex) syntax = syntaxOf(node.regex.pattern, node.regex.flags);
+		else if (call)
 			syntax = syntaxOf(stringOf(node.arguments?.[0]), stringOf(node.arguments?.[1]) ?? "");
-		if (syntax) found.push({ text: code.slice(node.start, node.end), syntax, start: node.start });
+		if (syntax)
+			found.push({ text: code.slice(node.start, node.end), syntax, start: node.start, call });
 		for (const [key, child] of Object.entries(node)) if (key !== "loc") visit(child);
 	};
 	visit(program);
@@ -96,9 +100,12 @@ export function refusedRegExps(code: string, parse: ScriptParser): RefusedRegExp
 
 /**
  * Where `text` is in `file` as written, which the loaders may have changed: the place of its first
- * appearance, or of its pattern when SWC wrote a literal as a call.
+ * appearance, or of its pattern when SWC wrote a literal as a call, and whether it is that literal.
  */
-function placeOf(file: string, found: RefusedRegExp): Place | undefined {
+function placeOf(
+	file: string,
+	found: RefusedRegExp,
+): { place: Place; literal: boolean } | undefined {
 	let text: string;
 	try {
 		text = fs.readFileSync(file, "utf8");
@@ -106,19 +113,30 @@ function placeOf(file: string, found: RefusedRegExp): Place | undefined {
 		return undefined;
 	}
 	const pattern = /^(?:new )?RegExp\("((?:\\.|[^"\\])*)"/.exec(found.text)?.[1];
-	const needles = [
-		found.text,
-		...(pattern === undefined ? [] : [`/${JSON.parse(`"${pattern}"`) as string}/`]),
+	const needles: [string, boolean][] = [
+		[found.text, !found.call],
+		...(pattern === undefined
+			? []
+			: [[`/${JSON.parse(`"${pattern}"`) as string}/`, true] as [string, boolean]]),
 	];
-	for (const needle of needles) {
+	for (const [needle, literal] of needles) {
 		const offset = text.indexOf(needle);
-		if (offset !== -1) return placeAt({ file, text }, offset);
+		if (offset !== -1) return { place: placeAt({ file, text }, offset), literal };
 	}
 	return undefined;
 }
 
-/** Fails the build at each regular expression the engine refuses, once per place. */
+/**
+ * Fails the build at each regular expression literal the engine refuses, once per place, and in a
+ * development build warns at each `RegExp` call of one.
+ */
 export class EngineRegExpsPlugin {
+	readonly development: boolean;
+
+	constructor({ development }: { development: boolean }) {
+		this.development = development;
+	}
+
 	apply(compiler: Rspack.Compiler): void {
 		const name = `${PACKAGE_NAME}:engine-regexps`;
 		const parse = scriptParser(compiler.context);
@@ -131,19 +149,38 @@ export class EngineRegExpsPlugin {
 					const code = module.originalSource()?.source();
 					if (typeof resource !== "string" || typeof code !== "string") continue;
 					for (const found of refusedRegExps(code, parse)) {
-						const place = placeOf(resource, found);
-						const key = place?.where ?? `${resource}\0${found.text}`;
+						const located = placeOf(resource, found);
+						const literal = located?.literal ?? !found.call;
+						if (!literal && !this.development) continue;
+						const key = located?.place.where ?? `${resource}\0${found.text}`;
 						if (reported.has(key)) continue;
 						reported.add(key);
 						const file = path.relative(compiler.context, resource);
-						const { message } = buildError({
-							code: "regexp_refused",
+						const report = {
 							details: { regexp: found.text, syntax: found.syntax },
-							place: place && { ...place, where: place.where.replace(resource, file) },
-						});
-						compilation.errors.push(
-							Object.assign(new compiler.webpack.WebpackError(message), { stack: "" }),
-						);
+							place: located && {
+								...located.place,
+								where: located.place.where.replace(resource, file),
+							},
+						};
+						if (literal)
+							compilation.errors.push(
+								Object.assign(
+									new compiler.webpack.WebpackError(
+										buildError({ code: "regexp_refused", ...report }).message,
+									),
+									{ stack: "" },
+								),
+							);
+						else
+							compilation.warnings.push(
+								Object.assign(
+									new compiler.webpack.WebpackError(
+										buildWarning({ code: "regexp_refused_call", ...report }).message,
+									),
+									{ stack: "" },
+								),
+							);
 					}
 				}
 			});
