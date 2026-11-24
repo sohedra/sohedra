@@ -21,6 +21,7 @@ import type { HostEventsLog } from "./host.ts";
 import { createLynx } from "./lynx.ts";
 import type { BackgroundLynx, MainThreadLynx, TestApp, Thread } from "./lynx.ts";
 import { createThreadTasks, processTimer } from "./tasks.ts";
+import type { ThreadTasks } from "./tasks.ts";
 
 /** What a test page starts with. */
 export interface TestPageOptions {
@@ -197,24 +198,25 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 			});
 			return before;
 		}
-		installGlobals({
-			lynx: lynx.background,
-			SystemInfo: systemInfo,
-			...backgroundTimers(),
-			...backgroundFrames,
-		});
+		installGlobals({ lynx: lynx.background, SystemInfo: systemInfo, ...backgroundTimers() });
 		removeGlobals(mainThreadOnly);
 		return before;
 	};
-	const tasks = createThreadTasks({ enter, current: () => current });
 	/** The process's timers, or a test's fake ones: what the main thread and a test's own code use. */
 	const processTimers = (): Record<string, unknown> =>
 		Object.fromEntries(BACKGROUND_TIMERS.map((name) => [name, processTimer(readGlobal(name))]));
-	/** The background's timers: the process's, or a test's fake ones, run as the background. */
-	const backgroundTimers = (): Record<string, unknown> =>
-		Object.fromEntries(
+	/**
+	 * The background's timers: the process's, or a test's fake ones, and its frames, each run as
+	 * the background.
+	 */
+	const backgroundTimers = (): Record<string, unknown> => ({
+		...Object.fromEntries(
 			BACKGROUND_TIMERS.map((name) => [name, tasks.timer("background", readGlobal(name))]),
-		);
+		),
+		...(processFrame !== undefined && {
+			requestAnimationFrame: tasks.timer("background", processFrame),
+		}),
+	});
 	const engine = createEngine({
 		...(options.document && { document: options.document }),
 		...(options.container && { container: options.container }),
@@ -230,13 +232,7 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	const processFrame = processTimer(readGlobal("requestAnimationFrame"));
 	const processFrames: Record<string, unknown> =
 		processFrame === undefined ? {} : { requestAnimationFrame: processFrame };
-	const backgroundFrames: Record<string, unknown> =
-		processFrame === undefined
-			? {}
-			: { requestAnimationFrame: tasks.timer("background", processFrame) };
-	const mainThreadOnly = Object.keys(engine.functions).filter(
-		(name) => !(name in backgroundFrames),
-	);
+	const mainThreadOnly = Object.keys(engine.functions).filter((name) => !(name in processFrames));
 	const templateData = options.templateData ?? {};
 	const hostData = options.initData ?? {};
 	// The data the engine renders the page with (core/renderer/template_assembler.cc).
@@ -278,6 +274,14 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	};
 	const toBackground = (name: string, ...args: unknown[]): void =>
 		bridge.send(() => callApp(name, ...args));
+	// Last before the page touches the process: its hooks stay only while the page runs.
+	let tasks: ThreadTasks;
+	try {
+		tasks = createThreadTasks({ enter, current: () => current });
+	} catch (error) {
+		engine.dispose();
+		throw error;
+	}
 	// On a device, Lynx's element functions are the main thread's globals.
 	const restoreGlobals = installGlobals(
 		{ ...engine.functions, lynx: lynx.mainThread, SystemInfo: systemInfo },

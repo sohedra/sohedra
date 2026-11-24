@@ -1,10 +1,11 @@
-// What a thread of a test page leaves for later runs as that thread. On a device each thread has its
-// own timers and its own promise queue; here both share the process's. So the background's timers
-// are the process's, each callback run as the background, and a promise's continuation runs as the
-// thread that was running when it was queued, with its `then` or its `await`.
+// What a thread of a test page leaves for later runs as that thread. On a device each thread has
+// its own timers and its own promise queue; here both share the process's. So the background's
+// timers are the process's, each callback run as the background, and a promise's continuation runs
+// as the thread that was running when it was queued, with its `then` or its `await`.
 
 import { promiseHooks } from "node:v8";
 
+import { testingError } from "../catalogue.ts";
 import type { Thread } from "./lynx.ts";
 
 /** A function of the process's. */
@@ -52,25 +53,35 @@ export function createThreadTasks(options: {
 	const queuedOn = new WeakMap<Promise<unknown>, Thread>();
 	/** The thread in place before each continuation that runs now. */
 	const before: (Thread | undefined)[] = [];
+	const stops: ReturnType<typeof promiseHooks.onInit>[] = [];
 	// V8 calls these around every promise of the process: when one is made (by `then`, by an
-	// `await`, by a promise's constructor) and around each continuation it runs.
-	const stops = [
-		promiseHooks.onInit((promise) => {
-			const thread = current();
-			if (thread !== undefined) queuedOn.set(promise, thread);
-		}),
-		promiseHooks.onBefore((promise) => {
-			const thread = queuedOn.get(promise);
-			const was = current();
-			before.push(was);
-			if (thread !== undefined && thread !== was) enter(thread);
-		}),
-		promiseHooks.onAfter(() => {
-			const was = before.pop();
-			const thread = current();
-			if (thread !== undefined) leave(thread, was);
-		}),
-	];
+	// `await`, by a promise's constructor) and around each continuation it runs. A runtime without
+	// them (Bun's own) would run continuations as the wrong thread: it fails instead.
+	try {
+		stops.push(
+			promiseHooks.onInit((promise) => {
+				const thread = current();
+				if (thread !== undefined) queuedOn.set(promise, thread);
+			}),
+			promiseHooks.onBefore((promise) => {
+				const thread = queuedOn.get(promise);
+				const was = current();
+				before.push(was);
+				if (thread !== undefined && thread !== was) enter(thread);
+			}),
+			promiseHooks.onAfter(() => {
+				const was = before.pop();
+				const thread = current();
+				if (thread !== undefined) leave(thread, was);
+			}),
+		);
+	} catch (error) {
+		for (const stop of stops) stop();
+		throw testingError({
+			code: "promise_hooks_missing",
+			details: { reason: error instanceof Error ? error.message : String(error) },
+		});
+	}
 
 	return {
 		timer(thread, schedule) {

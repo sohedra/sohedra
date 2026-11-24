@@ -9,10 +9,10 @@ import { RENDERER_ENTRY } from "../../wire/index.ts";
 import { lynxWarningFilter } from "./warning-filter.ts";
 
 /**
- * The Svelte compiler options an app sets. The rest are set by the binding (`generate`,
- * `fragments`, `css`, `dev`, `runes`, `experimental.customRenderer`) or not supported (Svelte 4's
- * `accessors`, `immutable`, `compatibility`; `customElement`). `cssHash` names the scoping class
- * of a component's `<style>`.
+ * The Svelte compiler options an app sets, and `experimental.async`, Svelte's async mode. The rest
+ * are set by the binding (`generate`, `fragments`, `css`, `dev`, `runes`,
+ * `experimental.customRenderer`) or not supported (Svelte 4's `accessors`, `immutable`,
+ * `compatibility`; `customElement`). `cssHash` names the scoping class of a component's `<style>`.
  */
 export type SvelteLynxCompilerOptions = Pick<
 	CompileOptions,

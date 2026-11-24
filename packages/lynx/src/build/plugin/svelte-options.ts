@@ -109,11 +109,16 @@ export function pickCompilerOptions(input: Record<string, unknown>): {
 	return { compilerOptions, warnings };
 }
 
-/** The options `compileModule` takes, from the app's compiler options. */
+/**
+ * The options `compileModule` takes, from the app's compiler options: async mode too, which a
+ * module that awaits in a `$derived` needs, but not the custom renderer, which is a component's.
+ */
 export function moduleCompilerOptions(compilerOptions: CompileOptions): ModuleCompileOptions {
 	const options: Record<string, unknown> = {};
 	for (const key of MODULE_OPTIONS)
 		if (key in compilerOptions) options[key] = compilerOptions[key as keyof CompileOptions];
+	const async = compilerOptions.experimental?.async;
+	if (async !== undefined) options["experimental"] = { async };
 	// Boundary: the picked keys are the module options.
 	return options as ModuleCompileOptions;
 }
