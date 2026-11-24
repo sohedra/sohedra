@@ -49,6 +49,16 @@ describe("a main-thread ref", () => {
 		expect(await ask(() => api["read"]!() as Promise<unknown>)).toBe("first");
 	});
 
+	it("that two elements hold holds the last one bound, and the other once that one goes", async () => {
+		const { api, ask, change } = await refs();
+		// The first frame bound an element it alone draws last; hydration let it go.
+		expect(await ask(() => api["readShared"]!() as Promise<unknown>)).toBe("kept");
+		await change("addExtra");
+		expect(await ask(() => api["readShared"]!() as Promise<unknown>)).toBe("extra");
+		await change("dropExtra");
+		expect(await ask(() => api["readShared"]!() as Promise<unknown>)).toBe("kept");
+	});
+
 	it("keeps a style a main-thread function set when the background writes the style", async () => {
 		const { page, change } = await refs();
 		await tap(page, "inner");

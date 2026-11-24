@@ -7,6 +7,10 @@
 // The engine holds one entry for each event, never the function: a new value is a field written,
 // with no gap where the event has no function. A function ref runs at the next settle step, once
 // its element is in the tree, before the flush that shows it.
+//
+// A ref that several elements hold holds the last one bound, and when that one lets it go, the
+// last bound of those left: the background's tree decides which elements hold a ref, and the
+// first frame may have bound one the background never had, which hydration lets go of.
 
 import {
 	eventOf,
@@ -150,6 +154,9 @@ function cleanUp(binding: Binding, scope: BindingScope): void {
 	if (cleanup) scope.guarded(cleanup);
 }
 
+/** The elements that hold each ref, in the order they were bound. */
+const holders = new WeakMap<Ref, LynxElement[]>();
+
 /** A ref's value: a ref, or a main-thread function that gets the element. */
 const refKind: BindingKind = {
 	bind(binding, scope) {
@@ -161,8 +168,11 @@ const refKind: BindingKind = {
 			return;
 		}
 		if (!isRefHandle(value)) return;
-		binding.ref = scope.refs.of(value);
-		binding.ref.current = scope.elements.wrap(binding.element);
+		const ref = scope.refs.of(value);
+		binding.ref = ref;
+		const held = holders.get(ref) ?? [];
+		holders.set(ref, [...held.filter((element) => element !== binding.element), binding.element]);
+		ref.current = scope.elements.wrap(binding.element);
 	},
 	change(binding, value, scope) {
 		if (isRefHandle(value) && binding.ref !== undefined && scope.refs.of(value) === binding.ref) {
@@ -196,7 +206,12 @@ const refKind: BindingKind = {
 		binding.released = true;
 		const { ref } = binding;
 		binding.ref = undefined;
-		if (ref && ref.current === scope.elements.find(binding.element)) ref.current = null;
+		if (ref) {
+			const left = (holders.get(ref) ?? []).filter((element) => element !== binding.element);
+			holders.set(ref, left);
+			if (ref.current === scope.elements.find(binding.element))
+				ref.current = left.length > 0 ? scope.elements.wrap(left.at(-1)!) : null;
+		}
 		cleanUp(binding, scope);
 	},
 };
