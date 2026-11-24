@@ -1,5 +1,5 @@
-// Lazy bundles on the background. An `import()` the build splits off is a Lynx bundle of its own,
-// and the bundler's chunk loader asks `lynx.loadLazyBundle` for it. It loads on both threads, as
+// Lazy bundles on the background. The build makes each `import()` a Lynx bundle of its own, and
+// the bundler's chunk loader asks `lynx.loadLazyBundle` for it. It loads on both threads, as
 // ReactLynx loads one on Lynx's fetch path:
 //
 //   1. `lynx.fetchBundle(url)`          the engine downloads it, and keeps it

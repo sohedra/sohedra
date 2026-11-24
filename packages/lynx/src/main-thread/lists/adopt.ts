@@ -61,9 +61,9 @@ export function heldCells(list: ListState | undefined): HeldCell[] {
  */
 export function adoptedList(
 	{ state, items, cells, committed = items, waiting }: { state: ListState } & AdoptedItems,
-	releases: boolean,
+	letsGo: boolean,
 ): ListState {
-	const list = newList({ element: state.element, committed, releases, preload: state.preload });
+	const list = newList({ element: state.element, committed, letsGo, preload: state.preload });
 	list.lastAsked = state.lastAsked;
 	list.direction = state.direction;
 	for (let index = 0; index < items.length; index++) {
@@ -85,7 +85,7 @@ export function adoptedList(
 		list.cells.set(itemId, cell);
 		if (held) list.cellsByUid.set(held.uid, cell);
 		if (cell.bound) list.bound++;
-		else if (held && list.releases) list.unbound.add(cell);
+		else if (held && list.letsGo) list.unbound.add(cell);
 	}
 	return list;
 }

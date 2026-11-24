@@ -21,7 +21,7 @@ import type { InputState, TreeNode } from "./node.ts";
 import { textOf } from "./values.ts";
 
 /** What the input needs of the renderer. */
-export interface InputHost {
+export interface InputScope {
 	/** Listens to the input's event `name`, beside the component's own listener. */
 	listen(element: TreeNode, name: "input" | "blur", handler: Handler): void;
 	/** Sets an attribute the way the component would. */
@@ -54,7 +54,7 @@ const pageIsGone = (error: unknown): boolean =>
  * the caret at `cursor` when it is given; a write from code applies whatever was typed since.
  */
 function write(
-	host: InputHost,
+	scope: InputScope,
 	element: TreeNode,
 	value: string,
 	typing?: { cursor: number | undefined },
@@ -65,7 +65,7 @@ function write(
 	const tag = element.tag ?? "input";
 	const params: Record<string, unknown> = { value };
 	if (typing?.cursor !== undefined) params["cursor"] = typing.cursor;
-	host.setValue(element, params, typing ? input.answers : undefined).catch((error: unknown) => {
+	scope.setValue(element, params, typing ? input.answers : undefined).catch((error: unknown) => {
 		if (pageIsGone(error)) return;
 		reportError(
 			backgroundError({
@@ -92,16 +92,16 @@ function caret(typed: string, at: number, value: string): number {
 }
 
 /** Writes a setter's change that composition held back, unless the field holds it already. */
-function writeSkipped(host: InputHost, element: TreeNode): void {
+function writeSkipped(scope: InputScope, element: TreeNode): void {
 	const input = element.input!;
 	const skipped = input.skipped;
 	input.skipped = undefined;
 	if (skipped !== undefined && skipped !== input.current)
-		write(host, element, skipped, { cursor: undefined });
+		write(scope, element, skipped, { cursor: undefined });
 }
 
 /** Starts the state of a field's value, and listens to its typing. */
-function startInput(host: InputHost, element: TreeNode, value: string): InputState {
+function startInput(scope: InputScope, element: TreeNode, value: string): InputState {
 	const state: InputState = {
 		current: value,
 		composing: false,
@@ -112,7 +112,7 @@ function startInput(host: InputHost, element: TreeNode, value: string): InputSta
 		skipped: undefined,
 		blurs: false,
 	};
-	host.listen(element, "input", (event) => {
+	scope.listen(element, "input", (event) => {
 		// Boundary: Lynx's input event, read by field.
 		const detail = (
 			event as {
@@ -130,21 +130,21 @@ function startInput(host: InputHost, element: TreeNode, value: string): InputSta
 		// flushes Svelte's updates right after an event's handlers.
 		background.lynx.queueMicrotask(() => {
 			state.typing = false;
-			if (!state.composing) writeSkipped(host, element);
+			if (!state.composing) writeSkipped(scope, element);
 		});
 	});
 	return state;
 }
 
 /** Sets the `value` of `element`, an input or a textarea. */
-export function setInputValue(host: InputHost, element: TreeNode, raw: unknown): void {
+export function setInputValue(scope: InputScope, element: TreeNode, raw: unknown): void {
 	const value = raw == null ? "" : textOf(raw);
 	const input = element.input;
 	if (!input) {
-		element.input = startInput(host, element, value);
+		element.input = startInput(scope, element, value);
 		// An input that has no Lynx element yet starts from `default-value`, which it is made with.
-		if (element.lynxId === 0) host.setAttribute(element, "default-value", value);
-		else write(host, element, value);
+		if (element.lynxId === 0) scope.setAttribute(element, "default-value", value);
+		else write(scope, element, value);
 		return;
 	}
 	if (value === input.current) {
@@ -155,9 +155,9 @@ export function setInputValue(host: InputHost, element: TreeNode, raw: unknown):
 		input.skipped = value;
 		if (!input.blurs) {
 			input.blurs = true;
-			host.listen(element, "blur", () => {
+			scope.listen(element, "blur", () => {
 				input.composing = false;
-				writeSkipped(host, element);
+				writeSkipped(scope, element);
 			});
 		}
 		return;
@@ -165,14 +165,14 @@ export function setInputValue(host: InputHost, element: TreeNode, raw: unknown):
 	input.composing = false;
 	if (element.lynxId === 0) {
 		input.current = value;
-		host.setAttribute(element, "default-value", value);
+		scope.setAttribute(element, "default-value", value);
 		return;
 	}
 	// An answer to typing keeps the caret where the typing left it.
 	if (!input.typing) {
-		write(host, element, value);
+		write(scope, element, value);
 		return;
 	}
 	const cursor = input.selection >= 0 ? caret(input.typed, input.selection, value) : undefined;
-	write(host, element, value, { cursor });
+	write(scope, element, value, { cursor });
 }

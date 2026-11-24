@@ -18,7 +18,7 @@ import InitialRowsSnippet from "../fixtures/threads/InitialRowsSnippet.svelte";
 import drawInitialRowsSnippet from "../fixtures/threads/InitialRowsSnippet.svelte?first-frame";
 import InitialRowsTwoLists from "../fixtures/threads/InitialRowsTwoLists.svelte";
 import drawInitialRowsTwoLists from "../fixtures/threads/InitialRowsTwoLists.svelte?first-frame";
-import { expectInSyncOnceAsked, range } from "./released-rows.ts";
+import { expectInSyncOnceAsked, range } from "./rows-let-go.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
 import type { SveltePage } from "./svelte-page.ts";
@@ -93,7 +93,7 @@ function wholeRows(page: SveltePage, token: string): string[] {
 
 /** The ids of the rows the main thread asked the background for. */
 const shown = (page: SveltePage) =>
-	page.messages.flatMap((message) => (message.t === "show" ? message.nodes : []));
+	page.messages.flatMap((message) => (message.t === "show" ? message.elements : []));
 
 describe("a deferred list's initial rows", () => {
 	it("is drawn whole in the first frame, and rendered by the background as it starts", async () => {

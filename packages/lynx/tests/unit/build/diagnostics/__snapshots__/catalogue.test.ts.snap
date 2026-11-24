@@ -277,7 +277,7 @@ https://sohedra.com/e/list_item_without_key"
 `;
 
 exports[`the build's catalogue > lynx_engine_missing: the message 1`] = `
-"The Lynx build engine is not set up, so there is no template to build.
+"Lynx's build plugin is not set up, so there is no template to build.
 /app/src/App.svelte:2:3
 
 1: <script>
@@ -671,7 +671,7 @@ https://sohedra.com/e/svelte_without_renderers"
 `;
 
 exports[`the build's catalogue > template_plugin_versions: the message 1`] = `
-"The Lynx build engine uses @lynx-js/template-webpack-plugin 0.15.4, and @sohedra/lynx needs ^0.16.8 (it installs 0.16.8).
+"Lynx's build plugin uses @lynx-js/template-webpack-plugin 0.15.4, and @sohedra/lynx needs ^0.16.8 (it installs 0.16.8).
 /app/src/App.svelte:2:3
 
 1: <script>

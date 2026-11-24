@@ -33,7 +33,7 @@
 // Each detector has one state manager, made with it, which a callback gets as its second
 // argument: it moves that detector along through the engine's gesture manager.
 //
-// Known: on Android (Lynx 4.2), list rows with gestures released and made again grew native memory
+// Known: on Android (Lynx 4.2), list rows with gestures let go of and made again grew native memory
 // by about 1.5 KB per detector, where rows without gestures stayed flat. This page's tables return
 // to their size, and a removed detector's entries let go of their function and of the state
 // manager, which holds the element; whatever still grows is the engine's.

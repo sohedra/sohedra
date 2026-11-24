@@ -51,7 +51,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/compiler/phases/3-transform/client/transform-client.js",
 		anchor: "b.export_default",
 		reliesOn:
-			"the output holds `export default function Name(`, so the first frame's twin of a component can find the name",
+			"the output holds `export default function Name(`, so the first-frame copy of a component can find the name",
 		test: COMPILER,
 	},
 	{

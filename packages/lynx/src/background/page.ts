@@ -44,7 +44,13 @@ import { resetKeyboard } from "./host/keyboard.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
 import { closeLayers, openLayers, unmountLayers } from "./layers.ts";
 import type { Bag, MountPageOptions } from "./page-options.ts";
-import { bumpPage, clearPageState, currentPage, runAll, startGeneration } from "./page-state.ts";
+import {
+	bumpGeneration,
+	clearPageState,
+	currentGeneration,
+	runAll,
+	startGeneration,
+} from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { numberInput } from "./renderer/input.ts";
 import { pageHandlers, pageQueue, pageRenderer, withNodes } from "./renderer/page-renderer.ts";
@@ -137,7 +143,7 @@ export function mountPage<Props extends Bag>(
 			report(error, source);
 		}
 		after?.();
-		channel.flush();
+		channel.send();
 	}
 
 	/**
@@ -146,16 +152,16 @@ export function mountPage<Props extends Bag>(
 	 * in a later patch of the same page. What it throws is reported here, and answered.
 	 */
 	function callBackground({ id, fn, context, params }: CallMessage): void {
-		const page = currentPage();
+		const page = currentGeneration();
 		const answer = (result: Result): void => {
-			if (currentPage() === page) channel.reply(id, result);
+			if (currentGeneration() === page) channel.reply(id, result);
 		};
 		const target = channel.backgroundFunction(context, fn);
 		if (!target) {
 			const error = backgroundError({ code: "background_function_missing", details: {} });
 			reportError(error);
 			answer(failure(error));
-			channel.flush();
+			channel.send();
 			return;
 		}
 		let returned: unknown;
@@ -203,7 +209,7 @@ export function mountPage<Props extends Bag>(
 
 	/** An error the main thread reported into Lynx: the page's `onError` hears it here. */
 	function mainThreadReported({ error, place }: ErrorMessage): void {
-		const node = place?.node === undefined ? undefined : pageRenderer.nodeById(place.node);
+		const node = place?.element === undefined ? undefined : pageRenderer.nodeById(place.element);
 		heard(decodeError(error), "main-thread", { node, component: place?.component });
 	}
 
@@ -211,14 +217,14 @@ export function mountPage<Props extends Bag>(
 	 * The main thread asks for the page again, when its first frame could not be hydrated, or for
 	 * list cells, to let go of their elements or of their piled-up text.
 	 */
-	function rewrite({ nodes, mismatch }: RewriteMessage): void {
-		if (mismatch) reportError(mismatchError(mismatch, pageRenderer.nodeById(mismatch.node)));
-		if (nodes.includes(ROOT_ID)) {
+	function rewrite({ elements, mismatch }: RewriteMessage): void {
+		if (mismatch) reportError(mismatchError(mismatch, pageRenderer.nodeById(mismatch.element)));
+		if (elements.includes(ROOT_ID)) {
 			channel.rewritePage(() => pageRenderer.writePage());
 			return;
 		}
 		// A row held back has no text on the main thread to replace: it is written when asked for.
-		const cells = nodes.filter((id) => !channel.holds(id));
+		const cells = elements.filter((id) => !channel.holds(id));
 		channel.rewriteCells(cells, (id) => {
 			if (!pageRenderer.writeCell(id)) return false;
 			return rowOf(pageRenderer.nodeById(id))?.unmountsRecycled ? "unmount" : true;
@@ -226,8 +232,8 @@ export function mountPage<Props extends Bag>(
 	}
 
 	/** Deferred rows Lynx asked for: their contents render, and each is written whole. */
-	function show({ nodes }: ShowMessage): void {
-		const rows = nodes.filter((id) => channel.holds(id));
+	function show({ elements }: ShowMessage): void {
+		const rows = elements.filter((id) => channel.holds(id));
 		if (rows.length === 0) return;
 		handle(() => {
 			for (const id of rows) rowOf(pageRenderer.nodeById(id))?.show();
@@ -236,8 +242,8 @@ export function mountPage<Props extends Bag>(
 	}
 
 	/** Deferred rows the main thread let go of, text and all: their contents unmount. */
-	function hide({ nodes }: HideMessage): void {
-		const rows = nodes.filter((id) => !channel.holds(id) && rowOf(pageRenderer.nodeById(id)));
+	function hide({ elements }: HideMessage): void {
+		const rows = elements.filter((id) => !channel.holds(id) && rowOf(pageRenderer.nodeById(id)));
 		if (rows.length === 0) return;
 		channel.holdCells(rows);
 		handle(() => {
@@ -316,7 +322,7 @@ export function mountPage<Props extends Bag>(
 	}
 
 	function reload(data: unknown): void {
-		bumpPage();
+		bumpGeneration();
 		startOver();
 		clearRepeats();
 		mergeData(data);
@@ -329,12 +335,12 @@ export function mountPage<Props extends Bag>(
 		} finally {
 			// A patch of the new page even when it shows nothing yet, or failed to: the main thread
 			// keeps the old page on screen until one comes.
-			channel.flush(true);
+			channel.send(true);
 		}
 	}
 
 	function destroy(): void {
-		bumpPage();
+		bumpGeneration();
 		runAll([
 			teardown,
 			() => callThrough(null),
@@ -408,7 +414,7 @@ export function mountPage<Props extends Bag>(
 		// The template's data and the host's over it (core/runtime/js/bindings/js_app.cc), as the
 		// engine rendered the page with them: the data the first frame was drawn from.
 		lynx.__initData = { ...params.initData, ...params.updateData };
-		pageRenderer.setHost({
+		pageRenderer.setPageLink({
 			call: channel.call,
 			run: (handler: Handler, event: unknown) => handle(() => handler(event)),
 		});
@@ -418,7 +424,7 @@ export function mountPage<Props extends Bag>(
 		pageRenderer.insert(root, anchor, null);
 		render(true);
 		// Even when the page shows nothing: the main thread keeps a first frame until this patch.
-		channel.flush(true);
+		channel.send(true);
 	} catch (error) {
 		reportError(error);
 	}

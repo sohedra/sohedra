@@ -6,13 +6,13 @@ import { sourceLocation } from "../../svelte/runtime/index.ts";
 import type { CallRequest } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import type { BackgroundError } from "../catalogue.ts";
-import type { RendererHost } from "./host.ts";
 import type { TreeNode } from "./node.ts";
+import type { PageLink } from "./page-link.ts";
 
 /** What the methods reach of their renderer. */
 export interface MethodScope<Node extends TreeNode> {
-	/** The page's host; null when no page runs. */
-	host(): RendererHost | null;
+	/** The link to the page; null when no page runs. */
+	pageLink(): PageLink | null;
 	/** The element node with this id, while it is on the page. */
 	nodeById(id: number): Node | undefined;
 }
@@ -52,10 +52,10 @@ export function elementMethods<Node extends TreeNode>(
 ): ElementMethods<Node> {
 	/** Asks the main thread `request` about `node`'s element; rejects when it has none. */
 	function ask(node: Node, method: string, request: CallRequest): Promise<unknown> {
-		const host = scope.host();
-		if (!host) return Promise.reject(pageGone(method));
+		const pageLink = scope.pageLink();
+		if (!pageLink) return Promise.reject(pageGone(method));
 		if (node.lynxId === 0) return Promise.reject(notOnPage(node, method));
-		return host.call(node.lynxId, request).catch((error: unknown) => {
+		return pageLink.call(node.lynxId, request).catch((error: unknown) => {
 			// An element in a list cell is made only when Lynx shows the cell.
 			if (node.cell !== 0 && isCode(error, "element_missing"))
 				throw backgroundError({

@@ -54,7 +54,7 @@ describe("an app built with Rsbuild's CLI and the binding's plugin alone, twice 
 			background: script(builds[round]!, "background.js"),
 		}).page;
 
-	it("builds both times, the Lynx build engine registered by the plugin, the second from the cache", () => {
+	it("builds both times, Lynx's build plugin registered by the plugin, the second from the cache", () => {
 		for (const build of builds) {
 			expect(build.ok, build.output).toBe(true);
 			expect(build.output).not.toMatch(MESSAGE);

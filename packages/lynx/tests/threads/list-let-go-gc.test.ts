@@ -1,4 +1,4 @@
-// A released row's elements are let go of: the main thread keeps no reference to any of them, so
+// A let-go row's elements are let go of: the main thread keeps no reference to any of them, so
 // once the engine forgets them too, they are collected. On a device, Lynx frees an element's views
 // when the element object goes.
 
@@ -8,7 +8,7 @@ import { runInNewContext } from "node:vm";
 import { expect, it } from "@rstest/core";
 
 import type { LynxElement } from "../../src/testing/index.ts";
-import { releasedRows } from "./released-rows.ts";
+import { rowsLetGo } from "./rows-let-go.ts";
 
 setFlagsFromString("--expose-gc");
 // Boundary: a context made after the flag has V8's `gc`.
@@ -22,8 +22,8 @@ async function collect(): Promise<void> {
 	}
 }
 
-it("keeps no reference to a released row's elements", async () => {
-	const { page, through, rowsOnPage } = await releasedRows();
+it("keeps no reference to a let-go row's elements", async () => {
+	const { page, through, rowsOnPage } = await rowsLetGo();
 	const refs: WeakRef<LynxElement>[] = [];
 	const uids: number[] = [];
 	// In a function of its own, so that no local of the test holds an element.

@@ -126,7 +126,7 @@ describe("the value of an input that has no element yet", () => {
 	it("is written as its default-value each time, and the main thread is not asked", () => {
 		const { renderer, root, ops } = rendererFixture();
 		const calls: unknown[] = [];
-		renderer.setHost({
+		renderer.setPageLink({
 			call: (...args) => (calls.push(args), Promise.resolve(null)),
 			run: () => {},
 		});

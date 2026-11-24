@@ -11,7 +11,7 @@ import FunctionRows from "../../fixtures/threads/functions/FunctionRows.svelte";
 import drawFunctionRows from "../../fixtures/threads/functions/FunctionRows.svelte?first-frame";
 import PureRows from "../../fixtures/threads/functions/PureRows.svelte";
 import drawPureRows from "../../fixtures/threads/functions/PureRows.svelte?first-frame";
-import { holdRequests } from "../released-rows.ts";
+import { holdRequests } from "../rows-let-go.ts";
 import { scroller, scrollThrough } from "../scroll.ts";
 import { expectAccounted, unheld } from "./accounting.ts";
 import { startFunctionsPage } from "./pages.ts";

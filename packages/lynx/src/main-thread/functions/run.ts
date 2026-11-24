@@ -1,8 +1,7 @@
 // Running a main-thread function: its registered body, called with a copy of its object as `this`,
-// in which what it captured is what the body reads. A handle of a ref is the page's ref, an element
-// is its wrapper, a main-thread function is a function to call, and a handle of a background
-// function stays the handle, for `runOnBackground`. The object as it came is left as it is:
-// hydration reads it again.
+// in which what it captured is what the body reads. A ref handle is the page's ref, an element is
+// its wrapper, a main-thread function is a function to call, and a function handle stays the
+// handle, for `runOnBackground`. The object as it came is left as it is: hydration reads it again.
 //
 // The engine's own calls hand an event (`source` 1) or a gesture's event and its manager (`source`
 // 2). Their two targets carry the element itself (`elementRefptr`), which becomes its wrapper; an

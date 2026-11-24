@@ -55,7 +55,7 @@ describe("an element as main-thread functions see it", () => {
 		expect(wrapped.contains({})).toBe(false);
 		expect(wrapped.dataset).toEqual({ role: "handle", n: 3 });
 		expect(JSON.parse(JSON.stringify(wrapped))).toEqual({
-			node: 7,
+			element: 7,
 			id: "inner",
 			uid: engine().state(inner).uid,
 			dataset: { role: "handle", n: 3 },
@@ -92,7 +92,7 @@ describe("an element as main-thread functions see it", () => {
 			kept.querySelectorAll("*"),
 			kept.getComputedStyleProperty("width"),
 		]).toEqual([null, [], ""]);
-		expect(JSON.parse(JSON.stringify(kept))).toEqual({ node: 0 });
+		expect(JSON.parse(JSON.stringify(kept))).toEqual({ element: 0 });
 		kept.setAttribute("late", "yes");
 		kept.setStyleProperty("width", "1px");
 		kept.setStyleProperties({ height: "1px" });

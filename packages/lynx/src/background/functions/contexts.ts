@@ -2,11 +2,11 @@
 // functions it holds handles to (`runOnBackground(fn)`). A function that reaches one, itself or
 // through a main-thread function it captured, gets a context each time it is sent: a copy of it
 // with a new id (`_execId`), which the main thread names in its call, and which is kept here until
-// the main thread lets go of every copy it holds (a release message). A function that reaches none
+// the main thread lets go of every copy it holds (a context release). A function that reaches none
 // gets none, and costs nothing here.
 //
 // A context is given where a value becomes the text that crosses (the channel's `encode` and
-// `flush`, a call's request): what is never sent never holds one. Ids are never given twice.
+// `send`, a call's request): what is never sent never holds one. Ids are never given twice.
 
 import { FUNCTION_FIELDS, HANDLE_FIELDS, isMainThreadFunction } from "../../wire/index.ts";
 import type { MainThreadFunction } from "../../wire/index.ts";

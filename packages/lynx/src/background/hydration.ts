@@ -68,8 +68,8 @@ export function warnPropsIds(
 	differences: readonly PropsIdDifference[],
 	nodeOf: (id: number) => { tag: string | null } | undefined,
 ): void {
-	for (const { node, name, expected, got } of differences) {
-		const element = nodeOf(node);
+	for (const { element: id, name, expected, got } of differences) {
+		const element = nodeOf(id);
 		const tag = element?.tag ?? "element";
 		const where = element && sourceLocation(element);
 		warnOnce(`props_id_mismatch:${where ?? tag}:${name}`, () =>

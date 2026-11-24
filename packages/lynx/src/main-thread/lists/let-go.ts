@@ -4,7 +4,7 @@
 // and the text is kept for the next time Lynx asks. A cell never shown whose kept text piled up is
 // asked for the same way.
 //
-// A released row keeps what the background holds: its `$state`, effects, handlers, attributes,
+// A row let go of keeps what the background holds: its `$state`, effects, handlers, attributes,
 // styles set from code, and a controlled input's value. What only its views held goes:
 //   - a running animation stops, and its `finished` rejects as canceled;
 //   - an uncontrolled input's text, focus, and a scroll offset, such as a carousel's in the row;
@@ -24,11 +24,11 @@ import type { Cell, ListState } from "./state.ts";
  */
 const KEPT_CELLS = 10;
 
-/** How the background wrote a cell again turns out (see `Release.rewritten`). */
-export type Rewritten = "ignore" | "keep" | "release";
+/** How the background wrote a cell again turns out (see `LetGo.rewritten`). */
+export type Rewritten = "ignore" | "keep" | "let-go";
 
-/** The release of the cells of a page's lists. */
-export interface Release {
+/** Letting go of the cells of a page's lists. */
+export interface LetGo {
 	/** Lynx handed back a cell that keeps its element; past what the list keeps, it is asked for. */
 	handedBack(list: ListState, cell: Cell): void;
 	/**
@@ -41,7 +41,7 @@ export interface Release {
 	ask(id: number): void;
 	/**
 	 * The background wrote a cell again. `ignore`: not asked for, or Lynx asked for it since, and it
-	 * keeps what it has. `keep`: its new text replaces what was kept. `release`: as `keep`, and the
+	 * keeps what it has. `keep`: its new text replaces what was kept. `let-go`: as `keep`, and the
 	 * cell, which Lynx handed back, has left its list; its elements are the caller's to let go of.
 	 */
 	rewritten(id: number): Rewritten;
@@ -49,20 +49,17 @@ export interface Release {
 	clear(): void;
 }
 
-/** The release of the cells of `lists`; `schedule` asks for `takeRewrites` on a later task. */
-export function createRelease(
-	lists: ReadonlyMap<number, ListState>,
-	schedule: () => void,
-): Release {
+/** Letting go of the cells of `lists`; `schedule` asks for `takeRewrites` on a later task. */
+export function createLetGo(lists: ReadonlyMap<number, ListState>, schedule: () => void): LetGo {
 	// The cells `ask` named, until they are taken.
 	const wanted: Cell[] = [];
 
 	const kept = (list: ListState): number => Math.max(KEPT_CELLS, list.bound - 2 * list.preload);
 
 	/** A cell of a list whose cells can be let go of, with its list. */
-	function releasable(id: number): { list: ListState; cell: Cell } | undefined {
+	function cellToLetGo(id: number): { list: ListState; cell: Cell } | undefined {
 		for (const list of lists.values()) {
-			const cell = list.releases ? list.cells.get(id) : undefined;
+			const cell = list.letsGo ? list.cells.get(id) : undefined;
 			if (cell) return { list, cell };
 		}
 		return undefined;
@@ -94,14 +91,14 @@ export function createRelease(
 			return ids;
 		},
 		ask(id) {
-			const found = releasable(id);
+			const found = cellToLetGo(id);
 			if (!found || found.cell.element || found.cell.asked) return;
 			found.cell.asked = true;
 			wanted.push(found.cell);
 			schedule();
 		},
 		rewritten(id) {
-			const found = releasable(id);
+			const found = cellToLetGo(id);
 			if (!found?.cell.asked) return "ignore";
 			const { list, cell } = found;
 			cell.asked = false;
@@ -112,7 +109,7 @@ export function createRelease(
 			cell.element = undefined;
 			cell.uid = -1;
 			cell.attached = false;
-			return "release";
+			return "let-go";
 		},
 		clear() {
 			wanted.length = 0;

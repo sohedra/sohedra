@@ -55,7 +55,7 @@ export interface ListState {
 	/** The items whose info changed since the last update. */
 	changed: Set<number>;
 	/** Whether its cells come as text of their own: one Lynx handed back can be let go of. */
-	releases: boolean;
+	letsGo: boolean;
 	/** The cells Lynx handed back that keep their elements, in the order it handed them back. */
 	unbound: Set<Cell>;
 	/** How many cells Lynx holds. */
@@ -72,7 +72,7 @@ export interface ListState {
 export function newList(options: {
 	element: LynxElement;
 	committed?: number[];
-	releases?: boolean;
+	letsGo?: boolean;
 	preload?: number;
 }): ListState {
 	return {
@@ -82,7 +82,7 @@ export function newList(options: {
 		cells: new Map(),
 		cellsByUid: new Map(),
 		changed: new Set(),
-		releases: options.releases ?? false,
+		letsGo: options.letsGo ?? false,
 		unbound: new Set(),
 		bound: 0,
 		preload: options.preload ?? 0,

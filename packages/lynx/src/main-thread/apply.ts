@@ -382,7 +382,7 @@ export function createApplier(options: ApplierOptions): Applier {
 		waitingCells: (id) => lists.waitingCells(id),
 		replaceCell(id, text) {
 			const outcome = lists.rewritten(id);
-			if (outcome !== "release") return outcome === "keep";
+			if (outcome !== "let-go") return outcome === "keep";
 			// The cell's elements, as the text makes them again: the engine cancels their animations.
 			for (const op of decodeCell(text)) {
 				if (op[0] !== OpCode.Create && op[0] !== OpCode.CreateText) continue;

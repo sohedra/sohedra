@@ -55,7 +55,7 @@ describe("the main thread", () => {
 				const patch = readGlobal(PATCH_METHOD) as (params: { data: string }) => void;
 				patch(
 					encodePatch({
-						page: 0,
+						generation: 0,
 						items: [
 							[
 								"ops",
@@ -83,7 +83,7 @@ describe("the main thread", () => {
 		page.asMainThread(() =>
 			patch(
 				encodePatch({
-					page: 0,
+					generation: 0,
 					items: [["call", 0, 0, encodeCall(["run", { _wkltId: "a1b2:c3d4:9" }, []])]],
 				}),
 			),
@@ -107,7 +107,7 @@ describe("the main thread", () => {
 			page.asMainThread(() =>
 				patch(
 					encodePatch({
-						page: 0,
+						generation: 0,
 						items: [
 							["ops", [[OpCode.Release, 9]]],
 							["call", 0, 9, encodeCall(["invoke", "x", {}])],

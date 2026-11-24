@@ -42,14 +42,14 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 		docs: "svelte_without_renderers",
 	},
 	lynx_engine_missing: {
-		message: () => "The Lynx build engine is not set up, so there is no template to build.",
+		message: () => "Lynx's build plugin is not set up, so there is no template to build.",
 		fix: () =>
 			"Build with rspeedy, or add `pluginLynx()` from @lynx-js/rsbuild-plugin to the Rsbuild config.",
 		docs: "lynx_engine_missing",
 	},
 	template_plugin_versions: {
 		message: ({ engine, own, range }) =>
-			`The Lynx build engine uses @lynx-js/template-webpack-plugin ${engine}, and @sohedra/lynx needs ${range} (it installs ${own}).`,
+			`Lynx's build plugin uses @lynx-js/template-webpack-plugin ${engine}, and @sohedra/lynx needs ${range} (it installs ${own}).`,
 		fix: () =>
 			"Update @lynx-js/rspeedy (or @lynx-js/rsbuild-plugin) so that its template plugin is in that range, or update @sohedra/lynx to a version that supports the engine's.",
 		docs: "template_plugin_versions",

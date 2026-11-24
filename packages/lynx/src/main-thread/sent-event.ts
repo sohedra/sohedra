@@ -13,7 +13,7 @@ export type IdForUid = (uid: number) => number | undefined;
 function target(value: unknown, idForUid: IdForUid): SentTarget | undefined {
 	if (!isRecord(value)) return undefined;
 	const uid = typeof value["uid"] === "number" ? value["uid"] : undefined;
-	const sent: SentTarget = { node: (uid !== undefined && idForUid(uid)) || 0 };
+	const sent: SentTarget = { element: (uid !== undefined && idForUid(uid)) || 0 };
 	if (typeof value["id"] === "string") sent.id = value["id"];
 	if (uid !== undefined) sent.uid = uid;
 	if (isRecord(value["dataset"])) sent.dataset = value["dataset"];

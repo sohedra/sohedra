@@ -8,7 +8,7 @@ import type { Stamp } from "./page.ts";
 import { PROTOCOL_VERSION } from "./page.ts";
 import type { Result, ThrownError } from "./patch.ts";
 
-/** An element as an event names it, with the background's id for it (`node`, 0 for none). */
+/** An element as an event names it, with the background's id for it (`element`, 0 for none). */
 export interface SentTarget {
 	/** The element's `id` attribute, "" when it has none. */
 	id?: string;
@@ -16,7 +16,7 @@ export interface SentTarget {
 	uid?: number;
 	/** The element's `data-*` values. */
 	dataset?: Record<string, unknown>;
-	node: number;
+	element: number;
 }
 
 /** An event as plain data: Lynx's fields, with its targets named. */
@@ -65,15 +65,15 @@ export interface ReleaseMessage {
 }
 
 /**
- * The main thread asks the background to write subtrees again, with the ids they have. `nodes` is
- * the page's root (`ROOT_ID`) alone, after a hydration it refused or could not finish, answered
+ * The main thread asks the background to write subtrees again, with the ids they have. `elements`
+ * is the page's root (`ROOT_ID`) alone, after a hydration it refused or could not finish, answered
  * with a rewrite item; or list cells Lynx handed back or whose kept text piled up, each answered
  * with a marked cell item, and an id that is no longer a cell with nothing. `mismatch` says why a
  * hydration was refused, with the values that differ in development builds only.
  */
 export interface RewriteMessage {
 	t: "rewrite";
-	nodes: number[];
+	elements: number[];
 	mismatch?: HydrationMismatch;
 }
 
@@ -84,7 +84,7 @@ export interface RewriteMessage {
  */
 export interface ShowMessage {
 	t: "show";
-	nodes: number[];
+	elements: number[];
 }
 
 /**
@@ -93,17 +93,17 @@ export interface ShowMessage {
  */
 export interface HideMessage {
 	t: "hide";
-	nodes: number[];
+	elements: number[];
 }
 
 /**
  * What differs between the first frame and the page the background rendered, by the background's
- * ids. `node` is the element where it differs (for an element the background lacks, its parent);
+ * ids. `element` is the element where it differs (for an element the background lacks, its parent);
  * `expected` is the background's and `got` the first frame's.
  */
 export interface HydrationMismatch {
 	kind: "tag" | "missing" | "extra" | "attribute" | "list-keys";
-	node: number;
+	element: number;
 	/** The attribute that differs. */
 	name?: string;
 	expected?: unknown;
@@ -122,7 +122,7 @@ export interface PropsIdsMessage {
 
 /** An attribute of an element, by the background's id, and its value on each side. */
 export interface PropsIdDifference {
-	node: number;
+	element: number;
 	name: string;
 	/** The background's value. */
 	expected: string;
@@ -137,7 +137,7 @@ export interface ErrorPlace {
 	/** The id of the main-thread function that threw, which names its file and its function. */
 	mainThreadFunction?: string;
 	/** The background's id of the element whose main-thread function threw. */
-	node?: number;
+	element?: number;
 }
 
 /**
@@ -174,13 +174,13 @@ export interface ThreadEvent {
 }
 
 /**
- * A message to the background as the event to dispatch, stamped with the version and the page its
- * content belongs to.
+ * A message to the background as the event to dispatch, stamped with the version and the generation
+ * its content belongs to.
  */
-export function encodeToBackground(message: ToBackground, page: number): ThreadEvent {
+export function encodeToBackground(message: ToBackground, generation: number): ThreadEvent {
 	const type =
 		message.t === "event" || message.t === "call" ? TO_BACKGROUND.events : TO_BACKGROUND.replies;
-	const stamped: Stamp = { v: PROTOCOL_VERSION, page };
+	const stamped: Stamp = { v: PROTOCOL_VERSION, generation };
 	return { type, data: toText(Object.assign(stamped, message), "background") };
 }
 

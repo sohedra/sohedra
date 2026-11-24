@@ -25,7 +25,7 @@ describe("a reload", () => {
 		const flushes = page.engine.flushes.length;
 		page.reload({ reloaded: true });
 		await page.settle();
-		expect(page.patches.slice(before).map((patch) => patch.page)).toEqual([1]);
+		expect(page.patches.slice(before).map((patch) => patch.generation)).toEqual([1]);
 		expect(page.lynx.background.__initData).toEqual({ from: "native", reloaded: true });
 		expect(page.engine.texts()).toEqual(["Taps: 0 (even)", "Tap me"]);
 		// The main thread's own flush for the reload, then one for the new page's patch.
@@ -95,7 +95,9 @@ describe("a reload into an app that shows nothing", () => {
 		const before = page.patches.length;
 		page.reload({ empty: true });
 		await page.settle();
-		expect(page.patches.slice(before)).toEqual([expect.objectContaining({ page: 1, items: [] })]);
+		expect(page.patches.slice(before)).toEqual([
+			expect.objectContaining({ generation: 1, items: [] }),
+		]);
 		expect(page.engine.texts()).toEqual([]);
 		expect(page.errors).toEqual([]);
 	});
@@ -109,7 +111,7 @@ describe("a reload during a reload", () => {
 		expect(page.engine.texts()[0]).toBe("Taps: 1 (odd)");
 		await page.settle();
 		expect(page.engine.texts()).toEqual(["Taps: 0 (even)", "Tap me"]);
-		expect(page.patches.at(-1)!.page).toBe(2);
+		expect(page.patches.at(-1)!.generation).toBe(2);
 		expect(page.engine.listenerCount()).toBe(1);
 		expect(page.errors).toEqual([]);
 	});

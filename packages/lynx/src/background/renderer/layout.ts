@@ -6,13 +6,13 @@
 // element's `boundingClientRect`.
 
 import type { Handler } from "./handlers.ts";
-import type { RendererHost } from "./host.ts";
 import type { TreeNode } from "./node.ts";
+import type { PageLink } from "./page-link.ts";
 import { isRecord } from "./values.ts";
 
 /** What answering a late listener needs of the renderer. */
 export interface LayoutScope {
-	host(): RendererHost | null;
+	pageLink(): PageLink | null;
 	/** How many patches the page has sent. */
 	sent(): number;
 	/** Whether `handler` still listens for `layoutchange` on `node`. */
@@ -33,18 +33,18 @@ function layoutEvent(node: TreeNode, layout: Record<string, unknown>): Record<st
  */
 export function lateLayouts(scope: LayoutScope): (node: TreeNode, handler: Handler) => void {
 	return (node, handler) => {
-		const host = scope.host();
+		const pageLink = scope.pageLink();
 		// An element made in a patch not sent yet has its first layout to come, with the listener.
-		if (!host || node.lynxId === 0 || node.madeAt >= scope.sent()) return;
+		if (!pageLink || node.lynxId === 0 || node.madeAt >= scope.sent()) return;
 		const answer = (layout: Record<string, unknown>): void => {
-			if (scope.listening(node, handler)) host.run(handler, layoutEvent(node, layout));
+			if (scope.listening(node, handler)) pageLink.run(handler, layoutEvent(node, layout));
 		};
 		const known = node.layout;
 		if (known) {
 			scope.later(() => answer(known));
 			return;
 		}
-		host.call(node.lynxId, ["invoke", "boundingClientRect", {}]).then(
+		pageLink.call(node.lynxId, ["invoke", "boundingClientRect", {}]).then(
 			(rect) => {
 				// A layoutchange that came first was heard by the listener already.
 				if (node.layout || !isRecord(rect)) return;

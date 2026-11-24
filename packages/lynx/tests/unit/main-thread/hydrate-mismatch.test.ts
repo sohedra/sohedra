@@ -5,7 +5,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import { sentMismatch } from "../../../src/main-thread/hydrate/hydrate.ts";
 
-const MISMATCH = { kind: "attribute", node: 2, name: "class", expected: "a", got: "b" } as const;
+const MISMATCH = { kind: "attribute", element: 2, name: "class", expected: "a", got: "b" } as const;
 
 describe("a refused hydration's mismatch", () => {
 	it("crosses whole in a development build", () => {
@@ -13,6 +13,6 @@ describe("a refused hydration's mismatch", () => {
 	});
 
 	it("crosses without its values in a production build", () => {
-		expect(sentMismatch(MISMATCH, false)).toEqual({ kind: "attribute", node: 2 });
+		expect(sentMismatch(MISMATCH, false)).toEqual({ kind: "attribute", element: 2 });
 	});
 });

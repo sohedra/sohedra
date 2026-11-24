@@ -268,7 +268,7 @@ export function startMainThread(): MainThreadRuntime {
 						replacePage();
 					} else {
 						// Not the page the main thread waits for: it asks for the page again.
-						send({ t: "rewrite", nodes: [ROOT_ID] });
+						send({ t: "rewrite", elements: [ROOT_ID] });
 					}
 				}
 				continue;
@@ -319,10 +319,10 @@ export function startMainThread(): MainThreadRuntime {
 			}
 			state.applier = newApplier(state.element!);
 			state.rewriting = true;
-			applyItems(patch.items, patch.page);
+			applyItems(patch.items, patch.generation);
 			send({
 				t: "rewrite",
-				nodes: [ROOT_ID],
+				elements: [ROOT_ID],
 				...(result.kind === "refused" && { mismatch: sentMismatch(result.mismatch, DEV) }),
 			});
 			return undefined;
@@ -335,8 +335,8 @@ export function startMainThread(): MainThreadRuntime {
 		for (const [id, parts] of hydrated.cells) state.cells.set(id, parts);
 		for (const [id, contexts] of hydrated.cellContexts) state.cellContexts.set(id, contexts);
 		pageApplier.resumeWaiting();
-		for (const call of hydrated.calls) calls.run(call, patch.page);
-		applyItems(patch.items.slice(patch.rendered ?? 0), patch.page);
+		for (const call of hydrated.calls) calls.run(call, patch.generation);
+		applyItems(patch.items.slice(patch.rendered ?? 0), patch.generation);
 		return () => {
 			replayEarly({
 				frame,
@@ -347,7 +347,7 @@ export function startMainThread(): MainThreadRuntime {
 					const sent = sentEvent(early.event);
 					const element = pageApplier.element(at);
 					sent.currentTarget = {
-						node: at,
+						element: at,
 						...(element && { uid: mainThread.__GetElementUniqueID(element) }),
 					};
 					send({
@@ -366,7 +366,7 @@ export function startMainThread(): MainThreadRuntime {
 	/** Applies a patch of the page it shows, then flushes the tree once. */
 	function applyPatch(params: PatchParams): void {
 		const patch = decodePatch(params);
-		if (DEV) checkMessage(patch, { thread: "main-thread", page: state.generation });
+		if (DEV) checkMessage(patch, { thread: "main-thread", generation: state.generation });
 		if (!keepsMessage(patch, state.generation)) return;
 		// The new page replaces the old one in the same flush, with no empty frame between.
 		if (!state.rewriting) clearPrevious(state);
@@ -378,7 +378,7 @@ export function startMainThread(): MainThreadRuntime {
 		try {
 			functions.applying(() => {
 				if (state.frame) replay = hydrateFrame(patch);
-				else applyItems(patch.items, patch.page);
+				else applyItems(patch.items, patch.generation);
 				if (state.rewriting) return;
 				functions.settle();
 				state.dataHeld ||= patch.dataUpdated === true;

@@ -76,8 +76,8 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 		shows = [];
 		if (page.destroyed || page.rewriting) return;
 		try {
-			if (hidden.length > 0) send({ t: "hide", nodes: hidden });
-			if (shown.length > 0) send({ t: "show", nodes: shown });
+			if (hidden.length > 0) send({ t: "hide", elements: hidden });
+			if (shown.length > 0) send({ t: "show", elements: shown });
 		} catch (error) {
 			report(error);
 		}
@@ -95,9 +95,9 @@ export function createCells({ page, apply, send, report, later }: CellsOptions):
 		// A page written again, or gone, has none of its cells to let go of.
 		if (page.destroyed || page.rewriting || !page.applier) return;
 		try {
-			const nodes = page.applier.takeRewrites(CELLS_PER_REQUEST);
-			if (nodes.length > 0) send({ t: "rewrite", nodes });
-			if (nodes.length === CELLS_PER_REQUEST) schedule();
+			const elements = page.applier.takeRewrites(CELLS_PER_REQUEST);
+			if (elements.length > 0) send({ t: "rewrite", elements });
+			if (elements.length === CELLS_PER_REQUEST) schedule();
 		} catch (error) {
 			report(error);
 		}

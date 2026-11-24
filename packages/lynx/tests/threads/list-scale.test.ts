@@ -22,11 +22,11 @@ interface Row {
  * rows never shown in step: `tick` is the largest patch it sends.
  */
 const BUDGET = {
-	start: { ops: 9004, bytes: 261_608 },
-	append: { ops: 10, bytes: 5377 },
-	reverse: { ops: 1, bytes: 62_229 },
-	scroll: { ops: 8829, bytes: 222_981, up: 15_726 },
-	tick: { bytes: 52_919 },
+	start: { ops: 9004, bytes: 261_614 },
+	append: { ops: 10, bytes: 5383 },
+	reverse: { ops: 1, bytes: 62_235 },
+	scroll: { ops: 8829, bytes: 224_457, up: 17_940 },
+	tick: { bytes: 52_925 },
 };
 
 /** The most ids one request to write rows again names. */
@@ -122,10 +122,10 @@ describe("a list of 1,000 rows", () => {
 		}
 		expect(largest).toBeLessThanOrEqual(BUDGET.tick.bytes);
 		const requests = page.messages.flatMap((message) => (message.t === "rewrite" ? [message] : []));
-		expect(Math.max(...requests.map((request) => request.nodes.length))).toBeLessThanOrEqual(
+		expect(Math.max(...requests.map((request) => request.elements.length))).toBeLessThanOrEqual(
 			IDS_PER_REQUEST,
 		);
-		expect(new Set(requests.flatMap((request) => request.nodes)).size).toBeGreaterThan(900);
+		expect(new Set(requests.flatMap((request) => request.elements)).size).toBeGreaterThan(900);
 		const list = page.engine.list(page.byClass("list"));
 		expect(page.engine.text(list.show(999))).toBe("Row 1000, 12 min ago");
 		expect(page.errors).toEqual([]);

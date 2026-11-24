@@ -1,8 +1,8 @@
 // `pluginSvelteLynx`: the Rsbuild plugin that builds a Svelte app for Lynx.
 //
-// A DSL plugin on the Lynx build engine (`pluginLynx` from `@lynx-js/rsbuild-plugin`): it works
-// with the Rsbuild CLI and with rspeedy, and registers the engine itself when neither the app nor
-// rspeedy did. The engine owns the bundle filename, the intermediate directory, source maps and
+// A DSL plugin on Lynx's build plugin (`pluginLynx` from `@lynx-js/rsbuild-plugin`): it works
+// with the Rsbuild CLI and with rspeedy, and registers `pluginLynx` itself when neither the app nor
+// rspeedy did. `pluginLynx` owns the bundle filename, the intermediate directory, source maps and
 // debug metadata; this plugin asks it for them.
 //
 // Every entry becomes two layered entries plus one Lynx template:
@@ -76,7 +76,7 @@ export type {
 } from "./options.ts";
 import type { PluginSvelteLynxOptions } from "./options.ts";
 
-// What the Lynx build engine exposes to DSL plugins.
+// What Lynx's build plugin exposes to DSL plugins.
 const LYNX_CONFIG = Symbol.for("@lynx-js/rsbuild-plugin:config");
 const LYNX_TEMPLATE_PLUGIN = Symbol.for("LynxTemplatePlugin");
 
@@ -296,7 +296,7 @@ function checkEngineTemplatePlugin(options: { registered: boolean; root: string 
 }
 
 /**
- * Register the Lynx build engine unless the app (rsbuild.config.ts) or rspeedy already did, as
+ * Register Lynx's build plugin unless the app (rsbuild.config.ts) or rspeedy already did, as
  * pluginReactLynx does. Whether it was registered here.
  */
 async function registerLynxEngine(api: RsbuildPluginAPI): Promise<boolean> {

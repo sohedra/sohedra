@@ -33,7 +33,7 @@ export interface MainThreadPage {
 	shown: boolean;
 	/**
 	 * The ops of each list cell that has no elements, as they came: one Lynx never showed, or one
-	 * released, whose text the background wrote again.
+	 * let go of, whose text the background wrote again.
 	 */
 	cells: Map<number, string[]>;
 	/** The function contexts the texts of each cell in `cells` hold, when any do. */

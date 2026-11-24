@@ -24,7 +24,7 @@ describe("a change Lynx refuses", () => {
 		];
 		// What Lynx does with a patch: it calls the main thread's patch function.
 		const patch = readGlobal(PATCH_METHOD) as (params: { data: string }) => void;
-		page.asMainThread(() => patch(encodePatch({ page: 0, items: [["ops", refused]] })));
+		page.asMainThread(() => patch(encodePatch({ generation: 0, items: [["ops", refused]] })));
 		expect(page.engine.texts()).toEqual(["first", "after"]);
 		expect(page.engine.flushes.length).toBe(flushes + 1);
 		expect(page.errors).toEqual([

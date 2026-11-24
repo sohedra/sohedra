@@ -1,4 +1,4 @@
-// The `prepare` step: every rewrite a component needs before Svelte compiles it, in one go. The
+// The `prepare` step: every edit a component needs before Svelte compiles it, in one go. The
 // component is parsed once, each pass reads that one syntax tree and returns edits against the
 // text as written, the edits are applied together, and one source map comes out. A pass never
 // sees what another wrote, so a function's id, an error's place and the map all come from the

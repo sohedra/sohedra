@@ -1,4 +1,4 @@
-// List rows released off screen: past a screen of cells Lynx handed back, the main thread lets go
+// List rows let go of off screen: past a screen of cells Lynx handed back, the main thread lets go
 // of the oldest ones' elements, and the background writes each again from its tree, with the ids
 // it has, for the next time Lynx shows it. A row's state lives on the background and stays; what
 // only its views held goes. A row never shown keeps one merged text, written again the same way.
@@ -13,15 +13,15 @@ import {
 	holdRequests,
 	holdTimers,
 	range,
-	releasedRows,
+	rowsLetGo,
 	rewrittenCells,
-} from "./released-rows.ts";
+} from "./rows-let-go.ts";
 import { scroller, scrollThrough } from "./scroll.ts";
 import { startSveltePage } from "./svelte-page.ts";
 
 describe("list rows Lynx handed back", () => {
 	it("keep a screen of cells, and the oldest past it are released", async () => {
-		const { page, through, rowsOnPage } = await releasedRows();
+		const { page, through, rowsOnPage } = await rowsLetGo();
 		await through(0, 31);
 		// Lynx holds rows 32 to 40; the ten handed back last keep their elements.
 		expect(rowsOnPage()).toEqual(range(22, 40));
@@ -30,7 +30,7 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("are released after Lynx's callback returns, never inside it", async () => {
-		const { page, scroll, rowsOnPage } = await releasedRows();
+		const { page, scroll, rowsOnPage } = await rowsLetGo();
 		for (let first = 1; first <= 31; first++) scroll.to(first);
 		expect(rowsOnPage()).toEqual(range(1, 40));
 		await page.settle();
@@ -38,20 +38,20 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("keep a screen of what Lynx holds, the preload buffer left out", async () => {
-		const { through, rowsOnPage } = await releasedRows({ preload: 5 });
+		const { through, rowsOnPage } = await rowsLetGo({ preload: 5 });
 		// Rows 16 to 34 are held: one screen and five on each side.
 		await through(0, 20);
 		expect(rowsOnPage()).toEqual(range(6, 34));
 	});
 
 	it("keep a screen of small rows, as many as Lynx holds", async () => {
-		const { through, rowsOnPage } = await releasedRows({ count: 60, screen: 20 });
+		const { through, rowsOnPage } = await rowsLetGo({ count: 60, screen: 20 });
 		await through(0, 30);
 		expect(rowsOnPage()).toEqual(range(11, 50));
 	});
 
 	it("show again what the background holds, with their state and handlers", async () => {
-		const { page, feed, through, rowsOnPage, row, tap } = await releasedRows();
+		const { page, feed, through, rowsOnPage, row, tap } = await rowsLetGo();
 		await tap(1);
 		const before = row(1);
 		await through(0, 31);
@@ -67,7 +67,7 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("show a change made while their release was asked for", async () => {
-		const { page, through, change, rowsOnPage, row } = await releasedRows();
+		const { page, through, change, rowsOnPage, row } = await rowsLetGo();
 		const hold = holdRequests(page);
 		await through(0, 31);
 		expect(hold.held.length).toBeGreaterThan(0);
@@ -82,7 +82,7 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("show a change made after their release", async () => {
-		const { page, through, change, row } = await releasedRows();
+		const { page, through, change, row } = await rowsLetGo();
 		await through(0, 31);
 		await change((feed) => (feed.rows[0]!.label = "Changed"));
 		await through(31, 0);
@@ -91,7 +91,7 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("keep their elements when Lynx takes them back while their release is on its way", async () => {
-		const { page, through, row, rowsOnPage } = await releasedRows();
+		const { page, through, row, rowsOnPage } = await rowsLetGo();
 		const first = row(1);
 		const hold = holdRequests(page);
 		await through(0, 31);
@@ -105,7 +105,7 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("are written again for nothing once their list is gone", async () => {
-		const { page, through, change } = await releasedRows();
+		const { page, through, change } = await rowsLetGo();
 		const hold = holdRequests(page);
 		await through(0, 31);
 		const written = rewrittenCells(page).length;
@@ -120,7 +120,7 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("ask for nothing once the page is destroyed", async () => {
-		const { page, scroll } = await releasedRows();
+		const { page, scroll } = await rowsLetGo();
 		for (let first = 1; first <= 31; first++) scroll.to(first);
 		const asked = askedFor(page).length;
 		page.destroy();
@@ -130,14 +130,14 @@ describe("list rows Lynx handed back", () => {
 	});
 
 	it("are kept when their item is not recyclable", async () => {
-		const { page, through, rowsOnPage } = await releasedRows({ fixed: 1 });
+		const { page, through, rowsOnPage } = await rowsLetGo({ fixed: 1 });
 		await through(0, 31);
 		expect(rowsOnPage()).toEqual([1, ...range(22, 40)]);
 		expect(page.errors).toEqual([]);
 	});
 
-	it("reject a read of a released row's element, saying Lynx is not showing it", async () => {
-		const { page, handles, through } = await releasedRows();
+	it("reject a read of a let-go row's element, saying Lynx is not showing it", async () => {
+		const { page, handles, through } = await rowsLetGo();
 		await through(0, 31);
 		const answer = page.asBackground(() =>
 			(handles["row-1"] as ElementNode).invoke("boundingClientRect"),
@@ -151,9 +151,9 @@ describe("list rows Lynx handed back", () => {
 	});
 });
 
-describe("what a released row keeps", () => {
+describe("what a let-go row keeps", () => {
 	it("keeps its state and an input's value held in it; its animation and its own input go", async () => {
-		const { page, handles, through, row, within, tap } = await releasedRows();
+		const { page, handles, through, row, within, tap } = await rowsLetGo();
 		await tap(1);
 		page.engine.fire(within(row(1), "kept"), { type: "input", detail: { value: "typed" } });
 		let ended = "running";
@@ -180,7 +180,7 @@ describe("what a released row keeps", () => {
 	});
 });
 
-describe("a list in a released row", () => {
+describe("a list in a let-go row", () => {
 	it("goes with its row, and hears of its items again when Lynx shows the row again", async () => {
 		const page = startSveltePage(NestedRows);
 		await page.settle();
@@ -203,9 +203,9 @@ describe("a list in a released row", () => {
 	});
 });
 
-describe("a released row", () => {
+describe("a let-go row", () => {
 	it("keeps its changes as one text too, written again once they pile up", async () => {
-		const { page, through, change, row } = await releasedRows();
+		const { page, through, change, row } = await rowsLetGo();
 		await through(0, 31);
 		const before = rewrittenCells(page).length;
 		for (let version = 1; version <= 30; version++)
@@ -221,7 +221,7 @@ describe("a released row", () => {
 
 describe("a row Lynx never showed", () => {
 	it("keeps its changes as one text, written again once they pile up", async () => {
-		const { page, change, scroll } = await releasedRows();
+		const { page, change, scroll } = await rowsLetGo();
 		for (let version = 1; version <= 30; version++)
 			await change((feed) => (feed.rows[39]!.label = `Row 40, version ${version}`));
 		const rewritten = rewrittenCells(page);
@@ -235,7 +235,7 @@ describe("a row Lynx never showed", () => {
 	});
 
 	it("is not asked for once Lynx shows it before the request goes", async () => {
-		const { page, change, scroll } = await releasedRows();
+		const { page, change, scroll } = await rowsLetGo();
 		const timers = holdTimers(page);
 		for (let version = 1; version <= 30; version++)
 			await change((feed) => (feed.rows[39]!.label = `Row 40, version ${version}`));
@@ -250,12 +250,14 @@ describe("a row Lynx never showed", () => {
 	});
 
 	it("is asked for a few rows at a time, the rest on the next task", async () => {
-		const { page, change } = await releasedRows({ count: 200 });
+		const { page, change } = await rowsLetGo({ count: 200 });
 		const timers = holdTimers(page);
 		for (let tick = 1; tick <= 20; tick++)
 			await change((feed) => feed.rows.forEach((item) => (item.label = `Row ${item.id}, ${tick}`)));
 		const requests = () =>
-			page.messages.flatMap((message) => (message.t === "rewrite" ? [message.nodes.length] : []));
+			page.messages.flatMap((message) =>
+				message.t === "rewrite" ? [message.elements.length] : [],
+			);
 		timers.run();
 		await page.settle();
 		expect(requests()).toEqual([64]);

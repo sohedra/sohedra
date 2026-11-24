@@ -1,4 +1,4 @@
-// The template plugin of the Lynx build engine must be a version this package works with.
+// The template plugin of Lynx's build plugin must be a version this package works with.
 //
 // The engine and this package each run a template plugin on the compilation. Two copies of one
 // version keep their hooks on the compilation under one global symbol, so they work together; a
