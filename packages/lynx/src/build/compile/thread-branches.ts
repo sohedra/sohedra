@@ -119,25 +119,32 @@ const fragmentNodes = (fragment: AnyNode | undefined): AnyNode[] =>
 const holdsCaller = (fragment: AnyNode | undefined): boolean =>
 	[...nodes(fragmentNodes(fragment))].some((node) => CALLERS.has(node.type as string));
 
+/** A branch only one thread renders: its `{#if}`, and whether it is the `{:else}`. */
+export interface OneThreadBranch {
+	block: AnyNode;
+	alternate: boolean;
+}
+
 /**
  * The fragments of the `{#if}` branches only one thread renders, as recognized here: a flag's or
  * its negation's two branches, and the consequent of a flag joined to more by `&&`.
  */
-export function oneThreadFragments(ast: Parameters<Pass>[0]["ast"]): Set<AnyNode> {
-	const fragments = new Set<AnyNode>();
+export function oneThreadFragments(ast: Parameters<Pass>[0]["ast"]): Map<AnyNode, OneThreadBranch> {
+	const fragments = new Map<AnyNode, OneThreadBranch>();
 	const names = flagNames(ast);
 	if (names.flags.size === 0 && names.namespaces.size === 0) return fragments;
-	const add = (fragment: AnyNode | undefined): void => {
-		if (fragment !== undefined) fragments.add(fragment);
+	const add = (block: AnyNode, alternate: boolean): void => {
+		const fragment = field(block, alternate ? "alternate" : "consequent");
+		if (fragment !== undefined) fragments.set(fragment, { block, alternate });
 	};
 	for (const block of nodes(ast.fragment)) {
 		if (block.type !== "IfBlock") continue;
 		const test = field(block, "test")!;
 		if (flagTest(test, names) !== undefined) {
-			add(field(block, "consequent"));
-			add(field(block, "alternate"));
+			add(block, false);
+			add(block, true);
 		} else if (conjuncts(test).some((part) => flagTest(part, names) !== undefined))
-			add(field(block, "consequent"));
+			add(block, false);
 	}
 	return fragments;
 }

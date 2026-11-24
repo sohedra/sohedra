@@ -17,6 +17,8 @@ export interface CheckDetails {
 	main_thread_api_in_background: { api: string };
 	/** `selector` as written; `part`, the part of it Lynx doesn't support. */
 	css_selector_unsupported: { selector: string; part: string };
+	/** `attribute` as written; `branch` names the branch: "`{#if background}`", "the `{:else}` of …". */
+	main_thread_handler_in_thread_branch: { attribute: string; branch: string };
 }
 
 const THROWS = "so this code throws where it runs";
@@ -62,5 +64,12 @@ export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
 		fix: () =>
 			"Select the element by its type, a class or an id, and set the class from the component's state.",
 		docs: "css_selector_unsupported",
+	},
+	main_thread_handler_in_thread_branch: {
+		message: ({ attribute, branch }) =>
+			`\`${attribute}\` is inside ${branch}, which only one thread draws, so a call of \`runOnBackground\` it makes before the background takes the page over gets no answer.`,
+		fix: () =>
+			"Set it on an element the background renders the same way as the first frame, outside the `{#if}`.",
+		docs: "main_thread_handler_in_thread_branch",
 	},
 };

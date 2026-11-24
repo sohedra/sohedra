@@ -24,6 +24,7 @@ import { listItemKeys } from "./list-item-keys.ts";
 import type { Pass, PassContext } from "./pass.ts";
 import { copiedTypeScript, nodeTypeStripper, stripMainThreadTypes } from "./strip-types.ts";
 import { svelteOptions } from "./svelte-options.ts";
+import { threadBranchHandlers } from "./thread-branch-handlers.ts";
 import { threadBranches } from "./thread-branches.ts";
 
 /** What `prepare` reads. */
@@ -74,6 +75,7 @@ const PASSES: readonly Pass[] = [
 	effectImports,
 	listItemKeys,
 	appChecks,
+	threadBranchHandlers,
 	threadBranches,
 	deferredRows,
 ];

@@ -444,6 +444,18 @@ Move the declaration of \`onScroll\` above this use, after the values it capture
 https://sohedra.com/e/main_thread_function_used_early"
 `;
 
+exports[`the build's catalogue > main_thread_handler_in_thread_branch: the message 1`] = `
+"\`main-thread:ontap\` is inside \`{#if background}\`, which only one thread draws, so a call of \`runOnBackground\` it makes before the background takes the page over gets no answer.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Set it on an element the background renders the same way as the first frame, outside the \`{#if}\`.
+https://sohedra.com/e/main_thread_handler_in_thread_branch"
+`;
+
 exports[`the build's catalogue > on_directive: the message 1`] = `
 "\`on:\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3

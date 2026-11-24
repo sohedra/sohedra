@@ -118,7 +118,7 @@ const ROW_SOURCES = new Set([
 function* placedNodes(
 	node: unknown,
 	around: Omit<Placed, "node">,
-	oneThreadFragments: Set<AnyNode>,
+	oneThreadFragments: ReadonlyMap<AnyNode, unknown>,
 ): Generator<Placed> {
 	if (!node || typeof node !== "object") return;
 	if (Array.isArray(node)) {
