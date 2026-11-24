@@ -1,6 +1,6 @@
 // The polyfill folder's suites on PrimJS, apart from the package's own tests: they build PrimJS and
-// fetch WPT first (global-setup.ts), which takes a network and a C++ compiler.
-// `pnpm -F @sohedra/lynx test:primjs` runs them all; `test:wpt` the WPT suite.
+// fetch WPT and test262 first (global-setup.ts), which takes a network and a C++ compiler.
+// `pnpm -F @sohedra/lynx test:primjs` runs them all; `test:wpt` and `test:test262` one suite.
 
 import path from "node:path";
 

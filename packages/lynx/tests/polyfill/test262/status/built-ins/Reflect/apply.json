@@ -1,0 +1,8 @@
+{
+	"arguments-list-is-not-array-like.js": {
+		"fail": {
+			"note": "PrimJS's Reflect.apply takes a missing or non-object argument list instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}

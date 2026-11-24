@@ -1,0 +1,20 @@
+{
+	"cause_abrupt.js": {
+		"fail": {
+			"note": "PrimJS's Error takes no cause option.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"cause_property.js": {
+		"fail": {
+			"note": "PrimJS's Error takes no cause option.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"constructor.js": {
+		"fail": {
+			"note": "PrimJS's Error takes no cause option.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}
