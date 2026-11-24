@@ -46,7 +46,7 @@ describe("an {#await} with a pending branch", () => {
 	});
 
 	it("replays a tap the first frame heard outside it", async () => {
-		const page = awaiting(false);
+		const page = awaiting(true);
 		page.engine.dispatch(page.byClass("next"), { type: "tap" });
 		await page.settle();
 		expect(page.errors).toEqual([]);
