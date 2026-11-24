@@ -43,12 +43,12 @@ describe("resolvePageConfig", () => {
 		});
 	});
 
-	it("streams fetch's response bodies, unless the app turns it off", () => {
-		expect(resolvePageConfig(undefined).pageConfig).toMatchObject({
+	it("leaves fetch's streaming as Lynx has it, so lynx-core's Response.clone() keeps working", () => {
+		expect(resolvePageConfig(undefined).pageConfig).not.toHaveProperty(
+			"enableFetchAPIStandardStreaming",
+		);
+		expect(resolvePageConfig({ enableFetchAPIStandardStreaming: true }).pageConfig).toMatchObject({
 			enableFetchAPIStandardStreaming: true,
-		});
-		expect(resolvePageConfig({ enableFetchAPIStandardStreaming: false }).pageConfig).toMatchObject({
-			enableFetchAPIStandardStreaming: false,
 		});
 	});
 

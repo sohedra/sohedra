@@ -117,8 +117,8 @@ describe("the page config", () => {
 		expect(template["sourceContent"].config["enableCSSInlineVariables"]).toBe(true);
 	});
 
-	it("encodes enableFetchAPIStandardStreaming by default, so that a response's body streams", () => {
-		expect(template["sourceContent"].config["enableFetchAPIStandardStreaming"]).toBe(true);
+	it("leaves enableFetchAPIStandardStreaming out, so lynx-core's fetch works as Lynx has it", () => {
+		expect(template["sourceContent"].config).not.toHaveProperty("enableFetchAPIStandardStreaming");
 	});
 
 	it("sets what the runtime needs, and what no setting turns off: the engine's newer paths", () => {
