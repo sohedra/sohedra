@@ -3,8 +3,9 @@
 	// The root's rules, then this package's. oxlint reads every glob here, and the root's too,
 	// relative to this folder.
 	"extends": ["../../.oxlintrc.jsonc"],
-	// The npm packages the package bundles (scripts/vendor/bundle.ts), as their authors wrote them.
-	"ignorePatterns": ["src/fills/vendor/**"],
+	// The npm packages the package bundles (scripts/vendor/bundle.ts), as their authors wrote them,
+	// and the types written from TypeScript's (scripts/types/generate.ts).
+	"ignorePatterns": ["src/fills/vendor/**", "types/generated/**"],
 	"overrides": [
 		{
 			// The source runs on Lynx's threads: a thread's globals are reached through

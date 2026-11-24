@@ -21,3 +21,6 @@ ontextClickcapture = "ontextClickcapture"
 veiw = "veiw"
 # Misspelled on purpose: a test checks that the plugin suggests `engineVersion` for it.
 engineVersoin = "engineVersoin"
+# Lynx's own fields of its performance timing, as `@lynx-js/types` declares them.
+lepus_excute_start = "lepus_excute_start"
+lepus_excute_end = "lepus_excute_end"

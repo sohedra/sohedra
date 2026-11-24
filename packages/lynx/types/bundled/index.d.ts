@@ -108,7 +108,9 @@ export function unmount(component: Bag): void;
  * Mounts `App` as the page of this Lynx view: the page's entry calls it once, on both threads. On
  * the main thread it draws the first frame from the page's data; on the background it mounts the
  * component over that frame, then answers the page's events, and mounts it again when the host
- * reloads the page. An error while the page starts is reported into Lynx, not thrown.
+ * reloads the page. An error while the page starts is reported into Lynx, not thrown. A component
+ * with required props needs `props`. A second call while the page runs is reported, and does
+ * nothing.
  *
  * ```ts
  * import { mountPage } from "@sohedra/lynx";
@@ -119,7 +121,13 @@ export function unmount(component: Bag): void;
  */
 export function mountPage<Props extends Bag>(
 	App: Component<Props>,
-	options?: MountPageOptions<NoInfer<Props>>,
+	...[options]: {} extends Props
+		? [options?: MountPageOptions<NoInfer<Props>>]
+		: [
+				options: MountPageOptions<NoInfer<Props>> & {
+					props: {};
+				},
+			]
 ): void;
 type Bag = Record<string, any>;
 /** How `mountPage` mounts the page's root component. */
@@ -177,8 +185,8 @@ export type ErrorHandler = (error: Error, context: ErrorContext) => void;
  *
  * In a main-thread function, import it with `with { runtime: "shared" }`
  * (`import { reportError } from "@sohedra/lynx" with { runtime: "shared" }`): it then reports from
- * the main thread. A plain import is captured as the background's function, which cannot cross
- * to the main thread.
+ * the main thread. A plain import there is a build error (`shared_import_needed`): it would give
+ * the main thread the background's function.
  */
 export function reportError(error: unknown): void;
 /**

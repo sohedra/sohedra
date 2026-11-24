@@ -187,6 +187,10 @@ const NAMES: Record<string, Resolves> = {
 	"runOnBackground(sample)": {
 		kind: "runOnBackground from @sohedra/lynx, given the developer's function",
 	},
+	'with { runtime: "shared" }': { kind: "an import attribute, which the build reads" },
+	'import { sample } from "@sohedra/lynx" with { runtime: "shared" }': {
+		kind: "an import of @sohedra/lynx's export, with the attribute the build reads",
+	},
 };
 
 /** The modules a fix line names, by their specifier. */

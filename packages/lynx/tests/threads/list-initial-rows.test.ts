@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { readGlobal } from "../../src/testing/globals.ts";
+import { readGlobal, removeGlobals } from "../../src/testing/globals.ts";
 import { FIRST_FRAME_GLOBAL } from "../../src/wire/index.ts";
 import InitialRows from "../fixtures/threads/InitialRows.svelte";
 import drawInitialRows from "../fixtures/threads/InitialRows.svelte?first-frame";
@@ -335,8 +335,11 @@ const FIRST_FRAME_BYTES: Record<number, number> = { 1000: 70_697, 5000: 354_697 
 
 describe.each([1000, 5000])("a first frame of %i deferred rows", (count) => {
 	it("draws its initial rows whole and the rest empty, within its budget, as the background renders it", () => {
+		// A main thread records one page's first frame: the one drawn before goes first.
+		removeGlobals([FIRST_FRAME_GLOBAL]);
 		drawInitialRows({ handles: {}, count });
 		const markup = (readGlobal(FIRST_FRAME_GLOBAL) as (data: object) => string)({});
+		removeGlobals([FIRST_FRAME_GLOBAL]);
 		// A row of the fixture drawn whole holds a <view>; one that waits holds nothing.
 		expect(markup.split("<view").length - 1).toBe(10);
 		expect(markup.length).toBeLessThanOrEqual(FIRST_FRAME_BYTES[count]!);

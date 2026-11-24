@@ -9,7 +9,8 @@
 //   object, not the method (`hold.spring.set(2)` captures `hold.spring`): a method alone has lost
 //   its object, and a function is dropped when the captures are sent across.
 // - `runOnBackground(fn)` makes `fn` a background function: the object holds a handle to it, and
-//   the body passes the handle on.
+//   the body passes the handle on. The binding's thread functions are known by their import
+//   (thread-functions.ts), and never captured: each thread has its own.
 
 import type { BuildDetails } from "../diagnostics/catalogue.ts";
 import { capture, memberSegment, narrowable } from "./captures.ts";
@@ -22,6 +23,13 @@ import {
 	unwrap,
 } from "./directive.ts";
 import type { Node } from "./node.ts";
+import {
+	sharedOnlyFunction,
+	threadFunctionNames,
+	threadFunctionOf,
+	unclearThreadFunction,
+} from "./thread-functions.ts";
+import type { ThreadFunctionNames } from "./thread-functions.ts";
 
 /** What declares a name where it stands, besides variables and imports. */
 const NAMED_DECLARATIONS = new Set([
@@ -34,11 +42,6 @@ const NAMED_DECLARATIONS = new Set([
 /** Not nodes. */
 const SKIPPED_KEYS = new Set(["loc", "leadingComments", "trailingComments"]);
 
-/**
- * The binding's own functions that main-thread code calls. Each thread has its own, so they are
- * used where the body runs, never captured.
- */
-const NEVER_CAPTURED = new Set(["runOnBackground", "runOnMainThread"]);
 /** The methods of a function that call it: `save.call(…)` calls `save`. */
 const CALL_METHODS = new Set(["call", "apply", "bind"]);
 
@@ -102,6 +105,8 @@ export interface Found {
 
 /** The errors a script's walk can fail with. */
 type FailCode =
+	| "thread_function_unclear"
+	| "shared_import_needed"
 	| "main_thread_function_method"
 	| "main_thread_function_this"
 	| "main_thread_function_generator"
@@ -122,6 +127,8 @@ export interface ScriptFunctions {
 	topLevel: Set<Node>;
 	/** The first use of a main-thread function declaration above it, in its own scope. */
 	earlyUses: Map<Node, Node>;
+	/** How the script names the binding's thread functions. */
+	threadNames: ThreadFunctionNames;
 }
 
 /** Add the names of the program's imports marked `with { runtime: "shared" }` to `shared`. */
@@ -158,6 +165,9 @@ export function findFunctions(options: {
 	const earlyUses = new Map<Node, Node>();
 	sharedImports(program, shared);
 	if (outer) sharedImports(outer, shared);
+	const threadNames = threadFunctionNames([outer, program]);
+	/** The scopes of the script's top level: its program's, and a component's module script's. */
+	const topScopes = new Set<Scope>();
 	for (const statement of program.body) {
 		if (instance && statement.type === "FunctionDeclaration") {
 			topLevel.add(statement);
@@ -270,10 +280,30 @@ export function findFunctions(options: {
 			earlyUses.set(declaration, node);
 	};
 
+	/** Whether `name`, where the walk is, is declared at the script's top level. */
+	const atTop = (name: string): boolean => {
+		let from = scope;
+		while (from && !from.names.has(name)) from = from.parent;
+		return from !== undefined && topScopes.has(from);
+	};
+
+	/**
+	 * Refuses a read in a main-thread function that may be a thread function of the binding, or that
+	 * is the background's copy of a function the main thread has through a shared import.
+	 */
+	const refuseUnclear = (node: Node): void => {
+		const unclear = unclearThreadFunction(node, threadNames, atTop);
+		if (unclear) fail(node, { code: "thread_function_unclear", details: unclear });
+		const sharedOnly = sharedOnlyFunction(node, threadNames, atTop);
+		if (sharedOnly) fail(node, { code: "shared_import_needed", details: sharedOnly });
+	};
+
 	/** A name read in a main-thread function: captured if the file declares it outside the function. */
 	const reference = (name: string, node: Node): void => {
 		earlyUse(name, node);
-		if (!current || shared.has(name) || NEVER_CAPTURED.has(name)) return;
+		if (!current || shared.has(name)) return;
+		if (threadNames.functions.has(name) && atTop(name)) return;
+		refuseUnclear(node);
 		// In a component, `$count` reads the store `count`.
 		const declared =
 			instance && name.length > 1 && name.startsWith("$") && !name.startsWith("$$")
@@ -464,6 +494,7 @@ export function findFunctions(options: {
 				within(
 					own,
 					() => {
+						if (node.type === "Program") topScopes.add(scope!);
 						for (const statement of node.body) visit(statement, node);
 					},
 					top,
@@ -516,6 +547,12 @@ export function findFunctions(options: {
 				visit(node.init, node);
 				return;
 			case "MemberExpression": {
+				if (current) {
+					// The binding's `lynx.runOnBackground`: read where the body runs, as an import is.
+					if (threadFunctionOf(node, threadNames, atTop) !== undefined) return;
+					const object = unwrap(node.object);
+					if (object?.type !== "Identifier" || !shared.has(object.name)) refuseUnclear(node);
+				}
 				const object = unwrap(node.object);
 				const segment = memberSegment(node);
 				// A member read through `?.` is not captured: reading it when the
@@ -545,8 +582,7 @@ export function findFunctions(options: {
 			case "CallExpression":
 				if (
 					current &&
-					node.callee.type === "Identifier" &&
-					node.callee.name === "runOnBackground" &&
+					threadFunctionOf(node.callee, threadNames, atTop) === "runOnBackground" &&
 					node.arguments.length > 0
 				) {
 					// The argument is the background's: nothing in it is captured.
@@ -605,7 +641,8 @@ export function findFunctions(options: {
 		const own = declared();
 		for (const statement of outer.body) declare(statement, own, true, true);
 		scope = { ...own, early: own.names, top: undefined, depth: 0, parent: undefined };
+		topScopes.add(scope);
 	}
 	visit(program);
-	return { found, deepState, topLevel, earlyUses };
+	return { found, deepState, topLevel, earlyUses, threadNames };
 }

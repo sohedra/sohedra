@@ -36,6 +36,22 @@ both threads load can name it.
 When your code reads a global that no import put there, Sohedra's report names the import that fills
 it: `The global \`URL\` is not defined: … Import "@sohedra/lynx-polyfill/url" …`.
 
+## Types
+
+Each import brings the types of the globals it installs: after
+`import "@sohedra/lynx-polyfill/url"`, `URL` and `URLSearchParams` type-check, and without an import
+that installs them they are a type error, as they would be on the device. The types are TypeScript's
+own for the web without the DOM (`lib.webworker.d.ts`), cut to what the package fills, so your
+tsconfig needs no `"DOM"` in `lib`. They name each global as the standard has it: what a fill leaves
+out is under [Known limits](#known-limits). The language's types come from your tsconfig's `lib`.
+The interfaces those globals name are known after any import, as types only: after
+`import "@sohedra/lynx-polyfill/abort"`, `let url: URL` type-checks and `new URL(…)` does not.
+
+With the DOM's types or Node's (`@types/node`) in the same check, both declare some of the same
+globals: keep `skipLibCheck` on, as Sohedra's base tsconfig has it, which leaves their declarations
+to them; with it off, TypeScript reports the duplicates in the declaration files. With Node's types,
+the timers answer Node's `NodeJS.Timeout`, not a number.
+
 ## What each import fills
 
 | Import              | Fills                                                                                                                                                                                                                                                                                                                              | Threads                                                                                                                                   |
@@ -193,4 +209,5 @@ too, which must keep every built-in it has.
 
 ## License
 
-Apache-2.0. The npm packages it bundles keep their own licenses; `NOTICE` lists them.
+Apache-2.0. The npm packages it bundles, and TypeScript's declarations its types are written from,
+keep their own licenses; `NOTICE` lists them.

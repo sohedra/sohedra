@@ -5,7 +5,7 @@
 import { describe, expect, it } from "@rstest/core";
 import fc from "fast-check";
 
-import { readGlobal } from "../../../src/testing/globals.ts";
+import { readGlobal, removeGlobals } from "../../../src/testing/globals.ts";
 import { FIRST_FRAME_GLOBAL } from "../../../src/wire/index.ts";
 import drawGeneratedFrame from "../../fixtures/threads/GeneratedFrame.svelte?first-frame";
 import { drawnTree } from "../../unit/main-thread/drawn-tree.ts";
@@ -21,6 +21,8 @@ describe("the first frame's parser, on generated pages", () => {
 		const trees: string[] = [];
 		for (const model of PAGES) {
 			const compiled = await compilePage(pageSources(model), { production: model.production });
+			// A main thread records one page's first frame: the one drawn before goes first.
+			removeGlobals([FIRST_FRAME_GLOBAL]);
 			drawGeneratedFrame({
 				page: compiled.mainThread,
 				props: { data: structuredClone(model.data), handles: {} },

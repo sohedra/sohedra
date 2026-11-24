@@ -18,8 +18,11 @@ credits in `NOTICE`. Private.
   of the global's behavior, never over one that works. Its file's header gives the spec section and
   what it leaves out; its function carries a `@workaround` tag. What it catches goes to
   `reportCaught` (`src/fills/errors.ts`). A new subpath gets an entry per thread, a row in the
-  README, a row in the binding's missing-global table (`packages/lynx/src/wire/missing-globals.ts`)
-  and its budget in `tests/package/entries.test.ts`' snapshot.
+  README, a row in the binding's missing-global table (`packages/lynx/src/wire/missing-globals.ts`),
+  its budget in `tests/package/entries.test.ts`' snapshot, and its types:
+  `pnpm -F @sohedra/lynx-polyfill generate` writes `types/generated/` from that snapshot's globals
+  and TypeScript's `lib.webworker.d.ts`, never edited by hand; `exports` points the subpath's
+  `types` at its file.
 - **Vendored packages:** a dev dependency pinned exactly, an entry in `scripts/vendor/entries/`,
   `pnpm -F @sohedra/lynx-polyfill vendor` to bundle it into `src/fills/vendor/` (committed, never
   edited by hand), a hand-written `.d.ts` beside it, a line in `NOTICE`, and Renovate's `polyfill`

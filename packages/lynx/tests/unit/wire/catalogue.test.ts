@@ -16,6 +16,7 @@ const SAMPLES: { [Code in WireCode]: WireDetails[Code] } = {
 		name: "crypto",
 		instead: "For hashes, use a library in plain JavaScript such as @noble/hashes.",
 	},
+	page_already_mounted: { thread: "main-thread" },
 };
 
 const CODES = Object.keys(WIRE_CATALOGUE) as WireCode[];

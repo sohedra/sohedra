@@ -634,6 +634,18 @@ Fix the syntax at this place.
 https://sohedra.com/e/script_syntax_error"
 `;
 
+exports[`the build's catalogue > shared_import_needed: the message 1`] = `
+"A main-thread function uses \`report\`, which is \`reportError\` of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Import it with \`with { runtime: "shared" }\`, which gives the main thread its own: \`import { reportError } from "@sohedra/lynx" with { runtime: "shared" }\`.
+https://sohedra.com/e/shared_import_needed"
+`;
+
 exports[`the build's catalogue > single_copy_name: the message 1`] = `
 "\`singleCopy\` must be a list of package names such as 'zustand' or '@acme/state'; got ["./local"].
 /app/src/App.svelte:2:3
@@ -836,6 +848,18 @@ exports[`the build's catalogue > thread_branch_test: the message 1`] = `
 
 Give the part only one thread renders a block of its own whose test is the flag alone, \`{#if background}\`, \`{#if mainThread}\` or \`{#if BROWSER}\`, and put the rest of the test inside it.
 https://sohedra.com/e/thread_branch_test"
+`;
+
+exports[`the build's catalogue > thread_function_unclear: the message 1`] = `
+"A main-thread function calls \`toBackground\`, and the build cannot tell whether it is \`runOnBackground\` of @sohedra/lynx.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Import \`runOnBackground\` from "@sohedra/lynx", under any name, or under its own name from a module of the app that re-exports it.
+https://sohedra.com/e/thread_function_unclear"
 `;
 
 exports[`the build's catalogue > transition_directive: the message 1`] = `

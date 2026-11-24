@@ -1,5 +1,7 @@
 // `@sohedra/lynx/experimental`, bundled from the source by `pnpm -F @sohedra/lynx declarations`.
 
+import type { MainThread } from "@sohedra/lynx/elements";
+import type { Gesture } from "@sohedra/lynx/gesture";
 /** Several gestures on one element. */
 declare class ComposedGesture extends GestureBase {
 	private readonly type;
@@ -26,19 +28,9 @@ export class SimultaneousGesture extends ComposedGesture {
 export class ExclusiveGesture extends ComposedGesture {
 	constructor(...gestures: Gesture[]);
 }
-/**
- * What every gesture class extends: marked as a gesture, which the main thread reads. The mark is
- * public, so a gesture is one to every entry's declarations, which each declare the classes they
- * export.
- */
-declare class GestureBase {
-	readonly __isSerialized: true;
-}
-/**
- * A gesture: what `main-thread:gesture` takes, and what a gesture's relations name. Only the
- * gesture classes make one.
- */
-interface Gesture extends GestureBase {}
+/** What every gesture class extends: marked as a gesture, which the main thread reads. */
+declare class GestureBase {}
+interface GestureBase extends Gesture {}
 /** What every gesture takes besides its own options: the gestures it relates to. */
 interface GestureRelations {
 	/**
@@ -120,37 +112,6 @@ export class FlingGesture extends PlainGesture {
 export class NativeGesture extends PlainGesture {
 	constructor(options?: NativeGestureOptions);
 }
-/** The element a gesture is on, as a main-thread function gets it. */
-interface GestureElement {
-	/** The element's parent, up to the page; `null` above it. */
-	readonly parentElement: GestureElement | null;
-	/** The element's `data-*` attributes. */
-	readonly dataset: Record<string, unknown>;
-	/** Whether `other` is this element or inside it. */
-	contains(other: GestureElement): boolean;
-	getAttribute(name: string): unknown;
-	setAttribute(name: string, value: unknown): void;
-	/** Sets one style; a later `style` from the background keeps it. */
-	setStyleProperty(name: string, value: string | number | null): void;
-	/** Sets several styles at once. */
-	setStyleProperties(styles: Record<string, string | number | null>): void;
-	querySelector(selector: string): GestureElement | null;
-	querySelectorAll(selector: string): GestureElement[];
-	getAttributeNames(): string[];
-	/** The value a style of the element has now, as laid out. */
-	getComputedStyleProperty(name: string): string;
-	/** Animates the element; a number is the duration in milliseconds. */
-	animate(
-		keyframes: Record<string, string | number>[],
-		options?: number | Record<string, unknown>,
-	): {
-		cancel(): void;
-		pause(): void;
-		play(): void;
-	};
-	/** Calls one of the element's UI methods, once the frame it is in is laid out. */
-	invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
-}
 /**
  * Where a touch is. A tap's `onStart` and `onEnd` carry none of it on Android: read it in
  * `onBegin`.
@@ -173,9 +134,9 @@ interface GestureChangeEvent<Params extends GestureParams = GestureParams> {
 	/** When it happened, in milliseconds: on the event, not in `params`. */
 	timestamp: number;
 	/** The element the gesture is on, as `currentTarget`: a gesture names no touched element. */
-	target: GestureElement;
+	target: MainThread.Element;
 	/** The element the gesture is on. */
-	currentTarget: GestureElement;
+	currentTarget: MainThread.Element;
 	params: Params;
 }
 /** Where a scrolling element stands, as a pan's event has it. */

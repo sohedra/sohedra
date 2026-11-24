@@ -14,7 +14,7 @@ export const DOM_INSTEAD: Readonly<Record<DomInstead, string>> = {
 		"Read the screen's size from `systemInfo` in `@sohedra/lynx/host`, and listen to the page's events with `on(root, …)`.",
 	layout: "Listen to the element's `layoutchange` event, which gives its size and place.",
 	visibility:
-		"Use `lynx.createIntersectionObserver()` on the background, or the element's `onuiappear` and `onuidisappear` events.",
+		"Use the element's `onuiappear` and `onuidisappear` events, or `lynx.createIntersectionObserver({})` on the background.",
 	address: "Keep where the app is in its own state: a Lynx page has no address.",
 };
 

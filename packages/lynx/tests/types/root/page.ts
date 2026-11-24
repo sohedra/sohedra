@@ -1,6 +1,7 @@
 // Checked by `pnpm check`, not run. `mountPage` takes the root component and its props, as an object
 // or as a function of the page's data and the host's global props, typed as the app augments
-// `@sohedra/lynx/host`'s `InitData` and `GlobalProps`, and a context.
+// `@sohedra/lynx/host`'s `InitData` and `GlobalProps`, and a context. Props the component requires
+// must be given, as `mount` requires them.
 
 import { mountPage } from "@sohedra/lynx";
 import type { MountPageOptions } from "@sohedra/lynx";
@@ -33,7 +34,7 @@ mountPage(App, { props: { title: "Inbox" }, context: new Map([["theme", "dark"]]
 mountPage(Plain);
 mountPage(Inbox, { props: { title: "Inbox" } });
 mountPage(Inbox, { props: (data) => ({ title: String(data["title"]) }) });
-const options: MountPageOptions<{ title: string }> = { props: { title: "Inbox" } };
+const options = { props: { title: "Inbox" } } satisfies MountPageOptions<{ title: string }>;
 mountPage(App, options);
 // The app's own keys reach the function, typed.
 mountPage(App, {
@@ -48,6 +49,14 @@ const fromHost = (data: InitData, globals: GlobalProps) => ({
 });
 mountPage(App, { props: fromHost });
 
+// @ts-expect-error the component requires props, as `mount` does.
+mountPage(App);
+// @ts-expect-error the component requires props, as `mount` does.
+mountPage(App, {});
+// @ts-expect-error the component requires props, as `mount` does.
+mountPage(Inbox, { context: new Map() });
+// @ts-expect-error options that may hold no props do not give the component its props.
+mountPage(App, {} as MountPageOptions<{ title: string }>);
 // @ts-expect-error a prop the component does not have.
 mountPage(App, { props: { title: "Inbox", count: 1 } });
 // @ts-expect-error a prop the interface does not have.

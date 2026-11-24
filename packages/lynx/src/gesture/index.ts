@@ -15,18 +15,17 @@ export { DefaultScrollGesture, PanGesture, TapGesture } from "./gestures.ts";
 export type {
 	ContinuousGestureCallbacks,
 	DefaultScrollGestureOptions,
-	Gesture,
 	GestureCallbacks,
 	GestureRelations,
 	PanGestureOptions,
 	TapGestureOptions,
 } from "./gestures.ts";
+export type { Gesture } from "./gesture.ts";
 export type {
 	DefaultScrollGestureChangeEvent,
 	DeltaParams,
 	GestureCallback,
 	GestureChangeEvent,
-	GestureElement,
 	GestureParams,
 	PanGestureChangeEvent,
 	ScrollParams,

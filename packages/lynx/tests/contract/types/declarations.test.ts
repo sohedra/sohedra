@@ -22,6 +22,7 @@ const OTHER_DECLARATIONS = [
 	"types/client.d.ts",
 	"types/elements.d.ts",
 	"types/generated/elements.d.ts",
+	"types/generated/lynx.d.ts",
 ];
 
 interface Manifest {

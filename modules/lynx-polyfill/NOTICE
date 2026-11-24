@@ -35,3 +35,11 @@ its vendored module:
 - whatwg-url-minimum 0.2.0, Copyright (c) Phil Pluckthun, 650 Industries, Inc.
   (aka Expo) and Sebastian Mayr, licensed under the MIT License:
   src/fills/vendor/url.js
+
+This product includes declarations adapted from TypeScript
+(https://github.com/microsoft/TypeScript), Copyright (c) Microsoft Corporation,
+licensed under the Apache License 2.0:
+
+- types/generated/, written from TypeScript's lib.webworker.d.ts,
+  lib.webworker.iterable.d.ts and lib.webworker.asynciterable.d.ts
+  (scripts/types/generate.ts)

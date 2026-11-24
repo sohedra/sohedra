@@ -1,7 +1,7 @@
 // The types generated from `@lynx-js/types`: Lynx's elements as a Svelte component writes them,
-// `SystemInfo`, and the elements as the editor's HTML custom data. They are committed, since they are the binding's API: a move to a new
-// `@lynx-js/types` shows as a diff to review, and a test fails while the committed files differ from
-// what this makes.
+// `SystemInfo`, the global `lynx`, and the elements as the editor's HTML custom data. They are
+// committed, since they are the binding's API: a move to a new `@lynx-js/types` shows as a diff to
+// review, and a test fails while the committed files differ from what this makes.
 
 import { format } from "oxfmt";
 
@@ -15,6 +15,7 @@ import {
 	SYSTEM_INFO_NOTES,
 } from "./additions.ts";
 import { writeCustomData } from "./custom-data.ts";
+import { writeLynx } from "./lynx.ts";
 import { readLynxTypes } from "./read.ts";
 import type { ElementModel, Model } from "./read.ts";
 import { writeElements, writeSystemInfo } from "./write.ts";
@@ -86,6 +87,7 @@ export async function generateTypes(): Promise<GeneratedFile[]> {
 		{ path: "types/generated/elements.d.ts", text: writeElements(model) },
 		{ path: "src/background/host/system-info.ts", text: writeSystemInfo(model, SYSTEM_INFO_NOTES) },
 		{ path: "types/generated/html-custom-data.json", text: writeCustomData(model) },
+		{ path: "types/generated/lynx.d.ts", text: writeLynx() },
 	];
 	return Promise.all(
 		files.map(async ({ path, text }) => ({ path, text: await formatted(path, text) })),

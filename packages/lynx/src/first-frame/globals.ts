@@ -25,6 +25,11 @@ export function setGlobalFunction(name: string, fn: (...args: never[]) => unknow
 	(globalThis as unknown as Record<string, unknown>)[name] = fn;
 }
 
+/** Whether the global object has `name`. */
+export function hasGlobal(name: string): boolean {
+	return scope[name] !== undefined;
+}
+
 /** Any global, by name. */
 // Boundary: the engine's globals have no types; the runtime's are typed where they are read.
 const scope = globalThis as unknown as Record<string, unknown>;

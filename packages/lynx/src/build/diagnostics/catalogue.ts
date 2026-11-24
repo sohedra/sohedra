@@ -81,6 +81,10 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	/** `version` is the Node.js that builds (`v20.19.0`). */
 	typescript_stripper_missing: { version: string };
 	plain_function_in_main_thread_function: { name: string };
+	/** `written` is the read as written; `name`, the binding's export it reads. */
+	shared_import_needed: { written: string; name: string };
+	/** `written` is the call as written; `name`, the binding's function it may be. */
+	thread_function_unclear: { written: string; name: string };
 	script_syntax_error: { reason: string };
 	/** `regexp` is the expression as the code has it: a literal, or a `RegExp` call. */
 	regexp_refused: { regexp: string; syntax: RegExpSyntax };
@@ -239,6 +243,20 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 		fix: ({ name }) =>
 			`Call it through \`runOnBackground(${name})\`, or start its body with 'main thread'.`,
 		docs: "plain_function_in_main_thread_function",
+	},
+	shared_import_needed: {
+		message: ({ written, name }) =>
+			`A main-thread function uses \`${written}\`${written === name ? "" : `, which is \`${name}\``} of @sohedra/lynx through a plain import, which gives it the background's function: the main thread cannot run it.`,
+		fix: ({ name }) =>
+			`Import it with \`with { runtime: "shared" }\`, which gives the main thread its own: \`import { ${name} } from "@sohedra/lynx" with { runtime: "shared" }\`.`,
+		docs: "shared_import_needed",
+	},
+	thread_function_unclear: {
+		message: ({ written, name }) =>
+			`A main-thread function calls \`${written}\`, and the build cannot tell whether it is \`${name}\` of @sohedra/lynx.`,
+		fix: ({ name }) =>
+			`Import \`${name}\` from "@sohedra/lynx", under any name, or under its own name from a module of the app that re-exports it.`,
+		docs: "thread_function_unclear",
 	},
 	script_syntax_error: {
 		message: ({ reason }) => `A script has a syntax error: ${reason}.`,

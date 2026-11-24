@@ -21,6 +21,11 @@ import {
 } from "../main-thread-functions/directive.ts";
 import type { Node } from "../main-thread-functions/node.ts";
 import {
+	threadFunctionNames,
+	threadFunctionOf,
+} from "../main-thread-functions/thread-functions.ts";
+import type { ThreadFunctionNames } from "../main-thread-functions/thread-functions.ts";
+import {
 	collect,
 	FUNCTIONS,
 	GLOBAL_OBJECTS,
@@ -119,13 +124,15 @@ class Walk {
 		imports: new Set(),
 	};
 	readonly flags: FlagNames;
+	readonly threadFunctions: ThreadFunctionNames;
 	/** The markup element whose attribute is being read, if any. */
 	anchor: number | undefined;
 	/** How many functions the walk is inside. */
 	depth = 0;
 
-	constructor(flags: FlagNames) {
+	constructor(flags: FlagNames, threadFunctions: ThreadFunctionNames) {
 		this.flags = flags;
+		this.threadFunctions = threadFunctions;
 	}
 
 	/** The scope a name is declared in, from `scope` out. */
@@ -133,6 +140,12 @@ class Walk {
 		for (let current = scope; current; current = current.parent)
 			if (current.names.has(name)) return current;
 		return undefined;
+	}
+
+	/** Whether `name`, read in `scope`, is declared at the top level, where the imports are. */
+	atTop(name: string, scope: Scope): boolean {
+		const declaring = this.declaring(name, scope);
+		return declaring !== undefined && declaring.parent === undefined;
 	}
 
 	/** The thread a flag, a constant or its negation is true on, if `test` is one. */
@@ -368,12 +381,12 @@ class Walk {
 				return;
 			}
 			case "CallExpression":
-				// As the main-thread functions' compile reads it (main-thread-functions/find.ts): the
-				// argument of `runOnBackground(…)` in a main-thread function runs on the background.
+				// As the main-thread functions' compile reads it (main-thread-functions/thread-functions.ts):
+				// the argument of `runOnBackground(…)` in a main-thread function runs on the background.
 				if (
 					scope.mainThread &&
-					node.callee?.type === "Identifier" &&
-					node.callee.name === "runOnBackground" &&
+					threadFunctionOf(node.callee, this.threadFunctions, (name) => this.atTop(name, scope)) ===
+						"runOnBackground" &&
 					node.arguments.length > 0
 				) {
 					this.visit(node.callee, scope, at);
@@ -466,7 +479,7 @@ export function scriptUses({ programs, declared = [], expressions = [] }: Script
 	for (const program of programs) collect(program.body, names);
 	for (const name of declared) if (!names.has(name)) names.set(name, "value");
 	const top: Scope = { names, parent: undefined, mainThread: false };
-	const walk = new Walk(flagNames(programs));
+	const walk = new Walk(flagNames(programs), threadFunctionNames(programs));
 	const everywhere: At = { threads: BOTH, flagged: false };
 	for (const program of programs) walk.statements(program.body, top, everywhere);
 	for (const { node, thread, anchor } of expressions) {

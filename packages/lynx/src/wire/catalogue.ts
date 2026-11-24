@@ -21,6 +21,8 @@ export interface WireDetails {
 	global_background_only: { name: string };
 	/** `name`: a global the app read, which no fill gives; `instead`: what to use. */
 	global_not_on_lynx: { name: string; instead: string };
+	/** `thread`: the thread that refused the call. */
+	page_already_mounted: { thread: Thread };
 }
 
 /** What a code of the wire names. */
@@ -75,6 +77,13 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 			`The global \`${name}\` is not defined: Lynx's engine doesn't have it, and no fill gives it.`,
 		fix: ({ instead }) => instead,
 		docs: "global_not_on_lynx",
+	},
+	page_already_mounted: {
+		message: ({ thread }) =>
+			`A second call of \`mountPage\` did nothing: the page the first call started still runs.\nSeen on ${THREAD_NAMES[thread]}.`,
+		fix: () =>
+			"Call `mountPage` once, in the page's entry. To show a component over the page, call `mount`; to show another page, change what the root component shows.",
+		docs: "page_already_mounted",
 	},
 };
 

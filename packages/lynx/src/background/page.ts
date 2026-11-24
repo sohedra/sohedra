@@ -22,7 +22,7 @@ import {
 	startPropsIds,
 	withRenderer,
 } from "../svelte/runtime/index.ts";
-import { decodeError, encodeError, hearErrorEvents, ROOT_ID } from "../wire/index.ts";
+import { decodeError, encodeError, hearErrorEvents, ROOT_ID, wireError } from "../wire/index.ts";
 import type {
 	CallMessage,
 	ErrorMessage,
@@ -54,6 +54,9 @@ import { clearRepeats, report, reportError, warnOnce } from "./report.ts";
 
 /** The exports of the page's root component, while it is mounted. */
 let rootExports: Record<string, unknown> | undefined;
+
+/** Whether `mountPage` started the page, which runs until it is destroyed. */
+let mounted = false;
 
 /** The exports of the page's root component, while it is mounted: for the test library. */
 export function pageExports(): Record<string, unknown> | undefined {
@@ -93,7 +96,9 @@ const failure = (error: unknown): Result => ({ ok: false, error: encodeError(err
  * Mounts `App` as the page of this Lynx view: the page's entry calls it once, on both threads. On
  * the main thread it draws the first frame from the page's data; on the background it mounts the
  * component over that frame, then answers the page's events, and mounts it again when the host
- * reloads the page. An error while the page starts is reported into Lynx, not thrown.
+ * reloads the page. An error while the page starts is reported into Lynx, not thrown. A component
+ * with required props needs `props`. A second call while the page runs is reported, and does
+ * nothing.
  *
  * ```ts
  * import { mountPage } from "@sohedra/lynx";
@@ -104,8 +109,16 @@ const failure = (error: unknown): Result => ({ ok: false, error: encodeError(err
  */
 export function mountPage<Props extends Bag>(
 	App: Component<Props>,
-	options: MountPageOptions<NoInfer<Props>> = {},
+	...[options = {}]: {} extends Props
+		? [options?: MountPageOptions<NoInfer<Props>>]
+		: // `props` given: what it holds, `MountPageOptions` checks.
+			[options: MountPageOptions<NoInfer<Props>> & { props: {} }]
 ): void {
+	if (mounted) {
+		report(wireError({ code: "page_already_mounted", details: { thread: "background" } }));
+		return;
+	}
+	mounted = true;
 	const { lynx } = background;
 	const app = lynx.getApp();
 	const errors = setErrorHandler(options.onError, (error, source) =>
@@ -335,6 +348,7 @@ export function mountPage<Props extends Bag>(
 
 	function destroy(): void {
 		bumpGeneration();
+		mounted = false;
 		runAll([
 			teardown,
 			() => callThrough(null),

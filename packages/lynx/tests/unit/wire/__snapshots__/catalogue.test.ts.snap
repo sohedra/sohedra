@@ -21,6 +21,14 @@ For hashes, use a library in plain JavaScript such as @noble/hashes.
 https://sohedra.com/e/global_not_on_lynx"
 `;
 
+exports[`the wire's catalogue > page_already_mounted: the message 1`] = `
+"A second call of \`mountPage\` did nothing: the page the first call started still runs.
+Seen on the main thread.
+
+Call \`mountPage\` once, in the page's entry. To show a component over the page, call \`mount\`; to show another page, change what the root component shows.
+https://sohedra.com/e/page_already_mounted"
+`;
+
 exports[`the wire's catalogue > page_reloaded_on_one_thread: the message 1`] = `
 "This page reloaded on one of its threads only.
 Seen on the main thread: it shows load 1 of the page and got a message of load 2.
