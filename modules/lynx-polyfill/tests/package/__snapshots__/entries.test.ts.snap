@@ -58,7 +58,7 @@ exports[`import "@sohedra/lynx-polyfill" > on the background: its globals, and i
 exports[`import "@sohedra/lynx-polyfill" > on the background: its globals, and its size within budget 2`] = `
 {
   "gzip": 70000,
-  "minified": 227000,
+  "minified": 228000,
 }
 `;
 
@@ -102,7 +102,7 @@ exports[`import "@sohedra/lynx-polyfill" > on the main-thread: its globals, and 
 exports[`import "@sohedra/lynx-polyfill" > on the main-thread: its globals, and its size within budget 2`] = `
 {
   "gzip": 52000,
-  "minified": 151000,
+  "minified": 152000,
 }
 `;
 
@@ -378,7 +378,7 @@ exports[`import "@sohedra/lynx-polyfill/fetch" > on the background: its globals,
 
 exports[`import "@sohedra/lynx-polyfill/fetch" > on the background: its globals, and its size within budget 2`] = `
 {
-  "gzip": 49000,
+  "gzip": 50000,
   "minified": 170000,
 }
 `;
@@ -404,7 +404,7 @@ exports[`import "@sohedra/lynx-polyfill/fetch" > on the main-thread: its globals
 
 exports[`import "@sohedra/lynx-polyfill/fetch" > on the main-thread: its globals, and its size within budget 2`] = `
 {
-  "gzip": 32000,
+  "gzip": 33000,
   "minified": 96000,
 }
 `;
@@ -654,7 +654,7 @@ exports[`import "@sohedra/lynx-polyfill/url" > on the background: its globals, a
 exports[`import "@sohedra/lynx-polyfill/url" > on the background: its globals, and its size within budget 2`] = `
 {
   "gzip": 18000,
-  "minified": 53000,
+  "minified": 54000,
 }
 `;
 
@@ -668,7 +668,7 @@ exports[`import "@sohedra/lynx-polyfill/url" > on the main-thread: its globals, 
 exports[`import "@sohedra/lynx-polyfill/url" > on the main-thread: its globals, and its size within budget 2`] = `
 {
   "gzip": 18000,
-  "minified": 53000,
+  "minified": 54000,
 }
 `;
 
@@ -683,7 +683,7 @@ exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the background: its gl
 exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the background: its globals, and its size within budget 2`] = `
 {
   "gzip": 31000,
-  "minified": 110000,
+  "minified": 111000,
 }
 `;
 
@@ -698,6 +698,6 @@ exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the main-thread: its g
 exports[`import "@sohedra/lynx-polyfill/url-pattern" > on the main-thread: its globals, and its size within budget 2`] = `
 {
   "gzip": 31000,
-  "minified": 110000,
+  "minified": 111000,
 }
 `;

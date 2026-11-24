@@ -82,8 +82,21 @@ export async function bundleVendor(name: string): Promise<Vendored> {
 					},
 				],
 			},
-			// What a package reads by name as it loads, which a thread lacks until the fills run.
-			plugins: [new rspack.ProvidePlugin({ atob: [path.join(PROVIDED, "atob.js"), "atob"] })],
+			plugins: [
+				new rspack.ProvidePlugin({
+					// What a package reads by name as it loads, which a thread lacks until the fills run.
+					atob: [path.join(PROVIDED, "atob.js"), "atob"],
+					/**
+					 * whatwg-url-minimum's percent-decoding, by the URL Standard (provide/decode-uri-component.js).
+					 *
+					 * @workaround url-percent-decode kind=lynx-bug delete-when="PrimJS's decodeURIComponent throws a URIError on an encoded surrogate (%ED%A0%80) and whatwg-url-minimum decodes a cut UTF-8 sequence (%E2%82%41) as one U+FFFD and the A"
+					 */
+					decodeURIComponent: [
+						path.join(PROVIDED, "decode-uri-component.js"),
+						"decodeURIComponent",
+					],
+				}),
+			],
 			performance: false,
 			infrastructureLogging: { level: "error" },
 		});
