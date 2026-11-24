@@ -576,13 +576,13 @@ describe("fetch", () => {
 		]).toEqual(["a", "b"]);
 	});
 
-	it("sends the app's User-Agent when the request has none", async () => {
+	it("sends no User-Agent of its own, so the native module's stands, and the request's as given", async () => {
 		const { fetch: fill, native } = background();
 		void fill("https://a.example/");
 		void fill("https://a.example/", { headers: { "User-Agent": "mine/1" } });
 		await turn();
 		expect(native.requests.map((request) => request.headers["user-agent"])).toEqual([
-			"Lynx/4.2 (iOS)",
+			undefined,
 			"mine/1",
 		]);
 	});
