@@ -91,7 +91,6 @@ export const ANSWERS: Readonly<Record<string, Answer>> = Object.fromEntries<Answ
 			"es.array.to-spliced",
 			"es.array.with",
 			"es.map.group-by",
-			"es.object.assign",
 			"es.object.get-own-property-descriptor",
 			"es.object.group-by",
 			"es.object.has-own",
@@ -111,7 +110,6 @@ export const ANSWERS: Readonly<Record<string, Answer>> = Object.fromEntries<Answ
 			"x.error.cause.option",
 			"x.error.cause.own",
 			"x.bigint",
-			"why.object.assign.getter-defines",
 			"why.object.gopd.primitive",
 			"why.reflect.apply.no-args",
 			"why.string.match-all.non-global",
@@ -137,6 +135,10 @@ export const ANSWERS: Readonly<Record<string, Answer>> = Object.fromEntries<Answ
 		],
 		promiseSpecies,
 	),
+	...rows(["es.object.assign", "why.object.assign.getter-defines"], {
+		unfilled: "documented-limit",
+		note: "PrimJS's `Object.assign` copies a key a getter made non-enumerable during the copy; it stays for speed, as core-js's is 5 to 7.5 times slower on PrimJS.",
+	}),
 	...rows(["why.promise.species", "why.promise.species-getter"], {
 		unfilled: "documented-limit",
 		note: "lynx-core's `Promise` has no `Symbol.species`: the bridge adds the statics without it, and subclassing it stays as lynx-core makes it.",

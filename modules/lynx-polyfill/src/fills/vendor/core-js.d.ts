@@ -12,7 +12,6 @@ export type CoreJsModule =
 	| "es.array.with"
 	| "es.error.cause"
 	| "es.map.group-by"
-	| "es.object.assign"
 	| "es.object.get-own-property-descriptor"
 	| "es.object.group-by"
 	| "es.object.has-own"
@@ -35,7 +34,7 @@ export type CoreJsModule =
 export function loadCoreJs(name: CoreJsModule): void;
 
 /**
- * Makes core-js put its own in place of `feature` (as core-js names it: `Object.assign`,
+ * Makes core-js put its own in place of `feature` (as core-js names it: `Reflect.apply`,
  * `String#matchAll`), whatever its own check finds. Called before the module loads.
  */
 export function forceCoreJs(feature: string): void;

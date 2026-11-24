@@ -36,7 +36,7 @@ describe("a replacement from core-js", () => {
 	});
 
 	it("does nothing where the check holds", () => {
-		replaceFromCoreJs("es.object.assign", "Object.assign", true);
+		replaceFromCoreJs("es.reflect.apply", "Reflect.apply", true);
 		expect(forceCoreJs).not.toHaveBeenCalled();
 		expect(loadCoreJs).not.toHaveBeenCalled();
 	});

@@ -17,7 +17,7 @@ export function fillFromCoreJs(fills: readonly CoreJsFill[]): void {
 }
 
 /**
- * Loads `module` with core-js's own in place of `feature` (as core-js names it: `Object.assign`,
+ * Loads `module` with core-js's own in place of `feature` (as core-js names it: `Reflect.apply`,
  * `String#matchAll`), when `works` finds the engine's wrong: core-js's own check may pass a
  * built-in that the fill's check fails.
  */

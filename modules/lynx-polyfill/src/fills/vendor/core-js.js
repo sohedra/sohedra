@@ -1773,73 +1773,6 @@ module.exports = function(argument, $default) {
 
 
 },
-3356(module, __unused_rspack_exports, __webpack_require__) {
-
-var DESCRIPTORS = __webpack_require__(6302);
-var uncurryThis = __webpack_require__(5274);
-var call = __webpack_require__(8351);
-var fails = __webpack_require__(3385);
-var objectKeys = __webpack_require__(4298);
-var getOwnPropertySymbolsModule = __webpack_require__(9019);
-var propertyIsEnumerableModule = __webpack_require__(3291);
-var toObject = __webpack_require__(683);
-var IndexedObject = __webpack_require__(6569);
-// eslint-disable-next-line es/no-object-assign -- safe
-var $assign = Object.assign;
-// eslint-disable-next-line es/no-object-defineproperty -- required for testing
-var defineProperty = Object.defineProperty;
-var concat = uncurryThis([].concat);
-// `Object.assign` method
-// https://tc39.es/ecma262/#sec-object.assign
-module.exports = !$assign || fails(function() {
-    // should have correct order of operations (Edge bug)
-    if (DESCRIPTORS && $assign({
-        b: 1
-    }, $assign(defineProperty({}, 'a', {
-        enumerable: true,
-        get: function() {
-            defineProperty(this, 'b', {
-                value: 3,
-                enumerable: false
-            });
-        }
-    }), {
-        b: 2
-    })).b !== 1) return true;
-    // should work with symbols and should have deterministic property order (V8 bug)
-    var A = {};
-    var B = {};
-    // eslint-disable-next-line es/no-symbol -- safe
-    var symbol = Symbol('assign detection');
-    var alphabet = 'abcdefghijklmnopqrst';
-    A[symbol] = 7;
-    // eslint-disable-next-line es/no-array-prototype-foreach -- safe
-    alphabet.split('').forEach(function(chr) {
-        B[chr] = chr;
-    });
-    return $assign({}, A)[symbol] !== 7 || objectKeys($assign({}, B)).join('') !== alphabet;
-}) ? function assign(target, source) {
-    var T = toObject(target);
-    var argumentsLength = arguments.length;
-    var index = 1;
-    var getOwnPropertySymbols = getOwnPropertySymbolsModule.f;
-    var propertyIsEnumerable = propertyIsEnumerableModule.f;
-    while(argumentsLength > index){
-        var S = IndexedObject(arguments[index++]);
-        var keys = getOwnPropertySymbols ? concat(objectKeys(S), getOwnPropertySymbols(S)) : objectKeys(S);
-        var length = keys.length;
-        var j = 0;
-        var key;
-        while(length > j){
-            key = keys[j++];
-            if (!DESCRIPTORS || call(propertyIsEnumerable, S, key)) T[key] = S[key];
-        }
-    }
-    return T;
-} : $assign;
-
-
-},
 3658(module, __unused_rspack_exports, __webpack_require__) {
 
 /* global ActiveXObject -- old IE, WSH */ var anObject = __webpack_require__(9349);
@@ -3368,24 +3301,6 @@ $({
 
 
 },
-7431(__unused_rspack_module, __unused_rspack_exports, __webpack_require__) {
-
-var $ = __webpack_require__(1924);
-var assign = __webpack_require__(3356);
-// `Object.assign` method
-// https://tc39.es/ecma262/#sec-object.assign
-// eslint-disable-next-line es/no-object-assign -- required for testing
-$({
-    target: 'Object',
-    stat: true,
-    arity: 2,
-    forced: Object.assign !== assign
-}, {
-    assign: assign
-});
-
-
-},
 8249(__unused_rspack_module, __unused_rspack_exports, __webpack_require__) {
 
 var $ = __webpack_require__(1924);
@@ -4060,7 +3975,6 @@ const MODULES = {
     "es.array.with": ()=>__webpack_require__(8944),
     "es.error.cause": ()=>__webpack_require__(7354),
     "es.map.group-by": ()=>__webpack_require__(1110),
-    "es.object.assign": ()=>__webpack_require__(7431),
     "es.object.get-own-property-descriptor": ()=>__webpack_require__(8249),
     "es.object.group-by": ()=>__webpack_require__(8669),
     "es.object.has-own": ()=>__webpack_require__(2425),
@@ -4083,7 +3997,7 @@ const MODULES = {
     MODULES[name]();
 }
 /**
- * Makes core-js put its own in place of `feature` (as core-js names it: `Object.assign`,
+ * Makes core-js put its own in place of `feature` (as core-js names it: `Reflect.apply`,
  * `String#matchAll`), whatever its own check finds: for a built-in a fill's check found wrong.
  * Called before the module loads.
  */ function forceCoreJs(feature) {

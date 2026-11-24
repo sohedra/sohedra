@@ -14,7 +14,6 @@ const MODULES = {
 	"es.array.with": () => require("core-js/modules/es.array.with.js"),
 	"es.error.cause": () => require("core-js/modules/es.error.cause.js"),
 	"es.map.group-by": () => require("core-js/modules/es.map.group-by.js"),
-	"es.object.assign": () => require("core-js/modules/es.object.assign.js"),
 	"es.object.get-own-property-descriptor": () =>
 		require("core-js/modules/es.object.get-own-property-descriptor.js"),
 	"es.object.group-by": () => require("core-js/modules/es.object.group-by.js"),
@@ -41,7 +40,7 @@ export function loadCoreJs(name) {
 }
 
 /**
- * Makes core-js put its own in place of `feature` (as core-js names it: `Object.assign`,
+ * Makes core-js put its own in place of `feature` (as core-js names it: `Reflect.apply`,
  * `String#matchAll`), whatever its own check finds: for a built-in a fill's check found wrong.
  * Called before the module loads.
  */

@@ -58,7 +58,7 @@ exports[`import "@sohedra/lynx-polyfill" > on the background: its globals, and i
 exports[`import "@sohedra/lynx-polyfill" > on the background: its globals, and its size within budget 2`] = `
 {
   "gzip": 70000,
-  "minified": 228000,
+  "minified": 227000,
 }
 `;
 
@@ -102,7 +102,7 @@ exports[`import "@sohedra/lynx-polyfill" > on the main-thread: its globals, and 
 exports[`import "@sohedra/lynx-polyfill" > on the main-thread: its globals, and its size within budget 2`] = `
 {
   "gzip": 52000,
-  "minified": 152000,
+  "minified": 151000,
 }
 `;
 
@@ -450,7 +450,7 @@ exports[`import "@sohedra/lynx-polyfill/language" > on the background: its globa
 exports[`import "@sohedra/lynx-polyfill/language" > on the background: its globals, and its size within budget 2`] = `
 {
   "gzip": 17000,
-  "minified": 47000,
+  "minified": 46000,
 }
 `;
 
@@ -459,7 +459,7 @@ exports[`import "@sohedra/lynx-polyfill/language" > on the main-thread: its glob
 exports[`import "@sohedra/lynx-polyfill/language" > on the main-thread: its globals, and its size within budget 2`] = `
 {
   "gzip": 16000,
-  "minified": 45000,
+  "minified": 44000,
 }
 `;
 
