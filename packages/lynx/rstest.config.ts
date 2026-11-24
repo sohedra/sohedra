@@ -18,9 +18,10 @@ const floor = JSON.parse(
 const wholeRun = process.argv.slice(2).every((argument) => argument === "run");
 
 // Tests are grouped by kind, with a subfolder per source area (see CONTRIBUTING.md § Tests):
+//   threads/   both threads of a page on the engine fake
 //   unit/      one module at a time; those of `src/testing` and of the threads' programs on the
 //              engine fake
-//   threads/   both threads of a page on the engine fake
+//   build/     production, development and CLI builds of the fixture apps, and the size budgets
 //   library/   components tested through `@sohedra/lynx/testing`, as a component library would
 //   contract/  rules about the source, the repository, the pinned Svelte build, and the engine
 //              behavior spec run on the fake

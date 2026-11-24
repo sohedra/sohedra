@@ -35,6 +35,6 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
   `package.json`, source and built, or production drops it. Fixtures: `apps/package.json`.
 - **Build tests** (`tests/build/`) share a production and a development build of
   `tests/fixtures/build/apps/` per run (`sharedBuild`); `buildApp` takes a test's own options,
-  `cliBuild` a CLI. Fixtures are not type-checked; `stubs/` stand in for unwritten runtime.
+  `cliBuild` a CLI. Fixtures are not type-checked.
 - Only a bare `pnpm test` checks `tests/coverage-baseline.json`. The engine fake cites Lynx per
   behavior, and throws where unverified. `GENERATED_RUNS=500` tries more pages.

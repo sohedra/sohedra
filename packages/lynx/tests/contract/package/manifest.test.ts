@@ -71,7 +71,7 @@ describe("exports", () => {
 		}
 	});
 
-	it("has no internal entry but the ones compiled code and the build import", () => {
+	it("has exactly the internal entries compiled code and the build import", () => {
 		const internal = Object.keys(manifest.exports).filter((entry) =>
 			entry.startsWith("./internal/"),
 		);

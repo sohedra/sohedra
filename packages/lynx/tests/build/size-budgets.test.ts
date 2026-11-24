@@ -1,8 +1,8 @@
 // The size of each thread's script, in bytes of a production build of its own entry, against a
-// budget: the measured size and about 2% more. A build of one entry, as an app's is: in a build of
-// several, a module more than one entry uses is not concatenated into its entry's scope, which
-// makes it larger. Growth here usually means code reaching a thread that does not run it, so
-// raising a budget is a deliberate change, explained in its pull request.
+// budget: the measured size and 2% more, rounded to the nearest hundred. A build of one entry, as an
+// app's is: in a build of several, a module more than one entry uses is not concatenated into its
+// entry's scope, which makes it larger. Growth here usually means code reaching a thread that does
+// not run it, so raising a budget is a deliberate change, explained in its pull request.
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
