@@ -11,6 +11,7 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	page_is_gone: { call: "scrollTo" },
 	text_outside_text: { text: "Hello", parent: "view", where: "src/App.svelte:3:1" },
 	list_item_key_object: { where: "src/Feed.svelte:12:2" },
+	scroll_view_many_children: { limit: 200, where: "src/Feed.svelte:4:2" },
 	input_value_not_written: { tag: "input", reason: "Lynx answered setValue with the code 4." },
 	attribute_not_copyable: {
 		name: "accessibility-actions",
