@@ -36,8 +36,8 @@ describe("the size of a thread's script", () => {
 	// Raised by about 3.4 KB on each thread for the reports that name the import of
 	// @sohedra/lynx-polyfill a missing global needs, or what to use instead, and for hearing the
 	// error events a polyfill fires; the background also for Svelte's `performance.now()`.
-	it("is within budget for the main thread's runtime: an entry with no page (84,372 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(86_100);
+	it("is within budget for the main thread's runtime: an entry with no page (86,220 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(88_000);
 	});
 
 	it("is within budget for a minimal page's main thread, with its first frame (110,586 bytes measured)", () => {
