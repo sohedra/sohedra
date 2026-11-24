@@ -345,6 +345,8 @@ export function mountPage<Props extends Bag>(
 		// renders, and the new app reads it as it starts.
 		initDataChanged();
 		runAll([teardown, () => channel.abandon()]);
+		// The root outlives the reload; a listener added outside the app's effects is bound again.
+		pageRenderer.writeRootEvents();
 		try {
 			render(false);
 		} finally {

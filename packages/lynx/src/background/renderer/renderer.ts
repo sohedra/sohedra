@@ -84,6 +84,11 @@ export interface LynxRenderer extends Renderer<LynxNodes> {
 	 */
 	writePage(): void;
 	/**
+	 * Binds the root's listeners again: the page reloaded, and the main thread starts its new
+	 * generation with none.
+	 */
+	writeRootEvents(): void;
+	/**
 	 * Writes the ops of a list cell of the page again, the same way: its element, what is in it, and
 	 * no insert into its list, which knows the cell. False, with nothing written, when `id` is not
 	 * such a cell now.
@@ -547,6 +552,9 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 				realize(child, root, true);
 				for (const real of topReals(child)) queue.push([OpCode.Insert, ROOT_ID, real.lynxId, 0]);
 			}
+		},
+		writeRootEvents() {
+			if (root) pushEvents(root);
 		},
 		writeCell(id) {
 			const node = elementsById.get(id);
