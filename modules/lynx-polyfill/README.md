@@ -4,7 +4,10 @@ The web's standard APIs and the language through ES2025, on both of [Lynx](https
 threads. Lynx's engine, PrimJS, and lynx-core lack much of what web code expects: `URL` that parses,
 `TextEncoder`, streams, a standard `fetch`, `AbortSignal.timeout`, `Array.prototype.at`. This
 package fills them, so the code you write and the libraries you install run as they do in a browser.
-It works in any Lynx app, whatever its framework.
+It imports no framework. Its imports resolve by thread, so the build must resolve the main thread's
+imports with the `worker` export condition: Sohedra's build does; an app built otherwise
+(ReactLynx's included, which is untested) must add it, or its main thread loads the background's
+fills.
 
 Each fill installs only where the thread lacks the global or gets it wrong, and never replaces one
 that works: on an iOS app whose background thread runs on JavaScriptCore, most fills step aside.
@@ -25,7 +28,7 @@ import "@sohedra/lynx-polyfill/url";
 import "@sohedra/lynx-polyfill/fetch";
 ```
 
-Each import resolves by thread, as your build resolves Lynx's two threads: on the main thread it
+Each import resolves by thread, through the `worker` export condition on the main thread: there it
 installs that thread's part (the main thread gets no streams and no working `fetch`, which run on
 the background). An import of a background-only fill does nothing on the main thread, so a module
 both threads load can name it.

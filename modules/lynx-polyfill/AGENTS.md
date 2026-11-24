@@ -1,7 +1,8 @@
 # @sohedra/lynx-polyfill
 
-The web's standard APIs and the language through ES2025 on both of Lynx's threads, for any Lynx app.
-Apache-2.0, credits in `NOTICE`. Private.
+The web's standard APIs and the language through ES2025 on both of Lynx's threads, for a Lynx app
+whose build resolves the main thread with the `worker` condition (Sohedra's does). Apache-2.0,
+credits in `NOTICE`. Private.
 
 - Read `CONTRIBUTING.md` § Code first: shape, folders, errors, workarounds, tests.
 - `src/fills/` holds every fill and imports nothing outside itself: no Svelte, no `@lynx-js/*`, no
