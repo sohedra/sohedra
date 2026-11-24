@@ -49,6 +49,13 @@ const config: RstestConfig = defineConfig({
 			name: "page",
 			extends: withSvelteLynx(),
 			include: onTheTestTree.map((folder) => `${folder}/*.test.ts`),
+			exclude: ["tests/threads/async/**"],
+		},
+		{
+			// The same tests in Svelte's async mode, and the pages that await, which need it.
+			name: "page-async",
+			extends: withSvelteLynx({ svelte: { configFile: "tests/fixtures/async/svelte.config.js" } }),
+			include: onTheTestTree.map((folder) => `${folder}/*.test.ts`),
 		},
 		{
 			name: "node",

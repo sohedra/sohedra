@@ -670,18 +670,6 @@ Use the Svelte version this @sohedra/lynx was built for, or update @sohedra/lynx
 https://sohedra.com/e/spread_setter_moved"
 `;
 
-exports[`the build's catalogue > svelte_async_unsupported: the message 1`] = `
-"\`compilerOptions.experimental.async\` in svelte.config.js turns on Svelte's async mode, which @sohedra/lynx does not support.
-/app/src/App.svelte:2:3
-
-1: <script>
-2:   let a = 1;
-     ^
-
-Remove \`experimental.async\` from the compiler options.
-https://sohedra.com/e/svelte_async_unsupported"
-`;
-
 exports[`the build's catalogue > svelte_body: the message 1`] = `
 "\`<svelte:body>\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3

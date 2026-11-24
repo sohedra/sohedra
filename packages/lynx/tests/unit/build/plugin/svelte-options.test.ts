@@ -53,30 +53,24 @@ describe("findSvelteConfig", () => {
 });
 
 describe("pickCompilerOptions", () => {
-	it("keeps what an app may set, and warns about nothing", () => {
+	it("keeps what an app may set, and the async flag, and warns about nothing", () => {
 		const { compilerOptions, warnings } = pickCompilerOptions({
 			rootDir: "/app",
 			preserveComments: true,
 			cssHash: () => "h",
+			experimental: { async: true },
 		});
-		expect(compilerOptions).toMatchObject({ rootDir: "/app", preserveComments: true });
+		expect(compilerOptions).toMatchObject({
+			rootDir: "/app",
+			preserveComments: true,
+			experimental: { async: true },
+		});
 		expect(warnings).toEqual([]);
-	});
-
-	it("refuses Svelte's async mode, which the binding does not support", () => {
-		expect(() => pickCompilerOptions({ experimental: { async: true } })).toThrow(
-			expect.objectContaining({
-				code: "svelte_async_unsupported",
-				message: expect.stringContaining(
-					"`compilerOptions.experimental.async` in svelte.config.js turns on Svelte's async mode, which @sohedra/lynx does not support.",
-				),
-			}),
-		);
 	});
 
 	it("takes async mode turned off, without a word", () => {
 		const { compilerOptions, warnings } = pickCompilerOptions({ experimental: { async: false } });
-		expect(compilerOptions.experimental?.async).toBeFalsy();
+		expect(compilerOptions.experimental?.async).toBe(false);
 		expect(warnings).toEqual([]);
 	});
 
@@ -151,26 +145,17 @@ describe("readSvelteOptions", () => {
 	it("reads the config's compiler options and preprocessors", async () => {
 		const root = appWith({
 			"svelte.config.js": `import { defineConfig } from ${JSON.stringify(helper)};
-export default defineConfig({ compilerOptions: { rootDir: "/app" }, preprocess: [{ name: "mine" }] });`,
+export default defineConfig({ compilerOptions: { rootDir: "/app", experimental: { async: true } }, preprocess: [{ name: "mine" }] });`,
 		});
 		const options = await readSvelteOptions(root);
 		expect(options.compilerOptions.rootDir).toBe("/app");
+		expect(options.compilerOptions.experimental).toEqual({ async: true });
 		expect(options.preprocess).toEqual([{ name: "mine" }]);
 		expect(options.warnings).toEqual([]);
 	});
 
-	it("refuses a config that turns on async mode through `defineConfig()`", async () => {
-		const root = appWith({
-			"svelte.config.js": `import { defineConfig } from ${JSON.stringify(helper)};
-export default defineConfig({ compilerOptions: { experimental: { async: true } } });`,
-		});
-		await expect(readSvelteOptions(root)).rejects.toMatchObject({
-			code: "svelte_async_unsupported",
-		});
-	});
-
 	it("reads a plain object as the same config wrapped in `defineConfig()`", async () => {
-		const config = `{ compilerOptions: { rootDir: "/x", experimental: { async: false } }, preprocess: [{ name: "mine" }] }`;
+		const config = `{ compilerOptions: { rootDir: "/x", experimental: { async: true } }, preprocess: [{ name: "mine" }] }`;
 		const plain = await readSvelteOptions(
 			appWith({ "svelte.config.js": `export default ${config};` }),
 		);

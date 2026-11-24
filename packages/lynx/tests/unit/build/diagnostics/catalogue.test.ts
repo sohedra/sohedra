@@ -114,7 +114,6 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	},
 	svelte_config_option_owned: { key: "generate" },
 	svelte_config_option_unsupported: { key: "accessors" },
-	svelte_async_unsupported: {},
 	iife_ignored: { value: "true" },
 	main_thread_asset_missing: { file: ".lynx/main/main-thread.js" },
 	rsbuild_swc_missing: {},
