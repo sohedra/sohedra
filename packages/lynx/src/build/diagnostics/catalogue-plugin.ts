@@ -8,7 +8,13 @@ export interface PluginDetails {
 	// `range` is the Svelte this package was tested with, as its package.json writes it.
 	svelte_missing: { root: string; range: string };
 	svelte_without_renderers: { version: string; where: string; range: string };
-	svelte_version_unverified: { version: string; where: string; range: string };
+	/** `above`: a release newer than the range, which a newer @sohedra/lynx may support. */
+	svelte_version_untested: {
+		version: string;
+		where: string;
+		range: string;
+		direction: "above" | "other";
+	};
 	lynx_engine_missing: Record<string, never>;
 	template_plugin_versions: { engine: string; own: string; range: string };
 	encoder_not_handed_over: { reason: string };
@@ -43,12 +49,14 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 			`Install Svelte ${range}: custom renderers came in 5.59, and @sohedra/lynx is tested with that range.`,
 		docs: "svelte_without_renderers",
 	},
-	svelte_version_unverified: {
+	svelte_version_untested: {
 		message: ({ version, where, range }) =>
 			`The installed Svelte (${version}, ${where}) is outside the range @sohedra/lynx is tested with, ${range}.`,
-		fix: ({ version, range }) =>
-			`Install Svelte ${range}, or update @sohedra/lynx to a version tested with Svelte ${version}.`,
-		docs: "svelte_version_unverified",
+		fix: ({ version, range, direction }) =>
+			direction === "above"
+				? `Install Svelte ${range}, or update @sohedra/lynx to a version tested with Svelte ${version}.`
+				: `Install Svelte ${range}.`,
+		docs: "svelte_version_untested",
 	},
 	lynx_engine_missing: {
 		message: () => "Lynx's build plugin is not set up, so there is no template to build.",

@@ -380,7 +380,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/client/render.js",
 		anchor: "will be defined because the render effect runs synchronously",
 		reliesOn:
-			"`mount` draws the whole tree before it returns, with the first branch of every block (`{#if}`, `{#each}`, `{#key}`, `<svelte:boundary>`), and runs no `$effect` and no attachment until a flush: so the background's first patch, sent once `mount` returns, holds the whole page for hydration, and what an effect writes comes after it",
+			"`mount` draws the tree before it returns, with the first branch of `{#if}`, `{#each}`, `{#key}` and `<svelte:boundary>`, and runs no `$effect` and no attachment until a flush: so the background's first patch, sent once `mount` returns, holds what hydration adopts, and what an effect writes comes after it. `{#await}` draws its pending branch only in a microtask it queues, which hydration does not handle yet",
 		test: RUNTIME,
 	},
 	{

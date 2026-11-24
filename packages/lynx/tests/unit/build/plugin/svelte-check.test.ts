@@ -82,24 +82,30 @@ describe("checkSvelte", () => {
 		expect(refusal(appWithSvelte(`${highMajor}.${highMinor}.99`))).toBeUndefined();
 	});
 
-	it.each([
-		["just below the range", belowLowest],
-		["just above the range", aboveHighest],
-	])("refuses a Svelte %s, naming the version, the range and the fix", (_, version) => {
-		const root = appWithSvelte(version);
+	it("refuses a Svelte just above the range, and says a newer @sohedra/lynx may take it", () => {
+		const root = appWithSvelte(aboveHighest);
 		const error = refusal(root);
-		expect(error?.code).toBe("svelte_version_unverified");
+		expect(error?.code).toBe("svelte_version_untested");
 		expect(error?.message.split("\n")[0]).toBe(
-			`The installed Svelte (${version}, ${root}) is outside the range @sohedra/lynx is tested with, ${RANGE}.`,
+			`The installed Svelte (${aboveHighest}, ${root}) is outside the range @sohedra/lynx is tested with, ${RANGE}.`,
 		);
 		expect(error?.message).toContain(
-			`Install Svelte ${RANGE}, or update @sohedra/lynx to a version tested with Svelte ${version}.`,
+			`Install Svelte ${RANGE}, or update @sohedra/lynx to a version tested with Svelte ${aboveHighest}.`,
 		);
-		expect(error?.message).toContain("https://sohedra.com/e/svelte_version_unverified");
+		expect(error?.message).toContain("https://sohedra.com/e/svelte_version_untested");
 	});
 
-	it("refuses a prerelease, even of a version in the range", () => {
-		const error = refusal(appWithSvelte(`${lowMajor}.${lowMinor}.${lowPatch! + 1}-next.0`));
-		expect(error?.code).toBe("svelte_version_unverified");
+	it.each([
+		["just below the range", belowLowest],
+		[
+			"a prerelease, even of a version in the range",
+			`${lowMajor}.${lowMinor}.${lowPatch! + 1}-next.0`,
+		],
+		["a prerelease above the range", `${aboveHighest}-next.1`],
+	])("refuses %s, and only says to install a tested one", (_, version) => {
+		const error = refusal(appWithSvelte(version));
+		expect(error?.code).toBe("svelte_version_untested");
+		expect(error?.message).toContain(`Install Svelte ${RANGE}.\n`);
+		expect(error?.message).not.toContain("update @sohedra/lynx");
 	});
 });

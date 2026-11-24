@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { satisfiesRange } from "../../../../src/build/plugin/version-range.ts";
+import { aboveRange, satisfiesRange } from "../../../../src/build/plugin/version-range.ts";
 
 describe("satisfiesRange, a caret range", () => {
 	it("takes a version of the same minor at or above the floor, for a 0.x range", () => {
@@ -21,6 +21,12 @@ describe("satisfiesRange, a caret range", () => {
 		expect(satisfiesRange("2.1.0", "^2.1.0")).toBe(true);
 		expect(satisfiesRange("2.0.9", "^2.1.0")).toBe(false);
 		expect(satisfiesRange("3.0.0", "^2.1.0")).toBe(false);
+	});
+
+	it("takes only the floor itself for a 0.0.x range", () => {
+		expect(satisfiesRange("0.0.3", "^0.0.3")).toBe(true);
+		for (const version of ["0.0.4", "0.0.2", "0.1.0"])
+			expect(satisfiesRange(version, "^0.0.3"), version).toBe(false);
 	});
 
 	it("refuses a prerelease of the range's floor or above: only released versions are meant", () => {
@@ -63,5 +69,19 @@ describe("satisfiesRange, other forms", () => {
 		expect(satisfiesRange("5.59.0", ">=5.59.0")).toBe(false);
 		expect(satisfiesRange("5.59.0", "5.x")).toBe(false);
 		expect(satisfiesRange("latest", "~5.59.0")).toBe(false);
+	});
+});
+
+describe("aboveRange", () => {
+	it("is a release past the floor of every range, and in none", () => {
+		expect(aboveRange("5.60.0", "~5.59.0")).toBe(true);
+		expect(aboveRange("6.0.0", "~5.59.0 || ~5.60.0")).toBe(true);
+	});
+
+	it("is not a version below or between the ranges, in one, or a prerelease", () => {
+		expect(aboveRange("5.58.9", "~5.59.0")).toBe(false);
+		expect(aboveRange("5.60.0", "~5.59.0 || ~5.61.0")).toBe(false);
+		expect(aboveRange("5.59.3", "~5.59.0")).toBe(false);
+		expect(aboveRange("5.60.0-next.1", "~5.59.0")).toBe(false);
 	});
 });

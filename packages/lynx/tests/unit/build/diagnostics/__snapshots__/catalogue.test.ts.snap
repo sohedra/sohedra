@@ -754,7 +754,7 @@ Add Svelte ~5.59.0 to the app's package.json dependencies.
 https://sohedra.com/e/svelte_missing"
 `;
 
-exports[`the build's catalogue > svelte_version_unverified: the message 1`] = `
+exports[`the build's catalogue > svelte_version_untested: the message 1`] = `
 "The installed Svelte (5.60.0, /app) is outside the range @sohedra/lynx is tested with, ~5.59.0.
 /app/src/App.svelte:2:3
 
@@ -763,7 +763,7 @@ exports[`the build's catalogue > svelte_version_unverified: the message 1`] = `
      ^
 
 Install Svelte ~5.59.0, or update @sohedra/lynx to a version tested with Svelte 5.60.0.
-https://sohedra.com/e/svelte_version_unverified"
+https://sohedra.com/e/svelte_version_untested"
 `;
 
 exports[`the build's catalogue > svelte_window: the message 1`] = `

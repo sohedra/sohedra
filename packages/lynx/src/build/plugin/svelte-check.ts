@@ -3,23 +3,11 @@
 // message and not as an error in every component, or as a page that breaks on a device. The range
 // is the one this package's package.json gives `svelte` as a peer, so it is written in one place.
 
-import { createRequire } from "node:module";
-import path from "node:path";
-
 import { svelteCompiler } from "../../svelte/build/index.ts";
 import { RENDERER_ENTRY } from "../../wire/index.ts";
 import { buildError } from "../diagnostics/messages.ts";
-import { PACKAGE_ROOT } from "./layers.ts";
-import { satisfiesRange } from "./version-range.ts";
-
-/** The range of Svelte versions this package was tested with: its peer range for `svelte`. */
-function testedSvelteRange(): string {
-	// Boundary: this package's package.json, read at run time.
-	const manifest = createRequire(import.meta.url)(path.join(PACKAGE_ROOT, "package.json")) as {
-		peerDependencies: Record<string, string>;
-	};
-	return manifest.peerDependencies["svelte"] ?? "unknown";
-}
+import { ownManifest } from "./layers.ts";
+import { aboveRange, satisfiesRange } from "./version-range.ts";
 
 /**
  * Throws the build's message when the app in `root` has no Svelte, a Svelte without custom
@@ -27,7 +15,8 @@ function testedSvelteRange(): string {
  * every range).
  */
 export function checkSvelte(root: string): void {
-	const range = testedSvelteRange();
+	// The range of Svelte versions this package was tested with: its peer range for `svelte`.
+	const range = ownManifest().peerDependencies["svelte"] ?? "unknown";
 	let compiler: ReturnType<typeof svelteCompiler>;
 	try {
 		compiler = svelteCompiler(root);
@@ -46,7 +35,12 @@ export function checkSvelte(root: string): void {
 	}
 	if (satisfiesRange(compiler.VERSION, range)) return;
 	throw buildError({
-		code: "svelte_version_unverified",
-		details: { version: compiler.VERSION, where: root, range },
+		code: "svelte_version_untested",
+		details: {
+			version: compiler.VERSION,
+			where: root,
+			range,
+			direction: aboveRange(compiler.VERSION, range) ? "above" : "other",
+		},
 	});
 }

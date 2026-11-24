@@ -95,7 +95,12 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		root: "/app",
 	},
 	svelte_without_renderers: { version: "5.40.0", where: "/app", range: "~5.59.0" },
-	svelte_version_unverified: { version: "5.60.0", where: "/app", range: "~5.59.0" },
+	svelte_version_untested: {
+		version: "5.60.0",
+		where: "/app",
+		range: "~5.59.0",
+		direction: "above",
+	},
 	lynx_engine_missing: {},
 	template_plugin_versions: { engine: "0.15.4", own: "0.16.8", range: "^0.16.8" },
 	encoder_not_handed_over: {

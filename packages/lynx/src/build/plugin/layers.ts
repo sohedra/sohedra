@@ -1,5 +1,6 @@
 // The two threads as the bundler's layers, and where the build's own files are.
 
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -20,6 +21,18 @@ const extension = path.extname(self);
 
 /** The folder of this package: its `package.json` is there, and `@sohedra/lynx` resolves to it. */
 export const PACKAGE_ROOT: string = path.resolve(path.dirname(self), "../../..");
+
+/** The ranges this package's own `package.json` declares. */
+export interface OwnManifest {
+	dependencies: Record<string, string>;
+	peerDependencies: Record<string, string>;
+}
+
+/** This package's own `package.json`, read at run time. */
+export function ownManifest(): OwnManifest {
+	// Boundary: a package.json read at run time.
+	return createRequire(import.meta.url)(path.join(PACKAGE_ROOT, "package.json")) as OwnManifest;
+}
 
 /** A loader's absolute path, by its name without an extension, for `use().loader()`. */
 export function loaderPath(name: string): string {

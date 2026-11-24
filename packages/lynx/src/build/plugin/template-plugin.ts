@@ -9,7 +9,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 
 import { buildError } from "../diagnostics/messages.ts";
-import { PACKAGE_ROOT } from "./layers.ts";
+import { ownManifest } from "./layers.ts";
 import { satisfiesRange } from "./version-range.ts";
 
 const PLUGIN = "@lynx-js/template-webpack-plugin";
@@ -40,11 +40,7 @@ export function ownTemplateVersion(): string {
 
 /** The range of template plugin versions this package declares, from its `package.json`. */
 export function ownTemplateRange(): string {
-	// Boundary: this package's package.json, read at run time.
-	const manifest = createRequire(import.meta.url)(path.join(PACKAGE_ROOT, "package.json")) as {
-		dependencies: Record<string, string>;
-	};
-	return manifest.dependencies[PLUGIN] ?? "unknown";
+	return ownManifest().dependencies[PLUGIN] ?? "unknown";
 }
 
 /**
