@@ -560,6 +560,22 @@ describe("fetch", () => {
 		expect(text(request!.body)).toBe('{"a":1}');
 	});
 
+	it("sends a header named as an object's own property, constructor or __proto__", async () => {
+		const { fetch: fill, native } = background();
+		void fill("https://a.example/", {
+			headers: [
+				["constructor", "a"],
+				["__proto__", "b"],
+			],
+		});
+		await turn();
+		const sent = native.requests[0]!.headers;
+		expect([
+			sent["constructor"],
+			Object.getOwnPropertyDescriptor(sent, "__proto__")?.value,
+		]).toEqual(["a", "b"]);
+	});
+
 	it("sends the app's User-Agent when the request has none", async () => {
 		const { fetch: fill, native } = background();
 		void fill("https://a.example/");
