@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import vm from "node:vm";
 
 import { rspack } from "@rsbuild/core";
 import type { Rspack } from "@rsbuild/core";
@@ -43,14 +44,23 @@ export async function bundleEntry(options: {
 	after?: string;
 	/** Conditions the app's build adds, such as Svelte's `browser` on the background. */
 	conditions?: string[];
+	/** The package's folder: this one by default, or a packed copy. */
+	packageRoot?: string;
 }): Promise<string> {
-	const { subpath, thread, minimize, after = "", conditions = [] } = options;
+	const {
+		subpath,
+		thread,
+		minimize,
+		after = "",
+		conditions = [],
+		packageRoot = PACKAGE_ROOT,
+	} = options;
 	const work = fs.mkdtempSync(path.join(os.tmpdir(), "sohedra-entry-"));
 	try {
 		// The app: the package installed as a link in its node_modules, as a workspace installs it.
 		const linked = path.join(work, "node_modules/@sohedra/lynx-polyfill");
 		fs.mkdirSync(path.dirname(linked), { recursive: true });
-		fs.symlinkSync(PACKAGE_ROOT, linked, "dir");
+		fs.symlinkSync(packageRoot, linked, "dir");
 		fs.writeFileSync(path.join(work, "entry.js"), `import "${PACKAGE_NAME}${subpath}";\n${after}`);
 		const compiler = rspack({
 			mode: "production",
@@ -101,4 +111,30 @@ export async function bundleEntry(options: {
 	} finally {
 		fs.rmSync(work, { recursive: true, force: true });
 	}
+}
+
+/** A realm shaped like a Lynx thread's: the language's built-ins, `lynx`, timers and `console`. */
+export function threadRealm(thread: Thread): { context: vm.Context; reports: unknown[] } {
+	const reports: unknown[] = [];
+	const systemInfo = { platform: "Android", engineVersion: "4.2" };
+	const lynx: Record<string, unknown> = {
+		reportError: (error: unknown) => void reports.push(error),
+	};
+	const context = vm.createContext({});
+	const own: Record<string, unknown> = {
+		lynx,
+		console: { log() {}, warn() {}, error() {} },
+		setTimeout,
+		clearTimeout,
+		setInterval,
+		clearInterval,
+	};
+	if (thread === "background") {
+		lynx["queueMicrotask"] = queueMicrotask;
+		own["SystemInfo"] = systemInfo;
+	} else lynx["SystemInfo"] = systemInfo;
+	// The realm's own `process` is absent, as on a device: the package reads it as a production build.
+	for (const [name, value] of Object.entries(own))
+		Object.defineProperty(context, name, { value, writable: true, configurable: true });
+	return { context, reports };
 }

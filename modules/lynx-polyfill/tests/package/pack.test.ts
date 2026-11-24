@@ -6,10 +6,15 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import vm from "node:vm";
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 import { publint } from "publint";
 import { formatMessage } from "publint/utils";
+import ts from "typescript";
+
+import type { Thread } from "../../src/fills/globals.ts";
+import { bundleEntry, PACKAGE_NAME, subpaths, threadRealm } from "./entry-script.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "../..");
 /** What is not the package's to pack: installed, built, cached, or written by a test run. */
@@ -94,5 +99,79 @@ describe("the packed package", () => {
 	it("passes publint", async () => {
 		const { messages, pkg } = await publint({ pkgDir: unpacked, pack: false, level: "suggestion" });
 		expect(messages.map((message) => formatMessage(message, pkg))).toEqual([]);
+	});
+});
+
+/** What a script adds to a thread's realm, and what it reports into Lynx. */
+function installs(code: string, thread: Thread): { added: string[]; reports: unknown[] } {
+	const { context, reports } = threadRealm(thread);
+	const names = () =>
+		vm.runInContext("Object.getOwnPropertyNames(globalThis)", context) as string[];
+	const before = new Set(names());
+	vm.runInContext(code, context);
+	return {
+		added: names()
+			.filter((name) => !before.has(name))
+			.sort(),
+		reports,
+	};
+}
+
+describe("the packed package's built files", () => {
+	it.each(["background", "main-thread"] as const)(
+		"install on the %s what the source does",
+		async (thread) => {
+			const packed = await bundleEntry({
+				subpath: "",
+				thread,
+				minimize: true,
+				packageRoot: unpacked,
+			});
+			const source = await bundleEntry({ subpath: "", thread, minimize: true });
+			const fromPacked = installs(packed, thread);
+			expect(fromPacked.reports).toEqual([]);
+			expect(fromPacked.added.length).toBeGreaterThan(20);
+			expect(fromPacked.added).toEqual(installs(source, thread).added);
+		},
+		120_000,
+	);
+});
+
+describe("the types an app gets", () => {
+	it(`check each import on TypeScript ${ts.versionMajorMinor}, with ES2025 and every declaration file`, () => {
+		const app = path.join(work, "types-app");
+		const linked = path.join(app, "node_modules", PACKAGE_NAME);
+		fs.mkdirSync(path.dirname(linked), { recursive: true });
+		fs.symlinkSync(unpacked, linked, "dir");
+		const file = path.join(app, "index.ts");
+		fs.writeFileSync(
+			file,
+			subpaths()
+				.map((subpath) => `import "${PACKAGE_NAME}${subpath}";\n`)
+				.join("") + "export const union: Set<number> = new Set([1]).union(new Set([2]));\n",
+		);
+		// The options of Sohedra's base config (`@sohedra/lynx/tsconfig`), with every declaration
+		// file checked.
+		const program = ts.createProgram({
+			rootNames: [file],
+			options: {
+				target: ts.ScriptTarget.ES2025,
+				lib: ["lib.es2025.d.ts"],
+				module: ts.ModuleKind.ESNext,
+				moduleResolution: ts.ModuleResolutionKind.Bundler,
+				strict: true,
+				isolatedModules: true,
+				verbatimModuleSyntax: true,
+				noEmit: true,
+				skipLibCheck: false,
+				types: [],
+			},
+		});
+		const diagnostics = ts
+			.getPreEmitDiagnostics(program)
+			.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, " "));
+		expect(diagnostics).toEqual([]);
+		const entry = fs.realpathSync(path.join(unpacked, "types/entry.d.ts"));
+		expect(program.getSourceFiles().some((source) => source.fileName === entry)).toBe(true);
 	});
 });

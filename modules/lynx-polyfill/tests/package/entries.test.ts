@@ -9,35 +9,9 @@ import zlib from "node:zlib";
 import { describe, expect, it } from "@rstest/core";
 
 import type { Thread } from "../../src/fills/globals.ts";
-import { bundleEntry, PACKAGE_NAME, subpaths } from "./entry-script.ts";
+import { bundleEntry, PACKAGE_NAME, subpaths, threadRealm } from "./entry-script.ts";
 
 const THREADS: readonly Thread[] = ["background", "main-thread"];
-
-/** A realm shaped like a Lynx thread's: the language's built-ins, `lynx`, timers and `console`. */
-function threadRealm(thread: Thread): { context: vm.Context; reports: unknown[] } {
-	const reports: unknown[] = [];
-	const systemInfo = { platform: "Android", engineVersion: "4.2" };
-	const lynx: Record<string, unknown> = {
-		reportError: (error: unknown) => void reports.push(error),
-	};
-	const context = vm.createContext({});
-	const own: Record<string, unknown> = {
-		lynx,
-		console: { log() {}, warn() {}, error() {} },
-		setTimeout,
-		clearTimeout,
-		setInterval,
-		clearInterval,
-	};
-	if (thread === "background") {
-		lynx["queueMicrotask"] = queueMicrotask;
-		own["SystemInfo"] = systemInfo;
-	} else lynx["SystemInfo"] = systemInfo;
-	// The realm's own `process` is absent, as on a device: the package reads it as a production build.
-	for (const [name, value] of Object.entries(own))
-		Object.defineProperty(context, name, { value, writable: true, configurable: true });
-	return { context, reports };
-}
 
 /** The names a script added to the realm's global object, each read once. */
 function run(code: string, thread: Thread): string[] {
