@@ -607,6 +607,7 @@ export function makeTable(
 /** Text for a Markdown table's cell. */
 const escapeCell = (text: unknown): string =>
 	asText(text ?? "")
+		.replace(/\\/g, "\\\\")
 		.replace(/\|/g, "\\|")
 		.replace(/\n/g, " ");
 
