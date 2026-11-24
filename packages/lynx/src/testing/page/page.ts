@@ -20,6 +20,7 @@ import { createHostEvents } from "./host.ts";
 import type { HostEventsLog } from "./host.ts";
 import { createLynx } from "./lynx.ts";
 import type { BackgroundLynx, MainThreadLynx, TestApp, Thread } from "./lynx.ts";
+import { createThreadTasks, processTimer } from "./tasks.ts";
 
 /** What a test page starts with. */
 export interface TestPageOptions {
@@ -58,7 +59,9 @@ export interface TestPage {
 	readonly engine: Engine;
 	/**
 	 * Each thread's `lynx`. The global `lynx` is the one of the thread that ran last: each thread's
-	 * code finds its own when it runs, and so do the microtasks it leaves.
+	 * code finds its own when it runs, and so do the timers, microtasks and promise continuations it
+	 * leaves. A test's own code runs as the thread that ran last, and an `await` in it resumes as the
+	 * thread it awaited on.
 	 */
 	readonly lynx: { readonly mainThread: MainThreadLynx; readonly background: BackgroundLynx };
 	/**
@@ -133,6 +136,12 @@ export const IPHONE: Readonly<Record<string, unknown>> = {
  */
 const THREAD_FILLED = ["queueMicrotask", "EventTarget", "structuredClone"];
 
+/**
+ * The background's timers that take a callback, which lynx-core hands the background's bundle
+ * (the runtime wrapper's parameters): the process's, each callback run as the background.
+ */
+const BACKGROUND_TIMERS = ["setTimeout", "setInterval"];
+
 /** The globals a page's own code sets while it runs, put back when the page ends. */
 const PAGE_GLOBALS = [
 	...THREAD_FILLED,
@@ -180,13 +189,32 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 		}
 		current = thread;
 		if (thread === "main-thread") {
-			installGlobals({ ...engine.functions, lynx: lynx.mainThread, SystemInfo: systemInfo });
+			installGlobals({
+				...engine.functions,
+				lynx: lynx.mainThread,
+				SystemInfo: systemInfo,
+				...processTimers(),
+			});
 			return before;
 		}
-		installGlobals({ lynx: lynx.background, SystemInfo: systemInfo, ...backgroundFrames });
+		installGlobals({
+			lynx: lynx.background,
+			SystemInfo: systemInfo,
+			...backgroundTimers(),
+			...backgroundFrames,
+		});
 		removeGlobals(mainThreadOnly);
 		return before;
 	};
+	const tasks = createThreadTasks({ enter, current: () => current });
+	/** The process's timers, or a test's fake ones: what the main thread and a test's own code use. */
+	const processTimers = (): Record<string, unknown> =>
+		Object.fromEntries(BACKGROUND_TIMERS.map((name) => [name, processTimer(readGlobal(name))]));
+	/** The background's timers: the process's, or a test's fake ones, run as the background. */
+	const backgroundTimers = (): Record<string, unknown> =>
+		Object.fromEntries(
+			BACKGROUND_TIMERS.map((name) => [name, tasks.timer("background", readGlobal(name))]),
+		);
 	const engine = createEngine({
 		...(options.document && { document: options.document }),
 		...(options.container && { container: options.container }),
@@ -196,11 +224,16 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 	});
 	/**
 	 * lynx-core gives the background a `requestAnimationFrame` of its own, through the app's frames
-	 * (lynx-core's common/amd.ts, app.ts): the process's stands in for it there.
+	 * (lynx-core's common/amd.ts, app.ts): the process's, or the test's own, stands in for it there,
+	 * each callback run as the background.
 	 */
-	const processFrame = readGlobal("requestAnimationFrame");
-	const backgroundFrames: Record<string, unknown> =
+	const processFrame = processTimer(readGlobal("requestAnimationFrame"));
+	const processFrames: Record<string, unknown> =
 		processFrame === undefined ? {} : { requestAnimationFrame: processFrame };
+	const backgroundFrames: Record<string, unknown> =
+		processFrame === undefined
+			? {}
+			: { requestAnimationFrame: tasks.timer("background", processFrame) };
 	const mainThreadOnly = Object.keys(engine.functions).filter(
 		(name) => !(name in backgroundFrames),
 	);
@@ -324,6 +357,10 @@ export function startTestPage(options: TestPageOptions = {}): TestPage {
 			}
 			ended = true;
 			bridge.close();
+			tasks.stop();
+			// The test environment's timers may be accessors over its window, which keep the value
+			// last set: the process's own go back first.
+			installGlobals({ ...processTimers(), ...processFrames });
 			restoreGlobals();
 			engine.dispose();
 		},
