@@ -4,13 +4,12 @@ Svelte on Lynx: runs Svelte's custom renderer on Lynx's background thread and dr
 elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
 
 - Read `CONTRIBUTING.md` § Code first: shape, folders, errors, workarounds, tests.
-- Each folder of `src/` is a program, and imports another only through its `index.ts` (`polyfill/`:
-  through its thread entries, `background.ts` and `main-thread.ts`). `.oxlintrc.jsonc` enforces this
-  table; `tests/contract/lint/` pins it:
+- Each folder of `src/` is a program, and imports another only through its `index.ts`.
+  `.oxlintrc.jsonc` enforces this table; `tests/contract/lint/` pins it:
 
   | Folder                      | Runs                | May import                   |
   | --------------------------- | ------------------- | ---------------------------- |
-  | `wire/`, `polyfill/`        | both threads        | nothing                      |
+  | `wire/`                     | both threads        | nothing                      |
   | `build/` (and `presets/`)   | Node, at build time | `wire/`, `svelte/build/`     |
   | `background/`               | background thread   | `wire/`, `svelte/runtime/`   |
   | `main-thread/`              | main thread         | `wire/`                      |
@@ -25,9 +24,10 @@ elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
 - **Svelte's internals** are touched only in `src/svelte/`, and every touch is a row of
   `src/svelte/manifest.ts` that `tests/contract/svelte/` checks. To upgrade Svelte, bump its dev
   copy and run the tests: the failing row names what to revisit.
-- **The compile step** (`src/build/compile/`): `compileComponent` parses once; every pass returns
-  edits against the source as written, applied once with one map. Main-thread function ids come from
-  the script as written. Every build message is an entry of `build/diagnostics/catalogue.ts`.
+- **The compile step** (`src/build/compile/`): `compileComponent` parses a component once, every
+  pass returns edits against the source as written, and they are applied once with one map.
+  Main-thread function ids come from the script as written. Every message the build throws or warns
+  with is an entry of `build/diagnostics/catalogue.ts`.
 - **The plugin** (`src/build/plugin/`): a bundler layer per thread (a test run: the first-frame
   copies' main-thread layer only). Two loaders see every module, `node_modules` too: each returns at
   once without its marker.

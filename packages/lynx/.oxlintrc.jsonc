@@ -5,9 +5,8 @@
 	"extends": ["../../.oxlintrc.jsonc"],
 	// The app the type tests check against the package as published: its tsconfig.json extends the
 	// package's base by name, which resolves only once the package is installed (consumer.test.ts).
-	// The declarations bundled from the source, whose source is linted. The npm packages the polyfill
-	// folder bundles (scripts/polyfill/bundle.ts), as their authors wrote them.
-	"ignorePatterns": ["tests/fixtures/types/app/**", "types/bundled/**", "src/polyfill/vendor/**"],
+	// The declarations bundled from the source, whose source is linted.
+	"ignorePatterns": ["tests/fixtures/types/app/**", "types/bundled/**"],
 	"overrides": [
 		{
 			"files": ["src/**"],
@@ -45,15 +44,9 @@
 		// The main thread reads values the engine hands it (events, their targets, `runWorklet`'s
 		// options). On Android those objects have no prototype and `Reflect.get` refuses them ("not an
 		// object"), while a plain property read works, so code that runs there never uses `Reflect`.
-		// wire/ and polyfill/ run on both threads, and gesture/ in main-thread functions.
+		// wire/ runs on both threads, and gesture/ in main-thread functions.
 		{
-			"files": [
-				"src/main-thread/**",
-				"src/first-frame/**",
-				"src/wire/**",
-				"src/gesture/**",
-				"src/polyfill/**",
-			],
+			"files": ["src/main-thread/**", "src/first-frame/**", "src/wire/**", "src/gesture/**"],
 			"rules": {
 				"no-restricted-globals": [
 					"error",
@@ -71,7 +64,6 @@
 				"src/first-frame/globals.ts",
 				"src/wire/globals.ts",
 				"src/gesture/globals.ts",
-				"src/polyfill/globals.ts",
 			],
 			"rules": {
 				"no-restricted-globals": [
@@ -101,8 +93,6 @@
 						"patterns": [
 							{
 								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
 									"../**/wire",
 									"../**/wire/**",
 									"../build",
@@ -161,8 +151,6 @@
 						"patterns": [
 							{
 								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
 									"../**/wire",
 									"../**/wire/**",
 									"../build",
@@ -213,8 +201,6 @@
 						"patterns": [
 							{
 								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
 									"../**/wire",
 									"../**/wire/**",
 									"../build",
@@ -256,122 +242,9 @@
 				],
 			},
 		},
-		// May import: the polyfill folder's thread entries, as a package's: nothing of the binding, and
-		// nothing but its own files and the npm packages its entries name.
-		{
-			"files": ["src/polyfill/**"],
-			"rules": {
-				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
-				"import/no-nodejs-modules": "error",
-				"no-restricted-imports": [
-					"error",
-					{
-						"patterns": [
-							{
-								"group": [
-									"../**/wire",
-									"../**/wire/**",
-									"../**/build",
-									"../**/build/**",
-									"../**/background",
-									"../**/background/**",
-									"../**/main-thread",
-									"../**/main-thread/**",
-									"../**/first-frame",
-									"../**/first-frame/**",
-									"../**/svelte",
-									"../**/svelte/**",
-									"../**/testing",
-									"../**/testing/**",
-									"../**/gesture",
-									"../**/gesture/**",
-									"../**/env",
-									"../**/env/**",
-								],
-								"message": "The polyfill folder imports nothing of the binding: it could be a package of its own.",
-							},
-							{
-								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
-								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
-							},
-							{
-								"group": ["svelte", "svelte/**", "@sohedra/**", "@lynx-js/**"],
-								"message": "The polyfill folder serves any Lynx app: it imports neither Svelte nor Lynx's packages.",
-							},
-						],
-					},
-				],
-			},
-		},
-		// May import: wire/, and the polyfill folder's main-thread entry
-		{
-			"files": ["src/main-thread/**"],
-			"rules": {
-				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
-				"import/no-nodejs-modules": "error",
-				"no-restricted-imports": [
-					"error",
-					{
-						"patterns": [
-							{
-								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
-									"!../polyfill/main-thread.ts",
-									"!../../polyfill/main-thread.ts",
-									"!../../../polyfill/main-thread.ts",
-									"../**/wire",
-									"../**/wire/**",
-									"../build",
-									"../build/**",
-									"../../build",
-									"../../build/**",
-									"../../../build",
-									"../../../build/**",
-									"../**/background",
-									"../**/background/**",
-									"../**/main-thread",
-									"../**/main-thread/**",
-									"../**/first-frame",
-									"../**/first-frame/**",
-									"../**/svelte/build",
-									"../**/svelte/build/**",
-									"../**/svelte/runtime",
-									"../**/svelte/runtime/**",
-									"../**/testing",
-									"../**/svelte/manifest.ts",
-									"../**/testing/**",
-									"../**/gesture",
-									"../**/gesture/**",
-									"../**/env",
-									"../**/env/**",
-									"!../wire/index.ts",
-									"!../../wire/index.ts",
-									"!../../../wire/index.ts",
-								],
-								"message": "A folder imports only the folders in its row of the import table, each through its index.ts.",
-							},
-							{
-								"regex": "^\\./\\.\\.(/|$)|/\\.(/|$)|//|(^|/)([^./][^/]*|\\.[^./][^/]*|\\.\\.[^/]+)/\\.\\.(/|$)",
-								"message": "Write the path without a detour: no ./.. at its start, and no . or .. after a folder's name.",
-							},
-							{
-								"group": [
-									"svelte/internal",
-									"svelte/internal/**",
-									"svelte/compiler",
-									"svelte/src/**",
-								],
-								"message": "Svelte's internals are touched only in src/svelte/.",
-							},
-						],
-					},
-				],
-			},
-		},
 		// May import: wire/
 		{
-			"files": ["src/first-frame/**", "src/gesture/**", "src/env/**"],
+			"files": ["src/main-thread/**", "src/first-frame/**", "src/gesture/**", "src/env/**"],
 			"rules": {
 				// Node's modules are not on a Lynx thread, with or without the `node:` prefix.
 				"import/no-nodejs-modules": "error",
@@ -381,8 +254,6 @@
 						"patterns": [
 							{
 								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
 									"../**/wire",
 									"../**/wire/**",
 									"../build",
@@ -442,8 +313,6 @@
 						"patterns": [
 							{
 								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
 									"../**/wire",
 									"../**/wire/**",
 									"../build",
@@ -496,7 +365,7 @@
 				],
 			},
 		},
-		// May import: wire/ and svelte/runtime/, and the polyfill folder's background entry
+		// May import: wire/ and svelte/runtime/
 		{
 			"files": ["src/background/**"],
 			"rules": {
@@ -508,11 +377,6 @@
 						"patterns": [
 							{
 								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
-									"!../polyfill/background.ts",
-									"!../../polyfill/background.ts",
-									"!../../../polyfill/background.ts",
 									"../**/wire",
 									"../**/wire/**",
 									"../build",
@@ -565,7 +429,7 @@
 				],
 			},
 		},
-		// May import: every program but build/, and the polyfill folder's thread entries
+		// May import: every program but build/
 		{
 			"files": ["src/testing/**"],
 			"rules": {
@@ -575,14 +439,6 @@
 						"patterns": [
 							{
 								"group": [
-									"../**/polyfill",
-									"../**/polyfill/**",
-									"!../polyfill/background.ts",
-									"!../../polyfill/background.ts",
-									"!../../../polyfill/background.ts",
-									"!../polyfill/main-thread.ts",
-									"!../../polyfill/main-thread.ts",
-									"!../../../polyfill/main-thread.ts",
 									"../**/wire",
 									"../**/wire/**",
 									"../build",

@@ -12,6 +12,10 @@ export interface WireDetails {
 	page_reloaded_on_one_thread: { thread: Thread; received: number; page: number };
 	/** `thread` is the thread the value was sent to. */
 	value_not_copyable: { thread: Thread; reason: string };
+	/** `name`: a global the app read; `module`: the import of @sohedra/lynx-polyfill that fills it. */
+	global_not_filled: { name: string; module: string };
+	/** `name`: a global the app read, which no fill gives; `instead`: what to use. */
+	global_not_on_lynx: { name: string; instead: string };
 }
 
 /** What a code of the wire names. */
@@ -46,6 +50,19 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 		fix: () =>
 			"Send plain data: strings, numbers, booleans, null, arrays and plain objects, without cycles or BigInt values.",
 		docs: "value_not_copyable",
+	},
+	global_not_filled: {
+		message: ({ name }) =>
+			`The global \`${name}\` is not defined: Lynx's engine doesn't have it, and no import put it there.`,
+		fix: ({ module }) =>
+			`Import "${module}" in the first line of the app's entry, or "@sohedra/lynx-polyfill" for every fill.`,
+		docs: "global_not_filled",
+	},
+	global_not_on_lynx: {
+		message: ({ name }) =>
+			`The global \`${name}\` is not defined: Lynx's engine doesn't have it, and no fill gives it.`,
+		fix: ({ instead }) => instead,
+		docs: "global_not_on_lynx",
 	},
 };
 

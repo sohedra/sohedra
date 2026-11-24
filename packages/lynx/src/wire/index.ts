@@ -5,6 +5,8 @@ export { WIRE_CATALOGUE, wireError, wireMessage } from "./catalogue.ts";
 export type { WireCode, WireDetails, WireError, WireReport } from "./catalogue.ts";
 export { describeOp } from "./describe-op.ts";
 export { escapeJsonText } from "./escape.ts";
+export { hearErrorEvents } from "./error-events.ts";
+export { withMissingGlobalHint } from "./missing-globals.ts";
 export type { TagOf } from "./describe-op.ts";
 export {
 	eventOf,

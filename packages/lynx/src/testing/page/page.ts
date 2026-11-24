@@ -127,65 +127,11 @@ export const IPHONE: Readonly<Record<string, unknown>> = {
 };
 
 /**
- * What Lynx's threads lack or get wrong, which the polyfill folder fills (the device checks:
- * `queueMicrotask is not defined` on Lynx 4.2's main thread, and Svelte's `EventTarget` and
- * `structuredClone` missing on both, as are `atob` and `btoa`; the rest from the feature table): each
- * thread has only what its own code puts there, the binding's fills.
+ * What neither of Lynx's threads has (the device checks: `queueMicrotask is not defined` on Lynx
+ * 4.2's main thread, and Svelte's `EventTarget` and `structuredClone` missing on both): each thread
+ * has only what its own code puts there, the binding's fills.
  */
-const THREAD_FILLED = [
-	"queueMicrotask",
-	"EventTarget",
-	"Event",
-	"CustomEvent",
-	"ErrorEvent",
-	"PromiseRejectionEvent",
-	"reportError",
-	"addEventListener",
-	"removeEventListener",
-	"dispatchEvent",
-	"onerror",
-	"onunhandledrejection",
-	"onrejectionhandled",
-	"DOMException",
-	"structuredClone",
-	"atob",
-	"btoa",
-	"self",
-	"navigator",
-	"TextEncoder",
-	"TextDecoder",
-	"URL",
-	"URLSearchParams",
-	"performance",
-	"Performance",
-	"PerformanceEntry",
-	"PerformanceMark",
-	"PerformanceMeasure",
-	"AbortController",
-	"AbortSignal",
-	"Headers",
-	"Request",
-	"Response",
-	"fetch",
-	"ReadableStream",
-	"ReadableStreamDefaultReader",
-	"ReadableStreamBYOBReader",
-	"ReadableStreamDefaultController",
-	"ReadableByteStreamController",
-	"ReadableStreamBYOBRequest",
-	"WritableStream",
-	"WritableStreamDefaultWriter",
-	"WritableStreamDefaultController",
-	"TransformStream",
-	"TransformStreamDefaultController",
-	"ByteLengthQueuingStrategy",
-	"CountQueuingStrategy",
-	"TextEncoderStream",
-	"TextDecoderStream",
-	"Blob",
-	"File",
-	"FormData",
-];
+const THREAD_FILLED = ["queueMicrotask", "EventTarget", "structuredClone"];
 
 /** The globals a page's own code sets while it runs, put back when the page ends. */
 const PAGE_GLOBALS = [

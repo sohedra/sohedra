@@ -251,9 +251,9 @@ export function addBundlePlugins(
 		.use(RuntimeWrapperWebpackPlugin, [
 			{
 				// Same renames as ReactLynx: these wrapper params are unused. And `self` and
-				// `navigator` (`undefined` there), so the bundle reads the polyfill folder's from the
-				// global object. `fetch` keeps its name, which the wrapper's own code reads: the
-				// global-fetch plugin points the bundle's `fetch` at the global object's.
+				// `navigator` (`undefined` there), so the bundle reads the global object's, which
+				// `@sohedra/lynx-polyfill` fills. `fetch` keeps its name, which the wrapper's own code
+				// reads: the global-fetch plugin points the bundle's `fetch` at the global object's.
 				injectVars: (vars: string[]) =>
 					vars.map((name) => (RENAMED_WRAPPER_PARAMETERS.includes(name) ? `__${name}` : name)),
 				targetSdkVersion: engineVersion,
@@ -270,15 +270,18 @@ export function addBundlePlugins(
 }
 
 /**
- * Points the code's own `fetch` at the global object's, which the polyfill folder fills: Lynx's
- * runtime wrapper passes the background's bundle lynx-core's `fetch` as a parameter of that name,
- * which its own code reads (`fetch = fetch || lynx.fetch`), so the parameter can't be renamed.
+ * Points the code's own `fetch` at the global object's when there is one (`@sohedra/lynx-polyfill`
+ * puts it there), else at lynx-core's, as before: Lynx's runtime wrapper passes the background's
+ * bundle lynx-core's `fetch` as a parameter of that name, which its own code reads
+ * (`fetch = fetch || lynx.fetch`), so the parameter can't be renamed, and a fill can't reach it.
  *
  * @workaround wrapper-fetch-parameter kind=lynx-limit delete-when="Lynx's runtime wrapper no longer passes the bundle a fetch parameter"
  */
 class GlobalFetchPlugin {
 	apply(compiler: Rspack.Compiler): void {
-		new compiler.webpack.DefinePlugin({ fetch: "globalThis.fetch" }).apply(compiler);
+		new compiler.webpack.DefinePlugin({ fetch: "(globalThis.fetch || lynx.fetch)" }).apply(
+			compiler,
+		);
 	}
 }
 

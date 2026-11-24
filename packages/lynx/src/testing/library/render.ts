@@ -9,6 +9,7 @@ import type { BoundFunctions, queries } from "@testing-library/dom";
 import type { Component } from "svelte";
 
 import { fillEngineGaps, mountPage, pageExports } from "../../background/index.ts";
+import type { BackgroundGlobals } from "../../background/index.ts";
 import { startMainThread } from "../../main-thread/index.ts";
 import type { MainThreadRuntime } from "../../main-thread/index.ts";
 import { FIRST_FRAME_COPY_KEY } from "../../wire/index.ts";
@@ -129,7 +130,12 @@ export async function render<
 			background: () => {
 				// The background's start-up: what it lacks, filled as on a device.
 				const lynx = readGlobal("lynx") as BackgroundLynx;
-				fillEngineGaps({ scope: globalScope(), readLynx: () => lynx });
+				// Boundary: the fill reads only `lynx` of the background's globals.
+				fillEngineGaps({
+					scope: globalScope(),
+					strings: String.prototype,
+					globals: { lynx } as unknown as BackgroundGlobals,
+				});
 				mountPage(Component, { props: props.props, ...(context && { context }) });
 			},
 		}),

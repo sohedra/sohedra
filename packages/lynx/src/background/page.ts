@@ -22,7 +22,7 @@ import {
 	startPropsIds,
 	withRenderer,
 } from "../svelte/runtime/index.ts";
-import { decodeError, encodeError, ROOT_ID } from "../wire/index.ts";
+import { decodeError, encodeError, hearErrorEvents, ROOT_ID } from "../wire/index.ts";
 import type {
 	CallMessage,
 	ErrorMessage,
@@ -37,7 +37,7 @@ import { openChannel } from "./channel.ts";
 import { heard, releaseErrorHandler, runSvelte, setErrorHandler, startOver } from "./errors.ts";
 import type { ErrorSource } from "./errors.ts";
 import { callThrough } from "./functions/calls.ts";
-import { background } from "./globals.ts";
+import { background, globalScope } from "./globals.ts";
 import { globalPropsChanged, initDataChanged } from "./host/data.ts";
 import { closeHostEvents, openHostEvents } from "./host/events.ts";
 import { resetKeyboard } from "./host/keyboard.ts";
@@ -112,6 +112,8 @@ export function mountPage<Props extends Bag>(
 		componentOfError(typeof error.message === "string" ? error.message : "", source),
 	);
 	clearRepeats();
+	// What a polyfill the app imported catches reaches the page's `onError` too.
+	hearErrorEvents(globalScope, (error) => report(error));
 	startGeneration();
 	openLayers();
 	openHostEvents();
