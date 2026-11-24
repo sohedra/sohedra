@@ -47,6 +47,11 @@ describe("the output", () => {
 	it("marks the main thread's script, which the template encodes as lepus code", () => {
 		expect(template["lepusCode"]).toBeDefined();
 	});
+	it("points the code's own fetch at the global object's, where the fill puts it", () => {
+		// The wrapper reads its `fetch` parameter itself, so the parameter keeps its name.
+		expect(scripts.background).toContain("typeof globalThis.fetch");
+		expect(scripts.background).not.toMatch(/typeof fetch\b/);
+	});
 });
 
 describe("Lynx's dev client", () => {
@@ -107,6 +112,10 @@ describe("the page config", () => {
 
 	it("encodes enableCSSInlineVariables by default, so that a `--x` in a style works", () => {
 		expect(template["sourceContent"].config["enableCSSInlineVariables"]).toBe(true);
+	});
+
+	it("encodes enableFetchAPIStandardStreaming by default, so that a response's body streams", () => {
+		expect(template["sourceContent"].config["enableFetchAPIStandardStreaming"]).toBe(true);
 	});
 
 	it("sets what the runtime needs, and what no setting turns off: the engine's newer paths", () => {
