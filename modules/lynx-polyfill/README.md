@@ -160,9 +160,10 @@ changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed
 - **lynx-core's `Promise`** on the background has no `Symbol.species`: `/language` gives it `any`,
   `allSettled`, `withResolvers`, `try` and a working `finally` without it, and a subclass's `then`
   still returns lynx-core's `Promise`.
-- **PrimJS's `JSON`**: `JSON.parse` cuts a string at an escaped `\u0000`, `JSON.stringify` gives
-  `"0"` for a number as small as `1.23e-18`, doesn't throw on a `BigInt`, and sets an array's
-  elements through `Array.prototype`'s setters. No fill replaces `JSON` yet.
+- **PrimJS's `JSON`**: `JSON.parse` cuts a string at an escaped `\u0000` and refuses an escaped lone
+  surrogate (`"\ud800"`); `JSON.stringify` gives `"0"` for a number of magnitude `1e-15` or less,
+  doesn't throw on a `BigInt`, and goes through `Array.prototype`'s setters as it works, so a page
+  that sets one changes its output. No fill replaces `JSON` yet.
 - **Pages of a `LynxGroup`** share one background realm: the first page's fills serve them all.
 
 ## Tested

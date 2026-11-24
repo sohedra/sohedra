@@ -10,6 +10,5 @@
 	"iterator-chunking": "A proposal past ES2025 (Iterator.prototype.chunks and windows), which the package doesn't fill.",
 	"iterator-includes": "A proposal past ES2025 (Iterator.prototype.includes), which the package doesn't fill.",
 	"Iterator.prototype.join": "A proposal past ES2025 (Iterator.prototype.join), which the package doesn't fill.",
-	"explicit-resource-management": "ES2026's using and Symbol.dispose, past the ES2025 the package fills.",
-	"json-parse-with-source": "ES2026's JSON.parse with source (a reviver's context, JSON.rawJSON), past the ES2025 the package fills."
+	"explicit-resource-management": "ES2026's using and Symbol.dispose, past the ES2025 the package fills."
 }

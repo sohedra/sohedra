@@ -1,0 +1,152 @@
+{
+	"isRawJSON/basic.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"isRawJSON/builtin.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"isRawJSON/length.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"isRawJSON/name.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"isRawJSON/not-a-constructor.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"isRawJSON/prop-desc.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"parse/reviver-call-args-after-forward-modification.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"parse/reviver-context-source-array-literal.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"parse/reviver-context-source-object-literal.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"parse/reviver-context-source-primitive-literal.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"parse/reviver-forward-modifies-object.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/basic.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/bigint-raw-json-can-be-stringified.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/builtin.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/illegal-empty-and-start-end-chars.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/invalid-JSON-text.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/length.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/name.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/not-a-constructor.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/prop-desc.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"rawJSON/returns-expected-object.js": {
+		"fail": {
+			"note": "ES2026's JSON.parse with source (JSON.rawJSON, JSON.isRawJSON, a reviver's context), past the ES2025 the package fills: PrimJS has none of it.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"stringify/value-bigint-order.js": {
+		"fail": {
+			"note": "PrimJS engine bug: JSON.stringify writes a BigInt as a number (1n gives \"1\") instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"stringify/value-bigint-tojson-receiver.js": {
+		"fail": {
+			"note": "PrimJS engine bug: JSON.stringify writes a BigInt as a number (1n gives \"1\") instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"stringify/value-bigint.js": {
+		"fail": {
+			"note": "PrimJS engine bug: JSON.stringify writes a BigInt as a number (1n gives \"1\") instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"stringify/value-number.js": {
+		"fail": {
+			"note": "PrimJS engine bug: JSON.stringify writes a number of magnitude 1e-15 or less as \"0\" (1.23e-18 gives \"0\", where String gives \"1.23e-18\").",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}
