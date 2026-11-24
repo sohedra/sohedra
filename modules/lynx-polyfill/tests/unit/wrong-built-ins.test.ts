@@ -1,5 +1,5 @@
 // The built-ins PrimJS has and gets wrong: each replaced by core-js's own where it gets that wrong,
-// and left where it gets it right.
+// and left where it gets it right. PrimJS's `Object.assign` stays, wrong as it is, for speed.
 
 import { afterEach, beforeAll, describe, expect, it, rs } from "@rstest/core";
 
@@ -91,14 +91,12 @@ describe("on an engine that gets them wrong, as PrimJS does", () => {
 		];
 	});
 
-	it("replaces each with core-js's, forced past core-js's own check", () => {
+	it("replaces each but Object.assign with core-js's, forced past core-js's own check", () => {
 		expect(rs.mocked(forceCoreJs).mock.calls).toEqual([
-			["Object.assign"],
 			["Object.getOwnPropertyDescriptor"],
 			["Reflect.apply"],
 			["String#matchAll"],
 		]);
-		expect(filled).not.toContain(assignAsPrimJs);
 		expect(filled).not.toContain(descriptorAsPrimJs);
 		expect(filled).not.toContain(applyAsPrimJs);
 		expect(filled).not.toContain(matchAllAsPrimJs);
@@ -111,21 +109,8 @@ describe("on an engine that gets them wrong, as PrimJS does", () => {
 		expect(Object.assign).toBe(own.assign);
 	});
 
-	it("gives an Object.assign that skips a key a getter hides as it copies", () => {
-		const source: Record<string, unknown> = {};
-		Object.defineProperty(source, "a", {
-			enumerable: true,
-			get: () => Object.defineProperty(source, "b", { value: 3, enumerable: false }),
-		});
-		source["b"] = 2;
-		expect(assign({ b: 1 }, source)["b"]).toBe(1);
-		const symbol = Symbol("s");
-		expect(assign({}, { a: 1 }, null, { [symbol]: 2 }, "xy")).toEqual({
-			a: 1,
-			[symbol]: 2,
-			0: "x",
-			1: "y",
-		});
+	it("keeps the engine's Object.assign, for speed", () => {
+		expect(assign).toBe(assignAsPrimJs);
 	});
 
 	it("gives an Object.getOwnPropertyDescriptor that reads a primitive as its object", () => {
