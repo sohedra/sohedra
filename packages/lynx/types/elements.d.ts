@@ -275,17 +275,23 @@ export declare namespace MainThread {
 		readonly parentElement: Element | null;
 		/** The element's `data-*` values, without the prefix. */
 		readonly dataset: Record<string, unknown>;
-		/** Whether `other` is this element or inside it. */
+		/** Whether `other` is this element or inside it; `false` for anything but an element. */
 		contains(other: unknown): boolean;
+		/** The value of one of the element's attributes; `null` once the element is gone. */
 		getAttribute(name: string): unknown;
+		/** The names of the element's attributes. */
 		getAttributeNames(): string[];
+		/** Sets one of the element's attributes. */
 		setAttribute(name: string, value: unknown): void;
 		/** Sets one inline style; `null` or `""` gives the property back to `style`. */
 		setStyleProperty(name: string, value: string | number | null): void;
 		/** Sets inline styles, as `setStyleProperty` does each. */
 		setStyleProperties(styles: Record<string, string | number | null>): void;
+		/** The value a style of the element has now, as laid out. */
 		getComputedStyleProperty(name: string): string;
+		/** The first element inside this one that `selector` matches, or `null`. */
 		querySelector(selector: string): Element | null;
+		/** Every element inside this one that `selector` matches. */
 		querySelectorAll(selector: string): Element[];
 		/** Animates the element; a number is the duration in milliseconds. Its `id` is made up. */
 		animate(
@@ -298,9 +304,13 @@ export declare namespace MainThread {
 
 	/** An animation a main-thread function started. */
 	interface Animation {
+		/** The animation's name, made up by the binding. */
 		readonly id: string;
+		/** Runs it again from where it was paused. */
 		play(): void;
+		/** Holds it where it is. */
 		pause(): void;
+		/** Stops it and takes its styles off. */
 		cancel(): void;
 	}
 }

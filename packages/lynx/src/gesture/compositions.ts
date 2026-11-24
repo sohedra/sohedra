@@ -9,11 +9,13 @@
 // Adapted from @lynx-js/gesture-runtime (lynx-stack/packages/lynx/gesture-runtime/src), Copyright
 // 2025 The Lynx Authors, Apache License 2.0: the compositions' relations.
 
+// By the entry's name: the compositions take the one `Gesture` every entry's declarations name.
+import type { Gesture } from "@sohedra/lynx/gesture";
+
 import { GestureType } from "../wire/index.ts";
 import type { GestureRef, SerializedGesture } from "../wire/index.ts";
 import { gestureError } from "./catalogue.ts";
 import { crossing, GestureBase, merge, refsOf } from "./gestures.ts";
-import type { Gesture } from "./gestures.ts";
 
 /** What a composition adds to its members' relations. */
 interface Added {

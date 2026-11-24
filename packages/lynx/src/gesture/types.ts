@@ -1,32 +1,8 @@
 // What a gesture's callbacks get: the gesture's event, and the state manager of its detector.
 
-/** The element a gesture is on, as a main-thread function gets it. */
-export interface GestureElement {
-	/** The element's parent, up to the page; `null` above it. */
-	readonly parentElement: GestureElement | null;
-	/** The element's `data-*` attributes. */
-	readonly dataset: Record<string, unknown>;
-	/** Whether `other` is this element or inside it. */
-	contains(other: GestureElement): boolean;
-	getAttribute(name: string): unknown;
-	setAttribute(name: string, value: unknown): void;
-	/** Sets one style; a later `style` from the background keeps it. */
-	setStyleProperty(name: string, value: string | number | null): void;
-	/** Sets several styles at once. */
-	setStyleProperties(styles: Record<string, string | number | null>): void;
-	querySelector(selector: string): GestureElement | null;
-	querySelectorAll(selector: string): GestureElement[];
-	getAttributeNames(): string[];
-	/** The value a style of the element has now, as laid out. */
-	getComputedStyleProperty(name: string): string;
-	/** Animates the element; a number is the duration in milliseconds. */
-	animate(
-		keyframes: Record<string, string | number>[],
-		options?: number | Record<string, unknown>,
-	): { cancel(): void; pause(): void; play(): void };
-	/** Calls one of the element's UI methods, once the frame it is in is laid out. */
-	invoke(method: string, params?: Record<string, unknown>): Promise<unknown>;
-}
+// By the entry's name: a gesture's element is the one type of a main-thread element, which a ref
+// and a main-thread event have too.
+import type { MainThread } from "@sohedra/lynx/elements";
 
 /**
  * Where a touch is. A tap's `onStart` and `onEnd` carry none of it on Android: read it in
@@ -51,9 +27,9 @@ export interface GestureChangeEvent<Params extends GestureParams = GestureParams
 	/** When it happened, in milliseconds: on the event, not in `params`. */
 	timestamp: number;
 	/** The element the gesture is on, as `currentTarget`: a gesture names no touched element. */
-	target: GestureElement;
+	target: MainThread.Element;
 	/** The element the gesture is on. */
-	currentTarget: GestureElement;
+	currentTarget: MainThread.Element;
 	params: Params;
 }
 

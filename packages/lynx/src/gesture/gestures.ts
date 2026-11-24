@@ -21,6 +21,10 @@
 // Adapted from @lynx-js/gesture-runtime (lynx-stack/packages/lynx/gesture-runtime/src), Copyright
 // 2025 The Lynx Authors, Apache License 2.0: the shape and the types.
 
+// By the entry's name: every entry's declarations then name the one `Gesture`, whose brand only
+// these classes carry.
+import type { Gesture } from "@sohedra/lynx/gesture";
+
 import { GestureType, isGesture, isMainThreadFunction, plainGestures } from "../wire/index.ts";
 import type {
 	GestureRef,
@@ -41,20 +45,15 @@ import type {
 	TapGestureChangeEvent,
 } from "./types.ts";
 
-/**
- * What every gesture class extends: marked as a gesture, which the main thread reads. The mark is
- * public, so a gesture is one to every entry's declarations, which each declare the classes they
- * export.
- */
+// The class's type carries the brand of `Gesture`, which no value has: a plain object is no gesture.
+/* oxlint-disable typescript/no-unsafe-declaration-merging -- the brand is a type, never read */
+/** What every gesture class extends: marked as a gesture, which the main thread reads. */
 export abstract class GestureBase {
+	/** @internal */
 	readonly __isSerialized: true = true;
 }
-
-/**
- * A gesture: what `main-thread:gesture` takes, and what a gesture's relations name. Only the
- * gesture classes make one.
- */
-export interface Gesture extends GestureBase {}
+export interface GestureBase extends Gesture {}
+/* oxlint-enable typescript/no-unsafe-declaration-merging */
 
 /** What every gesture takes besides its own options: the gestures it relates to. */
 export interface GestureRelations {
