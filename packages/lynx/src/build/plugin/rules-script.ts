@@ -16,7 +16,8 @@ export type SwcByThread = Record<Thread, SwcOptions>;
 // oxlint-disable-next-line typescript/no-explicit-any -- webpack-chain's Rule generic parent is invariant; any matches whatever parent Rsbuild passes
 export type Rule = RspackChain.Rule<any>;
 
-// Same lists as ReactLynx's main-thread SWC env.
+// ReactLynx's main-thread SWC env, and `\p{…}` in a regular expression, which PrimJS reads only
+// with the Unicode tables Lynx builds it without (the background's list has it too).
 //
 // An exception to the app's `tools.swc` winning: PrimJS (ES2019) cannot run what these lists
 // lower, so they go over the app's own `env` on the main thread.
@@ -33,6 +34,7 @@ const MAIN_THREAD_ENV = {
 		"transform-class-static-block",
 		"transform-private-methods",
 		"transform-private-property-in-object",
+		"transform-unicode-property-regex",
 	],
 };
 

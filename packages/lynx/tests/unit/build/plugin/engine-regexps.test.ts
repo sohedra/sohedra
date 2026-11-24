@@ -36,11 +36,11 @@ describe("the regular expressions the engine refuses", () => {
 
 	it("are those with a modifier, and not a group that only groups or looks around", () => {
 		expect(
-			found("/(?i:a)b/; /(?-m:^a)/; /(?ims-s:a)/; /(?:a)/; /(?=a)(?!b)(?<=c)(?<!d)/; /\\(?i:a\\)/"),
+			found("/(?i:a)b/; /(?-m:^a)/; /(?im-s:a)/; /(?:a)/; /(?=a)(?!b)(?<=c)(?<!d)/; /\\(?i:a\\)/"),
 		).toEqual([
 			["/(?i:a)b/", "modifier"],
 			["/(?-m:^a)/", "modifier"],
-			["/(?ims-s:a)/", "modifier"],
+			["/(?im-s:a)/", "modifier"],
 		]);
 	});
 
