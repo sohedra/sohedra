@@ -12,6 +12,18 @@ Animate the element with its \`animate()\` method from an attachment (\`{@attach
 https://sohedra.com/e/animate_directive"
 `;
 
+exports[`the build's catalogue > background_api_in_main_thread_function: the message 1`] = `
+"A main-thread function uses \`NativeModules\`, which Lynx has on the background thread only.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Use it in a function the main-thread function calls with \`runOnBackground\`, or in an effect or an event handler.
+https://sohedra.com/e/background_api_in_main_thread_function"
+`;
+
 exports[`the build's catalogue > background_only_in_component: the message 1`] = `
 "The component src/Card.svelte imports 'background-only', but every component also renders on the main thread for the first frame.
 /app/src/App.svelte:2:3
@@ -132,6 +144,18 @@ Use the @lynx-js/webpack-dev-transport this @sohedra/lynx was built for, or upda
 https://sohedra.com/e/dev_client_moved"
 `;
 
+exports[`the build's catalogue > dom_not_on_lynx: the message 1`] = `
+"\`document\` is part of the web's DOM, which Lynx doesn't have, so this code throws where it runs.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Reach an element with \`{@attach}\` on the background, or with \`main-thread:ref\` in a main-thread function, and use its methods.
+https://sohedra.com/e/dom_not_on_lynx"
+`;
+
 exports[`the build's catalogue > encoder_not_handed_over: the message 1`] = `
 "The Lynx encoder that @sohedra/lynx carries could not be given to the template plugin: its LynxEncodePlugin has no encodePool to run the encode step in.
 /app/src/App.svelte:2:3
@@ -180,6 +204,18 @@ Write \`ontap\` instead.
 https://sohedra.com/e/event_attribute_renamed"
 `;
 
+exports[`the build's catalogue > fill_not_imported: the message 1`] = `
+"Lynx's engine doesn't have the global \`TextEncoder\`, and the app imports nothing that fills it, so this code throws where it runs.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Import "@sohedra/lynx-polyfill/encoding" in the first line of the app's entry, or "@sohedra/lynx-polyfill", which holds it too.
+https://sohedra.com/e/fill_not_imported"
+`;
+
 exports[`the build's catalogue > first_frame_not_boolean: the message 1`] = `
 "\`firstFrame\` returned "yes" for the entry \`settings\`, and it must return a boolean.
 /app/src/App.svelte:2:3
@@ -202,6 +238,18 @@ exports[`the build's catalogue > global_event_attribute: the message 1`] = `
 
 Listen with \`on(root, "tap", handler)\` in an effect, with \`root\` from \`@sohedra/lynx\`.
 https://sohedra.com/e/global_event_attribute"
+`;
+
+exports[`the build's catalogue > global_not_in_lynx: the message 1`] = `
+"Lynx's engine doesn't have the global \`Intl\`, and no fill gives it, so this code throws where it runs.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Format dates and numbers with a library in plain JavaScript, such as date-fns or dayjs.
+https://sohedra.com/e/global_not_in_lynx"
 `;
 
 exports[`the build's catalogue > hot_footer_missing: the message 1`] = `
@@ -286,6 +334,18 @@ exports[`the build's catalogue > lynx_engine_missing: the message 1`] = `
 
 Build with rspeedy, or add \`pluginLynx()\` from @lynx-js/rsbuild-plugin to the Rsbuild config.
 https://sohedra.com/e/lynx_engine_missing"
+`;
+
+exports[`the build's catalogue > main_thread_api_in_background: the message 1`] = `
+"\`__CreateView\` is used outside a main-thread function, and Lynx has it on the main thread only.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Reach the element with \`main-thread:ref\`, and use its methods in a main-thread function: a function whose body starts with 'main thread'.
+https://sohedra.com/e/main_thread_api_in_background"
 `;
 
 exports[`the build's catalogue > main_thread_asset_missing: the message 1`] = `

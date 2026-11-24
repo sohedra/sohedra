@@ -50,6 +50,8 @@ export interface ThreadRules {
 	hot: boolean;
 	/** The rules take every module, not only those the thread's layer issues (a test run has no layers). */
 	unlayered?: boolean;
+	/** This thread's copy checks the app's own code for what fails on Lynx (one copy is enough). */
+	checks?: boolean;
 }
 
 /** The thread's branch of `rule`: the modules its layer issues. */
@@ -94,13 +96,13 @@ function withGlobals(options: SwcOptions, vars: Record<string, string>): SwcOpti
 /** Main-thread functions of a plain script run first, on the source as written. */
 export function useMainThreadFunctions(
 	rule: Rule,
-	options: { thread: Thread; hot: boolean },
+	options: { thread: Thread; hot: boolean; checks?: boolean | undefined },
 ): void {
-	const { thread, hot } = options;
+	const { thread, hot, checks } = options;
 	rule
 		.use(`${PACKAGE_NAME}:main-thread-functions`)
 		.loader(loaderPath("main-thread-functions"))
-		.options({ thread, hot });
+		.options({ thread, hot, ...(checks === true && { checks }) });
 }
 
 /**
@@ -185,5 +187,6 @@ export function threadsOf(options: {
 		// The plugin's own constants win over the app's.
 		defines: { ...define[thread], ...plugin(thread) },
 		hot: hot && thread === "background",
+		checks: thread === "background",
 	}));
 }

@@ -17,6 +17,7 @@ import type {
 	SvelteCompiler,
 } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
+import type { ModuleFills } from "../checks/fills-store.ts";
 import type { BuildWarning, SourceText } from "../diagnostics/messages.ts";
 import { compileError, compileWarnings, preprocessError } from "../diagnostics/svelte-errors.ts";
 import { appendMap, compose } from "../source-map/maps.ts";
@@ -51,6 +52,11 @@ export interface ComponentOptions {
 	 * main-thread functions is never compiled so: its functions live in the main thread's script.
 	 */
 	hot?: boolean | undefined;
+	/**
+	 * Check the component as the app's own code, on the background's copy: the reads that fail on
+	 * Lynx are errors, and its selectors and main-thread handlers development warnings.
+	 */
+	checks?: boolean | undefined;
 }
 
 /** A compiled component. */
@@ -66,6 +72,8 @@ export interface CompiledComponent {
 	dependencies: string[];
 	/** The ids of the component's main-thread functions, in source order. */
 	functionIds: string[];
+	/** The reads that wait on a fill, and the fills the component imports: the build decides them. */
+	fills: ModuleFills;
 }
 
 /** The text a preprocessor made of the component. */
@@ -205,6 +213,7 @@ export async function compileComponent(
 			warnings: [],
 			dependencies,
 			functionIds: prepared.functionIds,
+			fills: prepared.fills,
 		};
 	}
 
@@ -219,5 +228,6 @@ export async function compileComponent(
 		warnings: [...prepared.warnings, ...compileWarnings(result.warnings, context)],
 		dependencies,
 		functionIds: prepared.functionIds,
+		fills: prepared.fills,
 	};
 }

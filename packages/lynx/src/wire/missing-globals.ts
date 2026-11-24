@@ -1,7 +1,8 @@
 // What a page's error says when its code read a global Lynx's engine doesn't have: the engine's
 // own `ReferenceError` names only the global, so the report names the import of
-// `@sohedra/lynx-polyfill` that fills it, or, for what no fill gives, what to use instead. The binding
-// imports nothing of the package: this is a table of names.
+// `@sohedra/lynx-polyfill` that fills it, or, for what no fill gives, what to use instead. The build
+// reads the same tables to report such a global where the code reads it. The binding imports
+// nothing of the package: these are tables of names.
 
 import { wireMessage } from "./catalogue.ts";
 import type { WireCode, WireReport } from "./catalogue.ts";
@@ -90,6 +91,45 @@ const BACKGROUND_ONLY: readonly string[] = [
 	"DecompressionStream",
 ];
 
+/**
+ * The subpaths whose globals the catch-all import (`@sohedra/lynx-polyfill`) leaves out: the
+ * experimental fills and the heavy language fills. `scripts/missing-globals.ts` checks it against
+ * the package's entries.
+ */
+const OUTSIDE_BASELINE: readonly string[] = [
+	"/event-source",
+	"/compression",
+	"/url-pattern",
+	"/messaging",
+	"/iterator-helpers",
+];
+
+/**
+ * The globals of `FILLED` each thread has without the package, in an app of this binding: its own
+ * (lynx-core's, on the background, which the fills replace where they get the standard wrong) or the
+ * binding's engine gaps (`background/engine-gaps.ts`, `main-thread/engine-gaps.ts`). Reading one
+ * throws no `ReferenceError`, so the build reports none. Sources: the header of each fill in
+ * `@sohedra/lynx-polyfill`'s `src/fills/web/` (abort.ts, url.ts, fetch.ts, headers.ts, streams.ts).
+ */
+const ENGINE_HAS: Readonly<Record<Thread, readonly string[]>> = {
+	background: [
+		"AbortController",
+		"AbortSignal",
+		"URL",
+		"URLSearchParams",
+		"fetch",
+		"Headers",
+		"Request",
+		"Response",
+		"ReadableStream",
+		"queueMicrotask",
+		"EventTarget",
+		"structuredClone",
+		"performance",
+	],
+	"main-thread": ["queueMicrotask", "EventTarget", "structuredClone"],
+};
+
 /** What to use instead of each global no fill gives. */
 const NOT_ON_LYNX: Readonly<Record<string, string>> = {
 	crypto:
@@ -108,6 +148,62 @@ const NOT_ON_LYNX: Readonly<Record<string, string>> = {
 /** The global an engine's `ReferenceError` says is missing: V8's and PrimJS's, and JavaScriptCore's. */
 const NOT_DEFINED = /^(?:([\w$]+) is not defined|Can't find variable: ([\w$]+))$/;
 
+/** Whether `table` has `name` as its own key, not one of `Object.prototype`'s. */
+const owns = (table: object, name: string): boolean =>
+	Object.prototype.hasOwnProperty.call(table, name);
+
+/**
+ * The report for the global `name`, read on `thread`, by the tables above, whether or not the
+ * thread's engine has it; `undefined` for a global the tables don't name.
+ */
+function missingGlobal(name: string, thread: Thread): WireReport<WireCode> | undefined {
+	if (owns(NOT_ON_LYNX, name))
+		return { code: "global_not_on_lynx", details: { name, instead: NOT_ON_LYNX[name]! } };
+	if (thread === "main-thread" && BACKGROUND_ONLY.includes(name))
+		return { code: "global_background_only", details: { name } };
+	for (const subpath of Object.keys(FILLED))
+		if (FILLED[subpath]!.includes(name))
+			return { code: "global_not_filled", details: { name, module: `${POLYFILL}${subpath}` } };
+	return undefined;
+}
+
+/** Why a thread lacks a global, and what to do, as the build reports a read of it. */
+export type GlobalGap =
+	/** No fill gives it; `instead` says what to use. */
+	| { kind: "not_on_lynx"; instead: string }
+	/** Read on the main thread, which never has it: the background does. */
+	| { kind: "background_only" }
+	/** A fill gives it: `module` is its import; `baseline`, whether the catch-all import gives it too. */
+	| { kind: "fill"; module: string; baseline: boolean };
+
+/**
+ * What the global `name`, read on `thread`, lacks there, from the same tables as a page's error:
+ * whether or not the thread's engine has it (`engineHas`); `undefined` for a global they don't name.
+ */
+export function globalGap(name: string, thread: Thread): GlobalGap | undefined {
+	const report = missingGlobal(name, thread);
+	if (report === undefined) return undefined;
+	// Boundary: each code's details, by the code.
+	const details = report.details as { instead?: string; module?: string };
+	if (report.code === "global_not_on_lynx")
+		return { kind: "not_on_lynx", instead: details.instead! };
+	if (report.code === "global_background_only") return { kind: "background_only" };
+	const module = details.module!;
+	return {
+		kind: "fill",
+		module,
+		baseline: !OUTSIDE_BASELINE.includes(module.slice(POLYFILL.length)),
+	};
+}
+
+/**
+ * Whether `thread` has the global `name` of the fills' table without `@sohedra/lynx-polyfill`: its
+ * engine's own, or the binding's.
+ */
+export function engineHas(name: string, thread: Thread): boolean {
+	return ENGINE_HAS[thread].includes(name);
+}
+
 /**
  * The page's error as it should be reported: for a `ReferenceError` naming a global that a fill gives
  * on `thread`, that only the background has, or that Lynx lacks for good, a `ReferenceError` whose
@@ -119,18 +215,7 @@ export function withMissingGlobalHint(error: unknown, thread: Thread): unknown {
 	const match = NOT_DEFINED.exec(error.message);
 	const name = match?.[1] ?? match?.[2];
 	if (name === undefined) return error;
-	let report: WireReport<WireCode> | undefined;
-	const instead = NOT_ON_LYNX[name];
-	if (instead !== undefined) report = { code: "global_not_on_lynx", details: { name, instead } };
-	else if (thread === "main-thread" && BACKGROUND_ONLY.includes(name))
-		report = { code: "global_background_only", details: { name } };
-	else
-		for (const [subpath, names] of Object.entries(FILLED))
-			if (names.includes(name))
-				report = {
-					code: "global_not_filled",
-					details: { name, module: `${POLYFILL}${subpath}` },
-				};
+	const report = missingGlobal(name, thread);
 	if (report === undefined) return error;
 	const text = wireMessage(report);
 	// The code beside the message, as every catalogue's error carries it: onError's context reads it.

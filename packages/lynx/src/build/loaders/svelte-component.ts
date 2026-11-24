@@ -15,6 +15,8 @@ import type { Rspack } from "@rsbuild/core";
 
 import type { CompileOptions, PreprocessorGroup } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
+import { isAppCode } from "../checks/app-code.ts";
+import { recordFills } from "../checks/fills-store.ts";
 import { compileComponent } from "../compile/component.ts";
 import { buildError, buildWarning } from "../diagnostics/messages.ts";
 import type { SourceMap } from "../source-map/maps.ts";
@@ -51,6 +53,8 @@ export interface SvelteComponentLoaderOptions {
 	 * `@sohedra/lynx/testing` to draw its first frame with (./first-frame-copy.ts).
 	 */
 	firstFrameCopy?: boolean;
+	/** Check the app's own components for what fails on Lynx (`ComponentOptions.checks`). */
+	checks?: boolean;
 }
 
 type Context = Rspack.LoaderContext<SvelteComponentLoaderOptions>;
@@ -75,7 +79,9 @@ async function compileSource(
 		serverInternals: options.serverInternals,
 		clientInternals: options.clientInternals,
 		hot,
+		checks: options.checks === true && isAppCode(filename, context.rootContext),
 	});
+	if (options.checks === true) recordFills(context, compiled.fills);
 	// Every component also renders on the main thread, where `background-only` has no stub to be.
 	if (options.thread === "main-thread" && IMPORTS_BACKGROUND_ONLY.test(compiled.code)) {
 		throw buildError({

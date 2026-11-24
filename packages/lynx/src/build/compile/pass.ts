@@ -4,6 +4,7 @@
 
 import type { ComponentAst } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
+import type { ModuleFills } from "../checks/fills-store.ts";
 import type { BuildWarning } from "../diagnostics/messages.ts";
 import type { Edit } from "../source-map/edits.ts";
 
@@ -27,8 +28,15 @@ export interface PassContext {
 	renderer?: string | undefined;
 	/** The app's folder, which the places a thread's runtime reports are made relative to. */
 	root?: string | undefined;
+	/**
+	 * Check the component as the app's own code: the reads that fail on Lynx, its selectors, its
+	 * main-thread handlers. Only the background's copy checks, so each place is reported once.
+	 */
+	checks?: boolean | undefined;
 	/** The warnings the passes add. */
 	warnings: BuildWarning[];
+	/** The reads that wait on a fill, and the fills the component imports. */
+	fills: ModuleFills;
 }
 
 /** A pass: the edits it makes, or an error it throws, for a component. */
