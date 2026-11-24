@@ -171,12 +171,11 @@ describe("the types an app gets", () => {
 			.getPreEmitDiagnostics(program)
 			.map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, " "));
 		expect(diagnostics).toEqual([]);
-		const entry = fs.realpathSync(path.join(unpacked, "types/entry.d.ts"));
-		// TypeScript names files with `/` on every platform; `path.normalize` compares them as Windows writes them too.
+		// Both sides through the native realpath, as TypeScript resolves the link: it writes `/` and
+		// expands Windows' short names (`RUNNER~1`), which Node's own `realpathSync` keeps.
+		const entry = fs.realpathSync.native(path.join(unpacked, "types/entry.d.ts"));
 		expect(
-			program
-				.getSourceFiles()
-				.some((source) => path.normalize(source.fileName) === path.normalize(entry)),
+			program.getSourceFiles().some((source) => fs.realpathSync.native(source.fileName) === entry),
 		).toBe(true);
 	});
 });
