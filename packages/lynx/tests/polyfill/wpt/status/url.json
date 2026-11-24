@@ -1,0 +1,5 @@
+{
+	"*": {
+		"skip": "No URL or URLSearchParams on the thread yet: the URL fill replaces this row with its results."
+	}
+}
