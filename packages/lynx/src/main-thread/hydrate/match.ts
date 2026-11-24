@@ -7,7 +7,9 @@
 //   - the branches of Svelte's `{#if}` blocks: the first frame and the background may take another
 //     branch there, as `{#if background}` does. Of a run of them, the elements that have the same
 //     tags in the same places from its end and from its start are adopted, with what differs
-//     written, in the cells of a list among them too; the rest is made again in place;
+//     written, in the cells of a list among them too; the rest is made again in place. An
+//     `{#await}` given a promise is such a block: the background draws its content after the page
+//     rendered, and the first patch brings it after the rendered items;
 //   - events, styles set from code, and what the first mount's effects changed: none of them is in
 //     the first frame.
 // What refuses hydration (a mismatch): outside a block, a tag that differs, an element that one

@@ -229,6 +229,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: SOURCE,
 	},
 	{
+		id: "server-await-block",
+		program: "runtime",
+		file: "src/internal/server/index.js",
+		anchor: "export { await_block as await };",
+		reliesOn:
+			"the server's `await` writes `<!--[-->` through the renderer it is given when given a promise, and `<!--[!-->` otherwise, and calls the branch it draws, which writes through the renderer the compiled component closes over: the first frame's replacement opens a block given a promise with a mark of its own (`<!--[await-->`), which the first frame's parser keeps",
+		test: RUNTIME,
+	},
+	{
 		id: "props-id-order",
 		program: "runtime",
 		file: "src/internal/server/renderer.js",
@@ -380,7 +389,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/client/render.js",
 		anchor: "will be defined because the render effect runs synchronously",
 		reliesOn:
-			"`mount` draws the tree before it returns, with the first branch of `{#if}`, `{#each}`, `{#key}` and `<svelte:boundary>`, and runs no `$effect` and no attachment until a flush: so the background's first patch, sent once `mount` returns, holds what hydration adopts, and what an effect writes comes after it. `{#await}` draws its pending branch only in a microtask it queues, which hydration does not handle yet",
+			"`mount` draws the tree before it returns, with the first branch of `{#if}`, `{#each}`, `{#key}` and `<svelte:boundary>`, and runs no `$effect` and no attachment until a flush: so the background's first patch, sent once `mount` returns, holds what hydration adopts, and what an effect writes comes after it. `{#await}` given a promise draws its pending branch only in a task it queues, which the flush after `mount` runs: the branch comes in the first patch after the rendered items, and hydration takes the first frame's as a block it may find empty (`server-await-block`)",
 		test: RUNTIME,
 	},
 	{
