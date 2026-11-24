@@ -36,6 +36,7 @@ import { TreeNode } from "./node.ts";
 import type { PageLink } from "./page-link.ts";
 import type { OpQueue } from "./queue.ts";
 import { linkRow, rowOf } from "./rows.ts";
+import { checkScrollViewRows } from "./scroll-view-rows.ts";
 import { link, nextRealAnchor, realContainer, topReals, unlink } from "./tree.ts";
 import { attrValue, isFunction, isRecord, textOf } from "./values.ts";
 
@@ -243,6 +244,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			if (child.lynxId !== 0) queue.push([OpCode.Insert, id, child.lynxId, 0]);
 			else for (const real of topReals(child)) queue.push([OpCode.Insert, id, real.lynxId, 0]);
 		}
+		if (DEV) checkScrollViewRows(node);
 	}
 
 	function realizeText(node: TreeNode, container: TreeNode, again: boolean): void {
@@ -348,6 +350,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			unrealize(node);
 		realize(node, container);
 		reflectInsert(node, container);
+		if (DEV) checkScrollViewRows(container);
 	}
 
 	function remove(node: TreeNode): void {
