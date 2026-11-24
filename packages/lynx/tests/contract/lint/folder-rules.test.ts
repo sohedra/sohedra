@@ -118,7 +118,7 @@ describe("the polyfill folder's thread entries", () => {
 		[`${SRC}/polyfill/probe-svelte.ts`]: 'import "svelte";\n',
 		[`${SRC}/polyfill/probe-lynx.ts`]: 'import "@lynx-js/types";\n',
 		[`${SRC}/polyfill/web/probe-own.ts`]: 'import "../install.ts";\n',
-		[`${SRC}/polyfill/web/probe-package.ts`]: 'import "@ungap/event-target";\n',
+		[`${SRC}/polyfill/web/probe-package.ts`]: 'import "fflate";\n',
 	};
 	const refused = reported(lint({ ...files, ...inside }), RULE);
 

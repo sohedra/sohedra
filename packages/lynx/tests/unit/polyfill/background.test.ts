@@ -14,9 +14,9 @@ import type { ThreadLynx } from "../../../src/polyfill/globals.ts";
 import { deserialize, serialize } from "../../../src/polyfill/vendor/structured-clone.js";
 import { installGlobals } from "../../../src/testing/globals.ts";
 
-// In Node, `@ungap/event-target` hands back Node's own `EventTarget`, so these tests check where the
-// fills go and what reaches `@ungap/structured-clone`'s own copy; the device-shaped build tests
-// (tests/build/device-snapshot.test.ts) run the packages' own code.
+// These tests check where the fills go and what reaches `@ungap/structured-clone`'s own copy; each
+// fill's own tests check what it does, and the device-shaped build tests
+// (tests/build/device-snapshot.test.ts) run the built scripts.
 rs.mock("../../../src/polyfill/vendor/structured-clone.js", { spy: true });
 afterEach(() => {
 	rs.clearAllMocks();
@@ -44,9 +44,72 @@ function device() {
 		reportError: (error: unknown) => void calls.push(["reportError", error]),
 	};
 	const scope: Record<string, unknown> = {};
-	fillBackground({ scope, readLynx: () => lynx });
+	fillBackground({ scope, readLynx: () => lynx, timers: TIMERS, console: {} as never });
 	return { calls, scope, lynx };
 }
+
+/** The timers lynx-core passes the bundle by name. */
+const TIMERS = { setTimeout, clearTimeout, setInterval, clearInterval };
+
+/** What the background's fills put on its global object. */
+const BACKGROUND_GLOBALS = [
+	"AbortController",
+	"AbortSignal",
+	"Blob",
+	"ByteLengthQueuingStrategy",
+	"CountQueuingStrategy",
+	"CustomEvent",
+	"DOMException",
+	"ErrorEvent",
+	"Event",
+	"EventTarget",
+	"File",
+	"FormData",
+	"Headers",
+	"Performance",
+	"PerformanceEntry",
+	"PerformanceMark",
+	"PerformanceMeasure",
+	"PromiseRejectionEvent",
+	"ReadableByteStreamController",
+	"ReadableStream",
+	"ReadableStreamBYOBReader",
+	"ReadableStreamBYOBRequest",
+	"ReadableStreamDefaultController",
+	"ReadableStreamDefaultReader",
+	"Request",
+	"Response",
+	"TextDecoder",
+	"TextDecoderStream",
+	"TextEncoder",
+	"TextEncoderStream",
+	"TransformStream",
+	"TransformStreamDefaultController",
+	"URL",
+	"URLSearchParams",
+	"WritableStream",
+	"WritableStreamDefaultController",
+	"WritableStreamDefaultWriter",
+	"addEventListener",
+	"atob",
+	"btoa",
+	"clearInterval",
+	"clearTimeout",
+	"dispatchEvent",
+	"fetch",
+	"navigator",
+	"onerror",
+	"onrejectionhandled",
+	"onunhandledrejection",
+	"performance",
+	"queueMicrotask",
+	"removeEventListener",
+	"reportError",
+	"self",
+	"setInterval",
+	"setTimeout",
+	"structuredClone",
+];
 
 describe("on a background that lacks them", () => {
 	it("puts a global queueMicrotask that queues on lynx's", () => {
@@ -79,11 +142,11 @@ describe("on a background that lacks them", () => {
 		expect(() => (scope["queueMicrotask"] as (callback: unknown) => void)(1)).toThrow(TypeError);
 	});
 
-	it("puts its globals on the global object, not enumerable, and no timers: the bundle's wrapper passes them", () => {
+	it("puts its globals on the global object, not enumerable, with the timers the bundle's wrapper passes", () => {
 		const { scope } = device();
-		const names = Object.getOwnPropertyNames(scope).sort();
-		expect(names).toEqual(["EventTarget", "atob", "btoa", "queueMicrotask", "structuredClone"]);
+		expect(Object.getOwnPropertyNames(scope).sort()).toEqual(BACKGROUND_GLOBALS);
 		expect(Object.keys(scope)).toEqual([]);
+		expect(scope["setTimeout"]).toBe(setTimeout);
 	});
 
 	it("puts a global EventTarget, which Svelte's runtime tests values with", () => {
@@ -147,22 +210,25 @@ describe("the structuredClone it gives", () => {
 
 describe("on a background that has them", () => {
 	it("leaves the engine's own, and lynx-core's Promise's own statics", () => {
-		const own = () => {};
-		const scope: Record<string, unknown> = {
-			queueMicrotask: own,
-			EventTarget: own,
-			structuredClone: own,
-			atob: (data: string) => globalThis.atob(data),
-			btoa: (data: string) => globalThis.btoa(data),
-		};
+		// The test page's globals, which follow the standards.
+		const own = globalThis as unknown as Record<string, unknown>;
+		const scope: Record<string, unknown> = Object.fromEntries(
+			BACKGROUND_GLOBALS.map((name) => [name, own[name]]),
+		);
 		const before = { ...scope };
-		const statics = { any: own, allSettled: own, withResolvers: own, try: own };
+		const kept = () => {};
+		const statics = { any: kept, allSettled: kept, withResolvers: kept, try: kept };
 		const PromiseClass = Object.assign(lynxCorePromise(), statics);
-		fillBackground({ scope, readLynx: () => ({ Promise: PromiseClass, reportError: own }) });
+		fillBackground({
+			scope,
+			readLynx: () => ({ Promise: PromiseClass, reportError: kept }),
+			timers: TIMERS,
+			console,
+		});
 		expect(scope).toEqual(before);
 		// Boundary: the statics, read by name.
-		const kept = PromiseClass as unknown as Record<string, unknown>;
-		for (const name of Object.keys(statics)) expect(kept[name], name).toBe(own);
+		const read = PromiseClass as unknown as Record<string, unknown>;
+		for (const name of Object.keys(statics)) expect(read[name], name).toBe(kept);
 	});
 });
 

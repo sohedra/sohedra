@@ -3,6 +3,7 @@
 
 import type { Scope } from "../globals.ts";
 import { holds, installLazy } from "../install.ts";
+import { domException } from "./dom-exception.ts";
 
 /** @workaround web-atob kind=lynx-gap delete-when="the engine of the oldest Lynx the binding supports has atob and btoa on both threads" */
 export function fillAtob(scope: Scope): void {
@@ -40,20 +41,9 @@ const VALUES: Int16Array = (() => {
 /** ASCII whitespace, as Infra defines it: tab, line feed, form feed, carriage return, space. */
 const WHITESPACE = /[\t\n\f\r ]/g;
 
-/**
- * The `InvalidCharacterError` `DOMException` the standard throws, made with the thread's
- * `DOMException` when it is read; an `Error` of that name where the thread has none.
- */
+/** The `InvalidCharacterError` `DOMException` the standard throws. */
 function invalidCharacter(scope: Scope, message: string): Error {
-	// Boundary: the standard global, which a thread may lack.
-	const DOMExceptionClass = scope["DOMException"] as
-		| (new (message: string, name: string) => Error)
-		| undefined;
-	if (typeof DOMExceptionClass === "function")
-		return new DOMExceptionClass(message, "InvalidCharacterError");
-	const error = new Error(message);
-	error.name = "InvalidCharacterError";
-	return error;
+	return domException(scope, message, "InvalidCharacterError");
 }
 
 /** WebIDL's `DOMString` of an argument: a symbol is refused, anything else made text. */

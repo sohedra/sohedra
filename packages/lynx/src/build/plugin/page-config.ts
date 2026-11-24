@@ -69,8 +69,16 @@ export const NEW_PATH_COMPILER_OPTIONS: Readonly<Record<string, boolean>> = {
 	enableCSSSelector: true,
 };
 
-/** The page-config keys that are not template options, with the plugin's defaults. `enableCSSInlineVariables`: a `--x` in a style does nothing on the engine without it. */
-const PAGE_CONFIG_DEFAULTS: PageConfig = { enableCSSInlineVariables: true };
+/**
+ * The page-config keys that are not template options, with the plugin's defaults.
+ * `enableCSSInlineVariables`: a `--x` in a style does nothing on the engine without it.
+ * `enableFetchAPIStandardStreaming`: a fetched response's body streams as it arrives, which the
+ * polyfill folder's `fetch` gives as a `ReadableStream`.
+ */
+const PAGE_CONFIG_DEFAULTS: PageConfig = {
+	enableCSSInlineVariables: true,
+	enableFetchAPIStandardStreaming: true,
+};
 
 /** The page's settings, split by where they go. */
 export interface ResolvedPageConfig {

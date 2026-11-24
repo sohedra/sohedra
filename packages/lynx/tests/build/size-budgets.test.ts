@@ -33,19 +33,21 @@ describe("the size of a thread's script", () => {
 		}
 	});
 
-	// Raised for the polyfill folder: its install helpers, atob and btoa, on both threads; then by
-	// about 46 KB on each thread for the language fills, most of it core-js's shared internals.
-	it("is within budget for the main thread's runtime: an entry with no page (129,614 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(132_200);
+	// Raised for the polyfill folder: its install helpers, atob and btoa, on both threads; then for
+	// the web fills each thread's baseline carries (events, DOMException, URL, encoding, Performance,
+	// AbortController, and the main thread's Headers, Request and Response), about 98 KB minified.
+	it("is within budget for the main thread's runtime: an entry with no page (181,625 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(185_300);
 	});
 
-	it("is within budget for a minimal page's main thread, with its first frame (155,876 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(159_000);
+	it("is within budget for a minimal page's main thread, with its first frame (207,907 bytes measured)", () => {
+		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(212_100);
 	});
 
-	it("is within budget for a minimal page's background: Svelte, the renderer and the page (157,734 bytes measured)", () => {
+	it("is within budget for a minimal page's background: Svelte, the renderer and the page (281,795 bytes measured)", () => {
 		// Raised from 96,500 by Svelte's newest renderer build: its batching rewrite and crossing code;
-		// then by the language fills.
-		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(160_900);
+		// then by about 172 KB for the background's web fills (streams, fetch, Blob, FormData and the
+		// main thread's set).
+		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(287_500);
 	});
 });

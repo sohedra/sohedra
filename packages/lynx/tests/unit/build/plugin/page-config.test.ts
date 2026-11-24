@@ -43,6 +43,15 @@ describe("resolvePageConfig", () => {
 		});
 	});
 
+	it("streams fetch's response bodies, unless the app turns it off", () => {
+		expect(resolvePageConfig(undefined).pageConfig).toMatchObject({
+			enableFetchAPIStandardStreaming: true,
+		});
+		expect(resolvePageConfig({ enableFetchAPIStandardStreaming: false }).pageConfig).toMatchObject({
+			enableFetchAPIStandardStreaming: false,
+		});
+	});
+
 	it("leaves out a key set to undefined", () => {
 		const { pageConfig, template } = resolvePageConfig({
 			enableCSSRule: undefined,

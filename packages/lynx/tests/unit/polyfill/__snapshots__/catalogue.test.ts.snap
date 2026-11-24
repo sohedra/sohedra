@@ -1,0 +1,8 @@
+// Rstest Snapshot v1
+
+exports[`the polyfill folder's catalogue > fetch_on_main_thread: the message 1`] = `
+"fetch was called on the main thread, where it does not run.
+
+Call fetch on the background thread: in an \`$effect\`, an event handler, or a function a main-thread function calls with \`runOnBackground\`.
+https://sohedra.com/e/fetch_on_main_thread"
+`;

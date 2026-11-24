@@ -93,3 +93,17 @@ export function holds(run: () => boolean): boolean {
 		return false;
 	}
 }
+
+/**
+ * `Class`, named `name` as its interface is: its `name`, and its instances' tag in
+ * `Object.prototype.toString`. A fill's class is written under its own name, so it can't be mistaken
+ * for the global it stands in for.
+ */
+export function named<T extends abstract new (...args: never[]) => unknown>(
+	Class: T,
+	name: string,
+): T {
+	Object.defineProperty(Class, "name", { value: name, configurable: true });
+	Object.defineProperty(Class.prototype, Symbol.toStringTag, { value: name, configurable: true });
+	return Class;
+}

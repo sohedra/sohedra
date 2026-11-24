@@ -14,20 +14,52 @@ afterEach(() => {
 /** A device's main thread: the global object has none of the fills. */
 function device() {
 	const scope: Record<string, unknown> = {};
-	fillMainThread({ scope });
+	fillMainThread({ scope, console: {} as never });
 	return { scope };
 }
 
+/** What the main thread's fills put on its global object. */
+const MAIN_THREAD_GLOBALS = [
+	"AbortController",
+	"AbortSignal",
+	"CustomEvent",
+	"DOMException",
+	"ErrorEvent",
+	"Event",
+	"EventTarget",
+	"Headers",
+	"Performance",
+	"PerformanceEntry",
+	"PerformanceMark",
+	"PerformanceMeasure",
+	"PromiseRejectionEvent",
+	"Request",
+	"Response",
+	"TextDecoder",
+	"TextEncoder",
+	"URL",
+	"URLSearchParams",
+	"addEventListener",
+	"atob",
+	"btoa",
+	"dispatchEvent",
+	"fetch",
+	"navigator",
+	"onerror",
+	"onrejectionhandled",
+	"onunhandledrejection",
+	"performance",
+	"queueMicrotask",
+	"removeEventListener",
+	"reportError",
+	"self",
+	"structuredClone",
+];
+
 describe("on a main thread that lacks them", () => {
-	it("puts the same globals as the background", () => {
+	it("puts the background's globals but the streams, Blob, File, FormData and the timers", () => {
 		const { scope } = device();
-		expect(Object.getOwnPropertyNames(scope).sort()).toEqual([
-			"EventTarget",
-			"atob",
-			"btoa",
-			"queueMicrotask",
-			"structuredClone",
-		]);
+		expect(Object.getOwnPropertyNames(scope).sort()).toEqual(MAIN_THREAD_GLOBALS);
 	});
 
 	it("queues a microtask as a promise's reaction, and sends what it throws to the error hook", async () => {
@@ -63,16 +95,13 @@ describe("on a main thread that lacks them", () => {
 
 describe("on a main thread that has them", () => {
 	it("leaves the engine's own", () => {
-		const own = () => "";
-		const scope: Record<string, unknown> = {
-			EventTarget: own,
-			structuredClone: own,
-			queueMicrotask: own,
-			atob: (data: string) => globalThis.atob(data),
-			btoa: (data: string) => globalThis.btoa(data),
-		};
+		// The test page's globals, which follow the standards.
+		const own = globalThis as unknown as Record<string, unknown>;
+		const scope: Record<string, unknown> = Object.fromEntries(
+			MAIN_THREAD_GLOBALS.map((name) => [name, own[name]]),
+		);
 		const before = { ...scope };
-		fillMainThread({ scope });
+		fillMainThread({ scope, console });
 		expect(scope).toEqual(before);
 	});
 });

@@ -245,15 +245,17 @@ export function addBundlePlugins(
 			.plugin(`${PACKAGE_NAME}:page-config`)
 			.use(PageConfigPlugin, [LynxTemplatePlugin, pageConfig]);
 	chain.plugin(`${PACKAGE_NAME}:engine-paths`).use(EnginePathsPlugin, [LynxTemplatePlugin]);
+	chain.plugin(`${PACKAGE_NAME}:global-fetch`).use(GlobalFetchPlugin);
 	chain
 		.plugin(RUNTIME_WRAPPER)
 		.use(RuntimeWrapperWebpackPlugin, [
 			{
-				// Same renames as ReactLynx: these wrapper params are unused.
+				// Same renames as ReactLynx: these wrapper params are unused. And `self` and
+				// `navigator` (`undefined` there), so the bundle reads the polyfill folder's from the
+				// global object. `fetch` keeps its name, which the wrapper's own code reads: the
+				// global-fetch plugin points the bundle's `fetch` at the global object's.
 				injectVars: (vars: string[]) =>
-					vars.map((name) =>
-						["Card", "Component", "ReactLynx", "Behavior"].includes(name) ? `__${name}` : name,
-					),
+					vars.map((name) => (RENAMED_WRAPPER_PARAMETERS.includes(name) ? `__${name}` : name)),
 				targetSdkVersion: engineVersion,
 				// Only background scripts are wrapped (`tt.define(...)`): the wrapper leaves a script
 				// MainThreadAssetsPlugin marked.
@@ -266,6 +268,29 @@ export function addBundlePlugins(
 		.plugin(`${PACKAGE_NAME}:main-thread-assets`)
 		.use(MainThreadAssetsPlugin, [mainThreadFiles, LynxTemplatePlugin]);
 }
+
+/**
+ * Points the code's own `fetch` at the global object's, which the polyfill folder fills: Lynx's
+ * runtime wrapper passes the background's bundle lynx-core's `fetch` as a parameter of that name,
+ * which its own code reads (`fetch = fetch || lynx.fetch`), so the parameter can't be renamed.
+ *
+ * @workaround wrapper-fetch-parameter kind=lynx-limit delete-when="Lynx's runtime wrapper no longer passes the bundle a fetch parameter"
+ */
+class GlobalFetchPlugin {
+	apply(compiler: Rspack.Compiler): void {
+		new compiler.webpack.DefinePlugin({ fetch: "globalThis.fetch" }).apply(compiler);
+	}
+}
+
+/** The parameters of the background's wrapper that the bundle's code must not read by name. */
+const RENAMED_WRAPPER_PARAMETERS = [
+	"Card",
+	"Component",
+	"ReactLynx",
+	"Behavior",
+	"self",
+	"navigator",
+];
 
 type EntryValue = string | string[] | { import: string | string[] };
 
