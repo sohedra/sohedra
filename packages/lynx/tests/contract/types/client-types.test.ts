@@ -102,6 +102,14 @@ describe("@sohedra/lynx/client", () => {
 			"NativeModules",
 		];
 		expect(threads.filter((name) => !declared(name))).toEqual([]);
+		// lynx-core's own, which Lynx types with the DOM's types: the polyfill's standard ones instead.
+		const lynx = checker.getTypeOfSymbol(
+			checker.resolveName("lynx", undefined, ts.SymbolFlags.Value, false)!,
+		);
+		expect(
+			["fetch", "EventSource", "ReadableStream"].filter((member) => lynx.getProperty(member)),
+		).toEqual([]);
+		expect(lynx.getProperty("createSelectorQuery")).toBeDefined();
 		const polyfill = ["URL", "fetch", "TextEncoder", "AbortController", "structuredClone"];
 		const nowhere = ["window", "document", "localStorage", "navigator", "self", "crypto"];
 		expect([...polyfill, ...nowhere].filter(declared)).toEqual([]);

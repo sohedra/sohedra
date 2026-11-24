@@ -162,18 +162,22 @@ export function onTap() {
 		}
 	});
 
-	it("under another name or from a namespace: the fix names the binding's export", () => {
-		const aliased = message(
-			calling('import { reportError as report } from "@sohedra/lynx";', "report"),
-			false,
-		);
-		expect(aliased.split("\n")[0]).toContain(
-			"uses `report`, which is `reportError` of @sohedra/lynx",
-		);
-		expect(aliased).toContain('`import { reportError } from "@sohedra/lynx" with');
-		expect(
-			failure(calling('import * as sohedra from "@sohedra/lynx";', "sohedra.reportError")),
-		).toBe("shared_import_needed");
+	it("under another name or from a namespace, in either build: the fix names the binding's export", () => {
+		for (const development of [true, false]) {
+			const aliased = message(
+				calling('import { reportError as report } from "@sohedra/lynx";', "report"),
+				development,
+			);
+			expect(aliased.split("\n")[0]).toContain(
+				"uses `report`, which is `reportError` of @sohedra/lynx",
+			);
+			expect(aliased).toContain('`import { reportError } from "@sohedra/lynx" with');
+			const namespaced = message(
+				calling('import * as sohedra from "@sohedra/lynx";', "sohedra.reportError"),
+				development,
+			);
+			expect(namespaced).toContain("https://sohedra.com/e/shared_import_needed");
+		}
 	});
 
 	it("handed to runOnBackground: the background's, no error", () => {

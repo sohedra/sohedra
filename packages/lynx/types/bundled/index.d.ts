@@ -185,8 +185,8 @@ export type ErrorHandler = (error: Error, context: ErrorContext) => void;
  *
  * In a main-thread function, import it with `with { runtime: "shared" }`
  * (`import { reportError } from "@sohedra/lynx" with { runtime: "shared" }`): it then reports from
- * the main thread. A plain import is captured as the background's function, which cannot cross
- * to the main thread.
+ * the main thread. A plain import there is a build error (`shared_import_needed`): it would give
+ * the main thread the background's function.
  */
 export function reportError(error: unknown): void;
 /**

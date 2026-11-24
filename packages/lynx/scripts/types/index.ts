@@ -1,7 +1,7 @@
 // The types generated from `@lynx-js/types`: Lynx's elements as a Svelte component writes them,
-// `SystemInfo`, the global `lynx`, and the elements as the editor's HTML custom data. They are committed, since they are the binding's API: a move to a new
-// `@lynx-js/types` shows as a diff to review, and a test fails while the committed files differ from
-// what this makes.
+// `SystemInfo`, the global `lynx`, and the elements as the editor's HTML custom data. They are
+// committed, since they are the binding's API: a move to a new `@lynx-js/types` shows as a diff to
+// review, and a test fails while the committed files differ from what this makes.
 
 import { format } from "oxfmt";
 

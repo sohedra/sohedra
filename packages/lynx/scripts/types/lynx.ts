@@ -45,31 +45,27 @@ const LYNX_REPLACED: Readonly<Record<string, string>> = {
 };
 
 /**
- * The DOM's types that Lynx's own name for lynx-core's `fetch`, `EventSource` and `ReadableStream`,
- * as the shapes lynx-core gives (lynx-core's modules/fetch): the web's, from
- * `@sohedra/lynx-polyfill`, are what an app uses instead.
+ * Lynx's members left out, with what an app uses instead: lynx-core's own `fetch`, `EventSource` and
+ * `ReadableStream`, which Lynx types with the DOM's types (`Headers`, `RequestInfo`, `Event`…) that
+ * Lynx's threads and the base tsconfig lack. The standard ones of `@sohedra/lynx-polyfill` are typed.
  */
-const DOM_STAND_INS: string = [
-	"/** A URL, as lynx-core's `fetch` takes it: its text. */",
-	"type URL = string;",
-	"/** What lynx-core's `fetch` takes: a URL, or a request. */",
-	"type RequestInfo = string | Request;",
-	"/** The headers of lynx-core's `fetch`. */",
-	"type Headers = Record<string, string>;",
-	"type HeadersInit = Record<string, string>;",
-	"/** A body lynx-core's `fetch` sends. */",
-	"type BodyInit = string | ArrayBuffer;",
-	"interface ResponseInit {\n\tstatus?: number;\n\tstatusText?: string;\n\theaders?: HeadersInit;\n}",
-	"/** A response's body, as lynx-core streams it. */",
-	"type ReadableStream = LynxReadableStream<Uint8Array>;",
-	"/** An event of lynx-core's `EventSource`. */",
-	"interface Event {\n\treadonly type: string;\n}",
-	"/** The events of lynx-core's `EventSource`, by name. */",
-	"interface EventSourceEventMap {\n\terror: Event;\n\tmessage: MessageEvent;\n\topen: Event;\n}",
-].join("\n");
+const LEFT_OUT: Readonly<Record<string, string>> = {
+	fetch: "the global `fetch` of `@sohedra/lynx-polyfill/fetch`",
+	EventSource: "the global `EventSource` of `@sohedra/lynx-polyfill/event-source`",
+	ReadableStream: "the global `ReadableStream` of `@sohedra/lynx-polyfill/streams`",
+};
 
 /** Lynx's types the forms above name, which the members alone would not reach. */
-const NAMED_BY_REPLACEMENTS: readonly string[] = ["IntersectionObserver", "Request"];
+const NAMED_BY_REPLACEMENTS: readonly string[] = ["IntersectionObserver"];
+
+/**
+ * The threads of a member that Lynx's types give to one thread and the engine gives to both, with
+ * where the engine does.
+ */
+const THREADS_REPLACED: Readonly<Record<string, string>> = {
+	__globalProps:
+		"Both threads: the engine sets it on the main thread's `lynx` too (core/renderer/template_entry.cc, `SetPropertyToLynx`).",
+};
 
 /** What a member's doc adds for a Svelte app, by member. */
 const MEMBER_NOTES: Readonly<Record<string, string>> = {
@@ -130,7 +126,7 @@ export function writeLynx(): string {
 		const own = new Map<string, ts.TypeElement[]>();
 		for (const member of declaration.members) {
 			const key = member.name?.getText(source);
-			if (key === undefined) continue;
+			if (key === undefined || key in LEFT_OUT) continue;
 			own.set(key, [...(own.get(key) ?? []), member]);
 		}
 		for (const [key, nodes] of own) {
@@ -234,7 +230,7 @@ export function writeLynx(): string {
 		return `${doc.length > 0 ? docComment(doc, "") : ""}${text}`;
 	});
 
-	const lines = [...members.entries()].sort(([a], [b]) => a.localeCompare(b));
+	const lines = [...members.entries()].sort(([a], [b]) => a.localeCompare(b, "en"));
 	const body = lines.flatMap(([key, { nodes, file, threads, text }]) =>
 		nodes.map((node) => {
 			const source = node.getSourceFile();
@@ -244,7 +240,7 @@ export function writeLynx(): string {
 			const at = tags === -1 ? doc.length : tags;
 			const notes = [
 				...(MEMBER_NOTES[key] === undefined ? [] : [MEMBER_NOTES[key]]),
-				threads,
+				THREADS_REPLACED[key] ?? threads,
 				`Lynx's declaration: \`@lynx-js/types\`, \`types/${file}\`.`,
 			];
 			const lines = [...doc.slice(0, at), ...(at > 0 ? [""] : []), ...notes, ...doc.slice(at)];
@@ -255,20 +251,26 @@ export function writeLynx(): string {
 	return `${[
 		[
 			`// Generated from @lynx-js/types ${version} by \`pnpm -F @sohedra/lynx generate\`. Do not edit:`,
-			"// change scripts/types/ and generate again. The doc comments are Lynx's, from",
-			"// @lynx-js/types (Apache License 2.0).",
+			"// change scripts/types/ and generate again. The types and their doc comments are Lynx's,",
+			"// adapted from @lynx-js/types (Copyright 2024 The Lynx Authors, Apache License 2.0):",
+			"// `createIntersectionObserver` is written anew, and the members below say their threads.",
 			"//",
 			"// The global `lynx`, as Lynx declares it for each thread, and the types its members name.",
+			"// Left out, as Lynx types them with the DOM's types, which its threads lack:",
+			...Object.entries(LEFT_OUT).map(
+				([name, instead]) => `// - \`lynx.${name}\`: use ${instead} instead.`,
+			),
 		].join("\n"),
 		'import type { GlobalProps } from "@sohedra/lynx/host";',
-		DOM_STAND_INS,
 		...types.filter((text) => !/^(?:interface|type) GlobalProps\b/m.test(text)),
 		[
 			"declare global {",
 			"\t/**",
 			"\t * Lynx's `lynx` object: what each thread has of it, as Lynx declares it. Each member says which",
-			"\t * thread has it; the build reports a member read on a thread without it. Add to it, as",
-			"\t * `declare global { interface Lynx { … } }`, for a member a newer Lynx has.",
+			"\t * thread has it; the build reports most of the background's members read on the main thread.",
+			"\t * `fetch`, `EventSource` and `ReadableStream` are left out: use the standard globals of",
+			"\t * `@sohedra/lynx-polyfill`. Add to it, as `declare global { interface Lynx { … } }`, for a",
+			"\t * member a newer Lynx has.",
 			"\t */",
 			"\tinterface Lynx {",
 			...body,

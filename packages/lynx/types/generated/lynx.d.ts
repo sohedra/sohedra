@@ -1,37 +1,15 @@
 // Generated from @lynx-js/types 4.4.2 by `pnpm -F @sohedra/lynx generate`. Do not edit:
-// change scripts/types/ and generate again. The doc comments are Lynx's, from
-// @lynx-js/types (Apache License 2.0).
+// change scripts/types/ and generate again. The types and their doc comments are Lynx's,
+// adapted from @lynx-js/types (Copyright 2024 The Lynx Authors, Apache License 2.0):
+// `createIntersectionObserver` is written anew, and the members below say their threads.
 //
 // The global `lynx`, as Lynx declares it for each thread, and the types its members name.
+// Left out, as Lynx types them with the DOM's types, which its threads lack:
+// - `lynx.fetch`: use the global `fetch` of `@sohedra/lynx-polyfill/fetch` instead.
+// - `lynx.EventSource`: use the global `EventSource` of `@sohedra/lynx-polyfill/event-source` instead.
+// - `lynx.ReadableStream`: use the global `ReadableStream` of `@sohedra/lynx-polyfill/streams` instead.
 
 import type { GlobalProps } from "@sohedra/lynx/host";
-
-/** A URL, as lynx-core's `fetch` takes it: its text. */
-type URL = string;
-/** What lynx-core's `fetch` takes: a URL, or a request. */
-type RequestInfo = string | Request;
-/** The headers of lynx-core's `fetch`. */
-type Headers = Record<string, string>;
-type HeadersInit = Record<string, string>;
-/** A body lynx-core's `fetch` sends. */
-type BodyInit = string | ArrayBuffer;
-interface ResponseInit {
-	status?: number;
-	statusText?: string;
-	headers?: HeadersInit;
-}
-/** A response's body, as lynx-core streams it. */
-type ReadableStream = LynxReadableStream<Uint8Array>;
-/** An event of lynx-core's `EventSource`. */
-interface Event {
-	readonly type: string;
-}
-/** The events of lynx-core's `EventSource`, by name. */
-interface EventSourceEventMap {
-	error: Event;
-	message: MessageEvent;
-	open: Event;
-}
 
 interface Animation {
 	readonly effect: KeyframeEffect;
@@ -98,37 +76,6 @@ interface BeforePublishEvent extends EventEmitter {
 	): BeforePublishEvent;
 
 	remove(eventName: string, callback: (...args: unknown[]) => void): BeforePublishEvent;
-}
-
-/**
- * @description Http Body
- * @since 2.18
- */
-interface Body {
-	/**
-	 * @description body used
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/bodyUsed
-	 * @since 2.18
-	 */
-	readonly bodyUsed: boolean;
-	/**
-	 * @description arrayBuffer()
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/arrayBuffer
-	 * @since 2.18
-	 */
-	arrayBuffer(): Promise<ArrayBuffer>;
-	/**
-	 * @description json()
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/json
-	 * @since 2.18
-	 */
-	json(): Promise<any>;
-	/**
-	 * @description text()
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/text
-	 * @since 2.18
-	 */
-	text(): Promise<string>;
 }
 
 interface BundleInfo {
@@ -252,36 +199,6 @@ interface EventEmitter {
 	toggle(eventName: string, ...data: unknown[]): void;
 }
 
-/**
- * @description EventSource to support SSE protocol
- * @see https://developer.mozilla.org/en-US/docs/Web/API/EventSource
- * @since 3.5
- */
-interface EventSource {
-	new (url: string | URL, options?: RequestInit): EventSource;
-
-	/** [MDN Reference](https://developer.mozilla.org/docs/Web/API/EventSource/error_event) */
-	onerror: ((this: EventSource, ev: Event) => any) | null;
-	/** [MDN Reference](https://developer.mozilla.org/docs/Web/API/EventSource/message_event) */
-	onmessage: ((this: EventSource, ev: MessageEvent) => any) | null;
-	/**
-	 * The **`close()`** method of the EventSource interface closes the connection, if one is made, and sets the ```js-nolint close() ``` None.
-	 *
-	 * [MDN Reference](https://developer.mozilla.org/docs/Web/API/EventSource/close)
-	 */
-	close(): void;
-	addEventListener<K extends keyof EventSourceEventMap>(
-		type: K,
-		listener: (this: EventSource, ev: EventSourceEventMap[K]) => any,
-	): void;
-	addEventListener(type: string, listener: (event: MessageEvent) => void): void;
-	removeEventListener<K extends keyof EventSourceEventMap>(
-		type: K,
-		listener: (this: EventSource, ev: EventSourceEventMap[K]) => any,
-	): void;
-	removeEventListener(type: string, listener: (event: MessageEvent) => void): void;
-}
-
 interface ExtraTimingInfo {
 	prepare_template_start?: number;
 	prepare_template_end?: number;
@@ -375,31 +292,6 @@ interface LoadDynamicComponentSuccessResult {
 		errMsg: "";
 		cache: boolean;
 	};
-}
-
-interface LynxExtension {
-	useStreaming?: boolean;
-	/**
-	 * @description Sets the total request timeout in milliseconds for internal TTNet builds. The value must be an integer from 1,000 through 600,000. If omitted or invalid, the network stack's default timeout behavior is preserved.
-	 * @since 4.4
-	 */
-	requestTimeoutMs?: number;
-}
-
-interface LynxReadableStream<T = ArrayBuffer> {
-	readonly locked: boolean;
-	cancel(reason?: any): Promise<any>;
-	getReader(): LynxReadableStreamDefaultReader<T> | null;
-}
-
-interface LynxReadableStreamDefaultReader<T = ArrayBuffer> {
-	read(): Promise<LynxReadableStreamReadResult<T>>;
-	cancel(reason?: any): Promise<any>;
-}
-
-interface LynxReadableStreamReadResult<T = ArrayBuffer> {
-	done: boolean;
-	value: T | undefined;
 }
 
 /**
@@ -615,66 +507,6 @@ interface RelativeToViewportMargins {
 	left?: number;
 }
 
-/**
- * @description This Fetch API interface represents a resource request.
- * @see https://developer.mozilla.org/docs/Web/API/Request
- * @since 2.18
- */
-interface Request extends Body {
-	/**
-	 * @description Returns a Headers object consisting of the headers associated with request. Note that headers added in the network layer by the user agent will not be accounted for in this object, e.g., the "Host" header.
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/headers
-	 * @since 2.18
-	 */
-	readonly headers: Headers;
-	/**
-	 * @description Returns request's HTTP method, which is "GET" by default.
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/method
-	 * @since 2.18
-	 */
-	readonly method: string;
-	/**
-	 * @description Returns the URL of request as a string.
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/url
-	 * @since 2.18
-	 */
-	readonly url: string;
-	/**
-	 * @description clone()
-	 * @see https://developer.mozilla.org/docs/Web/API/Request/clone
-	 * @since 2.18
-	 */
-	clone(): Request;
-}
-
-/**
- * @description This Fetch API interface represents the response to a request.
- * @see https://developer.mozilla.org/docs/Web/API/Response
- * @since 2.18
- */
-interface RequestInit {
-	/**
-	 * @description A BodyInit object or null to set request's body.
-	 * @since 2.18
-	 */
-	body?: BodyInit | null;
-	/**
-	 * @description A Headers object, an object literal, or an array of two-item arrays to set request's headers.
-	 * @since 2.18
-	 */
-	headers?: HeadersInit;
-	/**
-	 * @description A string to set request's method.
-	 * @since 2.18
-	 */
-	method?: string;
-	/**
-	 * @description Lynx-specific fetch options.
-	 * @since 3.4
-	 */
-	lynxExtension?: LynxExtension;
-}
-
 interface ResourcePrefetchConfig {
 	awaitComplete?: boolean;
 	awaitTimeout?: number; // default is 60000ms
@@ -702,56 +534,6 @@ interface ResourcePrefetchResult {
 		uri: string;
 		type: "image" | "video";
 	}[];
-}
-
-/**
- * @description This Fetch API interface represents the response to a request.
- * @see https://developer.mozilla.org/docs/Web/API/Response
- * @since 2.18
- */
-interface Response extends Body {
-	/**
-	 * @description headers
-	 * @see https://developer.mozilla.org/docs/Web/API/Response/headers
-	 * @since 2.18
-	 */
-	readonly headers: Headers;
-	/**
-	 * @description ok
-	 * @see https://developer.mozilla.org/docs/Web/API/Response/ok
-	 * @since 2.18
-	 */
-	readonly ok: boolean;
-	/**
-	 * @description status
-	 * @see https://developer.mozilla.org/docs/Web/API/Response/status
-	 * @since 2.18
-	 */
-	readonly status: number;
-	/**
-	 * @description statusText
-	 * @see https://developer.mozilla.org/docs/Web/API/Response/statusText
-	 * @since 2.18
-	 */
-	readonly statusText: string;
-	/**
-	 * @description url
-	 * @see https://developer.mozilla.org/docs/Web/API/Response/url
-	 * @since 2.18
-	 */
-	readonly url: string;
-	/**
-	 * @description body of ReadableStream
-	 * @see https://developer.mozilla.org/docs/Web/API/Response/body
-	 * @since 3.4
-	 */
-	readonly body: ReadableStream;
-	/**
-	 * @description clone()
-	 * @see https://developer.mozilla.org/docs/Web/API/Response/clone
-	 * @since 2.18
-	 */
-	clone(): Response;
 }
 
 interface ResponseHandler {
@@ -910,12 +692,14 @@ interface uiMethodOptions {
 declare global {
 	/**
 	 * Lynx's `lynx` object: what each thread has of it, as Lynx declares it. Each member says which
-	 * thread has it; the build reports a member read on a thread without it. Add to it, as
-	 * `declare global { interface Lynx { … } }`, for a member a newer Lynx has.
+	 * thread has it; the build reports most of the background's members read on the main thread.
+	 * `fetch`, `EventSource` and `ReadableStream` are left out: use the standard globals of
+	 * `@sohedra/lynx-polyfill`. Add to it, as `declare global { interface Lynx { … } }`, for a
+	 * member a newer Lynx has.
 	 */
 	interface Lynx {
 		/**
-		 * Background thread only.
+		 * Both threads: the engine sets it on the main thread's `lynx` too (core/renderer/template_entry.cc, `SetPropertyToLynx`).
 		 * Lynx's declaration: `@lynx-js/types`, `types/background-thread/lynx.d.ts`.
 		 * @description Properties inside `lynx.__globalProps` is NOT managed by Lynx, so you MUST extends this interface yourself
 		 * @see https://www.typescriptlang.org/docs/handbook/declaration-merging.html
@@ -957,22 +741,6 @@ declare global {
 		 * Lynx's declaration: `@lynx-js/types`, `types/background-thread/lynx.d.ts`.
 		 */
 		createSelectorQuery(): SelectorQuery;
-		/**
-		 * Background thread only.
-		 * Lynx's declaration: `@lynx-js/types`, `types/background-thread/lynx.d.ts`.
-		 * @description EventSource to support SSE protocol
-		 * @see https://developer.mozilla.org/en-US/docs/Web/API/EventSource
-		 * @since 3.5
-		 */
-		EventSource: EventSource;
-		/**
-		 * Background thread only.
-		 * Lynx's declaration: `@lynx-js/types`, `types/background-thread/lynx.d.ts`.
-		 * @description subset of Fetch API
-		 * @see https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
-		 * @since 2.18
-		 */
-		fetch(input: RequestInfo, init?: RequestInit): Promise<Response>;
 		/**
 		 * Both threads.
 		 * Lynx's declaration: `@lynx-js/types`, `types/common/lynx.d.ts`.
@@ -1070,14 +838,6 @@ declare global {
 		 * @since 3.1
 		 */
 		queueMicrotask(callback: () => void): void;
-		/**
-		 * Background thread only.
-		 * Lynx's declaration: `@lynx-js/types`, `types/background-thread/lynx.d.ts`.
-		 * @description app-scoped ReadableStream constructor
-		 */
-		ReadableStream: {
-			new (): LynxReadableStream;
-		};
 		/**
 		 * Background thread only.
 		 * Lynx's declaration: `@lynx-js/types`, `types/background-thread/lynx.d.ts`.
