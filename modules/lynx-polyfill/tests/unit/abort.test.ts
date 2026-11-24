@@ -2,6 +2,9 @@
 // `EventTarget`; and lynx-core's `fetch`, which reads only a signal's `aborted`, `reason` and
 // `abort` listeners, rejecting with these signals' reasons.
 
+import v8 from "node:v8";
+import vm from "node:vm";
+
 import { afterEach, describe, expect, it, rs } from "@rstest/core";
 
 import { createAbort, fillAbort } from "../../src/fills/web/abort.ts";
@@ -141,6 +144,31 @@ describe("AbortSignal", () => {
 		const outer = AbortSignal.any([inner]);
 		root.abort("r");
 		expect([inner.reason, outer.reason]).toEqual(["r", "r"]);
+	});
+
+	it("any() holds its signals weakly from their sources, as DOM's weak sets do", async () => {
+		v8.setFlagsFromString("--expose-gc");
+		const collect = vm.runInNewContext("gc") as () => void;
+		const { AbortSignal, AbortController } = filled();
+		const root = new AbortController();
+		const made: WeakRef<AbortSignal>[] = [];
+		const make = () => {
+			for (let index = 0; index < 100; index++) {
+				const dependent = AbortSignal.any([root.signal]);
+				dependent.addEventListener("abort", () => {});
+				made.push(new WeakRef(dependent));
+			}
+		};
+		make();
+		for (let round = 0; round < 3; round++) {
+			await new Promise((resolve) => setTimeout(resolve, 0));
+			collect();
+		}
+		// The engine may keep the last one it made a little longer; the rest are gone.
+		expect(made.filter((each) => each.deref() !== undefined).length).toBeLessThanOrEqual(1);
+		const kept = AbortSignal.any([root.signal]);
+		root.abort("r");
+		expect(kept.reason).toBe("r");
 	});
 
 	it("any() refuses what is not a signal", () => {
