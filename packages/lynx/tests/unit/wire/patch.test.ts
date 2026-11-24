@@ -55,6 +55,18 @@ describe("a patch", () => {
 		).toBe(false);
 	});
 
+	it("says when the page did not start, and only then", () => {
+		expect(decodePatch(encodePatch({ generation: 0, items: [], notStarted: true }))).toEqual({
+			v: PROTOCOL_VERSION,
+			generation: 0,
+			items: [],
+			notStarted: true,
+		});
+		expect(
+			"notStarted" in decodePatch(encodePatch({ generation: 0, items: [], notStarted: false })),
+		).toBe(false);
+	});
+
 	it("keeps its items in order, whatever their kind", () => {
 		const items: PatchItem[] = [
 			[

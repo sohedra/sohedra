@@ -17,6 +17,7 @@ const SAMPLES: { [Code in WireCode]: WireDetails[Code] } = {
 		instead: "For hashes, use a library in plain JavaScript such as @noble/hashes.",
 	},
 	page_already_mounted: { thread: "main-thread" },
+	page_not_started: { reason: "Cannot read properties of undefined (reading 'title')" },
 };
 
 const CODES = Object.keys(WIRE_CATALOGUE) as WireCode[];
