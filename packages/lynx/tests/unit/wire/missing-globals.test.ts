@@ -27,6 +27,14 @@ describe("an error for a global Lynx lacks", () => {
 		expect(hinted.message).toContain('Import "@sohedra/lynx-polyfill" in the first line');
 	});
 
+	it("names only the subpath for a global the catch-all import leaves out", () => {
+		const hinted = withMissingGlobalHint(notDefined("URLPattern"), "background") as Error;
+		expect(hinted.message).toContain(
+			'Import "@sohedra/lynx-polyfill/url-pattern" in the first line',
+		);
+		expect(hinted.message).not.toContain('or "@sohedra/lynx-polyfill"');
+	});
+
 	it("reads JavaScriptCore's wording too", () => {
 		const hinted = withMissingGlobalHint(
 			new ReferenceError("Can't find variable: TextEncoder"),
