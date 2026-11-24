@@ -123,7 +123,7 @@ export interface Channel {
 	close(): void;
 	/**
 	 * Answers a main-thread function's call of a background function, in the next patch, after
-	 * what is queued. A result that cannot be sent answers with that error instead.
+	 * what is queued. A result that cannot be sent is reported, and answers with that error instead.
 	 */
 	reply(id: number, result: Result): void;
 	/** The background function `fn` that the main-thread function context `context` holds. */
@@ -439,6 +439,8 @@ export function openChannel(options: ChannelOptions): Channel {
 			try {
 				text = encodeResult(result);
 			} catch (error) {
+				// As a throw of the function is: reported here, where it was written, then answered.
+				reportError(error);
 				text = encodeResult({ ok: false, error: encodeError(error) });
 			}
 			takeOps();

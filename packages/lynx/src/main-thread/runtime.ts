@@ -194,7 +194,8 @@ export function startMainThread(): MainThreadRuntime {
 		functions: () => state.functions,
 		report: (error) => report(error),
 		// A call's result goes back when the call wants one; a failure that nobody waits for is
-		// reported. A result that cannot cross answers with why.
+		// reported. A result that cannot cross is reported here, where it was written, and answers
+		// with why.
 		answer({ id, stamp }, result) {
 			if (id === 0) {
 				if (!result.ok) report(decodeError(result.error));
@@ -203,6 +204,7 @@ export function startMainThread(): MainThreadRuntime {
 			try {
 				send({ t: "reply", id, result }, stamp);
 			} catch (error) {
+				report(error);
 				send({ t: "reply", id, result: { ok: false, error: encodeError(error) } }, stamp);
 			}
 		},
