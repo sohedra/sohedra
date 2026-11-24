@@ -72,13 +72,11 @@ export const NEW_PATH_COMPILER_OPTIONS: Readonly<Record<string, boolean>> = {
 /**
  * The page-config keys that are not template options, with the plugin's defaults.
  * `enableCSSInlineVariables`: a `--x` in a style does nothing on the engine without it.
- * `enableFetchAPIStandardStreaming`: a fetched response's body streams as it arrives: lynx-core's
- * `fetch` gives `response.body` only then (null without it), and `@sohedra/lynx-polyfill`'s gives it
- * as a standard `ReadableStream`.
+ * `enableFetchAPIStandardStreaming` stays Lynx's (off): with it on, lynx-core's `Response.clone()`
+ * throws, so an app turns it on itself when it streams responses.
  */
 const PAGE_CONFIG_DEFAULTS: PageConfig = {
 	enableCSSInlineVariables: true,
-	enableFetchAPIStandardStreaming: true,
 };
 
 /** The page's settings, split by where they go. */

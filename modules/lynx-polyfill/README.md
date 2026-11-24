@@ -99,6 +99,21 @@ body's chunks, a stream read elsewhere, an empty `FormData` body): its first cal
 becomes stable, with no change to your code, once its tests pass on PrimJS and on an Android and an
 iOS device.
 
+## Streaming a response's body
+
+By default, Lynx reads a response's whole body before `fetch`'s `response.body` gives its first
+chunk. For a body that arrives over time (a large download you show progress for, an AI model's
+tokens, `EventSource`'s events, which arrive only as they come), turn on the page config's
+`enableFetchAPIStandardStreaming`. In Sohedra's build, that is the plugin's `pageConfig` option:
+
+```ts
+pluginSvelteLynx({ pageConfig: { enableFetchAPIStandardStreaming: true } });
+```
+
+With it on, Lynx hands each chunk to `response.body` as it arrives. It is off by default because it
+changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed response's
+`clone()` throws. This package's `fetch` reads the body either way.
+
 ## What no fill gives
 
 | Global or feature                                                                         | Instead                                                                                                                                                                               |
@@ -118,8 +133,8 @@ iOS device.
 
 - **`fetch`**: redirects are the native module's, so `redirected` is always `false` and `redirect`
   does nothing; CORS, credentials, the cache and `keepalive` mean nothing outside a browser; an
-  upload is read whole before it is sent. A response's body streams when the page config's
-  `enableFetchAPIStandardStreaming` is on, which Sohedra's build sets by default.
+  upload is read whole before it is sent. A response's body arrives whole unless the page streams it
+  (see [Streaming a response's body](#streaming-a-responses-body)).
 - **Events**: an event's `target` on the global object is the global object's own target, and
   `ErrorEvent` has no `filename`, `lineno` or `colno`. An event's `timeStamp` is the epoch's.
 - **`performance`**: the clock is `Date.now()`'s, in whole milliseconds, never going back; there is

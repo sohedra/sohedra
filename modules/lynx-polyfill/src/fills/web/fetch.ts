@@ -9,7 +9,7 @@
 // lynx-core's `fetch` all the same: it makes the page global's `Request` and `Response` as it goes,
 // so while a request waits, this `Request` hands lynx-core its own, and this `Response` takes what
 // lynx-core gives it (the response's head and its body: the bytes, or the stream Lynx feeds when the
-// page config's `enableFetchAPIStandardStreaming` is on, as Sohedra's build sets by default).
+// page config's `enableFetchAPIStandardStreaming` is on).
 //
 // Leaves out: redirects are the native module's, so `redirected` is always `false` and `redirect`
 // does nothing; CORS, credentials, the cache and `keepalive` mean nothing without a browser, so their
