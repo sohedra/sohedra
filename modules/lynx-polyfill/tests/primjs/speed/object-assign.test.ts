@@ -18,7 +18,7 @@ afterAll(() => fs.rmSync(work, { recursive: true, force: true }));
 describe.each(ENGINES.map((engine) => ({ engine, name: engine.name })))(
 	"Object.assign on the PrimJS of Lynx $name",
 	({ engine }) => {
-		it("is the fill's, at most twenty times slower than the engine's own", async () => {
+		it("is the fill's, at most forty times slower than the engine's own", async () => {
 			const script = await buildThreadScript({
 				thread: "background",
 				bridge: { module: "tests/primjs/speed/assign-bridge.ts", connect: "connectAssignSpeed" },
@@ -37,8 +37,9 @@ describe.each(ENGINES.map((engine) => ({ engine, name: engine.name })))(
 			process.stdout.write(
 				`Object.assign on Lynx ${engine.name}: 3 keys ×200k ${nativeSmall} ms → ${filledSmall} ms; 30 keys ×20k ${nativeWide} ms → ${filledWide} ms\n`,
 			);
-			expect(filledSmall).toBeLessThan(Math.max(nativeSmall, 10) * 20);
-			expect(filledWide).toBeLessThan(Math.max(nativeWide, 10) * 20);
+			// About 7 and 5 times on a quiet computer; the suites run beside it, so the floor is wide.
+			expect(filledSmall).toBeLessThan(Math.max(nativeSmall, 50) * 40);
+			expect(filledWide).toBeLessThan(Math.max(nativeWide, 50) * 40);
 		}, 120_000);
 	},
 );
