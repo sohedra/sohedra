@@ -1,12 +1,13 @@
-// The files the repository checks read: everything but installed packages, agent worktrees and
-// build output. Build output is skipped by where it is, at a package's root next to its
-// package.json, never by name: a bare `lib` would also hide SvelteKit's `src/lib/`.
+// The files the repository checks read: everything but installed packages, agent worktrees, build
+// output and a package's cache of downloads (`.cache`). Build output is skipped by where it is, at a
+// package's root next to its package.json, never by name: a bare `lib` would also hide SvelteKit's
+// `src/lib/`.
 
 import { existsSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const SKIPPED = new Set([".git", "node_modules", ".svelte-kit"]);
-const OUTPUT = new Set(["lib", "dist", "coverage"]);
+const OUTPUT = new Set(["lib", "dist", "coverage", ".cache"]);
 const WORKTREES = ".claude/worktrees";
 
 /** A file the checks read. */
