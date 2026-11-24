@@ -45,6 +45,20 @@ of it: it hears the errors the polyfill catches as `error` events on the global 
 them to the page's `onError`. When a page reads a global Lynx lacks, its error names the import that
 fills it, or what to use instead.
 
+The build also checks the app's own code (not its packages) for what type-checks and then fails on
+Lynx, at its file, line and column. These are errors: a global the thread lacks, with the import of
+`@sohedra/lynx-polyfill` that fills it when the app imports neither it nor the catch-all, or what to
+use instead; the web's DOM (`document`, `window`, `HTMLElement`…); an API of the other thread, such
+as `NativeModules` or `lynx.getJSModule` in a main-thread function, or Lynx's element functions
+outside one; and a plain function a main-thread function calls without `runOnBackground`. A read
+behind a feature check (`typeof X !== "undefined"`, `"X" in globalThis`) anywhere in the file is
+left alone. A development build also warns at a selector outside the ones Lynx lists, and at a
+main-thread handler inside `{#if background}`, `{#if mainThread}` or their `{:else}`. To silence one
+of these on a line, write a comment with its code on that line or the one above:
+`// svelte-lynx-ignore dom_not_on_lynx`, `<!-- svelte-lynx-ignore … -->` in markup, and
+`/* svelte-lynx-ignore … */` in a style sheet. As it runs, a development build warns once for a
+`<scroll-view>` that holds more than 200 elements directly, which a `<list>` draws faster.
+
 Without the polyfill, your code sees the binding's fills, and `EventTarget` and `structuredClone`
 are smaller than the web's:
 
