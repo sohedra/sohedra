@@ -82,6 +82,7 @@
 				"event-target-shim",
 				"eventsource-parser",
 				"fflate",
+				"unorm",
 				"urlpattern-polyfill",
 				"web-streams-polyfill",
 				"whatwg-url-minimum"

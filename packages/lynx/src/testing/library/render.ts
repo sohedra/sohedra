@@ -129,7 +129,7 @@ export async function render<
 			background: () => {
 				// The background's start-up: what it lacks, filled as on a device.
 				const lynx = readGlobal("lynx") as BackgroundLynx;
-				fillEngineGaps({ scope: globalScope(), strings: String.prototype, readLynx: () => lynx });
+				fillEngineGaps({ scope: globalScope(), readLynx: () => lynx });
 				mountPage(Component, { props: props.props, ...(context && { context }) });
 			},
 		}),

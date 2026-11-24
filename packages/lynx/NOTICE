@@ -42,3 +42,10 @@ heads its vendored module:
 
 - @ungap/structured-clone 1.4.0, Copyright (c) 2021 Andrea Giammarchi,
   licensed under the ISC License: src/polyfill/vendor/structured-clone.js
+- core-js 3.51.0, Copyright (c) 2013–2025 Denis Pushkarev (zloirock.ru),
+  Copyright (c) 2025–2026 CoreJS Company (core-js.io), licensed under the MIT
+  License: src/polyfill/vendor/core-js.js, float16.js, iterator-helpers.js
+  and set-methods.js
+- unorm 1.6.0, Copyright (c) 2008-2013 Matsuza and Bjarke Walling, licensed
+  under the MIT License (dual licensed with GPL-2.0; used under MIT):
+  src/polyfill/vendor/normalize.js
