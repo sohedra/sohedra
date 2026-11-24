@@ -12,7 +12,7 @@ import type { Cell, ListState } from "./state.ts";
  * fling (`ViewConfiguration`'s 8,000 dp a second) passes about six rows a ninth of the screen tall
  * in that time; ten, a screen of such rows, leaves a margin.
  */
-export const ROWS_AHEAD = 10;
+const ROWS_AHEAD = 10;
 
 /** What a page's lists, and its applier, do with the cells the main thread has no text for. */
 export interface WaitingCells {

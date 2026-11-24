@@ -23,7 +23,7 @@ import { untrack } from "svelte";
 import { inThreadBranch } from "./thread-branches.ts";
 
 /** About a phone screen of rows, before Lynx's `preload-buffer-count`. */
-export const SCREEN_ROWS = 10;
+const SCREEN_ROWS = 10;
 
 /**
  * The furthest `initial-scroll-index` the first frame draws up to. Each row drawn whole costs the
@@ -57,7 +57,7 @@ export interface ListAttributes {
  * What the count of a list says to its developer, once the list counts a row: a list with no
  * deferred row says nothing. `where` is the list's `file:line:col`, in development builds.
  */
-export type ListNote =
+type ListNote =
 	| { code: "initial_scroll_index_past_initial_rows"; index: number; where?: string | undefined }
 	| { code: "initial_item_count_not_a_count"; value: string; where?: string | undefined };
 

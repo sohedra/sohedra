@@ -8,7 +8,7 @@ export const isRecord = (value: unknown): value is Record<string, unknown> =>
 	typeof value === "object" && value !== null;
 
 /** The background's id of a Lynx element, by its unique id. */
-export type IdForUid = (uid: number) => number | undefined;
+type IdForUid = (uid: number) => number | undefined;
 
 function target(value: unknown, idForUid: IdForUid): SentTarget | undefined {
 	if (!isRecord(value)) return undefined;

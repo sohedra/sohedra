@@ -36,7 +36,7 @@ function piledUp(parts: readonly string[]): boolean {
 const CELLS_PER_REQUEST = 64;
 
 /** What the cells need of the runtime. */
-export interface CellsOptions {
+interface CellsOptions {
 	page: MainThreadPage;
 	/** Applies ops to the page, reporting those it cannot. */
 	apply(ops: Op[]): void;

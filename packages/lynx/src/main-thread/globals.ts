@@ -63,7 +63,7 @@ export type ComponentAtIndexes = (
 export type EnqueueComponent = (list: LynxElement, listId: number, sign: number) => void;
 
 /** What the main thread's engine provides: Lynx's element functions, and a smaller `lynx`. */
-export interface MainThreadGlobals {
+interface MainThreadGlobals {
 	lynx: {
 		reportError(error: unknown): void;
 		/** The main thread's way to the background. */
@@ -233,7 +233,7 @@ export interface BundlerChunk {
 }
 
 /** The bundler's runtime: it runs a module by id, and `C` installs a chunk's modules. */
-export type BundlerRequire = ((id: string) => unknown) & { C?: (chunk: BundlerChunk) => void };
+type BundlerRequire = ((id: string) => unknown) & { C?: (chunk: BundlerChunk) => void };
 
 // The bundler names its own runtime so in the modules it bundles.
 declare const __webpack_require__: BundlerRequire | undefined;

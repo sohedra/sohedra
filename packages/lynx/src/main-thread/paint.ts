@@ -22,7 +22,7 @@ import { mainThread } from "./globals.ts";
  * system sends no display frames while the app is in the background, and a page that is not on the
  * screen has nothing to paint first.
  */
-export const PAINT_TIMEOUT = 500;
+const PAINT_TIMEOUT = 500;
 
 /**
  * How long the page waits again, in milliseconds, after a timer. A timer may fire ahead of a frame

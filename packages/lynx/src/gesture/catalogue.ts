@@ -62,7 +62,7 @@ export const GESTURE_CATALOGUE: Catalogue<GestureDetails> = {
 };
 
 /** One message of the gestures: its code and the details it is written from. */
-export interface GestureReport<Code extends GestureCode> {
+interface GestureReport<Code extends GestureCode> {
 	code: Code;
 	details: GestureDetails[Code];
 }

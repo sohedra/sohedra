@@ -1,12 +1,9 @@
 // The fills, and what installs them: the package's entries (src/background/, src/main-thread/) call
 // these with the thread's own global object.
 
-export { globalScope, readConsole, readLynx, readTimers } from "./globals.ts";
-export type { Scope, Thread, ThreadConsole, ThreadLynx, ThreadTimers } from "./globals.ts";
+export { globalScope, readLynx } from "./globals.ts";
 export { fillBackground } from "./background.ts";
-export type { BackgroundTargets } from "./background.ts";
 export { fillMainThread } from "./main-thread.ts";
-export type { MainThreadTargets } from "./main-thread.ts";
 export { fillArrayMethods } from "./language/array-methods.ts";
 export { fillBigIntAsUintN } from "./language/bigint-as-uint-n.ts";
 export { fillErrorCause } from "./language/error-cause.ts";

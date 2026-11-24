@@ -69,7 +69,7 @@ const markMainThread = (id: string): string =>
 const threadOf = (id: string): Thread => (isMainThread(id) ? "main-thread" : "background");
 
 /** What the plugins need besides the plugin's resolved options. */
-export interface VitePluginsOptions {
+interface VitePluginsOptions {
 	/** The app's folder, where Svelte resolves from: the Vite root by default. */
 	rootPath?: string | undefined;
 	/** The plugin's options as given, which the cache key names. */

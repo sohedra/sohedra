@@ -7,7 +7,7 @@
 // compile to a lookup per access.
 
 /** What a node is, in Svelte's renderer's words. */
-export type NodeKind = "fragment" | "element" | "text" | "comment";
+type NodeKind = "fragment" | "element" | "text" | "comment";
 
 /** What an `<input>` or a `<textarea>` holds, once it has a `value`. */
 export interface InputState {

@@ -15,7 +15,7 @@ type Store = Map<string, { hash: string; css: string }>;
 const stores = new WeakMap<object, Store>();
 
 /** What the loaders know of a build: its compiler (Rspack's `_compiler`). */
-export interface CssStoreContext {
+interface CssStoreContext {
 	_compiler?: object | undefined;
 	resourcePath: string;
 }

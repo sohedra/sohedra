@@ -109,7 +109,7 @@ function dataOf(value: object, key: string): string {
 }
 
 /** HTML's `ErrorEvent`, an `Event` of the thread's. */
-export function createErrorEvent(scope: Scope): ErrorEventClass {
+function createErrorEvent(scope: Scope): ErrorEventClass {
 	// Boundary: the thread's `Event`, this folder's or an engine's.
 	const Base = scope["Event"] as EventClass;
 	const fields = new WeakMap<object, Required<Omit<ErrorEventInit, keyof EventInit>>>();
@@ -149,7 +149,7 @@ export function createErrorEvent(scope: Scope): ErrorEventClass {
 }
 
 /** HTML's `PromiseRejectionEvent`, an `Event` of the thread's. */
-export function createPromiseRejectionEvent(scope: Scope): PromiseRejectionEventClass {
+function createPromiseRejectionEvent(scope: Scope): PromiseRejectionEventClass {
 	// Boundary: the thread's `Event`, this folder's or an engine's.
 	const Base = scope["Event"] as EventClass;
 	const fields = new WeakMap<object, { promise: Promise<unknown>; reason: unknown }>();

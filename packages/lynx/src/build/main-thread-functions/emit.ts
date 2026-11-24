@@ -44,7 +44,7 @@ export interface Hoisted {
 }
 
 /** What `emitFunctions` reads. */
-export interface EmitOptions {
+interface EmitOptions {
 	/** The text every position counts in. */
 	source: string;
 	filename: string;
@@ -64,7 +64,7 @@ export interface EmitOptions {
 }
 
 /** What a script's main-thread functions are written as. */
-export interface Emitted {
+interface Emitted {
 	/** The functions replaced by their objects, and the markup functions by their names. */
 	edits: Edit[];
 	/** The declarations of the hoisted functions. */

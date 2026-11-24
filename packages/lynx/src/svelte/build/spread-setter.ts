@@ -27,7 +27,7 @@ export const SPREAD_SETTER_FILE: RegExp =
 	/[\\/]svelte[\\/]src[\\/]internal[\\/]client[\\/]reactivity[\\/]props\.js$/;
 
 /** A line of that file the patch changes, as Svelte writes it, and what it becomes. */
-export interface SpreadSetterAnchor {
+interface SpreadSetterAnchor {
 	text: string;
 	replacement: string;
 	/** What the line is, for the message when it is gone. */

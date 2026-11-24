@@ -13,7 +13,7 @@ import type { InputMap, SourceMap } from "../source-map/maps.ts";
 import { importedValueReads } from "./value-reads.ts";
 
 /** What compiling a rune module reads. */
-export interface ModuleOptions {
+interface ModuleOptions {
 	filename: string;
 	/** The thread: the main thread's copy compiles for Svelte's server renderer (the first frame). */
 	thread: Thread;
@@ -27,7 +27,7 @@ export interface ModuleOptions {
 }
 
 /** A compiled rune module. */
-export interface CompiledModule {
+interface CompiledModule {
 	code: string;
 	map: SourceMap | undefined;
 	/** Svelte's warnings, once: only the background thread's copy reports them. */

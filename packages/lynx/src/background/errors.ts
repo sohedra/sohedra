@@ -33,7 +33,7 @@ export interface ErrorSource {
 }
 
 /** Names the component an error came from: the page gives it, with Svelte's development records. */
-export type ComponentOf = (error: Error, source: ErrorSource) => string | undefined;
+type ComponentOf = (error: Error, source: ErrorSource) => string | undefined;
 
 let handler: ErrorHandler | undefined;
 /** Which page set the handler: a page that ended lets go only of its own. */

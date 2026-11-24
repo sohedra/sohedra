@@ -33,7 +33,7 @@ export interface PendingFill {
 }
 
 /** What a file's checks found. */
-export interface ScriptFindings {
+interface ScriptFindings {
 	errors: AnyReport[];
 	fills: PendingFill[];
 	/** The fills the file imports itself. */
@@ -146,7 +146,7 @@ export function checkScripts(source: SourceText, roots: ScriptRoots): ScriptFind
 }
 
 /** What fills globals in a whole app: imports of the polyfill, and the globals it installs itself. */
-export interface AppFills {
+interface AppFills {
 	/** The polyfill's imports, as written. */
 	imports: ReadonlySet<string>;
 	/** The globals the app's code, or a fill package it imports, installs. */

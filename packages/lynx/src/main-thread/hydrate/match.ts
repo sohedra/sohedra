@@ -26,7 +26,7 @@ import { readCell } from "./rendered.ts";
 import type { Rendered, RenderedNode } from "./rendered.ts";
 
 /** A list the background keeps: its drawn cells by index, adopted, let go of, or left to wait. */
-export interface ListPlan {
+interface ListPlan {
 	id: number;
 	drawn: number;
 	items: number[];
@@ -35,13 +35,13 @@ export interface ListPlan {
 }
 
 /** A list inside a cell, whose items are its children: it keeps its state under the new ids. */
-export interface NestedListPlan {
+interface NestedListPlan {
 	id: number;
 	drawn: number;
 }
 
 /** A run of drawn children made again in place from the background's. */
-export interface Repair {
+interface Repair {
 	/** The parent, by the background's id and the first frame's. */
 	parent: number;
 	drawnParent: number;
@@ -52,7 +52,7 @@ export interface Repair {
 }
 
 /** The texts of a parent made again in place: the frame drew others, or not as many. */
-export interface TextRepair {
+interface TextRepair {
 	drawnParent: number;
 	/** The drawn texts to take off. */
 	drop: number[];
@@ -83,7 +83,7 @@ export interface Refused {
 }
 
 /** What the match reads of the first frame's lists: which cells have elements, and which Lynx holds. */
-export interface DrawnLists {
+interface DrawnLists {
 	held(list: number): Map<number, { bound: boolean }>;
 }
 

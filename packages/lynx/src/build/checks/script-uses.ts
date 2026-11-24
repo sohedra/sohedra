@@ -65,7 +65,7 @@ export interface GlobalRead {
 }
 
 /** What a script reads, and how it guards it. */
-export interface ScriptUses {
+interface ScriptUses {
 	globals: GlobalRead[];
 	/** The calls a main-thread function makes of a plain function the script declares outside it. */
 	plainCalls: { name: string; start: number; anchor?: number | undefined }[];

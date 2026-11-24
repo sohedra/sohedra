@@ -40,7 +40,7 @@ export type { ListState } from "./lists/state.ts";
 export const LIST_ONLY_INFO: ReadonlySet<string> = new Set(["reuse-identifier", "recyclable"]);
 
 /** A list update the background wrote. */
-export interface SentListUpdate {
+interface SentListUpdate {
 	info: ListUpdateInfo;
 	items: number[];
 	added: number[];
@@ -48,7 +48,7 @@ export interface SentListUpdate {
 }
 
 /** What the lists need of the page. */
-export interface ListsScope {
+interface ListsScope {
 	/** The page's unique id, which elements are made with. */
 	pageUid: number;
 	/** Makes the cell with this id from what the main thread kept for it: Lynx waits for it. */

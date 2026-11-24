@@ -27,7 +27,7 @@ export interface SentEvent {
 }
 
 /** An element's event, for the background's handler of this id. */
-export interface EventMessage {
+interface EventMessage {
 	t: "event";
 	handler: number;
 	event: SentEvent;
@@ -52,14 +52,14 @@ export interface CallMessage {
 }
 
 /** The answer to a call of a patch, by the call's id. */
-export interface ReplyMessage {
+interface ReplyMessage {
 	t: "reply";
 	id: number;
 	result: Result;
 }
 
 /** The function contexts the main thread no longer holds, so the background can let them go. */
-export interface ReleaseMessage {
+interface ReleaseMessage {
 	t: "release";
 	contexts: number[];
 }

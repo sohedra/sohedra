@@ -19,7 +19,7 @@ const TEMPLATE_DEFAULTS = {
 } as const;
 
 /** The keys of `pageConfig` the template plugin has an option for. */
-export const TEMPLATE_KEYS: readonly string[] = Object.keys(TEMPLATE_DEFAULTS);
+const TEMPLATE_KEYS: readonly string[] = Object.keys(TEMPLATE_DEFAULTS);
 
 /**
  * The keys the plugin sets whatever the app says: the engine's newer paths, the engine version
@@ -80,7 +80,7 @@ const PAGE_CONFIG_DEFAULTS: PageConfig = {
 };
 
 /** The page's settings, split by where they go. */
-export interface ResolvedPageConfig {
+interface ResolvedPageConfig {
 	/** The template plugin's options. */
 	template: Record<string, unknown>;
 	/** The other keys, which go into the encoder's config. */

@@ -18,7 +18,7 @@ import type { Pass } from "./pass.ts";
  * Svelte's rule: an `on…` attribute with a single expression is an event, whatever follows `on`.
  * `name` is the attribute's name without its `main-thread:` prefix.
  */
-export function isEventAttribute(attribute: AnyNode, name: string): boolean {
+function isEventAttribute(attribute: AnyNode, name: string): boolean {
 	if (attribute.type !== "Attribute" || !name.startsWith("on")) return false;
 	const value = attributeValue(attribute);
 	return value !== true && value.length === 1 && value[0]!.type === "ExpressionTag";

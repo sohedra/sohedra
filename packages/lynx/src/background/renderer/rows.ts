@@ -25,7 +25,7 @@ export interface DeferOptions {
 }
 
 /** Where a deferred row is, as the build reads it from the row's markup. */
-export interface RowPlace {
+interface RowPlace {
 	/** The value of the row's `full-span`: it takes a whole line of its list's initial rows. */
 	fullSpan?: () => unknown;
 	/** In a branch only one thread renders: it never takes a place among a list's initial rows. */

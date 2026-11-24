@@ -8,7 +8,7 @@
 import { PROPS_ID_PREFIX } from "../../wire/index.ts";
 
 /** The thread a branch is for. */
-export type BranchThread = "background" | "main-thread";
+type BranchThread = "background" | "main-thread";
 
 /** The letter of each thread's branch sequence. */
 const LETTERS = { background: "b", "main-thread": "m" } as const;
@@ -20,7 +20,7 @@ export type BranchCounts = Record<"b" | "m", number>;
 const drawing: ("b" | "m")[] = [];
 
 /** What the compile step passes: the thread the branch is for, and the branch as a snippet. */
-export interface ThreadBranchProps<Target> {
+interface ThreadBranchProps<Target> {
 	thread: BranchThread;
 	render: (target: Target) => void;
 }

@@ -11,7 +11,7 @@
 // @workaround primjs-unicode-regex kind=lynx-limit delete-when="the main-thread engine compiles regexes with astral escapes"
 
 /** One regex to rewrite. */
-export interface PrimjsRegexRewrite {
+interface PrimjsRegexRewrite {
 	/** The file in Svelte's `src` folder, with `/` separators. */
 	file: string;
 	/** The declaration, from the name to the end of the regex. */

@@ -95,7 +95,7 @@ export interface ElementScope {
 }
 
 /** The class of a renderer's element nodes. */
-export type ElementClass = new (tag: string) => ElementNode;
+type ElementClass = new (tag: string) => ElementNode;
 
 /** The class of the element nodes of one renderer: its methods reach that renderer's tree. */
 export function elementClass(scope: ElementScope): ElementClass {

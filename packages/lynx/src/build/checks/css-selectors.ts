@@ -20,7 +20,7 @@ const NO_SELECTORS = new Set(["keyframes", "-webkit-keyframes", "font-face", "pa
 const SIMPLE = new Set(["TypeSelector", "ClassSelector", "IdSelector", "NestingSelector"]);
 
 /** A selector Lynx doesn't support: the selector, the part of it, and where the selector starts. */
-export interface UnsupportedSelector {
+interface UnsupportedSelector {
 	/** The complex selector, as written. */
 	selector: string;
 	/** The part outside Lynx's list, as a phrase with its text in backticks. */

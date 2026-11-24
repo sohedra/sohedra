@@ -49,7 +49,7 @@ function writePieces(source: string, pieces: Piece[], builder: MapBuilder): stri
 }
 
 /** What `applyEdits` makes of a source. */
-export interface Edited {
+interface Edited {
 	code: string;
 	/** The map from `code` to the source, which it calls `name`. */
 	map: (name: string) => SourceMap;

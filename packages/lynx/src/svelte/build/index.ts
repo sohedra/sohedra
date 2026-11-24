@@ -14,7 +14,6 @@ export {
 export type { AnyNode, ScriptProgram } from "./ast.ts";
 export { svelteCompiler } from "./compiler.ts";
 export type {
-	AST,
 	CompileOptions,
 	ComponentAst,
 	ModuleCompileOptions,
@@ -27,9 +26,6 @@ export type { Diagnostic } from "./errors.ts";
 export { scriptParser } from "./script-parser.ts";
 export type { ScriptParser } from "./script-parser.ts";
 export { hotFooter } from "./hot-footer.ts";
-export type { HotFooter } from "./hot-footer.ts";
 export { isPrimjsRegexFile, PRIMJS_REGEX_REWRITES, rewritePrimjsRegex } from "./primjs-regex.ts";
-export type { PrimjsRegexRewrite } from "./primjs-regex.ts";
 export { SPREAD_SETTER_ANCHORS, SPREAD_SETTER_FILE, patchSpreadSetter } from "./spread-setter.ts";
-export type { SpreadSetterAnchor } from "./spread-setter.ts";
 export { SERVER_ASYNC_HOOKS_IMPORT, SERVER_CRYPTO_FILE } from "./server-imports.ts";

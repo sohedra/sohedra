@@ -24,7 +24,7 @@ import type { Refs } from "./refs.ts";
 const MAX_DEPTH = 64;
 
 /** What a walk carries into. */
-export interface CarryScope {
+interface CarryScope {
 	refs: Refs;
 	lifetimes: Lifetimes;
 }

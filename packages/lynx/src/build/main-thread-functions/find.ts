@@ -101,14 +101,14 @@ export interface Found {
 }
 
 /** The errors a script's walk can fail with. */
-export type FailCode =
+type FailCode =
 	| "main_thread_function_method"
 	| "main_thread_function_this"
 	| "main_thread_function_generator"
 	| "main_thread_function_used_early";
 
 /** A message of a function that cannot be a main-thread function. */
-export type Failure = { [Code in FailCode]: { code: Code; details: BuildDetails[Code] } }[FailCode];
+type Failure = { [Code in FailCode]: { code: Code; details: BuildDetails[Code] } }[FailCode];
 
 /** Reports the function `node` as one that cannot be a main-thread function. */
 export type Fail = (node: Node, failure: Failure) => never;

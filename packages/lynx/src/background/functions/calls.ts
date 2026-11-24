@@ -14,7 +14,7 @@ import { backgroundError } from "../catalogue.ts";
 import { reportError } from "../report.ts";
 
 /** Where calls reach the main thread: the running page's channel. */
-export interface CallHost {
+interface CallHost {
 	call(request: CallRequest): Promise<unknown>;
 	/** The ids of the main-thread function contexts the page keeps. */
 	contexts(): number[];
@@ -90,7 +90,7 @@ export function runOnBackground<Args extends unknown[], Result>(
 }
 
 /** A handle as the background holds it: the function stays here, and only its id crosses. */
-export interface HeldHandle extends BackgroundFunctionHandle {
+interface HeldHandle extends BackgroundFunctionHandle {
 	_fn?: (...args: unknown[]) => unknown;
 }
 

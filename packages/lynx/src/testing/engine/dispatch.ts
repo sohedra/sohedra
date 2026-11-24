@@ -31,7 +31,7 @@ import { elementName, stateOf } from "./state.ts";
 import type { LynxElement } from "./types.ts";
 
 /** `RunWorkletType` (touch_event_handler.h): what the engine tells `runWorklet` it is running. */
-export const SOURCE_EVENT = 1;
+const SOURCE_EVENT = 1;
 export const SOURCE_GESTURE = 2;
 /** `EventResult` (touch_event_handler.h): the bits of `eventReturnResult`. */
 const STOP_PROPAGATION = 0x1;
@@ -62,7 +62,7 @@ export function runMainThreadFunction(call: {
 }
 
 /** A target as Lynx sends it: plain `{ id, uid, dataset }`. */
-export function targetInfo(state: ElementState): { id: string; uid: number; dataset: unknown } {
+function targetInfo(state: ElementState): { id: string; uid: number; dataset: unknown } {
 	return { id: state.id ?? "", uid: state.uid, dataset: { ...state.dataset } };
 }
 

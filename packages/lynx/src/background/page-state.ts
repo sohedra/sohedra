@@ -1,5 +1,5 @@
-// What the background keeps of the page it runs: its generation, and what other modules let go
-// of when the page ends.
+// What the background keeps of the page it runs, its generation; and how the page's reload and
+// destroy run their steps.
 //
 // The generation tells this life of the page from the next (src/wire/page.ts). It starts at 0 and
 // is bumped synchronously, first thing, when the app reloads and when the page is destroyed,
@@ -21,18 +21,6 @@ export function startGeneration(): void {
 /** The page reloads or is destroyed: a new generation starts. */
 export function bumpGeneration(): void {
 	generation++;
-}
-
-const clears: (() => void)[] = [];
-
-/** Runs `clear` when the running page is destroyed, once. */
-export function onPageDestroy(clear: () => void): void {
-	clears.push(clear);
-}
-
-/** The page is destroyed: runs what was registered, in order, and forgets it. */
-export function clearPageState(): void {
-	runAll(clears.splice(0));
 }
 
 /**

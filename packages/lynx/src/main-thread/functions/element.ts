@@ -46,7 +46,7 @@ const ANIMATE = { start: 0, play: 1, pause: 2, cancel: 3 } as const;
 let animations = 0;
 
 /** An animation a main-thread function started on an element. */
-export class MainThreadAnimation {
+class MainThreadAnimation {
 	readonly id: string;
 	private readonly element: LynxElement;
 

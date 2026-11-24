@@ -11,7 +11,7 @@ export interface StyleSheetFunctions {
 }
 
 /** What a test does with style sheets. */
-export interface StyleSheets {
+interface StyleSheets {
 	/** The sheet `__LoadStyleSheet` finds for a bundle. */
 	provide(bundleName: string, sheet: unknown): void;
 	/** The sheets the page adopted, in order. */

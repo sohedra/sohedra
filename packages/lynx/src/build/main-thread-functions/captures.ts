@@ -82,7 +82,7 @@ export interface Copy {
 }
 
 /** How `writeCaptures` writes the values. */
-export interface WriteOptions {
+interface WriteOptions {
 	copy?: Copy | undefined;
 	guard?: Guard | undefined;
 }

@@ -86,7 +86,7 @@ export type CallItem = ["call", number, number, string];
  * The background's reply to a main-thread function's call of a background function: the call's
  * id and the result as text from `encodeResult`. It rides only in a patch of its call's page.
  */
-export type ReplyItem = ["reply", number, string];
+type ReplyItem = ["reply", number, string];
 
 /**
  * The page is written again: the main thread lets go of its elements, which stay on the screen until
@@ -117,7 +117,7 @@ export interface Patch extends Stamp {
 }
 
 /** A patch as the background writes it: the generation its content belongs to, and its items. */
-export interface PatchOf {
+interface PatchOf {
 	generation: number;
 	items: PatchItem[];
 	/** Whether the patch shows the page's new data. */

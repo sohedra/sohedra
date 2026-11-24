@@ -5,7 +5,7 @@ import { FUNCTIONS_GLOBAL, REGISTER_FUNCTION } from "../wire/index.ts";
 import type { FunctionsGlobal } from "../wire/index.ts";
 
 /** What the main thread's engine provides to the first frame. */
-export interface FirstFrameGlobals {
+interface FirstFrameGlobals {
 	lynx: {
 		/** `level` is `"error"` (the default) or `"warning"`. */
 		reportError(error: unknown, options?: { level?: "error" | "warning" }): void;

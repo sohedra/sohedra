@@ -11,7 +11,7 @@ import type { PageLink } from "./page-link.ts";
 import { isRecord } from "./values.ts";
 
 /** What answering a late listener needs of the renderer. */
-export interface LayoutScope {
+interface LayoutScope {
 	pageLink(): PageLink | null;
 	/** How many patches the page has sent. */
 	sent(): number;

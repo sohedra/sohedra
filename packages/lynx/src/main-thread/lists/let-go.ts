@@ -28,7 +28,7 @@ const KEPT_CELLS = 10;
 export type Rewritten = "ignore" | "keep" | "let-go";
 
 /** Letting go of the cells of a page's lists. */
-export interface LetGo {
+interface LetGo {
 	/** Lynx handed back a cell that keeps its element; past what the list keeps, it is asked for. */
 	handedBack(list: ListState, cell: Cell): void;
 	/**

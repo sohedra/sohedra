@@ -224,7 +224,7 @@ export async function encodeMultipart(form: FormData, boundary: string): Promise
 }
 
 /** How much of an untrusted multipart body `decodeMultipart` reads before it refuses it. */
-export interface MultipartLimits {
+interface MultipartLimits {
 	/** The most parts a body may have. */
 	parts: number;
 	/** The most bytes of headers one part may have. */

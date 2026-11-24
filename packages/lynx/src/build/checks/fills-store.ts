@@ -17,7 +17,7 @@ export interface ModuleFills {
 }
 
 /** A build's store: what each module waits on, by its file. */
-export interface FillsStore {
+interface FillsStore {
 	modules: Map<string, ModuleFills>;
 	/** Whether the build restores modules from a persistent cache. */
 	persistent: boolean;
@@ -41,7 +41,7 @@ export function createFillsStore(compiler: { options?: { cache?: unknown } }): F
 }
 
 /** What a loader knows of its module and its build. */
-export interface FillsContext {
+interface FillsContext {
 	/** Rspack's compiler. */
 	_compiler?: object | undefined;
 	resourcePath: string;

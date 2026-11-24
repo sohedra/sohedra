@@ -5,7 +5,7 @@
 export type Scope = Record<PropertyKey, unknown>;
 
 /** What a thread's Lynx says about the device (`SystemInfo`, `lynx.SystemInfo`). */
-export interface ThreadSystemInfo {
+interface ThreadSystemInfo {
 	/** `"iOS"` or `"Android"`. */
 	platform?: string;
 	/** The Lynx engine's version, such as `"4.2"`. */

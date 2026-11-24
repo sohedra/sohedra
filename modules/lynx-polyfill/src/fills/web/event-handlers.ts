@@ -10,7 +10,7 @@ export interface Listening {
 }
 
 /** What the handler is given: the event, or for `"error"` HTML's five arguments of an `onerror`. */
-export type HandlerKind = "event" | "error";
+type HandlerKind = "event" | "error";
 
 /** Each object's handlers, by event type. */
 const handlers = new WeakMap<

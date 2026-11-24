@@ -18,7 +18,7 @@ import { buildError, buildWarning, placeAt } from "../diagnostics/messages.ts";
 import type { Place } from "../diagnostics/messages.ts";
 
 /** A regular expression the engine refuses: its text, why, and where it starts in the code. */
-export interface RefusedRegExp {
+interface RefusedRegExp {
 	text: string;
 	syntax: RegExpSyntax;
 	start: number;

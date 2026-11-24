@@ -9,7 +9,7 @@ import { warnOnce } from "../report.ts";
 import type { TreeNode } from "./node.ts";
 
 /** How many elements a scroll view holds directly before the warning. */
-export const SCROLL_VIEW_ROWS = 200;
+const SCROLL_VIEW_ROWS = 200;
 
 const warned = new WeakSet<TreeNode>();
 

@@ -37,7 +37,7 @@ export interface GestureCall {
 }
 
 /** What the engine's side of gestures offers. */
-export interface GestureDriver {
+interface GestureDriver {
 	/**
 	 * Runs a callback of one of the element's detectors as Lynx does (HandleGestureEvent),
 	 * with the gesture's event and the gesture manager. Returns what the function returned.

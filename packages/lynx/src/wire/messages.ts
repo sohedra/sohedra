@@ -24,7 +24,7 @@ export function docsLink(docs: string): string {
 }
 
 /** The parts of one message. */
-export interface MessageParts {
+interface MessageParts {
 	/** The plain sentence. */
 	sentence: string;
 	/** `file:line:col`, or the component, when known. */

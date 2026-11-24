@@ -10,7 +10,7 @@ import type { TreeNode } from "./node.ts";
 import type { PageLink } from "./page-link.ts";
 
 /** What the methods reach of their renderer. */
-export interface MethodScope<Node extends TreeNode> {
+interface MethodScope<Node extends TreeNode> {
 	/** The link to the page; null when no page runs. */
 	pageLink(): PageLink | null;
 	/** The element node with this id, while it is on the page. */

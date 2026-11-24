@@ -17,7 +17,7 @@ import { mainThreadError } from "../catalogue.ts";
 export const LOOP_LIMIT = 1000;
 
 /** What the code that runs main-thread functions and flushes their changes tells the guard. */
-export interface LoopGuard {
+interface LoopGuard {
 	/** The function `id` runs, for the event `event` if the engine gave one. */
 	ran(id: string, event: string | undefined): void;
 	/** A function changed an element: `what` it called, with what. */
@@ -27,7 +27,7 @@ export interface LoopGuard {
 }
 
 /** What the guard needs of the page. */
-export interface LoopGuardOptions {
+interface LoopGuardOptions {
 	report(error: unknown): void;
 	/** Runs `callback` at the main thread's next turn, if the engine can. */
 	nextTurn(callback: () => void): boolean;

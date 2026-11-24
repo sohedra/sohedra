@@ -29,7 +29,7 @@ const CLOSED: KeyboardState = { open: false, height: 0 };
  *
  * @workaround keyboard-closed-height kind=lynx-gap delete-when="Lynx sends a height of 0 with every off status of keyboardstatuschanged, on Android too"
  */
-export function keyboardState(status: unknown, height: unknown): KeyboardState {
+function keyboardState(status: unknown, height: unknown): KeyboardState {
 	if (status !== "on") return CLOSED;
 	return { open: true, height: typeof height === "number" && height > 0 ? height : 0 };
 }

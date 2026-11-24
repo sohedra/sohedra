@@ -175,7 +175,7 @@ function missingGlobal(name: string, thread: Thread): WireReport<WireCode> | und
 }
 
 /** Why a thread lacks a global, and what to do, as the build reports a read of it. */
-export type GlobalGap =
+type GlobalGap =
 	/** No fill gives it; `instead` says what to use. */
 	| { kind: "not_on_lynx"; instead: string }
 	/** Read on the main thread, which never has it: the background does. */

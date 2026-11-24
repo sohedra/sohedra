@@ -6,7 +6,7 @@ import { OpCode } from "./ops.ts";
 import type { Op } from "./ops.ts";
 
 /** An element's tag by its id, when known. */
-export type TagOf = (id: number) => string | null | undefined;
+type TagOf = (id: number) => string | null | undefined;
 
 /**
  * What `op` does, as a phrase: `insert <view> 42 into <scroll-view> 7`, or, with no tag known,

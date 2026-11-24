@@ -11,7 +11,7 @@ const FOOTER =
 	/if \(import\.meta\.hot\) \{\s*(\w+) = \$\.hmr\(\1\);\s*import\.meta\.hot\.accept\(\(module\) => \{\s*(?:\$\.cleanup_styles\([^)]*\);\s*)?\1\[\$\.HMR\]\.update\(module\.default\);\s*\}\);\s*\}/;
 
 /** Where Svelte's footer is in a component's code. */
-export interface HotFooter {
+interface HotFooter {
 	/** The component's name. */
 	name: string;
 	start: number;

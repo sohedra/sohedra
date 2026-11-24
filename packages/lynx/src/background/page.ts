@@ -44,13 +44,7 @@ import { resetKeyboard } from "./host/keyboard.ts";
 import { mismatchError, warnPropsIds } from "./hydration.ts";
 import { closeLayers, openLayers, unmountLayers } from "./layers.ts";
 import type { Bag, MountPageOptions } from "./page-options.ts";
-import {
-	bumpGeneration,
-	clearPageState,
-	currentGeneration,
-	runAll,
-	startGeneration,
-} from "./page-state.ts";
+import { bumpGeneration, currentGeneration, runAll, startGeneration } from "./page-state.ts";
 import type { Handler } from "./renderer/handlers.ts";
 import { numberInput } from "./renderer/input.ts";
 import { pageHandlers, pageQueue, pageRenderer, withNodes } from "./renderer/page-renderer.ts";
@@ -350,7 +344,6 @@ export function mountPage<Props extends Bag>(
 			closeLayers,
 			closeHostEvents,
 			resetKeyboard,
-			clearPageState,
 			// Not after the teardown's promise: the engine frees the runtime as this hook returns
 			// (Android, Lynx 4.2), so what Svelte gives that promise is never reported.
 			() => releaseErrorHandler(errors),

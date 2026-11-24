@@ -4,7 +4,7 @@
 // table says Lynx lacks for good (`matchMedia`, `localStorage`), are not repeated here.
 
 /** What a group of the DOM's globals is replaced by on Lynx. */
-export type DomInstead = "element" | "screen" | "layout" | "visibility" | "address";
+type DomInstead = "element" | "screen" | "layout" | "visibility" | "address";
 
 /** What to use instead, by group. */
 export const DOM_INSTEAD: Readonly<Record<DomInstead, string>> = {
