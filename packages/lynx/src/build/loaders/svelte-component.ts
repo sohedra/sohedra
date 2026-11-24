@@ -16,7 +16,7 @@ import type { Rspack } from "@rsbuild/core";
 import type { CompileOptions, PreprocessorGroup } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
 import { isAppCode } from "../checks/app-code.ts";
-import { recordFills } from "../checks/fills-store.ts";
+import { NO_FILLS, recordFills } from "../checks/fills-store.ts";
 import { compileComponent } from "../compile/component.ts";
 import { buildError, buildWarning } from "../diagnostics/messages.ts";
 import type { SourceMap } from "../source-map/maps.ts";
@@ -67,6 +67,8 @@ async function compileSource(
 	const filename = context.resourcePath;
 	const development = context.mode === "development";
 	const hot = options.hot === true && development && options.thread === "background";
+	// A component that fails keeps no reads from before.
+	if (options.checks === true) recordFills(context, NO_FILLS);
 	const compiled = await compileComponent(source, {
 		filename,
 		thread: options.thread,

@@ -6,6 +6,7 @@ import { scriptParser } from "../../svelte/build/index.ts";
 import { buildErrors } from "../diagnostics/messages.ts";
 import type { SourceText } from "../diagnostics/messages.ts";
 import { isAppCode } from "./app-code.ts";
+import { NO_FILLS } from "./fills-store.ts";
 import type { ModuleFills } from "./fills-store.ts";
 import { checkScripts } from "./script-checks.ts";
 
@@ -18,22 +19,20 @@ const SCRIPT = /\.[mc]?[jt]sx?$/;
 
 /**
  * Checks a module of the app as written: throws the build's error for what certainly fails, and
- * returns the reads that wait on a fill, with the fills the module imports.
+ * returns the reads that wait on a fill, with the fills the module imports and the globals it
+ * installs.
  */
 export function checkModule(source: SourceText, root: string): ModuleFills {
-	const none: ModuleFills = { pending: [], imports: [] };
-	if (!isAppCode(source.file, root) || !SCRIPT.test(source.file)) return none;
+	if (!isAppCode(source.file, root) || !SCRIPT.test(source.file)) return NO_FILLS;
+	const parse = scriptParser(root, { jsx: isJsx(source.file) });
 	let program: unknown;
 	try {
-		program = scriptParser(root, { jsx: isJsx(source.file) })(
-			source.text,
-			isTypeScript(source.file),
-		);
+		program = parse(source.text, isTypeScript(source.file));
 	} catch {
-		return none;
+		return NO_FILLS;
 	}
 	const findings = checkScripts(source, { programs: [program] });
 	const [first, ...rest] = findings.errors;
 	if (first !== undefined) throw buildErrors([first, ...rest]);
-	return { pending: findings.fills, imports: findings.imports };
+	return { pending: findings.fills, imports: findings.imports, installs: findings.installs };
 }

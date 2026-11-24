@@ -12,7 +12,7 @@ Animate the element with its \`animate()\` method from an attachment (\`{@attach
 https://sohedra.com/e/animate_directive"
 `;
 
-exports[`the build's catalogue > background_api_in_main_thread_function: the message 1`] = `
+exports[`the build's catalogue > background_api_on_main_thread: the message 1`] = `
 "A main-thread function uses \`NativeModules\`, which Lynx has on the background thread only.
 /app/src/App.svelte:2:3
 
@@ -21,7 +21,7 @@ exports[`the build's catalogue > background_api_in_main_thread_function: the mes
      ^
 
 Use it in a function the main-thread function calls with \`runOnBackground\`, or in an effect or an event handler.
-https://sohedra.com/e/background_api_in_main_thread_function"
+https://sohedra.com/e/background_api_on_main_thread"
 `;
 
 exports[`the build's catalogue > background_only_in_component: the message 1`] = `
@@ -252,7 +252,7 @@ Listen with \`on(root, "tap", handler)\` in an effect, with \`root\` from \`@soh
 https://sohedra.com/e/global_event_attribute"
 `;
 
-exports[`the build's catalogue > global_not_in_lynx: the message 1`] = `
+exports[`the build's catalogue > global_no_fill: the message 1`] = `
 "Lynx's engine doesn't have the global \`Intl\`, and no fill gives it, so this code throws where it runs.
 /app/src/App.svelte:2:3
 
@@ -261,7 +261,7 @@ exports[`the build's catalogue > global_not_in_lynx: the message 1`] = `
      ^
 
 Format dates and numbers with a library in plain JavaScript, such as date-fns or dayjs.
-https://sohedra.com/e/global_not_in_lynx"
+https://sohedra.com/e/global_no_fill"
 `;
 
 exports[`the build's catalogue > hot_footer_missing: the message 1`] = `
@@ -346,6 +346,18 @@ exports[`the build's catalogue > lynx_engine_missing: the message 1`] = `
 
 Build with rspeedy, or add \`pluginLynx()\` from @lynx-js/rsbuild-plugin to the Rsbuild config.
 https://sohedra.com/e/lynx_engine_missing"
+`;
+
+exports[`the build's catalogue > lynx_member_missing: the message 1`] = `
+"\`lynx.querySelector\` doesn't exist on either thread in Svelte on Lynx, so this code throws where it runs.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Reach the element with \`main-thread:ref\` in a main-thread function, and call the element's own method.
+https://sohedra.com/e/lynx_member_missing"
 `;
 
 exports[`the build's catalogue > main_thread_api_in_background: the message 1`] = `

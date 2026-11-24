@@ -8,6 +8,7 @@ import path from "node:path";
 
 import type { ComponentAst } from "../../svelte/build/index.ts";
 import type { Thread } from "../../wire/index.ts";
+import { NO_FILLS } from "../checks/fills-store.ts";
 import type { ModuleFills } from "../checks/fills-store.ts";
 import type { BuildWarning } from "../diagnostics/messages.ts";
 import { componentFunctions } from "../main-thread-functions/script.ts";
@@ -83,7 +84,7 @@ const PASSES: readonly Pass[] = [
 /** Run every pass over the component and apply what they return. */
 export function prepare(options: PrepareOptions): Prepared {
 	const { source, filename, sourceMap } = options;
-	const context: PassContext = { ...options, warnings: [], fills: { pending: [], imports: [] } };
+	const context: PassContext = { ...options, warnings: [], fills: NO_FILLS };
 	const edits = PASSES.flatMap((pass) => pass(context));
 	const functions = componentFunctions(options);
 	edits.push(...(functions?.edits ?? []));

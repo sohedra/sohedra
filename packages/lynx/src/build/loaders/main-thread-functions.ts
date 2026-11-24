@@ -12,7 +12,7 @@
 import type { Rspack } from "@rsbuild/core";
 
 import type { Thread } from "../../wire/index.ts";
-import { recordFills } from "../checks/fills-store.ts";
+import { NO_FILLS, recordFills } from "../checks/fills-store.ts";
 import { checkModule } from "../checks/module-checks.ts";
 import { hasMainThreadFunction } from "../main-thread-functions/directive.ts";
 import { moduleFunctions } from "../main-thread-functions/script.ts";
@@ -40,6 +40,8 @@ export default function mainThreadFunctionsLoader(
 		try {
 			recordFills(this, checkModule({ file: this.resourcePath, text: source }, this.rootContext));
 		} catch (error) {
+			// Its reads from before the error are gone with it.
+			recordFills(this, NO_FILLS);
 			// Boundary: the bundler's callback takes an `Error`; a thrown value is any.
 			this.callback(error as Error);
 			return;

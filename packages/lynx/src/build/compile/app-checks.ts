@@ -32,7 +32,11 @@ export const appChecks: Pass = (context) => {
 		}
 	}
 	const findings = checkScripts(text, componentRoots(ast));
-	context.fills = { pending: findings.fills, imports: findings.imports };
+	context.fills = {
+		pending: findings.fills,
+		imports: findings.imports,
+		installs: findings.installs,
+	};
 	const [first, ...rest] = findings.errors;
 	if (first !== undefined) throw buildErrors([first, ...rest]);
 	return [];

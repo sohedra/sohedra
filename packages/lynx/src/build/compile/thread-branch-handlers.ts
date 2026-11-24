@@ -42,7 +42,9 @@ export const threadBranchHandlers: Pass = ({
 				if (attribute.type !== "Attribute") continue;
 				const name = attributeName(attribute);
 				const start = attribute.start!;
-				if (!isHandler(name) || warned.has(start) || silenced(CODE, start)) continue;
+				if (!isHandler(name) || warned.has(start)) continue;
+				// A comment above the element silences its attributes, each on its own line or not.
+				if (silenced(CODE, start) || silenced(CODE, element.start!)) continue;
 				warned.add(start);
 				warnings.push(
 					buildWarning({

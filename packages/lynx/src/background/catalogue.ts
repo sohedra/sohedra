@@ -144,7 +144,7 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 	},
 	scroll_view_many_children: {
 		message: ({ limit }) =>
-			`A <scroll-view> holds more than ${limit} elements directly, and it draws every one of them in the first frame, which delays the page's first paint.`,
+			`A <scroll-view> holds more than ${limit} elements directly, and it draws every one of them at once, which slows the page's first paint and every update.`,
 		fix: () =>
 			"Show the rows in a <list> of <list-item> elements instead: Lynx makes a list's rows as they scroll into view.",
 		docs: "scroll_view_many_children",

@@ -2,6 +2,8 @@
 // where Lynx, or ReactLynx, says so. The globals `@sohedra/lynx-polyfill` fills that only the
 // background has are the wire's table (`globalGap`), not repeated here.
 
+import { ELEMENT_FUNCTIONS } from "./element-functions.ts";
+
 /**
  * Globals only the background has.
  *
@@ -47,27 +49,24 @@ const BACKGROUND_LYNX: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Members of `lynx` only the main thread has: ReactLynx's main-thread runtime adds them
- * (`@lynx-js/react`, runtime/src/worklet-runtime/api/lynxApi.ts).
+ * Members of `lynx` neither thread has in Svelte on Lynx: ReactLynx's main-thread runtime adds them
+ * (`@lynx-js/react`, runtime/src/worklet-runtime/api/lynxApi.ts), Lynx's own `lynx` doesn't have
+ * them on either thread (`@lynx-js/types`), and the binding gives a main-thread element its own
+ * `querySelector` instead.
  */
-const MAIN_THREAD_LYNX: ReadonlySet<string> = new Set(["querySelector", "querySelectorAll"]);
+const MISSING_LYNX: ReadonlySet<string> = new Set(["querySelector", "querySelectorAll"]);
 
-/**
- * Lynx's element functions, which only the main thread has (`__CreateView`, `__SetAttribute`…:
- * lynx core/runtime/lepus/bindings/renderer_functions.cc). A `__` and a capitalized word; the
- * build's constants (`__DEV__`, `__MAIN_THREAD__`) are capitals only.
- */
-const ELEMENT_FUNCTION = /^__[A-Z][a-z]\w*$/;
+/** Whether `name`, `lynx.<member>`, is a member of `lynx` neither thread has. */
+export const isMissingLynxMember = (name: string): boolean =>
+	name.startsWith("lynx.") && MISSING_LYNX.has(name.slice("lynx.".length));
 
 /** The thread a read of `name` (a global, or `lynx.<member>`) can only run on, if only one has it. */
 export function onlyThread(name: string): "background" | "main-thread" | undefined {
 	if (name.startsWith("lynx.")) {
 		const member = name.slice("lynx.".length);
-		if (BACKGROUND_LYNX.has(member)) return "background";
-		if (MAIN_THREAD_LYNX.has(member)) return "main-thread";
-		return undefined;
+		return BACKGROUND_LYNX.has(member) ? "background" : undefined;
 	}
 	if (BACKGROUND_GLOBALS.has(name)) return "background";
-	if (ELEMENT_FUNCTION.test(name)) return "main-thread";
+	if (ELEMENT_FUNCTIONS.has(name)) return "main-thread";
 	return undefined;
 }

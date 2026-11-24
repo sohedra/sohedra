@@ -3,8 +3,11 @@
 
 import { scriptProgram } from "../../svelte/build/index.ts";
 import type { AnyNode, ComponentAst } from "../../svelte/build/index.ts";
+import type { Thread } from "../../wire/index.ts";
+import { oneThreadFragments } from "../compile/thread-branches.ts";
+import type { OneThreadBranch } from "../compile/thread-branches.ts";
 import { patternNames } from "../main-thread-functions/directive.ts";
-import type { ScriptRoots } from "./script-uses.ts";
+import type { MarkupExpression, ScriptRoots } from "./script-uses.ts";
 
 /** The types of Svelte's markup nodes; any other node with a type is JavaScript. */
 const MARKUP = new Set([
@@ -54,21 +57,31 @@ const DECLARING = new Set(["context", "parameters", "value", "error"]);
 /** What a component's markup declares and reads. */
 interface Markup {
 	declared: Set<string>;
-	expressions: AnyNode[];
+	expressions: MarkupExpression[];
+	/** The branches only one thread renders, by their fragment. */
+	branches: ReadonlyMap<AnyNode, OneThreadBranch>;
 }
 
-function walkMarkup(node: unknown, markup: Markup): void {
+/** Where in the markup a node is: the thread of its branch, and the element whose attribute holds it. */
+interface Context {
+	thread: Thread | undefined;
+	anchor: number | undefined;
+}
+
+function walkMarkup(node: unknown, markup: Markup, context: Context): void {
 	if (!node || typeof node !== "object") return;
 	if (Array.isArray(node)) {
-		for (const item of node) walkMarkup(item, markup);
+		for (const item of node) walkMarkup(item, markup, context);
 		return;
 	}
 	// Boundary: the markup's nodes are read by shape.
 	const record = node as AnyNode;
 	if (typeof record.type === "string" && !MARKUP.has(record.type)) {
-		markup.expressions.push(record);
+		markup.expressions.push({ node: record, ...context });
 		return;
 	}
+	const branch = markup.branches.get(record);
+	const here: Context = branch ? { thread: branch.thread, anchor: undefined } : context;
 	for (const [key, value] of Object.entries(record)) {
 		if (DECLARING.has(key) && record.type !== "Attribute" && record.type !== "StyleDirective") {
 			for (const pattern of Array.isArray(value) ? value : [value])
@@ -87,18 +100,25 @@ function walkMarkup(node: unknown, markup: Markup): void {
 			// Boundary: a `{@const}` holds one variable declaration, read by shape.
 			for (const declarator of (value as AnyNode).declarations as AnyNode[]) {
 				for (const name of patternNames(declarator.id)) markup.declared.add(name);
-				markup.expressions.push(declarator.init as AnyNode);
+				markup.expressions.push({ node: declarator.init as AnyNode, ...here });
 			}
 			continue;
 		}
-		walkMarkup(value, markup);
+		// An element's attributes: a silencing comment above the element applies to them.
+		const anchor =
+			key === "attributes" ? record.start : key === "fragment" ? undefined : here.anchor;
+		walkMarkup(value, markup, { thread: here.thread, anchor });
 	}
 }
 
 /** A component's code for the script checks. Positions are the component's. */
 export function componentRoots(ast: ComponentAst): ScriptRoots {
-	const markup: Markup = { declared: new Set(), expressions: [] };
-	walkMarkup(ast.fragment, markup);
+	const markup: Markup = {
+		declared: new Set(),
+		expressions: [],
+		branches: oneThreadFragments(ast),
+	};
+	walkMarkup(ast.fragment, markup, { thread: undefined, anchor: undefined });
 	const programs = [scriptProgram(ast.module), scriptProgram(ast.instance)].filter(
 		(program) => program !== undefined,
 	);
