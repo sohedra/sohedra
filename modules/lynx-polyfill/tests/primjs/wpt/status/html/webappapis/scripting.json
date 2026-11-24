@@ -1,0 +1,18 @@
+{
+	"processing-model-2/integration-with-the-javascript-agent-formalism/atomics-wait-async.https.any.js": {
+		"skip": "PrimJS has no Atomics, which no fill can add."
+	},
+	"processing-model-2/integration-with-the-javascript-agent-formalism/requires-*.any.js": {
+		"skip": "Lynx has no WebAssembly."
+	},
+	"reporterror.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"expected": [
+				"self.reportError(1)",
+				"self.reportError(TypeError)",
+				"self.reportError(undefined)"
+			]
+		}
+	}
+}

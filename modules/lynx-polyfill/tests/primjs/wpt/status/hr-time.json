@@ -1,0 +1,5 @@
+{
+	"idlharness.any.js": {
+		"skip": "idlharness's checks of Web IDL bindings, which the fills' JavaScript classes don't all follow (attributes as own getters, operations' lengths), and it reads the IDL from WPT's server."
+	}
+}

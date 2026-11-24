@@ -1,0 +1,15 @@
+// Rstest Snapshot v1
+
+exports[`the package's catalogue > fetch_on_main_thread: the message 1`] = `
+"fetch was called on the main thread, where it does not run.
+
+Call fetch from code that runs on the background thread, such as an effect or an event handler; a main-thread function hands the call to the background first (in Sohedra, with \`runOnBackground\`).
+https://sohedra.com/e/fetch_on_main_thread"
+`;
+
+exports[`the package's catalogue > fill_experimental: the message 1`] = `
+"\`URLPattern\` comes from the experimental fill of \`@sohedra/lynx-polyfill/url-pattern\`: it may change in any minor release, and not all of its web platform tests pass on Lynx yet.
+
+If it does something a browser would not, open an issue with a reproduction. This warning shows once, in development builds only.
+https://sohedra.com/e/fill_experimental"
+`;

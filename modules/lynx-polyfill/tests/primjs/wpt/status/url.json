@@ -1,0 +1,22 @@
+{
+	"idlharness.any.js": {
+		"skip": "idlharness's checks of Web IDL bindings, which the fills' JavaScript classes don't all follow (attributes as own getters, operations' lengths), and it reads the IDL from WPT's server."
+	},
+	"url-constructor.any.js": {
+		"fail": {
+			"note": "whatwg-url-minimum (vendored) takes an IPv4 part with a leading zero in an IPv6 address, which the URL Standard refuses.",
+			"expected": ["Parsing: <https://[0:1:2:3:4:5:192.0.02.1]/> without base"]
+		}
+	},
+	"urlencoded-parser.any.js": {
+		"skip": "Reads bodies with Request and Response, whose bodies are the background's only: the main thread has their classes without bodies.",
+		"threads": ["main-thread"]
+	},
+	"urlsearchparams-constructor.any.js": {
+		"fail": {
+			"note": "Blob, FormData and the streams are the background's only.",
+			"threads": ["main-thread"],
+			"expected": ["URLSearchParams constructor, FormData."]
+		}
+	}
+}

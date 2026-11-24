@@ -1,0 +1,8 @@
+{
+	"not-a-constructor.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}

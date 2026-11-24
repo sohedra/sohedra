@@ -1,0 +1,263 @@
+{
+	"*": {
+		"skip": "The EventSource fill, over fetch, is the background's only: Lynx runs fetch and its streams on the background thread, and the main thread has none of them.",
+		"threads": ["main-thread"]
+	},
+	"event-data.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"eventsource-constructor-empty-url.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["EventSource constructor with an empty url."]
+		}
+	},
+	"eventsource-cross-origin-redirect-origin.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": [
+				"MessageEvent.origin is the origin of the final URL after a cross-origin redirect"
+			]
+		}
+	},
+	"eventsource-eventtarget.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"eventsource-onmessage-trusted.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["EventSource message events are trusted"]
+		}
+	},
+	"eventsource-onmessage.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"eventsource-onopen.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"eventsource-prototype.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"eventsource-url.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-bom-2.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-bom-split.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["EventSource: byte order mark split across chunks"]
+		}
+	},
+	"format-bom-utf-16.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": [
+				"EventSource: UTF-16BE byte order mark is not used",
+				"EventSource: UTF-16LE byte order mark is not used"
+			]
+		}
+	},
+	"format-bom.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-comments.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-data-before-final-empty-line.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-data.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-event-empty.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-event.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-id-2.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-id-redirect.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-id.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-parsing.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-retry-bogus-2.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-retry-bogus.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-retry-empty.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-retry.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-field-unknown.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-leading-space.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-mime-bogus.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-mime-trailing-semicolon.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-mime-valid-bogus.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-newlines.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-null-character.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"format-utf-8.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"request-accept.any.js": {
+		"fail": {
+			"note": "A relative URL: Lynx has no page address to resolve it against, so the fill refuses it, and the suite runs no WPT server to answer it.",
+			"threads": ["background"],
+			"expected": ["Untitled"]
+		}
+	},
+	"request-cache-control.any.js": {
+		"fail": {
+			"note": "Needs a page: Lynx has no `location`, window events or Cache API.",
+			"threads": ["background"],
+			"expected": ["<harness>"]
+		}
+	}
+}

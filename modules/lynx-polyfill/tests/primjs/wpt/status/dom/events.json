@@ -1,0 +1,29 @@
+{
+	"AddEventListenerOptions-signal.any.js": {
+		"fail": {
+			"note": "event-target-shim (vendored) takes `signal: null`, which the standard refuses.",
+			"expected": [
+				"Passing null as the signal should throw",
+				"Passing null as the signal should throw (listener is also null)"
+			]
+		}
+	},
+	"Event-constructors.any.js": {
+		"fail": {
+			"note": "event-target-shim (vendored) makes an Event with no type, which the standard refuses.",
+			"expected": ["Untitled 1"]
+		}
+	},
+	"Event-isTrusted.any.js": {
+		"fail": {
+			"note": "event-target-shim (vendored) keeps `isTrusted` on the prototype, not as each event's own unforgeable getter.",
+			"expected": ["Untitled"]
+		}
+	},
+	"EventTarget-constructible.any.js": {
+		"fail": {
+			"note": "event-target-shim (vendored) clears an event's target once its dispatch ends.",
+			"expected": ["A constructed EventTarget implements dispatch correctly"]
+		}
+	}
+}

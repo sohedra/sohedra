@@ -1,0 +1,92 @@
+{
+	"from/get-return-method-when-call-return.js": {
+		"fail": {
+			"note": "core-js's Iterator.from (vendored) reads more of the iterator than the standard does (its '@@iterator' and Symbol.toStringTag).",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"from/iterable-primitives.js": {
+		"fail": {
+			"note": "core-js's Iterator.from (vendored) wraps a string primitive in an object before it reads its iterator.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"from/non-constructible.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor. Its drop and take check their argument first, so they throw a RangeError there.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"from/return-method-calls-base-return-method.js": {
+		"fail": {
+			"note": "core-js's Iterator.from (vendored) reads more of the iterator than the standard does (its '@@iterator' and Symbol.toStringTag).",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/drop/non-constructible.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor. Its drop and take check their argument first, so they throw a RangeError there.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/drop/throws-typeerror-when-generator-is-running.js": {
+		"fail": {
+			"note": "A helper resumed while it runs: PrimJS throws an InternalError (core-js's take, vendored, nothing), where the standard throws a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/filter/non-constructible.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor. Its drop and take check their argument first, so they throw a RangeError there.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/filter/throws-typeerror-when-generator-is-running.js": {
+		"fail": {
+			"note": "A helper resumed while it runs: PrimJS throws an InternalError (core-js's take, vendored, nothing), where the standard throws a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/flatMap/non-constructible.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor. Its drop and take check their argument first, so they throw a RangeError there.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/flatMap/throws-typeerror-when-generator-is-running.js": {
+		"fail": {
+			"note": "A helper resumed while it runs: PrimJS throws an InternalError (core-js's take, vendored, nothing), where the standard throws a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/flatMap/underlying-iterator-not-closed-when-step-throws.js": {
+		"fail": {
+			"note": "core-js's flatMap (vendored) closes the underlying iterator when its step throws, which the standard doesn't.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/map/non-constructible.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor. Its drop and take check their argument first, so they throw a RangeError there.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/map/throws-typeerror-when-generator-is-running.js": {
+		"fail": {
+			"note": "A helper resumed while it runs: PrimJS throws an InternalError (core-js's take, vendored, nothing), where the standard throws a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/take/non-constructible.js": {
+		"fail": {
+			"note": "core-js (vendored) writes its methods as plain functions, which `new` accepts: test262 asks that a built-in method isn't a constructor. Its drop and take check their argument first, so they throw a RangeError there.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"prototype/take/throws-typeerror-when-generator-is-running.js": {
+		"fail": {
+			"note": "A helper resumed while it runs: PrimJS throws an InternalError (core-js's take, vendored, nothing), where the standard throws a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}

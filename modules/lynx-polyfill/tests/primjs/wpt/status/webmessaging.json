@@ -1,0 +1,133 @@
+{
+	"Channel_postMessage_Blob.any.js": {
+		"fail": [
+			{
+				"note": "@ungap/structured-clone (vendored), which copies a message, copies a Blob as a plain object.",
+				"threads": ["background"],
+				"expected": ["Test Description: Messages can contain Blobs."]
+			},
+			{
+				"note": "Blob, FormData and the streams are the background's only.",
+				"threads": ["main-thread"],
+				"expected": ["<harness>"]
+			}
+		]
+	},
+	"Channel_postMessage_transfer_target_port.any.js": {
+		"fail": {
+			"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved. The messaging fill moves only MessagePorts, and structuredClone's `transfer` moves nothing.",
+			"expected": [
+				"Transferring the entangled target port detaches it",
+				"Transferring the entangled target port via StructuredSerializeOptions detaches it"
+			]
+		}
+	},
+	"MessageEvent-trusted.any.js": {
+		"fail": [
+			{
+				"note": "Lynx has no workers, and the package no BroadcastChannel.",
+				"expected": ["With a BroadcastChannel"]
+			},
+			{
+				"note": "event-target-shim (vendored) has no trusted events: `isTrusted` is false on every event.",
+				"expected": ["With a MessageChannel and its MessagePorts"]
+			}
+		]
+	},
+	"broadcastchannel/basics.any.js": {
+		"fail": {
+			"note": "Lynx has no workers, and the package no BroadcastChannel.",
+			"expected": [
+				"BroadcastChannel constructor called as normal function",
+				"Closing a channel in onmessage prevents already queued tasks from firing onmessage events",
+				"closing and creating channels during message delivery works correctly",
+				"messages are delivered in port creation order",
+				"messages aren't delivered to a closed port",
+				"messages aren't delivered to a port closed after calling postMessage.",
+				"postMessage results in correct event"
+			]
+		}
+	},
+	"broadcastchannel/interface.any.js": {
+		"fail": {
+			"note": "Lynx has no workers, and the package no BroadcastChannel.",
+			"expected": [
+				"BroadcastChannel should have an onmessage event",
+				"Non-empty name should not throw",
+				"Non-string name should not throw",
+				"Null name should not throw",
+				"Should throw if no name is provided",
+				"Undefined name should not throw",
+				"close should not throw",
+				"close should not throw when called multiple times",
+				"postMessage after close should throw",
+				"postMessage should throw InvalidStateError after close, even with uncloneable data",
+				"postMessage should throw with uncloneable data",
+				"postMessage with null should not throw",
+				"postMessage without parameters should throw"
+			]
+		}
+	},
+	"message-channels/close.any.js": {
+		"fail": {
+			"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved. The messaging fill moves only MessagePorts, and structuredClone's `transfer` moves nothing.",
+			"expected": ["close() detaches a MessagePort (but not the one its entangled with)"]
+		}
+	},
+	"message-channels/dictionary-transferrable.any.js": {
+		"fail": {
+			"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved.",
+			"expected": ["Untitled"]
+		}
+	},
+	"message-channels/transfer-from-closed-port.any.js": {
+		"fail": [
+			{
+				"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved. The messaging fill moves only MessagePorts, and structuredClone's `transfer` moves nothing.",
+				"expected": [
+					"Transferring a port from a closed port detaches it (StructuredSerializeOptions)",
+					"Transferring both ports of a channel from a closed port detaches both",
+					"Transferring the formerly entangled port from a closed port detaches it"
+				]
+			},
+			{
+				"note": "PrimJS has no ArrayBuffer transfer, so no buffer can be detached or moved.",
+				"expected": ["Transferring a port and an ArrayBuffer from a closed port detaches both"]
+			}
+		]
+	},
+	"message-channels/user-activation.tentative.any.js": {
+		"fail": {
+			"note": "Lynx has no user activation (navigator.userActivation).",
+			"expected": ["Untitled"]
+		}
+	},
+	"message-channels/worker-post-after-close.any.js": {
+		"fail": [
+			{
+				"note": "Lynx has no workers, and the package no BroadcastChannel.",
+				"threads": ["background"],
+				"expected": ["MessageChannel/MessagePort should not work after a worker self.close()"]
+			},
+			{
+				"note": "Blob, FormData and the streams are the background's only.",
+				"threads": ["main-thread"],
+				"expected": ["MessageChannel/MessagePort should not work after a worker self.close()"]
+			}
+		]
+	},
+	"message-channels/worker.any.js": {
+		"fail": [
+			{
+				"note": "Lynx has no workers, and the package no BroadcastChannel.",
+				"threads": ["background"],
+				"expected": ["MessageChannel/MessagePort created and used after a worker self.close()"]
+			},
+			{
+				"note": "Blob, FormData and the streams are the background's only.",
+				"threads": ["main-thread"],
+				"expected": ["MessageChannel/MessagePort created and used after a worker self.close()"]
+			}
+		]
+	}
+}

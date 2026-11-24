@@ -1,0 +1,26 @@
+{
+	"value-bigint-order.js": {
+		"fail": {
+			"note": "A PrimJS bug: its JSON.stringify writes a BigInt instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"value-bigint-tojson-receiver.js": {
+		"fail": {
+			"note": "A PrimJS bug: its JSON.stringify writes a BigInt instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"value-bigint.js": {
+		"fail": {
+			"note": "A PrimJS bug: its JSON.stringify writes a BigInt instead of throwing a TypeError.",
+			"expected": ["non-strict", "strict"]
+		}
+	},
+	"value-number.js": {
+		"fail": {
+			"note": "A PrimJS bug: its JSON.stringify writes a number as small as 1.23e-18 as \"0\".",
+			"expected": ["non-strict", "strict"]
+		}
+	}
+}
