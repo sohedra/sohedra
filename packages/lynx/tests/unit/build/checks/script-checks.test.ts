@@ -36,7 +36,7 @@ async function componentError(source: string): Promise<string> {
 
 /** The codes in an error's text, in order. */
 const codes = (text: string): string[] =>
-	[...text.matchAll(/https:\/\/sohedra\.com\/e\/(\w+)/g)].map((match) => match[1]!);
+	[...text.matchAll(/^https:\/\/sohedra\.com\/e\/(\w+)$/gm)].map((match) => match[1]!);
 
 describe("a global no fill gives", () => {
 	it("is an error at its place, with what to use instead", () => {

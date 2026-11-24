@@ -14,7 +14,7 @@ function codesOf(text: string, file = "shape.ts"): string[] {
 		checkModule({ file: inApp(file), text }, APP_ROOT);
 		return [];
 	} catch (error) {
-		return [...(error as Error).message.matchAll(/https:\/\/sohedra\.com\/e\/(\w+)/g)].map(
+		return [...(error as Error).message.matchAll(/^https:\/\/sohedra\.com\/e\/(\w+)$/gm)].map(
 			(match) => match[1]!,
 		);
 	}

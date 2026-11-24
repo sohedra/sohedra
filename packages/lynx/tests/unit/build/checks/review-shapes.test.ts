@@ -22,7 +22,7 @@ function codesOf(text: string): string[] {
 		moduleOf(text);
 		return [];
 	} catch (error) {
-		return [...(error as Error).message.matchAll(/https:\/\/sohedra\.com\/e\/(\w+)/g)].map(
+		return [...(error as Error).message.matchAll(/^https:\/\/sohedra\.com\/e\/(\w+)$/gm)].map(
 			(match) => match[1]!,
 		);
 	}
