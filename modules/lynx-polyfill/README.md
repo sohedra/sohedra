@@ -136,6 +136,10 @@ changes lynx-core's own `fetch` too: without this package's `/fetch`, a streamed
   does nothing; CORS, credentials, the cache and `keepalive` mean nothing outside a browser; an
   upload is read whole before it is sent. A response's body arrives whole unless the page streams it
   (see [Streaming a response's body](#streaming-a-responses-body)).
+- **Streaming on iOS**: a streamed response whose `Content-Type` is `text/plain` is held back until
+  512 bytes have arrived or the body ends, as iOS reads them to guess the type. To stream it at
+  once, the server sends `X-Content-Type-Options: nosniff` or another type (`text/event-stream`,
+  `application/octet-stream`). AI SDK text streams are `text/plain`.
 - **Events**: an event's `target` on the global object is the global object's own target, and
   `ErrorEvent` has no `filename`, `lineno` or `colno`. An event's `timeStamp` is the epoch's.
 - **`performance`**: the clock is `Date.now()`'s, in whole milliseconds, never going back; there is
