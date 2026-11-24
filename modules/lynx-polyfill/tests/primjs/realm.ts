@@ -1,6 +1,6 @@
 // What a thread of Lynx gives its scripts before the package's fills run, made in PrimJS's shell
 // (scripts/primjs/host.cc), whose realm has only the engine's built-ins, `print` and `load`. As
-// tests/build/device-threads.ts describes the threads:
+// the binding's device-shaped realms describe the threads (packages/lynx/tests/build/device-threads.ts):
 //
 // - `lynx`, with `reportError` (into LogBox) on both threads and the engine's `queueMicrotask` on
 //   the background;

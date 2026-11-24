@@ -10,8 +10,8 @@ import { deserialize, serialize } from "../../src/fills/vendor/structured-clone.
 import { hearReports, stopHearing } from "./reports.ts";
 
 // These tests check where the fills go and what reaches `@ungap/structured-clone`'s own copy; each
-// fill's own tests check what it does, and the device-shaped build tests
-// (tests/build/device-snapshot.test.ts) run the built scripts.
+// fill's own tests check what it does, and tests/package/ runs each import's built script in a
+// realm shaped like a thread's.
 rs.mock("../../src/fills/vendor/structured-clone.js", { spy: true });
 afterEach(() => {
 	rs.clearAllMocks();
