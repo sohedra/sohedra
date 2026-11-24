@@ -43,6 +43,16 @@ const REGEXP_SYNTAX: Record<RegExpSyntax, { what: string; instead: string }> = {
 	},
 };
 
+/** What `syntax` is, and how to write without it; a name it does not know, as it is. */
+function syntaxOf(syntax: string): { what: string; instead: string } {
+	return (
+		REGEXP_SYNTAX[syntax as RegExpSyntax] ?? {
+			what: syntax,
+			instead: "Write the expression without it.",
+		}
+	);
+}
+
 /** The details each of the build's messages is written from. */
 export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails {
 	preprocess_failed: { reason: string };
@@ -232,8 +242,8 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 	},
 	regexp_refused: {
 		message: ({ regexp, syntax }) =>
-			`The regular expression \`${regexp}\` uses ${REGEXP_SYNTAX[syntax].what}, which Lynx's engine does not have: the thread's whole script would fail to load.`,
-		fix: ({ syntax }) => REGEXP_SYNTAX[syntax].instead,
+			`The regular expression \`${regexp}\` uses ${syntaxOf(syntax).what}, which Lynx's engine does not have: the thread's whole script would fail to load.`,
+		fix: ({ syntax }) => syntaxOf(syntax).instead,
 		docs: "regexp_refused",
 	},
 	event_attribute_renamed: {

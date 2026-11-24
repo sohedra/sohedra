@@ -11,7 +11,7 @@ import { loadCoreJs } from "../vendor/core-js.js";
  * @workaround language-error-cause kind=lynx-gap delete-when="the engine of the oldest Lynx the binding supports keeps the cause option of Error and AggregateError"
  */
 export function fillErrorCause(): void {
-	if (!holds(() => new Error("", { cause: 7 }).cause === 7)) loadCoreJs("es.error.cause");
-	if (!holds(() => new AggregateError([], "", { cause: 7 }).cause === 7))
+	if (!holds(() => new Error(undefined, { cause: 7 }).cause === 7)) loadCoreJs("es.error.cause");
+	if (!holds(() => new AggregateError([], undefined, { cause: 7 }).cause === 7))
 		loadCoreJs("es.aggregate-error.cause");
 }

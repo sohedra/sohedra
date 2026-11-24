@@ -284,15 +284,6 @@ describe("the binding's messages", () => {
 			.map((entry) => path.join(entry.parentPath, entry.name));
 	}
 
-	/**
-	 * Errors made from text written in place, which are no message of the binding's: the language's
-	 * own messages of the `replaceAll` both threads fill in.
-	 */
-	const LANGUAGE_MESSAGES = [
-		"String.prototype.replaceAll called on null or undefined",
-		"replaceAll must be called with a global RegExp",
-	];
-
 	it("are written in a catalogue: no error is made from a literal text", () => {
 		const written: string[] = [];
 		for (const file of sources(SOURCE)) {
@@ -301,7 +292,6 @@ describe("the binding's messages", () => {
 			if (relative.startsWith("testing")) continue;
 			const text = fs.readFileSync(file, "utf8");
 			for (const match of text.matchAll(/new (?:Type|Range|Syntax)?Error\(\s*(["'`])([^"'`$]*)/g)) {
-				if (LANGUAGE_MESSAGES.some((message) => match[2]!.startsWith(message))) continue;
 				// The polyfill folder throws the standards' own TypeError, RangeError and SyntaxError where
 				// the standard says to, as an engine would; a message of its own is still a catalogue's.
 				if (relative.startsWith("polyfill") && !match[0].startsWith("new Error")) continue;
