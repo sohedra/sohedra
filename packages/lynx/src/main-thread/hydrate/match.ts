@@ -134,8 +134,10 @@ export function matchFrame(options: {
 	root: DrawnNode;
 	rendered: Rendered;
 	lists: DrawnLists;
+	/** Whether the first frame bound a `main-thread:` attribute on the drawn element. */
+	binds?: (drawn: number) => boolean;
 }): Plan | Refused {
-	const { root, rendered, lists } = options;
+	const { root, rendered, lists, binds } = options;
 	const plan: Plan = {
 		adopt: [],
 		writes: [],
@@ -155,10 +157,22 @@ export function matchFrame(options: {
 	const drawnElements = (children: DrawnChild[]): DrawnNode[] =>
 		elementsOf(children).filter((child) => child.tag !== "#text");
 
-	/** Whether the two have the same tags in the same places, all the way down. */
+	/** Whether the rendered element has a `main-thread:` attribute. */
+	const bindsBuilt = (id: number): boolean =>
+		[...node(id).attrs].some(
+			([name, value]) => name.startsWith(MAIN_THREAD_PREFIX) && value != null,
+		);
+
+	/**
+	 * Whether the two have the same tags in the same places, all the way down, and both or neither
+	 * have a main-thread binding: in a run of blocks, an element only the background renders may
+	 * have the tag of the first frame's element beside it, and adopting the wrong one loses the
+	 * calls the first frame's function made.
+	 */
 	function sameShape(id: number, drawn: DrawnNode): boolean {
 		const built = node(id);
 		if (built.tag !== drawn.tag) return false;
+		if (binds && binds(drawn.id) !== bindsBuilt(id)) return false;
 		if (drawn.cells)
 			return keysOf(drawn).join("\n") === (built.list?.keys ?? []).map(keyText).join("\n");
 		const children = drawnElements(drawn.children);
