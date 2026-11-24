@@ -194,6 +194,17 @@ describe("a connection", () => {
 });
 
 describe("reconnection", () => {
+	it("sends an ID past Latin-1 as its UTF-8 bytes, as browsers do", async () => {
+		const { scope, connection } = thread();
+		const source = new (createEventSource(scope))("https://api.example/stream");
+		const first = await connection();
+		first.send("retry: 10\nid: 日本\ndata: one\n\n");
+		first.end();
+		const second = await connection();
+		expect(second.headers.get("last-event-id")).toBe(Buffer.from("日本").toString("latin1"));
+		source.close();
+	});
+
 	it("follows the end of the stream after the retry time, sending the last event ID", async () => {
 		const { scope, connection } = thread();
 		const source = new (createEventSource(scope))("https://api.example/stream");
