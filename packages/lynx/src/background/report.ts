@@ -23,7 +23,7 @@ export function clearRepeats(): void {
  */
 export function report(caught: unknown, source?: ErrorSource): void {
 	// A global the page read that Lynx lacks: the report names the import that fills it.
-	const error = withMissingGlobalHint(caught);
+	const error = withMissingGlobalHint(caught, "background");
 	const thrown = asError(error);
 	try {
 		const count = DEV ? repeats.count(thrown) : 1;

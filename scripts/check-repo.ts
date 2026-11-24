@@ -9,6 +9,7 @@ import { parse } from "yaml";
 
 import { lowered, readCoverageBaseline } from "./coverage-baseline.ts";
 import { readLabels } from "./labels.ts";
+import { checkMissingGlobals } from "./missing-globals.ts";
 import { checkRenovate } from "./renovate.ts";
 import { checkSharedPackages } from "./shared-packages.ts";
 import { listIsCurrent, scanRepository } from "./workarounds.ts";
@@ -259,6 +260,9 @@ problems.push(...checkWorkflows("."));
 
 // 12. Renovate keeps every peer of @sohedra/lynx on the Dependency Dashboard.
 problems.push(...checkRenovate("."));
+
+// 13. The binding's missing-global hints name what @sohedra/lynx-polyfill's entries install.
+problems.push(...checkMissingGlobals("."));
 
 if (problems.length > 0) {
 	console.error(["Repository check failed:", ...problems].join("\n- "));

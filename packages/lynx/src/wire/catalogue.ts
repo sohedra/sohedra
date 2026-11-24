@@ -14,6 +14,8 @@ export interface WireDetails {
 	value_not_copyable: { thread: Thread; reason: string };
 	/** `name`: a global the app read; `module`: the import of @sohedra/lynx-polyfill that fills it. */
 	global_not_filled: { name: string; module: string };
+	/** `name`: a global the main thread read, which only the background has. */
+	global_background_only: { name: string };
 	/** `name`: a global the app read, which no fill gives; `instead`: what to use. */
 	global_not_on_lynx: { name: string; instead: string };
 }
@@ -57,6 +59,13 @@ export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
 		fix: ({ module }) =>
 			`Import "${module}" in the first line of the app's entry, or "@sohedra/lynx-polyfill" for every fill.`,
 		docs: "global_not_filled",
+	},
+	global_background_only: {
+		message: ({ name }) =>
+			`The global \`${name}\` is not defined on the main thread: Lynx has it on the background thread only.`,
+		fix: () =>
+			"Use it in code that runs on the background, such as an effect or an event handler, or call such code from a main-thread function with `runOnBackground`.",
+		docs: "global_background_only",
 	},
 	global_not_on_lynx: {
 		message: ({ name }) =>

@@ -150,7 +150,7 @@ export function startMainThread(): MainThreadRuntime {
 	 */
 	function report(error: unknown, { op, place }: { op?: Op; place?: ErrorPlace } = {}): void {
 		// A global the page read that Lynx lacks: the report names the import that fills it.
-		const thrown = asError(withMissingGlobalHint(error));
+		const thrown = asError(withMissingGlobalHint(error, "main-thread"));
 		try {
 			const count = DEV ? repeats.count(thrown) : 1;
 			if (count !== undefined) reportIntoLynx(withCount(thrown, count));

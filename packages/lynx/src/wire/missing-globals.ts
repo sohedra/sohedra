@@ -4,12 +4,13 @@
 // imports nothing of the package: this is a table of names.
 
 import { wireMessage } from "./catalogue.ts";
+import type { Thread } from "./names.ts";
 
 const POLYFILL = "@sohedra/lynx-polyfill";
 
 /** Each global a subpath of @sohedra/lynx-polyfill fills, by subpath. */
 const FILLED: Readonly<Record<string, readonly string[]>> = {
-	"": ["self", "navigator"],
+	"": ["self", "navigator", "queueMicrotask"],
 	"/events": [
 		"Event",
 		"EventTarget",
@@ -21,9 +22,11 @@ const FILLED: Readonly<Record<string, readonly string[]>> = {
 		"addEventListener",
 		"removeEventListener",
 		"dispatchEvent",
+		"onerror",
 	],
 	"/abort": ["AbortController", "AbortSignal"],
 	"/base64": ["atob", "btoa"],
+	"/structured-clone": ["structuredClone"],
 	"/encoding": ["TextEncoder", "TextDecoder"],
 	"/url": ["URL", "URLSearchParams"],
 	"/performance": [
@@ -37,9 +40,14 @@ const FILLED: Readonly<Record<string, readonly string[]>> = {
 		"ReadableStream",
 		"ReadableStreamDefaultReader",
 		"ReadableStreamBYOBReader",
+		"ReadableStreamDefaultController",
+		"ReadableByteStreamController",
+		"ReadableStreamBYOBRequest",
 		"WritableStream",
 		"WritableStreamDefaultWriter",
+		"WritableStreamDefaultController",
 		"TransformStream",
+		"TransformStreamDefaultController",
 		"ByteLengthQueuingStrategy",
 		"CountQueuingStrategy",
 		"TextEncoderStream",
@@ -52,6 +60,34 @@ const FILLED: Readonly<Record<string, readonly string[]>> = {
 	"/messaging": ["MessageChannel", "MessagePort", "MessageEvent"],
 	"/iterator-helpers": ["Iterator"],
 };
+
+/**
+ * The globals of `FILLED` that only the background gets: an import of their fill installs nothing
+ * on the main thread. `scripts/missing-globals.ts` checks both tables against the package's entries.
+ */
+const BACKGROUND_ONLY: readonly string[] = [
+	"ReadableStream",
+	"ReadableStreamDefaultReader",
+	"ReadableStreamBYOBReader",
+	"ReadableStreamDefaultController",
+	"ReadableByteStreamController",
+	"ReadableStreamBYOBRequest",
+	"WritableStream",
+	"WritableStreamDefaultWriter",
+	"WritableStreamDefaultController",
+	"TransformStream",
+	"TransformStreamDefaultController",
+	"ByteLengthQueuingStrategy",
+	"CountQueuingStrategy",
+	"TextEncoderStream",
+	"TextDecoderStream",
+	"Blob",
+	"File",
+	"FormData",
+	"EventSource",
+	"CompressionStream",
+	"DecompressionStream",
+];
 
 /** What to use instead of each global no fill gives. */
 const NOT_ON_LYNX: Readonly<Record<string, string>> = {
@@ -73,10 +109,11 @@ const NOT_DEFINED = /^(?:([\w$]+) is not defined|Can't find variable: ([\w$]+))$
 
 /**
  * The page's error as it should be reported: for a `ReferenceError` naming a global that a fill gives
- * or that Lynx lacks for good, a `ReferenceError` whose message says so and what to do, with the
- * original's stack and the original as its `cause`. Anything else as it is.
+ * on `thread`, that only the background has, or that Lynx lacks for good, a `ReferenceError` whose
+ * message says so and what to do, with the original's stack and the original as its `cause`.
+ * Anything else as it is.
  */
-export function withMissingGlobalHint(error: unknown): unknown {
+export function withMissingGlobalHint(error: unknown, thread: Thread): unknown {
 	if (!(error instanceof ReferenceError)) return error;
 	const match = NOT_DEFINED.exec(error.message);
 	const name = match?.[1] ?? match?.[2];
@@ -85,6 +122,8 @@ export function withMissingGlobalHint(error: unknown): unknown {
 	const instead = NOT_ON_LYNX[name];
 	if (instead !== undefined)
 		text = wireMessage({ code: "global_not_on_lynx", details: { name, instead } });
+	else if (thread === "main-thread" && BACKGROUND_ONLY.includes(name))
+		text = wireMessage({ code: "global_background_only", details: { name } });
 	else
 		for (const [subpath, names] of Object.entries(FILLED))
 			if (names.includes(name))
