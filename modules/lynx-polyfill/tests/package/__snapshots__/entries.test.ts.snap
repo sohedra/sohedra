@@ -373,14 +373,12 @@ exports[`import "@sohedra/lynx-polyfill/fetch" > on the background: its globals,
   "WritableStreamDefaultController",
   "WritableStreamDefaultWriter",
   "fetch",
-  "navigator",
-  "self",
 ]
 `;
 
 exports[`import "@sohedra/lynx-polyfill/fetch" > on the background: its globals, and its size within budget 2`] = `
 {
-  "gzip": 50000,
+  "gzip": 49000,
   "minified": 170000,
 }
 `;

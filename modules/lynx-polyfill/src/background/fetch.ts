@@ -10,7 +10,6 @@ import {
 	fillEvents,
 	fillFetch,
 	fillFormData,
-	fillNavigator,
 	fillStreams,
 	fillTextEncoding,
 	fillUrl,
@@ -27,5 +26,4 @@ fillStreams(globalScope);
 fillEncodingStreams(globalScope);
 fillBlob(globalScope);
 fillFormData(globalScope);
-fillNavigator(globalScope, readLynx);
 fillFetch(globalScope, readLynx);

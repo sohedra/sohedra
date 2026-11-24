@@ -14,7 +14,8 @@
 // Leaves out: redirects are the native module's, so `redirected` is always `false` and `redirect`
 // does nothing; CORS, credentials, the cache and `keepalive` mean nothing without a browser, so their
 // options are kept and do nothing; an upload is read whole before it is sent (lynx-core takes bytes);
-// lynx-core adds `Content-Type: text/plain;charset=UTF-8` to a request without a body. On the main
+// lynx-core adds `Content-Type: text/plain;charset=UTF-8` to a request without a body; a request
+// without a `User-Agent` gets the native module's own, which names the app and the system. On the main
 // thread, where there is no native fetch, `Headers`, `Request` and `Response` are there (code shared
 // with the first frame may make them) and `fetch` throws the folder's `fetch_on_main_thread`.
 
@@ -575,12 +576,6 @@ export function createFetch(
 		return new ResponseFill();
 	};
 
-	const userAgent = (): string | undefined => {
-		// Boundary: the thread's `navigator`, which this folder fills.
-		const navigator = scope["navigator"] as { userAgent?: unknown } | undefined;
-		return typeof navigator?.userAgent === "string" ? navigator.userAgent : undefined;
-	};
-
 	function fetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
 		return new Promise((resolve, reject) => {
 			const request = new RequestFill(input, init);
@@ -596,8 +591,6 @@ export function createFetch(
 					headers[name] = Object.prototype.hasOwnProperty.call(headers, name)
 						? `${headers[name]}, ${value}`
 						: value;
-				const agent = userAgent();
-				if (!state.headers.has("user-agent") && agent !== undefined) headers["user-agent"] = agent;
 				const lynxFetch = readLynx().fetch;
 				if (typeof lynxFetch !== "function")
 					return reject(new TypeError("fetch needs Lynx's fetch, which this thread lacks."));
