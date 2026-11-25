@@ -1,5 +1,5 @@
-// Builds that must fail, and what their messages say: the file, the place, the fix and the docs
-// link, as the catalogue writes them.
+// Builds that must fail or warn, and what their messages say: the file, the place, the fix and
+// the docs link, as the catalogue writes them.
 
 import path from "node:path";
 
@@ -149,5 +149,28 @@ describe("the app's code that fails on Lynx", () => {
 		const text = build.error + build.messages;
 		expect(text).toContain("`document` is part of the web's DOM");
 		expect(text).toMatch(/dom\.ts:1:36/);
+	}, 120_000);
+});
+
+describe("a thread flag read outside an {#if} test", () => {
+	it("builds, and warns in development with the file, line, column and code frame, once", async () => {
+		build = await buildApp("broken", {
+			entry: "./flag.ts",
+			files: {
+				"Flag.svelte":
+					'<script>\n\timport { background } from "@sohedra/lynx/environment";\n</script>\n<view>\n\t<text>{background ? "page" : "frame"}</text>\n</view>\n',
+				"flag.ts":
+					'import Flag from "./Flag.svelte";\n\n(globalThis as Record<string, unknown>)["page"] = Flag;\n',
+			},
+			development: true,
+		});
+		expect(build.ok).toBe(true);
+		const text = build.error + build.messages;
+		expect(text).toContain("`background` is read outside an `{#if}` test");
+		expect(text).toMatch(/Flag\.svelte:5:9/);
+		expect(text).toContain('5: \t<text>{background ? "page" : "frame"}</text>');
+		expect(text).toContain("https://sohedra.com/e/thread_flag_outside_if");
+		// Once, though both threads build the component.
+		expect(text.match(/Flag\.svelte:5:9/g)).toHaveLength(1);
 	}, 120_000);
 });

@@ -49,6 +49,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	list_item_without_key: {},
 	thread_branch_test: { test: "background && user" },
 	thread_branch_name_taken: { name: "SohedraLynxThreadBranch" },
+	thread_flag_outside_if: { read: "label", flag: "background" },
 	list_item_defer_ignored: { written: "in a spread" },
 	fill_not_imported: {
 		name: "TextEncoder",

@@ -850,6 +850,18 @@ Give the part only one thread renders a block of its own whose test is the flag 
 https://sohedra.com/e/thread_branch_test"
 `;
 
+exports[`the build's catalogue > thread_flag_outside_if: the message 1`] = `
+"\`label\` depends on \`background\` and is read outside an \`{#if}\` test, so the first frame can show something here other than the page shows once it starts.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Put each thread's part in its own branch, \`{#if background}…{:else}…{/if}\` (or \`{#if background && user}\`), or read \`background\` in an event handler or an effect.
+https://sohedra.com/e/thread_flag_outside_if"
+`;
+
 exports[`the build's catalogue > thread_function_unclear: the message 1`] = `
 "A main-thread function calls \`toBackground\`, and the build cannot tell whether it is \`runOnBackground\` of @sohedra/lynx.
 /app/src/App.svelte:2:3

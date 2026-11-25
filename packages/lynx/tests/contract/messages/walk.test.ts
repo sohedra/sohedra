@@ -175,6 +175,10 @@ const NAMES: Record<string, Resolves> = {
 	"{#if BROWSER}": { kind: "Svelte's syntax, with BROWSER from esm-env" },
 	"{@attach}": { kind: "Svelte's syntax" },
 	"{#if}": { kind: "Svelte's syntax" },
+	"{#if sample}…{:else}…{/if}": { kind: "Svelte's syntax, with the thread flag the code read" },
+	"{#if sample && user}": {
+		kind: "Svelte's syntax, with the thread flag the code read and the developer's own name",
+	},
 	"if (background)": {
 		kind: "JavaScript's syntax, with background from @sohedra/lynx/environment",
 	},

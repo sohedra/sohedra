@@ -10,7 +10,7 @@ import { patternNames } from "../main-thread-functions/directive.ts";
 import type { MarkupExpression, ScriptRoots } from "./script-uses.ts";
 
 /** The types of Svelte's markup nodes; any other node with a type is JavaScript. */
-const MARKUP = new Set([
+export const MARKUP: ReadonlySet<string> = new Set([
 	"Fragment",
 	"Text",
 	"Comment",
@@ -52,7 +52,7 @@ const MARKUP = new Set([
 ]);
 
 /** Keys of markup nodes that declare names rather than read them. */
-const DECLARING = new Set(["context", "parameters", "value", "error"]);
+export const DECLARING: ReadonlySet<string> = new Set(["context", "parameters", "value", "error"]);
 
 /** What a component's markup declares and reads. */
 interface Markup {
