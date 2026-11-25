@@ -11,6 +11,7 @@ import { compileClient, compileServer } from "./compile.ts";
 import {
 	loadComponent,
 	mountComponent,
+	mountThrough,
 	serverComponents,
 	svelteClient,
 	treeRenderer,
@@ -276,7 +277,7 @@ export const checks: Checks = {
 	"block-first-branch-sync": async () => {
 		const file = path.join(import.meta.dirname, "branch-probe.ts");
 		// Boundary: the probe is loaded by Node, so its export type is declared here.
-		const probe = (await importNative(file)) as unknown as { seen: boolean[] };
+		const probe = (await importNative(file)) as unknown as { seen: boolean[]; order: string[] };
 		probe.seen.length = 0;
 		// Blocks draw their first branch inside the call that makes them, nested as deep as they go:
 		// each leaf is drawn while `Marked`'s call runs.
@@ -288,6 +289,66 @@ export const checks: Checks = {
 				"<Marked render={body} />",
 		);
 		expect(probe.seen).toEqual([true, true]);
+		// An `{#await}` reads what it is given inside the call that makes it, and draws a value's
+		// `{:then}` there, an `{#await}` in it included: the blocks after each run after its own.
+		probe.order.length = 0;
+		await mountComponent(
+			`<script>import { note } from "${pathToFileURL(file).href}";</script>` +
+				"{#await note('outer', 1)}{:then}" +
+				"{#await note('inner', 2)}{:then}<view></view>{/await}{#if note('inner after')}{/if}" +
+				"{/await}{#if note('outer after')}{/if}",
+		);
+		expect(probe.order).toEqual(["outer", "inner", "inner after", "outer after"]);
+	},
+
+	"if-branch-number": async () => {
+		const file = path.join(import.meta.dirname, "if-probe.ts");
+		// Boundary: the probe is loaded by Node, so its export type is declared here.
+		const probe = (await importNative(file)) as unknown as {
+			runs: { keys: (number | false | undefined)[]; before: (string | undefined)[] }[];
+		};
+		const blocks =
+			"{#if n === 0}<view></view>{:else if n === 1}<text></text>{:else}<image></image>{/if}" +
+			"{#if n === 0}<list></list>{/if}";
+		probe.runs.length = 0;
+		const { app } = await mountThrough(
+			`<script>let n = $state(0); export const set = (value) => (n = value);</script>${blocks}`,
+			file,
+		);
+		const { flushSync } = await svelteClient();
+		const drawn: string[] = [];
+		const { render } = await importSvelte("src/server/index.js");
+		const page = (
+			await serverComponents({ Blocks: `<script>let { n } = $props();</script>${blocks}` }, false)
+		)["default"];
+		for (const n of [0, 1, 2]) {
+			if (n > 0) {
+				// Boundary: the fixture's export, typed by what it does.
+				(app as { set(value: number): void }).set(n);
+				flushSync();
+			}
+			// Boundary: Svelte's server `render` has no types here.
+			const body = (render as (component: unknown, options: object) => { body: string })(page, {
+				props: { n },
+			}).body;
+			drawn.push(...[...body.matchAll(/<!--\[(-?\d+)-->/g)].map((found) => found[1]!));
+		}
+		// Each run calls the branch's function once, with the server's number (none for 0), and the
+		// branch is before the anchor once the call returns; none when no branch is taken.
+		expect(probe.runs).toEqual([
+			{ keys: [undefined], before: ["view"] },
+			{ keys: [undefined], before: ["list"] },
+			{ keys: [1], before: ["text"] },
+			{ keys: [], before: [] },
+			{ keys: [-1], before: ["image"] },
+			{ keys: [], before: [] },
+		]);
+		expect(drawn).toEqual(["0", "0", "1", "-1", "-1", "-1"]);
+		// Compiled code calls `$.if` with the anchor and the function, and `true` for `{:else if}`
+		// when it is not folded into the block before it.
+		expect(compileClient("{#if x}<view></view>{:else if el}<text></text>{/if}")).toMatch(
+			/\$\.if\(node, \(\$\$render\) => \{/,
+		);
 	},
 
 	"component-crossing-check": async () => {

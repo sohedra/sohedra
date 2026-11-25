@@ -164,6 +164,57 @@ describe("the splitter", () => {
 		]);
 	});
 
+	it("sends a block's branch mark with the element it marks: pending, or in its cell", () => {
+		const split = createSplitter(cellText);
+		// `<view>{#if a}<text>{/if}<image></view>`, as the renderer writes it: the mark after the
+		// view's first child, before the view is inserted.
+		expect(
+			page(
+				split.split([
+					[O.Create, 2, "view"],
+					[O.Create, 3, "text"],
+					[O.Insert, 2, 3, 0],
+					[O.Branch, 2, 0, 1, 1],
+					[O.Create, 4, "image"],
+					[O.Insert, 2, 4, 0],
+					[O.Insert, ROOT_ID, 2, 0],
+				]),
+			),
+		).toEqual([
+			[O.Create, 2, "view"],
+			[O.Branch, 2, 0, 1, 1],
+			[O.Create, 3, "text"],
+			[O.Insert, 2, 3, 0],
+			[O.Create, 4, "image"],
+			[O.Insert, 2, 4, 0],
+			[O.Insert, ROOT_ID, 2, 0],
+		]);
+		split.split([
+			[O.Create, 5, "list"],
+			[O.Insert, ROOT_ID, 5, 0],
+		]);
+		const out = split.split([
+			[O.Create, 6, "list-item"],
+			[O.SetAttr, 6, "item-key", "a"],
+			[O.Create, 7, "text"],
+			[O.Insert, 6, 7, 0],
+			[O.Branch, 6, -1, 1, 1],
+			[O.Insert, 5, 6, 0],
+		]);
+		expect(cells(out)).toEqual([
+			[
+				6,
+				[
+					[O.Create, 6, "list-item"],
+					[O.SetAttr, 6, "item-key", "a"],
+					[O.Branch, 6, -1, 1, 1],
+					[O.Create, 7, "text"],
+					[O.Insert, 6, 7, 0],
+				],
+			],
+		]);
+	});
+
 	it("reports removed cells and sends their release to the page", () => {
 		const split = createSplitter(cellText);
 		split.split([

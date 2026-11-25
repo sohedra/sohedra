@@ -59,18 +59,31 @@ export async function svelteClient(): Promise<Client> {
  * Compiles `markup` for the renderer module into this run's folder, and loads it. `dev` compiles
  * it as a development build does.
  */
-export async function loadComponent(
+export function loadComponent(
 	markup: string,
 	dev = false,
+): Promise<{ component: unknown; file: string }> {
+	return compiledFixture(markup, { dev });
+}
+
+/** `loadComponent`, with Svelte's client runtime imported from `internals` (a file) when given. */
+async function compiledFixture(
+	markup: string,
+	options: { dev: boolean; internals?: string },
 ): Promise<{ component: unknown; file: string }> {
 	const { js } = compile(markup, {
 		...clientOptions({}, pathToFileURL(path.join(import.meta.dirname, "tree-renderer.ts")).href),
 		filename: `Fixture${count}.svelte`,
-		dev,
+		dev: options.dev,
 	});
+	const { internals } = options;
+	const code =
+		internals === undefined
+			? js.code
+			: js.code.replaceAll("'svelte/internal/client'", `'${pathToFileURL(internals).href}'`);
 	folder ??= fs.mkdtempSync(path.join(PACKAGE_ROOT, "node_modules", ".contract-fixtures-"));
 	const file = path.join(folder, `fixture-${count++}.mjs`);
-	fs.writeFileSync(file, js.code);
+	fs.writeFileSync(file, code);
 	return { component: (await importNative(file))["default"], file };
 }
 
@@ -78,10 +91,22 @@ export async function loadComponent(
  * Compiles `markup` for the renderer module, mounts it on a new root, and clears the log. `dev`
  * compiles it as a development build does.
  */
-export async function mountComponent(markup: string, dev = false): Promise<Mounted> {
+export function mountComponent(markup: string, dev = false): Promise<Mounted> {
+	return mountFixture(markup, { dev });
+}
+
+/** `mountComponent`, with Svelte's client runtime imported from the file `internals`. */
+export function mountThrough(markup: string, internals: string): Promise<Mounted> {
+	return mountFixture(markup, { dev: false, internals });
+}
+
+async function mountFixture(
+	markup: string,
+	options: { dev: boolean; internals?: string },
+): Promise<Mounted> {
 	const renderer = await treeRenderer();
 	const client = await svelteClient();
-	const { component, file } = await loadComponent(markup, dev);
+	const { component, file } = await compiledFixture(markup, options);
 	const target = renderer.createRoot();
 	const app = client.mount(component, { target, renderer: renderer.default });
 	renderer.log.length = 0;

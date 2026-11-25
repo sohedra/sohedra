@@ -138,6 +138,10 @@ export const checks: Checks = {
 		const constants = readSvelte("src/constants.js");
 		expect(constants).toContain("export const HYDRATION_START = '[';");
 		expect(constants).toContain("export const HYDRATION_END = ']';");
+		// A second state: an `{#each}`'s `{:else}`, an `{#await}` given a value, a boundary's
+		// `pending`, and a dynamic component that is nothing.
+		expect(constants).toContain("export const HYDRATION_START_ELSE = '[!';");
+		expect(markers).toMatch(/export const BLOCK_OPEN_ELSE = `<!--\$\{HYDRATION_START_ELSE\}-->`;/);
 	},
 
 	"props-id-order": () => {

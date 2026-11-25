@@ -22,3 +22,12 @@ export function inMark(): string {
 	seen.push(depth > 0);
 	return "leaf";
 }
+
+/** The names `note` was called with, in order. */
+export const order: string[] = [];
+
+/** Records `name`, and gives `value` back. */
+export function note<T>(name: string, value?: T): T | undefined {
+	order.push(name);
+	return value;
+}

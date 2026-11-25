@@ -71,7 +71,7 @@ export {
 	TO_BACKGROUND,
 } from "./names.ts";
 export type { LazyBundleParams, Thread } from "./names.ts";
-export { OpCode, ROOT_ID } from "./ops.ts";
+export { BranchKey, OpCode, ROOT_ID } from "./ops.ts";
 export type { AttrValue, Op } from "./ops.ts";
 export { checkMessage, keepsMessage, PROTOCOL_VERSION } from "./page.ts";
 export { createRepeats, withCount } from "./repeats.ts";

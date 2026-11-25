@@ -22,6 +22,8 @@ export interface RenderedNode {
 	parent: number;
 	/** A list on the page: its items and its update. */
 	list: { items: number[]; keys: unknown[]; update: Op } | null;
+	/** The branch marks of the blocks among its children, `[key, count, at]`, in the order sent. */
+	marks: [number, number, number][] | null;
 }
 
 /** What the rendered items hold. */
@@ -59,6 +61,7 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 					children: [],
 					parent: 0,
 					list: null,
+					marks: null,
 				});
 				break;
 			case OpCode.SetAttr: {
@@ -74,6 +77,9 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 			case OpCode.SetStyles:
 			case OpCode.Animate:
 				made(nodes, op[1], op).ops.push(op);
+				break;
+			case OpCode.Branch:
+				(made(nodes, op[1], op).marks ??= []).push([op[2], op[3], op[4]]);
 				break;
 			case OpCode.Insert: {
 				const parent = made(nodes, op[1], op);
@@ -121,6 +127,7 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 		children: [],
 		parent: 0,
 		list: null,
+		marks: null,
 	});
 	const cells = new Map<number, string[]>();
 	const cellContexts = new Map<number, number[]>();
