@@ -66,6 +66,9 @@ export async function rendersACard(): Promise<void> {
 	await gesture.fire("onUpdate", { params: { x: 1 }, timestamp: 16 });
 	// @ts-expect-error a kind of gesture Lynx does not have.
 	lynx.gesture(result.container, "swipe");
+	lynx.gesture(result.container, "longPress");
+	// @ts-expect-error a kind is named after its class: `"defaultScroll"` for `DefaultScrollGesture`.
+	lynx.gesture(result.container, "default");
 	await lynx.sendHostEvent("onWindowResize", [390, 844]);
 	// @ts-expect-error the window's size is two numbers.
 	await lynx.sendHostEvent("onWindowResize", ["wide"]);

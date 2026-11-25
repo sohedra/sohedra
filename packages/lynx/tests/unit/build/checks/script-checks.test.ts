@@ -343,3 +343,39 @@ describe("a component's errors", () => {
 		expect(compiled.code).toContain("document");
 	});
 });
+
+describe("Svelte's own mount and unmount", () => {
+	it("are an error at their import, which names the binding's", () => {
+		const text = moduleError('import { mount, tick } from "svelte";\nexport { mount, tick };');
+		expect(text.split("\n")[0]).toBe(
+			"`mount` is imported from \"svelte\", whose `mount` works with the web's DOM, not with Lynx's page.",
+		);
+		expect(text).toContain("util.ts:1:10");
+		expect(text).toContain(
+			'Import `mount` from "@sohedra/lynx", which mounts a component on the page.',
+		);
+		expect(codes(text)).toEqual(["svelte_mount_imported"]);
+	});
+
+	it("are an error in a component, under any local name", async () => {
+		const text = await componentError(
+			'<script>\n\timport { unmount as remove } from "svelte";\n\tremove({});\n</script>',
+		);
+		expect(codes(text)).toEqual(["svelte_mount_imported"]);
+		expect(text.split("\n")[0]).toContain("`unmount`");
+	});
+
+	it("leave the binding's, a type import and the silencing comment alone", () => {
+		expect(
+			moduleError('import { mount, unmount } from "@sohedra/lynx";\nvoid [mount, unmount];'),
+		).toBe("");
+		expect(moduleError('import type { mount } from "svelte";\nexport type M = typeof mount;')).toBe(
+			"",
+		);
+		expect(
+			moduleError(
+				'// sohedra-ignore svelte_mount_imported\nimport { mount } from "svelte";\nvoid mount;',
+			),
+		).toBe("");
+	});
+});

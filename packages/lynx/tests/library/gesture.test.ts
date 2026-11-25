@@ -32,6 +32,15 @@ it("picks one of an element's gestures by its kind", async () => {
 	);
 });
 
+it("names each kind after its class", async () => {
+	const { lynx, log, element } = await setup();
+	await lynx.gesture(element("press"), "longPress").fire("onEnd");
+	expect(log).toEqual(["press"]);
+	expect(() => lynx.gesture(element("press"))).toThrow(
+		"The <view> has several gestures (longPress, defaultScroll), and lynx.gesture was not told which to run.",
+	);
+});
+
 it("says what is missing: a gesture, or a callback", async () => {
 	const { lynx, element, container } = await setup();
 	expect(() => lynx.gesture(container.querySelector("text")!)).toThrow(
