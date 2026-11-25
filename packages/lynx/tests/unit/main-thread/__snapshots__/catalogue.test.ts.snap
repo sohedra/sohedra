@@ -43,6 +43,13 @@ Call it from an element the background renders the same way as the first frame, 
 https://sohedra.com/e/first_frame_call_unanswered"
 `;
 
+exports[`the main thread's catalogue > first_frame_event_dropped: the message 1`] = `
+"A tap on <text class="login"> before the page started was dropped: the element is in a part of the page the background rendered differently from the first frame, so no handler ran for it (2 events).
+
+Render that part from the page's data, which both threads have, so the first frame draws what the background renders. A part only the background renders, such as {#if background}, also drops the events heard before the page started in the {#if} blocks beside it, in the same element: give it an element of its own, as in <view>{#if background}…{/if}</view>. Events after the page has started are handled as usual.
+https://sohedra.com/e/first_frame_event_dropped"
+`;
+
 exports[`the main thread's catalogue > first_frame_markup_unreadable: the message 1`] = `
 "The first frame was not drawn: its markup could not be read at character 11, where the value of class on <view> is not quoted.
 

@@ -12,6 +12,9 @@
 //     rendered, and the first patch brings it after the rendered items;
 //   - events, styles set from code, and what the first mount's effects changed: none of them is in
 //     the first frame.
+// A run's pairs are a guess. The run settles when it paired one to one and hydration wrote nothing
+// over what it adopted but an id of `$props.id()` or a text that is empty; an adopted node in a run
+// that did not settle, at any depth, is one hydration is not sure of (`Plan.unsure`).
 // What refuses hydration (a mismatch): outside a block, a tag that differs, an element that one
 // side has and the other lacks, or an attribute that differs; and a list whose keys differ.
 // Outside a block, an attribute that differs only in `$props.id()`'s ids is written over the first
@@ -77,6 +80,14 @@ export interface Plan {
 	adoptedCells: Set<number>;
 	/** Attributes outside a block whose ids of `$props.id()` differ, written over the first frame's. */
 	propsIds: PropsIdDifference[];
+	/** The adopted nodes hydration is not sure of: in a run that did not settle, at any depth. */
+	unsure: Set<number>;
+}
+
+/** A run of blocks, as its pairs are made: whether it has not settled, and the run it is in. */
+interface Run {
+	unsettled: boolean;
+	outer: Run | undefined;
 }
 
 /** Hydration was refused: what differs. */
@@ -149,7 +160,10 @@ export function matchFrame(options: {
 		textRepairs: [],
 		adoptedCells: new Set(),
 		propsIds: [],
+		unsure: new Set(),
 	};
+	/** The innermost run of each node adopted in one. */
+	const runs = new Map<number, Run>();
 	const node = (id: number): RenderedNode => rendered.nodes.get(id)!;
 	const isText = (id: number): boolean => node(id).tag === "#text";
 	/** The rendered children that are elements: texts are matched on their own. */
@@ -189,12 +203,16 @@ export function matchFrame(options: {
 		return (drawn.cells ?? []).map((cell) => keyText(cell.attrs.get("item-key")));
 	}
 
-	/** Compares a pair of the same tag, and what is under it. */
-	function pair(id: number, drawn: DrawnNode, inBlock: boolean): void {
+	/** Compares a pair of the same tag, and what is under it; `at` is the run it is in, if any. */
+	function pair(id: number, drawn: DrawnNode, inBlock: boolean, at?: Run): void {
 		const built = node(id);
 		plan.adopt.push([id, drawn.id]);
+		if (at) runs.set(id, at);
 		if (built.tag === "#text") {
-			if (built.text !== drawn.text) plan.writes.push({ id, name: null, value: built.text });
+			if (built.text !== drawn.text) {
+				plan.writes.push({ id, name: null, value: built.text });
+				if (at) at.unsettled = true;
+			}
 			return;
 		}
 		for (const [name, value] of built.attrs) {
@@ -207,6 +225,8 @@ export function matchFrame(options: {
 				plan.propsIds.push({ element: id, name, expected: value, got });
 			}
 			plan.writes.push({ id, name, value });
+			if (at && !(typeof value === "string" && typeof got === "string" && sameButIds(value, got)))
+				at.unsettled = true;
 		}
 		for (const [name, value] of drawn.attrs) {
 			if (!compared(name) || built.attrs.has(name) || asNone(name, value)) continue;
@@ -219,17 +239,18 @@ export function matchFrame(options: {
 					got: value,
 				});
 			plan.writes.push({ id, name, value: null });
+			if (at) at.unsettled = true;
 		}
 		if (drawn.cells) {
-			list(id, drawn, inBlock);
+			list(id, drawn, inBlock, at);
 			return;
 		}
 		if (drawn.tag === "list") plan.nestedLists.push({ id, drawn: drawn.id });
-		align(id, drawn, inBlock);
+		align(id, drawn, inBlock, at);
 	}
 
 	/** A list's cells by key; in a block, as the list is, so their attributes may differ too. */
-	function list(id: number, drawn: DrawnNode, inBlock: boolean): void {
+	function list(id: number, drawn: DrawnNode, inBlock: boolean, at: Run | undefined): void {
 		const built = node(id);
 		const keys = (built.list?.keys ?? []).map(keyText);
 		const got = keysOf(drawn);
@@ -251,7 +272,7 @@ export function matchFrame(options: {
 				throw new Mismatch({ kind: "extra", element: id, got: "list-item" });
 			cells.push(cell.id);
 			plan.adoptedCells.add(item);
-			pair(item, cell.node, inBlock);
+			pair(item, cell.node, inBlock, at);
 		}
 		plan.lists.push({ id, drawn: drawn.id, items, cells });
 	}
@@ -263,7 +284,7 @@ export function matchFrame(options: {
 	 * again: an element adopted from a run keeps its drawn place, which a drawn text may be on the
 	 * wrong side of.
 	 */
-	function texts(id: number, drawn: DrawnNode): void {
+	function texts(id: number, drawn: DrawnNode, at: Run | undefined): void {
 		const children = node(id).children;
 		const drawnChildren = elementsOf(drawn.children);
 		/** The texts of a list of children, by how many elements come before them. */
@@ -286,9 +307,13 @@ export function matchFrame(options: {
 			const ours = built[slot]!;
 			const theirs = drawnTexts[slot]!;
 			if (aligned && ours.length === theirs.length) {
-				for (let index = 0; index < ours.length; index++) pair(ours[index]!, theirs[index]!, true);
+				for (let index = 0; index < ours.length; index++)
+					pair(ours[index]!, theirs[index]!, true, at);
 				continue;
 			}
+			// Svelte's server writes no text for an empty one, and its client makes it.
+			if (at && (theirs.length > 0 || ours.some((text) => node(text).text !== "")))
+				at.unsettled = true;
 			plan.textRepairs.push({
 				parent: id,
 				drawnParent: drawn.id,
@@ -299,8 +324,8 @@ export function matchFrame(options: {
 	}
 
 	/** Matches a parent's children: drawn elements outside blocks one to one, blocks by run. */
-	function align(id: number, drawn: DrawnNode, inBlock: boolean): void {
-		texts(id, drawn);
+	function align(id: number, drawn: DrawnNode, inBlock: boolean, at?: Run): void {
+		texts(id, drawn, at);
 		const built = elementChildren(id);
 		// The drawn elements as fixed nodes, and runs that may differ: Svelte's `{#if}` branches.
 		const parts: (DrawnNode | DrawnChild[])[] = [];
@@ -347,12 +372,12 @@ export function matchFrame(options: {
 						got: part.tag,
 					});
 				}
-				pair(builtId, part, inBlock);
+				pair(builtId, part, inBlock, at);
 				continue;
 			}
 			const make = built.slice(index, index + free);
 			index += free;
-			run(id, drawn.id, { make, drawn: drawnElements(part) });
+			run(id, drawn.id, { make, drawn: drawnElements(part), outer: at });
 		}
 	}
 
@@ -363,8 +388,9 @@ export function matchFrame(options: {
 	function run(
 		id: number,
 		drawnParent: number,
-		{ make, drawn }: { make: number[]; drawn: DrawnNode[] },
+		{ make, drawn, outer }: { make: number[]; drawn: DrawnNode[]; outer: Run | undefined },
 	): void {
+		const at: Run = { unsettled: false, outer };
 		const most = Math.min(make.length, drawn.length);
 		// From the end first: a part only the background renders, `{#if background}`, comes first
 		// more often than last.
@@ -373,12 +399,13 @@ export function matchFrame(options: {
 			end++;
 		let start = 0;
 		while (start < most - end && sameShape(make[start]!, drawn[start]!)) start++;
-		for (let index = 0; index < start; index++) pair(make[index]!, drawn[index]!, true);
+		for (let index = 0; index < start; index++) pair(make[index]!, drawn[index]!, true, at);
 		for (let index = 1; index <= end; index++)
-			pair(make[make.length - index]!, drawn[drawn.length - index]!, true);
+			pair(make[make.length - index]!, drawn[drawn.length - index]!, true, at);
 		const left = make.slice(start, make.length - end);
 		const dropped = drawn.slice(start, drawn.length - end);
 		if (left.length === 0 && dropped.length === 0) return;
+		at.unsettled = true;
 		plan.repairs.push({
 			parent: id,
 			drawnParent,
@@ -389,6 +416,12 @@ export function matchFrame(options: {
 
 	try {
 		align(root.id, root, false);
+		for (const [id, innermost] of runs)
+			for (let at: Run | undefined = innermost; at; at = at.outer)
+				if (at.unsettled) {
+					plan.unsure.add(id);
+					break;
+				}
 		return plan;
 	} catch (error) {
 		if (error instanceof Mismatch) return { mismatch: error.mismatch };

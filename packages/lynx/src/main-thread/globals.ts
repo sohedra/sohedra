@@ -68,7 +68,11 @@ export type EnqueueComponent = (list: LynxElement, listId: number, sign: number)
  */
 export interface MainThreadGlobals {
 	lynx: {
-		reportError(error: unknown): void;
+		/**
+		 * The engine's `_ReportError` under another name (core/runtime/lepusng/bindings/renderer_ng.cc,
+		 * kReportError), which takes the background's `level` too.
+		 */
+		reportError(error: unknown, options?: { level?: "warning" }): void;
 		/** The main thread's way to the background. */
 		getJSContext(): { dispatchEvent(event: { type: string; data: string }): void };
 		/** The engine's events: render and update the page. */
@@ -208,7 +212,7 @@ export interface MainThreadGlobals {
 	 * (core/runtime/lepus/bindings/renderer_functions.cc, ReportError); `undefined` on an engine
 	 * without it.
 	 */
-	_ReportError?: (error: Error, options: { errorCode: number }) => void;
+	_ReportError?: (error: Error, options: { errorCode: number; level?: "warning" }) => void;
 	/** The standard one, on an engine that has it: the main thread tells the background what it let go of. */
 	FinalizationRegistry?: typeof FinalizationRegistry;
 }

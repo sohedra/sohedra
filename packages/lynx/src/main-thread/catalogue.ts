@@ -30,6 +30,13 @@ export interface MainThreadDetails {
 	page_is_gone: { call: string };
 	/** `count` is how many calls had no answer in the task it is reported in. */
 	first_frame_call_unanswered: { count: number };
+	/**
+	 * `event` is the event's name, `element` the first frame's element whose listener heard it, as
+	 * its tag and class, and `count` how many of its events were dropped. Two branches of an `{#if}`
+	 * that look the same are not told apart: an event on one still runs the other's handler, with no
+	 * warning.
+	 */
+	first_frame_event_dropped: { event: string; element: string; count: number };
 	main_thread_value_not_runnable: Record<string, never>;
 	/** `method` is what was called on the element. */
 	element_released: { method: string };
@@ -60,7 +67,8 @@ export type MainThreadCode = keyof MainThreadDetails;
  */
 export type MainThreadDevelopmentCode =
 	| "main_thread_value_not_runnable"
-	| "main_thread_update_loop";
+	| "main_thread_update_loop"
+	| "first_frame_event_dropped";
 
 /** Every message of the main thread that a production build reports. */
 export const MAIN_THREAD_CATALOGUE: Catalogue<Omit<MainThreadDetails, MainThreadDevelopmentCode>> =
@@ -200,6 +208,13 @@ export const MAIN_THREAD_DEVELOPMENT_CATALOGUE: Catalogue<
 		fix: () =>
 			"Change the element only when the value differs, as a layout handler that sets a size or a scroll handler that sets a scroll position must. Until the main thread's next turn, what main-thread functions change is not shown.",
 		docs: "main_thread_update_loop",
+	},
+	first_frame_event_dropped: {
+		message: ({ event, element, count }) =>
+			`A ${event} on ${element} before the page started was dropped: the element is in a part of the page the background rendered differently from the first frame, so no handler ran for it${count > 1 ? ` (${count} events)` : ""}.`,
+		fix: () =>
+			"Render that part from the page's data, which both threads have, so the first frame draws what the background renders. A part only the background renders, such as {#if background}, also drops the events heard before the page started in the {#if} blocks beside it, in the same element: give it an element of its own, as in <view>{#if background}…{/if}</view>. Events after the page has started are handled as usual.",
+		docs: "first_frame_event_dropped",
 	},
 };
 
