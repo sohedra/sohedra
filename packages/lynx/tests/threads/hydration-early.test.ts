@@ -5,11 +5,14 @@
 import { describe, expect, it } from "@rstest/core";
 
 import { startMainThread } from "../../src/main-thread/index.ts";
+import type { MainThreadRuntime } from "../../src/main-thread/index.ts";
 import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import {
 	decodeToBackground,
+	encodeCall,
 	encodePatch,
+	encodeResult,
 	FIRST_FRAME_GLOBAL,
 	OpCode,
 	PATCH_METHOD,
@@ -114,5 +117,56 @@ describe("a rewrite item for another element while the page waits to be written 
 		);
 		expect(page.engine.texts()).toEqual(["drawn"]);
 		expect(page.engine.state(page.engine.all()[1]!).tag).toBe("view");
+	});
+});
+
+describe("while the page waits to be written again", () => {
+	it("a call waits for the page written again, and a reply is read at once", async () => {
+		let patch: (params: PatchParams) => void = () => {};
+		let runtime: MainThreadRuntime | undefined;
+		const page = startTestPage({
+			mainThread: () => {
+				runtime = startMainThread();
+				// A frame the first patch refuses: a <text> where the patch makes a <view>.
+				installGlobals({ [FIRST_FRAME_GLOBAL]: () => `<text class="box">drawn</text>` });
+				patch = readGlobal(PATCH_METHOD) as (params: PatchParams) => void;
+			},
+		});
+		page.asMainThread(() =>
+			patch(encodePatch({ generation: 0, items: [["ops", FIRST]], rendered: 1 })),
+		);
+		await page.settle();
+		const replies: unknown[] = [];
+		const functions = runtime!.page.functions;
+		functions.reply = (id, result) => void replies.push([id, result]);
+		page.asMainThread(() =>
+			patch(
+				encodePatch({
+					generation: 0,
+					items: [
+						["call", 0, 0, encodeCall(["run", { _wkltId: "a1b2:c3d4:9" }, []])],
+						["reply", 7, encodeResult({ ok: true, value: "answered" })],
+					],
+				}),
+			),
+		);
+		await page.settle();
+		expect(replies).toEqual([[7, { ok: true, value: "answered" }]]);
+		expect(page.errors).toEqual([]);
+		page.asMainThread(() =>
+			patch(
+				encodePatch({
+					generation: 0,
+					items: [
+						["rewrite", ROOT_ID],
+						["ops", FIRST],
+					],
+				}),
+			),
+		);
+		await page.settle();
+		expect(page.errors).toEqual([
+			expect.objectContaining({ code: "main_thread_function_not_found" }),
+		]);
 	});
 });

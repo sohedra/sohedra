@@ -21,6 +21,12 @@ type Strict<F> = F extends (...args: infer Args) => infer Returned
 type StrictMembers<T> = { [Name in keyof T]: Strict<T[Name]> };
 
 /**
+ * The fake's side of `StrictMembers`: a second alias, as TypeScript compares two uses of one alias
+ * by its variance, with methods' parameters both ways.
+ */
+type StrictFake<T> = { [Name in keyof T]: Strict<T[Name]> };
+
+/**
  * An element of the engine fake, as the main thread types every element: the main thread passes
  * back only the elements the engine made.
  */
@@ -42,10 +48,10 @@ type ElementFunctionsPort = StrictMembers<
 
 export const engineFake = (fake: EngineFake): ElementFunctionsPort => fake;
 export const mainThreadLynx = (
-	fake: StrictMembers<MainThreadLynx>,
+	fake: StrictFake<MainThreadLynx>,
 ): StrictMembers<MainThreadGlobals["lynx"]> => fake;
 export const backgroundLynx = (
-	fake: StrictMembers<BackgroundLynx>,
+	fake: StrictFake<BackgroundLynx>,
 ): StrictMembers<BackgroundGlobals["lynx"]> => fake;
 
 /** The functions the engine fake has and the main thread does not declare. */

@@ -10,15 +10,18 @@ import * as backgroundGlobals from "../../src/background/globals.ts" with {
 import * as mainThreadGlobals from "../../src/main-thread/globals.ts" with {
 	rstest: "importActual",
 };
-import { readGlobal } from "../../src/testing/globals.ts";
+import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import {
+	decodeToBackground,
 	encodeCall,
 	encodePatch,
 	encodeToBackground,
+	FIRST_FRAME_GLOBAL,
 	OpCode,
 	PATCH_METHOD,
 	ROOT_ID,
+	TO_BACKGROUND,
 } from "../../src/wire/index.ts";
 import type {
 	CallRequest,
@@ -63,6 +66,62 @@ describe("the main thread, in a production build", () => {
 			"view",
 		]);
 		expect(page.errors).toEqual([]);
+	});
+});
+
+/** The background's first patch of `<view class="box"></view>`. */
+const BOX: Op[] = [
+	[OpCode.Create, 2, "view"],
+	[OpCode.SetAttr, 2, "class", "box"],
+	[OpCode.Insert, ROOT_ID, 2, 0],
+];
+
+/** A test page's main thread with a first frame, and a way to send it a patch. */
+function framedPage(frame: string) {
+	let patch: (params: PatchParams) => void = () => {};
+	const page = startTestPage({
+		mainThread: () => {
+			startMainThread();
+			installGlobals({ [FIRST_FRAME_GLOBAL]: () => frame });
+			patch = readGlobal(PATCH_METHOD) as (params: PatchParams) => void;
+		},
+	});
+	const apply = (items: PatchItem[], rendered?: number): void =>
+		page.asMainThread(() => patch(encodePatch({ generation: 0, items, rendered })));
+	/** The elements each rewrite message asked the background to write again. */
+	const asked: number[][] = [];
+	page.asBackground(() =>
+		page.lynx.background.getCoreContext().addEventListener(TO_BACKGROUND.replies, (event) => {
+			const message = decodeToBackground(event);
+			if (message.t === "rewrite") asked.push(message.elements);
+		}),
+	);
+	return { page, apply, asked };
+}
+
+describe("the main thread with a first frame, in a production build", () => {
+	it("skips an op of a kind it does not know in the rendered page, and hydrates the frame", async () => {
+		const { page, apply, asked } = framedPage(`<view class="box"></view>`);
+		apply([["ops", [...BOX, UNKNOWN_OP]]], 1);
+		await page.settle();
+		expect(page.errors).toEqual([]);
+		// Adopted: the page is not asked for again, and the frame's view is the page's.
+		expect(asked).toEqual([]);
+		expect(page.engine.madeCount("view")).toBe(1);
+	});
+
+	it("skips an item of a kind it does not know while the page waits to be written again", async () => {
+		// A frame the first patch refuses: a <text> where the patch makes a <view>.
+		const { page, apply } = framedPage(`<text class="box"></text>`);
+		apply([["ops", BOX]], 1);
+		await page.settle();
+		apply([UNKNOWN_ITEM, ["rewrite", ROOT_ID], ["ops", BOX]]);
+		await page.settle();
+		expect(page.errors).toEqual([]);
+		expect(page.engine.all().map((element) => page.engine.state(element).tag)).toEqual([
+			"page",
+			"view",
+		]);
 	});
 });
 

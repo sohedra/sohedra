@@ -10,6 +10,7 @@ import { startMainThread } from "../../src/main-thread/index.ts";
 import { installGlobals, readGlobal } from "../../src/testing/globals.ts";
 import { startTestPage } from "../../src/testing/index.ts";
 import {
+	decodeToBackground,
 	encodeCall,
 	encodePatch,
 	encodeToBackground,
@@ -17,6 +18,7 @@ import {
 	OpCode,
 	PATCH_METHOD,
 	ROOT_ID,
+	TO_BACKGROUND,
 } from "../../src/wire/index.ts";
 import type {
 	CallRequest,
@@ -58,7 +60,15 @@ function mainThreadPage(frame?: string) {
 	});
 	const apply = (items: PatchItem[], rendered?: number): void =>
 		page.asMainThread(() => patch(encodePatch({ generation: 0, items, rendered })));
-	return { page, apply };
+	/** The elements each rewrite message asked the background to write again. */
+	const asked: number[][] = [];
+	page.asBackground(() =>
+		page.lynx.background.getCoreContext().addEventListener(TO_BACKGROUND.replies, (event) => {
+			const message = decodeToBackground(event);
+			if (message.t === "rewrite") asked.push(message.elements);
+		}),
+	);
+	return { page, apply, asked };
 }
 
 describe("the main thread, in a development build", () => {
@@ -100,10 +110,25 @@ describe("the main thread, in a development build", () => {
 
 describe("the main thread with a first frame, in a development build", () => {
 	it("reports an op of a kind it does not know in the rendered page, and asks for the page again", async () => {
-		const { page, apply } = mainThreadPage(`<view class="box"></view>`);
+		const { page, apply, asked } = mainThreadPage(`<view class="box"></view>`);
 		apply([["ops", [...BOX, UNKNOWN_OP]]], 1);
 		await page.settle();
 		expect(page.errors).toEqual([unknownKind("99", "the main thread")]);
+		expect(asked).toEqual([[ROOT_ID]]);
+	});
+
+	it("reports an item of a kind it does not know in the rendered page once, and asks for the page again", async () => {
+		const { page, apply, asked } = mainThreadPage(`<view class="box"></view>`);
+		apply([["ops", BOX], UNKNOWN_ITEM], 2);
+		await page.settle();
+		// The hydration that could not read it fails, as for any rendered part it cannot read.
+		expect(page.errors).toEqual([
+			expect.objectContaining({
+				message: "A patch's rendered part holds an item of kind mystery.",
+			}),
+			unknownKind("mystery", "the main thread"),
+		]);
+		expect(asked).toEqual([[ROOT_ID]]);
 	});
 
 	it("reports an item of a kind it does not know while the page waits to be written again", async () => {
