@@ -20,54 +20,77 @@ setFlagsFromString("--expose-gc");
 // Boundary: a context made after the flag has V8's `gc`.
 const gc = runInNewContext("gc") as () => void;
 
+/** How long `collect` waits for what it waits on: far past the few rounds it takes when idle. */
+const COLLECT_LIMIT = 10_000;
+
+/** The timeout of a test that collects: its wait, and time to report. */
+const TIMEOUT = COLLECT_LIMIT + 5_000;
+
 /**
- * Collects what nothing refers to, and runs what the collector found gone, until `done` (at most
- * 50 rounds): V8 runs the callbacks of what it collected on a later task of its choosing, later on a
- * busy machine, so a fixed number of rounds passes here and fails on a loaded CI runner.
+ * Collects what nothing refers to, and runs what the collector found gone, until `done`, and fails
+ * saying `what` it waited for if that takes `COLLECT_LIMIT`: V8 runs the callbacks of what it
+ * collected on a later task of its choosing, later on a busy machine.
  */
-async function collect(done: () => boolean | Promise<boolean>): Promise<void> {
-	for (let round = 0; round < 50; round++) {
+async function collect(what: string, done: () => Promise<boolean>): Promise<void> {
+	const deadline = performance.now() + COLLECT_LIMIT;
+	while (!(await done())) {
+		if (performance.now() > deadline) {
+			throw new Error(
+				`Still waiting for ${what} after ${COLLECT_LIMIT} ms of running the collector.`,
+			);
+		}
 		await new Promise((resolve) => setTimeout(resolve, 0));
 		gc();
 		await new Promise((resolve) => setTimeout(resolve, 0));
-		if (await done()) return;
 	}
 }
 
-it("lets the background drop the context of a handler built again, once its copy is collected", async () => {
-	const api: Record<string, () => void> = {};
-	const page = startFunctionsPage(Events, { draw: drawEvents, props: { log: [], api } });
-	await page.settle();
-	const before = page.asBackground(keptContexts);
-	page.asBackground(() => api["next"]!());
-	await page.settle();
-	expect(page.asBackground(keptContexts)).toHaveLength(before.length + 1);
-	await collect(async () => {
+it(
+	"lets the background drop the context of a handler built again, once its copy is collected",
+	async () => {
+		const api: Record<string, () => void> = {};
+		const page = startFunctionsPage(Events, { draw: drawEvents, props: { log: [], api } });
 		await page.settle();
-		return page.asBackground(keptContexts).length === before.length;
-	});
-	const after = page.asBackground(keptContexts);
-	expect(after).toHaveLength(before.length);
-	expect(after).not.toEqual(before);
-	expectAccounted(page, "after the collector ran");
-});
+		const before = page.asBackground(keptContexts);
+		page.asBackground(() => api["next"]!());
+		await page.settle();
+		// The collector may already have taken the first copy on its own, so what this checks is that
+		// the copy built again has a context, and that each thread keeps what the other holds.
+		const built = page.asBackground(keptContexts).filter((id) => !before.includes(id));
+		expect(built).toHaveLength(1);
+		expectAccounted(page, "after the handler was built again");
+		await collect("the background to let go of the first copy's context", async () => {
+			await page.settle();
+			return page.asBackground(keptContexts).length === before.length;
+		});
+		const after = page.asBackground(keptContexts);
+		expect(after).toHaveLength(before.length);
+		expect(after).toContain(built[0]);
+		expectAccounted(page, "after the collector ran");
+	},
+	TIMEOUT,
+);
 
-it("forgets on the main thread a ref the background let go of, with the next patch", async () => {
-	const api: Record<string, (...args: never[]) => unknown> = {};
-	const page = startFunctionsPage(Unref, { draw: drawUnref, props: { api } });
-	await page.settle();
-	// In a function of its own, so that no local of the test holds the ref.
-	const used = await (async () => {
-		const answer = page.asBackground(() => api["use"]!(mainThreadRef(7) as never));
+it(
+	"forgets on the main thread a ref the background let go of, with the next patch",
+	async () => {
+		const api: Record<string, (...args: never[]) => unknown> = {};
+		const page = startFunctionsPage(Unref, { draw: drawUnref, props: { api } });
 		await page.settle();
-		return answer;
-	})();
-	expect(used).toBe(7);
-	expect(page.runtime.page.functions.sizes().refs).toBe(1);
-	await collect(async () => {
-		page.asBackground(() => api["tick"]!());
-		await page.settle();
-		return page.runtime.page.functions.sizes().refs === 0;
-	});
-	expect(page.runtime.page.functions.sizes().refs).toBe(0);
-});
+		// In a function of its own, so that no local of the test holds the ref.
+		const used = await (async () => {
+			const answer = page.asBackground(() => api["use"]!(mainThreadRef(7) as never));
+			await page.settle();
+			return answer;
+		})();
+		expect(used).toBe(7);
+		expect(page.runtime.page.functions.sizes().refs).toBe(1);
+		await collect("the main thread to forget the ref", async () => {
+			page.asBackground(() => api["tick"]!());
+			await page.settle();
+			return page.runtime.page.functions.sizes().refs === 0;
+		});
+		expect(page.runtime.page.functions.sizes().refs).toBe(0);
+	},
+	TIMEOUT,
+);
