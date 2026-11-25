@@ -23,6 +23,7 @@ const SAMPLES: { [Code in WireCode]: WireDetails[Code] } = {
 	},
 	page_already_mounted: { thread: "main-thread" },
 	page_not_started: { reason: "Cannot read properties of undefined (reading 'title')" },
+	hydratable_not_on_lynx: {},
 };
 
 /** Every entry: those a production build reports, and those only a development build does. */

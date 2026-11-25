@@ -268,6 +268,32 @@ export const checks: Checks = {
 		);
 	},
 
+	"devalue-for-hydratable": () => {
+		// Two modules of the server runtime import `devalue`, and call its `uneval` alone.
+		const importers = filesWith("src", "from 'devalue'").sort(byName);
+		expect(importers).toEqual([
+			"src/internal/server/hydratable.js",
+			"src/internal/server/renderer.js",
+		]);
+		for (const file of importers) {
+			const source = readSvelte(file);
+			expect(source).toContain("import * as devalue from 'devalue';");
+			expect(new Set(source.match(/\bdevalue\.\w+/g))).toEqual(new Set(["devalue.uneval"]));
+		}
+		// `hydratable` asks for async rendering's context before it serializes, and a synchronous
+		// render has none: it throws first.
+		const hydratable = readSvelte("src/internal/server/hydratable.js");
+		expect(hydratable.indexOf("get_render_context()")).toBeGreaterThan(-1);
+		expect(hydratable.indexOf("get_render_context()")).toBeLessThan(
+			hydratable.indexOf("encode(key, value"),
+		);
+		// The renderer serializes only in its hydratable block, which async rendering alone writes.
+		const renderer = readSvelte("src/internal/server/renderer.js");
+		expect(occurrences(renderer, "devalue.uneval(")).toBe(1);
+		expect(occurrences(renderer, "this.#hydratable_block(")).toBe(1);
+		expect(renderer).toContain("return await this.#hydratable_block(ctx);");
+	},
+
 	"runtime-reads-event-target": () => {
 		// Where the binding's global `EventTarget` is read: copying state, and walking an action's value.
 		expect(filesWith("src", "instanceof EventTarget")).toEqual([
