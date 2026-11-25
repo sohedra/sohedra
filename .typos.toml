@@ -4,9 +4,11 @@
 [files]
 # The npm packages @sohedra/lynx-polyfill bundles, spelled as their authors wrote them.
 # The status files name WPT's and test262's tests exactly as those suites spell them.
+# The generated pages' snapshots hold texts the generator joins at random ("a & b" twice reads "ba").
 extend-exclude = [
 	"modules/lynx-polyfill/src/fills/vendor/*.js",
 	"modules/lynx-polyfill/tests/primjs/*/status/**",
+	"packages/lynx/tests/threads/generated/__snapshots__/*.snap",
 ]
 
 [default.extend-identifiers]
