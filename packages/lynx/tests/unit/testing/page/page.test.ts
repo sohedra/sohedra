@@ -1,9 +1,11 @@
 // A test page: the engine fake as the main thread's globals, a `lynx` for each thread, and the two
 // places where the page's own scripts start. No runtime runs in their place.
 
-import { describe, expect, it } from "@rstest/core";
+import { promiseHooks } from "node:v8";
 
-import { readGlobal } from "../../../../src/testing/globals.ts";
+import { afterEach, describe, expect, it, rs } from "@rstest/core";
+
+import { installGlobals, readGlobal } from "../../../../src/testing/globals.ts";
 import { startTestPage } from "../../../../src/testing/index.ts";
 import type { BackgroundLynx, MainThreadLynx } from "../../../../src/testing/index.ts";
 
@@ -13,6 +15,14 @@ const mainThreadCall = (name: string, ...args: unknown[]): unknown =>
 
 /** The `lynx` a script reads while its thread runs: a global. */
 const lynx = () => readGlobal("lynx");
+
+/** A timer as a thread's script calls it: through its global. */
+const timer = (name: string) =>
+	readGlobal(name) as (callback: () => void, delay?: number) => unknown;
+
+afterEach(() => {
+	rs.useRealTimers();
+});
 
 // Every element function the main-thread runtime calls: the names its element-function table
 // required and took when present, and the ones its element methods and lazy bundles call.
@@ -145,6 +155,37 @@ describe("a test page", () => {
 		expect(document.body.childNodes).toHaveLength(0);
 	});
 
+	it("leaves no hook on the process's promises when it cannot start", () => {
+		const onInit = rs.spyOn(promiseHooks, "onInit");
+		try {
+			const noBody = {
+				get body(): never {
+					throw new Error("no body");
+				},
+			};
+			expect(() => startTestPage({ document: noBody as unknown as Document })).toThrow("no body");
+			expect(onInit).not.toHaveBeenCalled();
+		} finally {
+			onInit.mockRestore();
+		}
+	});
+
+	it("says it needs Node.js where the runtime has no promise hooks, as Bun's own has not", () => {
+		const onInit = rs.spyOn(promiseHooks, "onInit").mockImplementation(() => {
+			throw new Error("node:v8 onInit is not yet implemented in Bun");
+		});
+		try {
+			expect(() => startTestPage()).toThrow(
+				expect.objectContaining({
+					code: "promise_hooks_missing",
+					message: expect.stringContaining("node:v8 onInit is not yet implemented in Bun"),
+				}),
+			);
+		} finally {
+			onInit.mockRestore();
+		}
+	});
+
 	it("ends the page before it when a test starts another", () => {
 		const first = startTestPage();
 		const ended: unknown[] = [];
@@ -207,6 +248,117 @@ describe("a test page's threads", () => {
 		expect(seen).toEqual([]);
 		await page.settle();
 		expect(seen).toEqual([page.lynx.mainThread]);
+	});
+
+	it("run a background timer as the background, though the main thread ran last", async () => {
+		const page = startTestPage();
+		const seen: unknown[] = [];
+		page.asBackground(() => timer("setTimeout")(() => seen.push(lynx()), 1));
+		page.asMainThread(() => undefined);
+		await new Promise((resolve) => setTimeout(resolve, 5));
+		expect(seen).toEqual([page.lynx.background]);
+	});
+
+	it("run each turn of a background interval as the background", async () => {
+		const page = startTestPage();
+		const seen: unknown[] = [];
+		const id = page.asBackground(() => timer("setInterval")(() => seen.push(lynx()), 1));
+		page.asMainThread(() => undefined);
+		while (seen.length < 2) await new Promise((resolve) => setTimeout(resolve, 2));
+		clearInterval(id as ReturnType<typeof setInterval>);
+		expect(seen.slice(0, 2)).toEqual([page.lynx.background, page.lynx.background]);
+	});
+
+	it("put the thread that ran before back after a background timer", async () => {
+		const page = startTestPage();
+		rs.useFakeTimers();
+		page.asBackground(() => timer("setTimeout")(() => undefined, 1));
+		page.asMainThread(() => undefined);
+		rs.advanceTimersByTime(1);
+		expect(lynx()).toBe(page.lynx.mainThread);
+	});
+
+	it("run a background timer the test faked before the page started as the background", () => {
+		rs.useFakeTimers();
+		const page = startTestPage();
+		const seen: unknown[] = [];
+		page.asBackground(() => timer("setTimeout")(() => seen.push(lynx()), 100));
+		page.asMainThread(() => undefined);
+		rs.advanceTimersByTime(100);
+		expect(seen).toEqual([page.lynx.background]);
+	});
+
+	it("run a background timer the test faked while the background ran as the background", () => {
+		const own = readGlobal("setTimeout");
+		const page = startTestPage();
+		rs.useFakeTimers();
+		const seen: unknown[] = [];
+		page.asBackground(() => timer("setTimeout")(() => seen.push(lynx()), 100));
+		page.asMainThread(() => undefined);
+		rs.advanceTimersByTime(100);
+		expect(seen).toEqual([page.lynx.background]);
+		rs.useRealTimers();
+		page.dispose();
+		expect(readGlobal("setTimeout")).toBe(own);
+	});
+
+	it("give the background the test's requestAnimationFrame, and run its frames as the background", () => {
+		const frames: (() => void)[] = [];
+		const own = (callback: () => void) => frames.push(callback);
+		const restore = installGlobals({ requestAnimationFrame: own });
+		try {
+			const page = startTestPage();
+			const seen: unknown[] = [];
+			page.asBackground(() => timer("requestAnimationFrame")(() => seen.push(lynx())));
+			page.asMainThread(() => undefined);
+			expect(frames).toHaveLength(1);
+			frames[0]!();
+			expect(seen).toEqual([page.lynx.background]);
+			page.dispose();
+			expect(readGlobal("requestAnimationFrame")).toBe(own);
+		} finally {
+			restore();
+		}
+	});
+
+	it("put the process's timers back when the page ends", () => {
+		const own = [readGlobal("setTimeout"), readGlobal("setInterval")];
+		const page = startTestPage();
+		page.asBackground(() => undefined);
+		page.dispose();
+		expect([readGlobal("setTimeout"), readGlobal("setInterval")]).toEqual(own);
+	});
+
+	it("run a promise's continuation as the thread that queued it, whichever ran last", async () => {
+		const page = startTestPage();
+		const seen: unknown[] = [];
+		const settled = Promise.resolve();
+		page.asBackground(() => {
+			void settled.then(() => seen.push(["then", lynx()]));
+			void (async () => {
+				await settled;
+				seen.push(["await", lynx()]);
+			})();
+		});
+		page.asMainThread(() => void settled.then(() => seen.push(["main thread", lynx()])));
+		page.asBackground(() => undefined);
+		await page.settle();
+		expect(seen).toEqual([
+			["then", page.lynx.background],
+			["await", page.lynx.background],
+			["main thread", page.lynx.mainThread],
+		]);
+	});
+
+	it("resume a test's await as the thread it awaited on", async () => {
+		const page = startTestPage();
+		page.asMainThread(() => undefined);
+		page.lynx.mainThread.getJSContext().dispatchEvent({ type: "ping", data: 1 });
+		await page.settle();
+		expect(lynx()).toBe(page.lynx.mainThread);
+		page.asBackground(() => undefined);
+		await page.settle();
+		expect(lynx()).toBe(page.lynx.background);
 	});
 
 	it("keep a report at the warning level apart from the errors", () => {

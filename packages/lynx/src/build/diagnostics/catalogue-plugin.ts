@@ -21,7 +21,6 @@ export interface PluginDetails {
 	svelte_config_invalid: { file: string; reason: string };
 	svelte_config_option_owned: { key: string };
 	svelte_config_option_unsupported: { key: string };
-	svelte_async_unsupported: Record<string, never>;
 	iife_ignored: { value: string };
 	main_thread_asset_missing: { file: string };
 	rsbuild_swc_missing: Record<string, never>;
@@ -95,12 +94,6 @@ export const PLUGIN_CATALOGUE: Catalogue<PluginDetails> = {
 			`\`compilerOptions.${key}\` in svelte.config.js is not supported on Lynx, so it is ignored.`,
 		fix: ({ key }) => `Remove \`${key}\` from the compiler options.`,
 		docs: "svelte_config_option_unsupported",
-	},
-	svelte_async_unsupported: {
-		message: () =>
-			"`compilerOptions.experimental.async` in svelte.config.js turns on Svelte's async mode, which @sohedra/lynx does not support.",
-		fix: () => "Remove `experimental.async` from the compiler options.",
-		docs: "svelte_async_unsupported",
 	},
 	iife_ignored: {
 		message: ({ value }) =>

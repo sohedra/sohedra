@@ -29,6 +29,8 @@ export interface TestingDetails {
 	gesture_callback_missing: { kind: string; tag: string; name: string };
 	/** `tag` is the element's. */
 	not_a_list: { tag: string };
+	/** `reason` is what the runtime answered when the hooks were asked for. */
+	promise_hooks_missing: { reason: string };
 }
 
 /** What a code of the test library names. */
@@ -108,6 +110,13 @@ export const TESTING_CATALOGUE: Catalogue<TestingDetails> = {
 		message: ({ tag }) => `A <${tag}> was given to lynx.list, which drives a <list>.`,
 		fix: () => "Pass the <list> element itself.",
 		docs: "not_a_list",
+	},
+	promise_hooks_missing: {
+		message: ({ reason }) =>
+			`The test page needs Node.js's \`v8.promiseHooks\` to run each thread's promise continuations as that thread, and this runtime has none (${reason}).`,
+		fix: () =>
+			"Run the tests on Node.js: with Bun, run the test script without `--bun`, so the runner starts under Node.js.",
+		docs: "promise_hooks_missing",
 	},
 };
 

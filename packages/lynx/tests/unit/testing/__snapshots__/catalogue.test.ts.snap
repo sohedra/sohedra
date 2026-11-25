@@ -77,6 +77,13 @@ Each one is in this error's list of errors: fix the first, which may cause the r
 https://sohedra.com/e/page_reported_errors"
 `;
 
+exports[`the test library's catalogue > promise_hooks_missing: the message 1`] = `
+"The test page needs Node.js's \`v8.promiseHooks\` to run each thread's promise continuations as that thread, and this runtime has none (node:v8 onInit is not yet implemented in Bun).
+
+Run the tests on Node.js: with Bun, run the test script without \`--bun\`, so the runner starts under Node.js.
+https://sohedra.com/e/promise_hooks_missing"
+`;
+
 exports[`the test library's catalogue > render_needs_dom: the message 1`] = `
 "There is no DOM to put the page's elements in, so render could not draw it.
 

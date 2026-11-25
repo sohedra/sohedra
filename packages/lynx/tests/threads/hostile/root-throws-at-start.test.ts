@@ -32,6 +32,9 @@ const codes = (page: SveltePage): unknown[] =>
 
 const DRAWN = ["tap", "call", "child"];
 
+const isUnref = (item: readonly unknown[]): boolean =>
+	item[0] === "call" && typeof item[3] === "string" && item[3].startsWith('["unref"');
+
 describe.each(["script", "template", "child"] as const)(
 	"a root that throws in its %s at start",
 	(throws) => {
@@ -39,7 +42,10 @@ describe.each(["script", "template", "child"] as const)(
 			const { page } = starting(throws);
 			const drawn = page.engine.all();
 			await page.settle();
-			expect(page.patches).toEqual([expect.objectContaining({ notStarted: true, items: [] })]);
+			// Only the collector's `unref` of a ref let go of earlier may ride along: it runs when it
+			// likes, and ref ids are never reused.
+			expect(page.patches).toEqual([expect.objectContaining({ notStarted: true })]);
+			expect(page.patches[0]!.items.filter((item) => !isUnref(item))).toEqual([]);
 			expect(page.engine.all()).toEqual(drawn);
 			expect(page.engine.texts()).toEqual(DRAWN);
 			expect(codes(page)).toEqual(["page_not_started"]);

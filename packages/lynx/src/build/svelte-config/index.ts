@@ -9,11 +9,10 @@ import { RENDERER_ENTRY } from "../../wire/index.ts";
 import { lynxWarningFilter } from "./warning-filter.ts";
 
 /**
- * The Svelte compiler options an app sets. The rest are set by the binding (`generate`,
- * `fragments`, `css`, `dev`, `runes`, `experimental.customRenderer`) or not supported (Svelte 4's
- * `accessors`, `immutable`, `compatibility`; `customElement`; Svelte's async mode,
- * `experimental.async`, which fails the build). `cssHash` names the scoping class of a component's
- * `<style>`.
+ * The Svelte compiler options an app sets, and `experimental.async`, Svelte's async mode. The rest
+ * are set by the binding (`generate`, `fragments`, `css`, `dev`, `runes`,
+ * `experimental.customRenderer`) or not supported (Svelte 4's `accessors`, `immutable`,
+ * `compatibility`; `customElement`). `cssHash` names the scoping class of a component's `<style>`.
  */
 export type SvelteLynxCompilerOptions = Pick<
 	CompileOptions,
@@ -23,7 +22,9 @@ export type SvelteLynxCompilerOptions = Pick<
 	| "preserveWhitespace"
 	| "discloseVersion"
 	| "cssHash"
->;
+> & {
+	experimental?: Pick<NonNullable<CompileOptions["experimental"]>, "async">;
+};
 
 /** What `defineConfig()` takes: the app's own Svelte options, in Svelte's config shape. */
 export interface SvelteConfigOptions {
@@ -42,7 +43,8 @@ export interface SvelteConfig {
  * The Svelte config of a Lynx app: your regular Svelte config, with runes, the custom renderer and
  * Lynx's warning filter on, so the editor and `svelte-check` check a component as the build
  * compiles it. A plain object builds the same, since the build sets those itself; only the editor
- * would miss Lynx's errors and warn on `main-thread:` attributes.
+ * would miss Lynx's errors and warn on `main-thread:` attributes. Async support is Svelte's own
+ * (off); set `compilerOptions.experimental.async` to turn it on.
  *
  * ```js
  * // svelte.config.js
@@ -53,15 +55,12 @@ export interface SvelteConfig {
  */
 export function defineConfig(options: SvelteConfigOptions = {}): SvelteConfig {
 	const { compilerOptions = {}, preprocess = [] } = options;
-	// Boundary: a config in JavaScript may set `experimental.async` all the same; it is passed on, for
-	// the build to refuse.
-	const { experimental } = compilerOptions as Pick<CompileOptions, "experimental">;
 	return {
 		compilerOptions: {
 			...compilerOptions,
 			runes: true,
 			warningFilter: lynxWarningFilter(compilerOptions.warningFilter),
-			experimental: { ...experimental, customRenderer: RENDERER_ENTRY },
+			experimental: { ...compilerOptions.experimental, customRenderer: RENDERER_ENTRY },
 		},
 		preprocess: [preprocess].flat(),
 	};

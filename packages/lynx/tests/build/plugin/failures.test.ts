@@ -69,21 +69,6 @@ describe("an app that installed a Svelte without custom renderers", () => {
 	});
 });
 
-describe("an app that turns on Svelte's async mode", () => {
-	it("fails as the plugin is set up, naming the option and the fix", async () => {
-		build = await buildApp("broken", {
-			files: {
-				"svelte.config.js":
-					"export default { compilerOptions: { experimental: { async: true } } };\n",
-			},
-		});
-		expect(build.ok).toBe(false);
-		const text = build.error + build.messages;
-		expect(text).toContain("`compilerOptions.experimental.async` in svelte.config.js");
-		expect(text).toContain("https://sohedra.com/e/svelte_async_unsupported");
-	});
-});
-
 describe("a regular expression Lynx's engine refuses", () => {
 	it("fails the build with the file, line and column, and how to write it instead", async () => {
 		build = await buildApp("broken", {

@@ -105,13 +105,19 @@ are smaller than the web's:
   the web's refuses, such as a `Promise` or a `WeakMap`, as an empty object, gives an array's holes
   the value `undefined`, and ignores `transfer`.
 
+An app can turn on Svelte's async mode (`compilerOptions.experimental.async`, off as in Svelte). The
+first frame does not wait: a page that awaits outside a `<svelte:boundary>` with a `pending` snippet
+has no first frame, and a development build warns; inside one, the first frame draws the snippet.
+
 `@sohedra/lynx/testing` tests components without a phone, in `@testing-library/svelte`'s shape:
 `await render(Component, { props, context, lynx })` runs the page on both threads, on an engine fake
 that has only what a device has and the binding's fills. The background draws it; with
 `lynx: { firstFrame: true }` the main thread draws the first frame first, and the background
 hydrates it: turn that on to test what the first frame shows, or that the two agree. `fireEvent`,
 `act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a list's rows, a
-gesture's callbacks) are awaited. Run the tests with `withSvelteLynx()` from
+gesture's callbacks) are awaited. Each thread's timers, frames and promise continuations run as that
+thread, as on a device, also under the test's fake timers; the background's `requestAnimationFrame`
+is the test's own, if it set one before `render`. Run the tests with `withSvelteLynx()` from
 `@sohedra/lynx/config/rstest` or `svelteLynx()` from `@sohedra/lynx/config/vitest`, and install
 `jsdom`, `@testing-library/dom` and the runner (Vitest needs `vite` too).
 

@@ -22,6 +22,7 @@ const SAMPLES: { [Code in TestingCode]: TestingDetails[Code] } = {
 	gesture_not_named: { tag: "view", kinds: "pan, tap" },
 	gesture_callback_missing: { kind: "pan", tag: "view", name: "onSwipe" },
 	not_a_list: { tag: "view" },
+	promise_hooks_missing: { reason: "node:v8 onInit is not yet implemented in Bun" },
 };
 
 const CODES = Object.keys(TESTING_CATALOGUE) as TestingCode[];
