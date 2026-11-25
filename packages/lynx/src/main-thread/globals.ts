@@ -223,9 +223,16 @@ export function setGlobalFunction(name: string, fn: (...args: never[]) => unknow
 }
 
 declare const __DEV__: boolean;
+declare const __FIRST_FRAME__: boolean | undefined;
 
 /** `true` in a development build: the build replaces it, and drops what it guards otherwise. */
 export const DEV: boolean = __DEV__;
+
+/**
+ * `false` in a build where no page draws its first frame, which then drops the drawing of the
+ * first frame and its hydration from the runtime. A test run leaves it unset, and draws.
+ */
+export const DRAWS: boolean = typeof __FIRST_FRAME__ === "undefined" || __FIRST_FRAME__;
 
 /** A chunk of the bundler's: its modules, by id. */
 export interface BundlerChunk {

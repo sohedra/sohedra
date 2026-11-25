@@ -312,8 +312,8 @@ export function mountPage<Props extends Bag>(
 			for (const note of endInitialRows())
 				warnOnce(`${note.code}:${note.where ?? ""}`, () =>
 					note.code === "initial_scroll_index_past_initial_rows"
-						? backgroundError({ code: note.code, details: { ...note, cap: SCROLL_INDEX_CAP } })
-						: backgroundError({ code: note.code, details: note }),
+						? { code: note.code, details: { ...note, cap: SCROLL_INDEX_CAP } }
+						: { code: note.code, details: note },
 				);
 		}
 		rootExports = instance;

@@ -1,13 +1,23 @@
 // The scanner lists the text a production build must not contain. An empty or wrong list would pass
 // every build test, so this pins what it finds and what it leaves out, on a source written for it.
-// The scan of the binding's own sources, and the check of a built bundle, arrive with the code
-// they scan.
+// The check of built bundles is in tests/build/size-budgets.test.ts.
 
 import path from "node:path";
 
 import { describe, expect, it } from "@rstest/core";
 
-import { MIN_FRAGMENT, scanDevText, SHIPPED_DIRS } from "../../dev-text/scanner.ts";
+import { BACKGROUND_DEVELOPMENT_CATALOGUE } from "../../../src/background/catalogue.ts";
+import { FIRST_FRAME_DEVELOPMENT_CATALOGUE } from "../../../src/first-frame/catalogue.ts";
+import { GESTURE_DEVELOPMENT_CATALOGUE } from "../../../src/gesture/catalogue.ts";
+import { MAIN_THREAD_DEVELOPMENT_CATALOGUE } from "../../../src/main-thread/catalogue.ts";
+import { WIRE_DEVELOPMENT_CATALOGUE } from "../../../src/wire/index.ts";
+import {
+	DEVELOPMENT_FILES,
+	MIN_FRAGMENT,
+	scanDevText,
+	SHIPPED_DIRS,
+} from "../../dev-text/scanner.ts";
+import { ANY_DETAILS } from "../messages/catalogues.ts";
 
 const fixtures = path.resolve(import.meta.dirname, "../../fixtures/dev-text");
 const texts = scanDevText([fixtures]).map(({ text }) => text);
@@ -26,16 +36,19 @@ describe("the list of development text", () => {
 		expect(has("a development message guarded by NODE_ENV")).toBe(true);
 		expect(has("a development message after an early return")).toBe(true);
 		expect(has("a development message after an or return")).toBe(true);
+		expect(has("a development message behind the thread flag")).toBe(true);
 	});
 
-	it("has the text of a function only development code calls", () => {
+	it("has the text of a function or an object only development code reads", () => {
 		expect(has("update the list ")).toBe(true);
+		expect(has("a development message in an object only it reads")).toBe(true);
 	});
 
 	it("does not have text that ships, or a function production code calls", () => {
 		expect(has("this message ships in every build")).toBe(false);
 		expect(has("this helper also runs in production builds")).toBe(false);
 		expect(has("this text is used in both builds")).toBe(false);
+		expect(has("this object is read in production builds")).toBe(false);
 	});
 
 	it("does not have text that runs when a production test with another condition is false", () => {
@@ -64,7 +77,33 @@ describe("the folders scanned", () => {
 		]);
 	});
 
-	it("find no development text yet, because they hold no code", () => {
-		expect(scanDevText()).toEqual([]);
+	it("list the text of every entry only a development build reports", () => {
+		const sources = scanDevText().map(({ text }) => text);
+		const catalogues = [
+			BACKGROUND_DEVELOPMENT_CATALOGUE,
+			FIRST_FRAME_DEVELOPMENT_CATALOGUE,
+			GESTURE_DEVELOPMENT_CATALOGUE,
+			MAIN_THREAD_DEVELOPMENT_CATALOGUE,
+			WIRE_DEVELOPMENT_CATALOGUE,
+		];
+		for (const catalogue of catalogues)
+			for (const [code, entry] of Object.entries(catalogue)) {
+				// Boundary: the entries of different codes take different details.
+				const { message, fix } = entry as {
+					message: (d: never) => string;
+					fix: (d: never) => string;
+				};
+				const text = `${message(ANY_DETAILS)}\n${fix(ANY_DETAILS)}`;
+				expect(
+					sources.some((source) => text.includes(source)),
+					code,
+				).toBe(true);
+			}
+	});
+
+	it("list the text of the files only a development build loads", () => {
+		expect(DEVELOPMENT_FILES).toEqual(["src/background/dev-client.ts"]);
+		const files = new Set(scanDevText().map(({ file }) => file));
+		expect(files.has("src/background/dev-client.ts")).toBe(true);
 	});
 });

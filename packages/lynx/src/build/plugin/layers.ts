@@ -61,6 +61,8 @@ export const RUNTIME_FILES: Readonly<{
 	backgroundOnly: string;
 	/** What stands in for `svelte/internal/server` in the main thread's compiled components. */
 	serverInternals: string;
+	/** What `devalue` resolves to on the main thread, for Svelte's server runtime. */
+	devalue: string;
 	/** What stands in for `svelte/internal/client` in the background's compiled components. */
 	clientInternals: string;
 	/** What `svelte/events` resolves to on the background. */
@@ -76,6 +78,7 @@ export const RUNTIME_FILES: Readonly<{
 	firstFrameEntry: programFile("first-frame/root-entry"),
 	backgroundOnly: programFile("background/background-only"),
 	serverInternals: programFile("svelte/runtime/server-internals"),
+	devalue: programFile("svelte/runtime/devalue"),
 	clientInternals: programFile("svelte/runtime/client-internals"),
 	svelteEvents: programFile("svelte/runtime/events"),
 	devClient: programFile("background/dev-client"),

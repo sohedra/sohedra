@@ -11,7 +11,7 @@
 
 import { FUNCTION_FIELDS, isMainThreadFunction, RUN_FUNCTION } from "../../wire/index.ts";
 import type { ErrorPlace, MainThreadFunction, Result, ToBackground } from "../../wire/index.ts";
-import { mainThreadError } from "../catalogue.ts";
+import { mainThreadDevelopmentError, mainThreadError } from "../catalogue.ts";
 import type { CodeStyles } from "../code-styles.ts";
 import type { Flattening } from "../flatten.ts";
 import { DEV } from "../globals.ts";
@@ -306,7 +306,7 @@ export function createFunctionsPage(options: FunctionsPageOptions): FunctionsPag
 			else if (isMainThreadFunction(value)) ready = silenced ? undefined : readyOf(value);
 			else if (DEV && !reportedNames.has(RUN_FUNCTION)) {
 				reportedNames.add(RUN_FUNCTION);
-				report(mainThreadError({ code: "main_thread_value_not_runnable", details: {} }));
+				report(mainThreadDevelopmentError({ code: "main_thread_value_not_runnable", details: {} }));
 			}
 			if (!ready) return undefined;
 			// The engine's objects, read as plain properties: see `withTargets` (./run.ts).

@@ -48,3 +48,20 @@ export function productionOr(x: boolean): void {
 	if (!__DEV__ || x) return;
 	report("a development message after an or return");
 }
+
+declare const DEV: boolean;
+
+export function threadFlag(): void {
+	if (DEV) report("a development message behind the thread flag");
+}
+
+/** Only development code reads this table. */
+const DEVELOPMENT_TABLE = { entry: () => "a development message in an object only it reads" };
+
+/** Production code reads this one too. */
+const SHIPPED_TABLE = { entry: () => "this object is read in production builds" };
+
+export function tables(): void {
+	if (DEV) report(DEVELOPMENT_TABLE.entry());
+	report(SHIPPED_TABLE.entry());
+}

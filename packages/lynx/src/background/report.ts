@@ -5,6 +5,8 @@
 // the level is the binding's.
 
 import { asError, createRepeats, withCount, withMissingGlobalHint } from "../wire/index.ts";
+import { backgroundDevelopmentError } from "./catalogue.ts";
+import type { BackgroundDevelopmentCode, BackgroundReport } from "./catalogue.ts";
 import { heard } from "./errors.ts";
 import type { ErrorSource } from "./errors.ts";
 import { background, DEV } from "./globals.ts";
@@ -52,15 +54,18 @@ export function reportError(error: unknown): void {
 
 const warned = new Set<string>();
 
+/** A message only a development build reports, written when it is reported. */
+type DevelopmentReport = () => BackgroundReport<BackgroundDevelopmentCode>;
+
 /**
  * Reports `warning` into Lynx at its warning level, in a development build, the first time
  * `place` warns. `place` names the warning and where it is, so each place warns once.
  */
-export function warnOnce(place: string, warning: () => Error): void {
+export function warnOnce(place: string, warning: DevelopmentReport): void {
 	if (!DEV || warned.has(place)) return;
 	warned.add(place);
 	try {
-		background.lynx.reportError(warning(), { level: "warning" });
+		background.lynx.reportError(backgroundDevelopmentError(warning()), { level: "warning" });
 	} catch {
 		// Reporting must never throw.
 	}
@@ -71,8 +76,8 @@ export function warnOnce(place: string, warning: () => Error): void {
  * in the page's code that the binding finds, which repeats wherever the code runs again. `source`
  * says where it came from, for `onError`.
  */
-export function reportOnce(place: string, error: () => Error, source?: ErrorSource): void {
+export function reportOnce(place: string, error: DevelopmentReport, source?: ErrorSource): void {
 	if (!DEV || warned.has(place)) return;
 	warned.add(place);
-	report(error(), source);
+	report(backgroundDevelopmentError(error()), source);
 }

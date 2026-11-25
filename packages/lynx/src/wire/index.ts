@@ -2,7 +2,8 @@
 // outside this folder spells a message between the threads.
 
 export { WIRE_CATALOGUE, wireError, wireMessage } from "./catalogue.ts";
-export type { WireCode, WireDetails } from "./catalogue.ts";
+export type { WireCode, WireDetails, WireDevelopmentCode } from "./catalogue.ts";
+export { WIRE_DEVELOPMENT_CATALOGUE, wireDevelopmentError } from "./development-catalogue.ts";
 export { describeOp } from "./describe-op.ts";
 export { escapeJsonText } from "./escape.ts";
 export { hearErrorEvents } from "./error-events.ts";
@@ -41,8 +42,14 @@ export type {
 	MainThreadFunction,
 	MainThreadRefHandle,
 } from "./main-thread-functions.ts";
-export { DOCS_BASE, docsLink, formatMessage } from "./messages.ts";
-export type { Catalogue, Entry } from "./messages.ts";
+export {
+	catalogueError,
+	catalogueMessage,
+	DOCS_BASE,
+	docsLink,
+	formatMessage,
+} from "./messages.ts";
+export type { Catalogue, CatalogueReport, Entry } from "./messages.ts";
 export {
 	ASYNC_LIST,
 	DEFER,

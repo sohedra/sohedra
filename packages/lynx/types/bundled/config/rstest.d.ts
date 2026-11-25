@@ -51,7 +51,9 @@ interface PluginSvelteLynxOptions {
 	 * Draw each page's first frame on the main thread while Lynx renders it, from the page that
 	 * Svelte's server renderer makes with the host's init data, so there is no empty frame while the
 	 * background thread starts. A function of the entry's name draws the first frame of some pages
-	 * and not of others; it is called once for each entry when the build starts.
+	 * and not of others; it is called once for each entry when the build starts. When no page of the
+	 * build draws its first frame, the main thread's script also leaves out the code that draws and
+	 * hydrates it; when some do, every page keeps that code, since the pages share it.
 	 * @defaultValue true
 	 */
 	firstFrame?: boolean | ((entryName: string) => boolean);

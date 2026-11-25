@@ -8,7 +8,7 @@
 // the next turn, which ends a loop that goes through the engine's layout. A long drag is not a
 // loop: each move is a turn of its own.
 
-import { mainThreadError } from "../catalogue.ts";
+import { mainThreadDevelopmentError } from "../catalogue.ts";
 
 /**
  * How many flushes in a row are let through: far above what code that ends asks for before the
@@ -66,7 +66,7 @@ export function createLoopGuard({ report, nextTurn }: LoopGuardOptions): LoopGua
 			if (++flushes <= LOOP_LIMIT) return true;
 			looping = true;
 			report(
-				mainThreadError({
+				mainThreadDevelopmentError({
 					code: "main_thread_update_loop",
 					details: { limit: LOOP_LIMIT, fn, event, change },
 				}),

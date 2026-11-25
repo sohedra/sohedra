@@ -3,7 +3,12 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { GESTURE_CATALOGUE, gestureError } from "../../../src/gesture/catalogue.ts";
+import {
+	GESTURE_CATALOGUE,
+	GESTURE_DEVELOPMENT_CATALOGUE,
+	gestureDevelopmentError,
+	gestureError,
+} from "../../../src/gesture/catalogue.ts";
 import type { GestureCode, GestureDetails } from "../../../src/gesture/catalogue.ts";
 import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
@@ -15,7 +20,16 @@ const SAMPLES: { [Code in GestureCode]: GestureDetails[Code] } = {
 	gesture_member_not_gesture: { composition: "RaceGesture" },
 };
 
-const CODES = Object.keys(GESTURE_CATALOGUE) as GestureCode[];
+/** Every entry: those a production build reports, and those only a development build does. */
+const CATALOGUE = { ...GESTURE_CATALOGUE, ...GESTURE_DEVELOPMENT_CATALOGUE };
+const CODES = Object.keys(CATALOGUE) as GestureCode[];
+
+/** The error for `code`, through the function its code is raised with. */
+const errorOf = (code: GestureCode, details: unknown): Error & { code: string } =>
+	// The samples hold each code's own details, which TypeScript cannot pair through an index.
+	code in GESTURE_DEVELOPMENT_CATALOGUE
+		? gestureDevelopmentError({ code, details } as never)
+		: gestureError({ code, details } as never);
 
 describe("the gestures' catalogue", () => {
 	it("has a sample for each entry", () => {
@@ -23,14 +37,14 @@ describe("the gestures' catalogue", () => {
 	});
 
 	it.each(CODES)("%s has a fix and its own code as its docs page", (code) => {
-		const entry = GESTURE_CATALOGUE[code];
+		const entry = CATALOGUE[code];
 		// The samples hold each code's own details, which TypeScript cannot pair through an index.
 		expect(entry.fix(SAMPLES[code] as never).trim()).not.toBe("");
 		expect(entry.docs).toBe(code);
 	});
 
 	it.each(CODES)("%s: the message", (code) => {
-		const error = gestureError({ code, details: SAMPLES[code] as never });
+		const error = errorOf(code, SAMPLES[code]);
 		expect(error.code).toBe(code);
 		expect(error.message.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
 		expect(error.message).not.toMatch(INTERNAL_WORDS);
@@ -38,7 +52,7 @@ describe("the gestures' catalogue", () => {
 	});
 
 	it("gesture_relation_experimental: the message for continueWith, which no device has run", () => {
-		const error = gestureError({
+		const error = gestureDevelopmentError({
 			code: "gesture_relation_experimental",
 			details: { gesture: "PanGesture", name: "continueWith" },
 		});

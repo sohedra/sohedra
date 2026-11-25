@@ -55,9 +55,10 @@ class RefHandle<T> {
 
 	get current(): T {
 		if (DEV)
-			warnOnce("main_thread_ref_read_on_background", () =>
-				backgroundError({ code: "main_thread_ref_read_on_background", details: {} }),
-			);
+			warnOnce("main_thread_ref_read_on_background", () => ({
+				code: "main_thread_ref_read_on_background",
+				details: {},
+			}));
 		return this[REF_FIELDS.initial];
 	}
 

@@ -3,9 +3,14 @@
 // app's is: in a build of several, a module more than one entry uses is not concatenated into its
 // entry's scope, which makes it larger. Growth here usually means code reaching a thread that does
 // not run it, so raising a budget is a deliberate change, explained in its pull request.
+//
+// The same builds hold none of the text only a development build shows (tests/dev-text), except a
+// page's background script: many of its modules stay apart there, unconcatenated, so their reads of
+// `DEV` are not folded and what they guard ships.
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 
+import { scanDevText } from "../dev-text/scanner.ts";
 import { buildApp, cleanBuild, scriptsOf } from "./build-app.ts";
 import type { AppBuild } from "./build-app.ts";
 
@@ -33,19 +38,36 @@ describe("the size of a thread's script", () => {
 		}
 	});
 
-	it("is within budget for the main thread's runtime: an entry with no page (87,249 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(87_900);
+	it("is within budget for the main thread's runtime: an entry with no page (85,829 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(87_500);
 	});
 
-	it("is within budget for the background's runtime: an entry with no page (27,119 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).background)).toBeLessThanOrEqual(27_700);
+	it("is within budget for the background's runtime: an entry with no page (22,238 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).background)).toBeLessThanOrEqual(22_700);
 	});
 
-	it("is within budget for a minimal page's main thread, with its first frame (113,731 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(114_700);
+	it("is within budget for a minimal page's main thread, with its first frame (102,761 bytes measured)", () => {
+		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(104_800);
 	});
 
-	it("is within budget for a minimal page's background: Svelte, the renderer and the page (114,733 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(115_400);
+	it("is within budget for a minimal page's background: Svelte, the renderer and the page (115,034 bytes measured)", () => {
+		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(117_300);
+	});
+});
+
+describe("a production build of a thread's script", () => {
+	/** The fragments of development text in `script`, with where each is written. */
+	const developmentText = (script: string): string[] =>
+		scanDevText()
+			.filter(({ text }) => script.includes(text))
+			.map(({ text, file, line }) => `${file}:${line} ${text}`);
+
+	it("holds no text only a development build shows: the runtime's, on both threads", () => {
+		expect(developmentText(scriptsOf(runtime).mainThread)).toEqual([]);
+		expect(developmentText(scriptsOf(runtime).background)).toEqual([]);
+	});
+
+	it("holds no text only a development build shows: a page's main thread", () => {
+		expect(developmentText(scriptsOf(page).mainThread)).toEqual([]);
 	});
 });

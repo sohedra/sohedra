@@ -21,7 +21,7 @@ import {
 	OpCode,
 	PATCH_METHOD,
 	PROTOCOL_VERSION,
-	wireError,
+	wireDevelopmentError,
 } from "../../../src/wire/index.ts";
 import type {
 	CallRequest,
@@ -182,7 +182,7 @@ describe("a thrown error", () => {
 	});
 
 	it("keeps an error's code, the wire's own included", () => {
-		const error = wireError({
+		const error = wireDevelopmentError({
 			code: "threads_from_different_builds",
 			details: { thread: "background", received: 2, expected: 1 },
 		});

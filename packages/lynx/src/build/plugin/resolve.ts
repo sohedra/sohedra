@@ -5,7 +5,11 @@ import path from "node:path";
 
 import type { ModifyBundlerChainUtils, Rspack, RspackChain } from "@rsbuild/core";
 
-import { SERVER_ASYNC_HOOKS_IMPORT, SERVER_CRYPTO_FILE } from "../../svelte/build/index.ts";
+import {
+	SERVER_ASYNC_HOOKS_IMPORT,
+	SERVER_CRYPTO_FILE,
+	SERVER_RUNTIME_MODULE,
+} from "../../svelte/build/index.ts";
 import { PACKAGE_NAME } from "../../wire/index.ts";
 import { escapeRegExp } from "../string-literal.ts";
 import { LAYERS, PACKAGE_ROOT, RUNTIME_FILES } from "./layers.ts";
@@ -171,7 +175,21 @@ export function configureResolve(chain: RspackChain, isDev: boolean): void {
 		.rule(`${PACKAGE_NAME}:main-thread-resolve`)
 		.issuerLayer(LAYERS["main-thread"])
 		.resolve.conditionNames.merge(mainThreadConditions(isDev));
+	// Svelte's server runtime only: an app's own import of `devalue` gets the package.
+	chain.module
+		.rule(`${PACKAGE_NAME}:svelte-server-aliases`)
+		.issuerLayer(LAYERS["main-thread"])
+		.issuer(SERVER_RUNTIME_MODULE)
+		.resolve.alias.merge(SVELTE_SERVER_ALIASES);
 }
+
+/**
+ * What Svelte's server runtime imports in place of a package, on the main thread: for `devalue`,
+ * which it imports for `hydratable` alone, a stand-in that throws (svelte/runtime/devalue.ts).
+ */
+export const SVELTE_SERVER_ALIASES: Readonly<Record<string, string>> = {
+	devalue$: RUNTIME_FILES.devalue,
+};
 
 /**
  * Svelte server code the first frame never runs, kept quiet and out of the bundle.

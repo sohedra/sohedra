@@ -9,7 +9,7 @@ import { render } from "svelte/server";
 
 import { FIRST_FRAME_GLOBAL, PROPS_ID_PREFIX, wireError } from "../wire/index.ts";
 import type { Thread } from "../wire/index.ts";
-import { firstFrameError } from "./catalogue.ts";
+import { firstFrameDevelopmentError } from "./catalogue.ts";
 import { whileDrawing } from "./drawing.ts";
 import { DEV, DRAWS, firstFrame, hasGlobal, setGlobalFunction } from "./globals.ts";
 
@@ -75,7 +75,7 @@ export function mountPage<Props extends Bag>(
 			if (DEV && !warned) {
 				warned = true;
 				firstFrame.lynx.reportError(
-					firstFrameError({
+					firstFrameDevelopmentError({
 						code: "first_frame_skipped_await",
 						details: { component: App.name || "page" },
 					}),

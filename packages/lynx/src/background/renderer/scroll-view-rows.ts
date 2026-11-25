@@ -4,7 +4,6 @@
 // more than that many elements directly, pointing to `<list>`, which makes its rows on demand.
 
 import { sourceLocation } from "../../svelte/runtime/index.ts";
-import { backgroundError } from "../catalogue.ts";
 import { warnOnce } from "../report.ts";
 import type { TreeNode } from "./node.ts";
 
@@ -30,10 +29,8 @@ export function checkScrollViewRows(container: TreeNode): void {
 	if (countElements(container, SCROLL_VIEW_ROWS) <= SCROLL_VIEW_ROWS) return;
 	warned.add(container);
 	const where = sourceLocation(container);
-	warnOnce(`scroll_view_many_children:${where ?? container.lynxId}`, () =>
-		backgroundError({
-			code: "scroll_view_many_children",
-			details: { limit: SCROLL_VIEW_ROWS, where },
-		}),
-	);
+	warnOnce(`scroll_view_many_children:${where ?? container.lynxId}`, () => ({
+		code: "scroll_view_many_children",
+		details: { limit: SCROLL_VIEW_ROWS, where },
+	}));
 }

@@ -72,11 +72,9 @@ export function warnPropsIds(
 		const element = nodeOf(id);
 		const tag = element?.tag ?? "element";
 		const where = element && sourceLocation(element);
-		warnOnce(`props_id_mismatch:${where ?? tag}:${name}`, () =>
-			backgroundError({
-				code: "props_id_mismatch",
-				details: { tag, name, expected, got, where },
-			}),
-		);
+		warnOnce(`props_id_mismatch:${where ?? tag}:${name}`, () => ({
+			code: "props_id_mismatch",
+			details: { tag, name, expected, got, where },
+		}));
 	}
 }

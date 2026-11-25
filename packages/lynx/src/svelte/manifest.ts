@@ -192,6 +192,15 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		test: SOURCE,
 	},
 	{
+		id: "devalue-for-hydratable",
+		program: "build",
+		file: "src/internal/server/renderer.js",
+		anchor: "import * as devalue from 'devalue';",
+		reliesOn:
+			"the server runtime imports `devalue` only for `hydratable`, here and in `hydratable.js`, and calls only its `uneval`, which a synchronous render never reaches: `hydratable` needs async rendering's context first, and only an async render writes the hydratable block. So the main thread's build points `devalue` at a stand-in that throws",
+		test: SOURCE,
+	},
+	{
 		id: "svelte-own-dependencies",
 		program: "build",
 		file: "package.json",

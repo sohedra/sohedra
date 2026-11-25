@@ -1,7 +1,6 @@
 // An `item-key` as text, which Lynx's list needs.
 
 import { sourceLocation } from "../../svelte/runtime/index.ts";
-import { backgroundError } from "../catalogue.ts";
 import { warnOnce } from "../report.ts";
 import type { TreeNode } from "./node.ts";
 import { textOf } from "./values.ts";
@@ -15,8 +14,9 @@ export function itemKey(element: TreeNode, value: unknown): string {
 	if (typeof value === "string") return value;
 	if (typeof value === "number") return String(value);
 	const where = sourceLocation(element);
-	warnOnce(`list_item_key_object:${where ?? ""}`, () =>
-		backgroundError({ code: "list_item_key_object", details: { where } }),
-	);
+	warnOnce(`list_item_key_object:${where ?? ""}`, () => ({
+		code: "list_item_key_object",
+		details: { where },
+	}));
 	return textOf(value);
 }
