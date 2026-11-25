@@ -4,7 +4,6 @@
 import isForced from "core-js/internals/is-forced.js";
 
 const MODULES = {
-	"es.aggregate-error.cause": () => require("core-js/modules/es.aggregate-error.cause.js"),
 	"es.array.at": () => require("core-js/modules/es.array.at.js"),
 	"es.array.find-last": () => require("core-js/modules/es.array.find-last.js"),
 	"es.array.find-last-index": () => require("core-js/modules/es.array.find-last-index.js"),
@@ -12,7 +11,6 @@ const MODULES = {
 	"es.array.to-sorted": () => require("core-js/modules/es.array.to-sorted.js"),
 	"es.array.to-spliced": () => require("core-js/modules/es.array.to-spliced.js"),
 	"es.array.with": () => require("core-js/modules/es.array.with.js"),
-	"es.error.cause": () => require("core-js/modules/es.error.cause.js"),
 	"es.map.group-by": () => require("core-js/modules/es.map.group-by.js"),
 	"es.object.get-own-property-descriptor": () =>
 		require("core-js/modules/es.object.get-own-property-descriptor.js"),

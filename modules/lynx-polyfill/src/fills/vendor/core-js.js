@@ -747,57 +747,6 @@ module.exports = version;
 
 
 },
-9711(module, __unused_rspack_exports, __webpack_require__) {
-
-var uncurryThis = __webpack_require__(5274);
-var $Error = Error;
-var replace = uncurryThis(''.replace);
-var TEST = function(arg) {
-    return String(new $Error(arg).stack);
-}('zxcasd');
-// eslint-disable-next-line redos/no-vulnerable -- safe
-var V8_OR_CHAKRA_STACK_ENTRY = /\n\s*at [^:]*:[^\n]*/;
-var IS_V8_OR_CHAKRA_STACK = V8_OR_CHAKRA_STACK_ENTRY.test(TEST);
-module.exports = function(stack, dropEntries) {
-    if (IS_V8_OR_CHAKRA_STACK && typeof stack == 'string' && !$Error.prepareStackTrace) {
-        while(dropEntries--)stack = replace(stack, V8_OR_CHAKRA_STACK_ENTRY, '');
-    }
-    return stack;
-};
-
-
-},
-3409(module, __unused_rspack_exports, __webpack_require__) {
-
-var createNonEnumerableProperty = __webpack_require__(9005);
-var clearErrorStack = __webpack_require__(9711);
-var ERROR_STACK_INSTALLABLE = __webpack_require__(1997);
-// non-standard V8
-// eslint-disable-next-line es/no-nonstandard-error-properties -- safe
-var captureStackTrace = Error.captureStackTrace;
-module.exports = function(error, C, stack, dropEntries) {
-    if (ERROR_STACK_INSTALLABLE) {
-        if (captureStackTrace) captureStackTrace(error, C);
-        else createNonEnumerableProperty(error, 'stack', clearErrorStack(stack, dropEntries));
-    }
-};
-
-
-},
-1997(module, __unused_rspack_exports, __webpack_require__) {
-
-var fails = __webpack_require__(3385);
-var createPropertyDescriptor = __webpack_require__(1274);
-module.exports = !fails(function() {
-    var error = new Error('a');
-    if (!('stack' in error)) return true;
-    // eslint-disable-next-line es/no-object-defineproperty -- safe
-    Object.defineProperty(error, 'stack', createPropertyDescriptor(1, 7));
-    return error.stack !== 7;
-});
-
-
-},
 1924(module, __unused_rspack_exports, __webpack_require__) {
 
 var globalThis = __webpack_require__(8218);
@@ -1175,22 +1124,6 @@ module.exports = fails(function() {
 
 
 },
-1709(module, __unused_rspack_exports, __webpack_require__) {
-
-var isCallable = __webpack_require__(5867);
-var isObject = __webpack_require__(9400);
-var setPrototypeOf = __webpack_require__(4129);
-// makes subclassing work correct for wrapped built-ins
-module.exports = function($this, dummy, Wrapper) {
-    var NewTarget, NewTargetPrototype;
-    if (// it can work only with native `setPrototypeOf`
-    setPrototypeOf && // we haven't completely correct pre-ES6 way for getting `new.target`, so use this
-    isCallable(NewTarget = dummy.constructor) && NewTarget !== Wrapper && isObject(NewTargetPrototype = NewTarget.prototype) && NewTargetPrototype !== Wrapper.prototype) setPrototypeOf($this, NewTargetPrototype);
-    return $this;
-};
-
-
-},
 5028(module, __unused_rspack_exports, __webpack_require__) {
 
 var uncurryThis = __webpack_require__(5274);
@@ -1204,20 +1137,6 @@ if (!isCallable(store.inspectSource)) {
     };
 }
 module.exports = store.inspectSource;
-
-
-},
-2402(module, __unused_rspack_exports, __webpack_require__) {
-
-var isObject = __webpack_require__(9400);
-var createNonEnumerableProperty = __webpack_require__(9005);
-// `InstallErrorCause` abstract operation
-// https://tc39.es/ecma262/#sec-installerrorcause
-module.exports = function(O, options) {
-    if (isObject(options) && 'cause' in options) {
-        createNonEnumerableProperty(O, 'cause', options.cause);
-    }
-};
 
 
 },
@@ -1764,15 +1683,6 @@ module.exports.f = function(C) {
 
 
 },
-8817(module, __unused_rspack_exports, __webpack_require__) {
-
-var toString = __webpack_require__(8277);
-module.exports = function(argument, $default) {
-    return argument === undefined ? arguments.length < 2 ? '' : $default : toString(argument);
-};
-
-
-},
 3658(module, __unused_rspack_exports, __webpack_require__) {
 
 /* global ActiveXObject -- old IE, WSH */ var anObject = __webpack_require__(9349);
@@ -2149,23 +2059,6 @@ module.exports = function(C, x) {
     var resolve = promiseCapability.resolve;
     resolve(x);
     return promiseCapability.promise;
-};
-
-
-},
-910(module, __unused_rspack_exports, __webpack_require__) {
-
-var defineProperty = (__webpack_require__(2123)/* .f */.f);
-module.exports = function(Target, Source, key) {
-    key in Target || defineProperty(Target, key, {
-        configurable: true,
-        get: function() {
-            return Source[key];
-        },
-        set: function(it) {
-            Source[key] = it;
-        }
-    });
 };
 
 
@@ -2857,102 +2750,6 @@ module.exports = '\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u2000\u2001\u
 
 
 },
-5743(module, __unused_rspack_exports, __webpack_require__) {
-
-var getBuiltIn = __webpack_require__(4289);
-var hasOwn = __webpack_require__(2203);
-var createNonEnumerableProperty = __webpack_require__(9005);
-var isPrototypeOf = __webpack_require__(4447);
-var setPrototypeOf = __webpack_require__(4129);
-var copyConstructorProperties = __webpack_require__(3238);
-var proxyAccessor = __webpack_require__(910);
-var inheritIfRequired = __webpack_require__(1709);
-var normalizeStringArgument = __webpack_require__(8817);
-var installErrorCause = __webpack_require__(2402);
-var installErrorStack = __webpack_require__(3409);
-var DESCRIPTORS = __webpack_require__(6302);
-var IS_PURE = __webpack_require__(3717);
-module.exports = function(FULL_NAME, wrapper, FORCED, IS_AGGREGATE_ERROR) {
-    var STACK_TRACE_LIMIT = 'stackTraceLimit';
-    var OPTIONS_POSITION = IS_AGGREGATE_ERROR ? 2 : 1;
-    var path = FULL_NAME.split('.');
-    var ERROR_NAME = path[path.length - 1];
-    var OriginalError = getBuiltIn.apply(null, path);
-    if (!OriginalError) return;
-    var OriginalErrorPrototype = OriginalError.prototype;
-    // V8 9.3- bug https://bugs.chromium.org/p/v8/issues/detail?id=12006
-    if (!IS_PURE && hasOwn(OriginalErrorPrototype, 'cause')) delete OriginalErrorPrototype.cause;
-    if (!FORCED) return OriginalError;
-    var BaseError = getBuiltIn('Error');
-    var WrappedError = wrapper(function(a, b) {
-        var message = normalizeStringArgument(IS_AGGREGATE_ERROR ? b : a, undefined);
-        var result = IS_AGGREGATE_ERROR ? new OriginalError(a) : new OriginalError();
-        if (message !== undefined) createNonEnumerableProperty(result, 'message', message);
-        installErrorStack(result, WrappedError, result.stack, 2);
-        if (this && isPrototypeOf(OriginalErrorPrototype, this)) inheritIfRequired(result, this, WrappedError);
-        if (arguments.length > OPTIONS_POSITION) installErrorCause(result, arguments[OPTIONS_POSITION]);
-        return result;
-    });
-    WrappedError.prototype = OriginalErrorPrototype;
-    if (ERROR_NAME !== 'Error') {
-        if (setPrototypeOf) setPrototypeOf(WrappedError, BaseError);
-        else copyConstructorProperties(WrappedError, BaseError, {
-            name: true
-        });
-    } else if (DESCRIPTORS && STACK_TRACE_LIMIT in OriginalError) {
-        proxyAccessor(WrappedError, OriginalError, STACK_TRACE_LIMIT);
-        proxyAccessor(WrappedError, OriginalError, 'prepareStackTrace');
-    }
-    copyConstructorProperties(WrappedError, OriginalError);
-    if (!IS_PURE) try {
-        // Safari 13- bug: WebAssembly errors does not have a proper `.name`
-        if (OriginalErrorPrototype.name !== ERROR_NAME) {
-            createNonEnumerableProperty(OriginalErrorPrototype, 'name', ERROR_NAME);
-        }
-        OriginalErrorPrototype.constructor = WrappedError;
-    } catch (error) {}
-    return WrappedError;
-};
-
-
-},
-7000(__unused_rspack_module, __unused_rspack_exports, __webpack_require__) {
-
-var $ = __webpack_require__(1924);
-var getBuiltIn = __webpack_require__(4289);
-var apply = __webpack_require__(187);
-var fails = __webpack_require__(3385);
-var wrapErrorConstructorWithCause = __webpack_require__(5743);
-var AGGREGATE_ERROR = 'AggregateError';
-var $AggregateError = getBuiltIn(AGGREGATE_ERROR);
-var FORCED = !fails(function() {
-    return $AggregateError([
-        1
-    ]).errors[0] !== 1;
-}) && fails(function() {
-    return $AggregateError([
-        1
-    ], AGGREGATE_ERROR, {
-        cause: 7
-    }).cause !== 7;
-});
-// https://tc39.es/ecma262/#sec-aggregate-error
-$({
-    global: true,
-    constructor: true,
-    arity: 2,
-    forced: FORCED
-}, {
-    AggregateError: wrapErrorConstructorWithCause(AGGREGATE_ERROR, function(init) {
-        // eslint-disable-next-line no-unused-vars -- required for functions `.length`
-        return function AggregateError(errors, message) {
-            return apply(init, this, arguments);
-        };
-    }, FORCED, true)
-});
-
-
-},
 1017(__unused_rspack_module, __unused_rspack_exports, __webpack_require__) {
 
 var $ = __webpack_require__(1924);
@@ -3158,97 +2955,6 @@ $({
         for(; k < len; k++)createProperty(A, k, k === actualIndex ? value : O[k]);
         return A;
     }
-});
-
-
-},
-7354(__unused_rspack_module, __unused_rspack_exports, __webpack_require__) {
-
-/* eslint-disable no-unused-vars -- required for functions `.length` */ var $ = __webpack_require__(1924);
-var globalThis = __webpack_require__(8218);
-var apply = __webpack_require__(187);
-var wrapErrorConstructorWithCause = __webpack_require__(5743);
-var WEB_ASSEMBLY = 'WebAssembly';
-var WebAssembly = globalThis[WEB_ASSEMBLY];
-// eslint-disable-next-line es/no-error-cause -- feature detection
-var FORCED = new Error('e', {
-    cause: 7
-}).cause !== 7;
-var exportGlobalErrorCauseWrapper = function(ERROR_NAME, wrapper) {
-    var O = {};
-    // eslint-disable-next-line unicorn/no-immediate-mutation -- ES3 syntax limitation
-    O[ERROR_NAME] = wrapErrorConstructorWithCause(ERROR_NAME, wrapper, FORCED);
-    $({
-        global: true,
-        constructor: true,
-        arity: 1,
-        forced: FORCED
-    }, O);
-};
-var exportWebAssemblyErrorCauseWrapper = function(ERROR_NAME, wrapper) {
-    if (WebAssembly && WebAssembly[ERROR_NAME]) {
-        var O = {};
-        // eslint-disable-next-line unicorn/no-immediate-mutation -- ES3 syntax limitation
-        O[ERROR_NAME] = wrapErrorConstructorWithCause(WEB_ASSEMBLY + '.' + ERROR_NAME, wrapper, FORCED);
-        $({
-            target: WEB_ASSEMBLY,
-            stat: true,
-            constructor: true,
-            arity: 1,
-            forced: FORCED
-        }, O);
-    }
-};
-// https://tc39.es/ecma262/#sec-nativeerror
-exportGlobalErrorCauseWrapper('Error', function(init) {
-    return function Error1(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportGlobalErrorCauseWrapper('EvalError', function(init) {
-    return function EvalError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportGlobalErrorCauseWrapper('RangeError', function(init) {
-    return function RangeError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportGlobalErrorCauseWrapper('ReferenceError', function(init) {
-    return function ReferenceError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportGlobalErrorCauseWrapper('SyntaxError', function(init) {
-    return function SyntaxError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportGlobalErrorCauseWrapper('TypeError', function(init) {
-    return function TypeError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportGlobalErrorCauseWrapper('URIError', function(init) {
-    return function URIError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportWebAssemblyErrorCauseWrapper('CompileError', function(init) {
-    return function CompileError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportWebAssemblyErrorCauseWrapper('LinkError', function(init) {
-    return function LinkError(message) {
-        return apply(init, this, arguments);
-    };
-});
-exportWebAssemblyErrorCauseWrapper('RuntimeError', function(init) {
-    return function RuntimeError(message) {
-        return apply(init, this, arguments);
-    };
 });
 
 
@@ -3965,7 +3671,6 @@ var is_forced_default = /*#__PURE__*/__webpack_require__.n(is_forced);
 // loads only when a fill asks for it by name.
 
 const MODULES = {
-    "es.aggregate-error.cause": ()=>__webpack_require__(7000),
     "es.array.at": ()=>__webpack_require__(1017),
     "es.array.find-last": ()=>__webpack_require__(4252),
     "es.array.find-last-index": ()=>__webpack_require__(3357),
@@ -3973,7 +3678,6 @@ const MODULES = {
     "es.array.to-sorted": ()=>__webpack_require__(5235),
     "es.array.to-spliced": ()=>__webpack_require__(1652),
     "es.array.with": ()=>__webpack_require__(8944),
-    "es.error.cause": ()=>__webpack_require__(7354),
     "es.map.group-by": ()=>__webpack_require__(1110),
     "es.object.get-own-property-descriptor": ()=>__webpack_require__(8249),
     "es.object.group-by": ()=>__webpack_require__(8669),
