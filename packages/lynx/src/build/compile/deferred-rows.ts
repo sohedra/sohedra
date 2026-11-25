@@ -256,7 +256,12 @@ function ignoredDefer(element: AnyNode): string | undefined {
 		: undefined;
 }
 
-/** The edits that defer the contents of each `<list-item defer>`, and count each list's initial rows. */
+/**
+ * The edits that defer the contents of each `<list-item defer>`, and count each list's initial rows;
+ * and the edits of the blocks hydration pairs (./block-states.ts), here because this pass writes
+ * the one import line of the thread runtime's hooks: a second pass writing its own would give a
+ * component with no script two module scripts.
+ */
 export const deferredRows: Pass = (context) => {
 	const { source, filename, ast, thread, development, internals, warnings } = context;
 	const background = thread === "background";

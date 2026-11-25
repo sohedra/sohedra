@@ -119,7 +119,8 @@ export function align(
 			return result;
 		}
 		if (ours.kind === "block" && theirs.kind === "block") {
-			if (ours.key !== theirs.key) result.otherBlocks++;
+			// The place of an `{#await}` given a promise: the background draws its branch later.
+			if (ours.key !== theirs.key || ours.key === BranchKey.Await) result.otherBlocks++;
 			else {
 				result.sameBlocks++;
 				align(ours.children, theirs.children, result, `${path}{${ours.key}}`);

@@ -134,6 +134,8 @@ export interface StartOptions {
 	background?: boolean;
 	/** The keys of the data that come from the template; the host gives the rest. */
 	fromTemplate?: readonly (keyof PageState)[];
+	/** The data the first frame is drawn from, when it is not the background's. */
+	frameData?: PageState;
 }
 
 const copy = <T>(value: T): T => structuredClone(value);
@@ -208,7 +210,7 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 				draw: drawGeneratedFrame,
 				props: {
 					page: compiled.mainThread,
-					props: { data: copy(data) },
+					props: { data: copy(options.frameData ?? data) },
 					ids: recorder(ids.frame),
 				},
 			},
