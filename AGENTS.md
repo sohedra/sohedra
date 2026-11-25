@@ -27,8 +27,8 @@ read each file with its own package's settings. A Lynx package sets
 `"svelteOptions": { "namespace": "svelteLynx" }` there, and its `svelte.config.js` uses the
 binding's config (`@sohedra/lynx/config/svelte`).
 
-Before you write code, read `CONTRIBUTING.md` § Code: its rules on code shape, folders and imports,
-error messages, workarounds and tests apply to every package.
+Before you write code, read `CONTRIBUTING.md` § Code: its rules on shape, design, folders and
+imports, error messages, workarounds and tests apply to every package.
 
 ## Keeping the repository current
 
