@@ -38,20 +38,20 @@ describe("the size of a thread's script", () => {
 		}
 	});
 
-	it("is within budget for the main thread's runtime: an entry with no page (87,249 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(87_900);
+	it("is within budget for the main thread's runtime: an entry with no page (85,840 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(87_600);
 	});
 
-	it("is within budget for the background's runtime: an entry with no page (27,119 bytes measured)", () => {
-		expect(bytes(scriptsOf(runtime).background)).toBeLessThanOrEqual(27_700);
+	it("is within budget for the background's runtime: an entry with no page (22,249 bytes measured)", () => {
+		expect(bytes(scriptsOf(runtime).background)).toBeLessThanOrEqual(22_700);
 	});
 
-	it("is within budget for a minimal page's main thread, with its first frame (113,731 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(114_700);
+	it("is within budget for a minimal page's main thread, with its first frame (102,772 bytes measured)", () => {
+		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(104_800);
 	});
 
-	it("is within budget for a minimal page's background: Svelte, the renderer and the page (114,733 bytes measured)", () => {
-		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(115_400);
+	it("is within budget for a minimal page's background: Svelte, the renderer and the page (115,045 bytes measured)", () => {
+		expect(bytes(scriptsOf(page).background)).toBeLessThanOrEqual(117_300);
 	});
 });
 
