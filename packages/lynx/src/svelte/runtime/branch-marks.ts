@@ -70,14 +70,15 @@ export function ifBlock(anchor: unknown, fn: (render: Render) => void, elseif?: 
 			let started: unknown = anchor;
 			let mark: number | null | undefined;
 			let rendered = false;
-			fn((branch, number = 0) => {
+			fn((branch, number) => {
 				// The test ran: its hook, if it has one, has spoken.
 				mark = said;
 				said = undefined;
 				rendered = true;
 				started = record.start(anchor);
 				render(branch, number);
-				key = number === false ? -1 : number;
+				// None is the first branch, as Svelte's own default.
+				key = number === undefined ? 0 : number === false ? -1 : number;
 			});
 			if (!rendered) {
 				mark = said;

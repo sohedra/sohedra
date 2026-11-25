@@ -24,6 +24,18 @@ export interface Run {
 /** Every run since the fixture loaded, in order. */
 export const runs: Run[] = [];
 
+/** Whether a block's function is running now. */
+let inside = false;
+
+/** For each call, whether a block's function was running: a block's test calls it. */
+export const tested: boolean[] = [];
+
+/** Records whether a block's function is running; true. */
+export function inTest(): true {
+	tested.push(inside);
+	return true;
+}
+
 function probedIf(anchor: ProbedNode, fn: (render: Render) => void, elseif?: boolean): void {
 	// Boundary: Svelte's function, typed by what it does.
 	(svelteIf as (anchor: unknown, fn: (render: Render) => void, elseif?: boolean) => void)(
@@ -31,12 +43,17 @@ function probedIf(anchor: ProbedNode, fn: (render: Render) => void, elseif?: boo
 		(render) => {
 			const run: Run = { keys: [], before: [] };
 			runs.push(run);
-			fn((branch, key) => {
-				run.keys.push(key);
-				render(branch, key);
-				const siblings = anchor.parent?.children ?? [];
-				run.before.push(siblings[siblings.indexOf(anchor) - 1]?.name);
-			});
+			inside = true;
+			try {
+				fn((branch, key) => {
+					run.keys.push(key);
+					render(branch, key);
+					const siblings = anchor.parent?.children ?? [];
+					run.before.push(siblings[siblings.indexOf(anchor) - 1]?.name);
+				});
+			} finally {
+				inside = false;
+			}
 		},
 		elseif,
 	);

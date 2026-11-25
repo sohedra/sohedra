@@ -35,6 +35,8 @@ export interface RecordedBranch {
 	first: TreeNode | null;
 	/** Whether its mark is written. */
 	written: boolean;
+	/** Whether it took a branch more than once while the page started. */
+	again: boolean;
 }
 
 /** One node of the tree. */

@@ -10,7 +10,7 @@
 // an anchor that has a Lynx element (a text inside a `<text>`) one more. A list of the page gets
 // none: its cells pair by key. A block hydration could pair wrongly gets an unreadable mark
 // (`at` -1), so its parent's children are made again: one whose content was moved away from its
-// anchor, or one that took a branch again after its mark was written.
+// anchor, or one that took a branch again while the page started, before its mark or after.
 
 import { recordBranches } from "../../svelte/runtime/index.ts";
 import type { BranchRecorder } from "../../svelte/runtime/index.ts";
@@ -53,12 +53,19 @@ export function branchMarks(queue: OpQueue): BranchMarks {
 			let first: TreeNode | null = null;
 			if (parent && started !== node)
 				first = started === parent ? parent.first : (started as TreeNode).next;
-			if (node.branch?.written) {
+			const before = node.branch;
+			if (before?.written) {
 				if (parent && parent.lynxId !== 0) unreadable(parent, key);
 				return;
 			}
-			if (!node.branch) anchors.push(node);
-			node.branch = { key, first: first === node ? null : first, written: false };
+			if (!before) anchors.push(node);
+			// A block that ran again while the page starts: what its content is cannot be told.
+			node.branch = {
+				key,
+				first: first === node ? null : first,
+				written: false,
+				again: before !== null,
+			};
 			if (parent && parent.lynxId !== 0) late.add(parent);
 		},
 	};
@@ -87,7 +94,7 @@ export function branchMarks(queue: OpQueue): BranchMarks {
 			const block = child.branch;
 			if (block && !block.written) {
 				block.written = true;
-				const entries = block.first === null ? 0 : count(child, block.first);
+				const entries = block.again ? -1 : block.first === null ? 0 : count(child, block.first);
 				if (listOfPage) {
 					// Its cells pair by key.
 				} else if (entries === -1) unreadable(element, block.key);

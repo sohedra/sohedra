@@ -344,11 +344,18 @@ export const checks: Checks = {
 			{ keys: [], before: [] },
 		]);
 		expect(drawn).toEqual(["0", "0", "1", "-1", "-1", "-1"]);
-		// Compiled code calls `$.if` with the anchor and the function, and `true` for `{:else if}`
-		// when it is not folded into the block before it.
+		// Compiled code calls `$.if` with the anchor and the function.
 		expect(compileClient("{#if x}<view></view>{:else if el}<text></text>{/if}")).toMatch(
 			/\$\.if\(node, \(\$\$render\) => \{/,
 		);
+		// A block's test runs inside that function: a hook in it speaks while the block records.
+		const tested = (probe as unknown as { tested: boolean[] }).tested;
+		tested.length = 0;
+		await mountThrough(
+			`<script>import { inTest } from "${pathToFileURL(file).href}";</script>{#if inTest()}<view></view>{/if}`,
+			file,
+		);
+		expect(tested).toEqual([true]);
 	},
 
 	"component-crossing-check": async () => {
@@ -407,13 +414,16 @@ export const checks: Checks = {
 		try {
 			const { component } = await loadComponent(
 				"<script>const runs = globalThis.__mountRuns; const draw = (name) => (runs.push(name), name);" +
+					'const boom = () => { throw new Error("thrown"); };' +
 					'let items = [1, 2]; const later = new Promise(() => {}); $effect(() => { runs.push("effect"); });</script>' +
 					'{#if items.length}<view name={draw("if")} {@attach () => { runs.push("attach"); }}>' +
 					'{#each items as item}<text name={draw("each " + item)}>{item}</text>{/each}' +
 					'<svelte:boundary><view name={draw("boundary")}>' +
 					'{#key items}<view name={draw("key")}></view>{/key}</view></svelte:boundary>' +
 					"</view>{/if}" +
-					'<view>{#await later}<view name={draw("pending")}></view>{:then}<view></view>{/await}</view>',
+					'<view>{#await later}<view name={draw("pending")}></view>{:then}<view></view>{/await}</view>' +
+					'<svelte:boundary>{#snippet failed()}<view name={draw("failed")}></view>{/snippet}' +
+					"<view name={boom()}></view></svelte:boundary>",
 			);
 			const renderer = await treeRenderer();
 			const client = await svelteClient();
@@ -425,9 +435,13 @@ export const checks: Checks = {
 			// time `mount` returns, and no effect has run.
 			expect(runs.toSorted()).toEqual(["boundary", "each 1", "each 2", "if", "key"]);
 			// `{#await}` draws its pending branch only in a task it queues, which a flush runs before
-			// the effects: it comes after the rendered items, and the first frame marks the block.
+			// the effects: it comes after the rendered items, and the first frame marks the block. A
+			// boundary whose children threw draws its `failed` there too, never among the rendered
+			// items, where it would stand against the first frame's children.
 			client.flushSync();
-			expect(runs.slice(5).toSorted()).toEqual(["attach", "effect", "pending"]);
+			await Promise.resolve();
+			client.flushSync();
+			expect(runs.slice(5).toSorted()).toEqual(["attach", "effect", "failed", "pending"]);
 			await client.unmount(app);
 		} finally {
 			delete (globalThis as { __mountRuns?: string[] }).__mountRuns;

@@ -107,6 +107,23 @@ describe("the branch marks", () => {
 		marks.end();
 	});
 
+	it("make the parent unreadable when a block takes a branch again before its mark", () => {
+		const { queue, marks, block } = setup();
+		const view = element("view");
+		const at = anchor();
+		link(view, at, null);
+		const old = element("text");
+		block(at, 0, [old]);
+		// As Svelte's branches do it: the new branch goes in before the anchor, then the old one goes.
+		const started = marks.recorder.start(at);
+		link(view, element("image"), at);
+		unlink(old);
+		marks.recorder.taken(at, -1, started);
+		marks.made(view);
+		expect(queue.take()).toEqual([[OpCode.Branch, view.lynxId, -1, 0, -1]]);
+		marks.end();
+	});
+
 	it("make the parent unreadable when a block's content moved away from its anchor", () => {
 		const { queue, marks, block } = setup();
 		const view = element("view");

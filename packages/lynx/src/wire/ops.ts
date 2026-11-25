@@ -42,7 +42,9 @@ export const OpCode = {
 	 * `[Branch, parentId, key, count, at]`: written only among a page's rendered items, for
 	 * hydration. A block of Svelte's took the branch `key` (an `{#if}`'s number, as Svelte's server
 	 * writes it in the block's marker, or a `BranchKey`); its content is the last `count` of
-	 * `parentId`'s entries once its first `at` children are entries, an inner block being one.
+	 * `parentId`'s entries once its first `at` children are entries, an inner block being one. An
+	 * `at` of -1 is a mark that cannot be read: the background lost track of a block there, and
+	 * hydration makes that parent's children again.
 	 */
 	Branch: 12,
 } as const;
@@ -53,7 +55,10 @@ export const BranchKey = {
 	Second: -2,
 	/** An `{#await}` given a promise: the background draws its content after the rendered items. */
 	Await: -3,
-	/** A boundary's `failed`. */
+	/**
+	 * A boundary's `failed`. Neither the background nor a synchronous first frame writes it among
+	 * the rendered items: it is here for the first frame's parser, which reads `<!--[?-->`.
+	 */
 	Failed: -4,
 } as const;
 
