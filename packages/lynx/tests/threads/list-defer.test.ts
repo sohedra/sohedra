@@ -141,12 +141,12 @@ describe("a deferred row", () => {
 		const { page, list } = await deferredRows();
 		const element = page.byClass("list");
 		const uid = page.engine.state(element).uid;
-		const answer = page.asMainThread(() => list().componentAtIndex(element, uid, 5, 900));
+		const answer = page.asMainThread(() => list().componentAtIndex!(element, uid, 5, 900));
 		expect(answer).toBeUndefined();
-		const written = page.asMainThread(() => list().componentAtIndex(element, uid, 6, 901));
+		const written = page.asMainThread(() => list().componentAtIndex!(element, uid, 6, 901));
 		expect(written).toBeUndefined();
 		await page.settle();
-		expect(typeof page.asMainThread(() => list().componentAtIndex(element, uid, 6, 902))).toBe(
+		expect(typeof page.asMainThread(() => list().componentAtIndex!(element, uid, 6, 902))).toBe(
 			"number",
 		);
 		expect(page.errors).toEqual([]);

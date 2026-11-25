@@ -9,6 +9,7 @@ import {
 	warnPropsIds,
 } from "../../../src/background/hydration.ts";
 import { startTestPage } from "../../../src/testing/index.ts";
+import type { HydrationMismatch } from "../../../src/wire/index.ts";
 
 describe("a refused hydration", () => {
 	it.each([
@@ -44,6 +45,14 @@ describe("a refused hydration", () => {
 	] as const)("says %j", (mismatch, phrase) => {
 		const tag = mismatch.element === 1 ? "page" : "view";
 		expect(describeMismatch(mismatch, tag)).toBe(phrase);
+	});
+
+	it("names a difference of a kind this build does not know", () => {
+		// Boundary: a kind no reader has, as another build could send it.
+		const mismatch = { kind: "order", element: 2 } as unknown as HydrationMismatch;
+		expect(describeMismatch(mismatch, "view")).toBe(
+			"the <view> differs in a way this build does not know (order)",
+		);
 	});
 
 	it("says only that it was refused when the element is gone", () => {

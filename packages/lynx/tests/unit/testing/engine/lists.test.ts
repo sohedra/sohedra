@@ -106,6 +106,17 @@ describe("a list", () => {
 		handle.hide(kept);
 	});
 
+	it("calls none of the page's callbacks once the page let go of them, as Lynx", () => {
+		const { element, asked, returned } = list();
+		const handle = engine().list(element);
+		const cell = handle.show(0);
+		engine().functions.__UpdateListCallbacks(element, null, null, null);
+		expect(() => handle.show(1)).toThrow("The list has no cell for the unique id -1 at index 1.");
+		handle.hide(cell);
+		expect(asked).toHaveLength(1);
+		expect(returned).toEqual([]);
+	});
+
 	it("throws when asked for a cell past the items the page gave it", () => {
 		const { element } = list();
 		const f = engine().functions;

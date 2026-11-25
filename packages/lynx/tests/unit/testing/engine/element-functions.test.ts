@@ -1,8 +1,9 @@
-// Every element function the main thread calls exists on the engine, and a page's globals carry
-// them.
+// Every element function the main thread calls exists on the engine, the build keeps it to the
+// main thread, and a page's globals carry them.
 
 import { describe, expect, it } from "@rstest/core";
 
+import { ELEMENT_FUNCTIONS } from "../../../../src/build/checks/element-functions.ts";
 import { engineForEach } from "./engine-fixture.ts";
 
 const engine = engineForEach();
@@ -61,5 +62,12 @@ describe("the engine's element functions", () => {
 	it("have nothing else: a function Lynx has no use for here is not a stand-in", () => {
 		const names = Object.keys(engine().functions).toSorted();
 		expect(names).toEqual(CALLED_BY_THE_MAIN_THREAD.toSorted());
+	});
+
+	it("are each one the build keeps to the main thread", () => {
+		const unknown = Object.keys(engine().functions).filter(
+			(name) => name.startsWith("__") && !ELEMENT_FUNCTIONS.has(name),
+		);
+		expect(unknown).toEqual([]);
 	});
 });

@@ -193,7 +193,7 @@ describe("a list in a let-go row", () => {
 		await scrollThrough({ scroll, from: 0, to: 21, settle: page.settle });
 		expect(() => page.byClass("inner-1")).toThrow();
 		const uid = page.engine.state(inner).uid;
-		expect(page.asMainThread(() => callbacks.componentAtIndex(inner, uid, 0, 1))).toBe(-1);
+		expect(page.asMainThread(() => callbacks.componentAtIndex!(inner, uid, 0, 1))).toBe(-1);
 		await scrollThrough({ scroll, from: 21, to: 0, settle: page.settle });
 		const again = page.byClass("inner-1");
 		expect(again).not.toBe(inner);

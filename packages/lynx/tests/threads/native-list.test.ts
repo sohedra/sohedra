@@ -182,8 +182,8 @@ describe("<list>", () => {
 		const { page, listElement, list } = await nativeList();
 		const element = listElement();
 		const uid = page.engine.state(element).uid;
-		expect(page.asMainThread(() => list().componentAtIndex(element, uid, 7, 1))).toBe(-1);
-		page.asMainThread(() => list().enqueueComponent(element, uid, 99_999));
+		expect(page.asMainThread(() => list().componentAtIndex!(element, uid, 7, 1))).toBe(-1);
+		page.asMainThread(() => list().enqueueComponent!(element, uid, 99_999));
 		page.asMainThread(() => list().componentAtIndexes!(element, uid, [0, 9], [3, 4], false, true));
 		const flushes = page.engine.flushes.slice(-2) as Record<string, unknown>[];
 		expect(flushes[0]).toEqual({ asyncFlush: true });
@@ -210,7 +210,7 @@ describe("<list>", () => {
 		await change((feed) => (feed.show = false));
 		expect(page.engine.all()).not.toContain(element);
 		const uid = page.engine.state(element).uid;
-		expect(page.asMainThread(() => callbacks.componentAtIndex(element, uid, 0, 1))).toBe(-1);
+		expect(page.asMainThread(() => callbacks.componentAtIndex!(element, uid, 0, 1))).toBe(-1);
 		expect(page.errors).toEqual([]);
 	});
 });

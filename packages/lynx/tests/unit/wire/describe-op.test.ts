@@ -54,4 +54,9 @@ describe("describeOp", () => {
 		expect(describeOp(op)).toBe(plain);
 		expect(describeOp(op, (id) => TAGS[id])).toBe(tagged);
 	});
+
+	it("names the kind of an op this build does not know", () => {
+		// Boundary: a kind no reader has, as another build could send it.
+		expect(describeOp([99, 42] as unknown as Op)).toBe("apply a change of unknown kind 99");
+	});
 });

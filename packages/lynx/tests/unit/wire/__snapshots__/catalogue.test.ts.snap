@@ -28,6 +28,14 @@ Load the value on the background instead: in an effect, or with await inside a <
 https://sohedra.com/e/hydratable_not_on_lynx"
 `;
 
+exports[`the wire's catalogue > message_kind_unknown: the message 1`] = `
+"A message between the threads has a kind this build does not know (12).
+Seen on the main thread.
+
+Build the app again and reopen the page, so both threads load from one build. If they already do, report it as a bug in @sohedra/lynx.
+https://sohedra.com/e/message_kind_unknown"
+`;
+
 exports[`the wire's catalogue > page_already_mounted: the message 1`] = `
 "A second call of \`mountPage\` did nothing: the page the first call started still runs.
 Seen on the main thread.
