@@ -1,5 +1,5 @@
-// ES2022's `cause` option of the error constructors, by core-js's modules: on constructors that
-// ignore it, as PrimJS's do.
+// ES2022's `cause` option of the error constructors, on constructors that ignore it, as PrimJS's
+// do: the fill wraps each, keeping the constructor's shape and the specification's order.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -91,5 +91,67 @@ describe("the constructors it gives", () => {
 		expect(error.message).toBe("both");
 		expect(error.cause).toBe(3);
 		expect(error).toBeInstanceOf(own[7]);
+	});
+});
+
+describe("the constructors' own shape", () => {
+	it("have the engine's name and length, a fixed prototype, and Error's class side", () => {
+		filled.forEach((Filled, index) => {
+			const name = NAMES[index]!;
+			expect(Filled.name, name).toBe(name);
+			expect(Filled.length, name).toBe(name === "AggregateError" ? 2 : 1);
+			expect(Object.getOwnPropertyDescriptor(Filled, "prototype"), name).toEqual({
+				value: own[index]!.prototype,
+				writable: false,
+				enumerable: false,
+				configurable: false,
+			});
+			if (name !== "Error") expect(Object.getPrototypeOf(Filled), name).toBe(FilledError);
+		});
+	});
+
+	it("make a subclass's errors, and take the prototype from new.target", () => {
+		class AppError extends FilledError! {}
+		const error = new AppError("app", { cause: 1 });
+		expect(error).toBeInstanceOf(AppError);
+		expect(error).toBeInstanceOf(own[0]);
+		expect(error.cause).toBe(1);
+		const custom = { custom: true };
+		const target = new Proxy(function () {}, {
+			get: (base, key) => (key === "prototype" ? custom : base[key as keyof typeof base]),
+		});
+		expect(Object.getPrototypeOf(Reflect.construct(FilledAggregateError!, [[]], target))).toBe(
+			custom,
+		);
+		const plain = function () {};
+		plain.prototype = 1;
+		expect(Object.getPrototypeOf(Reflect.construct(FilledTypeError!, [], plain))).toBe(
+			own[5]!.prototype,
+		);
+	});
+
+	it("read the message, then the cause, then an AggregateError's errors", () => {
+		const order: string[] = [];
+		const message = {
+			toString: () => {
+				order.push("message");
+				return "m";
+			},
+		};
+		const options = {
+			get cause() {
+				order.push("cause");
+				return 0;
+			},
+		};
+		const errors = {
+			[Symbol.iterator]: () => {
+				order.push("errors");
+				return [][Symbol.iterator]();
+			},
+		};
+		new FilledError!(message, options);
+		new FilledAggregateError!(errors, message, options);
+		expect(order).toEqual(["message", "cause", "message", "cause", "errors"]);
 	});
 });
