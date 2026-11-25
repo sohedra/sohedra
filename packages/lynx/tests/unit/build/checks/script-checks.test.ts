@@ -342,7 +342,7 @@ describe("a component's errors", () => {
 	});
 });
 
-describe("Svelte's own mount and unmount", () => {
+describe("Svelte's own mount, unmount and hydrate", () => {
 	it("are an error at their import, which names the binding's", () => {
 		const text = moduleError('import { mount, tick } from "svelte";\nexport { mount, tick };');
 		expect(text.split("\n")[0]).toBe(
@@ -376,6 +376,27 @@ describe("Svelte's own mount and unmount", () => {
 		expect(moduleError('import * as svelte from "svelte";\nexport const t = svelte.tick;')).toBe(
 			"",
 		);
+	});
+
+	it("are an error for hydrate, in every form, whose fix is the binding's mount", () => {
+		const text = moduleError('import { hydrate } from "svelte";\nvoid hydrate;');
+		expect(text.split("\n")[0]).toBe(
+			"`hydrate` is imported from \"svelte\", whose `hydrate` works with the web's DOM, not with Lynx's page.",
+		);
+		expect(text).toContain("util.ts:1:10");
+		expect(text).toContain(
+			'Use `mount` from "@sohedra/lynx": the binding hydrates the first frame itself.',
+		);
+		expect(codes(text)).toEqual(["svelte_mount_imported"]);
+		expect(codes(moduleError('export { hydrate } from "svelte";'))).toEqual([
+			"svelte_mount_imported",
+		]);
+		expect(
+			codes(moduleError('import * as svelte from "svelte";\nexport const h = svelte.hydrate;')),
+		).toEqual(["svelte_mount_imported"]);
+		expect(
+			moduleError('import type { hydrate } from "svelte";\nexport type H = typeof hydrate;'),
+		).toBe("");
 	});
 
 	it("leave the binding's, a type import and the silencing comment alone", () => {
