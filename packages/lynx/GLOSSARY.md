@@ -130,6 +130,10 @@ _Avoid_: result, response
 context release or a rewrite.\
 _Avoid_: event (as the general name), dispatch
 
+**Kind**: What a message, a patch item, an op or a call is: a message's `t`, the first member of the
+others. Every reader of them handles each kind, so a new one fails to compile until it does.\
+_Avoid_: type, tag
+
 **Rewrite**: The main thread asking the background to write a subtree again, with the same element
 ids, from what it holds now.\
 _Avoid_: re-render, rewrite (for build changes)
