@@ -30,14 +30,14 @@ describe("the elements hydration is not sure of", () => {
 		);
 	});
 
-	it("are those it wrote an attribute over in a block, and not what is under them", () => {
+	it("are those it wrote an attribute over in a block, and what is under them", () => {
 		expect(
 			unsure(
 				matchPlan(`<view><!--[0--><view class="a"><text>x</text></view><!--]--></view>`, [
 					view(10, [block(0, [view(11, [text(12, ["x"])], "b")])]),
 				]),
 			),
-		).toEqual([11]);
+		).toEqual([11, 12]);
 	});
 
 	it("are none where it wrote only the ids of $props.id() in a block", () => {
@@ -109,9 +109,15 @@ describe("hydration's match where marks cannot be read", () => {
 		).toEqual(["adopt 10 <view> = 2", "make again in 10 = 2: make 11 12, drop 3 5"]);
 	});
 
-	it("refuses a parent with no mark for a drawn block, outside every block", () => {
+	it("makes a parent's children again where a drawn block has no mark, outside every block", () => {
 		expect(
-			refusalOf(`<view><!--[0--><text>a</text><!--]--></view>`, [view(10, [text(11, ["a"])])]),
-		).toEqual({ kind: "tag", element: 10 });
+			planOf(`<view><!--[0--><text>a</text><!--]--></view>`, [view(10, [text(11, ["a"])])]),
+		).toEqual(["adopt 10 <view> = 2", "make again in 10 = 2: make 11, drop 3"]);
+	});
+
+	it("refuses a parent's children that hold no block and do not line up", () => {
+		expect(
+			refusalOf(`<view><text>a</text></view>`, [view(10, [text(11, ["a"]), view(12)])]),
+		).toEqual({ kind: "missing", element: 12, expected: "view" });
 	});
 });

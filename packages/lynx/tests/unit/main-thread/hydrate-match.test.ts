@@ -402,12 +402,13 @@ describe("hydration's match of Svelte's blocks", () => {
 		).toEqual(["adopt 10 <view> = 2", "make again in 10 = 2: make 11, drop 3 5"]);
 	});
 
-	it("refuses a parent's children that do not line up around a block both took alike", () => {
+	// A block among the children explains the difference: nothing there is paired, nothing refused.
+	it("makes a parent's children again where they do not line up around a block both took alike", () => {
 		expect(
-			refusalOf(`<view><!--[0--><text>a</text><!--]--><image></image></view>`, [
+			planOf(`<view><!--[0--><text>a</text><!--]--><image></image></view>`, [
 				el(10, "view", [block(0, [el(11, "text", ["a"])]), el(12, "view")]),
 			]),
-		).toEqual({ kind: "tag", element: 12, expected: "view", got: "image" });
+		).toEqual(["adopt 10 <view> = 2", "make again in 10 = 2: make 11 12, drop 3 5"]);
 	});
 });
 

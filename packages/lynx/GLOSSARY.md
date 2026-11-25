@@ -194,9 +194,9 @@ _Avoid_: diff, compare
 over it.\
 _Avoid_: claim, take over
 
-**Mismatch**: A difference between the first frame and the background outside every block. It
-refuses hydration and leads to a rewrite of the root. A difference inside a block is made again in
-place.\
+**Mismatch**: A difference between the first frame and the background outside every block, in a
+parent that holds no block. It refuses hydration and leads to a rewrite of the root. A difference
+inside a block, or among children that hold one, is made again in place.\
 _Avoid_: hydration error
 
 **Thread branch**: A part of the page only one thread renders (`{#if background}`). The match needs

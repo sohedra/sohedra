@@ -14,16 +14,16 @@
 //
 // What may differ, and is written over the first frame or made again in place:
 //   - a text;
-//   - inside a block, an attribute: hydration is not sure of the element it wrote over
-//     (`Plan.unsure`), and replays no early event there;
+//   - inside a block, an attribute: hydration is not sure of the element it wrote over, nor of
+//     what is under it (`Plan.unsure`), and replays no early event there;
 //   - inside a block, a sequence that does not line up, or a list whose keys differ: the block's
 //     content, or the parent's children, are made again whole, and none of it is adopted;
-//   - a parent's children that hold a block that is not an `{#if}`'s branch, or whose marks cannot
-//     be read: made again whole when they do not line up;
+//   - a parent's children that hold a block, on either side, and do not line up: made again whole;
+//   - a parent's children whose marks cannot be read: made again whole, lined up or not;
 //   - events, styles set from code, and what the first mount's effects changed: none of them is in
 //     the first frame.
-// What refuses hydration (a mismatch), outside every block: a sequence that does not line up, an
-// attribute that differs, and a list whose keys differ. An attribute that differs only in
+// What refuses hydration (a mismatch), outside every block: a parent's children that hold no block
+// and do not line up, an attribute that differs, and a list whose keys differ. An attribute that differs only in
 // `$props.id()`'s ids is written over the first frame's, and kept for a development build's
 // warning: the ids agree unless a component only one thread renders is in a branch whose test the
 // build does not recognize as one, or a component binding renders the first frame twice. Inside a
@@ -86,7 +86,10 @@ export interface Plan {
 	adoptedCells: Set<number>;
 	/** Attributes outside a block whose ids of `$props.id()` differ, written over the first frame's. */
 	propsIds: PropsIdDifference[];
-	/** The adopted elements hydration wrote an attribute over, but an id of `$props.id()`. */
+	/**
+	 * The adopted elements hydration wrote an attribute over, but an id of `$props.id()`, and what is
+	 * under them.
+	 */
 	unsure: Set<number>;
 }
 
@@ -148,9 +151,6 @@ const compared = (name: string): boolean => !name.startsWith(MAIN_THREAD_PREFIX)
  */
 const asNone = (name: string, value: AttrValue | undefined): boolean =>
 	value === undefined || (name === "class" && value === "");
-
-/** Whether a block is not an `{#if}`'s branch: a second state, an `{#await}`'s place, a failure. */
-const notAnIf = (key: number): boolean => key < -1;
 
 /** Matches the drawn page against the rendered one. */
 export function matchFrame(options: {
@@ -230,11 +230,12 @@ export function matchFrame(options: {
 			plan.repairs.push({ parent: id, drawnParent: drawnId, make, drop });
 	}
 
-	/** The first difference of a parent's children outside every block, as a mismatch. */
+	/** The first difference of a parent's children that hold no block, as a mismatch. */
 	function refusal(id: number, built: Built[], drawn: Drawn[]): Mismatch {
 		const ours = builtElements(built);
 		const theirs = drawnElements(drawn);
-		for (let index = 0; index < Math.max(ours.length, theirs.length); index++) {
+		// With no block on either side, the two differ in an element: the loop ends there.
+		for (let index = 0; ; index++) {
 			const mine = ours[index];
 			const yours = theirs[index];
 			if (mine === undefined)
@@ -249,9 +250,17 @@ export function matchFrame(options: {
 					got: yours.tag,
 				});
 		}
-		// The same elements, in blocks on one side only.
-		return new Mismatch({ kind: "tag", element: id });
 	}
+
+	/** What the plan lists, in the order `rewind` takes their lengths. */
+	const listed: unknown[][] = [
+		plan.adopt,
+		plan.writes,
+		plan.lists,
+		plan.nestedLists,
+		plan.repairs,
+		plan.textRepairs,
+	];
 
 	/** Forgets what the plan holds past `at`: a block's content that is made again after all. */
 	function rewind(at: number[]): void {
@@ -259,12 +268,7 @@ export function matchFrame(options: {
 			plan.unsure.delete(id);
 			plan.adoptedCells.delete(id);
 		}
-		plan.adopt.length = at[0]!;
-		plan.writes.length = at[1]!;
-		plan.lists.length = at[2]!;
-		plan.nestedLists.length = at[3]!;
-		plan.repairs.length = at[4]!;
-		plan.textRepairs.length = at[5]!;
+		listed.forEach((list, index) => (list.length = at[index]!));
 	}
 
 	/**
@@ -277,13 +281,14 @@ export function matchFrame(options: {
 		built: Built[],
 		drawn: Drawn[],
 		inBlock: boolean,
+		over: boolean,
 	): void {
 		for (let index = 0; index < built.length; index++) {
 			const ours = built[index]!;
 			const theirs = drawn[index]!;
 			if (typeof ours === "number") {
 				// Boundary: the sequences line up, so an element is against an element.
-				pair(ours, theirs as DrawnNode, inBlock);
+				pair(ours, theirs as DrawnNode, inBlock, over);
 				continue;
 			}
 			// Boundary: as above, a block against a block.
@@ -295,16 +300,9 @@ export function matchFrame(options: {
 				continue;
 			}
 			// What differs deeper, a list's keys, is made again with the block's content.
-			const at = [
-				plan.adopt.length,
-				plan.writes.length,
-				plan.lists.length,
-				plan.nestedLists.length,
-				plan.repairs.length,
-				plan.textRepairs.length,
-			];
+			const at = listed.map((list) => list.length);
 			try {
-				sequence(id, drawnId, content, drawnContent, true);
+				sequence(id, drawnId, content, drawnContent, true, over);
 			} catch (error) {
 				if (!(error instanceof Mismatch)) throw error;
 				rewind(at);
@@ -314,7 +312,7 @@ export function matchFrame(options: {
 	}
 
 	/** A parent's children: its texts, then its entries. */
-	function children(id: number, drawn: DrawnNode, inBlock: boolean): void {
+	function children(id: number, drawn: DrawnNode, inBlock: boolean, over: boolean): void {
 		texts(id, drawn);
 		const entries = entriesOf(node(id));
 		const drawnChildren = drawnEntries(drawn.children);
@@ -325,19 +323,17 @@ export function matchFrame(options: {
 		}
 		const built = builtEntries(entries);
 		if (linesUp(built, drawnChildren)) {
-			sequence(id, drawn.id, built, drawnChildren, inBlock);
+			sequence(id, drawn.id, built, drawnChildren, inBlock, over);
 			return;
 		}
 		const explained =
-			inBlock ||
-			built.some((entry) => typeof entry !== "number" && notAnIf(entry.key)) ||
-			drawnChildren.some((child) => isBlock(child) && notAnIf(child.key));
+			inBlock || built.some((entry) => typeof entry !== "number") || drawnChildren.some(isBlock);
 		if (!explained) throw refusal(id, built, drawnChildren);
 		remake(id, drawn.id, built, drawnChildren);
 	}
 
 	/** Compares a pair of the same tag, and what is under it. */
-	function pair(id: number, drawn: DrawnNode, inBlock: boolean): void {
+	function pair(id: number, drawn: DrawnNode, inBlock: boolean, over = false): void {
 		const built = node(id);
 		plan.adopt.push([id, drawn.id]);
 		if (built.tag === "#text") {
@@ -371,16 +367,19 @@ export function matchFrame(options: {
 			plan.writes.push({ id, name, value: null });
 			plan.unsure.add(id);
 		}
+		// What is under an element written over is not sure either.
+		if (over) plan.unsure.add(id);
+		else over = plan.unsure.has(id);
 		if (drawn.cells) {
-			list(id, drawn, inBlock);
+			list(id, drawn, inBlock, over);
 			return;
 		}
 		if (drawn.tag === "list") plan.nestedLists.push({ id, drawn: drawn.id });
-		children(id, drawn, inBlock);
+		children(id, drawn, inBlock, over);
 	}
 
 	/** A list's cells by key; in a block, as the list is, so their attributes may differ too. */
-	function list(id: number, drawn: DrawnNode, inBlock: boolean): void {
+	function list(id: number, drawn: DrawnNode, inBlock: boolean, over: boolean): void {
 		const built = node(id);
 		const keys = (built.list?.keys ?? []).map(keyText);
 		const got = (drawn.cells ?? []).map((cell) => keyText(cell.attrs.get("item-key")));
@@ -402,7 +401,7 @@ export function matchFrame(options: {
 				throw new Mismatch({ kind: "extra", element: id, got: "list-item" });
 			cells.push(cell.id);
 			plan.adoptedCells.add(item);
-			pair(item, cell.node, inBlock);
+			pair(item, cell.node, inBlock, over);
 		}
 		plan.lists.push({ id, drawn: drawn.id, items, cells });
 	}
@@ -449,7 +448,7 @@ export function matchFrame(options: {
 	}
 
 	try {
-		children(root.id, root, false);
+		children(root.id, root, false, false);
 		return plan;
 	} catch (error) {
 		if (error instanceof Mismatch) return { mismatch: error.mismatch };

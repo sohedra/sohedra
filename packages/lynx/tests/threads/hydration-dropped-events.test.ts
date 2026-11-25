@@ -36,10 +36,14 @@ import SessionAvatar from "../fixtures/threads/early/SessionAvatar.svelte";
 import drawSessionAvatar from "../fixtures/threads/early/SessionAvatar.svelte?first-frame";
 import TextInRun from "../fixtures/threads/early/TextInRun.svelte";
 import drawTextInRun from "../fixtures/threads/early/TextInRun.svelte?first-frame";
+import ThroughWrittenOver from "../fixtures/threads/early/ThroughWrittenOver.svelte";
+import drawThroughWrittenOver from "../fixtures/threads/early/ThroughWrittenOver.svelte?first-frame";
 import TouchBubble from "../fixtures/threads/early/TouchBubble.svelte";
 import drawTouchBubble from "../fixtures/threads/early/TouchBubble.svelte?first-frame";
 import TouchBubbleSession from "../fixtures/threads/early/TouchBubbleSession.svelte";
 import drawTouchBubbleSession from "../fixtures/threads/early/TouchBubbleSession.svelte?first-frame";
+import UnderWrittenOver from "../fixtures/threads/early/UnderWrittenOver.svelte";
+import drawUnderWrittenOver from "../fixtures/threads/early/UnderWrittenOver.svelte?first-frame";
 import type { FirstFrameCopy, SveltePage } from "./svelte-page.ts";
 import { startSveltePage } from "./svelte-page.ts";
 
@@ -243,6 +247,24 @@ describe("an early tap in a branch picked by data only the background has", () =
 		await tapEarly(page, "cta");
 		expect(log).toEqual([]);
 		expect(page.warnings).toEqual([dropped("tap", '<text class="cta">')]);
+	});
+});
+
+// A part picked by thread with no `{#if}` of its own, inside one both threads take: the elements
+// look alike but for an attribute, which hydration writes over. It is not sure of that element, nor
+// of what is under it.
+describe("an early tap under an element hydration wrote over", () => {
+	it("runs no handler of its own element, and is warned about", async () => {
+		const { page, log } = start(UnderWrittenOver, drawUnderWrittenOver);
+		await tapEarly(page, "inner");
+		expect(log).toEqual([]);
+		expect(page.warnings).toEqual([dropped("tap", '<text class="inner">')]);
+	});
+
+	it("runs no handler of the element written over", async () => {
+		const { page, log } = start(ThroughWrittenOver, drawThroughWrittenOver);
+		await tapEarly(page, "inner");
+		expect(log).toEqual([]);
 	});
 });
 

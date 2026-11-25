@@ -1,6 +1,6 @@
 // Hydration's changes, once the match has decided them (./match.ts): the page's applier takes the
 // drawn elements under the background's ids, with what differs written over them, and makes in
-// place the runs that differ more. A list keeps the cells Lynx holds; a cell it handed back is let
+// place what differs more. A list keeps the cells Lynx holds; a cell it handed back is let
 // go of, and is made from the background's text when Lynx asks for it again. Then the events the
 // first frame heard are replayed through the background's handlers, except those on an element the
 // match did not adopt (it was made again) or is not sure of (it wrote an attribute over).

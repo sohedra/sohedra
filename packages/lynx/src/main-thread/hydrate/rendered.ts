@@ -77,24 +77,31 @@ function made(nodes: Map<number, RenderedNode>, id: number, op: Op): RenderedNod
 	return node;
 }
 
+/** The node a create op makes. */
+function renderedNode(
+	create: [typeof OpCode.Create, number, string] | [typeof OpCode.CreateText, number, string],
+): RenderedNode {
+	return {
+		id: create[1],
+		create,
+		tag: create[0] === OpCode.Create ? create[2] : "#text",
+		text: create[0] === OpCode.CreateText ? create[2] : "",
+		attrs: new Map(),
+		ops: [],
+		children: [],
+		parent: 0,
+		list: null,
+		marks: null,
+		moved: false,
+	};
+}
+
 function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 	for (const op of ops) {
 		switch (op[0]) {
 			case OpCode.Create:
 			case OpCode.CreateText:
-				nodes.set(op[1], {
-					id: op[1],
-					create: op,
-					tag: op[0] === OpCode.Create ? op[2] : "#text",
-					text: op[0] === OpCode.CreateText ? op[2] : "",
-					attrs: new Map(),
-					ops: [],
-					children: [],
-					parent: 0,
-					list: null,
-					marks: null,
-					moved: false,
-				});
+				nodes.set(op[1], renderedNode(op));
 				break;
 			case OpCode.SetAttr: {
 				const node = made(nodes, op[1], op);
@@ -153,19 +160,7 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 /** The tree the first `count` items of a patch describe. Throws `NotATree` when they describe none. */
 export function readRendered(items: PatchItem[], count: number): Rendered {
 	const nodes = new Map<number, RenderedNode>();
-	nodes.set(ROOT_ID, {
-		id: ROOT_ID,
-		create: [OpCode.Create, ROOT_ID, "page"],
-		tag: "page",
-		text: "",
-		attrs: new Map(),
-		ops: [],
-		children: [],
-		parent: 0,
-		list: null,
-		marks: null,
-		moved: false,
-	});
+	nodes.set(ROOT_ID, renderedNode([OpCode.Create, ROOT_ID, "page"]));
 	const cells = new Map<number, string[]>();
 	const cellContexts = new Map<number, number[]>();
 	const calls: CallItem[] = [];
