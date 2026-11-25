@@ -159,6 +159,27 @@ Issues and pull requests that don't meet these rules may be closed without revie
 - **Type escapes** (`as`, `any`, `@ts-expect-error`) appear only at boundaries, such as thread
   entries and untyped Svelte or Lynx APIs, each with a one-line comment giving the reason.
 
+### Design
+
+- **Match by identity, not by position or text.** When two things must be paired (a drawn element
+  and the one that replaces it, a module and its package, a row and its data), pair them by an
+  identity the system gives you: a key, a mark, a resolved path. Order, shape and string patterns
+  are guesses.
+- **Ask the source of truth.** When a dependency already knows the answer (the bundler's resolved
+  module, the compiler's AST, a published type), use its answer instead of working it out again.
+- **A type escape names what is missing.** A `Boundary` comment says which published type does not
+  fit and why, and stays true for the installed version. Without that reason, use the published
+  type.
+- **Each decision lives in one place.** When two files decide the same thing, they drift; one owns
+  it and the other asks.
+- **No silent failure.** A `catch` reports, rethrows, or says in a comment why ignoring the error is
+  correct here.
+- **Wait for a condition, not for time.** No fixed timeouts, delays or round counts in code or
+  tests; wait for the state you need, with a bound that fails saying what it waited for.
+- **Handle the general case, or refuse it loudly.** Code that works only for the layouts or shapes
+  the tests use either handles the rest or reports them with an error. A known gap is a
+  `@workaround` or a test marked as a known failure, never an unmarked assumption.
+
 ### Folders and imports
 
 - Each top folder of a package has one `index.ts`, its only face to the other folders. Inside a
