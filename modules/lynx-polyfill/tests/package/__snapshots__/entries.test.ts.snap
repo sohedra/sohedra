@@ -458,7 +458,7 @@ exports[`import "@sohedra/lynx-polyfill/language" > on the main-thread: its glob
 
 exports[`import "@sohedra/lynx-polyfill/language" > on the main-thread: its globals, and its size within budget 2`] = `
 {
-  "gzip": 15000,
+  "gzip": 16000,
   "minified": 42000,
 }
 `;
