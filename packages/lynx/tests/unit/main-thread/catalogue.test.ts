@@ -3,7 +3,12 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { MAIN_THREAD_CATALOGUE, mainThreadMessage } from "../../../src/main-thread/catalogue.ts";
+import {
+	MAIN_THREAD_CATALOGUE,
+	MAIN_THREAD_DEVELOPMENT_CATALOGUE,
+	mainThreadDevelopmentError,
+	mainThreadError,
+} from "../../../src/main-thread/catalogue.ts";
 import type { MainThreadCode, MainThreadDetails } from "../../../src/main-thread/catalogue.ts";
 import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
@@ -37,8 +42,17 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 	lazy_bundle_not_on_main_thread: { url: "https://cdn.example/lazy-bundle/Chart.bundle" },
 };
 
+/** Every entry: those a production build reports, and those only a development build does. */
+const CATALOGUE = { ...MAIN_THREAD_CATALOGUE, ...MAIN_THREAD_DEVELOPMENT_CATALOGUE };
 // Boundary: the keys of the catalogue are its codes.
-const CODES = Object.keys(MAIN_THREAD_CATALOGUE) as MainThreadCode[];
+const CODES = Object.keys(CATALOGUE) as MainThreadCode[];
+
+/** The error for `code`, through the function its code is raised with. */
+const errorOf = (code: MainThreadCode, details: unknown): Error =>
+	// The samples hold each code's own details, which TypeScript cannot pair through an index.
+	code in MAIN_THREAD_DEVELOPMENT_CATALOGUE
+		? mainThreadDevelopmentError({ code, details } as never)
+		: mainThreadError({ code, details } as never);
 
 describe("the main thread's catalogue", () => {
 	it("has a sample for each entry", () => {
@@ -47,13 +61,13 @@ describe("the main thread's catalogue", () => {
 	});
 
 	it.each(CODES)("%s has a fix and its own code as its docs page", (code) => {
-		const entry = MAIN_THREAD_CATALOGUE[code];
+		const entry = CATALOGUE[code];
 		expect(entry.fix(SAMPLES[code] as never).trim()).not.toBe("");
 		expect(entry.docs).toBe(code);
 	});
 
 	it.each(CODES)("%s: the message", (code) => {
-		const text = mainThreadMessage({ code, details: SAMPLES[code] as never });
+		const text = errorOf(code, SAMPLES[code]).message;
 		expect(text.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
 		expect(text).not.toMatch(INTERNAL_WORDS);
 		expect(text).toMatchSnapshot();

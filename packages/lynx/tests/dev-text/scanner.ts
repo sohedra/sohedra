@@ -12,8 +12,12 @@
 //   - the statements after `if (<condition>) return;` in the same block, when that condition being
 //     false says development;
 //   - the whole of a named function (a `function`, or a `const` holding an arrow or function
-//     expression) every one of whose references is in such code or in another such function.
-//     References are resolved by the type checker, across files and through imports and re-exports.
+//     expression) or a `const` holding an object literal, every one of whose references is in such
+//     code or in another such declaration. References are resolved by the type checker, across files
+//     and through imports and re-exports;
+//   - the whole of a file only a development build loads (DEVELOPMENT_FILES).
+//
+// A development guard reads `__DEV__`, or `DEV`, the name each thread's `globals.ts` gives it.
 //
 // A text that also appears in code that is not development-only (a message an error throws in every
 // build) is not listed.
@@ -36,6 +40,9 @@ export const SHIPPED_DIRS: string[] = [
 	"src/gesture",
 	"src/env",
 ];
+
+/** The files only a development build loads, relative to the package: the build adds them then. */
+export const DEVELOPMENT_FILES: string[] = ["src/background/dev-client.ts"];
 
 /**
  * The shortest fragment kept. Short enough for the fixed parts of
@@ -73,7 +80,7 @@ function isNodeEnv(node: ts.Node): boolean {
 function says(node: ts.Expression, value: boolean): Polarity {
 	if (ts.isParenthesizedExpression(node)) return says(node.expression, value);
 	const build = (dev: boolean): Polarity => (dev === value ? "dev" : "prod");
-	if (isIdent(node, "__DEV__") || isIdent(node, "dev")) return build(true);
+	if (isIdent(node, "__DEV__") || isIdent(node, "DEV") || isIdent(node, "dev")) return build(true);
 	if (ts.isPropertyAccessExpression(node) && node.name.text === "dev") return build(true);
 	if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.ExclamationToken) {
 		return says(node.operand, !value);
@@ -175,8 +182,14 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 	const scanned = new Set(files.map((file) => file.split(path.sep).join("/")));
 	const sources = program.getSourceFiles().filter((source) => scanned.has(source.fileName));
 
-	// 1. The code that runs only in development, from the guards.
+	// 1. The code that runs only in development, from the guards and the files.
 	const guarded: Region[] = [];
+	const developmentFiles = new Set(
+		DEVELOPMENT_FILES.map((file) => path.resolve(root, file).split(path.sep).join("/")),
+	);
+	for (const source of sources)
+		if (developmentFiles.has(source.fileName))
+			guarded.push({ start: 0, end: source.end, file: source.fileName });
 	const mark = (node: ts.Node, source: ts.SourceFile) =>
 		guarded.push({ start: node.getStart(source), end: node.end, file: source.fileName });
 	for (const source of sources) {
@@ -227,7 +240,7 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 		);
 	};
 
-	// 2. The named functions only development code uses: the greatest set whose
+	// 2. The named functions and objects only development code uses: the greatest set whose
 	// references all lie in guarded code or inside a member of the set.
 	interface Candidate {
 		symbol: ts.Symbol;
@@ -247,7 +260,9 @@ export function scanDevText(dirs: string[] = SHIPPED_DIRS): DevFragment[] {
 				ts.isVariableDeclaration(node) &&
 				ts.isIdentifier(node.name) &&
 				node.initializer &&
-				(ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+				(ts.isArrowFunction(node.initializer) ||
+					ts.isFunctionExpression(node.initializer) ||
+					ts.isObjectLiteralExpression(node.initializer))
 			) {
 				name = node.name;
 				body = node;

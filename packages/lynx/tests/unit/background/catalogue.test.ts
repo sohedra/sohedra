@@ -3,7 +3,12 @@
 
 import { describe, expect, it } from "@rstest/core";
 
-import { BACKGROUND_CATALOGUE, backgroundMessage } from "../../../src/background/catalogue.ts";
+import {
+	BACKGROUND_CATALOGUE,
+	BACKGROUND_DEVELOPMENT_CATALOGUE,
+	backgroundDevelopmentError,
+	backgroundError,
+} from "../../../src/background/catalogue.ts";
 import type { BackgroundCode, BackgroundDetails } from "../../../src/background/catalogue.ts";
 import { INTERNAL_WORDS } from "../../contract/messages/internal-words.ts";
 
@@ -94,8 +99,17 @@ const SAMPLES: { [Code in BackgroundCode]: BackgroundDetails[Code] } = {
 	reload_needs_devtool: {},
 };
 
+/** Every entry: those a production build reports, and those only a development build does. */
+const CATALOGUE = { ...BACKGROUND_CATALOGUE, ...BACKGROUND_DEVELOPMENT_CATALOGUE };
 // Boundary: the keys of the catalogue are its codes.
-const CODES = Object.keys(BACKGROUND_CATALOGUE) as BackgroundCode[];
+const CODES = Object.keys(CATALOGUE) as BackgroundCode[];
+
+/** The error for `code`, through the function its code is raised with. */
+const errorOf = (code: BackgroundCode, details: unknown): Error =>
+	// The samples hold each code's own details, which TypeScript cannot pair through an index.
+	code in BACKGROUND_DEVELOPMENT_CATALOGUE
+		? backgroundDevelopmentError({ code, details } as never)
+		: backgroundError({ code, details } as never);
 
 describe("the background's catalogue", () => {
 	it("has a sample for each entry", () => {
@@ -103,13 +117,13 @@ describe("the background's catalogue", () => {
 	});
 
 	it.each(CODES)("%s has a fix and its own code as its docs page", (code) => {
-		const entry = BACKGROUND_CATALOGUE[code];
+		const entry = CATALOGUE[code];
 		expect(entry.fix(SAMPLES[code] as never).trim()).not.toBe("");
 		expect(entry.docs).toBe(code);
 	});
 
 	it.each(CODES)("%s: the message", (code) => {
-		const text = backgroundMessage({ code, details: SAMPLES[code] as never });
+		const text = errorOf(code, SAMPLES[code]).message;
 		expect(text.split("\n")[0]).toMatch(/^[A-Z].*\.$/);
 		expect(text).not.toMatch(INTERNAL_WORDS);
 		expect(text).toMatchSnapshot();
