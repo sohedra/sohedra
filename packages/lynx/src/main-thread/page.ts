@@ -50,8 +50,8 @@ export interface MainThreadPage {
 	 * are dropped (the rewrite holds what they did), and their calls wait for it.
 	 */
 	rewriting: boolean;
-	/** The calls that wait for the rewrite, with their patches' pages. */
-	held: { item: CallItem; stamp: number }[];
+	/** The calls that wait for the rewrite, with their patches' generations. */
+	waitingCalls: { item: CallItem; generation: number }[];
 	/** A patch dropped while waiting for the rewrite showed new data: the rewrite's flush says so. */
 	dataHeld: boolean;
 	/** The styles code set and the elements held for a UI, which hydration carries over. */
@@ -83,7 +83,7 @@ export function createMainThreadPage(
 		cellContexts: new Map(),
 		frame: undefined,
 		rewriting: false,
-		held: [],
+		waitingCalls: [],
 		dataHeld: false,
 		styles,
 		flattening,

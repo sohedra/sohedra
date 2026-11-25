@@ -113,8 +113,8 @@ export function startMainThread(): MainThreadRuntime {
 	const native = lynx.getNative();
 	const state = createMainThreadPage((scope) => newFunctions(scope, 0));
 
-	function send(message: ToBackground, stamp: number = state.generation): void {
-		lynx.getJSContext().dispatchEvent(encodeToBackground(message, stamp));
+	function send(message: ToBackground, generation: number = state.generation): void {
+		lynx.getJSContext().dispatchEvent(encodeToBackground(message, generation));
 	}
 
 	/** The main-thread functions of the page `generation`, whose messages are of that page. */
@@ -196,16 +196,16 @@ export function startMainThread(): MainThreadRuntime {
 		// A call's result goes back when the call wants one; a failure that nobody waits for is
 		// reported. A result that cannot cross is reported here, where it was written, and answers
 		// with why.
-		answer({ id, stamp }, result) {
+		answer({ id, generation }, result) {
 			if (id === 0) {
 				if (!result.ok) report(decodeError(result.error));
 				return;
 			}
 			try {
-				send({ t: "reply", id, result }, stamp);
+				send({ t: "reply", id, result }, generation);
 			} catch (error) {
 				report(error);
-				send({ t: "reply", id, result: { ok: false, error: encodeError(error) } }, stamp);
+				send({ t: "reply", id, result: { ok: false, error: encodeError(error) } }, generation);
 			}
 		},
 	});
@@ -258,12 +258,12 @@ export function startMainThread(): MainThreadRuntime {
 	}
 
 	/** Applies a patch's items, in order. */
-	function applyItems(items: PatchItem[], stamp: number): void {
+	function applyItems(items: PatchItem[], generation: number): void {
 		for (const item of items) {
 			if (state.rewriting) {
 				// Until the rewrite, the background's page is written again: only the calls wait for it,
 				// and the answers to calls are read.
-				if (item[0] === "call") state.held.push({ item, stamp });
+				if (item[0] === "call") state.waitingCalls.push({ item, generation });
 				else if (item[0] === "reply") state.functions.reply(item[1], decodeResult(item[2]));
 				else if (item[0] === "rewrite") {
 					if (isPageRewrite(item)) {
@@ -284,7 +284,7 @@ export function startMainThread(): MainThreadRuntime {
 					cells.take(item);
 					break;
 				case "call":
-					calls.run(item, stamp);
+					calls.run(item, generation);
 					break;
 				case "rewrite":
 					if (isPageRewrite(item)) replacePage();
@@ -295,7 +295,8 @@ export function startMainThread(): MainThreadRuntime {
 			}
 		}
 		if (!state.rewriting)
-			for (const { item, stamp: page } of state.held.splice(0)) calls.run(item, page);
+			for (const waiting of state.waitingCalls.splice(0))
+				calls.run(waiting.item, waiting.generation);
 	}
 
 	/**
@@ -498,7 +499,7 @@ export function startMainThread(): MainThreadRuntime {
 				state.painting = false;
 				state.early.length = 0;
 				state.rewriting = false;
-				state.held.length = 0;
+				state.waitingCalls.length = 0;
 				state.dataHeld = false;
 				state.applier?.silence();
 				// The old page's functions run no more; its elements let go of them as they leave.
@@ -540,7 +541,7 @@ export function startMainThread(): MainThreadRuntime {
 			}
 			state.applier = undefined;
 			state.early.length = 0;
-			state.held.length = 0;
+			state.waitingCalls.length = 0;
 			state.cells.clear();
 			state.cellContexts.clear();
 		} catch (error) {

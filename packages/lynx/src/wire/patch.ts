@@ -1,5 +1,5 @@
 // Background to main thread: one patch at a time, through `callLepusMethod(PATCH_METHOD, params)`.
-// A patch is `{ v, page, items }`, and the main thread runs its items in order, so a call it
+// A patch is `{ v, generation, items }`, and the main thread runs its items in order, so a call it
 // carries never overtakes the ops before it. A call and a reply are written as text when they are
 // made, as a cell's ops are, so a value that cannot cross fails at the line that sent it and never
 // takes a patch down with it.
@@ -84,7 +84,7 @@ export type CallItem = ["call", number, number, string];
 
 /**
  * The background's reply to a main-thread function's call of a background function: the call's
- * id and the result as text from `encodeResult`. It rides only in a patch of its call's page.
+ * id and the result as text from `encodeResult`. It rides only in a patch of its call's generation.
  */
 type ReplyItem = ["reply", number, string];
 

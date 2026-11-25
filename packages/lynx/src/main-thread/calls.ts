@@ -30,7 +30,7 @@ interface CallsScope {
 	/** The applier of the page being shown. */
 	applier(): Applier;
 	/** Sends a call's result: its reply, or the report of a failed call that wants none. */
-	answer(call: { id: number; stamp: number }, result: Result): void;
+	answer(call: { id: number; generation: number }, result: Result): void;
 	/** The main-thread functions of the page being shown. */
 	functions(): FunctionsPage;
 	/** Reports what a main-thread function the background called threw, on this thread. */
@@ -40,7 +40,7 @@ interface CallsScope {
 /** The calls of the patches of one page. */
 export interface Calls {
 	/** Runs a call of the patch being applied, or keeps it until the patch is flushed. */
-	run(item: CallItem, stamp: number): void;
+	run(item: CallItem, generation: number): void;
 	/**
 	 * The patch was flushed: runs the computed styles that waited, then, once the platform has laid
 	 * the patch out, its UI methods, each kind in order.
@@ -187,9 +187,9 @@ export function createCalls(scope: CallsScope): Calls {
 		afterLayout(run) {
 			afterLayout.push(run);
 		},
-		run(item, stamp) {
+		run(item, generation) {
 			const [, id, elementId, text] = item;
-			const done = (result: Result): void => scope.answer({ id, stamp }, result);
+			const done = (result: Result): void => scope.answer({ id, generation }, result);
 			try {
 				const request = decodeCall(text);
 				if (request[0] === "unref") {

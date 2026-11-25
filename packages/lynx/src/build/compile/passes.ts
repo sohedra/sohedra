@@ -1,4 +1,4 @@
-// The `prepare` step: every edit a component needs before Svelte compiles it, in one go. The
+// The passes: every edit a component needs before Svelte compiles it, in one go. The
 // component is parsed once, each pass reads that one syntax tree and returns edits against the
 // text as written, the edits are applied together, and one source map comes out. A pass never
 // sees what another wrote, so a function's id, an error's place and the map all come from the
@@ -28,8 +28,8 @@ import { svelteOptions } from "./svelte-options.ts";
 import { threadBranchHandlers } from "./thread-branch-handlers.ts";
 import { threadBranches } from "./thread-branches.ts";
 
-/** What `prepare` reads. */
-interface PrepareOptions {
+/** What `runPasses` reads. */
+interface PassesOptions {
 	/** The component as written, after its preprocessors. */
 	source: string;
 	filename: string;
@@ -50,7 +50,7 @@ interface PrepareOptions {
 }
 
 /** A component ready for Svelte's compiler. */
-export interface Prepared {
+export interface PassesResult {
 	/** The component with every pass's edits. */
 	code: string;
 	/** From `code` to the component as written. */
@@ -82,7 +82,7 @@ const PASSES: readonly Pass[] = [
 ];
 
 /** Run every pass over the component and apply what they return. */
-export function prepare(options: PrepareOptions): Prepared {
+export function runPasses(options: PassesOptions): PassesResult {
 	const { source, filename, sourceMap } = options;
 	const context: PassContext = { ...options, warnings: [], fills: NO_FILLS };
 	const edits = PASSES.flatMap((pass) => pass(context));
