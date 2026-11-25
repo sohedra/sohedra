@@ -23,6 +23,7 @@ import {
 	PATCH_METHOD,
 	ROOT_ID,
 	TO_BACKGROUND,
+	unknownKindError,
 } from "../wire/index.ts";
 import type {
 	AttrValue,
@@ -293,44 +294,43 @@ export function openChannel(options: ChannelOptions): Channel {
 			return;
 		}
 		if (!open || !keepsMessage(received, generation)) return;
-		if (received.t === "event") {
-			onEvent(received.handler, received.event, received.input);
-			return;
+		switch (received.t) {
+			case "event":
+				onEvent(received.handler, received.event, received.input);
+				return;
+			case "rewrite":
+				onRewrite(received);
+				return;
+			case "props-ids":
+				onPropsIds(received);
+				return;
+			case "show":
+				onShow?.(received);
+				return;
+			case "hide":
+				onHide?.(received);
+				return;
+			case "call":
+				onCall?.(received);
+				return;
+			case "release":
+				contexts.release(received.contexts);
+				return;
+			case "reply": {
+				const entry = waiting.get(received.id);
+				if (!entry) return;
+				waiting.delete(received.id);
+				const { result } = received;
+				if (result.ok) entry.resolve(result.value);
+				else entry.reject(decodeError(result.error));
+				return;
+			}
+			case "error":
+				onError?.(received);
+				return;
+			default:
+				if (DEV) reportError(unknownKindError(received, "background"));
 		}
-		if (received.t === "rewrite") {
-			onRewrite(received);
-			return;
-		}
-		if (received.t === "props-ids") {
-			onPropsIds(received);
-			return;
-		}
-		if (received.t === "show") {
-			onShow?.(received);
-			return;
-		}
-		if (received.t === "hide") {
-			onHide?.(received);
-			return;
-		}
-		if (received.t === "call") {
-			onCall?.(received);
-			return;
-		}
-		if (received.t === "release") {
-			contexts.release(received.contexts);
-			return;
-		}
-		if (received.t === "reply") {
-			const entry = waiting.get(received.id);
-			if (!entry) return;
-			waiting.delete(received.id);
-			const { result } = received;
-			if (result.ok) entry.resolve(result.value);
-			else entry.reject(decodeError(result.error));
-			return;
-		}
-		if (received.t === "error") onError?.(received);
 	}
 
 	core.addEventListener(TO_BACKGROUND.events, onMessage);

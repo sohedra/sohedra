@@ -14,12 +14,12 @@
 // patch out (`onceLaidOut`). Queries run in place. An element a UI method is called on is held
 // from then on, so that Lynx gives it a UI (./flatten.ts).
 
-import { decodeCall, encodeError } from "../wire/index.ts";
+import { decodeCall, encodeError, unknownKind, unknownKindError } from "../wire/index.ts";
 import type { CallItem, CallRequest, Result } from "../wire/index.ts";
 import type { Applier } from "./apply.ts";
 import { mainThreadError } from "./catalogue.ts";
 import type { FunctionsPage } from "./functions/page.ts";
-import { mainThread } from "./globals.ts";
+import { DEV, mainThread } from "./globals.ts";
 import type { InvokeResult, LynxElement } from "./globals.ts";
 
 /** Lynx's answer to a UI method on an element with no view: "no UI for this node". */
@@ -94,6 +94,8 @@ export function createCalls(scope: CallsScope): Calls {
 				return "querySelector";
 			case "queryAll":
 				return "querySelectorAll";
+			default:
+				return unknownKind(request);
 		}
 	}
 
@@ -153,6 +155,8 @@ export function createCalls(scope: CallsScope): Calls {
 				done({ ok: true, value: ids });
 				return;
 			}
+			default:
+				if (DEV) throw unknownKindError(request, "main-thread");
 		}
 	}
 

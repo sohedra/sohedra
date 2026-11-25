@@ -4,6 +4,7 @@
 
 import { OpCode } from "./ops.ts";
 import type { Op } from "./ops.ts";
+import { unknownKind } from "./unknown-kind.ts";
 
 /** An element's tag by its id, when known. */
 type TagOf = (id: number) => string | null | undefined;
@@ -40,5 +41,7 @@ export function describeOp(op: Op, tagOf?: TagOf): string {
 			return `set styles from code on ${at(op[1])}`;
 		case OpCode.Animate:
 			return `animate ${at(op[1])}`;
+		default:
+			return `apply a change of unknown kind ${unknownKind(op)}`;
 	}
 }

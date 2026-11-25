@@ -5,6 +5,7 @@
 // a refused one with its code alone in a production build.
 
 import { sourceLocation } from "../svelte/runtime/index.ts";
+import { unknownKind } from "../wire/index.ts";
 import type { HydrationMismatch, PropsIdDifference } from "../wire/index.ts";
 import { backgroundError } from "./catalogue.ts";
 import type { BackgroundError } from "./catalogue.ts";
@@ -41,6 +42,8 @@ export function describeMismatch(mismatch: HydrationMismatch, tag: string): stri
 				Array.isArray(value) && value.length > 0 ? value.join(", ") : "none";
 			return `the items of the <${tag}> differ: the background has the keys ${keys(expected)}, and the first frame ${keys(got)}`;
 		}
+		default:
+			return `the <${tag}> differs in a way this build does not know (${unknownKind(kind)})`;
 	}
 }
 

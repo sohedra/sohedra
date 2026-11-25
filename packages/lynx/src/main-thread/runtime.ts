@@ -32,6 +32,7 @@ import {
 	PATCH_METHOD,
 	ROOT_ID,
 	RUN_FUNCTION,
+	unknownKindError,
 	wireError,
 	withCount,
 	withMissingGlobalHint,
@@ -264,16 +265,27 @@ export function startMainThread(): MainThreadRuntime {
 			if (state.rewriting) {
 				// Until the rewrite, the background's page is written again: only the calls wait for it,
 				// and the answers to calls are read.
-				if (item[0] === "call") state.waitingCalls.push({ item, generation });
-				else if (item[0] === "reply") state.functions.reply(item[1], decodeResult(item[2]));
-				else if (item[0] === "rewrite") {
-					if (isPageRewrite(item)) {
-						state.rewriting = false;
-						replacePage();
-					} else {
-						// Not the page the main thread waits for: it asks for the page again.
-						send({ t: "rewrite", elements: [ROOT_ID] });
-					}
+				switch (item[0]) {
+					case "ops":
+					case "cell":
+						break;
+					case "call":
+						state.waitingCalls.push({ item, generation });
+						break;
+					case "reply":
+						state.functions.reply(item[1], decodeResult(item[2]));
+						break;
+					case "rewrite":
+						if (isPageRewrite(item)) {
+							state.rewriting = false;
+							replacePage();
+						} else {
+							// Not the page the main thread waits for: it asks for the page again.
+							send({ t: "rewrite", elements: [ROOT_ID] });
+						}
+						break;
+					default:
+						if (DEV) report(unknownKindError(item, "main-thread"));
 				}
 				continue;
 			}
@@ -293,6 +305,8 @@ export function startMainThread(): MainThreadRuntime {
 				case "reply":
 					state.functions.reply(item[1], decodeResult(item[2]));
 					break;
+				default:
+					if (DEV) report(unknownKindError(item, "main-thread"));
 			}
 		}
 		if (!state.rewriting)

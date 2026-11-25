@@ -14,6 +14,7 @@ import {
 	OpCode,
 	ROOT_ID,
 	sentNames,
+	unknownKindError,
 } from "../wire/index.ts";
 import type { LynxEventType, Op } from "../wire/index.ts";
 import { createAnimations } from "./animations.ts";
@@ -23,7 +24,7 @@ import type { CodeStyles } from "./code-styles.ts";
 import { createFlattening } from "./flatten.ts";
 import type { Flattening } from "./flatten.ts";
 import type { FunctionsPage } from "./functions/page.ts";
-import { mainThread } from "./globals.ts";
+import { DEV, mainThread } from "./globals.ts";
 import type { ListenerOptions, LynxElement } from "./globals.ts";
 import { createInputNumbers, inputValue } from "./inputs.ts";
 import type { InputNumbers } from "./inputs.ts";
@@ -353,6 +354,8 @@ export function createApplier(options: ApplierOptions): Applier {
 				animations.animated(op[1], op[2]);
 				return;
 			}
+			default:
+				if (DEV) report(unknownKindError(op, "main-thread"));
 		}
 	}
 

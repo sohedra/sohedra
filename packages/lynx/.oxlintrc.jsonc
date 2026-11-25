@@ -17,6 +17,12 @@
 			"files": ["src/**"],
 			"rules": {
 				"no-console": "error",
+				// A switch over a union names every member or has a default branch. A reader of what the
+				// threads send each other ends its default branch in `unknownKind`, which takes `never`.
+				"typescript/switch-exhaustiveness-check": [
+					"error",
+					{ "considerDefaultExhaustiveForUnions": true },
+				],
 			},
 		},
 		{

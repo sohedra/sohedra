@@ -285,6 +285,10 @@ export function createSplitter(
 			case OpCode.ListUpdate:
 				// Only this splitter writes it.
 				to(0, op);
+				return;
+			default:
+				// The ops are this thread's own: a kind no case takes cannot come from another build.
+				op satisfies never;
 		}
 	}
 
