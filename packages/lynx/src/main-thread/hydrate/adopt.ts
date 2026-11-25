@@ -111,6 +111,7 @@ export function adoptFrame(options: {
 			cells: kept.map((item) => held.get(item)),
 			// An item made again in place is a new one to Lynx: the old one is told gone.
 			committed: order.committed.map((item) => byDrawn.get(item) ?? -item),
+			gone: [...held.values()].filter((cell) => !byDrawn.has(cell.id)),
 			infos,
 		});
 	}

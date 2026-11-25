@@ -24,6 +24,8 @@ export interface AdoptedItems {
 	cells: (HeldCell | undefined)[];
 	/** The items as Lynx last heard of them, when that is not `items`. */
 	committed?: number[];
+	/** The cells of items the list no longer has, which Lynx may still show. */
+	gone?: HeldCell[];
 	/** For each item, what answers Lynx's requests for it that wait for the background's row. */
 	waiting?: (((uid: number) => void) | undefined)[];
 	/**
@@ -60,7 +62,7 @@ export function heldCells(list: ListState | undefined): HeldCell[] {
  * element of its cell in `cells`.
  */
 export function adoptedList(
-	{ state, items, cells, committed = items, waiting }: { state: ListState } & AdoptedItems,
+	{ state, items, cells, committed = items, waiting, gone }: { state: ListState } & AdoptedItems,
 	letsGo: boolean,
 ): ListState {
 	const list = newList({ element: state.element, committed, letsGo, preload: state.preload });
@@ -86,6 +88,21 @@ export function adoptedList(
 		if (held) list.cellsByUid.set(held.uid, cell);
 		if (cell.bound) list.bound++;
 		else if (held && list.letsGo) list.unbound.add(cell);
+	}
+	// A cell of an item that is gone stays the list's until Lynx hands it back, as after an update.
+	for (const held of gone ?? []) {
+		const cell: Cell = {
+			...held,
+			id: -held.id,
+			removed: true,
+			asked: false,
+			waiting: null,
+			requested: false,
+			hidden: false,
+		};
+		list.cells.set(cell.id, cell);
+		list.cellsByUid.set(held.uid, cell);
+		if (cell.bound) list.bound++;
 	}
 	return list;
 }
