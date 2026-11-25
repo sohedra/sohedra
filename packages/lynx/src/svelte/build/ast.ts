@@ -1,7 +1,7 @@
 // A walk over Svelte's template AST, for the code that looks for nodes in a component before it
 // compiles: bare attributes, event attributes, list items, imports in effects.
 
-import type { ComponentAst } from "./compiler.ts";
+import type { AST, ComponentAst } from "./compiler.ts";
 
 /** A script's program: Svelte gives it positions in the whole component, which its type leaves out. */
 export interface ScriptProgram {
@@ -16,6 +16,21 @@ export interface ScriptProgram {
 export function scriptProgram(script: ComponentAst["instance"]): ScriptProgram | undefined {
 	// Boundary: Svelte types the program without the positions it gives it.
 	return script ? (script.content as unknown as ScriptProgram) : undefined;
+}
+
+/** A statement of a script's top level, as Svelte publishes it: estree's. */
+export type ScriptStatement = AST.Script["content"]["body"][number];
+
+/** An expression of a script, as Svelte publishes it: estree's. */
+export type ScriptExpression = Extract<
+	ScriptStatement,
+	{ type: "ExpressionStatement" }
+>["expression"];
+
+/** The fields acorn-typescript adds to an import or an export, which estree's types lack. */
+export interface ImportKinds {
+	importKind?: "type" | "value";
+	exportKind?: "type" | "value";
 }
 
 /** A node of Svelte's AST, read generically. */

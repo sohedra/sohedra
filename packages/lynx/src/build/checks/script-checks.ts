@@ -1,7 +1,8 @@
 // The checks of an app's scripts for code that type-checks and then fails on Lynx: a global the
 // thread's engine lacks (with the import that fills it, or what to use instead), the web's DOM, an
-// API only the other thread has, and Svelte's own `mount` and `unmount`. Each is an error at its
-// place: the code fails wherever it runs. A read the script checks for first (`typeof X`, `"X" in
+// API only the other thread has, Svelte's own `mount`, `unmount` and `hydrate`, its `MediaQuery`,
+// and its modules that read the web's `window` as they load. Each is an error at its place: the code
+// fails wherever it runs. A read the script checks for first (`typeof X`, `"X" in
 // globalThis`, a `try` with a `catch`) is left alone, and so is a line the silencing comment names
 // the code on.
 //
@@ -18,7 +19,7 @@ import { DOM_INSTEAD, domGlobal } from "./dom-globals.ts";
 import { scriptUses } from "./script-uses.ts";
 import type { GlobalRead, ScriptRoots } from "./script-uses.ts";
 import { silencer } from "./silencing.ts";
-import { svelteMountUses } from "./svelte-mount.ts";
+import { refusedSvelteUses } from "./svelte-imports.ts";
 import { isMissingLynxMember, onlyThread } from "./thread-apis.ts";
 
 /** The package whose imports fill the globals, and its subpaths. */
@@ -136,13 +137,9 @@ export function checkScripts(source: SourceText, roots: ScriptRoots): ScriptFind
 		// Boundary: `finding` pairs each code with its own details.
 		findings.errors.push({ ...found, place } as AnyReport);
 	}
-	for (const { name, start, anchor } of svelteMountUses(roots.programs)) {
-		if (quiet("svelte_mount_imported", start, anchor)) continue;
-		findings.errors.push({
-			code: "svelte_mount_imported",
-			details: { name },
-			place: placeAt(source, start),
-		});
+	for (const { report, start, anchor } of refusedSvelteUses(roots)) {
+		if (quiet(report.code, start, anchor)) continue;
+		findings.errors.push({ ...report, place: placeAt(source, start) });
 	}
 	for (const call of uses.plainCalls) {
 		if (quiet("plain_function_in_main_thread_function", call.start, call.anchor)) continue;

@@ -147,9 +147,10 @@ function substitute(
 }
 
 /**
- * Svelte's motion (`Tween`, `Spring`, `tweened`, `spring`) reads its clock from `performance.now()`
- * on every `set`, and `$inspect.trace()` too, unguarded on the background
- * (svelte/src/internal/client/timing.js, dev/tracing.js); the main thread's clock is `Date.now()`.
+ * `$inspect.trace()` reads its clock from `performance.now()`, unguarded on the background, and so
+ * does Svelte's motion (`Tween`, `Spring`) on every `set`, which the build refuses until it is
+ * replaced (svelte/src/internal/client/dev/tracing.js, timing.js); the main thread's clock is
+ * `Date.now()`.
  * Only `now` and `timeOrigin`: Lynx has no monotonic clock in JavaScript (`lynx.performance` is its
  * pipeline's timing), so this one counts `Date.now()`'s milliseconds, held from going back.
  *

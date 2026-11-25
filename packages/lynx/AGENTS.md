@@ -3,7 +3,7 @@
 Svelte on Lynx: runs Svelte's custom renderer on Lynx's background thread and draws with Lynx's
 elements on the main thread. Apache-2.0, credits in `NOTICE`. Private.
 
-- Read `CONTRIBUTING.md` § Code first: shape, folders, errors, workarounds, tests.
+- Read `CONTRIBUTING.md` § Code first: shape, design, folders, errors, workarounds, tests.
 - Each folder of `src/` is a program, and imports another only through its `index.ts`.
   `.oxlintrc.jsonc` enforces this table; `tests/contract/lint/` pins it:
 

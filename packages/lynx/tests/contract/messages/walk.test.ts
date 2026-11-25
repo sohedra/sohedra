@@ -9,6 +9,10 @@ import { describe, expect, it } from "@rstest/core";
 import ts from "typescript";
 
 import packageJson from "../../../package.json" with { type: "json" };
+import {
+	SVELTE_MODULE_FIXES,
+	SVELTE_MOUNT_FIXES,
+} from "../../../src/build/diagnostics/catalogue-checks.ts";
 import { ANY_DETAILS, CATALOGUES } from "./catalogues.ts";
 
 const SOURCE = path.resolve(import.meta.dirname, "../../../src");
@@ -117,6 +121,7 @@ const NAMES: Record<string, Resolves> = {
 	runOnBackground: { from: "@sohedra/lynx" },
 	createStaticCopy: { from: "@sohedra/lynx" },
 	systemInfo: { from: "@sohedra/lynx/host" },
+	globalProps: { from: "@sohedra/lynx/host" },
 	background: { from: "@sohedra/lynx/environment" },
 	mainThread: { from: "@sohedra/lynx/environment" },
 	PanGesture: { from: "@sohedra/lynx/gesture" },
@@ -190,6 +195,9 @@ const NAMES: Record<string, Resolves> = {
 	"<list-item defer>": { kind: "a Lynx element and its attribute" },
 	"on(root, …)": { kind: "on() from svelte/events, with root from @sohedra/lynx" },
 	'on(root, "sample", handler)': { kind: "on() from svelte/events, with root from @sohedra/lynx" },
+	'on(host, "onWindowResize", …)': {
+		kind: "on() from svelte/events, with host from @sohedra/lynx/host and its event",
+	},
 	"runOnBackground(sample)": {
 		kind: "runOnBackground from @sohedra/lynx, given the developer's function",
 	},
@@ -236,11 +244,22 @@ function namesIn(fix: string): { names: string[]; modules: string[] } {
 	return { names, modules };
 }
 
+/** The fix lines of entries that pick one by a detail, by entry and by that detail's value. */
+const FIXES_BY_DETAIL: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+	"build:svelte_mount_imported": SVELTE_MOUNT_FIXES,
+	"build:svelte_module_unsupported": SVELTE_MODULE_FIXES,
+};
+
 describe("every name a fix line gives", () => {
-	const named = ENTRIES.map(({ program, code, entry }) => ({
-		where: `${program}:${code}`,
-		...namesIn(entry.fix(ANY_DETAILS)),
-	}));
+	const named = ENTRIES.flatMap(({ program, code, entry }) => {
+		const where = `${program}:${code}`;
+		const fixes = FIXES_BY_DETAIL[where];
+		if (fixes === undefined) return [{ where, ...namesIn(entry.fix(ANY_DETAILS)) }];
+		return Object.entries(fixes).map(([detail, fix]) => ({
+			where: `${where}:${detail}`,
+			...namesIn(fix),
+		}));
+	});
 
 	it("is read whole from backticks, one-word and PascalCase names too", () => {
 		const { names, modules } = namesIn(

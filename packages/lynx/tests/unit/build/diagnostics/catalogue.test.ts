@@ -2,6 +2,10 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import {
+	SVELTE_MODULE_FIXES,
+	SVELTE_MOUNT_FIXES,
+} from "../../../../src/build/diagnostics/catalogue-checks.ts";
 import { BUILD_CATALOGUE } from "../../../../src/build/diagnostics/catalogue.ts";
 import type { BuildCode, BuildDetails } from "../../../../src/build/diagnostics/catalogue.ts";
 import {
@@ -76,6 +80,8 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		branch: "`{#if background}`",
 	},
 	svelte_mount_imported: { name: "mount" },
+	media_query_imported: {},
+	svelte_module_unsupported: { module: "svelte/motion" },
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",
@@ -187,6 +193,24 @@ describe("the build's catalogue", () => {
 			describeMessage({ code: "regexp_refused", details: { regexp, syntax } }),
 		).toMatchSnapshot();
 	});
+
+	it.each(Object.keys(SVELTE_MOUNT_FIXES) as (keyof typeof SVELTE_MOUNT_FIXES)[])(
+		"svelte_mount_imported for %s: the message",
+		(name) => {
+			expect(
+				describeMessage({ code: "svelte_mount_imported", details: { name } }),
+			).toMatchSnapshot();
+		},
+	);
+
+	it.each(Object.keys(SVELTE_MODULE_FIXES) as (keyof typeof SVELTE_MODULE_FIXES)[])(
+		"svelte_module_unsupported for %s: the message",
+		(module) => {
+			expect(
+				describeMessage({ code: "svelte_module_unsupported", details: { module } }),
+			).toMatchSnapshot();
+		},
+	);
 });
 
 describe("placeAt", () => {

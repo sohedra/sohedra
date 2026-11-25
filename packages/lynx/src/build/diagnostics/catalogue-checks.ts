@@ -28,11 +28,44 @@ export interface CheckDetails {
 	css_selector_unsupported: { selector: string; part: string };
 	/** `attribute` as written; `branch` names the branch: "`{#if background}`", "the `{:else}` of …". */
 	main_thread_handler_in_thread_branch: { attribute: string; branch: string };
-	/** `name` is `mount` or `unmount`. */
-	svelte_mount_imported: { name: string };
+	svelte_mount_imported: { name: SvelteMountName };
+	media_query_imported: Record<string, never>;
+	svelte_module_unsupported: { module: UnsupportedSvelteModule };
 }
 
+/** Svelte's functions that put a component on the web's DOM. */
+export type SvelteMountName = "mount" | "unmount" | "hydrate";
+
+/** Svelte's modules that read the web's `window` as they load. */
+export type UnsupportedSvelteModule = "svelte/motion" | "svelte/reactivity/window";
+
 const THROWS = "so this code throws where it runs";
+
+/** What to use for an element's motion, instead of Svelte's. */
+export const MOTION =
+	"Animate the element with its `animate()` method from an attachment (`{@attach}`), or set its style from a main-thread function with `setStyleProperty()`.";
+
+/** What to use for the screen's and the page's size, instead of the web's. */
+export const SCREEN_SIZE =
+	"Read the screen's size, which does not change as the page runs, from `systemInfo` in `@sohedra/lynx/host`, and follow the page's size with `on(host, \"onWindowResize\", …)`.";
+
+/** What to use for the web's other events. */
+export const PAGE_EVENTS = "Listen to the page's events with `on(root, …)`.";
+
+/** What to use instead of each of Svelte's functions that put a component on the web's DOM. */
+export const SVELTE_MOUNT_FIXES: Readonly<Record<SvelteMountName, string>> = {
+	mount: 'Import `mount` from "@sohedra/lynx", which mounts a component on the page.',
+	unmount:
+		'Import `unmount` from "@sohedra/lynx", which unmounts a component its `mount` returned.',
+	hydrate:
+		'Use `mountPage` from "@sohedra/lynx" in the page\'s entry: it draws the first frame on the main thread and mounts over it.',
+};
+
+/** What to use instead of each of Svelte's modules that read the web's `window`. */
+export const SVELTE_MODULE_FIXES: Readonly<Record<UnsupportedSvelteModule, string>> = {
+	"svelte/motion": MOTION,
+	"svelte/reactivity/window": SCREEN_SIZE,
+};
 
 /** The messages of the checks of the app's code. */
 export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
@@ -96,8 +129,19 @@ export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
 	svelte_mount_imported: {
 		message: ({ name }) =>
 			`\`${name}\` is imported from "svelte", whose \`${name}\` works with the web's DOM, not with Lynx's page.`,
-		fix: ({ name }) =>
-			`Import \`${name}\` from "@sohedra/lynx", which ${name === "mount" ? "mounts a component on the page" : "unmounts a component its `mount` returned"}.`,
+		fix: ({ name }) => SVELTE_MOUNT_FIXES[name],
 		docs: "svelte_mount_imported",
+	},
+	media_query_imported: {
+		message: () =>
+			"`MediaQuery` is imported from \"svelte/reactivity\", whose `MediaQuery` calls the web's `matchMedia`, which Lynx doesn't have, so making one throws.",
+		fix: () => `${SCREEN_SIZE} For the color scheme, read the host's theme from \`globalProps\`.`,
+		docs: "media_query_imported",
+	},
+	svelte_module_unsupported: {
+		message: ({ module }) =>
+			`\`${module}\` is not supported in Svelte on Lynx yet: it reads the web's \`window\` as it loads, which Lynx doesn't have, so the background throws as it loads it.`,
+		fix: ({ module }) => SVELTE_MODULE_FIXES[module],
+		docs: "svelte_module_unsupported",
 	},
 };

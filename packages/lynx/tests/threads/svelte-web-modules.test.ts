@@ -1,7 +1,8 @@
 // What Svelte's modules that read the browser's `window` do on each thread today: `svelte/motion`
 // (`Spring`, `Tween`, `prefersReducedMotion`), `svelte/reactivity/window` (`innerWidth`…) and
-// `MediaQuery` from `svelte/reactivity`. The binding replaces none of them. This test only pins
-// what happens; whether to replace them or refuse their import at build time is still open.
+// `MediaQuery` from `svelte/reactivity`. The binding replaces none of them, and the build refuses
+// their import in the app's code; this test pins what each does at run time, for a library's code,
+// which the build does not check.
 //
 // The test page runs in jsdom, which has a `window` with no `matchMedia`: on the background these
 // modules throw a `TypeError` there, where Lynx's background, which has no `window`, throws a

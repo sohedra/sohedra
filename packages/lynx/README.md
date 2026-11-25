@@ -38,9 +38,9 @@ build error in a main-thread function, which says what to write instead.
 
 Lynx's threads lack some globals and built-ins that Svelte's runtime reads or that the other thread
 has. The binding installs these where a thread has none, never over the engine's own:
-`queueMicrotask` on the background, `performance.now()` on the background (for `svelte/motion` and
-`$inspect.trace()`), `SystemInfo` on the main thread, and `String.prototype.replaceAll`,
-`EventTarget` ([`@ungap/event-target`](https://github.com/ungap/event-target)) and `structuredClone`
+`queueMicrotask` on the background, `performance.now()` on the background (for `$inspect.trace()`),
+`SystemInfo` on the main thread, and `String.prototype.replaceAll`, `EventTarget`
+([`@ungap/event-target`](https://github.com/ungap/event-target)) and `structuredClone`
 ([`@ungap/structured-clone`](https://github.com/ungap/structured-clone)) on both. `getAbortSignal()`
 in a `$derived` that the first frame renders still needs `AbortController` on the main thread.
 
@@ -76,8 +76,19 @@ thread only. These are errors:
   element functions on the background, and `lynx.querySelector`, which neither thread has in Svelte
   on Lynx;
 - a plain function a main-thread function calls without `runOnBackground`;
-- Svelte's own `mount` or `unmount`, imported from `svelte`, which work with the web's DOM: import
-  the binding's from `@sohedra/lynx`.
+- Svelte's own `mount`, `unmount` or `hydrate`, imported from `svelte` or read from a namespace
+  import of it, which work with the web's DOM: the page's entry calls `mountPage` from
+  `@sohedra/lynx`, which mounts over the first frame, and the binding's `mount` and `unmount` add
+  and remove layers above the page;
+- `MediaQuery` from `svelte/reactivity`, which calls the web's `matchMedia`: read the screen's size
+  from `systemInfo` in `@sohedra/lynx/host`, the page's size from the host's `onWindowResize` event,
+  and the theme from `globalProps`;
+- any import of `svelte/motion` or `svelte/reactivity/window`, `import()` included, which read the
+  web's `window` as they load and are not supported yet: animate an element with its `animate()`
+  method, and read the sizes as above.
+
+These checks follow imports as written: a refused export destructured from a namespace or a dynamic
+`import()`, or imported through the app's own `export *`, fails as the page starts instead.
 
 The background has lynx-core's own `URL`, `URLSearchParams`, `fetch`, `Headers`, `Request`,
 `Response` and `AbortController`, so reading them there throws nothing and the build says nothing.

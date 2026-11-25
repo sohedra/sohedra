@@ -533,16 +533,25 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/reactivity/index-client.js",
 		anchor: "export { createSubscriber } from './create-subscriber.js';",
 		reliesOn:
-			"`svelte/reactivity` exports `SvelteDate`, `SvelteSet`, `SvelteMap`, `SvelteURL`, `SvelteURLSearchParams`, `MediaQuery` and `createSubscriber`, which the binding re-exports, replacing `MediaQuery`",
+			"`svelte/reactivity` exports `SvelteDate`, `SvelteSet`, `SvelteMap`, `SvelteURL`, `SvelteURLSearchParams`, `MediaQuery` and `createSubscriber`, which the build leaves to the app but for `MediaQuery`",
 		test: RUNTIME,
 	},
 	{
+		id: "media-query-calls-match-media",
+		program: "build",
+		file: "src/reactivity/media-query.js",
+		anchor: "const q = window.matchMedia(final_query);",
+		reliesOn:
+			"`MediaQuery`'s constructor calls `window.matchMedia`, which neither of Lynx's threads has, so the build refuses an import of `MediaQuery`",
+		test: SOURCE,
+	},
+	{
 		id: "motion-index-media-query",
-		program: "runtime",
+		program: "build",
 		file: "src/motion/index.js",
 		anchor: "export const prefersReducedMotion = /*@__PURE__*/ new MediaQuery(",
 		reliesOn:
-			"`svelte/motion` makes a `MediaQuery` when it loads, which calls `matchMedia`, so the binding replaces the module",
+			"`svelte/motion` makes a `MediaQuery` when it loads, which calls `matchMedia`, so the build refuses any import of the module",
 		test: SOURCE,
 	},
 	{
@@ -550,7 +559,8 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		program: "runtime",
 		file: "src/motion/spring.js",
 		anchor: "export class Spring",
-		reliesOn: "`Spring` and `spring` live in their own file, which reads no window when it loads",
+		reliesOn:
+			"`Spring` and `spring` live in their own file, which reads no window when it loads: a replacement of `svelte/motion` after the alpha can re-export them",
 		test: SOURCE,
 	},
 	{
@@ -558,16 +568,16 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		program: "runtime",
 		file: "src/motion/tweened.js",
 		anchor: "export class Tween",
-		reliesOn: "`Tween` and `tweened` live in their own file, which reads no window when it loads",
+		reliesOn: "the same, for `Tween` and `tweened`",
 		test: SOURCE,
 	},
 	{
 		id: "window-values",
-		program: "runtime",
+		program: "build",
 		file: "src/reactivity/window/index.js",
-		anchor: "on(window, 'scroll', update)",
+		anchor: "#dpr = source(BROWSER ? window.devicePixelRatio : undefined);",
 		reliesOn:
-			"`svelte/reactivity/window` exports ten values, reads `window` as it loads, and so the binding replaces the module with the page's size",
+			"`svelte/reactivity/window` exports ten values, and makes `devicePixelRatio` as it loads, whose constructor reads `window` and calls `matchMedia` in a browser build, which the background's is: so the build refuses any import of the module",
 		test: SOURCE,
 	},
 	{

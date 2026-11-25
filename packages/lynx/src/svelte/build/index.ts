@@ -11,7 +11,13 @@ export {
 	optionAttributes,
 	scriptProgram,
 } from "./ast.ts";
-export type { AnyNode, ScriptProgram } from "./ast.ts";
+export type {
+	AnyNode,
+	ImportKinds,
+	ScriptExpression,
+	ScriptProgram,
+	ScriptStatement,
+} from "./ast.ts";
 export { svelteCompiler } from "./compiler.ts";
 export type {
 	CompileOptions,
