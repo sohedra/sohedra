@@ -30,6 +30,8 @@ export interface CheckDetails {
 	main_thread_handler_in_thread_branch: { attribute: string; branch: string };
 	/** `name` is `mount`, `unmount` or `hydrate`. */
 	svelte_mount_imported: { name: string };
+	/** `name` is `MediaQuery`. */
+	media_query_imported: { name: string };
 }
 
 const THROWS = "so this code throws where it runs";
@@ -102,5 +104,12 @@ export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
 			return `Import \`${name}\` from "@sohedra/lynx", which ${name === "mount" ? "mounts a component on the page" : "unmounts a component its `mount` returned"}.`;
 		},
 		docs: "svelte_mount_imported",
+	},
+	media_query_imported: {
+		message: ({ name }) =>
+			`\`${name}\` is imported from "svelte/reactivity", whose \`${name}\` calls the web's \`matchMedia\`, which Lynx doesn't have, so making one throws.`,
+		fix: () =>
+			"Read the screen's size from `systemInfo` in `@sohedra/lynx/host`, and listen to `on(host, \"onWindowResize\", …)` for the page's size as it changes.",
+		docs: "media_query_imported",
 	},
 };

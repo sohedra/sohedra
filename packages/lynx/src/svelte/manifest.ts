@@ -533,7 +533,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/reactivity/index-client.js",
 		anchor: "export { createSubscriber } from './create-subscriber.js';",
 		reliesOn:
-			"`svelte/reactivity` exports `SvelteDate`, `SvelteSet`, `SvelteMap`, `SvelteURL`, `SvelteURLSearchParams`, `MediaQuery` and `createSubscriber`, which the binding re-exports, replacing `MediaQuery`",
+			"`svelte/reactivity` exports `SvelteDate`, `SvelteSet`, `SvelteMap`, `SvelteURL`, `SvelteURLSearchParams`, `MediaQuery` and `createSubscriber`; the build refuses an import of `MediaQuery`, which calls `matchMedia` as it is made",
 		test: RUNTIME,
 	},
 	{

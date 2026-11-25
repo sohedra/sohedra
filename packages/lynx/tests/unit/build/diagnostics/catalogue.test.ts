@@ -76,6 +76,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		branch: "`{#if background}`",
 	},
 	svelte_mount_imported: { name: "mount" },
+	media_query_imported: { name: "MediaQuery" },
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",

@@ -78,7 +78,9 @@ thread only. These are errors:
 - a plain function a main-thread function calls without `runOnBackground`;
 - Svelte's own `mount`, `unmount` or `hydrate`, imported from `svelte`, which work with the web's
   DOM: import the binding's `mount` and `unmount` from `@sohedra/lynx`, whose `mount` hydrates the
-  first frame itself.
+  first frame itself;
+- `MediaQuery` from `svelte/reactivity`, which calls the web's `matchMedia`: read the screen's size
+  from `systemInfo` in `@sohedra/lynx/host`.
 
 The background has lynx-core's own `URL`, `URLSearchParams`, `fetch`, `Headers`, `Request`,
 `Response` and `AbortController`, so reading them there throws nothing and the build says nothing.

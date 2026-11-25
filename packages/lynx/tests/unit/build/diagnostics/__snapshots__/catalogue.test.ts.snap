@@ -480,6 +480,18 @@ Set it on an element the background renders the same way as the first frame, out
 https://sohedra.com/e/main_thread_handler_in_thread_branch"
 `;
 
+exports[`the build's catalogue > media_query_imported: the message 1`] = `
+"\`MediaQuery\` is imported from "svelte/reactivity", whose \`MediaQuery\` calls the web's \`matchMedia\`, which Lynx doesn't have, so making one throws.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Read the screen's size from \`systemInfo\` in \`@sohedra/lynx/host\`, and listen to \`on(host, "onWindowResize", …)\` for the page's size as it changes.
+https://sohedra.com/e/media_query_imported"
+`;
+
 exports[`the build's catalogue > on_directive: the message 1`] = `
 "\`on:\` is not available in Svelte on Lynx.
 /app/src/App.svelte:2:3

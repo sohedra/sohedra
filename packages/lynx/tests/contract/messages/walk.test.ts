@@ -190,6 +190,9 @@ const NAMES: Record<string, Resolves> = {
 	"<list-item defer>": { kind: "a Lynx element and its attribute" },
 	"on(root, …)": { kind: "on() from svelte/events, with root from @sohedra/lynx" },
 	'on(root, "sample", handler)': { kind: "on() from svelte/events, with root from @sohedra/lynx" },
+	'on(host, "onWindowResize", …)': {
+		kind: "on() from svelte/events, with host from @sohedra/lynx/host and its event",
+	},
 	"runOnBackground(sample)": {
 		kind: "runOnBackground from @sohedra/lynx, given the developer's function",
 	},
