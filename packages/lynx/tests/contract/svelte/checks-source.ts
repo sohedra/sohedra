@@ -197,8 +197,25 @@ export const checks: Checks = {
 	"window-values": () => {
 		const window = readSvelte("src/reactivity/window/index.js");
 		for (const name of WINDOW_VALUES) expect(window).toContain(`export const ${name} =`);
-		// They read `window` and listen to it when they are created.
-		expect(window).toContain("on(window, 'scroll', update)");
+		// `devicePixelRatio` is made as the module loads, and its constructor reads `window` and calls
+		// `matchMedia` in a browser build, which the background's is.
+		expect(window).toContain(
+			"export const devicePixelRatio = /* @__PURE__ */ new (class DevicePixelRatio {",
+		);
+		expect(window).toContain("#dpr = source(BROWSER ? window.devicePixelRatio : undefined);");
+		expect(window).toMatch(
+			/window\.matchMedia\(`\(resolution: \$\{window\.devicePixelRatio\}dppx\)`\)/,
+		);
+		expect(window).toMatch(/constructor\(\) \{\n\t\tif \(BROWSER\) \{\n\t\t\tthis\.#update\(\);/);
+	},
+
+	"media-query-calls-match-media": () => {
+		const source = readSvelte("src/reactivity/media-query.js");
+		// The constructor calls `matchMedia` before it calls `super`: making one reads `window`.
+		const constructor = source.slice(source.indexOf("constructor(query, fallback) {"));
+		const call = constructor.indexOf("const q = window.matchMedia(final_query);");
+		expect(call).toBeGreaterThan(0);
+		expect(call).toBeLessThan(constructor.indexOf("super("));
 	},
 
 	"url-class-extends-global": () => {

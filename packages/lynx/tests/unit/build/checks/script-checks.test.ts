@@ -6,6 +6,7 @@ import { describe, expect, it } from "@rstest/core";
 
 import type { ModuleFills } from "../../../../src/build/checks/fills-store.ts";
 import { checkModule } from "../../../../src/build/checks/module-checks.ts";
+import { SCREEN_SIZE } from "../../../../src/build/diagnostics/catalogue-checks.ts";
 import { APP_ROOT, inApp } from "../app.ts";
 import { component } from "../compiling.ts";
 
@@ -378,14 +379,14 @@ describe("Svelte's own mount, unmount and hydrate", () => {
 		);
 	});
 
-	it("are an error for hydrate, in every form, whose fix is the binding's mount", () => {
+	it("are an error for hydrate, in every form, whose fix is the binding's mountPage", () => {
 		const text = moduleError('import { hydrate } from "svelte";\nvoid hydrate;');
 		expect(text.split("\n")[0]).toBe(
 			"`hydrate` is imported from \"svelte\", whose `hydrate` works with the web's DOM, not with Lynx's page.",
 		);
 		expect(text).toContain("util.ts:1:10");
 		expect(text).toContain(
-			'Use `mount` from "@sohedra/lynx": the binding hydrates the first frame itself.',
+			'Use `mountPage` from "@sohedra/lynx" in the page\'s entry: it draws the first frame on the main thread and mounts over it.',
 		);
 		expect(codes(text)).toEqual(["svelte_mount_imported"]);
 		expect(codes(moduleError('export { hydrate } from "svelte";'))).toEqual([
@@ -396,6 +397,44 @@ describe("Svelte's own mount, unmount and hydrate", () => {
 		).toEqual(["svelte_mount_imported"]);
 		expect(
 			moduleError('import type { hydrate } from "svelte";\nexport type H = typeof hydrate;'),
+		).toBe("");
+	});
+
+	it("are an error by a string name, in a module script and in the markup", async () => {
+		expect(codes(moduleError('import { "hydrate" as h } from "svelte";\nvoid h;'))).toEqual([
+			"svelte_mount_imported",
+		]);
+		expect(
+			codes(
+				await componentError(
+					'<script module>\n\timport { mount } from "svelte";\n\tvoid mount;\n</script>',
+				),
+			),
+		).toEqual(["svelte_mount_imported"]);
+		expect(
+			codes(
+				await componentError(
+					'<script>\n\timport * as svelte from "svelte";\n</script>\n<view ontap={() => svelte.unmount({})}></view>',
+				),
+			),
+		).toEqual(["svelte_mount_imported"]);
+	});
+
+	it("leave a type import in a component's TypeScript, and silenced hydrate and namespace reads", async () => {
+		expect(
+			await componentError(
+				'<script lang="ts">\n\timport type { mount } from "svelte";\n\timport { type hydrate, tick } from "svelte";\n\ttype M = typeof mount | typeof hydrate;\n\tvoid tick;\n</script>',
+			),
+		).toBe("");
+		expect(
+			moduleError(
+				'// sohedra-ignore svelte_mount_imported\nimport { hydrate } from "svelte";\nvoid hydrate;',
+			),
+		).toBe("");
+		expect(
+			moduleError(
+				'import * as svelte from "svelte";\n// sohedra-ignore svelte_mount_imported\nexport const m = svelte.mount;',
+			),
 		).toBe("");
 	});
 
@@ -435,7 +474,21 @@ describe("MediaQuery from svelte/reactivity", () => {
 		);
 		expect(text).toContain("util.ts:1:10");
 		expect(text).toContain("`systemInfo` in `@sohedra/lynx/host`");
+		expect(text).toContain("`globalProps`");
 		expect(codes(text)).toEqual(["media_query_imported"]);
+	});
+
+	it("is an error by a string name, and read from a namespace in the markup", async () => {
+		expect(codes(moduleError('export { "MediaQuery" as MQ } from "svelte/reactivity";'))).toEqual([
+			"media_query_imported",
+		]);
+		expect(
+			codes(
+				await componentError(
+					'<script>\n\timport * as r from "svelte/reactivity";\n</script>\n<text>{new r.MediaQuery("min-width: 600px").current}</text>',
+				),
+			),
+		).toEqual(["media_query_imported"]);
 	});
 
 	it("is an error in a component, re-exported, and through a namespace import", async () => {
@@ -489,7 +542,7 @@ describe("svelte/motion and svelte/reactivity/window", () => {
 			'import { Spring } from "svelte/motion";\nexport const s = new Spring(0);',
 		);
 		expect(text.split("\n")[0]).toBe(
-			"`svelte/motion` is not supported in Svelte on Lynx yet: it reads the web's `window` as it loads, which Lynx doesn't have, so the page throws as it starts.",
+			"`svelte/motion` is not supported in Svelte on Lynx yet: it reads the web's `window` as it loads, which Lynx doesn't have, so the background throws as it loads it.",
 		);
 		expect(text).toContain("util.ts:1:24");
 		expect(text).toContain("`animate()`");
@@ -508,12 +561,21 @@ describe("svelte/motion and svelte/reactivity/window", () => {
 			'export { Tween } from "svelte/motion";',
 			'export * from "svelte/reactivity/window";',
 			'export const load = () => import("svelte/motion");',
+			"export const load = () => import(`svelte/reactivity/window`);",
+			'export * as motion from "svelte/motion";',
 		])
 			expect(codes(moduleError(text)), text).toEqual(["svelte_module_unsupported"]);
 		expect(
 			codes(
 				await componentError(
 					'<script>\n\timport { prefersReducedMotion } from "svelte/motion";\n</script>\n<text>{prefersReducedMotion.current}</text>',
+				),
+			),
+		).toEqual(["svelte_module_unsupported"]);
+		expect(
+			codes(
+				await componentError(
+					'{#await import("svelte/motion") then motion}<text>{String(motion)}</text>{/await}',
 				),
 			),
 		).toEqual(["svelte_module_unsupported"]);
@@ -530,6 +592,56 @@ describe("svelte/motion and svelte/reactivity/window", () => {
 		expect(
 			moduleError(
 				'// sohedra-ignore svelte_module_unsupported\nimport { Spring } from "svelte/motion";\nvoid Spring;',
+			),
+		).toBe("");
+	});
+});
+
+describe("the screen's size", () => {
+	it("is one fix line for the DOM's window, MediaQuery and svelte/reactivity/window", () => {
+		for (const text of [
+			"export const w = window.innerWidth;",
+			'import { innerWidth } from "svelte/reactivity/window";\nvoid innerWidth;',
+			'import { MediaQuery } from "svelte/reactivity";\nvoid MediaQuery;',
+		])
+			expect(moduleError(text), text).toContain(SCREEN_SIZE);
+		expect(SCREEN_SIZE).toContain('on(host, "onWindowResize", …)');
+	});
+});
+
+// Forms the refusal can't see without following values through the code: the page fails as it
+// starts instead (tests/threads/svelte-web-modules.test.ts), and a known false refusal.
+describe("known gaps of the refusal of Svelte's APIs", () => {
+	it.fails("refuses MediaQuery destructured from a namespace", () => {
+		expect(
+			codes(
+				moduleError(
+					'import * as r from "svelte/reactivity";\nconst { MediaQuery } = r;\nvoid MediaQuery;',
+				),
+			),
+		).toEqual(["media_query_imported"]);
+	});
+
+	it.fails("refuses MediaQuery destructured from a dynamic import", () => {
+		expect(
+			codes(
+				moduleError(
+					'export const load = async () => (await import("svelte/reactivity")).MediaQuery;',
+				),
+			),
+		).toEqual(["media_query_imported"]);
+	});
+
+	it.fails("refuses hydrate imported from the app's own re-export of all of svelte", () => {
+		expect(codes(moduleError('import { hydrate } from "./svelte-all";\nvoid hydrate;'))).toEqual([
+			"svelte_mount_imported",
+		]);
+	});
+
+	it.fails("leaves a parameter alone that shadows a namespace import", () => {
+		expect(
+			moduleError(
+				'import * as svelte from "svelte";\nexport function f(svelte: { mount(): void }) {\n\tsvelte.mount();\n}',
 			),
 		).toBe("");
 	});
