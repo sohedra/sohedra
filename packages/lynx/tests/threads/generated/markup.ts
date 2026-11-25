@@ -297,6 +297,39 @@ const screen: fc.Arbitrary<string[]> = fc.oneof(
 	),
 );
 
+/** Whether markup holds an `{#await}` outside the lists in it. */
+function holdsAwait(markup: readonly MarkupNode[]): boolean {
+	return markup.some((node) => {
+		switch (node.kind) {
+			case "await":
+				return true;
+			case "element":
+			case "dynamic":
+				return holdsAwait(node.children);
+			case "if":
+				return (
+					holdsAwait(node.consequent) ||
+					holdsAwait(node.elseIf?.consequent ?? []) ||
+					holdsAwait(node.otherwise ?? [])
+				);
+			case "each":
+				return holdsAwait(node.body) || holdsAwait(node.otherwise ?? []);
+			case "key":
+			case "boundary":
+				return holdsAwait(node.body);
+			default:
+				return false;
+		}
+	});
+}
+
+/**
+ * A row that holds an `{#await}` is not deferred: the first frame draws a deferred row's pending
+ * branch, and the background's row waits (a known failure, ../hydration-known-limits.test.ts).
+ */
+const undeferredAwait = <T extends { body: MarkupNode[]; defer?: Deferred }>(row: T): T =>
+	row.defer !== undefined && holdsAwait(row.body) ? { ...row, defer: undefined } : row;
+
 /**
  * Long rows, only in a list of the page, whose rows are released; small, with no list in them: a
  * scroll shows them many times over.
@@ -310,7 +343,7 @@ function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild>
 			attributes: attributes(scope, "view"),
 			body: nodes("block", nested(scope, { lists: MOST_LISTS }), Math.min(1, size - 1)),
 		})
-		.map((each): ListChild => ({ kind: "rows", item, ...each }));
+		.map((each): ListChild => ({ kind: "rows", item, ...undeferredAwait(each) }));
 }
 
 /** A list of the page with long rows only, which a scroll lets go of. */
@@ -343,7 +376,7 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			kind: "item",
 			key,
 			attributes: written,
-			...rest,
+			...undeferredAwait(rest),
 		}));
 	const { item, scope: eachScope } = withItem(inner);
 	const eachItems = fc
@@ -356,7 +389,7 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			defer,
 			wrapped,
 		})
-		.map((each): ListChild => ({ kind: "items", item, ...each }));
+		.map((each): ListChild => ({ kind: "items", item, ...undeferredAwait(each) }));
 	const kinds =
 		scope.lists === 0
 			? fc.oneof(listItem, eachItems, { weight: 2, arbitrary: rows(item, eachScope, size) })

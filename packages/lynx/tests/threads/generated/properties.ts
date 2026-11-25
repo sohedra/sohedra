@@ -139,7 +139,7 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
  * an early tap runs its own element's handler, or is dropped. Half the pages draw the first frame
  * from other data than the background's, as one drawn from older page data is: then the trees may
  * stop lining up where rows differ, and the match may refuse, but it is never sure of a pair the
- * trees do not make.
+ * trees do not make, and where it does not refuse, Lynx shows what the background rendered.
  */
 export const identityProperty: fc.IAsyncPropertyWithHooks<[PageModel, PageState | undefined]> =
 	fc.asyncProperty(pageModel, fc.option(pageState, { nil: undefined }), async (model, other) => {
@@ -169,6 +169,18 @@ export const identityProperty: fc.IAsyncPropertyWithHooks<[PageModel, PageState 
 			}
 			if (matched)
 				expect(pairsAstray(matched, alignment), "Sure pairs the trees do not pair").toEqual([]);
+			// What hydration made again in place ends as the background rendered it.
+			const refused =
+				rewrote(running.page) ||
+				running.page.errors.some(
+					(error) => (error as { code?: string }).code === "hydration_mismatch",
+				);
+			if (other && !refused)
+				expectSameTree(
+					engineTree(running.page.engine),
+					backgroundTree(),
+					"After hydration from other data, Lynx shows",
+				);
 		});
 	});
 
