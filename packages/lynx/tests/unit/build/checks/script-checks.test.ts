@@ -482,3 +482,55 @@ describe("MediaQuery from svelte/reactivity", () => {
 		).toBe("");
 	});
 });
+
+describe("svelte/motion and svelte/reactivity/window", () => {
+	it("are an error at any import, which says the module is not supported yet", () => {
+		const text = moduleError(
+			'import { Spring } from "svelte/motion";\nexport const s = new Spring(0);',
+		);
+		expect(text.split("\n")[0]).toBe(
+			"`svelte/motion` is not supported in Svelte on Lynx yet: it reads the web's `window` as it loads, which Lynx doesn't have, so the page throws as it starts.",
+		);
+		expect(text).toContain("util.ts:1:24");
+		expect(text).toContain("`animate()`");
+		expect(codes(text)).toEqual(["svelte_module_unsupported"]);
+		const window = moduleError(
+			'import { innerWidth } from "svelte/reactivity/window";\nvoid innerWidth;',
+		);
+		expect(codes(window)).toEqual(["svelte_module_unsupported"]);
+		expect(window).toContain("`systemInfo` in `@sohedra/lynx/host`");
+	});
+
+	it("are an error as a namespace, a side effect, a re-export and a dynamic import", async () => {
+		for (const text of [
+			'import * as motion from "svelte/motion";\nvoid motion;',
+			'import "svelte/reactivity/window";',
+			'export { Tween } from "svelte/motion";',
+			'export * from "svelte/reactivity/window";',
+			'export const load = () => import("svelte/motion");',
+		])
+			expect(codes(moduleError(text)), text).toEqual(["svelte_module_unsupported"]);
+		expect(
+			codes(
+				await componentError(
+					'<script>\n\timport { prefersReducedMotion } from "svelte/motion";\n</script>\n<text>{prefersReducedMotion.current}</text>',
+				),
+			),
+		).toEqual(["svelte_module_unsupported"]);
+	});
+
+	it("leave a type import, svelte/easing and the silencing comment alone", () => {
+		expect(
+			moduleError('import type { Spring } from "svelte/motion";\nexport type S = Spring;'),
+		).toBe("");
+		expect(
+			moduleError('import { type Tween } from "svelte/motion";\nexport type T = Tween<number>;'),
+		).toBe("");
+		expect(moduleError('import { cubicOut } from "svelte/easing";\nvoid cubicOut;')).toBe("");
+		expect(
+			moduleError(
+				'// sohedra-ignore svelte_module_unsupported\nimport { Spring } from "svelte/motion";\nvoid Spring;',
+			),
+		).toBe("");
+	});
+});
