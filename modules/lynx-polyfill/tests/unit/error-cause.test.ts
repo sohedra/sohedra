@@ -155,3 +155,87 @@ describe("the constructors' own shape", () => {
 		expect(order).toEqual(["message", "cause", "message", "cause", "errors"]);
 	});
 });
+
+/**
+ * `Error` filled over an engine's that ignores cause and gives each error `stack`: a data property
+ * holding `stack(message)`, or what `define` puts there.
+ */
+function filledWithStack(define: (error: Error, message: string) => void): ErrorClass {
+	// Boundary: an old-style constructor, as an engine's built-in is.
+	const Ignoring = function (message: string) {
+		const error = new own[0]!(message);
+		define(error, message);
+		return error;
+	} as unknown as ErrorClass;
+	Ignoring.prototype = own[0]!.prototype;
+	const [Filled] = fillOnDevice({
+		gaps: [[globalThis, "Error", Ignoring]],
+		fill: fillErrorCause,
+		restore: [[own[0]!.prototype, "constructor"]],
+	}) as ErrorClass[];
+	return Filled!;
+}
+
+/** The stack an error made by `Filled` has, given the engine wrote `stack`. */
+function trimmed(stack: (message: string) => string, message = "x"): unknown {
+	const Filled = filledWithStack((error, text) =>
+		Object.defineProperty(error, "stack", {
+			value: stack(text),
+			writable: true,
+			configurable: true,
+		}),
+	);
+	return new Filled(message).stack;
+}
+
+describe("the stack of an error the wrapper makes", () => {
+	it("loses the wrapper's entry when there is no header line, as PrimJS writes it", () => {
+		expect(trimmed(() => "    at wrapper (f:1:1)\n    at maker (f:2:2)\n")).toBe(
+			"    at maker (f:2:2)\n",
+		);
+	});
+
+	it("keeps a header line, and loses the entry after it", () => {
+		expect(
+			trimmed((message) => `Error: ${message}\n    at wrapper (f:1:1)\n    at maker (f:2:2)`),
+		).toBe("Error: x\n    at maker (f:2:2)");
+	});
+
+	it("keeps a header whose message has a line that looks like an entry", () => {
+		const message = "first\n    at line (of the message)";
+		expect(
+			trimmed((text) => `Error: ${text}\n    at wrapper (f:1:1)\n    at maker (f:2:2)`, message),
+		).toBe(`Error: ${message}\n    at maker (f:2:2)`);
+	});
+
+	it("stays as the engine wrote it in another shape, as JavaScriptCore's", () => {
+		expect(trimmed(() => "wrapper@f:1:1\nmaker@f:2:2")).toBe("wrapper@f:1:1\nmaker@f:2:2");
+	});
+
+	it("is left alone when it is not a string, or an accessor", () => {
+		const Number = filledWithStack((error) =>
+			Object.defineProperty(error, "stack", { value: 7, writable: true, configurable: true }),
+		);
+		expect(new Number("x").stack).toBe(7);
+		const read = (): string => "    at wrapper (f:1:1)";
+		const Accessor = filledWithStack((error) =>
+			Object.defineProperty(error, "stack", { get: read, configurable: true }),
+		);
+		expect(Object.getOwnPropertyDescriptor(new Accessor("x"), "stack")?.get).toBe(read);
+	});
+});
+
+describe("the engine's statics of Error", () => {
+	it("are on the wrapper, read and written through to the engine's", () => {
+		const Ignoring = ignoringCause(own[0]!) as ErrorClass & { stackTraceLimit?: number };
+		Ignoring.stackTraceLimit = 10;
+		const [Filled] = fillOnDevice({
+			gaps: [[globalThis, "Error", Ignoring]],
+			fill: fillErrorCause,
+			restore: [[own[0]!.prototype, "constructor"]],
+		}) as (ErrorClass & { stackTraceLimit?: number })[];
+		expect(Filled!.stackTraceLimit).toBe(10);
+		Filled!.stackTraceLimit = 50;
+		expect(Ignoring.stackTraceLimit).toBe(50);
+	});
+});

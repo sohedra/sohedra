@@ -4,9 +4,6 @@
 
 import { report } from "../realm.ts";
 
-/** A subclass of `Error`, as an app's own error class is. */
-class AppError extends Error {}
-
 function makeError(): Error {
 	return new Error("x");
 }
@@ -31,8 +28,11 @@ function makeURIError(): Error {
 function makeAggregateError(): Error {
 	return new AggregateError([], "x");
 }
-function makeAppError(): Error {
-	return new AppError("x");
+function makeBoundError(): Error {
+	// A library's partial application of the constructor, read after the fills ran.
+	// Boundary: lib types `bind` on `ErrorConstructor` by its call signature only.
+	const BoundError = Error.bind(null, "x") as unknown as new () => Error;
+	return new BoundError();
 }
 function callError(): Error {
 	return Error("x");
@@ -48,7 +48,7 @@ export const ERROR_MAKERS: readonly (readonly [kind: string, make: () => Error])
 	["TypeError", makeTypeError],
 	["URIError", makeURIError],
 	["AggregateError", makeAggregateError],
-	["a subclass", makeAppError],
+	["a bound Error", makeBoundError],
 	["Error called without new", callError],
 ];
 

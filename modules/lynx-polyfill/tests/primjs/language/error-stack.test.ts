@@ -43,7 +43,7 @@ describe.each(ENGINES.map((engine) => ({ engine, name: engine.name })))(
 						TypeError: "makeTypeError connectErrorStack",
 						URIError: "makeURIError connectErrorStack",
 						AggregateError: "makeAggregateError connectErrorStack",
-						"a subclass": "AppError makeAppError",
+						"a bound Error": "makeBoundError connectErrorStack",
 						"Error called without new": "callError connectErrorStack",
 					},
 					{ Error: true, AggregateError: true },
