@@ -10,6 +10,7 @@ import {
 	UnreadableMarkup,
 } from "../../../src/main-thread/frame/html.ts";
 import type { DrawnChild, DrawnNode } from "../../../src/main-thread/frame/html.ts";
+import { BranchKey } from "../../../src/wire/index.ts";
 
 function parse(html: string): DrawnNode {
 	let next = 1;
@@ -87,6 +88,13 @@ describe("the first frame's parser", () => {
 		expect(
 			page(`<!--[--><view></view><!--[-1--><!--]--><!--[0--><text></text><!--]--><!--]-->`),
 		).toEqual([{ tag: "view" }, { block: [] }, { block: [{ tag: "text" }] }]);
+	});
+
+	it("keeps the branch each block took", () => {
+		const keys = parse(
+			`<!--[0--><!--]--><!--[12--><!--]--><!--[-1--><!--]--><!--[!--><!--]--><!--[?{"x":1}--><!--]--><!--[await--><!--]-->`,
+		).children.map((child) => (isBlock(child) ? child.key : undefined));
+		expect(keys).toEqual([0, 12, -1, BranchKey.Second, BranchKey.Failed, BranchKey.Await]);
 	});
 
 	it("keeps a list's cells unparsed, a quoted > in a cell's tag included", () => {

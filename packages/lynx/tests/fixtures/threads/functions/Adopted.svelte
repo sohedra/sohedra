@@ -1,7 +1,7 @@
 <!--
 	Main-thread handlers that call the background, on elements of the same shape in both branches of
-	{#if background}: hydration adopts the first frame's element as the background's. One handler is
-	the same function in both branches; the other differs.
+	{#if background}: hydration makes the element again, since the threads took other branches. One
+	handler is the same function in both branches; the other differs.
 -->
 <script lang="ts">
 	import { runOnBackground } from "@sohedra/lynx";

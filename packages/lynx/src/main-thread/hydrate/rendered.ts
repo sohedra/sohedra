@@ -24,6 +24,37 @@ export interface RenderedNode {
 	list: { items: number[]; keys: unknown[]; update: Op } | null;
 	/** The branch marks of the blocks among its children, `[key, count, at]`, in the order sent. */
 	marks: [number, number, number][] | null;
+	/** Whether a child was put anywhere but last, or taken out: its marks may count the others. */
+	moved: boolean;
+}
+
+/** A block the background marked: the branch it took, and its content. */
+export interface RenderedBlock {
+	key: number;
+	entries: RenderedEntry[];
+}
+
+/** A child of a rendered node, by its id, or a block among its children. */
+export type RenderedEntry = number | RenderedBlock;
+
+/**
+ * A node's children with its blocks folded in from its branch marks, or null when they cannot be
+ * read: a mark out of order, or one that holds more entries than come before it.
+ */
+export function entriesOf(node: RenderedNode): RenderedEntry[] | null {
+	const { children, marks } = node;
+	if (marks === null) return children;
+	if (node.moved) return null;
+	const entries: RenderedEntry[] = [];
+	let next = 0;
+	for (const [key, count, at] of marks) {
+		if (at < next || at > children.length) return null;
+		while (next < at) entries.push(children[next++]!);
+		if (count > entries.length) return null;
+		entries.push({ key, entries: entries.splice(entries.length - count, count) });
+	}
+	while (next < children.length) entries.push(children[next++]!);
+	return entries;
 }
 
 /** What the rendered items hold. */
@@ -62,6 +93,7 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 					parent: 0,
 					list: null,
 					marks: null,
+					moved: false,
 				});
 				break;
 			case OpCode.SetAttr: {
@@ -86,14 +118,18 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 				const child = made(nodes, op[2], op);
 				const at = op[3] === 0 ? -1 : parent.children.indexOf(op[3]);
 				if (at === -1) parent.children.push(op[2]);
-				else parent.children.splice(at, 0, op[2]);
+				else {
+					parent.children.splice(at, 0, op[2]);
+					parent.moved = true;
+				}
 				child.parent = op[1];
 				break;
 			}
 			case OpCode.Remove: {
-				const children = made(nodes, op[1], op).children;
-				const at = children.indexOf(op[2]);
-				if (at !== -1) children.splice(at, 1);
+				const parent = made(nodes, op[1], op);
+				const at = parent.children.indexOf(op[2]);
+				if (at !== -1) parent.children.splice(at, 1);
+				parent.moved = true;
 				break;
 			}
 			case OpCode.Release:
@@ -128,6 +164,7 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 		parent: 0,
 		list: null,
 		marks: null,
+		moved: false,
 	});
 	const cells = new Map<number, string[]>();
 	const cellContexts = new Map<number, number[]>();

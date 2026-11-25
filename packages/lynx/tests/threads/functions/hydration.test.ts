@@ -198,7 +198,7 @@ describe("a first frame the background cannot hydrate", () => {
 	});
 });
 
-describe("a main-thread handler on an element hydration adopts from the other branch", () => {
+describe("a main-thread handler in the other branch of {#if background}", () => {
 	function adopting() {
 		const log: unknown[][] = [];
 		const page = startFunctionsPage(Adopted, {
@@ -209,33 +209,27 @@ describe("a main-thread handler on an element hydration adopts from the other br
 		return { page, log };
 	}
 
-	// Two branches that look the same: hydration cannot tell them apart, and takes the element as
-	// the other branch's, a known hole (`SameLook` in ../hydration-dropped-events.test.ts) that
-	// pairing blocks by the branch each took closes, flipping this test.
-	it("has its held call answered by the background's, when it is the same function", async () => {
-		const { page, log } = adopting();
-		const element = page.byClass("same");
-		page.engine.dispatch(element, { type: "tap" });
-		await page.settle();
-		expect(page.byClass("same")).toBe(element);
-		expect(log).toEqual([["same"]]);
-		expect(page.engine.state(element).attrs["refused"]).toBeUndefined();
-		expect(page.errors).toEqual([]);
-	});
-
-	it("has its held call rejected, and not answered by the other, when the functions differ", async () => {
-		const { page, log } = adopting();
-		const element = page.byClass("differs");
-		page.engine.dispatch(element, { type: "tap" });
-		await page.settle();
-		expect(page.byClass("differs")).toBe(element);
-		expect(log).toEqual([]);
-		expect(page.engine.state(element).attrs["refused"]).toBe("first_frame_call_unanswered");
-		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
-	});
+	// The two branches look the same, and hydration pairs by the branch each took: the element is
+	// made again, never taken as the other branch's.
+	it.each(["same", "differs"])(
+		"has its held call rejected, and its element made again, when the function is %s",
+		async (token) => {
+			const { page, log } = adopting();
+			const element = page.byClass(token);
+			page.engine.dispatch(element, { type: "tap" });
+			await page.settle();
+			expect(page.byClass(token)).not.toBe(element);
+			expect(log).toEqual([]);
+			// Its catch writes to the drawn element, which the page let go of.
+			expect(page.errors).toEqual([
+				expect.objectContaining({ code: "first_frame_call_unanswered" }),
+				expect.objectContaining({ code: "element_released" }),
+			]);
+		},
+	);
 });
 
-describe("a main-thread handler in a run of blocks that ends in a part only the background renders", () => {
+describe("a main-thread handler in a block beside a part only the background renders", () => {
 	/** Taps the first frame's `.tapped`, and lets hydration happen. */
 	async function tappedEarly(App: Parameters<typeof startFunctionsPage>[0], draw: Draw) {
 		const log: unknown[][] = [];
@@ -250,32 +244,30 @@ describe("a main-thread handler in a run of blocks that ends in a part only the 
 		return { page, log, element };
 	}
 
-	// Hydration cannot tell which element is which in the run: its held call is not answered by a
-	// guess, even when the guess is right.
-	it("has its held call rejected, its element kept", async () => {
+	it("has its held call answered by its own element's function, its element kept", async () => {
 		const { page, log, element } = await tappedEarly(BackgroundLast, drawBackgroundLast);
 		expect(page.byClass("tapped")).toBe(element);
-		expect(log).toEqual([]);
-		expect(page.engine.state(element).attrs["refused"]).toBe("first_frame_call_unanswered");
-		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
-		await tap(page, "tapped");
 		expect(log).toEqual([["tapped"]]);
-	});
-
-	it("has its held call rejected, not answered by the part only the background renders", async () => {
-		const { page, log } = await tappedEarly(BackgroundLastSame, drawBackgroundLastSame);
-		expect(log).toEqual([]);
-		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
+		expect(page.engine.state(element).attrs["refused"]).toBeUndefined();
+		expect(page.errors).toEqual([]);
 		await tap(page, "tapped");
-		await tap(page, "later");
 		expect(log).toEqual([["tapped"], ["tapped"]]);
 	});
 
-	it("has its held call rejected when the part only the background renders binds a ref", async () => {
-		const { page, log } = await tappedEarly(BackgroundLastBound, drawBackgroundLastBound);
-		expect(log).toEqual([]);
-		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
-		await tap(page, "tapped");
+	it("has its held call answered once, not by the part only the background renders", async () => {
+		const { page, log } = await tappedEarly(BackgroundLastSame, drawBackgroundLastSame);
 		expect(log).toEqual([["tapped"]]);
+		expect(page.errors).toEqual([]);
+		await tap(page, "tapped");
+		await tap(page, "later");
+		expect(log).toEqual([["tapped"], ["tapped"], ["tapped"]]);
+	});
+
+	it("has its held call answered when the part only the background renders binds a ref", async () => {
+		const { page, log } = await tappedEarly(BackgroundLastBound, drawBackgroundLastBound);
+		expect(log).toEqual([["tapped"]]);
+		expect(page.errors).toEqual([]);
+		await tap(page, "tapped");
+		expect(log).toEqual([["tapped"], ["tapped"]]);
 	});
 });

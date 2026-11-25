@@ -213,9 +213,9 @@ export const MAIN_THREAD_DEVELOPMENT_CATALOGUE: Catalogue<
 	},
 	first_frame_event_dropped: {
 		message: ({ event, element, count }) =>
-			`The first frame's ${event} event on ${element} was dropped${count > 1 ? `, ${count} times` : ""}: the element is in a part of the page that may differ between the first frame and the page once it started, so no handler ran for it.`,
+			`The first frame's ${event} event on ${element} was dropped${count > 1 ? `, ${count} times` : ""}: the page drew that element otherwise once it started, so no handler ran for it.`,
 		fix: () =>
-			"Render that part from the page's data, which both threads have, so the first frame draws what the background renders. A part only the background renders, such as {#if background}, and an {#await} given a promise, which the page draws again once it started, also drop the events heard before then in the {#if} blocks beside them, in the same element: give each an element of its own, as in <view>{#if background}…{/if}</view>. Events after the page has started are handled as usual.",
+			"Render that part from the page's data, which both threads have, so the first frame draws what the background renders. A branch only one thread takes, such as the {:else} of {#if background} or of {#if user} when only the background knows the user, and the pending branch of an {#await} given a promise are drawn again once the page starts. Events after the page has started are handled as usual.",
 		docs: "first_frame_event_dropped",
 	},
 };

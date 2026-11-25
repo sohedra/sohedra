@@ -1,35 +1,40 @@
 // Hydration's match: the first frame's drawn tree against the page the background rendered, by
-// position and kind, and a list's cells by key. It decides everything before anything changes, and
+// block and position, and a list's cells by key. It decides everything before anything changes, and
 // returns either what to do or the first difference that refuses hydration.
 //
-// What may differ, and is written over the first frame:
+// Svelte numbers every branch of every `{#if}` on both threads. The first frame's markup says which
+// one it drew (`<!--[0-->`), and the rendered items which one the background rendered (branch
+// marks). A parent's children are a sequence of entries, elements and blocks; texts are matched on
+// their own. Two sequences line up when they are as long, with an element of the same tag against
+// each element and a block against each block. A block's content is compared only when both
+// threads took the same branch; a block that took another is made again in place, never paired
+// across. A block's second state (a list's `{:else}`, an `{#await}` given a value, a boundary's
+// `pending`) is a block too, and so is the place of an `{#await}` given a promise, whose branch the
+// background draws after the rendered items; a second state with nothing in it is no entry.
+//
+// What may differ, and is written over the first frame or made again in place:
 //   - a text;
-//   - the branches of Svelte's `{#if}` blocks: the first frame and the background may take another
-//     branch there, as `{#if background}` does. Of a run of them, the elements that have the same
-//     tags in the same places from its end and from its start are adopted, with what differs
-//     written, in the cells of a list among them too; the rest is made again in place. An
-//     `{#await}` given a promise is such a block: the background draws its content after the page
-//     rendered, and the first patch brings it after the rendered items;
+//   - inside a block, an attribute: hydration is not sure of the element it wrote over
+//     (`Plan.unsure`), and replays no early event there;
+//   - inside a block, a sequence that does not line up, or a list whose keys differ: the block's
+//     content, or the parent's children, are made again whole, and none of it is adopted;
+//   - a parent's children that hold a block that is not an `{#if}`'s branch, or whose marks cannot
+//     be read: made again whole when they do not line up;
 //   - events, styles set from code, and what the first mount's effects changed: none of them is in
 //     the first frame.
-// A run's pairs are a guess. The run settles when it paired one to one and hydration wrote nothing
-// over what it adopted but an id of `$props.id()` or a text that is empty, in a run nested in it
-// and in its parent's texts too; an adopted node in a run that did not settle, at any depth, is one
-// hydration is not sure of (`Plan.unsure`).
-// What refuses hydration (a mismatch): outside a block, a tag that differs, an element that one
-// side has and the other lacks, or an attribute that differs; and a list whose keys differ.
-// Outside a block, an attribute that differs only in `$props.id()`'s ids is written over the first
-// frame's, and kept for a development build's warning: the ids agree unless a component only one
-// thread renders is in a branch whose test the build does not recognize as one, or a component
-// binding renders the first frame twice. Inside a block, an id that differs is written over with
-// no warning, as any attribute there is.
+// What refuses hydration (a mismatch), outside every block: a sequence that does not line up, an
+// attribute that differs, and a list whose keys differ. An attribute that differs only in
+// `$props.id()`'s ids is written over the first frame's, and kept for a development build's
+// warning: the ids agree unless a component only one thread renders is in a branch whose test the
+// build does not recognize as one, or a component binding renders the first frame twice. Inside a
+// block, an id that differs is written over with no warning, and hydration stays sure.
 
-import { MAIN_THREAD_PREFIX, PROPS_ID } from "../../wire/index.ts";
+import { BranchKey, MAIN_THREAD_PREFIX, PROPS_ID } from "../../wire/index.ts";
 import type { AttrValue, HydrationMismatch, PropsIdDifference } from "../../wire/index.ts";
 import { elementsOf, isBlock } from "../frame/html.ts";
-import type { DrawnChild, DrawnNode } from "../frame/html.ts";
-import { readCell } from "./rendered.ts";
-import type { Rendered, RenderedNode } from "./rendered.ts";
+import type { DrawnBlock, DrawnChild, DrawnNode } from "../frame/html.ts";
+import { entriesOf, readCell } from "./rendered.ts";
+import type { Rendered, RenderedBlock, RenderedEntry, RenderedNode } from "./rendered.ts";
 
 /** A list the background keeps: its drawn cells by index, adopted, let go of, or left to wait. */
 interface ListPlan {
@@ -46,7 +51,7 @@ interface NestedListPlan {
 	drawn: number;
 }
 
-/** A run of drawn children made again in place from the background's. */
+/** Drawn children made again in place from the background's. */
 interface Repair {
 	/** The parent, by the background's id and the first frame's. */
 	parent: number;
@@ -81,14 +86,8 @@ export interface Plan {
 	adoptedCells: Set<number>;
 	/** Attributes outside a block whose ids of `$props.id()` differ, written over the first frame's. */
 	propsIds: PropsIdDifference[];
-	/** The adopted nodes hydration is not sure of: in a run that did not settle, at any depth. */
+	/** The adopted elements hydration wrote an attribute over, but an id of `$props.id()`. */
 	unsure: Set<number>;
-}
-
-/** A run of blocks, as its pairs are made: whether it has not settled, and the run it is in. */
-interface Run {
-	unsettled: boolean;
-	outer: Run | undefined;
 }
 
 /** Hydration was refused: what differs. */
@@ -110,6 +109,11 @@ class Mismatch extends Error {
 	}
 }
 
+/** One entry of a sequence on the background's side: an element's id, or a block. */
+type Built = number | RenderedBlock;
+/** One entry on the first frame's side. */
+type Drawn = DrawnNode | DrawnBlock;
+
 /** `style` text as compared: spaces and the last `;` do not count. */
 const styleText = (value: string): string => value.replace(/\s+/g, "").replace(/;$/, "");
 
@@ -126,7 +130,9 @@ function same(name: string, a: AttrValue | undefined, b: AttrValue | undefined):
  * Whether two values differ only in the ids of `$props.id()`: then the background's are written
  * over the frame's, and the page goes on.
  */
-const sameButIds = (a: string, b: string): boolean =>
+const sameButIds = (a: AttrValue | undefined, b: AttrValue | undefined): boolean =>
+	typeof a === "string" &&
+	typeof b === "string" &&
 	a.replace(PROPS_ID, "") === b.replace(PROPS_ID, "");
 
 /** An item key as text: Lynx reads it as text. */
@@ -143,15 +149,16 @@ const compared = (name: string): boolean => !name.startsWith(MAIN_THREAD_PREFIX)
 const asNone = (name: string, value: AttrValue | undefined): boolean =>
 	value === undefined || (name === "class" && value === "");
 
+/** Whether a block is not an `{#if}`'s branch: a second state, an `{#await}`'s place, a failure. */
+const notAnIf = (key: number): boolean => key < -1;
+
 /** Matches the drawn page against the rendered one. */
 export function matchFrame(options: {
 	root: DrawnNode;
 	rendered: Rendered;
 	lists: DrawnLists;
-	/** Whether the first frame bound a `main-thread:` attribute on the drawn element. */
-	binds?: (drawn: number) => boolean;
 }): Plan | Refused {
-	const { root, rendered, lists, binds } = options;
+	const { root, rendered, lists } = options;
 	const plan: Plan = {
 		adopt: [],
 		writes: [],
@@ -163,71 +170,193 @@ export function matchFrame(options: {
 		propsIds: [],
 		unsure: new Set(),
 	};
-	/** The innermost run of each node adopted in one. */
-	const runs = new Map<number, Run>();
 	const node = (id: number): RenderedNode => rendered.nodes.get(id)!;
 	const isText = (id: number): boolean => node(id).tag === "#text";
-	/** The rendered children that are elements: texts are matched on their own. */
-	const elementChildren = (id: number): number[] =>
-		node(id).children.filter((child) => !isText(child));
-	/** The drawn elements of `children`, blocks opened, texts left out. */
-	const drawnElements = (children: DrawnChild[]): DrawnNode[] =>
-		elementsOf(children).filter((child) => child.tag !== "#text");
 
-	/** Whether the rendered element has a `main-thread:` attribute. */
-	const bindsBuilt = (id: number): boolean =>
-		[...node(id).attrs].some(
-			([name, value]) => name.startsWith(MAIN_THREAD_PREFIX) && value != null,
-		);
+	/** The entries of a sequence that are compared: texts left out, a second state with none too. */
+	function builtEntries(entries: RenderedEntry[]): Built[] {
+		const out: Built[] = [];
+		for (const entry of entries) {
+			if (typeof entry === "number") {
+				if (!isText(entry)) out.push(entry);
+			} else if (entry.key !== BranchKey.Second || builtEntries(entry.entries).length > 0)
+				out.push(entry);
+		}
+		return out;
+	}
+
+	function drawnEntries(children: DrawnChild[]): Drawn[] {
+		const out: Drawn[] = [];
+		for (const child of children) {
+			if (!isBlock(child)) {
+				if (child.tag !== "#text") out.push(child);
+			} else if (child.key !== BranchKey.Second || drawnEntries(child.children).length > 0)
+				out.push(child);
+		}
+		return out;
+	}
+
+	/** The background's elements of a sequence, blocks opened. */
+	function builtElements(entries: Built[], out: number[] = []): number[] {
+		for (const entry of entries) {
+			if (typeof entry === "number") out.push(entry);
+			else builtElements(builtEntries(entry.entries), out);
+		}
+		return out;
+	}
+
+	/** The first frame's elements of a sequence, blocks opened. */
+	const drawnElements = (entries: Drawn[]): DrawnNode[] =>
+		elementsOf(entries).filter((child) => child.tag !== "#text");
+
+	/** Whether two sequences line up: as long, with the same tag at each element, a block at each block. */
+	function linesUp(built: Built[], drawn: Drawn[]): boolean {
+		if (built.length !== drawn.length) return false;
+		for (let index = 0; index < built.length; index++) {
+			const ours = built[index]!;
+			const theirs = drawn[index]!;
+			if (typeof ours === "number") {
+				if (isBlock(theirs) || node(ours).tag !== theirs.tag) return false;
+			} else if (!isBlock(theirs)) return false;
+		}
+		return true;
+	}
+
+	/** Makes a sequence again in place: the background's elements made, the drawn taken off. */
+	function remake(id: number, drawnId: number, built: Built[], drawn: Drawn[]): void {
+		const make = builtElements(built);
+		const drop = drawnElements(drawn).map((child) => child.id);
+		if (make.length > 0 || drop.length > 0)
+			plan.repairs.push({ parent: id, drawnParent: drawnId, make, drop });
+	}
+
+	/** The first difference of a parent's children outside every block, as a mismatch. */
+	function refusal(id: number, built: Built[], drawn: Drawn[]): Mismatch {
+		const ours = builtElements(built);
+		const theirs = drawnElements(drawn);
+		for (let index = 0; index < Math.max(ours.length, theirs.length); index++) {
+			const mine = ours[index];
+			const yours = theirs[index];
+			if (mine === undefined)
+				return new Mismatch({ kind: "extra", element: id, got: yours?.tag ?? "" });
+			if (yours === undefined)
+				return new Mismatch({ kind: "missing", element: mine, expected: node(mine).tag });
+			if (node(mine).tag !== yours.tag)
+				return new Mismatch({
+					kind: "tag",
+					element: mine,
+					expected: node(mine).tag,
+					got: yours.tag,
+				});
+		}
+		// The same elements, in blocks on one side only.
+		return new Mismatch({ kind: "tag", element: id });
+	}
+
+	/** Forgets what the plan holds past `at`: a block's content that is made again after all. */
+	function rewind(at: number[]): void {
+		for (const [id] of plan.adopt.slice(at[0])) {
+			plan.unsure.delete(id);
+			plan.adoptedCells.delete(id);
+		}
+		plan.adopt.length = at[0]!;
+		plan.writes.length = at[1]!;
+		plan.lists.length = at[2]!;
+		plan.nestedLists.length = at[3]!;
+		plan.repairs.length = at[4]!;
+		plan.textRepairs.length = at[5]!;
+	}
 
 	/**
-	 * Whether the two have the same tags in the same places, all the way down, and both or neither
-	 * have a main-thread binding: in a run of blocks, an element only the background renders may
-	 * have the tag of the first frame's element beside it, and adopting the wrong one loses the
-	 * calls the first frame's function made.
+	 * Pairs two sequences that line up: elements as they are, blocks by their branch. `inBlock`:
+	 * the sequence is inside a block.
 	 */
-	function sameShape(id: number, drawn: DrawnNode): boolean {
-		const built = node(id);
-		if (built.tag !== drawn.tag) return false;
-		if (binds && binds(drawn.id) !== bindsBuilt(id)) return false;
-		if (drawn.cells)
-			return keysOf(drawn).join("\n") === (built.list?.keys ?? []).map(keyText).join("\n");
-		const children = drawnElements(drawn.children);
-		const builtChildren = elementChildren(id);
-		return (
-			children.length === builtChildren.length &&
-			children.every((child, index) => sameShape(builtChildren[index]!, child))
-		);
+	function sequence(
+		id: number,
+		drawnId: number,
+		built: Built[],
+		drawn: Drawn[],
+		inBlock: boolean,
+	): void {
+		for (let index = 0; index < built.length; index++) {
+			const ours = built[index]!;
+			const theirs = drawn[index]!;
+			if (typeof ours === "number") {
+				// Boundary: the sequences line up, so an element is against an element.
+				pair(ours, theirs as DrawnNode, inBlock);
+				continue;
+			}
+			// Boundary: as above, a block against a block.
+			const block = theirs as DrawnBlock;
+			const content = builtEntries(ours.entries);
+			const drawnContent = drawnEntries(block.children);
+			if (ours.key !== block.key || !linesUp(content, drawnContent)) {
+				remake(id, drawnId, content, drawnContent);
+				continue;
+			}
+			// What differs deeper, a list's keys, is made again with the block's content.
+			const at = [
+				plan.adopt.length,
+				plan.writes.length,
+				plan.lists.length,
+				plan.nestedLists.length,
+				plan.repairs.length,
+				plan.textRepairs.length,
+			];
+			try {
+				sequence(id, drawnId, content, drawnContent, true);
+			} catch (error) {
+				if (!(error instanceof Mismatch)) throw error;
+				rewind(at);
+				remake(id, drawnId, content, drawnContent);
+			}
+		}
 	}
 
-	function keysOf(drawn: DrawnNode): string[] {
-		return (drawn.cells ?? []).map((cell) => keyText(cell.attrs.get("item-key")));
+	/** A parent's children: its texts, then its entries. */
+	function children(id: number, drawn: DrawnNode, inBlock: boolean): void {
+		texts(id, drawn);
+		const entries = entriesOf(node(id));
+		const drawnChildren = drawnEntries(drawn.children);
+		// Marks that cannot be read: nothing under the parent is adopted.
+		if (entries === null) {
+			remake(id, drawn.id, builtEntries(node(id).children), drawnChildren);
+			return;
+		}
+		const built = builtEntries(entries);
+		if (linesUp(built, drawnChildren)) {
+			sequence(id, drawn.id, built, drawnChildren, inBlock);
+			return;
+		}
+		const explained =
+			inBlock ||
+			built.some((entry) => typeof entry !== "number" && notAnIf(entry.key)) ||
+			drawnChildren.some((child) => isBlock(child) && notAnIf(child.key));
+		if (!explained) throw refusal(id, built, drawnChildren);
+		remake(id, drawn.id, built, drawnChildren);
 	}
 
-	/** Compares a pair of the same tag, and what is under it; `at` is the run it is in, if any. */
-	function pair(id: number, drawn: DrawnNode, inBlock: boolean, at?: Run): void {
+	/** Compares a pair of the same tag, and what is under it. */
+	function pair(id: number, drawn: DrawnNode, inBlock: boolean): void {
 		const built = node(id);
 		plan.adopt.push([id, drawn.id]);
-		if (at) runs.set(id, at);
 		if (built.tag === "#text") {
-			if (built.text !== drawn.text) {
-				plan.writes.push({ id, name: null, value: built.text });
-				if (at) at.unsettled = true;
-			}
+			if (built.text !== drawn.text) plan.writes.push({ id, name: null, value: built.text });
 			return;
 		}
 		for (const [name, value] of built.attrs) {
 			const got = drawn.attrs.get(name);
 			if (!compared(name) || same(name, value, got)) continue;
 			if (asNone(name, value) && asNone(name, got)) continue;
+			const ids = sameButIds(value, got);
 			if (!inBlock) {
-				if (typeof value !== "string" || typeof got !== "string" || !sameButIds(value, got))
+				if (!ids)
 					throw new Mismatch({ kind: "attribute", element: id, name, expected: value, got });
-				plan.propsIds.push({ element: id, name, expected: value, got });
+				// Boundary: `sameButIds` holds of two strings only.
+				plan.propsIds.push({ element: id, name, expected: value as string, got: got as string });
 			}
 			plan.writes.push({ id, name, value });
-			if (at && !(typeof value === "string" && typeof got === "string" && sameButIds(value, got)))
-				at.unsettled = true;
+			if (!ids) plan.unsure.add(id);
 		}
 		for (const [name, value] of drawn.attrs) {
 			if (!compared(name) || built.attrs.has(name) || asNone(name, value)) continue;
@@ -240,21 +369,21 @@ export function matchFrame(options: {
 					got: value,
 				});
 			plan.writes.push({ id, name, value: null });
-			if (at) at.unsettled = true;
+			plan.unsure.add(id);
 		}
 		if (drawn.cells) {
-			list(id, drawn, inBlock, at);
+			list(id, drawn, inBlock);
 			return;
 		}
 		if (drawn.tag === "list") plan.nestedLists.push({ id, drawn: drawn.id });
-		align(id, drawn, inBlock, at);
+		children(id, drawn, inBlock);
 	}
 
 	/** A list's cells by key; in a block, as the list is, so their attributes may differ too. */
-	function list(id: number, drawn: DrawnNode, inBlock: boolean, at: Run | undefined): void {
+	function list(id: number, drawn: DrawnNode, inBlock: boolean): void {
 		const built = node(id);
 		const keys = (built.list?.keys ?? []).map(keyText);
-		const got = keysOf(drawn);
+		const got = (drawn.cells ?? []).map((cell) => keyText(cell.attrs.get("item-key")));
 		if (keys.join("\n") !== got.join("\n"))
 			throw new Mismatch({ kind: "list-keys", element: id, expected: keys, got });
 		const items = built.list?.items ?? [];
@@ -273,21 +402,18 @@ export function matchFrame(options: {
 				throw new Mismatch({ kind: "extra", element: id, got: "list-item" });
 			cells.push(cell.id);
 			plan.adoptedCells.add(item);
-			pair(item, cell.node, inBlock, at);
+			pair(item, cell.node, inBlock);
 		}
 		plan.lists.push({ id, drawn: drawn.id, items, cells });
 	}
 
 	/**
-	 * Matches a parent's texts, which never refuse. Texts go by the element they follow: where both
-	 * sides have as many there, one to one; else the drawn ones are taken off and the background's
-	 * made in place. Where the two sides have a different number of elements, every text is made
-	 * again: an element adopted from a run keeps its drawn place, which a drawn text may be on the
-	 * wrong side of. Returns whether a text that is not empty was written or made: the texts of the
-	 * blocks among the children are the parent's, read here before their run is.
+	 * Matches a parent's texts, which never refuse, with its blocks' texts as its own. Texts go by
+	 * the element they follow: where both sides have as many there, one to one; else the drawn ones
+	 * are taken off and the background's made in place. Where the two sides have a different number
+	 * of elements, every text is made again.
 	 */
-	function texts(id: number, drawn: DrawnNode, at: Run | undefined): boolean {
-		let changed = false;
+	function texts(id: number, drawn: DrawnNode): void {
 		const children = node(id).children;
 		const drawnChildren = elementsOf(drawn.children);
 		/** The texts of a list of children, by how many elements come before them. */
@@ -310,14 +436,9 @@ export function matchFrame(options: {
 			const ours = built[slot]!;
 			const theirs = drawnTexts[slot]!;
 			if (aligned && ours.length === theirs.length) {
-				for (let index = 0; index < ours.length; index++) {
-					if (node(ours[index]!).text !== theirs[index]!.text) changed = true;
-					pair(ours[index]!, theirs[index]!, true, at);
-				}
+				for (let index = 0; index < ours.length; index++) pair(ours[index]!, theirs[index]!, true);
 				continue;
 			}
-			// Svelte's server writes no text for an empty one, and its client makes it.
-			if (theirs.length > 0 || ours.some((text) => node(text).text !== "")) changed = true;
 			plan.textRepairs.push({
 				parent: id,
 				drawnParent: drawn.id,
@@ -325,131 +446,13 @@ export function matchFrame(options: {
 				make: ours,
 			});
 		}
-		if (at && changed) at.unsettled = true;
-		return changed;
-	}
-
-	/** Matches a parent's children: drawn elements outside blocks one to one, blocks by run. */
-	function align(id: number, drawn: DrawnNode, inBlock: boolean, at?: Run): void {
-		const changed = texts(id, drawn, at);
-		const built = elementChildren(id);
-		// The drawn elements as fixed nodes, and runs that may differ: Svelte's `{#if}` branches.
-		const parts: (DrawnNode | DrawnChild[])[] = [];
-		for (const child of drawn.children) {
-			if (!isBlock(child) && child.tag === "#text") continue;
-			const last = parts[parts.length - 1];
-			if (!isBlock(child)) parts.push(child);
-			else if (Array.isArray(last)) last.push(child);
-			else parts.push([child]);
-		}
-		const runs = parts.filter((part) => Array.isArray(part)).length;
-		if (runs > 1) {
-			// Several runs: from the first to the last is one, so that each side's length is known.
-			const first = parts.findIndex((part) => Array.isArray(part));
-			let last = parts.length - 1;
-			while (!Array.isArray(parts[last])) last--;
-			const merged = parts
-				.slice(first, last + 1)
-				.flatMap((part) => (Array.isArray(part) ? part : [part]));
-			parts.splice(first, last - first + 1, merged);
-		}
-		const fixed = parts.filter((part) => !Array.isArray(part)).length;
-		const free = built.length - fixed;
-		if (free < 0 || (runs === 0 && free > 0)) {
-			const extra = free < 0;
-			const at = extra ? undefined : built[fixed];
-			if (inBlock) throw new Mismatch({ kind: "tag", element: id });
-			throw new Mismatch(
-				extra
-					? { kind: "extra", element: id, got: firstFixedBeyond(parts, built, node) }
-					: { kind: "missing", element: at!, expected: node(at!).tag },
-			);
-		}
-		let index = 0;
-		for (const part of parts) {
-			if (!Array.isArray(part)) {
-				const builtId = built[index++]!;
-				if (node(builtId).tag !== part.tag) {
-					if (inBlock) throw new Mismatch({ kind: "tag", element: builtId });
-					throw new Mismatch({
-						kind: "tag",
-						element: builtId,
-						expected: node(builtId).tag,
-						got: part.tag,
-					});
-				}
-				pair(builtId, part, inBlock, at);
-				continue;
-			}
-			const make = built.slice(index, index + free);
-			index += free;
-			run(id, drawn.id, { make, drawn: drawnElements(part), outer: at, unsettled: changed });
-		}
-	}
-
-	/**
-	 * A run that may differ: what has the same shape from its end and from its start is adopted,
-	 * and what is left between is made again in place.
-	 */
-	function run(
-		id: number,
-		drawnParent: number,
-		{ make, drawn, outer, unsettled }: Run & { make: number[]; drawn: DrawnNode[] },
-	): void {
-		const at: Run = { unsettled, outer };
-		const most = Math.min(make.length, drawn.length);
-		// From the end first: a part only the background renders, `{#if background}`, comes first
-		// more often than last.
-		let end = 0;
-		while (end < most && sameShape(make[make.length - 1 - end]!, drawn[drawn.length - 1 - end]!))
-			end++;
-		let start = 0;
-		while (start < most - end && sameShape(make[start]!, drawn[start]!)) start++;
-		for (let index = 0; index < start; index++) pair(make[index]!, drawn[index]!, true, at);
-		for (let index = 1; index <= end; index++)
-			pair(make[make.length - index]!, drawn[drawn.length - index]!, true, at);
-		const left = make.slice(start, make.length - end);
-		const dropped = drawn.slice(start, drawn.length - end);
-		const repaired = left.length > 0 || dropped.length > 0;
-		// The runs around this one paired their elements only because the difference was left here:
-		// nothing tells the same branch with a difference inside from another branch.
-		if (repaired || at.unsettled)
-			for (let around: Run | undefined = at; around; around = around.outer) around.unsettled = true;
-		if (!repaired) return;
-		plan.repairs.push({
-			parent: id,
-			drawnParent,
-			make: left,
-			drop: dropped.map((child) => child.id),
-		});
 	}
 
 	try {
-		align(root.id, root, false);
-		for (const [id, innermost] of runs)
-			for (let at: Run | undefined = innermost; at; at = at.outer)
-				if (at.unsettled) {
-					plan.unsure.add(id);
-					break;
-				}
+		children(root.id, root, false);
 		return plan;
 	} catch (error) {
 		if (error instanceof Mismatch) return { mismatch: error.mismatch };
 		throw error;
 	}
-}
-
-/** The tag of the first drawn element the background has no place for. */
-function firstFixedBeyond(
-	parts: (DrawnNode | DrawnChild[])[],
-	built: number[],
-	node: (id: number) => RenderedNode,
-): string {
-	let index = 0;
-	for (const part of parts) {
-		if (Array.isArray(part)) continue;
-		const id = built[index++];
-		if (id === undefined || node(id).tag !== part.tag) return part.tag;
-	}
-	return "";
 }

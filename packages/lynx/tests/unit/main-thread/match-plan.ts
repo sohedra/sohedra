@@ -14,16 +14,18 @@ import { encodeCell, listUpdateInfo, OpCode, ROOT_ID } from "../../../src/wire/i
 import type { AttrValue, HydrationMismatch, Op, PatchItem } from "../../../src/wire/index.ts";
 
 /**
- * A node the background rendered: a text, an element with its attributes and children, or an
- * `{#if}` block with the branch it took, as Svelte numbers it. A list of the page has `rows`
- * instead of children: its items, each a `<list-item>` sent as a cell item.
+ * A node the background rendered: a text, an element with its attributes and children, or a block
+ * with the branch it took, as Svelte numbers an `{#if}`'s or as a `BranchKey`. A list of the page
+ * has `rows` instead of children: its items, each a `<list-item>` sent as a cell item.
  */
 export type Built = string | BuiltElement | BuiltBlock;
 
-/** An `{#if}` the background rendered: its content goes among its parent's children. */
+/** A block the background rendered: its content goes among its parent's children, and a mark says which. */
 export interface BuiltBlock {
 	branch: number;
 	children: Built[];
+	/** `true`: its mark cannot be read, as one the background writes for a block it lost track of. */
+	unreadable?: true;
 }
 
 export interface BuiltElement {
@@ -50,12 +52,18 @@ export interface Held {
 	cells?: string[];
 	/** The cells Lynx holds, by item key, that it handed back: their elements are let go of. */
 	handedBack?: string[];
-	/** The drawn ids on which the first frame bound a `main-thread:` attribute. */
-	binds?: number[];
 }
 
 /** Text ids, counted apart from the elements' own, from 1000 for each page. */
 let nextText = 1000;
+
+/** How many children each parent has had put in, which a block's mark counts from. */
+const inserted = new Map<number, number>();
+
+function insert(out: Op[], parent: number, id: number): void {
+	out.push([OpCode.Insert, parent, id, 0]);
+	inserted.set(parent, (inserted.get(parent) ?? 0) + 1);
+}
 
 /** The ops that make `built` under `parent`, each child appended; a list's rows go in `cells`. */
 function opsOf(options: { parent: number; built: Built; out: Op[]; cells: PatchItem[] }): void {
@@ -63,19 +71,27 @@ function opsOf(options: { parent: number; built: Built; out: Op[]; cells: PatchI
 	if (typeof built === "string") {
 		const id = nextText++;
 		out.push([OpCode.CreateText, id, built]);
-		out.push([OpCode.Insert, parent, id, 0]);
+		insert(out, parent, id);
 		return;
 	}
-	// The rendered items say nothing of a block yet: its content is its parent's.
+	// A block's content is its parent's, and its mark follows it: an inner block is one entry.
 	if ("branch" in built) {
 		for (const child of built.children) opsOf({ parent, built: child, out, cells });
+		const at = inserted.get(parent) ?? 0;
+		out.push([
+			OpCode.Branch,
+			parent,
+			built.branch,
+			built.children.length,
+			built.unreadable ? -1 : at,
+		]);
 		return;
 	}
 	out.push([OpCode.Create, built.id, built.tag]);
 	for (const [name, value] of Object.entries(built.attrs ?? {}))
 		out.push([OpCode.SetAttr, built.id, name, value]);
 	for (const child of built.children ?? []) opsOf({ parent: built.id, built: child, out, cells });
-	out.push([OpCode.Insert, parent, built.id, 0]);
+	insert(out, parent, built.id);
 	if (!built.rows) return;
 	const items = built.rows.map((row) => row.id);
 	for (const row of built.rows) {
@@ -111,6 +127,7 @@ function match(
 	let next = ROOT_ID;
 	const nextId = (): number => ++next;
 	nextText = 1000;
+	inserted.clear();
 	const root = parsePage(markup, ROOT_ID, nextId);
 	const ops: Op[] = [];
 	const cells: PatchItem[] = [];
@@ -141,7 +158,6 @@ function match(
 		root,
 		rendered,
 		lists: { held: (list) => lists.get(list) ?? new Map() },
-		binds: (drawn) => held.binds?.includes(drawn) ?? false,
 	});
 	return { result, rendered };
 }

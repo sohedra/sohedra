@@ -5,8 +5,8 @@
 import { describe, expect, it } from "@rstest/core";
 
 import type { LynxElement } from "../../src/testing/index.ts";
-import FrameCounter from "../fixtures/threads/FrameCounter.svelte";
-import FrameList from "../fixtures/threads/FrameList.svelte";
+import FrameCounterInBlock from "../fixtures/threads/FrameCounterInBlock.svelte";
+import FrameListAfterBlock from "../fixtures/threads/FrameListAfterBlock.svelte";
 import { startSveltePage } from "./svelte-page.ts";
 import type { SveltePage } from "./svelte-page.ts";
 
@@ -25,8 +25,8 @@ const errorTexts = (page: SveltePage): string[] => page.errors.map((error) => St
 
 describe("a hydration that fails part way", () => {
 	it("reports the error once, and the page written again has its root once", async () => {
-		// A drawn <text> in a block, where the background has its <view>: made in place.
-		const page = startSveltePage(FrameCounter, {
+		// A drawn <text> in a block's other branch, where the background has its <view>: made in place.
+		const page = startSveltePage(FrameCounterInBlock, {
 			firstFrame: () => `<!--[-1--><text class="root">Taps: 0 (even)</text><!--]-->`,
 		});
 		const drawn = page.byClass("root");
@@ -47,7 +47,8 @@ describe("a hydration that fails part way", () => {
 
 	it("after a list was drawn, makes each of its cells once from the page written again", async () => {
 		const log: unknown[] = [];
-		const page = startSveltePage(FrameList, {
+		// A drawn <view> in a block the background renders empty: taken off.
+		const page = startSveltePage(FrameListAfterBlock, {
 			props: () => ({ rows: ["a", "b", "c"], log }),
 			firstFrame: () =>
 				`<!--[-1--><view class="extra"></view><!--]--><list class="list">` +
