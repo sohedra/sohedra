@@ -11,12 +11,17 @@ import Adopted from "../../fixtures/threads/functions/Adopted.svelte";
 import drawAdopted from "../../fixtures/threads/functions/Adopted.svelte?first-frame";
 import BackgroundLast from "../../fixtures/threads/functions/BackgroundLast.svelte";
 import drawBackgroundLast from "../../fixtures/threads/functions/BackgroundLast.svelte?first-frame";
+import BackgroundLastBound from "../../fixtures/threads/functions/BackgroundLastBound.svelte";
+import drawBackgroundLastBound from "../../fixtures/threads/functions/BackgroundLastBound.svelte?first-frame";
+import BackgroundLastSame from "../../fixtures/threads/functions/BackgroundLastSame.svelte";
+import drawBackgroundLastSame from "../../fixtures/threads/functions/BackgroundLastSame.svelte?first-frame";
 import Hydrate from "../../fixtures/threads/functions/Hydrate.svelte";
 import drawHydrate from "../../fixtures/threads/functions/Hydrate.svelte?first-frame";
 import Refused from "../../fixtures/threads/functions/Refused.svelte";
 import drawRefused from "../../fixtures/threads/functions/Refused.svelte?first-frame";
 import { expectAccounted } from "./accounting.ts";
 import { startFunctionsPage, tap } from "./pages.ts";
+import type { Draw } from "./pages.ts";
 
 function hydrating() {
 	const log: unknown[][] = [];
@@ -204,6 +209,9 @@ describe("a main-thread handler on an element hydration adopts from the other br
 		return { page, log };
 	}
 
+	// Two branches that look the same: hydration cannot tell them apart, and takes the element as
+	// the other branch's, a known hole (`SameLook` in ../hydration-dropped-events.test.ts) that
+	// pairing blocks by the branch each took closes, flipping this test.
 	it("has its held call answered by the background's, when it is the same function", async () => {
 		const { page, log } = adopting();
 		const element = page.byClass("same");
@@ -228,19 +236,46 @@ describe("a main-thread handler on an element hydration adopts from the other br
 });
 
 describe("a main-thread handler in a run of blocks that ends in a part only the background renders", () => {
-	it("has its held call answered, its element kept as the background's of the same handler", async () => {
+	/** Taps the first frame's `.tapped`, and lets hydration happen. */
+	async function tappedEarly(App: Parameters<typeof startFunctionsPage>[0], draw: Draw) {
 		const log: unknown[][] = [];
-		const page = startFunctionsPage(BackgroundLast, {
-			draw: drawBackgroundLast,
+		const page = startFunctionsPage(App, {
+			draw,
 			props: { log },
 			firstFrame: true,
 		});
 		const element = page.byClass("tapped");
 		page.engine.dispatch(element, { type: "tap" });
 		await page.settle();
+		return { page, log, element };
+	}
+
+	// Hydration cannot tell which element is which in the run: its held call is not answered by a
+	// guess, even when the guess is right.
+	it("has its held call rejected, its element kept", async () => {
+		const { page, log, element } = await tappedEarly(BackgroundLast, drawBackgroundLast);
 		expect(page.byClass("tapped")).toBe(element);
+		expect(log).toEqual([]);
+		expect(page.engine.state(element).attrs["refused"]).toBe("first_frame_call_unanswered");
+		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
+		await tap(page, "tapped");
 		expect(log).toEqual([["tapped"]]);
-		expect(page.engine.state(element).attrs["refused"]).toBeUndefined();
-		expect(page.errors).toEqual([]);
+	});
+
+	it("has its held call rejected, not answered by the part only the background renders", async () => {
+		const { page, log } = await tappedEarly(BackgroundLastSame, drawBackgroundLastSame);
+		expect(log).toEqual([]);
+		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
+		await tap(page, "tapped");
+		await tap(page, "later");
+		expect(log).toEqual([["tapped"], ["tapped"]]);
+	});
+
+	it("has its held call rejected when the part only the background renders binds a ref", async () => {
+		const { page, log } = await tappedEarly(BackgroundLastBound, drawBackgroundLastBound);
+		expect(log).toEqual([]);
+		expect(page.errors).toEqual([expect.objectContaining({ code: "first_frame_call_unanswered" })]);
+		await tap(page, "tapped");
+		expect(log).toEqual([["tapped"]]);
 	});
 });

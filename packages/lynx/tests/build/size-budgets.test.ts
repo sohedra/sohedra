@@ -38,7 +38,7 @@ describe("the size of a thread's script", () => {
 		}
 	});
 
-	it("is within budget for the main thread's runtime: an entry with no page (86,079 bytes measured)", () => {
+	it("is within budget for the main thread's runtime: an entry with no page (87,302 bytes measured)", () => {
 		expect(bytes(scriptsOf(runtime).mainThread)).toBeLessThanOrEqual(87_800);
 	});
 
@@ -46,7 +46,7 @@ describe("the size of a thread's script", () => {
 		expect(bytes(scriptsOf(runtime).background)).toBeLessThanOrEqual(22_700);
 	});
 
-	it("is within budget for a minimal page's main thread, with its first frame (103,040 bytes measured)", () => {
+	it("is within budget for a minimal page's main thread, with its first frame (104,243 bytes measured)", () => {
 		expect(bytes(scriptsOf(page).mainThread)).toBeLessThanOrEqual(105_100);
 	});
 

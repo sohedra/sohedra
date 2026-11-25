@@ -69,7 +69,7 @@ import {
 	setGlobalFunction,
 } from "./globals.ts";
 import type { EngineMessage, LynxElement } from "./globals.ts";
-import { hydrate, replayEarly, sentMismatch } from "./hydrate/hydrate.ts";
+import { countDropped, hydrate, replayEarly, sentMismatch } from "./hydrate/hydrate.ts";
 import { installLazyBundles, takeLazyBundle } from "./lazy-bundle.ts";
 import { clearPrevious, createMainThreadPage } from "./page.ts";
 import type { MainThreadPage } from "./page.ts";
@@ -93,6 +93,17 @@ function reportIntoLynx(error: Error): void {
 	if (typeof mainThread._ReportError === "function")
 		mainThread._ReportError(error, { errorCode: MAIN_THREAD_ERROR });
 	else mainThread.lynx.reportError(error);
+}
+
+/** Reports a development warning into Lynx, at Lynx's warning level. Never throws. */
+function warnIntoLynx(warning: Error): void {
+	try {
+		if (typeof mainThread._ReportError === "function")
+			mainThread._ReportError(warning, { errorCode: MAIN_THREAD_ERROR, level: "warning" });
+		else mainThread.lynx.reportError(warning, { level: "warning" });
+	} catch {
+		// Reporting must never throw.
+	}
 }
 
 /** The arguments of an engine event, which the engine sends as an array. */
@@ -357,11 +368,11 @@ export function startMainThread(): MainThreadRuntime {
 		for (const call of hydrated.calls) calls.run(call, patch.generation);
 		applyItems(patch.items.slice(patch.rendered ?? 0), patch.generation);
 		return () => {
-			replayEarly({
+			const replay: Parameters<typeof replayEarly>[0] = {
 				frame,
 				applier: pageApplier,
 				rendered,
-				ids: hydrated.ids,
+				hydrated,
 				send: (handler, early, at) => {
 					const sent = sentEvent(early.event);
 					const element = pageApplier.element(at);
@@ -377,7 +388,13 @@ export function startMainThread(): MainThreadRuntime {
 					});
 				},
 				call: (held) => functions.sendHeld(held),
-			});
+			};
+			if (DEV) {
+				// A development build warns of the early events hydration could not place.
+				const dropped = countDropped();
+				replayEarly({ ...replay, dropped: dropped.dropped });
+				for (const warning of dropped.warnings()) warnIntoLynx(warning);
+			} else replayEarly(replay);
 			functions.endFirstFrame(true);
 		};
 	}

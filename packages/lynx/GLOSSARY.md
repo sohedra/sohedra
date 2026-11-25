@@ -201,7 +201,8 @@ _Avoid_: hydration error
 _Avoid_: branch, block
 
 **Event log**: The events and background-function calls the first frame heard before hydration,
-replayed through the background's handlers after it.\
+replayed through the background's handlers after it. Those on an element hydration did not adopt, or
+adopted from Svelte blocks it had to guess at, are dropped.\
 _Avoid_: replay queue
 
 **Stand-in**: The main-thread version of a background-only export, which throws an error that says

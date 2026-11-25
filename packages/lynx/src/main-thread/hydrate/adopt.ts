@@ -2,12 +2,15 @@
 // drawn elements under the background's ids, with what differs written over them, and makes in
 // place the runs that differ more. A list keeps the cells Lynx holds; a cell it handed back is let
 // go of, and is made from the background's text when Lynx asks for it again. Then the events the
-// first frame heard are replayed through the background's handlers.
+// first frame heard are replayed through the background's handlers, except those on an element the
+// match did not adopt or is not sure of, which it may have paired with another element.
 
 import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../../wire/index.ts";
 import type { CallItem, ListItemInfo, Op } from "../../wire/index.ts";
 import type { Applier } from "../apply.ts";
 import type { EarlyEvent, Frame } from "../frame/draw.ts";
+import { elementsOf } from "../frame/html.ts";
+import type { DrawnNode } from "../frame/html.ts";
 import type { HeldCall } from "../functions/background-calls.ts";
 import { mainThread } from "../globals.ts";
 import type { AdoptedItems, HeldCell } from "../lists.ts";
@@ -23,6 +26,8 @@ export interface Hydrated {
 	calls: CallItem[];
 	/** The background's id of each drawn node the page kept. */
 	ids: Map<number, number>;
+	/** Of those, the background's ids of the ones hydration is not sure of. */
+	unsure: Set<number>;
 }
 
 /**
@@ -154,37 +159,82 @@ export function adoptFrame(options: {
 		const contexts = rendered.cellContexts.get(id);
 		if (contexts) cellContexts.set(id, contexts);
 	}
-	return { cells, cellContexts, calls: rendered.calls, ids };
+	return { cells, cellContexts, calls: rendered.calls, ids, unsure: plan.unsure };
 }
 
 /** Sends an early event to a handler, with the element that handles it as its current target. */
 export type Replay = (handler: number, early: EarlyEvent, currentTarget: number) => void;
+
+/** The parent of each drawn node, through blocks and the cells Lynx asked for. */
+function drawnParents(node: DrawnNode, parents: Map<number, DrawnNode>): Map<number, DrawnNode> {
+	for (const child of elementsOf(node.children)) {
+		parents.set(child.id, node);
+		drawnParents(child, parents);
+	}
+	for (const cell of node.cells ?? [])
+		if (cell.node) {
+			parents.set(cell.node.id, node);
+			drawnParents(cell.node, parents);
+		}
+	return parents;
+}
 
 /**
  * Replays the events the first frame heard, in order, through the handlers the background bound:
  * one a drawn element's listener heard goes to the handler in the same slot; one the page caught
  * goes from its target up, as Lynx bubbles it (a `catch` stops it). A call of a background function
  * the first frame held goes in its place among them (`call`).
+ *
+ * An element the match did not adopt, or is not sure of, has no handler of its own. An event goes
+ * on from its target's first ancestor the match is sure of, unless an element on the way listened
+ * for it: then it ends there, dropped whole (`dropped`), whether the page or a listener heard it.
  */
 export function replayEarly(options: {
 	frame: Frame;
 	applier: Applier;
 	rendered: Rendered;
-	ids: Map<number, number>;
+	hydrated: Hydrated;
 	send: Replay;
 	call: (held: HeldCall) => void;
+	/** Hears each event dropped, with the drawn element whose listener heard it. */
+	dropped?: (early: EarlyEvent, at: DrawnNode) => void;
 }): void {
-	const { frame, applier, rendered, ids, send, call } = options;
+	const { frame, applier, rendered, hydrated, send, call, dropped } = options;
+	const { ids, unsure } = hydrated;
+	let parents: Map<number, DrawnNode> | undefined;
+	/** The background's id of a drawn node hydration is sure of. */
+	const sure = (drawn: number): number | undefined => {
+		const id = ids.get(drawn);
+		return id === undefined || unsure.has(id) ? undefined : id;
+	};
+	/**
+	 * Where an event goes on from: its target's first element hydration is sure of, unless one on
+	 * the way listened for it. A listener below another's hears it too, and its own record says so.
+	 */
+	const from = (early: EarlyEvent): number | undefined => {
+		let drawn = frame.node(early.target ?? early.at);
+		while (drawn && drawn.id !== ROOT_ID) {
+			const at = sure(drawn.id);
+			if (at !== undefined) return at;
+			if (drawn.events.some((listener) => listener.name === early.name)) {
+				if (early.slot === null || drawn.id === early.at) dropped?.(early, drawn);
+				return undefined;
+			}
+			drawn = (parents ??= drawnParents(frame.root, new Map())).get(drawn.id);
+		}
+		return undefined;
+	};
 	for (const early of frame.early) {
 		if ("call" in early) {
 			call(early);
 			continue;
 		}
-		const at = ids.get(early.at);
+		const at = from(early);
 		if (at === undefined) continue;
 		if (early.slot !== null) {
-			const handler = applier.handlerOf(at, early.slot);
-			if (handler !== undefined) send(handler, early, at);
+			const listener = sure(early.at);
+			const handler = listener === undefined ? undefined : applier.handlerOf(listener, early.slot);
+			if (handler !== undefined) send(handler, early, listener!);
 			continue;
 		}
 		for (let id = at; id !== ROOT_ID && id !== 0; id = rendered.nodes.get(id)?.parent ?? 0) {

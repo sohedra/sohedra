@@ -1,7 +1,8 @@
 // Hydration: the background's first patch adopts the first frame instead of making the page again.
 // The patch's rendered items (`Patch.rendered`) are matched against the drawn tree (./match.ts);
 // what matches is adopted (./adopt.ts), and the rest of the patch, what the first mount's effects
-// changed, is applied after as any patch is.
+// changed, is applied after as any patch is. What the first frame's main-thread functions left on an
+// element hydration is not sure of stays with them: the background's bind as on a new element.
 //
 // A mismatch refuses hydration before anything changes; an error part way stops it. Either way the
 // main thread asks the background to write the page again, and keeps the first frame on the screen
@@ -10,7 +11,9 @@
 import { MAIN_THREAD_PREFIX } from "../../wire/index.ts";
 import type { HydrationMismatch, PatchItem, PropsIdDifference } from "../../wire/index.ts";
 import type { Applier } from "../apply.ts";
-import type { Frame } from "../frame/draw.ts";
+import { mainThreadDevelopmentError } from "../catalogue.ts";
+import type { EarlyEvent, Frame } from "../frame/draw.ts";
+import type { DrawnNode } from "../frame/html.ts";
 import type { FunctionsPage, HydratedElement } from "../functions/page.ts";
 import { adoptFrame } from "./adopt.ts";
 import type { Hydrated } from "./adopt.ts";
@@ -55,6 +58,7 @@ export function hydrate(options: {
 		});
 		if ("mismatch" in plan) return { kind: "refused", mismatch: plan.mismatch };
 		const kept: HydratedElement[] = [];
+		const carried: HydratedElement[] = [];
 		for (const [id, drawn] of plan.adopt) {
 			const element = frame.applier.element(drawn);
 			const node = rendered.nodes.get(id);
@@ -63,15 +67,52 @@ export function hydrate(options: {
 			node.attrs.forEach((value, name) => {
 				if (name.startsWith(MAIN_THREAD_PREFIX)) values.push([name, value]);
 			});
-			if (values.length > 0 || functions.binds(element)) kept.push({ element, values });
+			if (values.length === 0 && !functions.binds(element)) continue;
+			kept.push({ element, values });
+			if (!plan.unsure.has(id)) carried.push({ element, values });
 		}
-		functions.carry(kept);
+		functions.carry(carried);
 		const hydrated = adoptFrame({ frame, applier, rendered, plan });
 		functions.adopt(kept);
 		return { kind: "adopted", hydrated, rendered, propsIds: plan.propsIds };
 	} catch (error) {
 		return { kind: "failed", error };
 	}
+}
+
+/**
+ * Counts the early events hydration dropped, by the drawn element that heard them, for a
+ * development build's warnings: one for each element, with its count.
+ */
+export function countDropped(): {
+	dropped: (early: EarlyEvent, at: DrawnNode) => void;
+	warnings: () => Error[];
+} {
+	const counts = new Map<DrawnNode, { names: Set<string>; count: number }>();
+	/** An attribute of `at` as written in the markup, if it has one. */
+	const attribute = (at: DrawnNode, name: string): string => {
+		const value = at.attrs.get(name);
+		return typeof value === "string" && value !== "" ? ` ${name}="${value}"` : "";
+	};
+	return {
+		dropped(early, at) {
+			const seen = counts.get(at) ?? { names: new Set(), count: 0 };
+			counts.set(at, seen);
+			seen.names.add(early.name);
+			seen.count++;
+		},
+		warnings: () =>
+			[...counts].map(([at, { names, count }]) =>
+				mainThreadDevelopmentError({
+					code: "first_frame_event_dropped",
+					details: {
+						event: [...names].join(" or "),
+						element: `<${at.tag}${attribute(at, "id")}${attribute(at, "class")}>`,
+						count,
+					},
+				}),
+			),
+	};
 }
 
 /**
