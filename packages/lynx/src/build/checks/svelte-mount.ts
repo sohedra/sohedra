@@ -1,14 +1,15 @@
-// Svelte's own `mount` and `unmount`, reached by the app's code: imported or re-exported by name,
-// or read from a namespace import of `svelte`. They work with the web's DOM; the ones from
-// `@sohedra/lynx` mount on Lynx's page, with its renderer.
+// Svelte's own `mount`, `unmount` and `hydrate`, reached by the app's code: imported or re-exported
+// by name, or read from a namespace import of `svelte`. They work with the web's DOM; the binding's
+// `mount` and `unmount` from `@sohedra/lynx` work on Lynx's page, with its renderer, and its `mount`
+// hydrates the first frame itself.
 
 import { field, identifierName, nodes } from "../../svelte/build/index.ts";
 import type { AnyNode } from "../../svelte/build/index.ts";
 
-/** The names `svelte` and `@sohedra/lynx` both export, which only the binding's draw on Lynx. */
-const SVELTE_ONLY_ON_WEB: ReadonlySet<string> = new Set(["mount", "unmount"]);
+/** Svelte's functions that put a component on the web's DOM, which only the binding's do on Lynx. */
+const SVELTE_ONLY_ON_WEB: ReadonlySet<string> = new Set(["mount", "unmount", "hydrate"]);
 
-/** A use of Svelte's `mount` or `unmount`: its name, where it starts, and its statement's start. */
+/** A use of one of them: its name, where it starts, and its statement's start. */
 export interface SvelteMountUse {
 	name: string;
 	start: number;
@@ -31,8 +32,8 @@ function memberName(node: AnyNode): string | undefined {
 }
 
 /**
- * Every use of Svelte's `mount` or `unmount` in the programs, as written: a named import, a
- * re-export, or a read of a namespace import of `svelte` (`svelte.mount(…)`).
+ * Every use of Svelte's `mount`, `unmount` or `hydrate` in the programs, as written: a named import,
+ * a re-export, or a read of a namespace import of `svelte` (`svelte.mount(…)`).
  */
 export function svelteMountUses(programs: readonly (AnyNode | undefined)[]): SvelteMountUse[] {
 	const found: SvelteMountUse[] = [];

@@ -28,7 +28,7 @@ export interface CheckDetails {
 	css_selector_unsupported: { selector: string; part: string };
 	/** `attribute` as written; `branch` names the branch: "`{#if background}`", "the `{:else}` of …". */
 	main_thread_handler_in_thread_branch: { attribute: string; branch: string };
-	/** `name` is `mount` or `unmount`. */
+	/** `name` is `mount`, `unmount` or `hydrate`. */
 	svelte_mount_imported: { name: string };
 }
 
@@ -96,8 +96,11 @@ export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
 	svelte_mount_imported: {
 		message: ({ name }) =>
 			`\`${name}\` is imported from "svelte", whose \`${name}\` works with the web's DOM, not with Lynx's page.`,
-		fix: ({ name }) =>
-			`Import \`${name}\` from "@sohedra/lynx", which ${name === "mount" ? "mounts a component on the page" : "unmounts a component its `mount` returned"}.`,
+		fix: ({ name }) => {
+			if (name === "hydrate")
+				return 'Use `mount` from "@sohedra/lynx": the binding hydrates the first frame itself.';
+			return `Import \`${name}\` from "@sohedra/lynx", which ${name === "mount" ? "mounts a component on the page" : "unmounts a component its `mount` returned"}.`;
+		},
 		docs: "svelte_mount_imported",
 	},
 };

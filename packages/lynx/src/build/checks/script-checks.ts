@@ -1,7 +1,7 @@
 // The checks of an app's scripts for code that type-checks and then fails on Lynx: a global the
 // thread's engine lacks (with the import that fills it, or what to use instead), the web's DOM, an
-// API only the other thread has, and Svelte's own `mount` and `unmount`. Each is an error at its
-// place: the code fails wherever it runs. A read the script checks for first (`typeof X`, `"X" in
+// API only the other thread has, and Svelte's own `mount`, `unmount` and `hydrate`. Each is an error
+// at its place: the code fails wherever it runs. A read the script checks for first (`typeof X`, `"X" in
 // globalThis`, a `try` with a `catch`) is left alone, and so is a line the silencing comment names
 // the code on.
 //
