@@ -62,8 +62,11 @@ export type ComponentAtIndexes = (
 /** Lynx hands a cell back, by its unique id. */
 export type EnqueueComponent = (list: LynxElement, listId: number, sign: number) => void;
 
-/** What the main thread's engine provides: Lynx's element functions, and a smaller `lynx`. */
-interface MainThreadGlobals {
+/**
+ * What the main thread's engine provides: Lynx's element functions, and a smaller `lynx`. The test
+ * library's engine fake is checked against it (tests/types/globals/fakes.ts).
+ */
+export interface MainThreadGlobals {
 	lynx: {
 		reportError(error: unknown): void;
 		/** The main thread's way to the background. */
@@ -74,10 +77,13 @@ interface MainThreadGlobals {
 		getNative(): EventSource;
 		/** The platform, the screen and the engine's version, which the background has as a global. */
 		SystemInfo?: unknown;
-		/** Runs `callback` on a later task of the main thread, `delay` milliseconds from now. */
-		setTimeout(callback: () => void, delay: number): unknown;
-		/** Cancels what `setTimeout` returned. */
-		clearTimeout(timer: unknown): void;
+		/**
+		 * Runs `callback` on a later task of the main thread, `delay` milliseconds from now, and
+		 * answers the timer's number (core/runtime/lepus/bindings/renderer_functions.cc, SetTimeout).
+		 */
+		setTimeout(callback: () => void, delay: number): number;
+		/** Cancels a timer by the number `setTimeout` answered (ClearTimeout). */
+		clearTimeout(timer: number): void;
 		/**
 		 * A bundle the engine has fetched or is fetching: `wait` answers once it is there, or once
 		 * `seconds` have passed (core/runtime/lepus/bindings/renderer_functions.cc, FetchBundle).

@@ -50,7 +50,7 @@ const LATE_WAITS = 10;
 export function afterFirstPaint(painted: () => void): void {
 	const { lynx } = mainThread;
 	let done = false;
-	let timer: unknown;
+	let timer = 0;
 	let waits = 0;
 	const once = (): void => {
 		if (done) return;

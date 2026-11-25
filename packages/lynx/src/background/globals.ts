@@ -49,7 +49,10 @@ export interface FetchedBundle {
 	error_msg?: string;
 }
 
-/** What the background thread's engine provides. */
+/**
+ * What the background thread's engine provides. The test library's `lynx` is checked against it
+ * (tests/types/globals/fakes.ts).
+ */
 export interface BackgroundGlobals {
 	lynx: {
 		/** The page's data, as the host opened it and as updates left it. */
@@ -59,7 +62,6 @@ export interface BackgroundGlobals {
 		/** `level` is `"error"` (the default) or `"warning"`. */
 		reportError(error: unknown, options?: { level?: "error" | "warning" }): void;
 		queueMicrotask(callback: () => void): void;
-		setTimeout(callback: () => void, delay?: number): number;
 		getNativeApp(): NativeApp;
 		getCoreContext(): CoreContext;
 		getApp(): App;
