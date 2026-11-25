@@ -51,10 +51,6 @@ export function hydrate(options: {
 			root: frame.root,
 			rendered,
 			lists: frame,
-			binds: (drawn) => {
-				const element = frame.applier.element(drawn);
-				return element !== undefined && functions.binds(element);
-			},
 		});
 		if ("mismatch" in plan) return { kind: "refused", mismatch: plan.mismatch };
 		const kept: HydratedElement[] = [];

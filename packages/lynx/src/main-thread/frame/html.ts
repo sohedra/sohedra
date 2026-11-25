@@ -2,7 +2,8 @@
 // nodes. It reads what `src/svelte/runtime/server-internals.ts` writes: a string in double quotes,
 // a typed value as JSON in single quotes, and a function as a bare name, an event when the name is
 // one. The branches Svelte's block markers bound (`<!--[0-->`, `<!--[-1-->`, `<!--[!-->` to
-// `<!--]-->`) are kept as blocks: where the first frame and the background may render differently.
+// `<!--]-->`) are kept as blocks, with the branch each took: where the first frame and the
+// background may render differently, which hydration pairs by that branch.
 // The cells of a list on the page keep their markup unparsed until Lynx asks for them. A
 // `<list-item>`'s `defer` is read here, and never set: Lynx has no such attribute.
 //
@@ -11,6 +12,7 @@
 
 import {
 	ASYNC_LIST,
+	BranchKey,
 	DEFER,
 	eventOf,
 	LIST_ITEM_INFO,
@@ -55,9 +57,27 @@ export interface DrawnNode {
 }
 
 /** A Svelte block: its content may differ between the first frame and the background. */
-interface DrawnBlock {
+export interface DrawnBlock {
 	block: true;
+	/** The branch it took: an `{#if}`'s number, or a `BranchKey`. */
+	key: number;
 	children: DrawnChild[];
+}
+
+/**
+ * The key of the block marker `<!--[…-->` whose mark runs from `at` to `close`: an `{#if}`'s
+ * number, `!` a second state, `?` a failed boundary, `await` an `{#await}` given a promise.
+ */
+function blockKey(html: string, at: number, close: number): number {
+	const first = html.charCodeAt(at);
+	if (first === 33 /* ! */) return BranchKey.Second;
+	if (first === 63 /* ? */) return BranchKey.Failed;
+	if (first === 97 /* a */) return BranchKey.Await;
+	const negative = first === 45; /* - */
+	let key = 0;
+	for (let index = negative ? at + 1 : at; index < close; index++)
+		key = key * 10 + html.charCodeAt(index) - 48;
+	return negative ? -key : key;
 }
 
 export type DrawnChild = DrawnNode | DrawnBlock;
@@ -397,7 +417,11 @@ function parseInto(
 				if (close > lt + 5) {
 					// An `{#if}`'s branch (`[0`, `[-1`), an else (`[!`), a failed boundary (`[?`) or an
 					// `{#await}` given a promise (`[await`, the first frame's own).
-					const block: DrawnBlock = { block: true, children: [] };
+					const block: DrawnBlock = {
+						block: true,
+						key: blockKey(html, lt + 5, close),
+						children: [],
+					};
 					into.push(block);
 					into = block.children;
 				}

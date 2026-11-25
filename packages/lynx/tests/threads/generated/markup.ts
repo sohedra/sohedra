@@ -24,7 +24,18 @@ export type MarkupNode =
 			items: ListChild[];
 	  }
 	| { kind: "text"; source: string }
-	| { kind: "if"; condition: string; consequent: MarkupNode[]; otherwise: MarkupNode[] | undefined }
+	| {
+			kind: "if";
+			condition: string;
+			consequent: MarkupNode[];
+			/** `{:else if}`: a second branch, numbered 1. */
+			elseIf?: { condition: string; consequent: MarkupNode[] } | undefined;
+			otherwise: MarkupNode[] | undefined;
+	  }
+	/** `{#await}` given `expression`: a value, a promise that never settles, or either by the state. */
+	| { kind: "await"; expression: string; pending: MarkupNode[]; resolved: MarkupNode[] }
+	/** A `<svelte:boundary>` with a `failed` snippet, around children that do not throw. */
+	| { kind: "boundary"; body: MarkupNode[] }
 	| {
 			kind: "each";
 			array: string;
@@ -108,6 +119,8 @@ export interface Scope {
 	readonly snippets: readonly Renderable[];
 	/** Whether `uid` (`$props.id()`) is defined. */
 	readonly uid: boolean;
+	/** Whether an `{#await}` is around: none nests in another. */
+	readonly inAwait?: boolean;
 }
 
 const BOOLEANS = ["st.b0", "!st.b1", "st.n0 === 1", 'st.s0 === ""', "st.a0.length > 1"] as const;
@@ -123,6 +136,12 @@ const ifTest: fc.Arbitrary<string> = fc.oneof(
 	{ weight: 5, arbitrary: fc.constantFrom(...BOOLEANS) },
 	{ weight: 1, arbitrary: fc.constantFrom(...THREAD_TESTS) },
 );
+
+/**
+ * What an `{#await}` is given: a value, a promise that never settles (`never`, which every
+ * component declares), or either as the state says, so the two threads may differ.
+ */
+const AWAITED = ["st.s0", "never", "st.b1 ? never : st.s0"] as const;
 
 /** What a tap does to the state. */
 const CHANGES = [
@@ -278,6 +297,39 @@ const screen: fc.Arbitrary<string[]> = fc.oneof(
 	),
 );
 
+/** Whether markup holds an `{#await}` outside the lists in it. */
+function holdsAwait(markup: readonly MarkupNode[]): boolean {
+	return markup.some((node) => {
+		switch (node.kind) {
+			case "await":
+				return true;
+			case "element":
+			case "dynamic":
+				return holdsAwait(node.children);
+			case "if":
+				return (
+					holdsAwait(node.consequent) ||
+					holdsAwait(node.elseIf?.consequent ?? []) ||
+					holdsAwait(node.otherwise ?? [])
+				);
+			case "each":
+				return holdsAwait(node.body) || holdsAwait(node.otherwise ?? []);
+			case "key":
+			case "boundary":
+				return holdsAwait(node.body);
+			default:
+				return false;
+		}
+	});
+}
+
+/**
+ * A row that holds an `{#await}` is not deferred: the first frame draws a deferred row's pending
+ * branch, and the background's row waits (a known failure, ../hydration-known-limits.test.ts).
+ */
+const undeferredAwait = <T extends { body: MarkupNode[]; defer?: Deferred }>(row: T): T =>
+	row.defer !== undefined && holdsAwait(row.body) ? { ...row, defer: undefined } : row;
+
 /**
  * Long rows, only in a list of the page, whose rows are released; small, with no list in them: a
  * scroll shows them many times over.
@@ -291,7 +343,7 @@ function rows(item: string, scope: Scope, size: number): fc.Arbitrary<ListChild>
 			attributes: attributes(scope, "view"),
 			body: nodes("block", nested(scope, { lists: MOST_LISTS }), Math.min(1, size - 1)),
 		})
-		.map((each): ListChild => ({ kind: "rows", item, ...each }));
+		.map((each): ListChild => ({ kind: "rows", item, ...undeferredAwait(each) }));
 }
 
 /** A list of the page with long rows only, which a scroll lets go of. */
@@ -324,7 +376,7 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			kind: "item",
 			key,
 			attributes: written,
-			...rest,
+			...undeferredAwait(rest),
 		}));
 	const { item, scope: eachScope } = withItem(inner);
 	const eachItems = fc
@@ -337,7 +389,7 @@ function list(scope: Scope, size: number): fc.Arbitrary<MarkupNode> {
 			defer,
 			wrapped,
 		})
-		.map((each): ListChild => ({ kind: "items", item, ...each }));
+		.map((each): ListChild => ({ kind: "items", item, ...undeferredAwait(each) }));
 	const kinds =
 		scope.lists === 0
 			? fc.oneof(listItem, eachItems, { weight: 2, arbitrary: rows(item, eachScope, size) })
@@ -399,12 +451,21 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 				.record({
 					condition: ifTest,
 					consequent: nodes(context, scope, size - 1),
+					elseIf: fc.option(
+						fc.record({
+							condition: fc.constantFrom(...BOOLEANS),
+							consequent: nodes(context, scope, size - 1),
+						}),
+						{ nil: undefined, freq: 4 },
+					),
 					otherwise: fc.option(nodes(context, scope, size - 1), { nil: undefined }),
 				})
-				.map(({ condition, consequent, otherwise }): MarkupNode => ({
+				.map(({ condition, consequent, elseIf, otherwise }): MarkupNode => ({
 					kind: "if",
 					condition,
 					consequent,
+					// An `{:else if}` after a thread test would be the thread's branch too: left out.
+					elseIf: (THREAD_TESTS as readonly string[]).includes(condition) ? undefined : elseIf,
 					otherwise,
 				})),
 		},
@@ -508,6 +569,41 @@ function node(context: Context, scope: Scope, size: number): fc.Arbitrary<Markup
 			},
 		);
 		if (scope.lists < MOST_LISTS) options.push({ weight: 2, arbitrary: list(scope, size) });
+		options.push({
+			weight: 1,
+			arbitrary: nodes(context, scope, size - 1).map((body): MarkupNode => ({
+				kind: "boundary",
+				body,
+			})),
+		});
+		if (!scope.inAwait) {
+			// No list, component or snippet inside. A list in an `{#await}`'s pending branch has no
+			// initial rows on the background, by design (src/svelte/runtime/initial-rows.ts); and the
+			// background draws that branch after the page started, so a component in it takes its
+			// `$props.id()` after those the first frame drew later.
+			const inside: Scope = {
+				...scope,
+				inAwait: true,
+				lists: MOST_LISTS,
+				components: [],
+				snippets: [],
+			};
+			options.push({
+				weight: 1,
+				arbitrary: fc
+					.record({
+						expression: fc.constantFrom(...AWAITED),
+						pending: nodes(context, inside, size - 1),
+						resolved: nodes(context, inside, size - 1),
+					})
+					.map(({ expression, pending, resolved }): MarkupNode => ({
+						kind: "await",
+						expression,
+						pending,
+						resolved,
+					})),
+			});
+		}
 	}
 	return fc.oneof({ depthSize: "small" }, ...options);
 }

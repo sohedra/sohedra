@@ -4,6 +4,7 @@
 import { describe, expect, it } from "@rstest/core";
 
 import {
+	entriesOf,
 	NotATree,
 	opsOf,
 	readCell,
@@ -127,5 +128,93 @@ describe("the rendered page", () => {
 		["an item that is no part of a page", [["rewrite", ROOT_ID]]],
 	] as [string, PatchItem[]][])("is no tree with %s", (_, items) => {
 		expect(() => readRendered(items, items.length)).toThrow(NotATree);
+	});
+
+	describe("branch marks", () => {
+		const page = (marks: Op[], more: Op[] = []) =>
+			readRendered(
+				[
+					[
+						"ops",
+						[
+							[OpCode.Create, 2, "view"],
+							...[3, 4, 5].flatMap((id): Op[] => [
+								[OpCode.Create, id, "text"],
+								[OpCode.Insert, 2, id, 0],
+							]),
+							...marks,
+							...more,
+							[OpCode.Insert, ROOT_ID, 2, 0],
+						],
+					],
+				],
+				1,
+			).nodes.get(2)!;
+
+		it("fold the blocks into the children, an inner block one entry of the outer", () => {
+			const view = page([
+				[OpCode.Branch, 2, 1, 1, 2],
+				[OpCode.Branch, 2, 0, 1, 2],
+				[OpCode.Branch, 2, -1, 0, 3],
+			]);
+			expect(view.children).toEqual([3, 4, 5]);
+			expect(entriesOf(view)).toEqual([
+				3,
+				{ key: 0, entries: [{ key: 1, entries: [4] }] },
+				5,
+				{ key: -1, entries: [] },
+			]);
+		});
+
+		it("are the children as they are where there are none", () => {
+			expect(entriesOf(page([]))).toEqual([3, 4, 5]);
+		});
+
+		it.each([
+			[
+				"out of order",
+				[
+					[OpCode.Branch, 2, 0, 1, 2],
+					[OpCode.Branch, 2, 0, 1, 1],
+				],
+			],
+			["past the children", [[OpCode.Branch, 2, 0, 1, 4]]],
+			["holding more than came before", [[OpCode.Branch, 2, 0, 3, 2]]],
+			["unreadable on purpose", [[OpCode.Branch, 2, 0, 0, -1]]],
+		] as [string, Op[]][])("cannot be read when a mark is %s", (_, marks) => {
+			expect(entriesOf(page(marks))).toBeNull();
+		});
+
+		it("cannot be read once a child was taken out or put anywhere but last", () => {
+			expect(entriesOf(page([[OpCode.Branch, 2, 0, 1, 1]], [[OpCode.Remove, 2, 5]]))).toBeNull();
+			expect(
+				entriesOf(
+					page(
+						[[OpCode.Branch, 2, 0, 1, 1]],
+						[
+							[OpCode.Create, 6, "text"],
+							[OpCode.Insert, 2, 6, 3],
+						],
+					),
+				),
+			).toBeNull();
+		});
+
+		it("are not made again with the part they are in", () => {
+			const rendered = readRendered(
+				[
+					[
+						"ops",
+						[
+							[OpCode.Create, 2, "view"],
+							[OpCode.Branch, 2, -1, 0, 0],
+							[OpCode.Insert, ROOT_ID, 2, 0],
+						],
+					],
+				],
+				1,
+			);
+			expect(opsOf(rendered, 2)).toEqual([[OpCode.Create, 2, "view"]]);
+		});
 	});
 });

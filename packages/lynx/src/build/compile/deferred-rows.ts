@@ -11,7 +11,8 @@
 //   </list-item>
 //
 // A `{@const}` goes only in a block, a snippet or a component's children, so a row anywhere else
-// is wrapped in `{#if true}`. The first frame draws a deferred row empty, and writes its `defer`,
+// is wrapped in an `{#if}` that is always true, which says it is the background's own: hydration
+// does not pair it with the first frame's blocks. The first frame draws a deferred row empty, and writes its `defer`,
 // which the main thread reads there; a row among the initial rows it draws whole, with no `defer`.
 //
 // The initial rows (`src/svelte/runtime/initial-rows.ts`): each `<list>` that may hold a deferred row
@@ -39,6 +40,7 @@ import { buildWarning, placeAt } from "../diagnostics/messages.ts";
 import type { Edit } from "../source-map/edits.ts";
 import { position } from "../source-map/maps.ts";
 import { stringLiteral } from "../string-literal.ts";
+import { blockStateEdits } from "./block-states.ts";
 import type { Pass, PassContext } from "./pass.ts";
 import { oneThreadFragments } from "./thread-branches.ts";
 
@@ -48,13 +50,20 @@ const ROW = "__sohedraLynxRow";
 const FACTORY = "__sohedraLynxDeferredRow";
 const FULL_SPAN = "full-span";
 
-/** The initial rows' helpers, from the thread's runtime, by the names the markup calls them. */
+/**
+ * The hooks of the thread's runtime the markup calls, by the names it calls them: the initial rows'
+ * and those of the blocks hydration pairs (./block-states.ts).
+ */
 const SCREEN = {
 	list: ["initialRowsList", "__sohedraLynxList"],
 	end: ["initialRowsEnd", "__sohedraLynxListEnd"],
 	count: ["initialRow", "__sohedraLynxCount"],
 	defer: ["initialRowDefer", "__sohedraLynxDefer"],
 	waits: ["initialRowWaits", "__sohedraLynxWaits"],
+	own: ["ownBranch", "__sohedraLynxOwn"],
+	second: ["secondState", "__sohedraLynxSecond"],
+	awaitGiven: ["awaitGiven", "__sohedraLynxAwaitGiven"],
+	awaitPlace: ["awaitPlace", "__sohedraLynxAwaitPlace"],
 } as const;
 
 /** The attributes the first frame never writes: their values are always `undefined`. */
@@ -247,7 +256,12 @@ function ignoredDefer(element: AnyNode): string | undefined {
 		: undefined;
 }
 
-/** The edits that defer the contents of each `<list-item defer>`, and count each list's initial rows. */
+/**
+ * The edits that defer the contents of each `<list-item defer>`, and count each list's initial rows;
+ * and the edits of the blocks hydration pairs (./block-states.ts), here because this pass writes
+ * the one import line of the thread runtime's hooks: a second pass writing its own would give a
+ * component with no script two module scripts.
+ */
 export const deferredRows: Pass = (context) => {
 	const { source, filename, ast, thread, development, internals, warnings } = context;
 	const background = thread === "background";
@@ -372,7 +386,9 @@ export const deferredRows: Pass = (context) => {
 		const made = `{@const ${row} = ${FACTORY}(() => (${option})${place})}`;
 		const wrapped = !places.has(element);
 		const at = element.start!;
-		edits.push({ start: at, end: at, text: wrapped ? `{#if true}${made}` : made });
+		// The wrapper is the background's alone: hydration does not pair it.
+		const test = countsRows ? call("own", "") : "true";
+		edits.push({ start: at, end: at, text: wrapped ? `{#if ${test}}${made}` : made });
 		const name = at + 1 + TAG.length;
 		edits.push({ start: name, end: name, text: ` ${DEFERRED_ROW}={${row}}` });
 		if (first && last) {
@@ -382,6 +398,18 @@ export const deferredRows: Pass = (context) => {
 		if (wrapped) edits.push({ start: element.end!, end: element.end!, text: "{/if}" });
 	}
 
+	if (internals !== undefined)
+		edits.push(
+			...blockStateEdits({
+				ast,
+				source,
+				background,
+				hook: (name) => {
+					used.add(name);
+					return SCREEN[name][1];
+				},
+			}),
+		);
 	const imports: string[] = [];
 	if (count > 0)
 		imports.push(

@@ -217,6 +217,30 @@ describe("golden patches", () => {
 		});
 	});
 
+	it("say which branch each block took, among the items that hold the page as it rendered", () => {
+		// `<view>{#if open}<text>Open</text>{:else}…{/if}</view>`, the first branch taken.
+		const items: PatchItem[] = [
+			[
+				"ops",
+				[
+					[OpCode.Create, 2, "view"],
+					[OpCode.Branch, 2, 0, 1, 1],
+					[OpCode.Create, 3, "text"],
+					[OpCode.Insert, 2, 3, 0],
+					[OpCode.Insert, ROOT_ID, 2, 0],
+				],
+			],
+		];
+		const { data } = encodePatch({ generation: 0, items, rendered: 1 });
+		expect(data).toMatchSnapshot();
+		expect(decodePatch({ data })).toEqual({
+			v: PROTOCOL_VERSION,
+			generation: 0,
+			items,
+			rendered: 1,
+		});
+	});
+
 	it("drop the page before a reload", () => {
 		const before = decodePatch(
 			encodePatch({ generation: 0, items: [["ops", [[OpCode.SetText, 4, "Count: 2"]]]] }),

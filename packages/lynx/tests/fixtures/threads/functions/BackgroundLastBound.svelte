@@ -1,7 +1,7 @@
 <!--
 	A main-thread handler that calls the background, on an element in an {#if} block, followed by an
-	element of the same tag that only the background renders, with a main-thread ref: in the run of
-	blocks, the first frame's element has the shape of the background's last one, and both bind.
+	element of the same tag that only the background renders, with a main-thread ref: the first
+	frame's element has the shape of the background's last one, and both bind.
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground } from "@sohedra/lynx";

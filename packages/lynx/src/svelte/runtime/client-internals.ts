@@ -1,14 +1,17 @@
 // What the background's compiled components import as Svelte's client runtime: the build points
-// `svelte/internal/client` here. Svelte's own, except `$props.id()`, and with the wrapper of a
-// branch only one thread renders and the count of a list's initial rows.
+// `svelte/internal/client` here. Svelte's own, except `$props.id()` and `$.if`, which tells which
+// branch each block took as a page starts, and with the wrapper of a branch only one thread
+// renders, the count of a list's initial rows and the hooks of the blocks the compile step adds.
 
 import { PROPS_ID_PREFIX } from "../../wire/index.ts";
+import { sayOwn } from "./branch-marks.ts";
 import { svelteSlot } from "./globals.ts";
 import { listAttributes, startingInitialRows } from "./initial-rows.ts";
 import type { ListAttributes } from "./initial-rows.ts";
 import { branchId, newBranchCounts } from "./thread-branches.ts";
 
 export { ThreadBranch } from "./thread-branches.ts";
+export { awaitGiven, awaitPlace, ifBlock as if, ownBranch, secondState } from "./branch-marks.ts";
 
 // @ts-expect-error -- Svelte publishes no types for its internal modules.
 export * from "svelte/internal/client";
@@ -46,6 +49,7 @@ export function startPropsIds(): void {
 
 /** The background's count of a list's initial rows, while the page starts (./initial-rows.ts). */
 export function initialRowsList(read?: () => ListAttributes, where?: string): undefined {
+	sayOwn();
 	startingInitialRows()?.open(listAttributes(read), where);
 	return undefined;
 }
@@ -58,6 +62,7 @@ export function initialRowsEnd(): undefined {
 
 /** Counts a row with no state of its own (a deferred row counts as it renders: `deferredRow`). */
 export function initialRow(fullSpan?: unknown): undefined {
+	sayOwn();
 	startingInitialRows()?.row(fullSpan);
 	return undefined;
 }

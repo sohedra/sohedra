@@ -14,7 +14,9 @@
 //   - static and dynamic attributes, classes (text and object), styles (text and `style:`),
 //     `data-*` (text, number and object), `id`, an attribute of Lynx's, and a `tap` handler that
 //     changes the state;
-//   - `{#if}` with `{:else}`, `{#if background}` and its kin from `@sohedra/lynx/environment`,
+//   - `{#if}` with `{:else if}` and `{:else}`, `{#if background}` and its kin from
+//     `@sohedra/lynx/environment`, `{#await}` given a value or a promise that never settles, a
+//     `<svelte:boundary>` with a `failed` snippet,
 //     `{#each}` keyed and unkeyed, `{#key}`, `<svelte:element>`, child components with props and a
 //     `--x` prop, snippets with `{@render}`, and `$props.id()`, also in a component that a branch
 //     only one thread renders holds, and after it;

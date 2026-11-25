@@ -2,1501 +2,1525 @@
 
 exports[`the first frame's parser, on generated pages > reads each page as before 1`] = `
 [
+  "",
+  "2 <list> {"custom-list-name":"list-container","initial-scroll-index":4,"accessibility-label":"<list-item"} bindEvent:tap",
+  "2 <list>
+  3 cell {"item-key":"r0","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r0\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r0\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    37 <view> {"data-n":0}
+      38 <text> {"data-v":"r0","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        39 "two words\\n\\ttwo words"
+      40 <text> {"class":"c1","accessibility-label":"r0"} bindEvent:tap
+        41 "lynx-s1"
+    [block]
+  4 cell {"item-key":"r1","recyclable":false} "<!----><view data-n='0'><text data-v=\\"r1\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r1\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    42 <view> {"data-n":0}
+      43 <text> {"data-v":"r1","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        44 "two words\\n\\ttwo words"
+      45 <text> {"class":"c1","accessibility-label":"r1"} bindEvent:tap
+        46 "lynx-s1"
+    [block]
+  5 cell {"item-key":"r2","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r2\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r2\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    47 <view> {"data-n":0}
+      48 <text> {"data-v":"r2","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        49 "two words\\n\\ttwo words"
+      50 <text> {"class":"c1","accessibility-label":"r2"} bindEvent:tap
+        51 "lynx-s1"
+    [block]
+  6 cell {"item-key":"r3","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r3\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r3\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    52 <view> {"data-n":0}
+      53 <text> {"data-v":"r3","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        54 "two words\\n\\ttwo words"
+      55 <text> {"class":"c1","accessibility-label":"r3"} bindEvent:tap
+        56 "lynx-s1"
+    [block]
+  7 cell {"item-key":"r4","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r4\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r4\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    57 <view> {"data-n":0}
+      58 <text> {"data-v":"r4","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        59 "two words\\n\\ttwo words"
+      60 <text> {"class":"c1","accessibility-label":"r4"} bindEvent:tap
+        61 "lynx-s1"
+    [block]
+  8 cell {"item-key":"r5","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r5\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r5\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    62 <view> {"data-n":0}
+      63 <text> {"data-v":"r5","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        64 "two words\\n\\ttwo words"
+      65 <text> {"class":"c1","accessibility-label":"r5"} bindEvent:tap
+        66 "lynx-s1"
+    [block]
+  9 cell {"item-key":"r6","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r6\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r6\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    67 <view> {"data-n":0}
+      68 <text> {"data-v":"r6","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        69 "two words\\n\\ttwo words"
+      70 <text> {"class":"c1","accessibility-label":"r6"} bindEvent:tap
+        71 "lynx-s1"
+    [block]
+  10 cell {"item-key":"r7","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r7\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r7\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    72 <view> {"data-n":0}
+      73 <text> {"data-v":"r7","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        74 "two words\\n\\ttwo words"
+      75 <text> {"class":"c1","accessibility-label":"r7"} bindEvent:tap
+        76 "lynx-s1"
+    [block]
+  11 cell {"item-key":"r8","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r8\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r8\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    77 <view> {"data-n":0}
+      78 <text> {"data-v":"r8","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        79 "two words\\n\\ttwo words"
+      80 <text> {"class":"c1","accessibility-label":"r8"} bindEvent:tap
+        81 "lynx-s1"
+    [block]
+  12 cell {"item-key":"r9","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r9\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r9\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    82 <view> {"data-n":0}
+      83 <text> {"data-v":"r9","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        84 "two words\\n\\ttwo words"
+      85 <text> {"class":"c1","accessibility-label":"r9"} bindEvent:tap
+        86 "lynx-s1"
+    [block]
+  13 cell {"item-key":"r10","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r10\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r10\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    87 <view> {"data-n":0}
+      88 <text> {"data-v":"r10","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        89 "two words\\n\\ttwo words"
+      90 <text> {"class":"c1","accessibility-label":"r10"} bindEvent:tap
+        91 "lynx-s1"
+    [block]
+  14 cell {"item-key":"r11","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r11\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r11\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    92 <view> {"data-n":0}
+      93 <text> {"data-v":"r11","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        94 "two words\\n\\ttwo words"
+      95 <text> {"class":"c1","accessibility-label":"r11"} bindEvent:tap
+        96 "lynx-s1"
+    [block]
+  15 cell {"item-key":"r12","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r12\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r12\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    97 <view> {"data-n":0}
+      98 <text> {"data-v":"r12","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        99 "two words\\n\\ttwo words"
+      100 <text> {"class":"c1","accessibility-label":"r12"} bindEvent:tap
+        101 "lynx-s1"
+    [block]
+  16 cell {"item-key":"r13","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r13\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r13\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    102 <view> {"data-n":0}
+      103 <text> {"data-v":"r13","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        104 "two words\\n\\ttwo words"
+      105 <text> {"class":"c1","accessibility-label":"r13"} bindEvent:tap
+        106 "lynx-s1"
+    [block]
+  17 cell {"item-key":"r14","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r14\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r14\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    107 <view> {"data-n":0}
+      108 <text> {"data-v":"r14","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        109 "two words\\n\\ttwo words"
+      110 <text> {"class":"c1","accessibility-label":"r14"} bindEvent:tap
+        111 "lynx-s1"
+    [block]
+  18 cell {"item-key":"r15","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r15\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r15\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    112 <view> {"data-n":0}
+      113 <text> {"data-v":"r15","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        114 "two words\\n\\ttwo words"
+      115 <text> {"class":"c1","accessibility-label":"r15"} bindEvent:tap
+        116 "lynx-s1"
+    [block]
+  19 cell {"item-key":"r16","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r16\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r16\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    117 <view> {"data-n":0}
+      118 <text> {"data-v":"r16","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        119 "two words\\n\\ttwo words"
+      120 <text> {"class":"c1","accessibility-label":"r16"} bindEvent:tap
+        121 "lynx-s1"
+    [block]
+  20 cell {"item-key":"r17","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r17\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r17\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    122 <view> {"data-n":0}
+      123 <text> {"data-v":"r17","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        124 "two words\\n\\ttwo words"
+      125 <text> {"class":"c1","accessibility-label":"r17"} bindEvent:tap
+        126 "lynx-s1"
+    [block]
+  21 cell {"item-key":"r18","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r18\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r18\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    127 <view> {"data-n":0}
+      128 <text> {"data-v":"r18","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        129 "two words\\n\\ttwo words"
+      130 <text> {"class":"c1","accessibility-label":"r18"} bindEvent:tap
+        131 "lynx-s1"
+    [block]
+  22 cell {"item-key":"r19","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r19\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r19\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    132 <view> {"data-n":0}
+      133 <text> {"data-v":"r19","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        134 "two words\\n\\ttwo words"
+      135 <text> {"class":"c1","accessibility-label":"r19"} bindEvent:tap
+        136 "lynx-s1"
+    [block]
+  23 cell {"item-key":"r20","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r20\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r20\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    137 <view> {"data-n":0}
+      138 <text> {"data-v":"r20","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        139 "two words\\n\\ttwo words"
+      140 <text> {"class":"c1","accessibility-label":"r20"} bindEvent:tap
+        141 "lynx-s1"
+    [block]
+  24 cell {"item-key":"r21","recyclable":true} "<!----><view data-n='0'><text data-v=\\"r21\\" bindtap main-thread:ontap='{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-7,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:e9db7:1\\",\\"_jsFn\\":{\\"_jsFn1\\":{\\"_isFirstScreen\\":true}}}'>two words\\n\\ttwo words</text> <text class=\\"c1\\" accessibility-label=\\"r21\\" bindtap>lynx-s1</text><!----></view><!----> <!--[-1--><!--]-->"
+    142 <view> {"data-n":0}
+      143 <text> {"data-v":"r21","main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:e9db7:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}} bindEvent:tap
+        144 "two words\\n\\ttwo words"
+      145 <text> {"class":"c1","accessibility-label":"r21"} bindEvent:tap
+        146 "lynx-s1"
+    [block]
+25 <view> {"main-thread:ref":{"_wkltId":"624d:e9db7:2"}} bindEvent:tap
+  26 <text> {"class":"lynx-s1","data-v":"é ü","style":"color: blue;"}
+    27 "é "
+    [block]
+      28 <text> {"style":"width: 0px","class":"c1"}
+    29 " "
+    [block]
+      30 <text> {"data-n":0}
+        31 "two words"
+  32 <text>
+    [block]
+    33 " "
+    34 <text>
+    35 " "
+    [block]
+      [block]
+        36 "lynx-s1 "",
   "[block]
-2 <list> {"main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}}
-  3 cell {"item-key":"r0","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    27 <view> bindEvent:tap
-    28 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  4 cell {"item-key":"r1","recyclable":false,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    29 <view> bindEvent:tap
-    30 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  5 cell {"item-key":"r2","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    31 <view> bindEvent:tap
-    32 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  6 cell {"item-key":"r3","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    33 <view> bindEvent:tap
-    34 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  7 cell {"item-key":"r4","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    35 <view> bindEvent:tap
-    36 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  8 cell {"item-key":"r5","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    37 <view> bindEvent:tap
-    38 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  9 cell {"item-key":"r6","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    39 <view> bindEvent:tap
-    40 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  10 cell {"item-key":"r7","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    41 <view> bindEvent:tap
-    42 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  11 cell {"item-key":"r8","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    43 <view> bindEvent:tap
-    44 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  12 cell {"item-key":"r9","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    45 <view> bindEvent:tap
-    46 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  13 cell {"item-key":"r10","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    47 <view> bindEvent:tap
-    48 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  14 cell {"item-key":"r11","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    49 <view> bindEvent:tap
-    50 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  15 cell {"item-key":"r12","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    51 <view> bindEvent:tap
-    52 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  16 cell {"item-key":"r13","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    53 <view> bindEvent:tap
-    54 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  17 cell {"item-key":"r14","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    55 <view> bindEvent:tap
-    56 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  18 cell {"item-key":"r15","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    57 <view> bindEvent:tap
-    58 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  19 cell {"item-key":"r16","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    59 <view> bindEvent:tap
-    60 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  20 cell {"item-key":"r17","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    61 <view> bindEvent:tap
-    62 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  21 cell {"item-key":"r18","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    63 <view> bindEvent:tap
-    64 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  22 cell {"item-key":"r19","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    65 <view> bindEvent:tap
-    66 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  23 cell {"item-key":"r20","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    67 <view> bindEvent:tap
-    68 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  24 cell {"item-key":"r21","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    69 <view> bindEvent:tap
-    70 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  25 cell {"item-key":"r22","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    71 <view> bindEvent:tap
-    72 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  26 cell {"item-key":"r23","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
-    73 <view> bindEvent:tap
-    74 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap",
-  "2 <list> {"custom-list-name":"list-container","preload-buffer-count":2,"initial-item-count":3,"data-k":"v"}
-  3 cell {"item-key":"e1-c","data-o":{"s":"c"},"class":"lit"} "<!--[0--><!----><view style=\\"color: blue;\\"><text data-v=\\"2\\" class=\\"c1\\"><!--[-1--><!--]--><text style=\\"color: red\\"></text></text><text bindtap class=\\"c1\\" style=\\"color: blue;\\">a &amp; b<!--[-1-->A<!--]--></text><!----></view><!----><text><!--[-1--><!--[-1-->litc<!--]--><!--[-1-->two words<!--]--><!--[-1-->a &amp; b{x}<!--]--><!--]-->a &amp; b</text><!--]-->"
-    [block]
-      61 <view> {"style":"color: blue;"}
-        62 <text> {"data-v":"2","class":"c1"}
-          [block]
-          63 <text> {"style":"color: red"}
-        64 <text> {"class":"c1","style":"color: blue;"} bindEvent:tap
-          65 "a & b"
-          [block]
-            66 "A"
-      67 <text>
-        [block]
-          [block]
-            68 "litc"
-          [block]
-            69 "two words"
-          [block]
-            70 "a & b{x}"
-        71 "a & b"
-  4 cell {"item-key":"e1-a","data-o":{"s":"a"},"class":"lit"} "<!--[0--><!----><view style=\\"color: blue;\\"><text data-v=\\"2\\" class=\\"c1\\"><!--[-1--><!--]--><text style=\\"color: red\\"></text></text><text bindtap class=\\"c1\\" style=\\"color: blue;\\">a &amp; b<!--[-1-->A<!--]--></text><!----></view><!----><text><!--[-1--><!--[-1-->lita<!--]--><!--[-1-->two words<!--]--><!--[-1-->a &amp; b{x}<!--]--><!--]-->a &amp; b</text><!--]-->"
-    [block]
-      72 <view> {"style":"color: blue;"}
-        73 <text> {"data-v":"2","class":"c1"}
-          [block]
-          74 <text> {"style":"color: red"}
-        75 <text> {"class":"c1","style":"color: blue;"} bindEvent:tap
-          76 "a & b"
-          [block]
-            77 "A"
-      78 <text>
-        [block]
-          [block]
-            79 "lita"
-          [block]
-            80 "two words"
-          [block]
-            81 "a & b{x}"
-        82 "a & b"
-5 <view> {"class":"off","data-n":2}
-  6 <text>
-    [block]
-      7 "{x}"
-  8 <text> {"data-n":2,"style":"width: 20px"}
-    9 <text> {"class":"c1"} bindEvent:tap
-      10 "x y"
-    11 "<"
-12 <view>
-13 <list> {"custom-list-name":"list-container","data-o":{"s":"2"}}
-  14 cell {"item-key":"r0","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      83 <text>
-        84 "<b>"
-  15 cell {"item-key":"r1","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      85 <text>
-        86 "<b>"
-  16 cell {"item-key":"r2","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      87 <text>
-        88 "<b>"
-  17 cell {"item-key":"r3","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      89 <text>
-        90 "<b>"
-  18 cell {"item-key":"r4","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      91 <text>
-        92 "<b>"
-  19 cell {"item-key":"r5","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      93 <text>
-        94 "<b>"
-  20 cell {"item-key":"r6","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      95 <text>
-        96 "<b>"
-  21 cell {"item-key":"r7","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      97 <text>
-        98 "<b>"
-  22 cell {"item-key":"r8","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      99 <text>
-        100 "<b>"
-  23 cell {"item-key":"r9","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} "<!--[0--><text>&lt;b></text><!----><!----><!--]-->"
-    [block]
-      101 <text>
-        102 "<b>"
-  24 cell {"item-key":"r10","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  25 cell {"item-key":"r11","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  26 cell {"item-key":"r12","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  27 cell {"item-key":"r13","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  28 cell {"item-key":"r14","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  29 cell {"item-key":"r15","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  30 cell {"item-key":"r16","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  31 cell {"item-key":"r17","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  32 cell {"item-key":"r18","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  33 cell {"item-key":"r19","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  34 cell {"item-key":"r20","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  35 cell {"item-key":"r21","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  36 cell {"item-key":"r22","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  37 cell {"item-key":"r23","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  38 cell {"item-key":"r24","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  39 cell {"item-key":"r25","accessibility-label":"2","data-o":{"s":"a & b"},"class":"a & b"} deferred "<!--[-1--><!--]-->"
-    [block]
-  40 cell {"item-key":"s2","full-span":true,"class":"<"} "<list class=\\"c1\\" data-o='{\\"s\\":\\"a &amp; b\\"}'><list-item item-key=\\"s0\\" class=\\"a &amp; b\\"><text data-n='2'>&amp;é</text></list-item><list-item item-key=\\"s1\\" class=\\"&lt;\\"><text></text><!--[0--><!--]--></list-item></list><text main-thread:ref='{\\"_wkltId\\":\\"624d:394ab:2\\"}' bindtap> </text>"
-    103 <list> {"class":"c1","data-o":{"s":"a & b"}}
-      104 <list-item> {"item-key":"s0","class":"a & b"}
-        105 <text> {"data-n":2}
-          106 "&é"
-      107 <list-item> {"item-key":"s1","class":"<"}
-        108 <text>
-        [block]
-    109 <text> {"main-thread:ref":{"_wkltId":"624d:394ab:2"}} bindEvent:tap
-      110 " "
-41 <view>
-  42 <view> {"class":"off","data-n":2}
-    43 <text>
-      [block]
-        44 "{x}"
-    45 <text> {"data-n":2,"style":"width: 20px"}
-      46 <text> {"class":"c1"} bindEvent:tap
-        47 "x y"
-      48 "<"
-  49 <view>
-[block]
-  50 <text>
-    [block]
-  51 <view> {"accessibility-label":"<","data-v":"2"}
-  52 <image> {"class":"off","data-n":2,"style":"color: blue;"}
-53 <view> {"class":"off","data-n":2}
-  54 <text>
-    [block]
-      55 "{x}"
-  56 <text> {"data-n":2,"style":"width: 20px"}
-    57 <text> {"class":"c1"} bindEvent:tap
-      58 "x y"
-    59 "<"
-60 <view>",
-  "2 <list> {"style":"color: red;"}
-  3 cell {"item-key":"r0"} "<image data-n='1'></image>"
-    57 <image> {"data-n":1}
-  4 cell {"item-key":"r1"} "<image data-n='1'></image>"
-    58 <image> {"data-n":1}
-  5 cell {"item-key":"r2"} "<image data-n='1'></image>"
-    59 <image> {"data-n":1}
-  6 cell {"item-key":"r3"} "<image data-n='1'></image>"
-    60 <image> {"data-n":1}
-  7 cell {"item-key":"r4"} "<image data-n='1'></image>"
-    61 <image> {"data-n":1}
-  8 cell {"item-key":"r5"} "<image data-n='1'></image>"
-    62 <image> {"data-n":1}
-  9 cell {"item-key":"r6"} "<image data-n='1'></image>"
-    63 <image> {"data-n":1}
-  10 cell {"item-key":"r7"} "<image data-n='1'></image>"
-    64 <image> {"data-n":1}
-  11 cell {"item-key":"r8"} "<image data-n='1'></image>"
-    65 <image> {"data-n":1}
-  12 cell {"item-key":"r9"} "<image data-n='1'></image>"
-    66 <image> {"data-n":1}
-  13 cell {"item-key":"r10"} "<image data-n='1'></image>"
-    67 <image> {"data-n":1}
-  14 cell {"item-key":"r11"} "<image data-n='1'></image>"
-    68 <image> {"data-n":1}
-  15 cell {"item-key":"r12"} "<image data-n='1'></image>"
-    69 <image> {"data-n":1}
-  16 cell {"item-key":"r13"} "<image data-n='1'></image>"
-    70 <image> {"data-n":1}
-  17 cell {"item-key":"r14"} "<image data-n='1'></image>"
-    71 <image> {"data-n":1}
-  18 cell {"item-key":"r15"} "<image data-n='1'></image>"
-    72 <image> {"data-n":1}
-  19 cell {"item-key":"r16"} "<image data-n='1'></image>"
-    73 <image> {"data-n":1}
-  20 cell {"item-key":"r17"} "<image data-n='1'></image>"
-    74 <image> {"data-n":1}
-  21 cell {"item-key":"r18"} "<image data-n='1'></image>"
-    75 <image> {"data-n":1}
-  22 cell {"item-key":"r19"} "<image data-n='1'></image>"
-    76 <image> {"data-n":1}
-  23 cell {"item-key":"r20"} "<image data-n='1'></image>"
-    77 <image> {"data-n":1}
-  24 cell {"item-key":"r21"} "<image data-n='1'></image>"
-    78 <image> {"data-n":1}
-  25 cell {"item-key":"r22"} "<image data-n='1'></image>"
-    79 <image> {"data-n":1}
-  26 cell {"item-key":"r23"} "<image data-n='1'></image>"
-    80 <image> {"data-n":1}
-27 <list> {"custom-list-name":"list-container","class":"c1","data-v":"two words"}
-  28 cell {"item-key":"e0-a"} "<!--[0--><!----><!--[-1--><!--]--><!----><text style=\\"color: red\\"><!----></text><!----><text data-n='1' style=\\"color: red\\">a &amp; b<!--[0-->a<!--]--></text><!----><image></image><!--]-->"
-    [block]
-      [block]
-      81 <text> {"style":"color: red"}
-      82 <text> {"data-n":1,"style":"color: red"}
-        83 "a & b"
-        [block]
-          84 "a"
-      85 <image>
-  29 cell {"item-key":"e0-b"} "<!--[0--><!----><!--[-1--><!--]--><!----><text style=\\"color: red\\"><!----></text><!----><text data-n='1' style=\\"color: red\\">a &amp; b<!--[0-->b<!--]--></text><!----><image></image><!--]-->"
-    [block]
-      [block]
-      86 <text> {"style":"color: red"}
-      87 <text> {"data-n":1,"style":"color: red"}
-        88 "a & b"
-        [block]
-          89 "b"
-      90 <image>
-  30 cell {"item-key":"e0-c"} "<!--[0--><!----><!--[-1--><!--]--><!----><text style=\\"color: red\\"><!----></text><!----><text data-n='1' style=\\"color: red\\">a &amp; b<!--[0-->c<!--]--></text><!----><image></image><!--]-->"
-    [block]
-      [block]
-      91 <text> {"style":"color: red"}
-      92 <text> {"data-n":1,"style":"color: red"}
-        93 "a & b"
-        [block]
-          94 "c"
-      95 <image>
-  31 cell {"item-key":"r0","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r0\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    96 <text> {"class":"r0","style":"color: red;"} bindEvent:tap
-      97 <text>
-      98 <text>
-  32 cell {"item-key":"r1","recyclable":false,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r1\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    99 <text> {"class":"r1","style":"color: red;"} bindEvent:tap
-      100 <text>
-      101 <text>
-  33 cell {"item-key":"r2","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r2\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    102 <text> {"class":"r2","style":"color: red;"} bindEvent:tap
-      103 <text>
-      104 <text>
-  34 cell {"item-key":"r3","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r3\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    105 <text> {"class":"r3","style":"color: red;"} bindEvent:tap
-      106 <text>
-      107 <text>
-  35 cell {"item-key":"r4","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r4\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    108 <text> {"class":"r4","style":"color: red;"} bindEvent:tap
-      109 <text>
-      110 <text>
-  36 cell {"item-key":"r5","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r5\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    111 <text> {"class":"r5","style":"color: red;"} bindEvent:tap
-      112 <text>
-      113 <text>
-  37 cell {"item-key":"r6","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r6\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    114 <text> {"class":"r6","style":"color: red;"} bindEvent:tap
-      115 <text>
-      116 <text>
-  38 cell {"item-key":"r7","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r7\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    117 <text> {"class":"r7","style":"color: red;"} bindEvent:tap
-      118 <text>
-      119 <text>
-  39 cell {"item-key":"r8","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r8\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    120 <text> {"class":"r8","style":"color: red;"} bindEvent:tap
-      121 <text>
-      122 <text>
-  40 cell {"item-key":"r9","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r9\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    123 <text> {"class":"r9","style":"color: red;"} bindEvent:tap
-      124 <text>
-      125 <text>
-  41 cell {"item-key":"r10","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r10\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    126 <text> {"class":"r10","style":"color: red;"} bindEvent:tap
-      127 <text>
-      128 <text>
-  42 cell {"item-key":"r11","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r11\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    129 <text> {"class":"r11","style":"color: red;"} bindEvent:tap
-      130 <text>
-      131 <text>
-  43 cell {"item-key":"r12","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r12\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    132 <text> {"class":"r12","style":"color: red;"} bindEvent:tap
-      133 <text>
-      134 <text>
-  44 cell {"item-key":"r13","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r13\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    135 <text> {"class":"r13","style":"color: red;"} bindEvent:tap
-      136 <text>
-      137 <text>
-  45 cell {"item-key":"r14","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r14\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    138 <text> {"class":"r14","style":"color: red;"} bindEvent:tap
-      139 <text>
-      140 <text>
-  46 cell {"item-key":"r15","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r15\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    141 <text> {"class":"r15","style":"color: red;"} bindEvent:tap
-      142 <text>
-      143 <text>
-  47 cell {"item-key":"r16","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r16\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    144 <text> {"class":"r16","style":"color: red;"} bindEvent:tap
-      145 <text>
-      146 <text>
-  48 cell {"item-key":"r17","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r17\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    147 <text> {"class":"r17","style":"color: red;"} bindEvent:tap
-      148 <text>
-      149 <text>
-  49 cell {"item-key":"r18","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r18\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    150 <text> {"class":"r18","style":"color: red;"} bindEvent:tap
-      151 <text>
-      152 <text>
-  50 cell {"item-key":"r19","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r19\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    153 <text> {"class":"r19","style":"color: red;"} bindEvent:tap
-      154 <text>
-      155 <text>
-  51 cell {"item-key":"r20","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r20\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    156 <text> {"class":"r20","style":"color: red;"} bindEvent:tap
-      157 <text>
-      158 <text>
-  52 cell {"item-key":"r21","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r21\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    159 <text> {"class":"r21","style":"color: red;"} bindEvent:tap
-      160 <text>
-      161 <text>
-  53 cell {"item-key":"r22","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r22\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    162 <text> {"class":"r22","style":"color: red;"} bindEvent:tap
-      163 <text>
-      164 <text>
-  54 cell {"item-key":"r23","recyclable":true,"data-o":{"s":"two words"},"class":"c1"} "<!----><text class=\\"r23\\" bindtap style=\\"color: red;\\"><text></text><text></text><!----></text><!---->"
-    165 <text> {"class":"r23","style":"color: red;"} bindEvent:tap
-      166 <text>
-      167 <text>
-  55 cell {"item-key":"s0","data-u":"two words","style":"color: red;","main-thread:gesture":{"__isSerialized":true,"id":-2,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-7,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} deferred "<!--[-1--><!--]-->"
-    [block]
-56 <view> {"class":"1","data-v":"a & b","style":"width: 10px"}
-[block]
-  [block]",
-  "[block]
-[block]
   [block]
-    2 <view>
-    [block]",
+    [block]
+      2 <view>
+      3 <view>",
   "",
   "2 <list>
-  3 cell {"item-key":"r0","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    32 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      33 "{x}0"
-  4 cell {"item-key":"r1","recyclable":false,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    34 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      35 "{x}0"
-  5 cell {"item-key":"r2","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    36 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      37 "{x}0"
-  6 cell {"item-key":"r3","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    38 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      39 "{x}0"
-  7 cell {"item-key":"r4","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    40 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      41 "{x}0"
-  8 cell {"item-key":"r5","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    42 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      43 "{x}0"
-  9 cell {"item-key":"r6","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    44 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      45 "{x}0"
-  10 cell {"item-key":"r7","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    46 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      47 "{x}0"
-  11 cell {"item-key":"r8","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    48 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      49 "{x}0"
-  12 cell {"item-key":"r9","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    50 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      51 "{x}0"
-  13 cell {"item-key":"r10","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    52 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      53 "{x}0"
-  14 cell {"item-key":"r11","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    54 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      55 "{x}0"
-  15 cell {"item-key":"r12","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    56 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      57 "{x}0"
-  16 cell {"item-key":"r13","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    58 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      59 "{x}0"
-  17 cell {"item-key":"r14","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    60 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      61 "{x}0"
-  18 cell {"item-key":"r15","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    62 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      63 "{x}0"
-  19 cell {"item-key":"r16","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    64 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      65 "{x}0"
-  20 cell {"item-key":"r17","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    66 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      67 "{x}0"
-  21 cell {"item-key":"r18","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    68 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      69 "{x}0"
-  22 cell {"item-key":"r19","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    70 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      71 "{x}0"
-  23 cell {"item-key":"r20","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    72 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      73 "{x}0"
-  24 cell {"item-key":"r21","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
-    [block]
-    74 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-4,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-15,"_initValue":0}},"_wkltId":"624d:f2810:3"}},"waitFor":[{"id":-3}],"simultaneousWith":[],"continueWith":[]}}
-      75 "{x}0"
-25 <view>
-  26 <view> {"style":"width: 0px"}
-    27 <view> {"main-thread:ref":{"_wkltId":"624d:f2810:2"},"class":"c1"} bindEvent:tap
-      28 <view> {"data-o":{"s":"'\\""},"id":"lynx-s1","data-v":"a"}
-      29 <image> {"src":"a.png"}
-  [block]
-    30 <view> {"class":"c1"}
-  [block]
-31 <image> {"accessibility-label":"lynx-s1"}",
-  "2 <list>",
-  "2 <view>
-  3 <list> {"style":"color: blue;"}
-    4 cell {"item-key":"s1","class":"c1"} "<!--[--><!--]-->"
-  5 <text> {"data-o":{"s":"0"}}
-    6 <text> bindEvent:tap
-  7 <list> {"style":"color: blue;"}
-    8 cell {"item-key":"s1","class":"c1"} "<!--[--><!--]-->"
-  9 <text> {"data-o":{"s":"0"}}
-    10 <text> bindEvent:tap",
-  "2 <view> {"style":"width: 10px; color: blue;"}
-  3 <text>
-4 <text> {"main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-23,"_initValue":0}},"_wkltId":"d691:d9846:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
-5 <image>",
-  "2 <view> {"data-u":"1","class":"on","style":"color: red"}",
-  "2 <list> {"custom-list-name":"list-container","preload-buffer-count":2}
-  3 cell {"item-key":"r0","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      33 <view>
-  4 cell {"item-key":"r1","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      34 <view>
-  5 cell {"item-key":"r2","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      35 <view>
-  6 cell {"item-key":"r3","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      36 <view>
-  7 cell {"item-key":"r4","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      37 <view>
-  8 cell {"item-key":"r5","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      38 <view>
-  9 cell {"item-key":"r6","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      39 <view>
-  10 cell {"item-key":"r7","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      40 <view>
-  11 cell {"item-key":"r8","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      41 <view>
-  12 cell {"item-key":"r9","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      42 <view>
-  13 cell {"item-key":"r10","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      43 <view>
-  14 cell {"item-key":"r11","style":"width: 20px","data-v":"2","accessibility-label":"x"} "<!--[0--><view></view><!--]-->"
-    [block]
-      44 <view>
-  15 cell {"item-key":"r12","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  16 cell {"item-key":"r13","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  17 cell {"item-key":"r14","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  18 cell {"item-key":"r15","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  19 cell {"item-key":"r16","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  20 cell {"item-key":"r17","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  21 cell {"item-key":"r18","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  22 cell {"item-key":"r19","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  23 cell {"item-key":"r20","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  24 cell {"item-key":"r21","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  25 cell {"item-key":"r22","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  26 cell {"item-key":"r23","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  27 cell {"item-key":"r24","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-  28 cell {"item-key":"r25","style":"width: 20px","data-v":"2","accessibility-label":"x"} deferred "<!--[-1--><!--]-->"
-    [block]
-29 <view> {"data-v":"2","class":"on","accessibility-label":"lit"}
-  30 <view>
-    31 <text> {"accessibility-label":"x","data-v":"2","class":"c1 c2"}
-      32 "<list-item"",
-  "",
-  "2 <list> {"custom-list-name":"list-container","span-count":2,"style":"width: 10px"}
-  3 cell {"item-key":"r0","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
+  3 cell {"item-key":"r0","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    36 <view>
+    37 <text> {"id":"lynx-s1"} bindEvent:tap
+      38 <text>
+      39 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        40 "Atwo words"
+  4 cell {"item-key":"r1","recyclable":false,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    41 <view>
+    42 <text> {"id":"lynx-s1"} bindEvent:tap
+      43 <text>
+      44 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        45 "Atwo words"
+  5 cell {"item-key":"r2","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    46 <view>
+    47 <text> {"id":"lynx-s1"} bindEvent:tap
+      48 <text>
+      49 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        50 "Atwo words"
+  6 cell {"item-key":"r3","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    51 <view>
+    52 <text> {"id":"lynx-s1"} bindEvent:tap
       53 <text>
-        54 "a & b"
-      55 <image> {"data-v":"","style":"width: 10px"}
-  4 cell {"item-key":"r1","recyclable":false} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      56 <text>
-        57 "a & b"
-      58 <image> {"data-v":"","style":"width: 10px"}
-  5 cell {"item-key":"r2","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      59 <text>
-        60 "a & b"
-      61 <image> {"data-v":"","style":"width: 10px"}
-  6 cell {"item-key":"r3","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      62 <text>
-        63 "a & b"
-      64 <image> {"data-v":"","style":"width: 10px"}
-  7 cell {"item-key":"r4","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      65 <text>
-        66 "a & b"
-      67 <image> {"data-v":"","style":"width: 10px"}
-  8 cell {"item-key":"r5","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
+      54 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        55 "Atwo words"
+  7 cell {"item-key":"r4","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    56 <view>
+    57 <text> {"id":"lynx-s1"} bindEvent:tap
+      58 <text>
+      59 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        60 "Atwo words"
+  8 cell {"item-key":"r5","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    61 <view>
+    62 <text> {"id":"lynx-s1"} bindEvent:tap
+      63 <text>
+      64 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        65 "Atwo words"
+  9 cell {"item-key":"r6","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    66 <view>
+    67 <text> {"id":"lynx-s1"} bindEvent:tap
       68 <text>
-        69 "a & b"
-      70 <image> {"data-v":"","style":"width: 10px"}
-  9 cell {"item-key":"r6","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      71 <text>
-        72 "a & b"
-      73 <image> {"data-v":"","style":"width: 10px"}
-  10 cell {"item-key":"r7","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      74 <text>
-        75 "a & b"
-      76 <image> {"data-v":"","style":"width: 10px"}
-  11 cell {"item-key":"r8","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      77 <text>
-        78 "a & b"
-      79 <image> {"data-v":"","style":"width: 10px"}
-  12 cell {"item-key":"r9","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      80 <text>
-        81 "a & b"
-      82 <image> {"data-v":"","style":"width: 10px"}
-  13 cell {"item-key":"r10","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
+      69 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        70 "Atwo words"
+  10 cell {"item-key":"r7","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    71 <view>
+    72 <text> {"id":"lynx-s1"} bindEvent:tap
+      73 <text>
+      74 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        75 "Atwo words"
+  11 cell {"item-key":"r8","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    76 <view>
+    77 <text> {"id":"lynx-s1"} bindEvent:tap
+      78 <text>
+      79 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        80 "Atwo words"
+  12 cell {"item-key":"r9","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    81 <view>
+    82 <text> {"id":"lynx-s1"} bindEvent:tap
       83 <text>
-        84 "a & b"
-      85 <image> {"data-v":"","style":"width: 10px"}
-  14 cell {"item-key":"r11","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      86 <text>
-        87 "a & b"
-      88 <image> {"data-v":"","style":"width: 10px"}
-  15 cell {"item-key":"r12","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      89 <text>
-        90 "a & b"
-      91 <image> {"data-v":"","style":"width: 10px"}
-  16 cell {"item-key":"r13","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      92 <text>
-        93 "a & b"
-      94 <image> {"data-v":"","style":"width: 10px"}
-  17 cell {"item-key":"r14","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      95 <text>
-        96 "a & b"
-      97 <image> {"data-v":"","style":"width: 10px"}
-  18 cell {"item-key":"r15","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
+      84 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        85 "Atwo words"
+  13 cell {"item-key":"r10","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    86 <view>
+    87 <text> {"id":"lynx-s1"} bindEvent:tap
+      88 <text>
+      89 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        90 "Atwo words"
+  14 cell {"item-key":"r11","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    91 <view>
+    92 <text> {"id":"lynx-s1"} bindEvent:tap
+      93 <text>
+      94 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        95 "Atwo words"
+  15 cell {"item-key":"r12","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    96 <view>
+    97 <text> {"id":"lynx-s1"} bindEvent:tap
       98 <text>
-        99 "a & b"
-      100 <image> {"data-v":"","style":"width: 10px"}
-  19 cell {"item-key":"r16","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      101 <text>
-        102 "a & b"
-      103 <image> {"data-v":"","style":"width: 10px"}
-  20 cell {"item-key":"r17","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      104 <text>
-        105 "a & b"
-      106 <image> {"data-v":"","style":"width: 10px"}
-  21 cell {"item-key":"r18","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      107 <text>
-        108 "a & b"
-      109 <image> {"data-v":"","style":"width: 10px"}
-  22 cell {"item-key":"r19","recyclable":true} "<!--[0--><!--[0--><!--]--><text>a &amp; b</text><image data-v=\\"\\" style=\\"width: 10px\\"></image><!--]-->"
-    [block]
-      [block]
-      110 <text>
-        111 "a & b"
-      112 <image> {"data-v":"","style":"width: 10px"}
-  23 cell {"item-key":"r20","recyclable":true} deferred "<!--[-1--><!--]-->"
-    [block]
-  24 cell {"item-key":"r21","recyclable":true} deferred "<!--[-1--><!--]-->"
-    [block]
-  25 cell {"item-key":"r22","recyclable":true} deferred "<!--[-1--><!--]-->"
-    [block]
-  26 cell {"item-key":"r23","recyclable":true} deferred "<!--[-1--><!--]-->"
-    [block]
+      99 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        100 "Atwo words"
+  16 cell {"item-key":"r13","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    101 <view>
+    102 <text> {"id":"lynx-s1"} bindEvent:tap
+      103 <text>
+      104 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        105 "Atwo words"
+  17 cell {"item-key":"r14","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    106 <view>
+    107 <text> {"id":"lynx-s1"} bindEvent:tap
+      108 <text>
+      109 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        110 "Atwo words"
+  18 cell {"item-key":"r15","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    111 <view>
+    112 <text> {"id":"lynx-s1"} bindEvent:tap
+      113 <text>
+      114 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        115 "Atwo words"
+  19 cell {"item-key":"r16","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    116 <view>
+    117 <text> {"id":"lynx-s1"} bindEvent:tap
+      118 <text>
+      119 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        120 "Atwo words"
+  20 cell {"item-key":"r17","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    121 <view>
+    122 <text> {"id":"lynx-s1"} bindEvent:tap
+      123 <text>
+      124 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        125 "Atwo words"
+  21 cell {"item-key":"r18","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    126 <view>
+    127 <text> {"id":"lynx-s1"} bindEvent:tap
+      128 <text>
+      129 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        130 "Atwo words"
+  22 cell {"item-key":"r19","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    131 <view>
+    132 <text> {"id":"lynx-s1"} bindEvent:tap
+      133 <text>
+      134 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        135 "Atwo words"
+  23 cell {"item-key":"r20","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    136 <view>
+    137 <text> {"id":"lynx-s1"} bindEvent:tap
+      138 <text>
+      139 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        140 "Atwo words"
+  24 cell {"item-key":"r21","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    141 <view>
+    142 <text> {"id":"lynx-s1"} bindEvent:tap
+      143 <text>
+      144 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        145 "Atwo words"
+  25 cell {"item-key":"r22","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    146 <view>
+    147 <text> {"id":"lynx-s1"} bindEvent:tap
+      148 <text>
+      149 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        150 "Atwo words"
+  26 cell {"item-key":"r23","recyclable":true,"id":"lynx-s1"} "<view></view><!----><!----><!----><text id=\\"lynx-s1\\" bindtap><text></text><text data-n='1' accessibility-label=\\"lynx-s1\\" class=\\"c1\\">Atwo words</text><!----></text><!---->"
+    151 <view>
+    152 <text> {"id":"lynx-s1"} bindEvent:tap
+      153 <text>
+      154 <text> {"data-n":1,"accessibility-label":"lynx-s1","class":"c1"}
+        155 "Atwo words"
 [block]
-27 <view> {"data-v":"1"}
-28 <list> {"custom-list-name":"list-container","preload-buffer-count":1}
-  29 cell {"item-key":"r0","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      113 <text> {"style":"color: blue;"}
-  30 cell {"item-key":"r1","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      114 <text> {"style":"color: blue;"}
-  31 cell {"item-key":"r2","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      115 <text> {"style":"color: blue;"}
-  32 cell {"item-key":"r3","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      116 <text> {"style":"color: blue;"}
-  33 cell {"item-key":"r4","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      117 <text> {"style":"color: blue;"}
-  34 cell {"item-key":"r5","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      118 <text> {"style":"color: blue;"}
-  35 cell {"item-key":"r6","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      119 <text> {"style":"color: blue;"}
-  36 cell {"item-key":"r7","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      120 <text> {"style":"color: blue;"}
-  37 cell {"item-key":"r8","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      121 <text> {"style":"color: blue;"}
-  38 cell {"item-key":"r9","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      122 <text> {"style":"color: blue;"}
-  39 cell {"item-key":"r10","style":"color: blue;"} "<!--[0--><text style=\\"color: blue;\\"></text><!--]-->"
-    [block]
-      123 <text> {"style":"color: blue;"}
-  40 cell {"item-key":"r11","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  41 cell {"item-key":"r12","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  42 cell {"item-key":"r13","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  43 cell {"item-key":"r14","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  44 cell {"item-key":"r15","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  45 cell {"item-key":"r16","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  46 cell {"item-key":"r17","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  47 cell {"item-key":"r18","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  48 cell {"item-key":"r19","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  49 cell {"item-key":"r20","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  50 cell {"item-key":"r21","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  51 cell {"item-key":"r22","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]
-  52 cell {"item-key":"r23","style":"color: blue;"} deferred "<!--[-1--><!--]-->"
-    [block]",
-  "2 <text> {"class":"c1","style":"color: blue;"}
   [block]
     [block]
-      [block]
-        [block]
-          [block]
-            3 "a"
-          4 " "
-        5 " "
-        6 <text>
-          7 "lynx-m1 "
-          [block]
-            8 "&"
-      9 " "
-      [block]
-        10 "{x}\\n\\t "
-      11 "  "
-    12 " a\\n\\ta & b"
-  13 " "
+  27 <text>
+    28 <text> {"data-o":{"s":"lynx-s1"},"id":"lynx-s1"}
+      29 "two words1"
+    30 <text> {"id":"lynx-s1"}
+      31 "x y{x}"
+  32 <list> {"class":"c1"}
+    33 cell {"item-key":"s1"} "<!----><!---->"
   [block]
-    14 " a"
-  15 " "",
-  "2 <view>
-3 <text> {"class":"on"}
-  [block]
-4 <image> {"src":"a.png","class":"off","accessibility-label":"0"}",
-  "2 <view> {"data-o":{"s":"1"}}",
-  "2 <list> {"custom-list-name":"list-container","class":"c1"}
-  3 cell {"item-key":"r0","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      26 <text> {"class":"off","style":"color: red"}
-        27 <text> {"class":"off","style":"color: red;"}
-        28 " "
-        29 <text> {"data-n":0,"class":"off"}
-      [block]
-  4 cell {"item-key":"r1","recyclable":false,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      30 <text> {"class":"off","style":"color: red"}
-        31 <text> {"class":"off","style":"color: red;"}
-        32 " "
-        33 <text> {"data-n":0,"class":"off"}
-      [block]
-  5 cell {"item-key":"r2","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      34 <text> {"class":"off","style":"color: red"}
-        35 <text> {"class":"off","style":"color: red;"}
-        36 " "
-        37 <text> {"data-n":0,"class":"off"}
-      [block]
-  6 cell {"item-key":"r3","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      38 <text> {"class":"off","style":"color: red"}
-        39 <text> {"class":"off","style":"color: red;"}
-        40 " "
-        41 <text> {"data-n":0,"class":"off"}
-      [block]
-  7 cell {"item-key":"r4","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      42 <text> {"class":"off","style":"color: red"}
-        43 <text> {"class":"off","style":"color: red;"}
-        44 " "
-        45 <text> {"data-n":0,"class":"off"}
-      [block]
-  8 cell {"item-key":"r5","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      46 <text> {"class":"off","style":"color: red"}
-        47 <text> {"class":"off","style":"color: red;"}
-        48 " "
-        49 <text> {"data-n":0,"class":"off"}
-      [block]
-  9 cell {"item-key":"r6","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      50 <text> {"class":"off","style":"color: red"}
-        51 <text> {"class":"off","style":"color: red;"}
-        52 " "
-        53 <text> {"data-n":0,"class":"off"}
-      [block]
-  10 cell {"item-key":"r7","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      54 <text> {"class":"off","style":"color: red"}
-        55 <text> {"class":"off","style":"color: red;"}
-        56 " "
-        57 <text> {"data-n":0,"class":"off"}
-      [block]
-  11 cell {"item-key":"r8","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      58 <text> {"class":"off","style":"color: red"}
-        59 <text> {"class":"off","style":"color: red;"}
-        60 " "
-        61 <text> {"data-n":0,"class":"off"}
-      [block]
-  12 cell {"item-key":"r9","recyclable":true,"style":"width: 0px"} "<!--[0--><!----><!----> <!----><text class=\\"off\\" style=\\"color: red\\"><text class=\\"off\\" style=\\"color: red;\\"></text> <text data-n='0' class=\\"off\\"></text><!----></text><!----> <!--[0--><!--]--><!--]-->"
-    [block]
-      62 <text> {"class":"off","style":"color: red"}
-        63 <text> {"class":"off","style":"color: red;"}
-        64 " "
-        65 <text> {"data-n":0,"class":"off"}
-      [block]
-  13 cell {"item-key":"r10","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  14 cell {"item-key":"r11","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  15 cell {"item-key":"r12","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  16 cell {"item-key":"r13","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  17 cell {"item-key":"r14","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  18 cell {"item-key":"r15","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  19 cell {"item-key":"r16","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  20 cell {"item-key":"r17","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  21 cell {"item-key":"r18","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  22 cell {"item-key":"r19","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  23 cell {"item-key":"r20","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-  24 cell {"item-key":"r21","recyclable":true,"style":"width: 0px"} deferred "<!--[-1--><!--]-->"
-    [block]
-25 <image>",
-  "2 <list> {"style":"color: red;"}
-  3 cell {"item-key":"r0","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  4 cell {"item-key":"r1","recyclable":false,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  5 cell {"item-key":"r2","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  6 cell {"item-key":"r3","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  7 cell {"item-key":"r4","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  8 cell {"item-key":"r5","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  9 cell {"item-key":"r6","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  10 cell {"item-key":"r7","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  11 cell {"item-key":"r8","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  12 cell {"item-key":"r9","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  13 cell {"item-key":"r10","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  14 cell {"item-key":"r11","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  15 cell {"item-key":"r12","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  16 cell {"item-key":"r13","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  17 cell {"item-key":"r14","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  18 cell {"item-key":"r15","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  19 cell {"item-key":"r16","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  20 cell {"item-key":"r17","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  21 cell {"item-key":"r18","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  22 cell {"item-key":"r19","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  23 cell {"item-key":"r20","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  24 cell {"item-key":"r21","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  25 cell {"item-key":"r22","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  26 cell {"item-key":"r23","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  27 cell {"item-key":"r24","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-  28 cell {"item-key":"r25","recyclable":true,"data-k":"v","data-n":2,"style":"color: red;"} ""
-29 <list> {"custom-list-name":"list-container","preload-buffer-count":2,"style":"width: 20px; color: red;","class":"c1"}
-  30 cell {"item-key":"e0-é","accessibility-label":"x y","main-thread:gesture":{"__isSerialized":true,"id":-5,"type":0,"config":{"minDistance":2},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-45,"_initValue":0}},"_wkltId":"624d:394ab:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<!--[-1--><text class=\\"c1\\" main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-5,\\"type\\":0,\\"config\\":{\\"minDistance\\":2},\\"callbacks\\":{\\"onUpdate\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-45,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:394ab:3\\"}},\\"waitFor\\":[],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'><!---->x y<!----> <!--[-1-->x y\\n\\t&lt;<!--]--> <text class=\\"c1\\" data-o='{\\"s\\":\\"2\\"}' style=\\"color: red;\\">2</text></text><!--]-->"
-    [block]
-      59 <text> {"class":"c1","main-thread:gesture":{"__isSerialized":true,"id":-5,"type":0,"config":{"minDistance":2},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-45,"_initValue":0}},"_wkltId":"624d:394ab:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}}
-        60 "x y"
-        61 " "
-        [block]
-          62 "x y\\n\\t<"
-        63 " "
-        64 <text> {"class":"c1","data-o":{"s":"2"},"style":"color: red;"}
-          65 "2"
-  31 cell {"item-key":"e0-<list-item","accessibility-label":"x y","main-thread:gesture":{"__isSerialized":true,"id":-5,"type":0,"config":{"minDistance":2},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-45,"_initValue":0}},"_wkltId":"624d:394ab:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<!--[-1--><text class=\\"c1\\" main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-5,\\"type\\":0,\\"config\\":{\\"minDistance\\":2},\\"callbacks\\":{\\"onUpdate\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-45,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:394ab:3\\"}},\\"waitFor\\":[],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'><!---->x y<!----> <!--[-1-->x y\\n\\t&lt;<!--]--> <text class=\\"c1\\" data-o='{\\"s\\":\\"2\\"}' style=\\"color: red;\\">2</text></text><!--]-->"
-    [block]
-      66 <text> {"class":"c1","main-thread:gesture":{"__isSerialized":true,"id":-5,"type":0,"config":{"minDistance":2},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-45,"_initValue":0}},"_wkltId":"624d:394ab:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}}
-        67 "x y"
-        68 " "
-        [block]
-          69 "x y\\n\\t<"
-        70 " "
-        71 <text> {"class":"c1","data-o":{"s":"2"},"style":"color: red;"}
-          72 "2"
-  32 cell {"item-key":"e0-b","accessibility-label":"x y","main-thread:gesture":{"__isSerialized":true,"id":-5,"type":0,"config":{"minDistance":2},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-45,"_initValue":0}},"_wkltId":"624d:394ab:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<!--[-1--><text class=\\"c1\\" main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-5,\\"type\\":0,\\"config\\":{\\"minDistance\\":2},\\"callbacks\\":{\\"onUpdate\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-45,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:394ab:3\\"}},\\"waitFor\\":[],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'><!---->x y<!----> <!--[-1-->x y\\n\\t&lt;<!--]--> <text class=\\"c1\\" data-o='{\\"s\\":\\"2\\"}' style=\\"color: red;\\">2</text></text><!--]-->"
-    [block]
-      73 <text> {"class":"c1","main-thread:gesture":{"__isSerialized":true,"id":-5,"type":0,"config":{"minDistance":2},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-45,"_initValue":0}},"_wkltId":"624d:394ab:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}}
-        74 "x y"
-        75 " "
-        [block]
-          76 "x y\\n\\t<"
-        77 " "
-        78 <text> {"class":"c1","data-o":{"s":"2"},"style":"color: red;"}
-          79 "2"
-  33 cell {"item-key":"r0","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r0\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      80 <text> {"style":"width: 20px"}
-        81 <text> {"style":"width: 20px","data-v":"r0","class":"off"}
-          82 "a"
-        83 " "
-        84 <text>
-          85 "a\\n\\té"
-      86 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  34 cell {"item-key":"r1","recyclable":false,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r1\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      87 <text> {"style":"width: 20px"}
-        88 <text> {"style":"width: 20px","data-v":"r1","class":"off"}
-          89 "a"
-        90 " "
-        91 <text>
-          92 "a\\n\\té"
-      93 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  35 cell {"item-key":"r2","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r2\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      94 <text> {"style":"width: 20px"}
-        95 <text> {"style":"width: 20px","data-v":"r2","class":"off"}
-          96 "a"
-        97 " "
-        98 <text>
-          99 "a\\n\\té"
-      100 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  36 cell {"item-key":"r3","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r3\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      101 <text> {"style":"width: 20px"}
-        102 <text> {"style":"width: 20px","data-v":"r3","class":"off"}
-          103 "a"
-        104 " "
-        105 <text>
-          106 "a\\n\\té"
-      107 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  37 cell {"item-key":"r4","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r4\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      108 <text> {"style":"width: 20px"}
-        109 <text> {"style":"width: 20px","data-v":"r4","class":"off"}
-          110 "a"
-        111 " "
-        112 <text>
-          113 "a\\n\\té"
-      114 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  38 cell {"item-key":"r5","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r5\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      115 <text> {"style":"width: 20px"}
-        116 <text> {"style":"width: 20px","data-v":"r5","class":"off"}
-          117 "a"
-        118 " "
-        119 <text>
-          120 "a\\n\\té"
-      121 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  39 cell {"item-key":"r6","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r6\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      122 <text> {"style":"width: 20px"}
-        123 <text> {"style":"width: 20px","data-v":"r6","class":"off"}
-          124 "a"
-        125 " "
-        126 <text>
-          127 "a\\n\\té"
-      128 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  40 cell {"item-key":"r7","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r7\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      129 <text> {"style":"width: 20px"}
-        130 <text> {"style":"width: 20px","data-v":"r7","class":"off"}
-          131 "a"
-        132 " "
-        133 <text>
-          134 "a\\n\\té"
-      135 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  41 cell {"item-key":"r8","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} "<!--[0--><!----><text style=\\"width: 20px\\"><text style=\\"width: 20px\\" data-v=\\"r8\\" class=\\"off\\">a</text> <text>a\\n\\té</text><!----></text><!----><!--[--><!--]--><view class=\\"c1\\" accessibility-label=\\"&lt;\\" data-n='2'></view><!--]-->"
-    [block]
-      136 <text> {"style":"width: 20px"}
-        137 <text> {"style":"width: 20px","data-v":"r8","class":"off"}
-          138 "a"
-        139 " "
-        140 <text>
-          141 "a\\n\\té"
-      142 <view> {"class":"c1","accessibility-label":"<","data-n":2}
-  42 cell {"item-key":"r9","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  43 cell {"item-key":"r10","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  44 cell {"item-key":"r11","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  45 cell {"item-key":"r12","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  46 cell {"item-key":"r13","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  47 cell {"item-key":"r14","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  48 cell {"item-key":"r15","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  49 cell {"item-key":"r16","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  50 cell {"item-key":"r17","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  51 cell {"item-key":"r18","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  52 cell {"item-key":"r19","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  53 cell {"item-key":"r20","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  54 cell {"item-key":"r21","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  55 cell {"item-key":"r22","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  56 cell {"item-key":"r23","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  57 cell {"item-key":"r24","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]
-  58 cell {"item-key":"r25","recyclable":true,"main-thread:ref":{"_wkltId":"624d:394ab:2"}} deferred "<!--[-1--><!--]-->"
-    [block]",
-  "2 <list> {"custom-list-name":"list-container","data-n":2}
-  3 cell {"item-key":"r0","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      76 <text> {"accessibility-label":"a & b"}
-      77 <view>
-  4 cell {"item-key":"r1","recyclable":false,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      78 <text> {"accessibility-label":"a & b"}
-      79 <view>
-  5 cell {"item-key":"r2","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      80 <text> {"accessibility-label":"a & b"}
-      81 <view>
-  6 cell {"item-key":"r3","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      82 <text> {"accessibility-label":"a & b"}
-      83 <view>
-  7 cell {"item-key":"r4","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      84 <text> {"accessibility-label":"a & b"}
-      85 <view>
-  8 cell {"item-key":"r5","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      86 <text> {"accessibility-label":"a & b"}
-      87 <view>
-  9 cell {"item-key":"r6","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      88 <text> {"accessibility-label":"a & b"}
-      89 <view>
-  10 cell {"item-key":"r7","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      90 <text> {"accessibility-label":"a & b"}
-      91 <view>
-  11 cell {"item-key":"r8","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      92 <text> {"accessibility-label":"a & b"}
-      93 <view>
-  12 cell {"item-key":"r9","recyclable":true,"data-n":2,"style":"color: red"} "<!--[0--><text accessibility-label=\\"a &amp; b\\"></text><view></view><!--]-->"
-    [block]
-      94 <text> {"accessibility-label":"a & b"}
-      95 <view>
-  13 cell {"item-key":"r10","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  14 cell {"item-key":"r11","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  15 cell {"item-key":"r12","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  16 cell {"item-key":"r13","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  17 cell {"item-key":"r14","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  18 cell {"item-key":"r15","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  19 cell {"item-key":"r16","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  20 cell {"item-key":"r17","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  21 cell {"item-key":"r18","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  22 cell {"item-key":"r19","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  23 cell {"item-key":"r20","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  24 cell {"item-key":"r21","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  25 cell {"item-key":"r22","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  26 cell {"item-key":"r23","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  27 cell {"item-key":"r24","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-  28 cell {"item-key":"r25","recyclable":true,"data-n":2,"style":"color: red"} deferred "<!--[-1--><!--]-->"
-    [block]
-29 <list> {"custom-list-name":"list-container","class":"off"}
-  30 cell {"item-key":"r0","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      96 <text> {"data-o":{"s":"2"}}
-      [block]
-  31 cell {"item-key":"r1","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      97 <text> {"data-o":{"s":"2"}}
-      [block]
-  32 cell {"item-key":"r2","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      98 <text> {"data-o":{"s":"2"}}
-      [block]
-  33 cell {"item-key":"r3","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      99 <text> {"data-o":{"s":"2"}}
-      [block]
-  34 cell {"item-key":"r4","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      100 <text> {"data-o":{"s":"2"}}
-      [block]
-  35 cell {"item-key":"r5","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      101 <text> {"data-o":{"s":"2"}}
-      [block]
-  36 cell {"item-key":"r6","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      102 <text> {"data-o":{"s":"2"}}
-      [block]
-  37 cell {"item-key":"r7","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      103 <text> {"data-o":{"s":"2"}}
-      [block]
-  38 cell {"item-key":"r8","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      104 <text> {"data-o":{"s":"2"}}
-      [block]
-  39 cell {"item-key":"r9","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} "<!--[0--><!--[--><!--]--><text data-o='{\\"s\\":\\"2\\"}'></text><!--[0--><!--]--><!--]-->"
-    [block]
-      105 <text> {"data-o":{"s":"2"}}
-      [block]
-  40 cell {"item-key":"r10","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  41 cell {"item-key":"r11","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  42 cell {"item-key":"r12","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  43 cell {"item-key":"r13","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  44 cell {"item-key":"r14","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  45 cell {"item-key":"r15","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  46 cell {"item-key":"r16","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  47 cell {"item-key":"r17","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  48 cell {"item-key":"r18","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  49 cell {"item-key":"r19","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  50 cell {"item-key":"r20","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  51 cell {"item-key":"r21","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  52 cell {"item-key":"r22","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  53 cell {"item-key":"r23","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  54 cell {"item-key":"r24","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
-  55 cell {"item-key":"r25","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
-    [block]
 [block]
-  56 <view>
   [block]
-    57 <text> {"class":"off","data-o":{"s":"a & b"}}
-      [block]
-        58 <text> {"accessibility-label":"<","main-thread:ref":{"_wvid":-48,"_initValue":null}} bindEvent:tap
-          [block]
-            59 "é ü\\n\\ta & b"
-          60 " "
-          [block]
-            61 "two words"
-          62 " "
-          [block]
-            63 "x y"
-      64 " "
-      [block]
-        [block]
-          65 "two words"
-      66 " "
-      [block]
-        [block]
-          67 "x y "
-          68 "é"
-        69 " 2\\n\\té ü"
-      70 " é "
-      71 "2\\n\\t&"
-    72 <text>
-      73 <text> bindEvent:tap
-        74 "é ü\\n\\tlit"
-    75 <image> {"data-o":{"s":"lit"},"data-u":"<","class":"c1"}",
-  "[block]
-  2 <image>
-  3 <view>
-    4 <text>
-5 <text>",
+    [block]
+      34 <image>
+      35 <view> {"class":"lit","data-v":"1"}
+[block]",
   "",
+  "2 <text>
+  3 "{x} "
+  4 <text> {"data-v":" ","style":"color: red"}
+    5 "lit"
+  6 "  "",
   "2 <list>
-  3 cell {"item-key":"r0","recyclable":true,"accessibility-label":"r0"} "<!--[-1--><!--]-->"
+  3 cell {"item-key":"r0","data-o":{"s":"r0"},"style":"color: blue;"} ""
+  4 cell {"item-key":"r1","data-o":{"s":"r1"},"style":"color: blue;"} ""
+  5 cell {"item-key":"r2","data-o":{"s":"r2"},"style":"color: blue;"} ""
+  6 cell {"item-key":"r3","data-o":{"s":"r3"},"style":"color: blue;"} ""
+  7 cell {"item-key":"r4","data-o":{"s":"r4"},"style":"color: blue;"} ""
+  8 cell {"item-key":"r5","data-o":{"s":"r5"},"style":"color: blue;"} ""
+  9 cell {"item-key":"r6","data-o":{"s":"r6"},"style":"color: blue;"} ""
+  10 cell {"item-key":"r7","data-o":{"s":"r7"},"style":"color: blue;"} ""
+  11 cell {"item-key":"r8","data-o":{"s":"r8"},"style":"color: blue;"} ""
+  12 cell {"item-key":"r9","data-o":{"s":"r9"},"style":"color: blue;"} ""
+  13 cell {"item-key":"r10","data-o":{"s":"r10"},"style":"color: blue;"} ""
+  14 cell {"item-key":"r11","data-o":{"s":"r11"},"style":"color: blue;"} ""
+  15 cell {"item-key":"r12","data-o":{"s":"r12"},"style":"color: blue;"} ""
+  16 cell {"item-key":"r13","data-o":{"s":"r13"},"style":"color: blue;"} ""
+  17 cell {"item-key":"r14","data-o":{"s":"r14"},"style":"color: blue;"} ""
+  18 cell {"item-key":"r15","data-o":{"s":"r15"},"style":"color: blue;"} ""
+  19 cell {"item-key":"r16","data-o":{"s":"r16"},"style":"color: blue;"} ""
+  20 cell {"item-key":"r17","data-o":{"s":"r17"},"style":"color: blue;"} ""
+  21 cell {"item-key":"r18","data-o":{"s":"r18"},"style":"color: blue;"} ""
+  22 cell {"item-key":"r19","data-o":{"s":"r19"},"style":"color: blue;"} ""
+  23 cell {"item-key":"r20","data-o":{"s":"r20"},"style":"color: blue;"} ""
+  24 cell {"item-key":"r21","data-o":{"s":"r21"},"style":"color: blue;"} ""
+  25 cell {"item-key":"r22","data-o":{"s":"r22"},"style":"color: blue;"} ""
+  26 cell {"item-key":"r23","data-o":{"s":"r23"},"style":"color: blue;"} ""
+  27 cell {"item-key":"r24","data-o":{"s":"r24"},"style":"color: blue;"} ""
+  28 cell {"item-key":"r25","data-o":{"s":"r25"},"style":"color: blue;"} """,
+  "2 <image>
+3 <text> {"class":"off"}
+  [block]
+    4 <text> {"data-v":"'\\""}
+      5 "lit"
+      [block]
+        6 "'\\"<b>"
+      [block]
+      7 <text> {"class":"lit","data-n":0,"main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-23,"_initValue":0}},"_wkltId":"d691:d1be0:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}},"data-one-thread":true}
+        [block]
+          8 "0"
+          9 "0"
+          10 "0"
+          11 "0"
+    12 "0"
+  [block]
+  13 <text> {"class":"lit","data-n":0,"main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-25,"_initValue":0}},"_wkltId":"d691:d1be0:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
     [block]
-  4 cell {"item-key":"r1","recyclable":false,"accessibility-label":"r1"} "<!--[-1--><!--]-->"
+      14 "x y"
+      15 "x y"
+      16 "x y"
+      17 "x y"
+  [block]
+  18 <text> {"class":"lit","data-n":0,"main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-27,"_initValue":0}},"_wkltId":"d691:d1be0:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
     [block]
-  5 cell {"item-key":"r2","recyclable":true,"accessibility-label":"r2"} "<!--[-1--><!--]-->"
+      19 "0"
+      20 "0"
+      21 "0"
+      22 "0"
+23 <text> {"main-thread:gesture":{"__isSerialized":true,"id":-2,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-21,"_initValue":0}},"_wkltId":"624d:084ec:3"}},"waitFor":[{"id":-1}],"simultaneousWith":[],"continueWith":[]}}",
+  "2 <list> {"class":"c1"}
+  3 cell {"item-key":"r0","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  6 cell {"item-key":"r3","recyclable":true,"accessibility-label":"r3"} "<!--[-1--><!--]-->"
+  4 cell {"item-key":"r1","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  7 cell {"item-key":"r4","recyclable":true,"accessibility-label":"r4"} "<!--[-1--><!--]-->"
+  5 cell {"item-key":"r2","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  8 cell {"item-key":"r5","recyclable":true,"accessibility-label":"r5"} "<!--[-1--><!--]-->"
+  6 cell {"item-key":"r3","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  9 cell {"item-key":"r6","recyclable":true,"accessibility-label":"r6"} "<!--[-1--><!--]-->"
+  7 cell {"item-key":"r4","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  10 cell {"item-key":"r7","recyclable":true,"accessibility-label":"r7"} "<!--[-1--><!--]-->"
+  8 cell {"item-key":"r5","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  11 cell {"item-key":"r8","recyclable":true,"accessibility-label":"r8"} "<!--[-1--><!--]-->"
+  9 cell {"item-key":"r6","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  12 cell {"item-key":"r9","recyclable":true,"accessibility-label":"r9"} "<!--[-1--><!--]-->"
+  10 cell {"item-key":"r7","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  13 cell {"item-key":"r10","recyclable":true,"accessibility-label":"r10"} "<!--[-1--><!--]-->"
+  11 cell {"item-key":"r8","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  14 cell {"item-key":"r11","recyclable":true,"accessibility-label":"r11"} "<!--[-1--><!--]-->"
+  12 cell {"item-key":"r9","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  15 cell {"item-key":"r12","recyclable":true,"accessibility-label":"r12"} "<!--[-1--><!--]-->"
+  13 cell {"item-key":"r10","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  16 cell {"item-key":"r13","recyclable":true,"accessibility-label":"r13"} "<!--[-1--><!--]-->"
+  14 cell {"item-key":"r11","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  17 cell {"item-key":"r14","recyclable":true,"accessibility-label":"r14"} "<!--[-1--><!--]-->"
+  15 cell {"item-key":"r12","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  18 cell {"item-key":"r15","recyclable":true,"accessibility-label":"r15"} "<!--[-1--><!--]-->"
+  16 cell {"item-key":"r13","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  19 cell {"item-key":"r16","recyclable":true,"accessibility-label":"r16"} "<!--[-1--><!--]-->"
+  17 cell {"item-key":"r14","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  20 cell {"item-key":"r17","recyclable":true,"accessibility-label":"r17"} "<!--[-1--><!--]-->"
+  18 cell {"item-key":"r15","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  21 cell {"item-key":"r18","recyclable":true,"accessibility-label":"r18"} "<!--[-1--><!--]-->"
+  19 cell {"item-key":"r16","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  22 cell {"item-key":"r19","recyclable":true,"accessibility-label":"r19"} "<!--[-1--><!--]-->"
+  20 cell {"item-key":"r17","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  23 cell {"item-key":"r20","recyclable":true,"accessibility-label":"r20"} "<!--[-1--><!--]-->"
+  21 cell {"item-key":"r18","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
-  24 cell {"item-key":"r21","recyclable":true,"accessibility-label":"r21"} "<!--[-1--><!--]-->"
+  22 cell {"item-key":"r19","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
+    [block]
+  23 cell {"item-key":"r20","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
+    [block]
+  24 cell {"item-key":"r21","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
+    [block]
+  25 cell {"item-key":"r22","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
+    [block]
+  26 cell {"item-key":"r23","data-n":1,"data-v":"lit"} "<!--[0--><!--]-->"
     [block]
 [block]
-  25 <view> {"data-o":{"s":"a"},"main-thread:ontap":{"_c":{"mtTaps":{"_wvid":-55,"_initValue":0}},"_wkltId":"624d:46e71:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}},"main-thread:ref":{"_wkltId":"624d:46e71:2"}}
-  26 <text> {"data-o":{"s":"0"},"data-k":"v","main-thread:gesture":{"__isSerialized":true,"id":-7,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-55,"_initValue":0}},"_wkltId":"624d:46e71:3"}},"waitFor":[{"id":-6}],"simultaneousWith":[],"continueWith":[]}}
-    27 <text> {"data-n":0,"style":"width: 0px"}
-      28 "{x}"
-    29 <text>
-      [block]
-      [block]
-30 <list> {"custom-list-name":"list-container","initial-scroll-index":4,"class":" ","data-v":"lit"} bindEvent:tap
-  31 cell {"item-key":"r0","recyclable":true,"data-v":"r0","class":"off"} "<!----><!----><text></text>"
-    57 <text>
-  32 cell {"item-key":"r1","recyclable":false,"data-v":"r1","class":"off"} "<!----><!----><text></text>"
-    58 <text>
-  33 cell {"item-key":"r2","recyclable":true,"data-v":"r2","class":"off"} "<!----><!----><text></text>"
-    59 <text>
-  34 cell {"item-key":"r3","recyclable":true,"data-v":"r3","class":"off"} "<!----><!----><text></text>"
-    60 <text>
-  35 cell {"item-key":"r4","recyclable":true,"data-v":"r4","class":"off"} "<!----><!----><text></text>"
-    61 <text>
-  36 cell {"item-key":"r5","recyclable":true,"data-v":"r5","class":"off"} "<!----><!----><text></text>"
-    62 <text>
-  37 cell {"item-key":"r6","recyclable":true,"data-v":"r6","class":"off"} "<!----><!----><text></text>"
-    63 <text>
-  38 cell {"item-key":"r7","recyclable":true,"data-v":"r7","class":"off"} "<!----><!----><text></text>"
-    64 <text>
-  39 cell {"item-key":"r8","recyclable":true,"data-v":"r8","class":"off"} "<!----><!----><text></text>"
-    65 <text>
-  40 cell {"item-key":"r9","recyclable":true,"data-v":"r9","class":"off"} "<!----><!----><text></text>"
-    66 <text>
-  41 cell {"item-key":"r10","recyclable":true,"data-v":"r10","class":"off"} "<!----><!----><text></text>"
-    67 <text>
-  42 cell {"item-key":"r11","recyclable":true,"data-v":"r11","class":"off"} "<!----><!----><text></text>"
-    68 <text>
-  43 cell {"item-key":"r12","recyclable":true,"data-v":"r12","class":"off"} "<!----><!----><text></text>"
-    69 <text>
-  44 cell {"item-key":"r13","recyclable":true,"data-v":"r13","class":"off"} "<!----><!----><text></text>"
-    70 <text>
-  45 cell {"item-key":"r14","recyclable":true,"data-v":"r14","class":"off"} "<!----><!----><text></text>"
-    71 <text>
-  46 cell {"item-key":"r15","recyclable":true,"data-v":"r15","class":"off"} "<!----><!----><text></text>"
-    72 <text>
-  47 cell {"item-key":"r16","recyclable":true,"data-v":"r16","class":"off"} "<!----><!----><text></text>"
-    73 <text>
-  48 cell {"item-key":"r17","recyclable":true,"data-v":"r17","class":"off"} "<!----><!----><text></text>"
-    74 <text>
-  49 cell {"item-key":"r18","recyclable":true,"data-v":"r18","class":"off"} "<!----><!----><text></text>"
-    75 <text>
-  50 cell {"item-key":"r19","recyclable":true,"data-v":"r19","class":"off"} "<!----><!----><text></text>"
-    76 <text>
-  51 cell {"item-key":"r20","recyclable":true,"data-v":"r20","class":"off"} "<!----><!----><text></text>"
-    77 <text>
-  52 cell {"item-key":"r21","recyclable":true,"data-v":"r21","class":"off"} "<!----><!----><text></text>"
-    78 <text>
-  53 cell {"item-key":"e0-c","data-v":"lynx-s1","data-k":"v"} "<!----><view data-n='0'></view><!---->"
-    79 <view> {"data-n":0}
-  54 cell {"item-key":"e0-b","data-v":"lynx-s1","data-k":"v"} "<!----><view data-n='0'></view><!---->"
-    80 <view> {"data-n":0}
-  55 cell {"item-key":"e0-x y","data-v":"lynx-s1","data-k":"v"} "<!----><view data-n='0'></view><!---->"
-    81 <view> {"data-n":0}
-  56 cell {"item-key":"e0-a","data-v":"lynx-s1","data-k":"v"} "<!----><view data-n='0'></view><!---->"
-    82 <view> {"data-n":0}",
-  "",
-  "2 <list> {"data-o":{"s":"lit"},"class":"off"}
-  3 cell {"item-key":"r0","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    34 <image>
-    35 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      36 <text> {"style":"color: red"}
-  4 cell {"item-key":"r1","recyclable":false,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    37 <image>
-    38 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      39 <text> {"style":"color: red"}
-  5 cell {"item-key":"r2","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    40 <image>
-    41 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      42 <text> {"style":"color: red"}
-  6 cell {"item-key":"r3","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    43 <image>
-    44 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      45 <text> {"style":"color: red"}
-  7 cell {"item-key":"r4","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    46 <image>
-    47 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      48 <text> {"style":"color: red"}
-  8 cell {"item-key":"r5","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    49 <image>
-    50 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      51 <text> {"style":"color: red"}
-  9 cell {"item-key":"r6","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    52 <image>
-    53 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      54 <text> {"style":"color: red"}
-  10 cell {"item-key":"r7","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    55 <image>
-    56 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      57 <text> {"style":"color: red"}
-  11 cell {"item-key":"r8","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    58 <image>
-    59 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      60 <text> {"style":"color: red"}
-  12 cell {"item-key":"r9","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    61 <image>
-    62 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      63 <text> {"style":"color: red"}
-  13 cell {"item-key":"r10","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    64 <image>
-    65 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      66 <text> {"style":"color: red"}
-  14 cell {"item-key":"r11","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    67 <image>
-    68 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      69 <text> {"style":"color: red"}
-  15 cell {"item-key":"r12","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    70 <image>
-    71 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      72 <text> {"style":"color: red"}
-  16 cell {"item-key":"r13","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    73 <image>
-    74 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      75 <text> {"style":"color: red"}
-  17 cell {"item-key":"r14","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    76 <image>
-    77 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      78 <text> {"style":"color: red"}
-  18 cell {"item-key":"r15","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    79 <image>
-    80 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      81 <text> {"style":"color: red"}
-  19 cell {"item-key":"r16","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    82 <image>
-    83 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      84 <text> {"style":"color: red"}
-  20 cell {"item-key":"r17","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    85 <image>
-    86 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      87 <text> {"style":"color: red"}
-  21 cell {"item-key":"r18","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    88 <image>
-    89 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      90 <text> {"style":"color: red"}
-  22 cell {"item-key":"r19","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    91 <image>
-    92 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      93 <text> {"style":"color: red"}
-  23 cell {"item-key":"r20","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    94 <image>
-    95 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      96 <text> {"style":"color: red"}
-  24 cell {"item-key":"r21","recyclable":true,"data-o":{"s":"lit"}} "<!--[-1--><!--]--><image></image><!----><view data-o='{\\"s\\":\\"lit\\"}' accessibility-label=\\"x\\"><text style=\\"color: red\\"></text><!----></view><!---->"
-    [block]
-    97 <image>
-    98 <view> {"data-o":{"s":"lit"},"accessibility-label":"x"}
-      99 <text> {"style":"color: red"}
-25 <text> {"accessibility-label":"x"}
-26 <text>
   [block]
     [block]
-      27 <text> {"class":"0","data-o":{"s":"two words"}} bindEvent:tap
+      27 <text> {"data-n":1}
+        28 "<b>\\n\\t<b>"
       [block]
-      28 <text> {"class":"off","main-thread:gesture":{"__isSerialized":true,"id":-9,"type":3,"config":{"maxDuration":500,"maxDistance":10},"callbacks":{"onEnd":{"_c":{"mtTaps":{"_wvid":-61,"_initValue":0}},"_wkltId":"624d:394ab:3"}},"waitFor":[{"id":-8}],"simultaneousWith":[],"continueWith":[]}} bindEvent:tap
-        29 "lit0"
+        [block]
+          [block]
+            29 <text>
+              30 "<b>\\n\\ta"
+            31 <text> {"data-o":{"s":""},"style":"color: blue;"}
+              32 "lit"
+        33 <view>
+        34 <text> {"style":"color: blue;"}
+          35 <text> {"accessibility-label":"x y","style":"color: red"}
+          36 " "
+          37 <text> {"class":"x y","style":"width: 10px; color: blue;"}
+            38 "<b>"
+      39 <list>
+        40 cell {"item-key":"e1-é","style":"color: blue;"} ""
+        41 cell {"item-key":"e1-<list-item","style":"color: blue;"} ""
+        42 cell {"item-key":"e1-x y","style":"color: blue;"} ""
+      [block]
+        [block]
+          [block]
+            43 <view> bindEvent:tap
+            44 <view> {"main-thread:ref":{"_wkltId":"624d:0e060:2"}}
+            45 <text> {"style":"color: red"}
+              46 <text> {"data-v":"a","accessibility-label":"x"}
+                47 "lit\\n\\tx y"
+              48 " "
+              49 <text> {"accessibility-label":"lit"}
+      50 <view>
     [block]
-      30 "A"
-      31 <text> {"data-o":{"s":"0"},"style":"color: blue;"}
-      32 "0"
-  33 "a & b"",
+      [block]
+        [block]
+          51 <text>
+            52 "<b>\\n\\ta"
+          53 <text> {"data-o":{"s":""},"style":"color: blue;"}
+            54 "lit"
+      55 <view>
+      56 <text> {"style":"color: blue;"}
+        57 <text> {"accessibility-label":"a","style":"color: red"}
+        58 " "
+        59 <text> {"class":"a","style":"width: 10px; color: blue;"}
+          60 "<b>"
+    61 <list>
+      62 cell {"item-key":"e1-é","style":"color: blue;"} ""
+      63 cell {"item-key":"e1-<list-item","style":"color: blue;"} ""
+      64 cell {"item-key":"e1-x y","style":"color: blue;"} ""
+    [block]
+      [block]
+        [block]
+          65 <view> bindEvent:tap
+          66 <view> {"main-thread:ref":{"_wkltId":"624d:0e060:2"}}
+          67 <text> {"style":"color: red"}
+            68 <text> {"data-v":"a","accessibility-label":"x"}
+              69 "lit\\n\\tx y"
+            70 " "
+            71 <text> {"accessibility-label":"lit"}
+    72 <view>
+      73 <view> {"style":"width: 10px"}
+      74 <view>
+  [block]
+    [block]
+      75 <text> {"data-n":1}
+        76 "<b>\\n\\t<b>"
+      [block]
+        [block]
+          [block]
+            77 <text>
+              78 "<b>\\n\\ta"
+            79 <text> {"data-o":{"s":""},"style":"color: blue;"}
+              80 "lit"
+        81 <view>
+        82 <text> {"style":"color: blue;"}
+          83 <text> {"accessibility-label":"x y","style":"color: red"}
+          84 " "
+          85 <text> {"class":"x y","style":"width: 10px; color: blue;"}
+            86 "<b>"
+      87 <list>
+        88 cell {"item-key":"e1-é","style":"color: blue;"} ""
+        89 cell {"item-key":"e1-<list-item","style":"color: blue;"} ""
+        90 cell {"item-key":"e1-x y","style":"color: blue;"} ""
+      [block]
+        [block]
+          [block]
+            91 <view> bindEvent:tap
+            92 <view> {"main-thread:ref":{"_wkltId":"624d:0e060:2"}}
+            93 <text> {"style":"color: red"}
+              94 <text> {"data-v":"a","accessibility-label":"x"}
+                95 "lit\\n\\tx y"
+              96 " "
+              97 <text> {"accessibility-label":"lit"}
+      98 <view>
+    [block]
+      [block]
+        [block]
+          99 <text>
+            100 "<b>\\n\\ta"
+          101 <text> {"data-o":{"s":""},"style":"color: blue;"}
+            102 "lit"
+      103 <view>
+      104 <text> {"style":"color: blue;"}
+        105 <text> {"accessibility-label":"a","style":"color: red"}
+        106 " "
+        107 <text> {"class":"a","style":"width: 10px; color: blue;"}
+          108 "<b>"
+    109 <list>
+      110 cell {"item-key":"e1-é","style":"color: blue;"} ""
+      111 cell {"item-key":"e1-<list-item","style":"color: blue;"} ""
+      112 cell {"item-key":"e1-x y","style":"color: blue;"} ""
+    [block]
+      [block]
+        [block]
+          113 <view> bindEvent:tap
+          114 <view> {"main-thread:ref":{"_wkltId":"624d:0e060:2"}}
+          115 <text> {"style":"color: red"}
+            116 <text> {"data-v":"a","accessibility-label":"x"}
+              117 "lit\\n\\tx y"
+            118 " "
+            119 <text> {"accessibility-label":"lit"}
+    120 <view>
+      121 <view> {"style":"width: 10px"}
+      122 <view>",
+  "[block]
+  2 <view> {"data-n":1}
+    3 <view> {"id":"lynx-s2","data-o":{"s":"lynx-s2"}}
+      4 <view> {"accessibility-label":"1","class":"on"}
+      5 <view> {"style":"width: 10px; color: red;","accessibility-label":"x"}
+      6 <text> {"accessibility-label":"x","style":"width: 10px"}
+        7 "{x}é"
+  [block]
+    [block]",
+  "2 <list> {"custom-list-name":"list-container","class":"c1","main-thread:ref":{"_wkltId":"624d:101e5:2"}}
+  3 cell {"item-key":"r0","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      53 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  4 cell {"item-key":"r1","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      54 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  5 cell {"item-key":"r2","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      55 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  6 cell {"item-key":"r3","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      56 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  7 cell {"item-key":"r4","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      57 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  8 cell {"item-key":"r5","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      58 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  9 cell {"item-key":"r6","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      59 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  10 cell {"item-key":"r7","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      60 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  11 cell {"item-key":"r8","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      61 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  12 cell {"item-key":"r9","data-o":{"s":"lit"}} "<!--[0--><view data-n='0' style=\\"color: blue;\\"></view><!--[-1--><!--]--><!--]-->"
+    [block]
+      62 <view> {"data-n":0,"style":"color: blue;"}
+      [block]
+  13 cell {"item-key":"r10","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  14 cell {"item-key":"r11","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  15 cell {"item-key":"r12","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  16 cell {"item-key":"r13","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  17 cell {"item-key":"r14","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  18 cell {"item-key":"r15","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  19 cell {"item-key":"r16","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  20 cell {"item-key":"r17","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  21 cell {"item-key":"r18","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  22 cell {"item-key":"r19","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  23 cell {"item-key":"r20","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+  24 cell {"item-key":"r21","data-o":{"s":"lit"}} deferred "<!--[-1--><!--]-->"
+    [block]
+[block]
+  [block]
+[block]
+  [block]
+    [block]
+      25 <view>
+        26 <text>
+          27 "x y'\\""
+        28 <text>
+          29 "&&"
+      30 <view> {"style":"color: blue;"}
+        31 <text> {"data-o":{"s":"é ü"}}
+          32 "'\\""
+        33 <text>
+    34 <view> {"class":"c1 c2","data-n":0}
+[block]
+  35 <text> {"class":"0"}
+    [block]
+    36 <text> {"class":"on"} bindEvent:tap
+      [block]
+        [block]
+          37 "x y"
+          38 <text>
+            39 "<"
+          40 <text> bindEvent:tap
+        41 "{x}"
+      [block]
+        42 "x y"
+        43 <text>
+          44 "<"
+        45 <text> bindEvent:tap
+      46 "{x}"
+      47 "'\\""
+    48 "é ü"
+  [block]
+    [block]
+      49 <text> {"data-v":"lit"}
+        50 "{x}"
+        51 <text> {"class":"off"}
+          52 "{x}{x}"
+      [block]
+      [block]",
+  "2 <list>
+  3 cell {"item-key":"r0","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    39 <view> {"accessibility-label":"x"}
+    40 <view> {"data-o":{"s":"lit"}}
+    41 <image> {"data-k":"v","style":"color: blue;"}
+  4 cell {"item-key":"r1","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    42 <view> {"accessibility-label":"x"}
+    43 <view> {"data-o":{"s":"lit"}}
+    44 <image> {"data-k":"v","style":"color: blue;"}
+  5 cell {"item-key":"r2","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    45 <view> {"accessibility-label":"x"}
+    46 <view> {"data-o":{"s":"lit"}}
+    47 <image> {"data-k":"v","style":"color: blue;"}
+  6 cell {"item-key":"r3","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    48 <view> {"accessibility-label":"x"}
+    49 <view> {"data-o":{"s":"lit"}}
+    50 <image> {"data-k":"v","style":"color: blue;"}
+  7 cell {"item-key":"r4","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    51 <view> {"accessibility-label":"x"}
+    52 <view> {"data-o":{"s":"lit"}}
+    53 <image> {"data-k":"v","style":"color: blue;"}
+  8 cell {"item-key":"r5","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    54 <view> {"accessibility-label":"x"}
+    55 <view> {"data-o":{"s":"lit"}}
+    56 <image> {"data-k":"v","style":"color: blue;"}
+  9 cell {"item-key":"r6","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    57 <view> {"accessibility-label":"x"}
+    58 <view> {"data-o":{"s":"lit"}}
+    59 <image> {"data-k":"v","style":"color: blue;"}
+  10 cell {"item-key":"r7","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    60 <view> {"accessibility-label":"x"}
+    61 <view> {"data-o":{"s":"lit"}}
+    62 <image> {"data-k":"v","style":"color: blue;"}
+  11 cell {"item-key":"r8","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    63 <view> {"accessibility-label":"x"}
+    64 <view> {"data-o":{"s":"lit"}}
+    65 <image> {"data-k":"v","style":"color: blue;"}
+  12 cell {"item-key":"r9","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    66 <view> {"accessibility-label":"x"}
+    67 <view> {"data-o":{"s":"lit"}}
+    68 <image> {"data-k":"v","style":"color: blue;"}
+  13 cell {"item-key":"r10","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    69 <view> {"accessibility-label":"x"}
+    70 <view> {"data-o":{"s":"lit"}}
+    71 <image> {"data-k":"v","style":"color: blue;"}
+  14 cell {"item-key":"r11","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    72 <view> {"accessibility-label":"x"}
+    73 <view> {"data-o":{"s":"lit"}}
+    74 <image> {"data-k":"v","style":"color: blue;"}
+  15 cell {"item-key":"r12","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    75 <view> {"accessibility-label":"x"}
+    76 <view> {"data-o":{"s":"lit"}}
+    77 <image> {"data-k":"v","style":"color: blue;"}
+  16 cell {"item-key":"r13","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    78 <view> {"accessibility-label":"x"}
+    79 <view> {"data-o":{"s":"lit"}}
+    80 <image> {"data-k":"v","style":"color: blue;"}
+  17 cell {"item-key":"r14","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    81 <view> {"accessibility-label":"x"}
+    82 <view> {"data-o":{"s":"lit"}}
+    83 <image> {"data-k":"v","style":"color: blue;"}
+  18 cell {"item-key":"r15","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    84 <view> {"accessibility-label":"x"}
+    85 <view> {"data-o":{"s":"lit"}}
+    86 <image> {"data-k":"v","style":"color: blue;"}
+  19 cell {"item-key":"r16","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    87 <view> {"accessibility-label":"x"}
+    88 <view> {"data-o":{"s":"lit"}}
+    89 <image> {"data-k":"v","style":"color: blue;"}
+  20 cell {"item-key":"r17","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    90 <view> {"accessibility-label":"x"}
+    91 <view> {"data-o":{"s":"lit"}}
+    92 <image> {"data-k":"v","style":"color: blue;"}
+  21 cell {"item-key":"r18","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    93 <view> {"accessibility-label":"x"}
+    94 <view> {"data-o":{"s":"lit"}}
+    95 <image> {"data-k":"v","style":"color: blue;"}
+  22 cell {"item-key":"r19","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    96 <view> {"accessibility-label":"x"}
+    97 <view> {"data-o":{"s":"lit"}}
+    98 <image> {"data-k":"v","style":"color: blue;"}
+  23 cell {"item-key":"r20","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    99 <view> {"accessibility-label":"x"}
+    100 <view> {"data-o":{"s":"lit"}}
+    101 <image> {"data-k":"v","style":"color: blue;"}
+  24 cell {"item-key":"r21","main-thread:ref":{"_wkltId":"624d:084ec:2"},"accessibility-label":"x"} "<view accessibility-label=\\"x\\"></view> <view data-o='{\\"s\\":\\"lit\\"}'></view> <image data-k=\\"v\\" style=\\"color: blue;\\"></image>"
+    102 <view> {"accessibility-label":"x"}
+    103 <view> {"data-o":{"s":"lit"}}
+    104 <image> {"data-k":"v","style":"color: blue;"}
+25 <text> {"accessibility-label":"x","style":"color: blue;"} bindEvent:tap
+  26 "é "
+  27 "lit"
+[block]
+  28 <text>
+    29 "0\\n\\t0"
+30 <view> {"data-o":{"s":"'\\""},"main-thread:ref":{"_wvid":-42,"_initValue":null}}
+  31 <text>
+    [block]
+    32 " "
+    33 <text> {"data-o":{"s":"a & b"},"class":"on"}
+      [block]
+        34 "{x}"
+    35 " {x} "
+    [block]
+    36 " "
+    [block]
+  37 <text> {"data-v":"'\\"","accessibility-label":"x"}
+    [block]
+    38 " "
+    [block]",
+  "",
+  "[block]
+  2 <view> {"style":"--x: red;"}
+  3 <image> {"style":"color: red","class":"c1"}",
+  "2 <text> {"style":"color: red;"}
+  [block]
+    3 <text> {"class":"on","style":"color: red;"}
+    [block]
+      [block]
+      4 "é ü"
+5 <text>
+6 <list>
+  7 cell {"item-key":"e0-x y","style":"color: red","accessibility-label":"x y","main-thread:ref":{"_wvid":-56,"_initValue":null}} ""
+8 <view>
+  9 <view> bindEvent:tap
+  10 <list> {"data-v":"é ü","data-o":{"s":"lit"},"style":"width: 0px"}
+    11 cell {"item-key":"s2","data-o":{"s":"é ü"},"data-u":"a","data-v":"lit"} ""
+    12 cell {"item-key":"s1","full-span":true,"accessibility-label":"x"} ""
+13 <text>
+  14 <text> {"data-o":{"s":"lit"}}
+  15 "x y"",
+  "2 <list> {"accessibility-label":"<"}
+  3 cell {"item-key":"r0","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  4 cell {"item-key":"r1","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  5 cell {"item-key":"r2","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  6 cell {"item-key":"r3","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  7 cell {"item-key":"r4","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  8 cell {"item-key":"r5","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  9 cell {"item-key":"r6","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  10 cell {"item-key":"r7","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  11 cell {"item-key":"r8","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  12 cell {"item-key":"r9","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  13 cell {"item-key":"r10","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  14 cell {"item-key":"r11","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  15 cell {"item-key":"r12","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  16 cell {"item-key":"r13","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  17 cell {"item-key":"r14","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  18 cell {"item-key":"r15","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  19 cell {"item-key":"r16","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  20 cell {"item-key":"r17","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  21 cell {"item-key":"r18","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  22 cell {"item-key":"r19","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  23 cell {"item-key":"r20","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  24 cell {"item-key":"r21","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  25 cell {"item-key":"r22","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+  26 cell {"item-key":"r23","data-n":1,"style":"color: red"} "<!--[0--><!--[--><!--]--><!--]-->"
+    [block]
+27 <view>
+  28 <image> {"accessibility-label":"a & b","class":"off"}
+  29 <list> {"custom-list-name":"list-container"}
+    30 cell {"item-key":"r0","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      60 <text>
+        61 "<"
+      62 <text> {"data-n":1,"accessibility-label":"<"}
+        63 "1"
+    31 cell {"item-key":"r1","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      64 <text>
+        65 "<"
+      66 <text> {"data-n":1,"accessibility-label":"<"}
+        67 "1"
+    32 cell {"item-key":"r2","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      68 <text>
+        69 "<"
+      70 <text> {"data-n":1,"accessibility-label":"<"}
+        71 "1"
+    33 cell {"item-key":"r3","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      72 <text>
+        73 "<"
+      74 <text> {"data-n":1,"accessibility-label":"<"}
+        75 "1"
+    34 cell {"item-key":"r4","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      76 <text>
+        77 "<"
+      78 <text> {"data-n":1,"accessibility-label":"<"}
+        79 "1"
+    35 cell {"item-key":"r5","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      80 <text>
+        81 "<"
+      82 <text> {"data-n":1,"accessibility-label":"<"}
+        83 "1"
+    36 cell {"item-key":"r6","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      84 <text>
+        85 "<"
+      86 <text> {"data-n":1,"accessibility-label":"<"}
+        87 "1"
+    37 cell {"item-key":"r7","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      88 <text>
+        89 "<"
+      90 <text> {"data-n":1,"accessibility-label":"<"}
+        91 "1"
+    38 cell {"item-key":"r8","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      92 <text>
+        93 "<"
+      94 <text> {"data-n":1,"accessibility-label":"<"}
+        95 "1"
+    39 cell {"item-key":"r9","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      96 <text>
+        97 "<"
+      98 <text> {"data-n":1,"accessibility-label":"<"}
+        99 "1"
+    40 cell {"item-key":"r10","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      100 <text>
+        101 "<"
+      102 <text> {"data-n":1,"accessibility-label":"<"}
+        103 "1"
+    41 cell {"item-key":"r11","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      104 <text>
+        105 "<"
+      106 <text> {"data-n":1,"accessibility-label":"<"}
+        107 "1"
+    42 cell {"item-key":"r12","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      108 <text>
+        109 "<"
+      110 <text> {"data-n":1,"accessibility-label":"<"}
+        111 "1"
+    43 cell {"item-key":"r13","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      112 <text>
+        113 "<"
+      114 <text> {"data-n":1,"accessibility-label":"<"}
+        115 "1"
+    44 cell {"item-key":"r14","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      116 <text>
+        117 "<"
+      118 <text> {"data-n":1,"accessibility-label":"<"}
+        119 "1"
+    45 cell {"item-key":"r15","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      120 <text>
+        121 "<"
+      122 <text> {"data-n":1,"accessibility-label":"<"}
+        123 "1"
+    46 cell {"item-key":"r16","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      124 <text>
+        125 "<"
+      126 <text> {"data-n":1,"accessibility-label":"<"}
+        127 "1"
+    47 cell {"item-key":"r17","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      128 <text>
+        129 "<"
+      130 <text> {"data-n":1,"accessibility-label":"<"}
+        131 "1"
+    48 cell {"item-key":"r18","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      132 <text>
+        133 "<"
+      134 <text> {"data-n":1,"accessibility-label":"<"}
+        135 "1"
+    49 cell {"item-key":"r19","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      136 <text>
+        137 "<"
+      138 <text> {"data-n":1,"accessibility-label":"<"}
+        139 "1"
+    50 cell {"item-key":"r20","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      140 <text>
+        141 "<"
+      142 <text> {"data-n":1,"accessibility-label":"<"}
+        143 "1"
+    51 cell {"item-key":"r21","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      144 <text>
+        145 "<"
+      146 <text> {"data-n":1,"accessibility-label":"<"}
+        147 "1"
+    52 cell {"item-key":"r22","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      148 <text>
+        149 "<"
+      150 <text> {"data-n":1,"accessibility-label":"<"}
+        151 "1"
+    53 cell {"item-key":"r23","class":"a & b","accessibility-label":"x","style":"color: blue;"} "<text>&lt;</text><text data-n='1' accessibility-label=\\"&lt;\\">1</text>"
+      152 <text>
+        153 "<"
+      154 <text> {"data-n":1,"accessibility-label":"<"}
+        155 "1"
+    54 cell {"item-key":"s0","class":"on"} deferred "<!--[-1--><!--]-->"
+      [block]
+55 <text> {"style":"color: blue;"}
+  [block]
+    [block]
+      56 "<A"
+    [block]
+      57 <text> {"data-v":"1","accessibility-label":"<"}
+        58 "<"
+    [block]
+      [block]
+        59 "<"
+[block]",
+  "2 <list> {"style":"width: 0px","data-v":"lit"} bindEvent:tap
+  3 cell {"item-key":"r0","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr0</text><text accessibility-label=\\"r0\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    25 <text> {"class":"0"}
+      26 "a & ba & b"
+    [block]
+    27 <view>
+      28 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        29 "x yr0"
+      30 <text> {"accessibility-label":"r0","style":"width: 0px"}
+        31 "two words&"
+  4 cell {"item-key":"r1","recyclable":false} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr1</text><text accessibility-label=\\"r1\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    32 <text> {"class":"0"}
+      33 "a & ba & b"
+    [block]
+    34 <view>
+      35 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        36 "x yr1"
+      37 <text> {"accessibility-label":"r1","style":"width: 0px"}
+        38 "two words&"
+  5 cell {"item-key":"r2","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr2</text><text accessibility-label=\\"r2\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    39 <text> {"class":"0"}
+      40 "a & ba & b"
+    [block]
+    41 <view>
+      42 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        43 "x yr2"
+      44 <text> {"accessibility-label":"r2","style":"width: 0px"}
+        45 "two words&"
+  6 cell {"item-key":"r3","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr3</text><text accessibility-label=\\"r3\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    46 <text> {"class":"0"}
+      47 "a & ba & b"
+    [block]
+    48 <view>
+      49 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        50 "x yr3"
+      51 <text> {"accessibility-label":"r3","style":"width: 0px"}
+        52 "two words&"
+  7 cell {"item-key":"r4","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr4</text><text accessibility-label=\\"r4\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    53 <text> {"class":"0"}
+      54 "a & ba & b"
+    [block]
+    55 <view>
+      56 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        57 "x yr4"
+      58 <text> {"accessibility-label":"r4","style":"width: 0px"}
+        59 "two words&"
+  8 cell {"item-key":"r5","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr5</text><text accessibility-label=\\"r5\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    60 <text> {"class":"0"}
+      61 "a & ba & b"
+    [block]
+    62 <view>
+      63 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        64 "x yr5"
+      65 <text> {"accessibility-label":"r5","style":"width: 0px"}
+        66 "two words&"
+  9 cell {"item-key":"r6","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr6</text><text accessibility-label=\\"r6\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    67 <text> {"class":"0"}
+      68 "a & ba & b"
+    [block]
+    69 <view>
+      70 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        71 "x yr6"
+      72 <text> {"accessibility-label":"r6","style":"width: 0px"}
+        73 "two words&"
+  10 cell {"item-key":"r7","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr7</text><text accessibility-label=\\"r7\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    74 <text> {"class":"0"}
+      75 "a & ba & b"
+    [block]
+    76 <view>
+      77 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        78 "x yr7"
+      79 <text> {"accessibility-label":"r7","style":"width: 0px"}
+        80 "two words&"
+  11 cell {"item-key":"r8","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr8</text><text accessibility-label=\\"r8\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    81 <text> {"class":"0"}
+      82 "a & ba & b"
+    [block]
+    83 <view>
+      84 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        85 "x yr8"
+      86 <text> {"accessibility-label":"r8","style":"width: 0px"}
+        87 "two words&"
+  12 cell {"item-key":"r9","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr9</text><text accessibility-label=\\"r9\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    88 <text> {"class":"0"}
+      89 "a & ba & b"
+    [block]
+    90 <view>
+      91 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        92 "x yr9"
+      93 <text> {"accessibility-label":"r9","style":"width: 0px"}
+        94 "two words&"
+  13 cell {"item-key":"r10","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr10</text><text accessibility-label=\\"r10\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    95 <text> {"class":"0"}
+      96 "a & ba & b"
+    [block]
+    97 <view>
+      98 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        99 "x yr10"
+      100 <text> {"accessibility-label":"r10","style":"width: 0px"}
+        101 "two words&"
+  14 cell {"item-key":"r11","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr11</text><text accessibility-label=\\"r11\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    102 <text> {"class":"0"}
+      103 "a & ba & b"
+    [block]
+    104 <view>
+      105 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        106 "x yr11"
+      107 <text> {"accessibility-label":"r11","style":"width: 0px"}
+        108 "two words&"
+  15 cell {"item-key":"r12","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr12</text><text accessibility-label=\\"r12\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    109 <text> {"class":"0"}
+      110 "a & ba & b"
+    [block]
+    111 <view>
+      112 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        113 "x yr12"
+      114 <text> {"accessibility-label":"r12","style":"width: 0px"}
+        115 "two words&"
+  16 cell {"item-key":"r13","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr13</text><text accessibility-label=\\"r13\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    116 <text> {"class":"0"}
+      117 "a & ba & b"
+    [block]
+    118 <view>
+      119 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        120 "x yr13"
+      121 <text> {"accessibility-label":"r13","style":"width: 0px"}
+        122 "two words&"
+  17 cell {"item-key":"r14","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr14</text><text accessibility-label=\\"r14\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    123 <text> {"class":"0"}
+      124 "a & ba & b"
+    [block]
+    125 <view>
+      126 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        127 "x yr14"
+      128 <text> {"accessibility-label":"r14","style":"width: 0px"}
+        129 "two words&"
+  18 cell {"item-key":"r15","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr15</text><text accessibility-label=\\"r15\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    130 <text> {"class":"0"}
+      131 "a & ba & b"
+    [block]
+    132 <view>
+      133 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        134 "x yr15"
+      135 <text> {"accessibility-label":"r15","style":"width: 0px"}
+        136 "two words&"
+  19 cell {"item-key":"r16","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr16</text><text accessibility-label=\\"r16\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    137 <text> {"class":"0"}
+      138 "a & ba & b"
+    [block]
+    139 <view>
+      140 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        141 "x yr16"
+      142 <text> {"accessibility-label":"r16","style":"width: 0px"}
+        143 "two words&"
+  20 cell {"item-key":"r17","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr17</text><text accessibility-label=\\"r17\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    144 <text> {"class":"0"}
+      145 "a & ba & b"
+    [block]
+    146 <view>
+      147 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        148 "x yr17"
+      149 <text> {"accessibility-label":"r17","style":"width: 0px"}
+        150 "two words&"
+  21 cell {"item-key":"r18","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr18</text><text accessibility-label=\\"r18\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    151 <text> {"class":"0"}
+      152 "a & ba & b"
+    [block]
+    153 <view>
+      154 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        155 "x yr18"
+      156 <text> {"accessibility-label":"r18","style":"width: 0px"}
+        157 "two words&"
+  22 cell {"item-key":"r19","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr19</text><text accessibility-label=\\"r19\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    158 <text> {"class":"0"}
+      159 "a & ba & b"
+    [block]
+    160 <view>
+      161 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        162 "x yr19"
+      163 <text> {"accessibility-label":"r19","style":"width: 0px"}
+        164 "two words&"
+  23 cell {"item-key":"r20","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr20</text><text accessibility-label=\\"r20\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    165 <text> {"class":"0"}
+      166 "a & ba & b"
+    [block]
+    167 <view>
+      168 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        169 "x yr20"
+      170 <text> {"accessibility-label":"r20","style":"width: 0px"}
+        171 "two words&"
+  24 cell {"item-key":"r21","recyclable":true} "<text class=\\"0\\">a &amp; ba &amp; b</text><!--[0--><!--]--><!----><view><text bindtap class=\\"0\\" data-k=\\"v\\">x yr21</text><text accessibility-label=\\"r21\\" style=\\"width: 0px\\">two words&amp;</text><!----></view><!---->"
+    172 <text> {"class":"0"}
+      173 "a & ba & b"
+    [block]
+    174 <view>
+      175 <text> {"class":"0","data-k":"v"} bindEvent:tap
+        176 "x yr21"
+      177 <text> {"accessibility-label":"r21","style":"width: 0px"}
+        178 "two words&"",
+  "2 <list> {"class":"on"}
+  3 cell {"item-key":"r0","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    45 <view>
+    [block]
+  4 cell {"item-key":"r1","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    46 <view>
+    [block]
+  5 cell {"item-key":"r2","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    47 <view>
+    [block]
+  6 cell {"item-key":"r3","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    48 <view>
+    [block]
+  7 cell {"item-key":"r4","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    49 <view>
+    [block]
+  8 cell {"item-key":"r5","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    50 <view>
+    [block]
+  9 cell {"item-key":"r6","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    51 <view>
+    [block]
+  10 cell {"item-key":"r7","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    52 <view>
+    [block]
+  11 cell {"item-key":"r8","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    53 <view>
+    [block]
+  12 cell {"item-key":"r9","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    54 <view>
+    [block]
+  13 cell {"item-key":"r10","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    55 <view>
+    [block]
+  14 cell {"item-key":"r11","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    56 <view>
+    [block]
+  15 cell {"item-key":"r12","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    57 <view>
+    [block]
+  16 cell {"item-key":"r13","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    58 <view>
+    [block]
+  17 cell {"item-key":"r14","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    59 <view>
+    [block]
+  18 cell {"item-key":"r15","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    60 <view>
+    [block]
+  19 cell {"item-key":"r16","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    61 <view>
+    [block]
+  20 cell {"item-key":"r17","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    62 <view>
+    [block]
+  21 cell {"item-key":"r18","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    63 <view>
+    [block]
+  22 cell {"item-key":"r19","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    64 <view>
+    [block]
+  23 cell {"item-key":"r20","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    65 <view>
+    [block]
+  24 cell {"item-key":"r21","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    66 <view>
+    [block]
+  25 cell {"item-key":"r22","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    67 <view>
+    [block]
+  26 cell {"item-key":"r23","class":"on","data-o":{"s":"lynx-s1"}} "<view></view> <!--[0--><!--]-->"
+    68 <view>
+    [block]
+27 <text> {"style":"width: 10px","id":"lynx-s1"}
+  28 <text> {"data-o":{"s":"lynx-s1"},"accessibility-label":"lit","class":"lit"}
+  29 " "
+  30 " <b> "
+  [block]
+    [block]
+    31 " "
+    32 <text> {"style":"color: red;"}
+    33 " "
+    [block]
+      34 "A "
+      [block]
+        35 "1"
+        36 "1"
+      37 "A "
+      [block]
+        38 "1"
+        39 "1"
+      40 "A "
+      [block]
+        41 "1"
+        42 "1"
+43 <text> {"style":"width: 10px","data-u":"<list-item"}
+  44 "A\\n\\t&"",
+  "[block]
+  2 <text>
+    3 "1"
+    4 " {x}"
+5 <view> {"style":"width: 10px","class":"1"} bindEvent:tap
+6 <view>
+  7 <view> {"main-thread:gesture":{"__isSerialized":true,"id":-3,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-71,"_initValue":0}},"_wkltId":"624d:101e5:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} bindEvent:tap
+    [block]
+      8 <text>
+        9 "1"
+        10 " {x}"
+    11 <view> {"style":"width: 10px","class":"1"} bindEvent:tap
+    12 <text> {"accessibility-label":"x"}
+      13 "<b> "
+      14 " 1"
+    15 <text> {"style":"color: blue;","class":"off"}
+      16 "A "
+      17 "lit\\n\\t{x}"
+  [block]
+    18 <text> {"data-n":1,"data-o":{"s":"<list-item"},"class":"on"}
+      19 "lit"
+  20 <view>
+    [block]
+      [block]
+        21 <view>
+  [block]
+  22 <list> {"accessibility-label":"lit"}
+    23 cell {"item-key":"r0","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r0\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      47 <text> {"accessibility-label":"lit"}
+        48 "r0\\n\\tA"
+      [block]
+        [block]
+    24 cell {"item-key":"r1","recyclable":false,"data-k":"v"} "<text accessibility-label=\\"lit\\">r1\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      49 <text> {"accessibility-label":"lit"}
+        50 "r1\\n\\tA"
+      [block]
+        [block]
+    25 cell {"item-key":"r2","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r2\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      51 <text> {"accessibility-label":"lit"}
+        52 "r2\\n\\tA"
+      [block]
+        [block]
+    26 cell {"item-key":"r3","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r3\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      53 <text> {"accessibility-label":"lit"}
+        54 "r3\\n\\tA"
+      [block]
+        [block]
+    27 cell {"item-key":"r4","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r4\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      55 <text> {"accessibility-label":"lit"}
+        56 "r4\\n\\tA"
+      [block]
+        [block]
+    28 cell {"item-key":"r5","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r5\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      57 <text> {"accessibility-label":"lit"}
+        58 "r5\\n\\tA"
+      [block]
+        [block]
+    29 cell {"item-key":"r6","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r6\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      59 <text> {"accessibility-label":"lit"}
+        60 "r6\\n\\tA"
+      [block]
+        [block]
+    30 cell {"item-key":"r7","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r7\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      61 <text> {"accessibility-label":"lit"}
+        62 "r7\\n\\tA"
+      [block]
+        [block]
+    31 cell {"item-key":"r8","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r8\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      63 <text> {"accessibility-label":"lit"}
+        64 "r8\\n\\tA"
+      [block]
+        [block]
+    32 cell {"item-key":"r9","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r9\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      65 <text> {"accessibility-label":"lit"}
+        66 "r9\\n\\tA"
+      [block]
+        [block]
+    33 cell {"item-key":"r10","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r10\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      67 <text> {"accessibility-label":"lit"}
+        68 "r10\\n\\tA"
+      [block]
+        [block]
+    34 cell {"item-key":"r11","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r11\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      69 <text> {"accessibility-label":"lit"}
+        70 "r11\\n\\tA"
+      [block]
+        [block]
+    35 cell {"item-key":"r12","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r12\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      71 <text> {"accessibility-label":"lit"}
+        72 "r12\\n\\tA"
+      [block]
+        [block]
+    36 cell {"item-key":"r13","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r13\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      73 <text> {"accessibility-label":"lit"}
+        74 "r13\\n\\tA"
+      [block]
+        [block]
+    37 cell {"item-key":"r14","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r14\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      75 <text> {"accessibility-label":"lit"}
+        76 "r14\\n\\tA"
+      [block]
+        [block]
+    38 cell {"item-key":"r15","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r15\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      77 <text> {"accessibility-label":"lit"}
+        78 "r15\\n\\tA"
+      [block]
+        [block]
+    39 cell {"item-key":"r16","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r16\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      79 <text> {"accessibility-label":"lit"}
+        80 "r16\\n\\tA"
+      [block]
+        [block]
+    40 cell {"item-key":"r17","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r17\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      81 <text> {"accessibility-label":"lit"}
+        82 "r17\\n\\tA"
+      [block]
+        [block]
+    41 cell {"item-key":"r18","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r18\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      83 <text> {"accessibility-label":"lit"}
+        84 "r18\\n\\tA"
+      [block]
+        [block]
+    42 cell {"item-key":"r19","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r19\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      85 <text> {"accessibility-label":"lit"}
+        86 "r19\\n\\tA"
+      [block]
+        [block]
+    43 cell {"item-key":"r20","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r20\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      87 <text> {"accessibility-label":"lit"}
+        88 "r20\\n\\tA"
+      [block]
+        [block]
+    44 cell {"item-key":"r21","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r21\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      89 <text> {"accessibility-label":"lit"}
+        90 "r21\\n\\tA"
+      [block]
+        [block]
+    45 cell {"item-key":"r22","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r22\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      91 <text> {"accessibility-label":"lit"}
+        92 "r22\\n\\tA"
+      [block]
+        [block]
+    46 cell {"item-key":"r23","recyclable":true,"data-k":"v"} "<text accessibility-label=\\"lit\\">r23\\n\\tA</text> <!--[0--><!--[!--><!--]--><!--]-->"
+      93 <text> {"accessibility-label":"lit"}
+        94 "r23\\n\\tA"
+      [block]
+        [block]",
+  "2 <list> {"accessibility-label":"<list-item","style":"color: red;"}
+  3 cell {"item-key":"r0","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  4 cell {"item-key":"r1","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  5 cell {"item-key":"r2","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  6 cell {"item-key":"r3","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  7 cell {"item-key":"r4","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  8 cell {"item-key":"r5","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  9 cell {"item-key":"r6","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  10 cell {"item-key":"r7","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  11 cell {"item-key":"r8","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  12 cell {"item-key":"r9","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  13 cell {"item-key":"r10","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  14 cell {"item-key":"r11","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  15 cell {"item-key":"r12","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  16 cell {"item-key":"r13","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  17 cell {"item-key":"r14","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  18 cell {"item-key":"r15","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  19 cell {"item-key":"r16","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  20 cell {"item-key":"r17","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  21 cell {"item-key":"r18","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  22 cell {"item-key":"r19","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  23 cell {"item-key":"r20","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  24 cell {"item-key":"r21","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  25 cell {"item-key":"r22","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  26 cell {"item-key":"r23","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  27 cell {"item-key":"r24","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+  28 cell {"item-key":"r25","style":"color: red","data-u":"<list-item"} "<!--[-1--><!--]--> <!----><!---->"
+    [block]
+29 <view> bindEvent:tap
+  30 <view> {"style":"--x: red;"}
+  31 <view> {"style":"--x: red;"}
+  [block]
+    [block]
+      32 <view> {"data-o":{"s":"lit"}}
+        33 <view> bindEvent:tap
+        [block]
+      [block]
+        34 <text> {"data-o":{"s":"a & b"},"data-v":"a & b"}
+          35 "{x}\\n\\ttwo words"",
+  "",
+  "",
 ]
 `;

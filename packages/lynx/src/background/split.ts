@@ -222,7 +222,8 @@ export function createSplitter(
 			case OpCode.SetAttr:
 			case OpCode.SetEvent:
 			case OpCode.SetStyles:
-			case OpCode.Animate: {
+			case OpCode.Animate:
+			case OpCode.Branch: {
 				const entry = pending.get(op[1]);
 				if (entry) {
 					entry.ops.push(op);

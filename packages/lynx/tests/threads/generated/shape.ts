@@ -46,8 +46,18 @@ export function pageShape(page: PageModel): PageShape {
 				case "if":
 					rows += Math.max(
 						walk(node.consequent, owner, lists, inRow),
+						walk(node.elseIf?.consequent ?? [], owner, lists, inRow),
 						walk(node.otherwise ?? [], owner, lists, inRow),
 					);
+					break;
+				case "await":
+					rows += Math.max(
+						walk(node.pending, owner, lists, inRow),
+						walk(node.resolved, owner, lists, inRow),
+					);
+					break;
+				case "boundary":
+					rows += walk(node.body, owner, lists, inRow);
 					break;
 				case "each":
 					rows += Math.max(

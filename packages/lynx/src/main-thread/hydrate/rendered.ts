@@ -22,6 +22,39 @@ export interface RenderedNode {
 	parent: number;
 	/** A list on the page: its items and its update. */
 	list: { items: number[]; keys: unknown[]; update: Op } | null;
+	/** The branch marks of the blocks among its children, `[key, count, at]`, in the order sent. */
+	marks: [number, number, number][] | null;
+	/** Whether a child was put anywhere but last, or taken out: its marks may count the others. */
+	moved: boolean;
+}
+
+/** A block the background marked: the branch it took, and its content. */
+export interface RenderedBlock {
+	key: number;
+	entries: RenderedEntry[];
+}
+
+/** A child of a rendered node, by its id, or a block among its children. */
+export type RenderedEntry = number | RenderedBlock;
+
+/**
+ * A node's children with its blocks folded in from its branch marks, or null when they cannot be
+ * read: a mark out of order, or one that holds more entries than come before it.
+ */
+export function entriesOf(node: RenderedNode): RenderedEntry[] | null {
+	const { children, marks } = node;
+	if (marks === null) return children;
+	if (node.moved) return null;
+	const entries: RenderedEntry[] = [];
+	let next = 0;
+	for (const [key, count, at] of marks) {
+		if (at < next || at > children.length) return null;
+		while (next < at) entries.push(children[next++]!);
+		if (count > entries.length) return null;
+		entries.push({ key, entries: entries.splice(entries.length - count, count) });
+	}
+	while (next < children.length) entries.push(children[next++]!);
+	return entries;
 }
 
 /** What the rendered items hold. */
@@ -44,22 +77,31 @@ function made(nodes: Map<number, RenderedNode>, id: number, op: Op): RenderedNod
 	return node;
 }
 
+/** The node a create op makes. */
+function renderedNode(
+	create: [typeof OpCode.Create, number, string] | [typeof OpCode.CreateText, number, string],
+): RenderedNode {
+	return {
+		id: create[1],
+		create,
+		tag: create[0] === OpCode.Create ? create[2] : "#text",
+		text: create[0] === OpCode.CreateText ? create[2] : "",
+		attrs: new Map(),
+		ops: [],
+		children: [],
+		parent: 0,
+		list: null,
+		marks: null,
+		moved: false,
+	};
+}
+
 function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 	for (const op of ops) {
 		switch (op[0]) {
 			case OpCode.Create:
 			case OpCode.CreateText:
-				nodes.set(op[1], {
-					id: op[1],
-					create: op,
-					tag: op[0] === OpCode.Create ? op[2] : "#text",
-					text: op[0] === OpCode.CreateText ? op[2] : "",
-					attrs: new Map(),
-					ops: [],
-					children: [],
-					parent: 0,
-					list: null,
-				});
+				nodes.set(op[1], renderedNode(op));
 				break;
 			case OpCode.SetAttr: {
 				const node = made(nodes, op[1], op);
@@ -75,19 +117,26 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 			case OpCode.Animate:
 				made(nodes, op[1], op).ops.push(op);
 				break;
+			case OpCode.Branch:
+				(made(nodes, op[1], op).marks ??= []).push([op[2], op[3], op[4]]);
+				break;
 			case OpCode.Insert: {
 				const parent = made(nodes, op[1], op);
 				const child = made(nodes, op[2], op);
 				const at = op[3] === 0 ? -1 : parent.children.indexOf(op[3]);
 				if (at === -1) parent.children.push(op[2]);
-				else parent.children.splice(at, 0, op[2]);
+				else {
+					parent.children.splice(at, 0, op[2]);
+					parent.moved = true;
+				}
 				child.parent = op[1];
 				break;
 			}
 			case OpCode.Remove: {
-				const children = made(nodes, op[1], op).children;
-				const at = children.indexOf(op[2]);
-				if (at !== -1) children.splice(at, 1);
+				const parent = made(nodes, op[1], op);
+				const at = parent.children.indexOf(op[2]);
+				if (at !== -1) parent.children.splice(at, 1);
+				parent.moved = true;
 				break;
 			}
 			case OpCode.Release:
@@ -111,17 +160,7 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 /** The tree the first `count` items of a patch describe. Throws `NotATree` when they describe none. */
 export function readRendered(items: PatchItem[], count: number): Rendered {
 	const nodes = new Map<number, RenderedNode>();
-	nodes.set(ROOT_ID, {
-		id: ROOT_ID,
-		create: [OpCode.Create, ROOT_ID, "page"],
-		tag: "page",
-		text: "",
-		attrs: new Map(),
-		ops: [],
-		children: [],
-		parent: 0,
-		list: null,
-	});
+	nodes.set(ROOT_ID, renderedNode([OpCode.Create, ROOT_ID, "page"]));
 	const cells = new Map<number, string[]>();
 	const cellContexts = new Map<number, number[]>();
 	const calls: CallItem[] = [];

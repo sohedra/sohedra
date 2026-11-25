@@ -1,9 +1,9 @@
 // Hydration's changes, once the match has decided them (./match.ts): the page's applier takes the
 // drawn elements under the background's ids, with what differs written over them, and makes in
-// place the runs that differ more. A list keeps the cells Lynx holds; a cell it handed back is let
+// place what differs more. A list keeps the cells Lynx holds; a cell it handed back is let
 // go of, and is made from the background's text when Lynx asks for it again. Then the events the
 // first frame heard are replayed through the background's handlers, except those on an element the
-// match did not adopt or is not sure of, which it may have paired with another element.
+// match did not adopt (it was made again) or is not sure of (it wrote an attribute over).
 
 import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../../wire/index.ts";
 import type { CallItem, ListItemInfo, Op } from "../../wire/index.ts";
@@ -111,6 +111,7 @@ export function adoptFrame(options: {
 			cells: kept.map((item) => held.get(item)),
 			// An item made again in place is a new one to Lynx: the old one is told gone.
 			committed: order.committed.map((item) => byDrawn.get(item) ?? -item),
+			gone: [...held.values()].filter((cell) => !byDrawn.has(cell.id)),
 			infos,
 		});
 	}

@@ -5,6 +5,7 @@ import fc from "fast-check";
 
 import { compilePage } from "./compile.ts";
 import type { CompiledBoth } from "./compile.ts";
+import { align, builtEntries, drawnEntries, heldCells, pairsAstray, planFor } from "./entries.ts";
 import { expectFunctionsAgree } from "./functions.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
@@ -22,6 +23,7 @@ import {
 import type { GeneratedPage, StartOptions, Step } from "./run.ts";
 import { about } from "./settings.ts";
 import { pageSources } from "./source.ts";
+import { pageState } from "./state.ts";
 import { backgroundTree, engineTree, expectSameTree } from "./trees.ts";
 
 /** Throws, with each error's message, when the page reported any. */
@@ -129,6 +131,58 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 		});
 	},
 );
+
+/**
+ * Both trees hydration matches, the first frame's and the background's from its first patch as the
+ * main thread receives it, line up block for block with no shape check, every branch mark read:
+ * element with element, block with block. And the match adopts, sure, only pairs that line up there:
+ * an early tap runs its own element's handler, or is dropped. Half the pages draw the first frame
+ * from other data than the background's, as one drawn from older page data is: then the trees may
+ * stop lining up where rows differ, and the match may refuse, but it is never sure of a pair the
+ * trees do not make, and where it does not refuse, Lynx shows what the background rendered.
+ */
+export const identityProperty: fc.IAsyncPropertyWithHooks<[PageModel, PageState | undefined]> =
+	fc.asyncProperty(pageModel, fc.option(pageState, { nil: undefined }), async (model, other) => {
+		await about(pageSources(model), { ...described(model), other }, async () => {
+			const { running } = await start(model, {
+				firstFrame: true,
+				...(other && { frameData: other }),
+			});
+			const frame = running.page.runtime.page.frame;
+			expect(frame, "The first frame was drawn").toBeDefined();
+			const held = heldCells(frame!.root);
+			await running.page.settle();
+			const errors = running.page.errors.filter(
+				(error) => !other || (error as { code?: string }).code !== "hydration_mismatch",
+			);
+			expectNoErrors(errors, "At hydration");
+			const patch = running.page.patches[0]!;
+			const built = builtEntries(patch);
+			expect(built.unreadable, "Parents whose branch marks cannot be read").toBe(0);
+			let next = 10_000_000;
+			const drawn = drawnEntries(frame!.root.children, () => next++);
+			const alignment = align(built.entries, drawn);
+			const matched = planFor(frame!.root, patch, held);
+			if (!other) {
+				expect(alignment.misaligned, "Where the trees stop lining up").toEqual([]);
+				expect(matched, "The match refused").toBeDefined();
+			}
+			if (matched)
+				expect(pairsAstray(matched, alignment), "Sure pairs the trees do not pair").toEqual([]);
+			// What hydration made again in place ends as the background rendered it.
+			const refused =
+				rewrote(running.page) ||
+				running.page.errors.some(
+					(error) => (error as { code?: string }).code === "hydration_mismatch",
+				);
+			if (other && !refused)
+				expectSameTree(
+					engineTree(running.page.engine),
+					backgroundTree(),
+					"After hydration from other data, Lynx shows",
+				);
+		});
+	});
 
 /**
  * The ids of `$props.id()` count on across a page's renders, and a component a branch only one

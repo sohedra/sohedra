@@ -286,8 +286,9 @@ export function mountPage<Props extends Bag>(
 
 	/**
 	 * Mounts the app. At the page's start, its lists render their initial rows, as the first frame
-	 * drew them, and what it rendered before its effects ran is marked: the main thread hydrates its
-	 * first frame from it.
+	 * drew them, and what it rendered before its effects ran is marked, with the branch each of
+	 * Svelte's blocks took: the main thread hydrates its first frame from it. A page with no first
+	 * frame writes the branches too.
 	 */
 	function render(starting: boolean): void {
 		const given = options.props;
@@ -297,7 +298,10 @@ export function mountPage<Props extends Bag>(
 			({} as Props);
 		// The ids of `$props.id()` are the first frame's: a reload draws no frame, and starts them too.
 		startPropsIds();
-		if (starting) startInitialRows();
+		if (starting) {
+			startInitialRows();
+			pageRenderer.startBranchMarks();
+		}
 		try {
 			instance = runSvelte(() =>
 				mount(App, {
@@ -309,6 +313,7 @@ export function mountPage<Props extends Bag>(
 				}),
 			);
 		} finally {
+			pageRenderer.endBranchMarks();
 			for (const note of endInitialRows())
 				warnOnce(`${note.code}:${note.where ?? ""}`, () =>
 					note.code === "initial_scroll_index_past_initial_rows"

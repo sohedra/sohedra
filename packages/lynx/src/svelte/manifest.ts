@@ -234,8 +234,17 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/compiler/phases/3-transform/server/visitors/IfBlock.js",
 		anchor: "prepend_block_marker(final_alternate, `<!--[-1-->`);",
 		reliesOn:
-			"the server writes an `{#if}`'s branch between `<!--[0-->` (`<!--[1-->`…, `<!--[-1-->` for the else) and `<!--]-->`, and a component's fragment, an `{#each}` and a `{#key}` between `<!--[-->` and `<!--]-->`: the first frame's parser keeps the branches, where the background may render otherwise, and reads through the rest",
+			"the server writes an `{#if}`'s branch between `<!--[0-->` (`<!--[1-->`…, `<!--[-1-->` for the else) and `<!--]-->`, the second state of an `{#each}`, an `{#await}` and a `<svelte:boundary>` between `<!--[!-->` and `<!--]-->`, and a component's fragment, an `{#each}` and a `{#key}` between `<!--[-->` and `<!--]-->`: the first frame's parser keeps the branches and their numbers, which hydration pairs with the background's (`if-branch-number`, its other half), and reads through the rest",
 		test: SOURCE,
+	},
+	{
+		id: "if-branch-number",
+		program: "runtime",
+		file: "src/internal/client/dom/blocks/if.js",
+		anchor: "fn((fn, key = 0) => {",
+		reliesOn:
+			"compiled client code calls `$.if(anchor, fn, elseif)`, and `fn` calls its argument at most once a run, with the branch and its number, the one the server writes in the block's marker (none for the first branch, 0; -1 for the else), and calls nothing when no branch is taken; the block's test runs inside `fn`, so a hook it calls speaks while the block records; the branch's nodes go in directly before the anchor inside that call. The background's client runtime replaces `$.if` with Svelte's own that tells hydration the number (`server-block-markers`, its other half). What it is given changed in 5.6.2 (sveltejs/svelte#14549), 5.21.0 (#15250), 5.50.2 (#17662) and 5.53.7 (#17830), the last two with the server's markers. If it can no longer be replaced, the compile step can mark each `{#if}` branch with a template comment both copies keep, which says the same with no Svelte internal",
+		test: RUNTIME,
 	},
 	{
 		id: "server-await-block",
@@ -279,7 +288,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/client/dom/blocks/branches.js",
 		anchor: "branch(() => fn(this.anchor))",
 		reliesOn:
-			"a client block (`{#if}`, `{#each}`, `{#key}`, `<svelte:boundary>`) draws its first branch inside the call that makes it, as deep as blocks nest: so every component a branch only one thread renders holds starts while `ThreadBranch` marks the branch",
+			"a client block (`{#if}`, `{#each}`, `{#key}`, `<svelte:boundary>`) draws its first branch inside the call that makes it, as deep as blocks nest: so every component a branch only one thread renders holds starts while `ThreadBranch` marks the branch. An `{#await}` reads its expression inside that call too, and draws the `{:then}` of a value there, so its blocks and the block after it run in template order: the compile step's `{#if}` after an `{#await}` takes the answer of its own",
 		test: RUNTIME,
 	},
 	{
@@ -398,7 +407,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/internal/client/render.js",
 		anchor: "will be defined because the render effect runs synchronously",
 		reliesOn:
-			"`mount` draws the tree before it returns, with the first branch of `{#if}`, `{#each}`, `{#key}` and `<svelte:boundary>`, and runs no `$effect` and no attachment until a flush: so the background's first patch, sent once `mount` returns, holds what hydration adopts, and what an effect writes comes after it. `{#await}` given a promise draws its pending branch only in a task it queues, which the flush after `mount` runs: the branch comes in the first patch after the rendered items, and hydration takes the first frame's as a block it may find empty (`server-await-block`)",
+			"`mount` draws the tree before it returns, with the first branch of `{#if}`, `{#each}`, `{#key}` and `<svelte:boundary>`, and runs no `$effect` and no attachment until a flush: so the background's first patch, sent once `mount` returns, holds what hydration adopts, and what an effect writes comes after it. `{#await}` given a promise draws its pending branch only in a task it queues, which the flush after `mount` runs: the branch comes in the first patch after the rendered items, and hydration takes the first frame's as a block it may find empty (`server-await-block`). A boundary whose children throw draws its `failed` after `mount` returns too, so it is never among the rendered items",
 		test: RUNTIME,
 	},
 	{

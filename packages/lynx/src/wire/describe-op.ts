@@ -41,6 +41,8 @@ export function describeOp(op: Op, tagOf?: TagOf): string {
 			return `set styles from code on ${at(op[1])}`;
 		case OpCode.Animate:
 			return `animate ${at(op[1])}`;
+		case OpCode.Branch:
+			return `mark a block in ${at(op[1])}`;
 		default:
 			return `apply a change of unknown kind ${unknownKind(op)}`;
 	}

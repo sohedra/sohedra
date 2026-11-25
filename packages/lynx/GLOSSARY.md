@@ -185,24 +185,37 @@ _Avoid_: initial items
 the page again.\
 _Avoid_: takeover
 
-**Match**: Hydration's comparison of the drawn tree with the rendered items, decided whole before
-anything changes.\
+**Match**: Hydration's comparison of the drawn tree with the rendered items, by block and position,
+decided whole before anything changes. A block's content is compared only where both threads took
+the same branch.\
 _Avoid_: diff, compare
 
 **Adopt**: Taking a drawn element under the background's element id, with any differences written
 over it.\
 _Avoid_: claim, take over
 
-**Mismatch**: A difference between the first frame and the background outside a thread branch. It
-refuses hydration and leads to a rewrite of the root.\
+**Mismatch**: A difference between the first frame and the background outside every block, in a
+parent that holds no block. It refuses hydration and leads to a rewrite of the root. A difference
+inside a block, or among children that hold one, is made again in place.\
 _Avoid_: hydration error
 
-**Thread branch**: A part of the page only one thread renders (`{#if background}`).\
+**Thread branch**: A part of the page only one thread renders (`{#if background}`). The match needs
+no build knowledge of it: the branch marks say each thread took another branch.\
 _Avoid_: branch, block
 
+**Branch mark**: An op among the rendered items that says which branch one of Svelte's blocks took
+on the background, as Svelte's compiler numbers an `{#if}`'s branches and its server writes the
+number in the first frame, and which of its parent's children are in it.\
+_Avoid_: block id, branch id
+
+**Second state**: A block's state other than its first, which the first frame marks `<!--[!-->`: a
+list's `{:else}`, an `{#await}` given a value, a boundary's `pending`. The background's copy wraps
+it in an `{#if}` that says so.\
+_Avoid_: else branch, fallback
+
 **Event log**: The events and background-function calls the first frame heard before hydration,
-replayed through the background's handlers after it. Those on an element hydration did not adopt, or
-adopted from Svelte blocks it had to guess at, are dropped.\
+replayed through the background's handlers after it. Those on an element hydration made again or
+wrote an attribute over are dropped.\
 _Avoid_: replay queue
 
 **Stand-in**: The main-thread version of a background-only export, which throws an error that says
@@ -398,9 +411,9 @@ _Avoid_: testing utils
   **Cell item**, and the **Channel** puts **Patch items** and **Calls** in order into one **Patch**.
 - The main thread answers with **Messages**: events by **Handler id**, calls, **Replies**, **Context
   releases**, errors, **Rewrites** and **Show / hide**.
-- The **First frame** is drawn from **Page data**. The first patch's **Rendered items** are
-  **Matched** against the **Drawn tree**: a match is **Adopted**; a **Mismatch** leads to a
-  **Rewrite** of the **Root**.
+- The **First frame** is drawn from **Page data**. The first patch's **Rendered items**, with their
+  **Branch marks**, are **Matched** against the **Drawn tree**: a match is **Adopted**; a
+  **Mismatch** leads to a **Rewrite** of the **Root**.
 - A **List of the page** has **List items**, each shown as a **Cell** whose **Kept text** is applied
   when Lynx asks for it. A **Handed back** cell may be **Let go** and come back as a **Marked** cell
   item.

@@ -38,6 +38,28 @@ export const OpCode = {
 	SetStyles: 10,
 	/** `[Animate, id, args]`: Lynx's `__ElementAnimate` arguments, `[operation, name, …]`. */
 	Animate: 11,
+	/**
+	 * `[Branch, parentId, key, count, at]`: written only among a page's rendered items, for
+	 * hydration. A block of Svelte's took the branch `key` (an `{#if}`'s number, as Svelte's server
+	 * writes it in the block's marker, or a `BranchKey`); its content is the last `count` of
+	 * `parentId`'s entries once its first `at` children are entries, an inner block being one. An
+	 * `at` of -1 is a mark that cannot be read: the background lost track of a block there, and
+	 * hydration makes that parent's children again.
+	 */
+	Branch: 12,
+} as const;
+
+/** The key of a branch mark whose block is not one of an `{#if}`'s branches. */
+export const BranchKey = {
+	/** A second state: a list's `{:else}`, an `{#await}` given a value, a boundary's `pending`. */
+	Second: -2,
+	/** An `{#await}` given a promise: the background draws its content after the rendered items. */
+	Await: -3,
+	/**
+	 * A boundary's `failed`. Neither the background nor a synchronous first frame writes it among
+	 * the rendered items: it is here for the first frame's parser, which reads `<!--[?-->`.
+	 */
+	Failed: -4,
 } as const;
 
 /**
@@ -58,4 +80,5 @@ export type Op =
 	| [typeof OpCode.Release, number]
 	| [typeof OpCode.ListUpdate, number, ListUpdateInfo, number[], number[], number[]]
 	| [typeof OpCode.SetStyles, number, Record<string, string | number | null>]
-	| [typeof OpCode.Animate, number, unknown[]];
+	| [typeof OpCode.Animate, number, unknown[]]
+	| [typeof OpCode.Branch, number, number, number, number];

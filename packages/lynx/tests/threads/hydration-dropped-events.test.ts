@@ -1,12 +1,15 @@
-// Events on the first frame whose element hydration cannot place: an element it did not adopt, or
-// adopted from a run of Svelte blocks, or one around it, that did not pair one to one or that it
-// wrote over. Such an event is dropped, not replayed through another element's handler, and a
-// development build warns, naming the element. An event that reaches no handler there goes on from
-// the first element hydration is sure of; one that reaches a dropped handler ends there, whether
-// the page or a listener heard it.
+// Events on the first frame and the element hydration pairs them with. Hydration pairs Svelte's
+// blocks by the branch each took on both threads, so an early event on an element beside a part
+// only one thread renders runs its own handler. One on an element hydration made again (another
+// branch, a second state only one thread drew) or wrote an attribute over is dropped, not replayed
+// through another element's handler, and a development build warns, naming the element. An event
+// that reaches no handler there goes on from the first element hydration is sure of; one that
+// reaches a dropped handler ends there, whether the page or a listener heard it.
 
 import { describe, expect, it } from "@rstest/core";
 
+import AdjacentEach from "../fixtures/threads/early/AdjacentEach.svelte";
+import drawAdjacentEach from "../fixtures/threads/early/AdjacentEach.svelte?first-frame";
 import AwaitBeside from "../fixtures/threads/early/AwaitBeside.svelte";
 import drawAwaitBeside from "../fixtures/threads/early/AwaitBeside.svelte?first-frame";
 import BesideBackgroundOnly from "../fixtures/threads/early/BesideBackgroundOnly.svelte";
@@ -35,8 +38,14 @@ import SessionAvatar from "../fixtures/threads/early/SessionAvatar.svelte";
 import drawSessionAvatar from "../fixtures/threads/early/SessionAvatar.svelte?first-frame";
 import TextInRun from "../fixtures/threads/early/TextInRun.svelte";
 import drawTextInRun from "../fixtures/threads/early/TextInRun.svelte?first-frame";
+import ThroughWrittenOver from "../fixtures/threads/early/ThroughWrittenOver.svelte";
+import drawThroughWrittenOver from "../fixtures/threads/early/ThroughWrittenOver.svelte?first-frame";
 import TouchBubble from "../fixtures/threads/early/TouchBubble.svelte";
 import drawTouchBubble from "../fixtures/threads/early/TouchBubble.svelte?first-frame";
+import TouchBubbleSession from "../fixtures/threads/early/TouchBubbleSession.svelte";
+import drawTouchBubbleSession from "../fixtures/threads/early/TouchBubbleSession.svelte?first-frame";
+import UnderWrittenOver from "../fixtures/threads/early/UnderWrittenOver.svelte";
+import drawUnderWrittenOver from "../fixtures/threads/early/UnderWrittenOver.svelte?first-frame";
 import type { FirstFrameCopy, SveltePage } from "./svelte-page.ts";
 import { startSveltePage } from "./svelte-page.ts";
 
@@ -71,12 +80,12 @@ const dropped = (event: string, element: string) =>
 	});
 
 describe("an early tap beside a part only the background renders", () => {
-	it("runs no handler, and none of its ancestors' either, and is warned about", async () => {
+	it("runs its own handler, and its ancestors'", async () => {
 		const { page, log } = start(BesideBackgroundOnly, drawBesideBackgroundOnly);
 		await tapEarly(page, "tapped");
-		expect(log).toEqual([]);
+		expect(log).toEqual(["tapped", "outer"]);
 		expect(page.errors).toEqual([]);
-		expect(page.warnings).toEqual([dropped("tap", '<text class="tapped">')]);
+		expect(page.warnings).toEqual([]);
 	});
 
 	it("leaves the page's own handlers to run after hydration", async () => {
@@ -84,7 +93,7 @@ describe("an early tap beside a part only the background renders", () => {
 		await tapEarly(page, "tapped");
 		await tapEarly(page, "tapped");
 		await tapEarly(page, "later");
-		expect(log).toEqual(["tapped", "outer", "later", "outer"]);
+		expect(log).toEqual(["tapped", "outer", "tapped", "outer", "later", "outer"]);
 	});
 
 	it("on an element with no handler, goes on from the first element hydration is sure of", async () => {
@@ -95,36 +104,49 @@ describe("an early tap beside a part only the background renders", () => {
 		expect(page.warnings).toEqual([]);
 	});
 
-	it("in a long press, runs no handler, and is warned about", async () => {
+	it("in a long press, runs its own handler", async () => {
 		const { page, log } = start(LongPress, drawLongPress);
 		page.engine.dispatch(page.byClass("tapped"), { type: "longpress" });
 		await page.settle();
-		expect(log).toEqual([]);
-		expect(page.warnings).toEqual([dropped("longpress", '<text class="tapped">')]);
+		expect(log).toEqual(["tapped", "outer"]);
+		expect(page.warnings).toEqual([]);
 	});
 
-	it("behind a component given the background's flag as a prop, runs no handler", async () => {
+	it("behind a component given the background's flag as a prop, runs its own handler", async () => {
 		const { page, log } = start(FlagByProp, drawFlagByProp);
 		await tapEarly(page, "tapped");
-		expect(log).toEqual([]);
-		expect(page.warnings).toEqual([dropped("tap", '<text class="tapped">')]);
+		expect(log).toEqual(["tapped"]);
+		expect(page.warnings).toEqual([]);
 	});
 });
 
 describe("an early event only listeners hear, beside a part only the background renders", () => {
-	it("is dropped, and warned about", async () => {
+	it("runs its own listener", async () => {
 		const { page, log } = start(ScrollBeside, drawScrollBeside);
 		page.engine.fire(page.byClass("scroller"), {
 			type: "scroll",
 			detail: { scrollTop: 4 },
 		});
 		await page.settle();
-		expect(log).toEqual([]);
-		expect(page.warnings).toEqual([dropped("scroll", '<scroll-view class="scroller">')]);
+		expect(log).toEqual(["scroller"]);
+		expect(page.warnings).toEqual([]);
 	});
 
-	it("that bubbles, ends where a dropped listener heard it, and its ancestors' run no handler", async () => {
+	it("that bubbles, runs its own listener and its ancestors'", async () => {
 		const { page, log } = start(TouchBubble, drawTouchBubble);
+		page.engine.dispatch(page.byClass("inner"), { type: "touchstart" });
+		await page.settle();
+		expect(log).toEqual(["inner", "outer"]);
+		expect(page.warnings).toEqual([]);
+	});
+});
+
+describe("an early event that bubbles from an element hydration made again", () => {
+	it("ends where a dropped listener heard it, and its ancestors' run no handler", async () => {
+		const { page, log } = start(TouchBubbleSession, drawTouchBubbleSession, {
+			drawn: {},
+			built: { user: "ada" },
+		});
 		page.engine.dispatch(page.byClass("inner"), { type: "touchstart" });
 		await page.settle();
 		expect(log).toEqual([]);
@@ -219,15 +241,31 @@ describe("an early tap in a branch picked by data only the background has", () =
 		expect(page.warnings).toEqual([]);
 	});
 
-	// A known hole until hydration pairs blocks by the branch each took: the two elements look the
-	// same, so nothing tells hydration they are not one. Once it does, this passes: drop `.fails`.
-	// The test of a held call in `Adopted.svelte` (./functions/hydration.test.ts) is the same hole.
-	it.fails("in two branches that look the same, runs neither branch's handler", async () => {
+	it("in two branches that look the same, runs neither branch's handler", async () => {
 		const { page, log } = start(SameLook, drawSameLook, {
 			drawn: {},
 			built: { owner: true },
 		});
 		await tapEarly(page, "cta");
+		expect(log).toEqual([]);
+		expect(page.warnings).toEqual([dropped("tap", '<text class="cta">')]);
+	});
+});
+
+// A part picked by thread with no `{#if}` of its own, inside one both threads take: the elements
+// look alike but for an attribute, which hydration writes over. It is not sure of that element, nor
+// of what is under it.
+describe("an early tap under an element hydration wrote over", () => {
+	it("runs no handler of its own element, and is warned about", async () => {
+		const { page, log } = start(UnderWrittenOver, drawUnderWrittenOver);
+		await tapEarly(page, "inner");
+		expect(log).toEqual([]);
+		expect(page.warnings).toEqual([dropped("tap", '<text class="inner">')]);
+	});
+
+	it("runs no handler of the element written over", async () => {
+		const { page, log } = start(ThroughWrittenOver, drawThroughWrittenOver);
+		await tapEarly(page, "inner");
 		expect(log).toEqual([]);
 	});
 });
@@ -262,20 +300,38 @@ describe("an early tap on keyed rows the background has in another order", () =>
 	});
 });
 
+// The same hole for two `{#each}`s beside each other: a row moves from one list to the other,
+// each list's count shifts, and the rows pair by place across them. The tap runs the other list's
+// handler. Closing it needs every `{#each}` in a block of its own.
+describe("an early tap on a row that moved to the {#each} beside it", () => {
+	it.fails("does not run the other list's handler", async () => {
+		const { page, log } = start(AdjacentEach, drawAdjacentEach, {
+			drawn: { a: ["1", "2"], b: ["3"] },
+			built: { a: ["1"], b: ["2", "3"] },
+		});
+		const rows = page.engine
+			.all()
+			.filter((element) => page.engine.state(element).classes === "row");
+		page.engine.dispatch(rows[1]!, { type: "tap" });
+		await page.settle();
+		expect(log).not.toEqual(["pin 2"]);
+	});
+});
+
 describe("an early tap beside an {#await} given a promise", () => {
-	it.each(["beside", "wait"])(
-		"on .%s, runs no handler, and the warning says the part may differ",
-		async (token) => {
-			const { page, log } = start(AwaitBeside, drawAwaitBeside);
-			await tapEarly(page, token);
-			expect(log).toEqual([]);
-			expect(page.errors).toEqual([]);
-			expect(page.warnings).toEqual([
-				expect.objectContaining({
-					code: "first_frame_event_dropped",
-					message: expect.stringMatching(/may differ between the first frame[\s\S]*\{#await\}/),
-				}),
-			]);
-		},
-	);
+	it("runs its own handler", async () => {
+		const { page, log } = start(AwaitBeside, drawAwaitBeside);
+		await tapEarly(page, "beside");
+		expect(log).toEqual(["beside"]);
+		expect(page.errors).toEqual([]);
+		expect(page.warnings).toEqual([]);
+	});
+
+	it("on its pending branch, which the background draws again, runs no handler, and is warned about", async () => {
+		const { page, log } = start(AwaitBeside, drawAwaitBeside);
+		await tapEarly(page, "wait");
+		expect(log).toEqual([]);
+		expect(page.errors).toEqual([]);
+		expect(page.warnings).toEqual([dropped("tap", '<text class="wait">')]);
+	});
 });

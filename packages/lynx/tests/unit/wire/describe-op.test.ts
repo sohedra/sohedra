@@ -45,6 +45,7 @@ describe("describeOp", () => {
 			"set styles from code on <view> 42",
 		],
 		[[OpCode.Animate, 42, [1, "fade"]], "animate element 42", "animate <view> 42"],
+		[[OpCode.Branch, 42, 0, 1, 0], "mark a block in element 42", "mark a block in <view> 42"],
 		[
 			[OpCode.ListUpdate, 7, { insertAction: [], removeAction: [], updateAction: [] }, [], [], []],
 			"update the list element 7",

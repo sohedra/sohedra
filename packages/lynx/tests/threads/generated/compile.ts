@@ -29,9 +29,9 @@ export interface CompiledBoth {
 
 async function compileFor(
 	sources: PageSources,
-	options: { thread: Thread; development: boolean },
+	options: { thread: Thread; development: boolean; ownPasses: boolean },
 ): Promise<CompiledPage> {
-	const { thread, development } = options;
+	const { thread, development, ownPasses } = options;
 	const modules: [string, string][] = [];
 	for (const [file, source] of sources) {
 		const compiled = await compileComponent(source, {
@@ -42,21 +42,32 @@ async function compileFor(
 			sourceMap: false,
 			renderer: RENDERER,
 			serverInternals: INTERNALS,
-			clientInternals: INTERNALS,
+			clientInternals: ownPasses ? INTERNALS : undefined,
 		});
-		modules.push([file, compiled.code]);
+		// Without its own passes, the background's copy still runs on the binding's runtime.
+		modules.push([
+			file,
+			ownPasses
+				? compiled.code
+				: compiled.code.replaceAll("'svelte/internal/client'", JSON.stringify(INTERNALS)),
+		]);
 	}
 	return { modules };
 }
 
-/** Compiles `sources` for both threads, for development unless `production`. */
+/**
+ * Compiles `sources` for both threads, for development unless `production`. `ownPasses: false`
+ * compiles the background's copy without the passes that call the binding's runtime, as Svelte
+ * writes it: for a canary of Svelte's own behavior.
+ */
 export async function compilePage(
 	sources: PageSources,
-	options: { production?: boolean } = {},
+	options: { production?: boolean; ownPasses?: false } = {},
 ): Promise<CompiledBoth> {
 	const development = options.production !== true;
+	const ownPasses = options.ownPasses !== false;
 	return {
-		background: await compileFor(sources, { thread: "background", development }),
-		mainThread: await compileFor(sources, { thread: "main-thread", development }),
+		background: await compileFor(sources, { thread: "background", development, ownPasses }),
+		mainThread: await compileFor(sources, { thread: "main-thread", development, ownPasses: true }),
 	};
 }

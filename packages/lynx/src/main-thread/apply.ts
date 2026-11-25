@@ -354,6 +354,9 @@ export function createApplier(options: ApplierOptions): Applier {
 				animations.animated(op[1], op[2]);
 				return;
 			}
+			case OpCode.Branch:
+				// Hydration's alone: it reads it among the rendered items.
+				return;
 			default:
 				if (DEV) report(unknownKindError(op, "main-thread"));
 		}

@@ -141,8 +141,17 @@ function writer(gap: string): (nodes: readonly MarkupNode[], outer: string) => s
 			case "if": {
 				const inside = isThreadTest(node.condition) ? "true" : outer;
 				const otherwise = node.otherwise ? `{:else}${markup(node.otherwise, inside)}` : "";
-				return `{#if ${node.condition}}${markup(node.consequent, inside)}${otherwise}{/if}`;
+				const elseIf = node.elseIf
+					? `{:else if ${node.elseIf.condition}}${markup(node.elseIf.consequent, inside)}`
+					: "";
+				return `{#if ${node.condition}}${markup(node.consequent, inside)}${elseIf}${otherwise}{/if}`;
 			}
+			case "await":
+				// The background draws the pending branch again after the page started: what the first
+				// frame drew there is its alone, as a branch only one thread renders is.
+				return `{#await ${node.expression}}${markup(node.pending, "true")}{:then}${markup(node.resolved, outer)}{/await}`;
+			case "boundary":
+				return `<svelte:boundary>{#snippet failed()}<text>failed</text>{/snippet}${markup(node.body, outer)}</svelte:boundary>`;
 			case "each": {
 				const key = node.keyed ? ` (${node.item})` : "";
 				const otherwise = node.otherwise ? `{:else}${markup(node.otherwise, outer)}` : "";
@@ -195,6 +204,7 @@ export function componentSource(
 		);
 	// The flags are used only where a page has `{#if background}` or its kin: kept either way.
 	script.push("void background, mainThread;");
+	script.push("const never = new Promise(() => {});");
 	script.push(MAIN_THREAD_SCRIPT);
 	const snippets = component.snippets
 		.map((snippet) => `{#snippet ${snippet.name}(p, t)}${markup(snippet.body, "t")}{/snippet}`)
@@ -218,7 +228,15 @@ function* namesIn(nodes: readonly MarkupNode[]): Generator<string> {
 				break;
 			case "if":
 				yield* namesIn(node.consequent);
+				if (node.elseIf) yield* namesIn(node.elseIf.consequent);
 				if (node.otherwise) yield* namesIn(node.otherwise);
+				break;
+			case "await":
+				yield* namesIn(node.pending);
+				yield* namesIn(node.resolved);
+				break;
+			case "boundary":
+				yield* namesIn(node.body);
 				break;
 			case "each":
 				yield* namesIn(node.body);

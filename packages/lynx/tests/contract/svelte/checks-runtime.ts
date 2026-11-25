@@ -11,6 +11,7 @@ import { compileClient, compileServer } from "./compile.ts";
 import {
 	loadComponent,
 	mountComponent,
+	mountThrough,
 	serverComponents,
 	svelteClient,
 	treeRenderer,
@@ -276,7 +277,7 @@ export const checks: Checks = {
 	"block-first-branch-sync": async () => {
 		const file = path.join(import.meta.dirname, "branch-probe.ts");
 		// Boundary: the probe is loaded by Node, so its export type is declared here.
-		const probe = (await importNative(file)) as unknown as { seen: boolean[] };
+		const probe = (await importNative(file)) as unknown as { seen: boolean[]; order: string[] };
 		probe.seen.length = 0;
 		// Blocks draw their first branch inside the call that makes them, nested as deep as they go:
 		// each leaf is drawn while `Marked`'s call runs.
@@ -288,6 +289,73 @@ export const checks: Checks = {
 				"<Marked render={body} />",
 		);
 		expect(probe.seen).toEqual([true, true]);
+		// An `{#await}` reads what it is given inside the call that makes it, and draws a value's
+		// `{:then}` there, an `{#await}` in it included: the blocks after each run after its own.
+		probe.order.length = 0;
+		await mountComponent(
+			`<script>import { note } from "${pathToFileURL(file).href}";</script>` +
+				"{#await note('outer', 1)}{:then}" +
+				"{#await note('inner', 2)}{:then}<view></view>{/await}{#if note('inner after')}{/if}" +
+				"{/await}{#if note('outer after')}{/if}",
+		);
+		expect(probe.order).toEqual(["outer", "inner", "inner after", "outer after"]);
+	},
+
+	"if-branch-number": async () => {
+		const file = path.join(import.meta.dirname, "if-probe.ts");
+		// Boundary: the probe is loaded by Node, so its export type is declared here.
+		const probe = (await importNative(file)) as unknown as {
+			runs: { keys: (number | false | undefined)[]; before: (string | undefined)[] }[];
+		};
+		const blocks =
+			"{#if n === 0}<view></view>{:else if n === 1}<text></text>{:else}<image></image>{/if}" +
+			"{#if n === 0}<list></list>{/if}";
+		probe.runs.length = 0;
+		const { app } = await mountThrough(
+			`<script>let n = $state(0); export const set = (value) => (n = value);</script>${blocks}`,
+			file,
+		);
+		const { flushSync } = await svelteClient();
+		const drawn: string[] = [];
+		const { render } = await importSvelte("src/server/index.js");
+		const page = (
+			await serverComponents({ Blocks: `<script>let { n } = $props();</script>${blocks}` }, false)
+		)["default"];
+		for (const n of [0, 1, 2]) {
+			if (n > 0) {
+				// Boundary: the fixture's export, typed by what it does.
+				(app as { set(value: number): void }).set(n);
+				flushSync();
+			}
+			// Boundary: Svelte's server `render` has no types here.
+			const body = (render as (component: unknown, options: object) => { body: string })(page, {
+				props: { n },
+			}).body;
+			drawn.push(...[...body.matchAll(/<!--\[(-?\d+)-->/g)].map((found) => found[1]!));
+		}
+		// Each run calls the branch's function once, with the server's number (none for 0), and the
+		// branch is before the anchor once the call returns; none when no branch is taken.
+		expect(probe.runs).toEqual([
+			{ keys: [undefined], before: ["view"] },
+			{ keys: [undefined], before: ["list"] },
+			{ keys: [1], before: ["text"] },
+			{ keys: [], before: [] },
+			{ keys: [-1], before: ["image"] },
+			{ keys: [], before: [] },
+		]);
+		expect(drawn).toEqual(["0", "0", "1", "-1", "-1", "-1"]);
+		// Compiled code calls `$.if` with the anchor and the function.
+		expect(compileClient("{#if x}<view></view>{:else if el}<text></text>{/if}")).toMatch(
+			/\$\.if\(node, \(\$\$render\) => \{/,
+		);
+		// A block's test runs inside that function: a hook in it speaks while the block records.
+		const tested = (probe as unknown as { tested: boolean[] }).tested;
+		tested.length = 0;
+		await mountThrough(
+			`<script>import { inTest } from "${pathToFileURL(file).href}";</script>{#if inTest()}<view></view>{/if}`,
+			file,
+		);
+		expect(tested).toEqual([true]);
 	},
 
 	"component-crossing-check": async () => {
@@ -346,13 +414,16 @@ export const checks: Checks = {
 		try {
 			const { component } = await loadComponent(
 				"<script>const runs = globalThis.__mountRuns; const draw = (name) => (runs.push(name), name);" +
+					'const boom = () => { throw new Error("thrown"); };' +
 					'let items = [1, 2]; const later = new Promise(() => {}); $effect(() => { runs.push("effect"); });</script>' +
 					'{#if items.length}<view name={draw("if")} {@attach () => { runs.push("attach"); }}>' +
 					'{#each items as item}<text name={draw("each " + item)}>{item}</text>{/each}' +
 					'<svelte:boundary><view name={draw("boundary")}>' +
 					'{#key items}<view name={draw("key")}></view>{/key}</view></svelte:boundary>' +
 					"</view>{/if}" +
-					'<view>{#await later}<view name={draw("pending")}></view>{:then}<view></view>{/await}</view>',
+					'<view>{#await later}<view name={draw("pending")}></view>{:then}<view></view>{/await}</view>' +
+					'<svelte:boundary>{#snippet failed()}<view name={draw("failed")}></view>{/snippet}' +
+					"<view name={boom()}></view></svelte:boundary>",
 			);
 			const renderer = await treeRenderer();
 			const client = await svelteClient();
@@ -364,9 +435,13 @@ export const checks: Checks = {
 			// time `mount` returns, and no effect has run.
 			expect(runs.toSorted()).toEqual(["boundary", "each 1", "each 2", "if", "key"]);
 			// `{#await}` draws its pending branch only in a task it queues, which a flush runs before
-			// the effects: it comes after the rendered items, and the first frame marks the block.
+			// the effects: it comes after the rendered items, and the first frame marks the block. A
+			// boundary whose children threw draws its `failed` there too, never among the rendered
+			// items, where it would stand against the first frame's children.
 			client.flushSync();
-			expect(runs.slice(5).toSorted()).toEqual(["attach", "effect", "pending"]);
+			await Promise.resolve();
+			client.flushSync();
+			expect(runs.slice(5).toSorted()).toEqual(["attach", "effect", "failed", "pending"]);
 			await client.unmount(app);
 		} finally {
 			delete (globalThis as { __mountRuns?: string[] }).__mountRuns;

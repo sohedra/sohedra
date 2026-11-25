@@ -1,7 +1,7 @@
 // What the first frame leaves to the background: a Svelte block may render otherwise there, as
 // `{#if background}` does, and the effects of the first mount run only there. Neither refuses
-// hydration: a block whose elements differ is made in place, one with the same tags is adopted with
-// what differs written, and what the effects change comes after the adoption.
+// hydration: a block that took another branch is made in place, whatever its tags, and what the
+// effects change comes after the adoption.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -49,13 +49,14 @@ describe("a block that took another branch", () => {
 		expect(page.byClass("tone")).not.toBe(plain);
 	});
 
-	it("with the same tags is adopted, with what differs written", async () => {
+	it("with the same tags is made again in place too", async () => {
 		const { page } = drawnBlocks("plain", "loud");
 		const badge = page.byClass("badge");
 		await page.settle();
-		expect(page.byClass("badge")).toBe(badge);
-		expect(page.engine.state(badge).classes).toBe("badge loud");
-		expect(page.engine.text(badge)).toBe("!");
+		expect(page.byClass("badge")).not.toBe(badge);
+		expect(page.engine.state(page.byClass("badge")).classes).toBe("badge loud");
+		expect(page.engine.text(page.byClass("badge"))).toBe("!");
+		expect(page.errors).toEqual([]);
 	});
 });
 
