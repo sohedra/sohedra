@@ -20,7 +20,7 @@ const names = (config: { plugins: { name?: string }[] }) =>
 
 describe("withSvelteLynx", () => {
 	it("has the plugin, with the options it is given, and a plugin for the resolve conditions", async () => {
-		const config = await configOf(withSvelteLynx({ singleCopy: ["a-lib"] }));
+		const config = await configOf(withSvelteLynx({ dedupe: ["a-lib"] }));
 		expect(names(config)).toEqual([PACKAGE_NAME, `${PACKAGE_NAME}:test-conditions`]);
 	});
 

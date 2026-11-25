@@ -103,7 +103,7 @@ export interface VitePlugins {
 }
 
 export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptions): VitePlugins {
-	const { define, singleCopy } = resolved;
+	const { define, dedupe } = resolved;
 	const firstFrame = resolved.firstFrame !== false;
 	// Development unless NODE_ENV says production, as in a Rstest run (Vitest sets `test`).
 	const development = process.env["NODE_ENV"] !== "production";
@@ -118,7 +118,7 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 		"main-thread": new RegExp(Object.keys(constants["main-thread"]).map(escapeRegExp).join("|")),
 		background: new RegExp(Object.keys(constants.background).map(escapeRegExp).join("|")),
 	};
-	const fromApp = requestsOf(["svelte", ...singleCopy]);
+	const fromApp = requestsOf(["svelte", ...dedupe]);
 	const fromBinding = requestsOf([PACKAGE_NAME]);
 
 	let root = "";
@@ -148,7 +148,7 @@ export function vitePlugins(resolved: ResolvedOptions, options: VitePluginsOptio
 								/[\\/]svelte[\\/]/,
 								/[\\/]esm-env[\\/]/,
 								IN_BINDING,
-								...singleCopy.map((name) => new RegExp(`[\\\\/]${escapeRegExp(name)}[\\\\/]`)),
+								...dedupe.map((name) => new RegExp(`[\\\\/]${escapeRegExp(name)}[\\\\/]`)),
 								MAIN_THREAD,
 							],
 						},

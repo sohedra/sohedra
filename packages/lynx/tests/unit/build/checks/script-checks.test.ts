@@ -85,12 +85,10 @@ describe("a global no fill gives", () => {
 	});
 
 	it("is silenced on its line by the comment", () => {
-		expect(moduleError("// svelte-lynx-ignore global_no_fill\nexport const c = crypto;")).toBe("");
-		expect(moduleError("export const c = crypto; /* svelte-lynx-ignore global_no_fill */")).toBe(
-			"",
-		);
+		expect(moduleError("// sohedra-ignore global_no_fill\nexport const c = crypto;")).toBe("");
+		expect(moduleError("export const c = crypto; /* sohedra-ignore global_no_fill */")).toBe("");
 		expect(
-			codes(moduleError("// svelte-lynx-ignore dom_not_on_lynx\nexport const c = crypto;")),
+			codes(moduleError("// sohedra-ignore dom_not_on_lynx\nexport const c = crypto;")),
 		).toEqual(["global_no_fill"]);
 	});
 });
@@ -130,7 +128,7 @@ describe("a global a fill gives", () => {
 
 	it("at the top level, under a thread's flag, is judged on that thread only", () => {
 		const text =
-			'import { background } from "@sohedra/lynx/env";\nexport const u = background ? new URL("https://a.b") : undefined;';
+			'import { background } from "@sohedra/lynx/environment";\nexport const u = background ? new URL("https://a.b") : undefined;';
 		expect(moduleOf(text).pending).toEqual([]);
 	});
 
@@ -189,7 +187,7 @@ describe("the web's DOM", () => {
 	it("is silenced in markup by the comment", async () => {
 		expect(
 			await componentError(
-				"<!-- svelte-lynx-ignore dom_not_on_lynx -->\n<view ontap={() => document.title}></view>",
+				"<!-- sohedra-ignore dom_not_on_lynx -->\n<view ontap={() => document.title}></view>",
 			),
 		).toBe("");
 	});
@@ -265,7 +263,7 @@ describe("an API of the other thread", () => {
 		expect(moduleError("if (__DEV__ && __BACKGROUND__) console.log(1);")).toBe("");
 		expect(
 			moduleError(
-				'import { mainThread } from "@sohedra/lynx/env";\nif (mainThread) __FlushElementTree();',
+				'import { mainThread } from "@sohedra/lynx/environment";\nif (mainThread) __FlushElementTree();',
 			),
 		).toBe("");
 	});
@@ -341,5 +339,67 @@ describe("a component's errors", () => {
 			thread: "main-thread",
 		});
 		expect(compiled.code).toContain("document");
+	});
+});
+
+describe("Svelte's own mount and unmount", () => {
+	it("are an error at their import, which names the binding's", () => {
+		const text = moduleError('import { mount, tick } from "svelte";\nexport { mount, tick };');
+		expect(text.split("\n")[0]).toBe(
+			"`mount` is imported from \"svelte\", whose `mount` works with the web's DOM, not with Lynx's page.",
+		);
+		expect(text).toContain("util.ts:1:10");
+		expect(text).toContain(
+			'Import `mount` from "@sohedra/lynx", which mounts a component on the page.',
+		);
+		expect(codes(text)).toEqual(["svelte_mount_imported"]);
+	});
+
+	it("are an error in a component, under any local name", async () => {
+		const text = await componentError(
+			'<script>\n\timport { unmount as remove } from "svelte";\n\tremove({});\n</script>',
+		);
+		expect(codes(text)).toEqual(["svelte_mount_imported"]);
+		expect(text.split("\n")[0]).toContain("`unmount`");
+	});
+
+	it("are an error through a namespace import, and re-exported", () => {
+		const read = moduleError('import * as svelte from "svelte";\nexport const m = svelte.mount;');
+		expect(codes(read)).toEqual(["svelte_mount_imported"]);
+		expect(read).toContain("util.ts:2:18");
+		expect(codes(moduleError('import * as s from "svelte";\ns["unmount"]({});'))).toEqual([
+			"svelte_mount_imported",
+		]);
+		expect(codes(moduleError('export { tick, mount } from "svelte";'))).toEqual([
+			"svelte_mount_imported",
+		]);
+		expect(moduleError('import * as svelte from "svelte";\nexport const t = svelte.tick;')).toBe(
+			"",
+		);
+	});
+
+	it("leave the binding's, a type import and the silencing comment alone", () => {
+		expect(
+			moduleError('import { mount, unmount } from "@sohedra/lynx";\nvoid [mount, unmount];'),
+		).toBe("");
+		expect(moduleError('import type { mount } from "svelte";\nexport type M = typeof mount;')).toBe(
+			"",
+		);
+		expect(
+			moduleError(
+				'import { type mount, tick } from "svelte";\nexport type M = typeof mount;\nvoid tick;',
+			),
+		).toBe("");
+		expect(moduleError('export type { mount } from "svelte";')).toBe("");
+		expect(
+			moduleError(
+				'// sohedra-ignore svelte_mount_imported\nimport {\n\ttick,\n\tmount,\n} from "svelte";\nvoid [tick, mount];',
+			),
+		).toBe("");
+		expect(
+			moduleError(
+				'// sohedra-ignore svelte_mount_imported\nimport { mount } from "svelte";\nvoid mount;',
+			),
+		).toBe("");
 	});
 });

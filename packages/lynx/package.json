@@ -34,7 +34,7 @@
 		"./elements": {
 			"types": "./types/elements.d.ts"
 		},
-		"./env": "./src/env/index.ts",
+		"./environment": "./src/env/index.ts",
 		"./experimental": "./src/gesture/experimental.ts",
 		"./gesture": "./src/gesture/index.ts",
 		"./host": {
@@ -79,8 +79,8 @@
 			"./elements": {
 				"types": "./types/elements.d.ts"
 			},
-			"./env": {
-				"types": "./types/bundled/env.d.ts",
+			"./environment": {
+				"types": "./types/bundled/environment.d.ts",
 				"default": "./lib/env/index.js"
 			},
 			"./experimental": {

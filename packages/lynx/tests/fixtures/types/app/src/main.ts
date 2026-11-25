@@ -2,7 +2,7 @@
 
 import { mount, mountPage, root, unmount } from "@sohedra/lynx";
 import type { LynxNode, LynxTouchEvent } from "@sohedra/lynx/elements";
-import { background, dev, mainThread } from "@sohedra/lynx/env";
+import { background, dev, mainThread } from "@sohedra/lynx/environment";
 import { globalProps, host, initData, keyboard, systemInfo } from "@sohedra/lynx/host";
 import type { PlatformType } from "@sohedra/lynx/host";
 import { on } from "svelte/events";

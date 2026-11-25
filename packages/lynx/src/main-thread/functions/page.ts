@@ -108,7 +108,7 @@ export interface FunctionsPage {
 export interface FunctionsPageOptions {
 	styles: CodeStyles;
 	flattening: Flattening;
-	/** Sends a message to the background, stamped with this page. */
+	/** Sends a message to the background, stamped with this page's generation. */
 	send(message: ToBackground): void;
 	report(error: unknown): void;
 	/**

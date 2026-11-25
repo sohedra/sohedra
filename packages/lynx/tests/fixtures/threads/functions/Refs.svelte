@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground, runOnMainThread } from "@sohedra/lynx";
-	import { mainThread } from "@sohedra/lynx/env";
+	import { mainThread } from "@sohedra/lynx/environment";
 	import { flushSync } from "svelte";
 
 	interface Element {

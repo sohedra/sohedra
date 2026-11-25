@@ -304,14 +304,14 @@ exports[`the first frame's parser, on the pages the thread tests draw > reads Fr
 
 exports[`the first frame's parser, on the pages the thread tests draw > reads Hydrate as before 1`] = `
 "2 <view> {"class":"outer","main-thread:ref":{"_wvid":-3,"_initValue":null}}
-  3 <view> {"class":"tap","main-thread:bindtap":{"_c":{"bump":{"_c":{"taps":{"_wvid":-1,"_initValue":0}},"_wkltId":"4b32:60fe3:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}},"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:2","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
-  4 <view> {"class":"saved","main-thread:bindtap":{"_c":{"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:60fe3:3"}}
+  3 <view> {"class":"tap","main-thread:bindtap":{"_c":{"bump":{"_c":{"taps":{"_wvid":-1,"_initValue":0}},"_wkltId":"4b32:a49fc:1","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}},"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:a49fc:2","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}
+  4 <view> {"class":"saved","main-thread:bindtap":{"_c":{"saved":{"_wvid":-2,"_initValue":null}},"_wkltId":"4b32:a49fc:3"}}
   5 <view> {"class":"plain"} bindEvent:tap
-  6 <view> {"class":"once","main-thread:ref":{"_wkltId":"4b32:60fe3:4","_jsFn":{"_jsFn1":{"_isFirstScreen":true},"_jsFn2":{"_isFirstScreen":true}}}}
-  7 <view> {"class":"where","main-thread:ref":{"_c":{"where":"frame","outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:5"}}
-  8 <view> {"class":"frame-only","main-thread:bindtap":{"_wkltId":"4b32:60fe3:9"}}
+  6 <view> {"class":"once","main-thread:ref":{"_wkltId":"4b32:a49fc:4","_jsFn":{"_jsFn1":{"_isFirstScreen":true},"_jsFn2":{"_isFirstScreen":true}}}}
+  7 <view> {"class":"where","main-thread:ref":{"_c":{"where":"frame","outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:a49fc:5"}}
+  8 <view> {"class":"frame-only","main-thread:bindtap":{"_wkltId":"4b32:a49fc:9"}}
   [block]
-    9 <text> {"class":"else","main-thread:ref":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:6"},"main-thread:bindtap":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:60fe3:7","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}"
+    9 <text> {"class":"else","main-thread:ref":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:a49fc:6"},"main-thread:bindtap":{"_c":{"outer":{"_wvid":-3,"_initValue":null}},"_wkltId":"4b32:a49fc:7","_jsFn":{"_jsFn1":{"_isFirstScreen":true}}}}"
 `;
 
 exports[`the first frame's parser, on the pages the thread tests draw > reads InitialRows as before 1`] = `

@@ -1,5 +1,5 @@
 // Main thread to background: one message at a time, through `lynx.getJSContext().dispatchEvent`,
-// as text stamped with the format's version and the page.
+// as text stamped with the format's version and the page's generation.
 
 import { toText } from "./copy.ts";
 import { TO_BACKGROUND } from "./names.ts";

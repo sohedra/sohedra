@@ -175,7 +175,7 @@ export function componentSource(
 ): string {
 	const markup = writer(options.indented ? "\n\t" : "");
 	const imports = [
-		'import { background, mainThread } from "@sohedra/lynx/env";',
+		'import { background, mainThread } from "@sohedra/lynx/environment";',
 		'import { mainThreadRef, runOnBackground } from "@sohedra/lynx";',
 		'import { PanGesture, TapGesture } from "@sohedra/lynx/gesture";',
 	];

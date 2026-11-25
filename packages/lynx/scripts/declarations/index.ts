@@ -43,7 +43,7 @@ export const DECLARED_ENTRIES: Readonly<Record<string, DeclaredEntry>> = {
 		declarations: "types/bundled/host.d.ts",
 		augmentations: ["src/background/host/events.ts"],
 	},
-	"./env": { source: "src/env/index.ts", declarations: "types/bundled/env.d.ts" },
+	"./environment": { source: "src/env/index.ts", declarations: "types/bundled/environment.d.ts" },
 	"./gesture": { source: "src/gesture/index.ts", declarations: "types/bundled/gesture.d.ts" },
 	"./experimental": {
 		source: "src/gesture/experimental.ts",

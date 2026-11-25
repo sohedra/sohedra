@@ -1,6 +1,7 @@
-// `@sohedra/lynx/env` and `esm-env` in a built app: each thread's bundle has its own values, a
-// branch on one is dropped from the bundle that never runs it, also when the branch is in another
-// module than the constant's, and an app with no dependency of its own on the binding still builds.
+// `@sohedra/lynx/environment` and `esm-env` in a built app: each thread's bundle has its own
+// values, a branch on one is dropped from the bundle that never runs it, also when the branch is in
+// another module than the constant's, and an app with no dependency of its own on the binding still
+// builds.
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
 

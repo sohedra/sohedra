@@ -6,7 +6,7 @@ export const PLUGIN_OPTION_NAMES: readonly string[] = [
 	"engineVersion",
 	"firstFrame",
 	"define",
-	"singleCopy",
+	"dedupe",
 	"pageConfig",
 	"svelte",
 ];

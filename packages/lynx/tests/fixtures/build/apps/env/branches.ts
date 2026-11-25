@@ -1,5 +1,5 @@
 import { defineConfig } from "@sohedra/lynx/config/svelte";
-import { dev } from "@sohedra/lynx/env";
+import { dev } from "@sohedra/lynx/environment";
 import { BROWSER, DEV } from "esm-env";
 
 import { onBackground, onMainThread } from "./thread.ts";

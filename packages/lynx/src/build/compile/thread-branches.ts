@@ -7,9 +7,9 @@
 // branch's own (`lynx-b1`… for the background's branch, `lynx-m1`… for the main thread's): the rest
 // keep the same ids on both threads. Both threads' copies wrap the same branches.
 //
-// The flags: `background` and `mainThread` from `@sohedra/lynx/env`, and `BROWSER` from `esm-env`,
-// which is the background on Lynx and the one flag a shared package can read; each imported under
-// any name, or read from a namespace import. The tests recognized:
+// The flags: `background` and `mainThread` from `@sohedra/lynx/environment`, and `BROWSER` from
+// `esm-env`, which is the background on Lynx and the one flag a shared package can read; each
+// imported under any name, or read from a namespace import. The tests recognized:
 //   - a flag or its negation (`background`, `!mainThread`, `!BROWSER`): both branches, each its
 //     thread's. An `{:else if}` after one is a branch of it, and so is each of its own branches;
 //   - a flag joined to more by `&&` (`background && user`): the consequent only. Its `{:else}`

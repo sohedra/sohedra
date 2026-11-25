@@ -168,8 +168,11 @@ export interface TestRect {
 	width: number;
 	height: number;
 }
-/** The kinds of gesture an element's detectors may be: Lynx's gesture types, by name. */
-export type GestureKind = Lowercase<Exclude<keyof typeof GestureType, "COMPOSED">>;
+/**
+ * The kinds of gesture an element may have, named after their classes: `"pan"` is a `PanGesture`,
+ * `"defaultScroll"` a `DefaultScrollGesture`.
+ */
+export type TestGestureKind = "pan" | "tap" | "fling" | "longPress" | "defaultScroll" | "native";
 /** What a gesture's callback gets besides the gesture manager: its values and when it happened. */
 export interface TestGestureEvent {
 	/** The gesture's values (`x`, `y`, `pageX`, `velocityX`), as the event's `params`. */
@@ -185,12 +188,12 @@ export interface TestGesture {
 	 */
 	fire(name: string, event?: TestGestureEvent): Promise<void>;
 }
-/** A native `<list>`, as Lynx asks it for its rows while it scrolls. */
+/** A native `<list>`, as Lynx asks it for its cells while it scrolls. */
 export interface TestList {
-	/** Lynx shows the item at `index`; returns its `<list-item>`. */
+	/** Lynx shows the cell at `index`; returns its `<list-item>`. */
 	show(index: number): LynxTestElement;
-	/** Lynx hands a shown row back: it scrolled away, and the list may reuse it. */
-	hide(row: LynxTestElement): void;
+	/** Lynx hands a shown cell back, with its `<list-item>`: it scrolled away. */
+	hide(listItem: LynxTestElement): void;
 }
 /** The Lynx around the page: what a test drives, or answers, in Lynx's place. */
 export interface TestLynx {
@@ -203,10 +206,10 @@ export interface TestLynx {
 	 * `respondInvoke` answers.
 	 */
 	setBoundingClientRect(element: Element, rect: TestRect): void;
-	/** A native `<list>`, to show and hide its rows as Lynx does while it scrolls. */
+	/** A native `<list>`, to show and hide its cells as Lynx does while it scrolls. */
 	list(element: Element): TestList;
 	/** The gesture of an element; `kind` names which, when it has several. */
-	gesture(element: Element, kind?: GestureKind): TestGesture;
+	gesture(element: Element, kind?: TestGestureKind): TestGesture;
 	/** The host changes its global props, merged into those it has. */
 	updateGlobalProps(props: Record<string, unknown>): Promise<void>;
 	/** The host sends the page new data, merged into its data. */
@@ -227,19 +230,5 @@ export interface InvokeResult {
 	code: number;
 	data?: unknown;
 }
-/** Gesture types as Lynx's detectors number them; a composed gesture holds several. */
-declare const GestureType: {
-	readonly COMPOSED: -1;
-	readonly PAN: 0;
-	readonly FLING: 1;
-	readonly DEFAULT: 2;
-	readonly TAP: 3;
-	readonly LONGPRESS: 4;
-	readonly ROTATION: 5;
-	readonly PINCH: 6;
-	readonly NATIVE: 7;
-};
-/** One of `GestureType`'s numbers. */
-type GestureType = (typeof GestureType)[keyof typeof GestureType];
 
 export {};

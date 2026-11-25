@@ -1,6 +1,6 @@
 // Compiles one `.svelte` component, for the background thread (the app, through the custom
 // renderer) or for the main thread's first frame (Svelte's server renderer: markup only, no
-// effects). The component is preprocessed and parsed once, `prepare` edits it, and Svelte
+// effects). The component is preprocessed and parsed once, `runPasses` edits it, and Svelte
 // compiles the result. What a tool wraps around the result (the CSS import, the first-frame
 // copy, the hot-reload footer) is that tool's.
 //
@@ -24,8 +24,8 @@ import { appendMap, compose } from "../source-map/maps.ts";
 import type { InputMap, SourceMap } from "../source-map/maps.ts";
 import { escapeRegExp, stringLiteral } from "../string-literal.ts";
 import { lynxCss } from "./lynx-css.ts";
-import { prepare } from "./prepare.ts";
-import type { Prepared } from "./prepare.ts";
+import { runPasses } from "./passes.ts";
+import type { PassesResult } from "./passes.ts";
 
 /** What compiling a component reads. */
 export interface ComponentOptions {
@@ -109,7 +109,7 @@ function componentName(filename: string): string {
 	return /^[A-Z]/.test(base) ? base : `Svelte_${base}`;
 }
 
-/** The options Svelte compiles the prepared component with. */
+/** The options Svelte compiles the edited component with. */
 function compileOptions(
 	options: ComponentOptions,
 	sourcemap: SourceMap | undefined,
@@ -178,19 +178,19 @@ export async function compileComponent(
 		throw compileError(error, { source: text, locate: (offset) => offset });
 	}
 	const internals = thread === "main-thread" ? options.serverInternals : options.clientInternals;
-	const prepared: Prepared = prepare({ ...options, source: code, ast, internals });
-	const map = options.sourceMap ? compose(prepared.map, preprocessMap) : undefined;
-	const hmr = options.hot === true && thread === "background" && prepared.functionIds.length === 0;
+	const edited: PassesResult = runPasses({ ...options, source: code, ast, internals });
+	const map = options.sourceMap ? compose(edited.map, preprocessMap) : undefined;
+	const hmr = options.hot === true && thread === "background" && edited.functionIds.length === 0;
 	const compiling = compileOptions(options, map, hmr);
-	const context = { source: text, locate: prepared.locate };
+	const context = { source: text, locate: edited.locate };
 	let result;
 	try {
-		result = svelte.compile(prepared.code, compiling);
+		result = svelte.compile(edited.code, compiling);
 	} catch (error) {
 		throw compileError(error, context);
 	}
 
-	// Boundary: Svelte's map is a source map. Its text is the prepared component; the file as
+	// Boundary: Svelte's map is a source map. Its text is the edited component; the file as
 	// written is what the positions point into.
 	const resultMap = options.sourceMap
 		? withContent(result.js.map as SourceMap, filename, source)
@@ -200,9 +200,9 @@ export async function compileComponent(
 		const body = withInternals(result.js.code, "svelte/internal/server", options.serverInternals!);
 		// The registrations follow Svelte's code with a map of their own, to the text a preprocessor
 		// made: composed, like Svelte's, with the preprocessor's map.
-		const registrationsMap = compose(prepared.registrations.map, preprocessMap);
+		const registrationsMap = compose(edited.registrations.map, preprocessMap);
 		return {
-			code: body + prepared.registrations.code,
+			code: body + edited.registrations.code,
 			map:
 				registrationsMap && resultMap
 					? appendMap(
@@ -212,8 +212,8 @@ export async function compileComponent(
 					: resultMap,
 			warnings: [],
 			dependencies,
-			functionIds: prepared.functionIds,
-			fills: prepared.fills,
+			functionIds: edited.functionIds,
+			fills: edited.fills,
 		};
 	}
 
@@ -225,9 +225,9 @@ export async function compileComponent(
 		code: output,
 		map: resultMap,
 		...(css !== undefined && { css }),
-		warnings: [...prepared.warnings, ...compileWarnings(result.warnings, context)],
+		warnings: [...edited.warnings, ...compileWarnings(result.warnings, context)],
 		dependencies,
-		functionIds: prepared.functionIds,
-		fills: prepared.fills,
+		functionIds: edited.functionIds,
+		fills: edited.fills,
 	};
 }

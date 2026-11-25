@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
 	import { runOnBackground } from "@sohedra/lynx";
-	import { background } from "@sohedra/lynx/env";
+	import { background } from "@sohedra/lynx/environment";
 
 	interface TapEvent {
 		currentTarget: { setAttribute(name: string, value: unknown): void };

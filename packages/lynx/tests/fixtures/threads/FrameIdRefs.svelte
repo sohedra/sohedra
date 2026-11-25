@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { background } from "@sohedra/lynx/env";
+	import { background } from "@sohedra/lynx/environment";
 
 	import FrameField from "./FrameField.svelte";
 	import FrameLabeled from "./FrameLabeled.svelte";

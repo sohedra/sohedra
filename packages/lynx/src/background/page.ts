@@ -169,9 +169,9 @@ export function mountPage<Props extends Bag>(
 	 * in a later patch of the same page. What it throws is reported here, and answered.
 	 */
 	function callBackground({ id, fn, context, params }: CallMessage): void {
-		const page = currentGeneration();
+		const generation = currentGeneration();
 		const answer = (result: Result): void => {
-			if (currentGeneration() === page) channel.reply(id, result);
+			if (currentGeneration() === generation) channel.reply(id, result);
 		};
 		const target = channel.backgroundFunction(context, fn);
 		if (!target) {

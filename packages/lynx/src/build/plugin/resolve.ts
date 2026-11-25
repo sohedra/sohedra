@@ -17,21 +17,21 @@ export const requestsOf = (names: readonly string[]): RegExp =>
 	new RegExp(`^(?:${names.map(escapeRegExp).join("|")})(?:/|$)`);
 
 /**
- * Resolves `svelte` and the `singleCopy` packages from the app's folder, and this package's own
- * requests from this package's folder. A linked or nested library never brings a second copy of
- * Svelte (two copies break context and reactivity) or of the binding (two renderers reject each
- * other's snippets), and an app that gets the binding through a library, with no dependency of
- * its own, still builds. Resolving the request from a folder, not aliasing it to a path, keeps
- * each package's `exports` conditions working.
+ * Resolves `svelte` and the `dedupe` packages from the app's folder, and this package's own
+ * requests from this package's folder. A linked or nested library never brings a second install of
+ * Svelte (two installs break context and reactivity) or of the binding (two renderers reject each
+ * other's snippets), and an app that gets the binding through a library, with no dependency of its
+ * own, still builds. Resolving the request from a folder, not aliasing it to a path, keeps each
+ * package's `exports` conditions working.
  */
-class SingleCopyPlugin {
+class DedupePlugin {
 	readonly rootPath: string;
 	readonly fromApp: RegExp;
 	readonly fromBinding: RegExp;
 
-	constructor(rootPath: string, singleCopy: readonly string[]) {
+	constructor(rootPath: string, dedupe: readonly string[]) {
 		this.rootPath = rootPath;
-		this.fromApp = requestsOf(["svelte", ...singleCopy]);
+		this.fromApp = requestsOf(["svelte", ...dedupe]);
 		this.fromBinding = requestsOf([PACKAGE_NAME]);
 	}
 
@@ -45,12 +45,12 @@ class SingleCopyPlugin {
 	}
 }
 
-/** Where the app's own Svelte and its `esm-env` are, and the binding's one copy of each. */
-export function configureSingleCopies(
+/** Where the app's own Svelte and its `esm-env` are, and the binding's one install of each. */
+export function configureDedupe(
 	chain: RspackChain,
-	options: { rootPath: string; singleCopy: readonly string[] },
+	options: { rootPath: string; dedupe: readonly string[] },
 ): void {
-	const { rootPath, singleCopy } = options;
+	const { rootPath, dedupe } = options;
 	const svelteRoot = path.dirname(
 		createRequire(path.join(rootPath, "package.json")).resolve("svelte/package.json"),
 	);
@@ -61,7 +61,7 @@ export function configureSingleCopies(
 		"esm-env$",
 		createRequire(path.join(svelteRoot, "package.json")).resolve("esm-env"),
 	);
-	chain.plugin(NAME).use(SingleCopyPlugin, [rootPath, singleCopy]);
+	chain.plugin(NAME).use(DedupePlugin, [rootPath, dedupe]);
 }
 
 /**

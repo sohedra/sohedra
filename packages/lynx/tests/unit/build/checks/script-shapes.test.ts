@@ -136,7 +136,7 @@ describe("the silencing comment", () => {
 	it("silences a plain function's call on its line", () => {
 		expect(
 			codesOf(
-				"function save() {}\nexport function f() {\n\t'main thread';\n\t// svelte-lynx-ignore plain_function_in_main_thread_function\n\tsave();\n}",
+				"function save() {}\nexport function f() {\n\t'main thread';\n\t// sohedra-ignore plain_function_in_main_thread_function\n\tsave();\n}",
 			),
 		).toEqual([]);
 	});

@@ -99,12 +99,12 @@ describe("a thread's flag", () => {
 	it("is read under any name it is imported by, or from a namespace", () => {
 		expect(
 			codesOf(
-				'import { mainThread as onMain } from "@sohedra/lynx/env";\nif (onMain) { __FlushElementTree(); }',
+				'import { mainThread as onMain } from "@sohedra/lynx/environment";\nif (onMain) { __FlushElementTree(); }',
 			),
 		).toEqual([]);
 		expect(
 			codesOf(
-				'import * as env from "@sohedra/lynx/env";\nexport const f = () => env.mainThread && __FlushElementTree();',
+				'import * as env from "@sohedra/lynx/environment";\nexport const f = () => env.mainThread && __FlushElementTree();',
 			),
 		).toEqual([]);
 	});
@@ -112,12 +112,12 @@ describe("a thread's flag", () => {
 	it("guards the code after an early return or throw", () => {
 		expect(
 			codesOf(
-				'import { mainThread } from "@sohedra/lynx/env";\nexport function flush() { if (!mainThread) return; __FlushElementTree(); }',
+				'import { mainThread } from "@sohedra/lynx/environment";\nexport function flush() { if (!mainThread) return; __FlushElementTree(); }',
 			),
 		).toEqual([]);
 		expect(
 			codesOf(
-				'import { background } from "@sohedra/lynx/env";\nexport function flush() { if (background) { throw new Error("x"); } __FlushElementTree(); }',
+				'import { background } from "@sohedra/lynx/environment";\nexport function flush() { if (background) { throw new Error("x"); } __FlushElementTree(); }',
 			),
 		).toEqual([]);
 	});
@@ -138,19 +138,19 @@ describe("top-level code", () => {
 		]);
 		expect(
 			codesOf(
-				'import { background } from "@sohedra/lynx/env";\nexport const log = background ? NativeModules.Log : undefined;',
+				'import { background } from "@sohedra/lynx/environment";\nexport const log = background ? NativeModules.Log : undefined;',
 			),
 		).toEqual([]);
 		expect(
 			codesOf(
-				'import { mainThread } from "@sohedra/lynx/env";\nif (!mainThread) NativeModules.Log.write(1);',
+				'import { mainThread } from "@sohedra/lynx/environment";\nif (!mainThread) NativeModules.Log.write(1);',
 			),
 		).toEqual([]);
 	});
 
 	it("in a component's script and markup, outside {#if background}", async () => {
 		const quiet =
-			'<script>\n\timport { background } from "@sohedra/lynx/env";\n</script>\n{#if background}<text>{NativeModules.Info.name}</text>{/if}';
+			'<script>\n\timport { background } from "@sohedra/lynx/environment";\n</script>\n{#if background}<text>{NativeModules.Info.name}</text>{/if}';
 		await expect(component(quiet, { checks: true })).resolves.toBeDefined();
 		const loud =
 			"<script>\n\tconst info = NativeModules.Info;\n</script>\n<text>{info.name}</text>";
@@ -163,7 +163,7 @@ describe("top-level code", () => {
 describe("the silencing comment in markup", () => {
 	it("above a multi-line element silences its attributes", async () => {
 		const source =
-			'<!-- svelte-lynx-ignore dom_not_on_lynx -->\n<view\n\tclass="row"\n\tontap={() => document.title}\n></view>';
+			'<!-- sohedra-ignore dom_not_on_lynx -->\n<view\n\tclass="row"\n\tontap={() => document.title}\n></view>';
 		await expect(component(source, { checks: true })).resolves.toBeDefined();
 	});
 });

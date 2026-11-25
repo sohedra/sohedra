@@ -1,5 +1,5 @@
-// The flags that tell the threads apart, as a script names them: `background` and `mainThread`
-// from `@sohedra/lynx/env`, and `BROWSER` from `esm-env` (the background on Lynx), each imported
+// The flags that tell the threads apart, as a script names them: `background` and `mainThread` from
+// `@sohedra/lynx/environment`, and `BROWSER` from `esm-env` (the background on Lynx), each imported
 // under any name or read from a namespace import. The thread branches of a component's markup and
 // the checks of the app's code read them the same way.
 
@@ -10,7 +10,7 @@ import type { Thread } from "../../wire/index.ts";
 
 /** The flags each module exports, by name, with the thread whose bundle each is `true` in. */
 const FLAG_MODULES: Readonly<Record<string, Readonly<Record<string, Thread>>>> = {
-	[`${PACKAGE_NAME}/env`]: { background: "background", mainThread: "main-thread" },
+	[`${PACKAGE_NAME}/environment`]: { background: "background", mainThread: "main-thread" },
 	"esm-env": { BROWSER: "background" },
 };
 

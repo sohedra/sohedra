@@ -34,7 +34,7 @@ async function compiledWith(
 	};
 }
 
-const ENV = 'import { background, mainThread } from "@sohedra/lynx/env";';
+const ENV = 'import { background, mainThread } from "@sohedra/lynx/environment";';
 const withScript = (markup: string, imports = ENV): string =>
 	`<script>${imports} import Card from "./Card.svelte"; let x = $state(false);</script>\n${markup}`;
 
@@ -74,12 +74,12 @@ describe("a branch only one thread renders", () => {
 	it("is recognized under another name, and through a namespace import", async () => {
 		const renamed = withScript(
 			"{#if bg}<Card />{/if}",
-			'import { background as bg } from "@sohedra/lynx/env";',
+			'import { background as bg } from "@sohedra/lynx/environment";',
 		);
 		expect(branchThreads(await compiled(renamed))).toEqual(["background"]);
 		const namespace = withScript(
 			"{#if !env.background}<Card />{/if}",
-			'import * as env from "@sohedra/lynx/env";',
+			'import * as env from "@sohedra/lynx/environment";',
 		);
 		expect(branchThreads(await compiled(namespace))).toEqual(["main-thread"]);
 	});
@@ -163,7 +163,8 @@ describe("a branch only one thread renders", () => {
 	});
 
 	it("gets a script for the import in a component that has none", async () => {
-		const source = '<script module>import { background } from "@sohedra/lynx/env";</script>';
+		const source =
+			'<script module>import { background } from "@sohedra/lynx/environment";</script>';
 		const code = await compiled(
 			`${source}{#snippet s()}{/snippet}{#if background}{@render s()}{/if}`,
 		);
@@ -225,7 +226,7 @@ describe("a test that is not a branch only one thread renders", () => {
 		expect((await compiledWith(source, { development: false })).warnings).toEqual([]);
 	});
 
-	it("is a name that is not @sohedra/lynx/env's", async () => {
+	it("is a name that is not @sohedra/lynx/environment's", async () => {
 		const source = withScript(
 			"{#if background}<Card />{/if}",
 			'import { background } from "./flags.js";',
@@ -236,7 +237,7 @@ describe("a test that is not a branch only one thread renders", () => {
 	it("fails with the build's message when the component declares a name the build adds", async () => {
 		const source = withScript(
 			"{#if background}<Card />{/if}",
-			'import { background } from "@sohedra/lynx/env"; import SohedraLynxThreadBranch from "./Mine.svelte";',
+			'import { background } from "@sohedra/lynx/environment"; import SohedraLynxThreadBranch from "./Mine.svelte";',
 		);
 		await expect(compiled(source)).rejects.toMatchObject({
 			code: "thread_branch_name_taken",

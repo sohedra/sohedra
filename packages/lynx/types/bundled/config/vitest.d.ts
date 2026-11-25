@@ -13,7 +13,7 @@ import type { Plugin } from "vite";
  * | --- | --- |
  * | TypeScript | Stripped by Vite's compiler, not SWC; nothing is lowered, which Node does not need |
  * | `define` and the thread's constants | Replaced in each thread's copy of the app's code and the binding's, not in other packages |
- * | Dependencies | Svelte, `esm-env`, the binding, the `singleCopy` packages and every main-thread copy go through Vite; other packages are loaded by Node as they are, where Rstest bundles them |
+ * | Dependencies | Svelte, `esm-env`, the binding, the `dedupe` packages and every main-thread copy go through Vite; other packages are loaded by Node as they are, where Rstest bundles them |
  * | An app's config | `svelteLynxFromConfig` reads the plugin's options only: not the config's aliases or `source.define` |
  * | Vitest's module cache | Keyed on the binding's version and build code, the plugin's options, the Svelte config and the installed Svelte, so a change of any compiles again |
  *
@@ -88,12 +88,12 @@ interface PluginSvelteLynxOptions {
 	 */
 	define?: DefineByThread;
 	/**
-	 * Packages to bundle once, besides `svelte` and `@sohedra/lynx`, which always are: a library
-	 * that keeps state both threads' code share, or that imports Svelte's internals, breaks when a
-	 * linked or nested package brings a second copy. Every import of a listed package resolves from
-	 * the app's folder on both threads, so the app must be able to resolve it.
+	 * Packages to bundle once, besides `svelte` and `@sohedra/lynx`, which always are: a library that
+	 * keeps state both threads' code share, or that imports Svelte's internals, breaks when a linked
+	 * or nested package brings a second install. Every import of a listed package resolves from the
+	 * app's folder on both threads, so the app must be able to resolve it.
 	 */
-	singleCopy?: string[];
+	dedupe?: string[];
 	/**
 	 * Settings of the page that Lynx's engine reads: `enableCSSRule`, `longPressDuration`,
 	 * `enableCSSInheritance` and the rest. The engine checks the keys, so a misspelt one is passed

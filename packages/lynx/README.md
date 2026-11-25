@@ -75,7 +75,9 @@ thread only. These are errors:
 - an API of the other thread: `NativeModules` or `lynx.getJSModule` on the main thread, Lynx's
   element functions on the background, and `lynx.querySelector`, which neither thread has in Svelte
   on Lynx;
-- a plain function a main-thread function calls without `runOnBackground`.
+- a plain function a main-thread function calls without `runOnBackground`;
+- Svelte's own `mount` or `unmount`, imported from `svelte`, which work with the web's DOM: import
+  the binding's from `@sohedra/lynx`.
 
 The background has lynx-core's own `URL`, `URLSearchParams`, `fetch`, `Headers`, `Request`,
 `Response` and `AbortController`, so reading them there throws nothing and the build says nothing.
@@ -87,9 +89,9 @@ A read behind a feature check (`typeof X !== "undefined"`, `"X" in globalThis`, 
 inside a `try` that has a `catch`) anywhere in the file is left alone. A development build also
 warns at a selector outside the ones Lynx lists, and at a main-thread handler inside
 `{#if background}`, `{#if mainThread}` or their `{:else}`. To silence one of these on a line, write
-a comment with its code on that line or the one above: `// svelte-lynx-ignore dom_not_on_lynx`,
-`/* svelte-lynx-ignore … */` in a style sheet, and `<!-- svelte-lynx-ignore … -->` in markup, where
-a comment above an element also silences its attributes, each on a line of its own. As it runs, a
+a comment with its code on that line or the one above: `// sohedra-ignore dom_not_on_lynx`,
+`/* sohedra-ignore … */` in a style sheet, and `<!-- sohedra-ignore … -->` in markup, where a
+comment above an element also silences its attributes, each on a line of its own. As it runs, a
 development build warns once for a `<scroll-view>` that holds more than 200 elements directly, which
 a `<list>` draws faster.
 
@@ -114,12 +116,13 @@ has no first frame, and a development build warns; inside one, the first frame d
 that has only what a device has and the binding's fills. The background draws it; with
 `lynx: { firstFrame: true }` the main thread draws the first frame first, and the background
 hydrates it: turn that on to test what the first frame shows, or that the two agree. `fireEvent`,
-`act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a list's rows, a
-gesture's callbacks) are awaited. Each thread's timers, frames and promise continuations run as that
-thread, as on a device, also under the test's fake timers; the background's `requestAnimationFrame`
-is the test's own, if it set one before `render`. Run the tests with `withSvelteLynx()` from
-`@sohedra/lynx/config/rstest` or `svelteLynx()` from `@sohedra/lynx/config/vitest`, and install
-`jsdom`, `@testing-library/dom` and the runner (Vitest needs `vite` too).
+`act`, `rerender` and what the test's `lynx` sends (host data and events, a reload, a list's cells,
+a gesture's callbacks) are awaited. Each thread's timers, frames and promise continuations run as
+that thread, as on a device, also under the test's fake timers; the background's
+`requestAnimationFrame` is the test's own, if it set one before `render`. Run the tests with
+`withSvelteLynx()` from `@sohedra/lynx/config/rstest` or `svelteLynx()` from
+`@sohedra/lynx/config/vitest`, and install `jsdom`, `@testing-library/dom` and the runner (Vitest
+needs `vite` too).
 
 Run its tests and type check from the repository root with `pnpm -F @sohedra/lynx test` and
 `pnpm -F @sohedra/lynx check`. Read [CONTRIBUTING.md](../../CONTRIBUTING.md) § Code before you

@@ -102,13 +102,13 @@ function defineProblems(define: unknown): AnyReport[] {
 /** A package's name: `zustand`, `@acme/state`; not a path into it, nor a file. */
 const PACKAGE_NAME = /^(?:@[\w~][\w.~-]*\/)?[\w~][\w.~-]*$/;
 
-function singleCopyProblems(value: unknown): AnyReport[] {
+function dedupeProblems(value: unknown): AnyReport[] {
 	if (
 		Array.isArray(value) &&
 		value.every((name) => typeof name === "string" && PACKAGE_NAME.test(name))
 	)
 		return [];
-	return [{ code: "single_copy_name", details: { given: given(value) } }];
+	return [{ code: "dedupe_name", details: { given: given(value) } }];
 }
 
 const isPageConfigValue = (value: unknown): boolean =>
@@ -170,7 +170,7 @@ export function checkPluginOptions(options: object): void {
 			),
 		);
 	if (has("define")) found.push(...defineProblems(given["define"]));
-	if (has("singleCopy")) found.push(...singleCopyProblems(given["singleCopy"]));
+	if (has("dedupe")) found.push(...dedupeProblems(given["dedupe"]));
 	if (has("pageConfig")) found.push(...pageConfigProblems(given["pageConfig"]));
 	if (has("svelte")) found.push(...svelteProblems(given["svelte"]));
 

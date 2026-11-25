@@ -38,7 +38,7 @@ const ENTRIES = [
 	"./config/rsbuild",
 	"./config/rstest",
 	"./config/svelte",
-	"./env",
+	"./environment",
 	"./experimental",
 	"./gesture",
 	"./internal/renderer",

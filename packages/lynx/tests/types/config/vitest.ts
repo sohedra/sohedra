@@ -6,7 +6,7 @@ import type { ConfigFileOptions } from "@sohedra/lynx/config/vitest";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
-const plugins: Plugin[] = svelteLynx({ firstFrame: false, singleCopy: ["@app/ui"] });
+const plugins: Plugin[] = svelteLynx({ firstFrame: false, dedupe: ["@app/ui"] });
 defineConfig({ plugins });
 defineConfig({ plugins: svelteLynx() });
 

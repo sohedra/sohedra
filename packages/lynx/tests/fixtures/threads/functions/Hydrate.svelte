@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground, runOnMainThread } from "@sohedra/lynx";
-	import { background, mainThread } from "@sohedra/lynx/env";
+	import { background, mainThread } from "@sohedra/lynx/environment";
 
 	interface Element {
 		setAttribute(name: string, value: unknown): void;

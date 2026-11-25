@@ -6,7 +6,8 @@ background starts, hydrates it with the background's first patch, and runs main-
 
 Some names are fixed by the engine or by ReactLynx's wire, such as `_wkltId`, `runWorklet`,
 `_isFirstScreen`, `updateCardData` and `initData`. They are spelled that way only where the wire
-needs them; everywhere else the terms below are used.
+needs them; everywhere else the terms below are used. Some public names keep Lynx's or ReactLynx's
+spelling, such as `InitData` and `unmountRecycled`; the _Avoid_ words don't apply to them.
 
 ## Language
 
@@ -30,10 +31,10 @@ _Avoid_: card, app (for the running instance), page (for its number)
 
 **Generation**: The number that tells one life of a page from the next. It starts at 0 and goes up
 on each reload or destroy.\
-_Avoid_: page, page id
+_Avoid_: page, page id, stamp
 
 **Stamp**: What every message between the threads carries: the protocol version and the generation
-its content belongs to.\
+its content belongs to. A generation alone is not a stamp.\
 _Avoid_: header
 
 **Protocol version**: The version of the format both threads speak. Threads from different builds
@@ -82,7 +83,7 @@ _Avoid_: error code
 
 **Repeats**: The counting of identical errors on one thread for one page, of which Lynx gets the
 1st, 10th, 100th and so on.\
-_Avoid_: dedupe
+_Avoid_: dedupe (that is the plugin's option)
 
 ### The patch protocol
 
@@ -144,8 +145,9 @@ makes the views and lays them out.\
 _Avoid_: commit, paint, flush (for the channel sending)
 
 **To text**: Turning a value into the JSON text that crosses threads. A value that can't be turned
-into text fails where it is written.\
-_Avoid_: copy, serialize, encode
+into text fails where it is written. The codes say a value is not copyable (`value_not_copyable`),
+and the functions encode (`encodePatch`).\
+_Avoid_: serialize
 
 **Lazy bundle**: A dynamic `import()` built as a Lynx bundle of its own, loaded on both threads
 before the patch that uses it.\
@@ -157,7 +159,12 @@ _Avoid_: chunk, async bundle, split bundle
 the background starts. Effects and handlers don't run on it.\
 _Avoid_: first screen, SSR, initial render
 
-**First-frame recording**: How the page's main-thread script records the first frame, which the
+**App's main-thread script**: What the app's entries run on the main thread (`src/first-frame/`). It
+records the first frame and holds the main-thread side of every public entry. A program apart from
+the main-thread runtime: they never import each other and share one global.\
+_Avoid_: page script, first-frame runtime
+
+**First-frame recording**: How the app's main-thread script records the first frame, which the
 runtime draws when the engine renders the page.\
 _Avoid_: recorded frame
 
@@ -326,6 +333,10 @@ _Avoid_: layer, thread layer
 renderer; the main thread's copy uses the server renderer.\
 _Avoid_: twin, version, build
 
+**Dedupe**: The plugin's list of packages that resolve from the app's folder on both threads, so a
+linked or nested library never brings a second install.\
+_Avoid_: single copy
+
 **First-frame copy**: In a test run, a component's main-thread copy, which `render` draws the first
 frame with.\
 _Avoid_: twin
@@ -334,7 +345,8 @@ _Avoid_: twin
 Svelte's compiler.\
 _Avoid_: prepare, transform
 
-**Pass**: One part of the compile step. It reads the syntax tree and returns edits.\
+**Pass**: One part of the compile step. It reads the syntax tree and returns edits. `runPasses` runs
+every pass and applies their edits once.\
 _Avoid_: transform, rewrite
 
 **Edit**: A change a pass makes to a component's text as written.\
@@ -349,6 +361,10 @@ _Avoid_: server-only
 **Static copy**: A lifeless copy of drawn elements, made from the background's tree with
 `createStaticCopy`.\
 _Avoid_: clone, snapshot, twin
+
+**Silencing comment**: A `sohedra-ignore <code>` comment that silences one build check on its line
+or the line below.\
+_Avoid_: ignore comment, disable comment
 
 ### Testing
 

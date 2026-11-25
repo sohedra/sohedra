@@ -71,7 +71,7 @@ describe("hydration", () => {
 		expect(page.errors).toEqual([]);
 	});
 
-	it("draws nothing when the page's script records no first frame", async () => {
+	it("draws nothing when the app's main-thread script records no first frame", async () => {
 		const page = startSveltePage(FrameCounter);
 		expect(page.engine.all()).toHaveLength(1);
 		await page.settle();

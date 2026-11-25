@@ -1,5 +1,5 @@
-// One `prepare` step, one map: whatever the passes inserted, positions in the compiled code point
-// at the source as written, for a component in which every pass is active.
+// One run of the passes, one map: whatever the passes inserted, positions in the compiled code
+// point at the source as written, for a component in which every pass is active.
 
 import { describe, expect, it } from "@rstest/core";
 

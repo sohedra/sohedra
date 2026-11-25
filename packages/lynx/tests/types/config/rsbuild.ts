@@ -10,7 +10,7 @@ const options: PluginSvelteLynxOptions = {
 	engineVersion: "3.4",
 	firstFrame: (entry) => entry !== "settings",
 	define: { mainThread: { __FLAG__: true }, background: { API: JSON.stringify("https://x") } },
-	singleCopy: ["some-store"],
+	dedupe: ["some-store"],
 	pageConfig: { enableFiberArch: true },
 	svelte: { configFile: "svelte.lynx.config.js" },
 };

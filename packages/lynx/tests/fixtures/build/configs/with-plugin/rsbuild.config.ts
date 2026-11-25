@@ -6,6 +6,6 @@ export default {
 	source: { define: { __APP__: JSON.stringify("app") } },
 	plugins: [
 		[{ name: "an-app-plugin", setup() {} }],
-		pluginSvelteLynx({ firstFrame: false, singleCopy: ["@app/ui"] }),
+		pluginSvelteLynx({ firstFrame: false, dedupe: ["@app/ui"] }),
 	],
 };

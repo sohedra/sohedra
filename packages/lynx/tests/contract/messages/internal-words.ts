@@ -3,4 +3,4 @@
 
 /** A word of the binding's own, not the developer's: none may appear in a message. */
 export const INTERNAL_WORDS: RegExp =
-	/\b(?:patch|op|ops|worklet|lepus|svelte-lynx|generation|wire|serialized)\b/i;
+	/\b(?:patch|op|ops|worklet|lepus|generation|wire|serialized)\b/i;

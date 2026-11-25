@@ -54,12 +54,12 @@ export interface PluginSvelteLynxOptions {
 	 */
 	define?: DefineByThread;
 	/**
-	 * Packages to bundle once, besides `svelte` and `@sohedra/lynx`, which always are: a library
-	 * that keeps state both threads' code share, or that imports Svelte's internals, breaks when a
-	 * linked or nested package brings a second copy. Every import of a listed package resolves from
-	 * the app's folder on both threads, so the app must be able to resolve it.
+	 * Packages to bundle once, besides `svelte` and `@sohedra/lynx`, which always are: a library that
+	 * keeps state both threads' code share, or that imports Svelte's internals, breaks when a linked
+	 * or nested package brings a second install. Every import of a listed package resolves from the
+	 * app's folder on both threads, so the app must be able to resolve it.
 	 */
-	singleCopy?: string[];
+	dedupe?: string[];
 	/**
 	 * Settings of the page that Lynx's engine reads: `enableCSSRule`, `longPressDuration`,
 	 * `enableCSSInheritance` and the rest. The engine checks the keys, so a misspelt one is passed
@@ -85,7 +85,7 @@ export interface ResolvedOptions {
 	firstFrame: boolean | ((entryName: string) => boolean);
 	/** The code each thread's constants are replaced by. */
 	define: Record<"mainThread" | "background", Record<string, string>>;
-	singleCopy: string[];
+	dedupe: string[];
 	pageConfig: PageConfig | undefined;
 	configFile: string | undefined;
 }
@@ -112,7 +112,7 @@ export function resolveOptions(options: PluginSvelteLynxOptions): ResolvedOption
 			mainThread: defineCode(options.define?.mainThread),
 			background: defineCode(options.define?.background),
 		},
-		singleCopy: options.singleCopy ?? [],
+		dedupe: options.dedupe ?? [],
 		pageConfig: options.pageConfig,
 		configFile: options.svelte?.configFile,
 	};

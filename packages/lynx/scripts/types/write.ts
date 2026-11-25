@@ -131,7 +131,7 @@ export function writeElements(model: Model): string {
 	);
 
 	for (const element of model.elements) {
-		const name = pascalCase(element.tag);
+		const name = `Lynx${pascalCase(element.tag)}`;
 		const tag = JSON.stringify(element.tag);
 		const base = !element.common
 			? `LynxElementAttributes<${tag}>`
@@ -166,12 +166,12 @@ export function writeElements(model: Model): string {
 		declaration(
 			["Every element, by tag: what a component may write on it."],
 			"LynxElements",
-			model.elements.map(({ tag }) => `${keyOf(tag)}: ${pascalCase(tag)}Attributes;`),
+			model.elements.map(({ tag }) => `${keyOf(tag)}: Lynx${pascalCase(tag)}Attributes;`),
 		),
 		declaration(
 			["The events of every element, by tag."],
 			"LynxElementEvents",
-			model.elements.map(({ tag }) => `${keyOf(tag)}: ${pascalCase(tag)}Events;`),
+			model.elements.map(({ tag }) => `${keyOf(tag)}: Lynx${pascalCase(tag)}Events;`),
 		),
 		declaration(
 			["The UI methods every element has, for `invoke`: what each takes and resolves with."],
@@ -183,7 +183,7 @@ export function writeElements(model: Model): string {
 		parts.push(
 			declaration(
 				[`The UI methods of \`<${tag}>\`.`],
-				`${pascalCase(tag)}Methods extends LynxCommonMethods`,
+				`Lynx${pascalCase(tag)}Methods extends LynxCommonMethods`,
 				methods.map(method),
 			),
 		);
@@ -195,7 +195,7 @@ export function writeElements(model: Model): string {
 		declaration(
 			["The UI methods of the elements that have their own, by tag."],
 			"LynxElementMethods",
-			model.methods.byTag.map(({ tag }) => `${keyOf(tag)}: ${pascalCase(tag)}Methods;`),
+			model.methods.byTag.map(({ tag }) => `${keyOf(tag)}: Lynx${pascalCase(tag)}Methods;`),
 		),
 		`/** The name of every UI method Lynx's types know. */\nexport type LynxMethodName = ${[
 			...new Set(names),

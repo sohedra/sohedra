@@ -1,4 +1,4 @@
-// Which requests resolve from the app's folder (`svelte` and the packages named in `singleCopy`),
+// Which requests resolve from the app's folder (`svelte` and the packages named in `dedupe`),
 // and which from this package's; and the conditions each thread resolves with.
 
 import { createRsbuild } from "@rsbuild/core";

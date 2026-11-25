@@ -65,7 +65,7 @@ describe("a package that runs on the web and on Lynx", () => {
 			'import { mount } from "@sohedra/lynx";\n',
 			'import { render } from "@sohedra/lynx/testing";\n',
 			'export * from "@sohedra/lynx/host";\n',
-			'const lazy = import("@sohedra/lynx/env");\n',
+			'const lazy = import("@sohedra/lynx/environment");\n',
 		]) {
 			const root = repository({
 				"packages/primitives-core": { manifest: shared, files: { "src/index.ts": source } },

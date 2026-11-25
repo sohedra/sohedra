@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { background } from "@sohedra/lynx/env";
+	import { background } from "@sohedra/lynx/environment";
 
 	let { label = "label" }: { label?: string } = $props();
 </script>

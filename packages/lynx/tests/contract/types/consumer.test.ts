@@ -228,8 +228,8 @@ describe("the types an app gets", { timeout: 120_000 }, () => {
 		// One mistake on each line of the wrong component, and nothing else.
 		const expected: [line: number, says: string][] = [
 			[8, "No overload matches this call"],
-			[9, `'"ontpa"' does not exist in type 'ViewAttributes'`],
-			[10, `'"bindtap"' does not exist in type 'ViewAttributes'`],
+			[9, `'"ontpa"' does not exist in type 'LynxViewAttributes'`],
+			[10, `'"bindtap"' does not exist in type 'LynxViewAttributes'`],
 			[11, "'(event: LynxScrollEvent) => undefined' is not assignable"],
 			[12, "Property 'stopPropagation' does not exist"],
 			[13, "Type 'number' is not assignable to type 'string'"],

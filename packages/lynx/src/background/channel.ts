@@ -1,7 +1,7 @@
 // The background's side of the wire (src/wire/): the renderer's ops and the calls made of the
 // main thread go out in the order they were made, as one patch after the batch of Svelte's
 // updates that made them (a microtask), or at once after an event. Events and the answers to
-// calls come back as messages, and a message of another page is dropped here.
+// calls come back as messages, and a message of another generation is dropped here.
 //
 // Where an op or a call becomes text, each main-thread function in a `main-thread:` attribute or a
 // call that reaches a background function gets its context (./functions/contexts.ts): what is never
@@ -283,16 +283,16 @@ export function openChannel(options: ChannelOptions): Channel {
 		backgroundError({ code: "page_is_gone", details: { call: callName(request) } });
 
 	function onMessage(message: CoreMessage): void {
-		const page = currentGeneration();
+		const generation = currentGeneration();
 		let received;
 		try {
 			received = decodeToBackground(message);
-			if (DEV) checkMessage(received, { thread: "background", generation: page });
+			if (DEV) checkMessage(received, { thread: "background", generation });
 		} catch (error) {
 			reportError(error);
 			return;
 		}
-		if (!open || !keepsMessage(received, page)) return;
+		if (!open || !keepsMessage(received, generation)) return;
 		if (received.t === "event") {
 			onEvent(received.handler, received.event, received.input);
 			return;
