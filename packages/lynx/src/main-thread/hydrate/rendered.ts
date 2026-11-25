@@ -1,7 +1,7 @@
 // The page as the background rendered it: the tree that the first patch's rendered items describe
 // (`Patch.rendered`), before any effect ran. Hydration matches the first frame against it.
 
-import { decodeCell, OpCode, ROOT_ID, unknownKindError } from "../../wire/index.ts";
+import { decodeCell, OpCode, ROOT_ID, unknownKind, unknownKindError } from "../../wire/index.ts";
 import type { AttrValue, CallItem, Op, PatchItem } from "../../wire/index.ts";
 import { DEV } from "../globals.ts";
 
@@ -129,7 +129,7 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 		switch (item[0]) {
 			case "ops":
 				readOps(nodes, item[1]);
-				continue;
+				break;
 			case "cell": {
 				let parts = cells.get(item[1]);
 				if (!parts) cells.set(item[1], (parts = []));
@@ -137,18 +137,18 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 				const contexts = item[4];
 				if (contexts)
 					cellContexts.set(item[1], [...(cellContexts.get(item[1]) ?? []), ...contexts]);
-				continue;
+				break;
 			}
 			case "call":
 				calls.push(item);
-				continue;
+				break;
 			case "reply":
 			case "rewrite":
-				break;
+				throw new NotATree(`A patch's rendered part holds an item of kind ${item[0]}.`);
 			default:
-				if (DEV) throw unknownKindError(item, "main-thread");
+				// A development build reports the kind as the page waits to be written again.
+				throw new NotATree(`A patch's rendered part holds an item of kind ${unknownKind(item)}.`);
 		}
-		throw new NotATree(`A patch's rendered part holds an item of kind ${item[0]}.`);
 	}
 	return { nodes, cells, cellContexts, calls };
 }

@@ -246,7 +246,10 @@ export function listHandle(engine: EngineState, element: LynxElement): ListHandl
 		},
 		given: (operation) => given(engine, state, operation),
 		askMany(indexes) {
-			if (!list.componentAtIndexes) throw new Error("The list was given no componentAtIndexes.");
+			if (!list.componentAtIndexes)
+				throw new Error(
+					"The list has no componentAtIndexes: none was given, or the page let go of it.",
+				);
 			const operations = indexes.map((index) => newRequest(list, index));
 			engine.enter();
 			list.componentAtIndexes(state.node, state.uid, indexes, operations, false, false);

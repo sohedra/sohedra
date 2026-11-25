@@ -18,7 +18,9 @@
 			"rules": {
 				"no-console": "error",
 				// A switch over a union names every member or has a default branch. A reader of what the
-				// threads send each other ends its default branch in `unknownKind`, which takes `never`.
+				// threads send each other ends its default branch in a check that takes `never`
+				// (`unknownKind` or `unknownKindError`); the splitter, whose ops are its own thread's,
+				// has no default, so this rule fails a kind it misses.
 				"typescript/switch-exhaustiveness-check": [
 					"error",
 					{ "considerDefaultExhaustiveForUnions": true },
