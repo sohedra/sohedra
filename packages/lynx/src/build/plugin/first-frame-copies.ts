@@ -6,8 +6,9 @@
 
 import type { Rspack } from "@rsbuild/core";
 
+import { SERVER_RUNTIME_MODULE } from "../../svelte/build/index.ts";
 import { LAYERS, RUNTIME_FILES, loaderPath } from "./layers.ts";
-import { MAIN_THREAD_ALIASES, mainThreadConditions } from "./resolve.ts";
+import { mainThreadConditions, SVELTE_SERVER_ALIASES } from "./resolve.ts";
 
 /** The test of the component rule, `/\.svelte$/`, as its source. */
 const SVELTE_COMPONENT = "\\.svelte$";
@@ -44,10 +45,12 @@ export function addFirstFrameCopies(config: Rspack.Configuration, development: b
 		...rules,
 		{
 			issuerLayer: LAYERS["main-thread"],
-			resolve: {
-				conditionNames: mainThreadConditions(development),
-				alias: { ...MAIN_THREAD_ALIASES },
-			},
+			resolve: { conditionNames: mainThreadConditions(development) },
+		},
+		{
+			issuerLayer: LAYERS["main-thread"],
+			issuer: SERVER_RUNTIME_MODULE,
+			resolve: { alias: { ...SVELTE_SERVER_ALIASES } },
 		},
 	];
 }

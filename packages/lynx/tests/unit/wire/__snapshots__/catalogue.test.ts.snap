@@ -22,7 +22,7 @@ https://sohedra.com/e/global_not_on_lynx"
 `;
 
 exports[`the wire's catalogue > hydratable_not_on_lynx: the message 1`] = `
-"Svelte's hydratable ran on the main thread, and Lynx has no way to carry its value to the background.
+"Svelte's hydratable ran in the first frame, which cannot hand its value to the background.
 
 Load the value on the background instead: in an effect, or with await inside a <svelte:boundary> with a pending snippet.
 https://sohedra.com/e/hydratable_not_on_lynx"

@@ -28,4 +28,8 @@ export type { ScriptParser } from "./script-parser.ts";
 export { hotFooter } from "./hot-footer.ts";
 export { isPrimjsRegexFile, PRIMJS_REGEX_REWRITES, rewritePrimjsRegex } from "./primjs-regex.ts";
 export { SPREAD_SETTER_ANCHORS, SPREAD_SETTER_FILE, patchSpreadSetter } from "./spread-setter.ts";
-export { SERVER_ASYNC_HOOKS_IMPORT, SERVER_CRYPTO_FILE } from "./server-imports.ts";
+export {
+	SERVER_ASYNC_HOOKS_IMPORT,
+	SERVER_CRYPTO_FILE,
+	SERVER_RUNTIME_MODULE,
+} from "./server-imports.ts";

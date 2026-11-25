@@ -1,7 +1,7 @@
-// What `devalue` is on the main thread: Svelte's server runtime imports it for `hydratable` alone,
-// which only async server rendering reaches, and the first frame renders synchronously. The build
-// points the import here, so a page's main-thread script leaves `devalue` out (the contract row
-// `devalue-for-hydratable`).
+// What `devalue` is for Svelte's server runtime on the main thread: it imports it for `hydratable`
+// alone, which only async server rendering reaches, and the first frame renders synchronously. The
+// build points Svelte's import here, so a page's main-thread script leaves `devalue` out unless the
+// app imports it itself (the contract row `devalue-for-hydratable`).
 
 import { wireError } from "../../wire/index.ts";
 

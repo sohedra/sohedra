@@ -92,7 +92,7 @@ export const WIRE_CATALOGUE: Catalogue<Omit<WireDetails, WireDevelopmentCode>> =
 	},
 	hydratable_not_on_lynx: {
 		message: () =>
-			"Svelte's hydratable ran on the main thread, and Lynx has no way to carry its value to the background.",
+			"Svelte's hydratable ran in the first frame, which cannot hand its value to the background.",
 		fix: () =>
 			"Load the value on the background instead: in an effect, or with await inside a <svelte:boundary> with a pending snippet.",
 		docs: "hydratable_not_on_lynx",
