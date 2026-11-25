@@ -29,6 +29,7 @@ export interface WireDetails {
 	 * refuses has none.
 	 */
 	page_not_started: { reason?: string | undefined };
+	hydratable_not_on_lynx: Record<string, never>;
 }
 
 /** What a code of the wire names. */
@@ -88,6 +89,13 @@ export const WIRE_CATALOGUE: Catalogue<Omit<WireDetails, WireDevelopmentCode>> =
 		fix: () =>
 			"Fix what threw (the cause of the page_not_started error), or wrap the part that can throw in a <svelte:boundary> with a failed snippet.",
 		docs: "page_not_started",
+	},
+	hydratable_not_on_lynx: {
+		message: () =>
+			"Svelte's hydratable ran on the main thread, and Lynx has no way to carry its value to the background.",
+		fix: () =>
+			"Load the value on the background instead: in an effect, or with await inside a <svelte:boundary> with a pending snippet.",
+		docs: "hydratable_not_on_lynx",
 	},
 };
 

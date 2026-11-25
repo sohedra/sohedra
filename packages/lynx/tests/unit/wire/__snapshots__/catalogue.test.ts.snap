@@ -21,6 +21,13 @@ For hashes, use a library in plain JavaScript such as @noble/hashes.
 https://sohedra.com/e/global_not_on_lynx"
 `;
 
+exports[`the wire's catalogue > hydratable_not_on_lynx: the message 1`] = `
+"Svelte's hydratable ran on the main thread, and Lynx has no way to carry its value to the background.
+
+Load the value on the background instead: in an effect, or with await inside a <svelte:boundary> with a pending snippet.
+https://sohedra.com/e/hydratable_not_on_lynx"
+`;
+
 exports[`the wire's catalogue > page_already_mounted: the message 1`] = `
 "A second call of \`mountPage\` did nothing: the page the first call started still runs.
 Seen on the main thread.

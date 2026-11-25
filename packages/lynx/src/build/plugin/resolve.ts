@@ -170,8 +170,18 @@ export function configureResolve(chain: RspackChain, isDev: boolean): void {
 	chain.module
 		.rule(`${PACKAGE_NAME}:main-thread-resolve`)
 		.issuerLayer(LAYERS["main-thread"])
-		.resolve.conditionNames.merge(mainThreadConditions(isDev));
+		.resolve.conditionNames.merge(mainThreadConditions(isDev))
+		.end()
+		.alias.merge(MAIN_THREAD_ALIASES);
 }
+
+/**
+ * What the main thread's modules import in place of a package: `devalue`, which Svelte's server
+ * runtime imports for `hydratable` alone, a stand-in that throws (svelte/runtime/devalue.ts).
+ */
+export const MAIN_THREAD_ALIASES: Readonly<Record<string, string>> = {
+	devalue$: RUNTIME_FILES.devalue,
+};
 
 /**
  * Svelte server code the first frame never runs, kept quiet and out of the bundle.
