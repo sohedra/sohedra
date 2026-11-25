@@ -424,3 +424,61 @@ describe("Svelte's own mount, unmount and hydrate", () => {
 		).toBe("");
 	});
 });
+
+describe("MediaQuery from svelte/reactivity", () => {
+	it("is an error at its import, which names the screen's size instead", () => {
+		const text = moduleError(
+			'import { MediaQuery, SvelteMap } from "svelte/reactivity";\nexport const wide = new MediaQuery("min-width: 600px");\nvoid SvelteMap;',
+		);
+		expect(text.split("\n")[0]).toBe(
+			"`MediaQuery` is imported from \"svelte/reactivity\", whose `MediaQuery` calls the web's `matchMedia`, which Lynx doesn't have, so making one throws.",
+		);
+		expect(text).toContain("util.ts:1:10");
+		expect(text).toContain("`systemInfo` in `@sohedra/lynx/host`");
+		expect(codes(text)).toEqual(["media_query_imported"]);
+	});
+
+	it("is an error in a component, re-exported, and through a namespace import", async () => {
+		expect(
+			codes(
+				await componentError(
+					'<script>\n\timport { MediaQuery as Query } from "svelte/reactivity";\n\tconst q = new Query("(min-width: 600px)");\n</script>\n<text>{q.current}</text>',
+				),
+			),
+		).toEqual(["media_query_imported"]);
+		expect(codes(moduleError('export { MediaQuery } from "svelte/reactivity";'))).toEqual([
+			"media_query_imported",
+		]);
+		const read = moduleError(
+			'import * as reactivity from "svelte/reactivity";\nexport const Q = reactivity.MediaQuery;',
+		);
+		expect(codes(read)).toEqual(["media_query_imported"]);
+		expect(read).toContain("util.ts:2:18");
+	});
+
+	it("leaves the module's other classes, a type import, svelte's own and the comment alone", () => {
+		expect(
+			moduleError(
+				'import { SvelteMap, SvelteSet } from "svelte/reactivity";\nvoid [SvelteMap, SvelteSet];',
+			),
+		).toBe("");
+		expect(
+			moduleError(
+				'import * as reactivity from "svelte/reactivity";\nexport const M = reactivity.SvelteMap;',
+			),
+		).toBe("");
+		expect(
+			moduleError(
+				'import type { MediaQuery } from "svelte/reactivity";\nexport type Q = MediaQuery;',
+			),
+		).toBe("");
+		expect(moduleError('import * as svelte from "svelte";\nexport const t = svelte.tick;')).toBe(
+			"",
+		);
+		expect(
+			moduleError(
+				'// sohedra-ignore media_query_imported\nimport { MediaQuery } from "svelte/reactivity";\nvoid MediaQuery;',
+			),
+		).toBe("");
+	});
+});
