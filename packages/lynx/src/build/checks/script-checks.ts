@@ -18,7 +18,7 @@ import { DOM_INSTEAD, domGlobal } from "./dom-globals.ts";
 import { scriptUses } from "./script-uses.ts";
 import type { GlobalRead, ScriptRoots } from "./script-uses.ts";
 import { silencer } from "./silencing.ts";
-import { svelteMountImports } from "./svelte-mount.ts";
+import { svelteMountUses } from "./svelte-mount.ts";
 import { isMissingLynxMember, onlyThread } from "./thread-apis.ts";
 
 /** The package whose imports fill the globals, and its subpaths. */
@@ -136,8 +136,8 @@ export function checkScripts(source: SourceText, roots: ScriptRoots): ScriptFind
 		// Boundary: `finding` pairs each code with its own details.
 		findings.errors.push({ ...found, place } as AnyReport);
 	}
-	for (const { name, start } of svelteMountImports(roots.programs)) {
-		if (quiet("svelte_mount_imported", start, undefined)) continue;
+	for (const { name, start, anchor } of svelteMountUses(roots.programs)) {
+		if (quiet("svelte_mount_imported", start, anchor)) continue;
 		findings.errors.push({
 			code: "svelte_mount_imported",
 			details: { name },
