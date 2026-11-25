@@ -97,6 +97,11 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 	thread_branch_test: { test: string };
 	/** `name` is the name the component declares that the build adds too. */
 	thread_branch_name_taken: { name: string };
+	/**
+	 * `flag` is the thread flag as written: `background`, `env.mainThread`; `read`, the name the markup
+	 * reads, the flag itself or a name of the script that depends on it.
+	 */
+	thread_flag_outside_if: { read: string; flag: string };
 	/** `written` says where: "in a spread" or "on <svelte:element>". */
 	list_item_defer_ignored: { written: string };
 }
@@ -305,6 +310,13 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 			`The name ${name} is one the build adds to this component, to draw a part only one thread renders, and the component declares it too.`,
 		fix: ({ name }) => `Rename your ${name}.`,
 		docs: "thread_branch_name_taken",
+	},
+	thread_flag_outside_if: {
+		message: ({ read, flag }) =>
+			`${read === flag ? `\`${flag}\` is read` : `\`${read}\` depends on \`${flag}\` and is read`} outside an \`{#if}\` test, so the first frame and the background can draw different content here with no block between them, and a tap before the background takes the page over can run the handler of the other's content.`,
+		fix: ({ flag }) =>
+			`Put what one thread draws in an \`{#if}\` whose test is \`${flag}\`, and what the other draws in its \`{:else}\`, or read \`${flag}\` in an event handler or an effect.`,
+		docs: "thread_flag_outside_if",
 	},
 	list_item_defer_ignored: {
 		message: ({ written }) =>

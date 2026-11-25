@@ -27,6 +27,7 @@ import { copiedTypeScript, nodeTypeStripper, stripMainThreadTypes } from "./stri
 import { svelteOptions } from "./svelte-options.ts";
 import { threadBranchHandlers } from "./thread-branch-handlers.ts";
 import { threadBranches } from "./thread-branches.ts";
+import { threadFlagReads } from "./thread-flag-reads.ts";
 
 /** What `runPasses` reads. */
 interface PassesOptions {
@@ -77,6 +78,7 @@ const PASSES: readonly Pass[] = [
 	listItemKeys,
 	appChecks,
 	threadBranchHandlers,
+	threadFlagReads,
 	threadBranches,
 	deferredRows,
 ];
