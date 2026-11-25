@@ -9,6 +9,8 @@ import { expect, it } from "@rstest/core";
 
 import { keptContexts } from "../../../src/background/functions/calls.ts";
 import { mainThreadRef } from "../../../src/background/root-entry.ts";
+import { FUNCTION_FIELDS } from "../../../src/wire/index.ts";
+import type { MainThreadFunction } from "../../../src/wire/index.ts";
 import Events from "../../fixtures/threads/functions/Events.svelte";
 import drawEvents from "../../fixtures/threads/functions/Events.svelte?first-frame";
 import Unref from "../../fixtures/threads/functions/Unref.svelte";
@@ -52,20 +54,28 @@ it(
 		const page = startFunctionsPage(Events, { draw: drawEvents, props: { log: [], api } });
 		await page.settle();
 		const before = page.asBackground(keptContexts);
+		// The `.tap` element's first copy, held here so that the collector cannot take it before the checks
+		// below; in a function of its own, so that no local of the test holds it once let go of.
+		const held = ((): { copy?: MainThreadFunction } => {
+			const tap = page.byClass("tap");
+			const bound = page.engine.workletEvents.find((row) => row.element === tap)!;
+			// Boundary: the engine logs what `__AddEvent` was given, the main thread's entry.
+			return { copy: (bound.value as { value: { fn: MainThreadFunction } }).value.fn };
+		})();
+		const first = held.copy![FUNCTION_FIELDS.context]!;
 		page.asBackground(() => api["next"]!());
 		await page.settle();
-		// The collector may already have taken the first copy on its own, so what this checks is that
-		// the copy built again has a context, and that each thread keeps what the other holds.
-		const built = page.asBackground(keptContexts).filter((id) => !before.includes(id));
-		expect(built).toHaveLength(1);
+		const rebuilt = page.asBackground(keptContexts);
+		expect(rebuilt).toHaveLength(before.length + 1);
+		expect(page.runtime.page.functions.sizes().contexts).toContain(first);
 		expectAccounted(page, "after the handler was built again");
+		delete held.copy;
 		await collect("the background to let go of the first copy's context", async () => {
 			await page.settle();
-			return page.asBackground(keptContexts).length === before.length;
+			return !page.asBackground(keptContexts).includes(first);
 		});
 		const after = page.asBackground(keptContexts);
-		expect(after).toHaveLength(before.length);
-		expect(after).toContain(built[0]);
+		expect(after).toEqual(rebuilt.filter((id) => id !== first));
 		expectAccounted(page, "after the collector ran");
 	},
 	TIMEOUT,

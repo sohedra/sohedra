@@ -17,7 +17,8 @@ import { describeSources, pageSources } from "./source.ts";
 /**
  * A page takes milliseconds to make and walk, so this tries ten times the pages a rendering property
  * does, each with its own time. A page took 26 ms on average with the generated tests running at
- * once, and 113 ms on a loaded CI runner, at 300 runs; a quarter of a second is over twice the most.
+ * once, and 113 ms on a loaded CI runner with both projects running it, at 300 runs; a quarter of a
+ * second is over twice the most.
  */
 const MODELS: Pages = { runs: RUNS * 10, each: 250 };
 
