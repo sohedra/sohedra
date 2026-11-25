@@ -3,7 +3,11 @@
 
 export { WIRE_CATALOGUE, wireError, wireMessage } from "./catalogue.ts";
 export type { WireCode, WireDetails, WireDevelopmentCode } from "./catalogue.ts";
-export { WIRE_DEVELOPMENT_CATALOGUE, wireDevelopmentError } from "./development-catalogue.ts";
+export {
+	unknownKindError,
+	WIRE_DEVELOPMENT_CATALOGUE,
+	wireDevelopmentError,
+} from "./development-catalogue.ts";
 export { describeOp } from "./describe-op.ts";
 export { escapeJsonText } from "./escape.ts";
 export { hearErrorEvents } from "./error-events.ts";
@@ -114,3 +118,4 @@ export type {
 	ThreadEvent,
 	ToBackground,
 } from "./to-background.ts";
+export { unknownKind } from "./unknown-kind.ts";

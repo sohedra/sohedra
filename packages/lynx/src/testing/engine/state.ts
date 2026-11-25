@@ -66,9 +66,10 @@ interface RunningAnimation {
 
 /** What a `<list>` keeps: the callbacks Lynx would call, and every update it got. */
 export interface ListState {
-	componentAtIndex: ComponentAtIndex;
-	componentAtIndexes: ComponentAtIndexes | undefined;
-	enqueueComponent: EnqueueComponent;
+	/** `null` once the page let go of it. */
+	componentAtIndex: ComponentAtIndex | null;
+	componentAtIndexes: ComponentAtIndexes | null | undefined;
+	enqueueComponent: EnqueueComponent | null;
 	updates: ListUpdate[];
 	/** Called inside each update, as iOS asks for cells right away. */
 	onUpdate?: (update: ListUpdate) => void;

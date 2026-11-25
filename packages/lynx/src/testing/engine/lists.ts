@@ -22,19 +22,20 @@ export interface ListFunctions {
 		info?: unknown,
 		componentAtIndexes?: ComponentAtIndexes,
 	): LynxElement;
+	/** A callback of `null` lets go of the page's: Lynx then calls none. */
 	__UpdateListCallbacks(
 		list: LynxElement,
-		componentAtIndex: ComponentAtIndex,
-		enqueueComponent: EnqueueComponent,
-		componentAtIndexes?: ComponentAtIndexes,
+		componentAtIndex: ComponentAtIndex | null,
+		enqueueComponent: EnqueueComponent | null,
+		componentAtIndexes?: ComponentAtIndexes | null,
 	): void;
 }
 
 /** What a test sees of a list, and does for Lynx: it asks for cells, and hands them back. */
 export interface ListHandle {
-	readonly componentAtIndex: ComponentAtIndex;
-	readonly componentAtIndexes: ComponentAtIndexes | undefined;
-	readonly enqueueComponent: EnqueueComponent;
+	readonly componentAtIndex: ComponentAtIndex | null;
+	readonly componentAtIndexes: ComponentAtIndexes | null | undefined;
+	readonly enqueueComponent: EnqueueComponent | null;
 	/** Every `update-list-info` the page sent. */
 	readonly updates: ListUpdate[];
 	/** Called inside each update, as iOS asks for cells right away. */
@@ -170,7 +171,7 @@ export function bindFlushed(engine: EngineState, options: unknown): void {
 			state.bound.set(operation, uid);
 			continue;
 		}
-		state.enqueueComponent(list.node, list.uid, uid);
+		state.enqueueComponent?.(list.node, list.uid, uid);
 	}
 }
 
@@ -206,10 +207,14 @@ export function listHandle(engine: EngineState, element: LynxElement): ListHandl
 		}
 		engine.enter();
 		const operation = newRequest(list, index);
-		const uid = list.componentAtIndex(state.node, state.uid, index, operation);
-		// The engine reads the answer as a number, and anything else as 0
-		// (core/renderer/dom/fiber/list_element.cc, ComponentAtIndex). The async list takes the cell
-		// from a flush that names the request, now or later, as a device showed.
+		// With no callback, the engine answers -1, no cell; it reads an answer as a number, and
+		// anything else as 0 (core/renderer/dom/fiber/list_element.cc, ComponentAtIndex).
+		const uid =
+			list.componentAtIndex === null
+				? -1
+				: list.componentAtIndex(state.node, state.uid, index, operation);
+		// The async list takes the cell from a flush that names the request, now or later, as a
+		// device showed.
 		if (typeof uid !== "number" && state.attrs["custom-list-name"] === "list-container")
 			return given(engine, state, operation);
 		const cell = typeof uid === "number" ? engine.made.get(uid)?.node : undefined;
@@ -241,7 +246,10 @@ export function listHandle(engine: EngineState, element: LynxElement): ListHandl
 		},
 		given: (operation) => given(engine, state, operation),
 		askMany(indexes) {
-			if (!list.componentAtIndexes) throw new Error("The list was given no componentAtIndexes.");
+			if (!list.componentAtIndexes)
+				throw new Error(
+					"The list has no componentAtIndexes: none was given, or the page let go of it.",
+				);
 			const operations = indexes.map((index) => newRequest(list, index));
 			engine.enter();
 			list.componentAtIndexes(state.node, state.uid, indexes, operations, false, false);
@@ -266,7 +274,8 @@ export function listHandle(engine: EngineState, element: LynxElement): ListHandl
 				);
 			}
 			engine.enter();
-			list.enqueueComponent(state.node, state.uid, cellState.uid);
+			// With no callback, the engine calls nothing (list_element.cc, EnqueueComponent).
+			list.enqueueComponent?.(state.node, state.uid, cellState.uid);
 		},
 	};
 }

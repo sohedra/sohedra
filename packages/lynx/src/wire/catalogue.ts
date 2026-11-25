@@ -30,6 +30,8 @@ export interface WireDetails {
 	 */
 	page_not_started: { reason?: string | undefined };
 	hydratable_not_on_lynx: Record<string, never>;
+	/** `thread` received a message, or a part of one, whose `kind` it does not know. */
+	message_kind_unknown: { thread: Thread; kind: string };
 }
 
 /** What a code of the wire names. */
@@ -45,7 +47,10 @@ export const THREAD_NAMES: Record<Thread, string> = {
  * The codes only a development build reports. Only code a production build drops reaches their
  * entries, which are kept apart (./development-catalogue.ts), so it drops their text too.
  */
-export type WireDevelopmentCode = "threads_from_different_builds" | "page_reloaded_on_one_thread";
+export type WireDevelopmentCode =
+	| "threads_from_different_builds"
+	| "page_reloaded_on_one_thread"
+	| "message_kind_unknown";
 
 /** Every message of the wire that a production build reports. */
 export const WIRE_CATALOGUE: Catalogue<Omit<WireDetails, WireDevelopmentCode>> = {

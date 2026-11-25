@@ -1,8 +1,9 @@
 // The page as the background rendered it: the tree that the first patch's rendered items describe
 // (`Patch.rendered`), before any effect ran. Hydration matches the first frame against it.
 
-import { decodeCell, OpCode, ROOT_ID } from "../../wire/index.ts";
+import { decodeCell, OpCode, ROOT_ID, unknownKind, unknownKindError } from "../../wire/index.ts";
 import type { AttrValue, CallItem, Op, PatchItem } from "../../wire/index.ts";
+import { DEV } from "../globals.ts";
 
 /** An element or a text the background rendered, by its id. */
 export interface RenderedNode {
@@ -101,6 +102,8 @@ function readOps(nodes: Map<number, RenderedNode>, ops: Op[]): void {
 				};
 				break;
 			}
+			default:
+				if (DEV) throw unknownKindError(op, "main-thread");
 		}
 	}
 }
@@ -139,8 +142,12 @@ export function readRendered(items: PatchItem[], count: number): Rendered {
 			case "call":
 				calls.push(item);
 				break;
-			default:
+			case "reply":
+			case "rewrite":
 				throw new NotATree(`A patch's rendered part holds an item of kind ${item[0]}.`);
+			default:
+				// A development build reports the kind as the page waits to be written again.
+				throw new NotATree(`A patch's rendered part holds an item of kind ${unknownKind(item)}.`);
 		}
 	}
 	return { nodes, cells, cellContexts, calls };

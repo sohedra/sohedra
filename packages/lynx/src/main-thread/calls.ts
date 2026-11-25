@@ -14,12 +14,12 @@
 // patch out (`onceLaidOut`). Queries run in place. An element a UI method is called on is held
 // from then on, so that Lynx gives it a UI (./flatten.ts).
 
-import { decodeCall, encodeError } from "../wire/index.ts";
+import { decodeCall, encodeError, unknownKindError } from "../wire/index.ts";
 import type { CallItem, CallRequest, Result } from "../wire/index.ts";
 import type { Applier } from "./apply.ts";
 import { mainThreadError } from "./catalogue.ts";
 import type { FunctionsPage } from "./functions/page.ts";
-import { mainThread } from "./globals.ts";
+import { DEV, mainThread } from "./globals.ts";
 import type { InvokeResult, LynxElement } from "./globals.ts";
 
 /** Lynx's answer to a UI method on an element with no view: "no UI for this node". */
@@ -53,6 +53,12 @@ export interface Calls {
 /** A request about an element; the others are for main-thread functions. */
 type ElementRequest = Exclude<CallRequest, ["unref", ...unknown[]] | ["run", ...unknown[]]>;
 
+/** A request about an element that waits for the patch's flush, or its layout. */
+type WaitingRequest = Extract<
+	ElementRequest,
+	["invoke", ...unknown[]] | ["computed", ...unknown[]]
+>;
+
 /**
  * Runs `run` once the platform has laid out the last flush: at the second frame after it. Android
  * measures a view's content, such as a scroll view's range, in the frame after a flush, after that
@@ -84,16 +90,12 @@ export function createCalls(scope: CallsScope): Calls {
 	const afterLayout: (() => void)[] = [];
 
 	/** The name of what was called, in the developer's words, for an error. */
-	function nameOf(request: ElementRequest): string {
+	function nameOf(request: WaitingRequest): string {
 		switch (request[0]) {
 			case "invoke":
 				return request[1];
 			case "computed":
 				return "getComputedStyleProperty";
-			case "query":
-				return "querySelector";
-			case "queryAll":
-				return "querySelectorAll";
 		}
 	}
 
@@ -153,6 +155,8 @@ export function createCalls(scope: CallsScope): Calls {
 				done({ ok: true, value: ids });
 				return;
 			}
+			default:
+				if (DEV) throw unknownKindError(request, "main-thread");
 		}
 	}
 
