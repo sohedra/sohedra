@@ -5,6 +5,7 @@ import fc from "fast-check";
 
 import { compilePage } from "./compile.ts";
 import type { CompiledBoth } from "./compile.ts";
+import { align, builtEntries, drawnEntries, heldCells, pairsAstray, planFor } from "./entries.ts";
 import { expectFunctionsAgree } from "./functions.ts";
 import { pageModel } from "./grammar.ts";
 import type { PageModel, PageState } from "./grammar.ts";
@@ -126,6 +127,36 @@ export const hydrationProperty: fc.IAsyncPropertyWithHooks<[PageModel, Step[]]> 
 			expectSameTree(engineTree(running.page.engine), backgroundTree());
 			expectFunctionsAgree(running.page, "After hydration");
 			await expectEveryRowCame(running.page, model, "After hydration");
+		});
+	},
+);
+
+/**
+ * Both trees hydration matches, the first frame's and the background's from its first patch as the
+ * main thread receives it, line up block for block with no shape check: element with element, block
+ * with block, every branch mark read. And the match adopts, sure, only pairs that line up there: an
+ * early tap runs its own element's handler, or is dropped.
+ */
+export const identityProperty: fc.IAsyncPropertyWithHooks<[PageModel]> = fc.asyncProperty(
+	pageModel,
+	async (model) => {
+		await about(pageSources(model), described(model), async () => {
+			const { running } = await start(model, { firstFrame: true });
+			const frame = running.page.runtime.page.frame;
+			expect(frame, "The first frame was drawn").toBeDefined();
+			const held = heldCells(frame!.root);
+			await running.page.settle();
+			expectNoErrors(running.page.errors, "At hydration");
+			const patch = running.page.patches[0]!;
+			const built = builtEntries(patch);
+			expect(built.unreadable, "Parents whose branch marks cannot be read").toBe(0);
+			let next = 10_000_000;
+			const drawn = drawnEntries(frame!.root.children, () => next++);
+			const alignment = align(built.entries, drawn);
+			expect(alignment.misaligned, "Where the trees stop lining up").toEqual([]);
+			const matched = planFor(frame!.root, patch, held);
+			expect(matched, "The match refused").toBeDefined();
+			expect(pairsAstray(matched!, alignment), "Sure pairs the trees do not pair").toEqual([]);
 		});
 	},
 );

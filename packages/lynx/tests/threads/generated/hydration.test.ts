@@ -7,7 +7,7 @@ import { compilePage } from "./compile.ts";
 import type { ComponentModel, PageModel } from "./grammar.ts";
 import { THREAD_TESTS } from "./markup.ts";
 import type { MarkupNode } from "./markup.ts";
-import { firstFrameProperty, hydrationProperty } from "./properties.ts";
+import { firstFrameProperty, hydrationProperty, identityProperty } from "./properties.ts";
 import { runEarly, startGenerated } from "./run.ts";
 import type { Step } from "./run.ts";
 import { check, TIMEOUT } from "./settings.ts";
@@ -26,6 +26,14 @@ describe("a generated page's first frame", () => {
 		"is hydrated with no mismatch and with the first frame's ids, and shows what the background rendered",
 		async () => {
 			await check(hydrationProperty, 1);
+		},
+		TIMEOUT,
+	);
+
+	it(
+		"lines up with the background's block for block, and hydration is sure only of what lines up",
+		async () => {
+			await check(identityProperty, 5);
 		},
 		TIMEOUT,
 	);

@@ -38,6 +38,10 @@ export interface MainThreadDetails {
 	 * another order, as many as the first frame drew, are paired by place, so a tap runs the handler
 	 * of the row now at that place.
 	 */
+	/**
+	 * `event` names the events dropped on one drawn element, which hydration made again or wrote an
+	 * attribute over; `element` is its tag, `id` and `class`, as written; `count` how many.
+	 */
 	first_frame_event_dropped: { event: string; element: string; count: number };
 	main_thread_value_not_runnable: Record<string, never>;
 	/** `method` is what was called on the element. */
