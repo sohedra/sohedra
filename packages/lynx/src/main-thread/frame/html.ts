@@ -20,7 +20,7 @@ import {
 import type { AttrValue, LynxListener } from "../../wire/index.ts";
 
 /** Svelte's void elements, which its server writes with no closing tag. */
-export const VOID_ELEMENTS: ReadonlySet<string> = new Set([
+export const VOID_ELEMENTS: ReadonlySet<string> = /* @__PURE__ */ new Set([
 	"area",
 	"base",
 	"br",
@@ -131,7 +131,7 @@ interface Tag {
 }
 
 /** The events of a tag that listens to none: one array for all of them. */
-const NO_EVENTS: readonly LynxListener[] = Object.freeze([]);
+const NO_EVENTS: readonly LynxListener[] = /* @__PURE__ */ Object.freeze([]);
 
 /**
  * An opening tag as Svelte's server writes it: its name, then each attribute after one space, its

@@ -60,6 +60,7 @@ import { createFunctionsPage } from "./functions/page.ts";
 import type { FunctionsPage } from "./functions/page.ts";
 import {
 	DEV,
+	DRAWS,
 	functionsGlobal,
 	globalScope,
 	installRegistry,
@@ -397,7 +398,8 @@ export function startMainThread(): MainThreadRuntime {
 		const functions = state.functions;
 		try {
 			functions.applying(() => {
-				if (state.frame) replay = hydrateFrame(patch);
+				// A build that draws no first frame has none to hydrate, and leaves hydration out.
+				if (DRAWS && state.frame) replay = hydrateFrame(patch);
 				else applyItems(patch.items, patch.generation);
 				if (state.rewriting) return;
 				functions.settle();
@@ -461,16 +463,19 @@ export function startMainThread(): MainThreadRuntime {
 			const functions = state.functions;
 			// The engine flushes the tree after the render: the first frame's function refs run before.
 			functions.applying(() => {
-				state.frame = drawRecordedFrame({
-					page,
-					data: argsOf(event)[0],
-					report,
-					styles: state.styles,
-					flattening: state.flattening,
-					inputs: state.inputs,
-					functions,
-					settle: settleIn(functions),
-				});
+				// A build that draws no first frame leaves the drawing out.
+				state.frame = DRAWS
+					? drawRecordedFrame({
+							page,
+							data: argsOf(event)[0],
+							report,
+							styles: state.styles,
+							flattening: state.flattening,
+							inputs: state.inputs,
+							functions,
+							settle: settleIn(functions),
+						})
+					: undefined;
 				if (state.frame) functions.holdFirstFrame(state.frame.early);
 				functions.settle();
 			}, calls.flushed);
