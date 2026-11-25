@@ -1,8 +1,1 @@
-{
-	"newtarget-proto-custom.js": {
-		"fail": {
-			"note": "core-js's AggregateError, which adds `cause` (vendored), doesn't take its prototype from a new.target whose `prototype` isn't an object.",
-			"expected": ["non-strict", "strict"]
-		}
-	}
-}
+{}

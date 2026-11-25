@@ -2,7 +2,6 @@
 
 /** A core-js module the language fills load, by core-js's name. */
 export type CoreJsModule =
-	| "es.aggregate-error.cause"
 	| "es.array.at"
 	| "es.array.find-last"
 	| "es.array.find-last-index"
@@ -10,7 +9,6 @@ export type CoreJsModule =
 	| "es.array.to-sorted"
 	| "es.array.to-spliced"
 	| "es.array.with"
-	| "es.error.cause"
 	| "es.map.group-by"
 	| "es.object.get-own-property-descriptor"
 	| "es.object.group-by"
