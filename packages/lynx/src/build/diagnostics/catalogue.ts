@@ -3,7 +3,7 @@
 // page, and snapshots every message.
 
 import type { Catalogue } from "../../wire/index.ts";
-import { CHECK_CATALOGUE } from "./catalogue-checks.ts";
+import { CHECK_CATALOGUE, MOTION } from "./catalogue-checks.ts";
 import type { CheckDetails } from "./catalogue-checks.ts";
 import { LOADER_CATALOGUE } from "./catalogue-loaders.ts";
 import type { LoaderDetails } from "./catalogue-loaders.ts";
@@ -110,8 +110,6 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 export type BuildCode = keyof BuildDetails;
 
 const NOT_AVAILABLE = (feature: string): string => `${feature} is not available in Svelte on Lynx.`;
-const MOTION =
-	"Animate the element with its `animate()` method from an attachment (`{@attach}`), or set its style from a main-thread function with `setStyleProperty()`.";
 const PAGE_EVENTS = "Listen to the page's events with `on(root, …)`.";
 
 /** Every message of the build. */

@@ -32,9 +32,19 @@ export interface CheckDetails {
 	svelte_mount_imported: { name: string };
 	/** `name` is `MediaQuery`. */
 	media_query_imported: { name: string };
+	/** `module` is `svelte/motion` or `svelte/reactivity/window`. */
+	svelte_module_unsupported: { module: string };
 }
 
 const THROWS = "so this code throws where it runs";
+
+/** What to use for an element's motion, instead of Svelte's. */
+export const MOTION =
+	"Animate the element with its `animate()` method from an attachment (`{@attach}`), or set its style from a main-thread function with `setStyleProperty()`.";
+
+/** What to use for the screen's and the page's size, instead of the web's. */
+const SCREEN_SIZE =
+	"Read the screen's size from `systemInfo` in `@sohedra/lynx/host`, and listen to `on(host, \"onWindowResize\", …)` for the page's size as it changes.";
 
 /** The messages of the checks of the app's code. */
 export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
@@ -108,8 +118,13 @@ export const CHECK_CATALOGUE: Catalogue<CheckDetails> = {
 	media_query_imported: {
 		message: ({ name }) =>
 			`\`${name}\` is imported from "svelte/reactivity", whose \`${name}\` calls the web's \`matchMedia\`, which Lynx doesn't have, so making one throws.`,
-		fix: () =>
-			"Read the screen's size from `systemInfo` in `@sohedra/lynx/host`, and listen to `on(host, \"onWindowResize\", …)` for the page's size as it changes.",
+		fix: () => SCREEN_SIZE,
 		docs: "media_query_imported",
+	},
+	svelte_module_unsupported: {
+		message: ({ module }) =>
+			`\`${module}\` is not supported in Svelte on Lynx yet: it reads the web's \`window\` as it loads, which Lynx doesn't have, so the page throws as it starts.`,
+		fix: ({ module }) => (module === "svelte/motion" ? MOTION : SCREEN_SIZE),
+		docs: "svelte_module_unsupported",
 	},
 };

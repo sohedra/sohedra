@@ -1,7 +1,8 @@
 // The checks of an app's scripts for code that type-checks and then fails on Lynx: a global the
 // thread's engine lacks (with the import that fills it, or what to use instead), the web's DOM, an
-// API only the other thread has, Svelte's own `mount`, `unmount` and `hydrate`, and its `MediaQuery`.
-// Each is an error at its place: the code fails wherever it runs. A read the script checks for first (`typeof X`, `"X" in
+// API only the other thread has, Svelte's own `mount`, `unmount` and `hydrate`, its `MediaQuery`,
+// and its modules that read the web's `window` as they load. Each is an error at its place: the code
+// fails wherever it runs. A read the script checks for first (`typeof X`, `"X" in
 // globalThis`, a `try` with a `catch`) is left alone, and so is a line the silencing comment names
 // the code on.
 //
@@ -136,13 +137,9 @@ export function checkScripts(source: SourceText, roots: ScriptRoots): ScriptFind
 		// Boundary: `finding` pairs each code with its own details.
 		findings.errors.push({ ...found, place } as AnyReport);
 	}
-	for (const { code, name, start, anchor } of refusedSvelteUses(roots.programs)) {
-		if (quiet(code, start, anchor)) continue;
-		findings.errors.push({
-			code,
-			details: { name },
-			place: placeAt(source, start),
-		});
+	for (const { report, start, anchor } of refusedSvelteUses(roots.programs)) {
+		if (quiet(report.code, start, anchor)) continue;
+		findings.errors.push({ ...report, place: placeAt(source, start) });
 	}
 	for (const call of uses.plainCalls) {
 		if (quiet("plain_function_in_main_thread_function", call.start, call.anchor)) continue;

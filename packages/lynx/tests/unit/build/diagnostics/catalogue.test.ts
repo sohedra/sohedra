@@ -77,6 +77,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	},
 	svelte_mount_imported: { name: "mount" },
 	media_query_imported: { name: "MediaQuery" },
+	svelte_module_unsupported: { module: "svelte/motion" },
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",

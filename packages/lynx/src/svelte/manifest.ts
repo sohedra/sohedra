@@ -533,7 +533,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/reactivity/index-client.js",
 		anchor: "export { createSubscriber } from './create-subscriber.js';",
 		reliesOn:
-			"`svelte/reactivity` exports `SvelteDate`, `SvelteSet`, `SvelteMap`, `SvelteURL`, `SvelteURLSearchParams`, `MediaQuery` and `createSubscriber`; the build refuses an import of `MediaQuery`, which calls `matchMedia` as it is made",
+			"`svelte/reactivity` exports `SvelteDate`, `SvelteSet`, `SvelteMap`, `SvelteURL`, `SvelteURLSearchParams`, `MediaQuery` and `createSubscriber`; `MediaQuery` calls `matchMedia` as it is made, so the build refuses an import of it",
 		test: RUNTIME,
 	},
 	{
@@ -542,7 +542,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/motion/index.js",
 		anchor: "export const prefersReducedMotion = /*@__PURE__*/ new MediaQuery(",
 		reliesOn:
-			"`svelte/motion` makes a `MediaQuery` when it loads, which calls `matchMedia`, so the binding replaces the module",
+			"`svelte/motion` makes a `MediaQuery` when it loads, which calls `matchMedia`, so the build refuses any import of the module",
 		test: SOURCE,
 	},
 	{
@@ -567,7 +567,7 @@ export const SVELTE_CONTRACT: readonly ContractRow[] = [
 		file: "src/reactivity/window/index.js",
 		anchor: "on(window, 'scroll', update)",
 		reliesOn:
-			"`svelte/reactivity/window` exports ten values, reads `window` as it loads, and so the binding replaces the module with the page's size",
+			"`svelte/reactivity/window` exports ten values and reads `window` as it loads, so the build refuses any import of the module",
 		test: SOURCE,
 	},
 	{

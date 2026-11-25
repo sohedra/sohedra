@@ -80,7 +80,10 @@ thread only. These are errors:
   DOM: import the binding's `mount` and `unmount` from `@sohedra/lynx`, whose `mount` hydrates the
   first frame itself;
 - `MediaQuery` from `svelte/reactivity`, which calls the web's `matchMedia`: read the screen's size
-  from `systemInfo` in `@sohedra/lynx/host`.
+  from `systemInfo` in `@sohedra/lynx/host`;
+- any import of `svelte/motion` or `svelte/reactivity/window`, which read the web's `window` as they
+  load and are not supported yet: animate an element with its `animate()` method, and read the
+  screen's size from `systemInfo`.
 
 The background has lynx-core's own `URL`, `URLSearchParams`, `fetch`, `Headers`, `Request`,
 `Response` and `AbortController`, so reading them there throws nothing and the build says nothing.
