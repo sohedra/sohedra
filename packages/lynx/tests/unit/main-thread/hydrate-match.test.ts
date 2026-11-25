@@ -1,7 +1,8 @@
 // Hydration's match as a value: which drawn node each of the background's nodes is adopted from,
 // what is written over, what is made again, what refuses, and which pairs hydration is not sure
 // of. Inside Svelte's blocks the match pairs by tags, a guess; the tests that say "for now" pin
-// what that guess does, and say what pairing by the branch each `{#if}` took makes of them.
+// what that guess does, and say what pairing by the branch each `{#if}` took makes of them. Where
+// pairing by branch has yet to settle an outcome, the test says so.
 
 import { describe, expect, it } from "@rstest/core";
 
@@ -15,6 +16,9 @@ const el = (
 	children: Built[] = [],
 	attrs?: Record<string, AttrValue>,
 ): Built => ({ id, tag, children, ...(attrs && { attrs }) });
+
+/** An `{#if}` the background rendered, with the branch it took: 0, 1… or -1 for none. */
+const block = (branch: number, children: Built[]): Built => ({ branch, children });
 
 const list = (id: number, rows: BuiltRow[]): Built => ({ id, tag: "list", rows });
 
@@ -63,9 +67,9 @@ describe("hydration's match, outside every block", () => {
 		).toEqual([
 			"adopt 10 <text> = 2",
 			'adopt 1000 "a" = 3',
-			'adopt 1002 "c" = 6',
 			"adopt 11 <text> = 4",
 			'adopt 1001 "b" = 5',
+			'adopt 1002 "c" = 6',
 		]);
 	});
 
@@ -95,6 +99,25 @@ describe("hydration's match, outside every block", () => {
 			'adopt 1000 "x" = 4',
 			'write 10 id "lynx-b1"',
 			'props id 10 id "lynx-b1" over "lynx-s1"',
+		]);
+	});
+
+	// An `{#each}`'s plain markers are read through. Nothing either thread reports says which row
+	// is which, so rows in another order, as many as the first frame drew, pair by place, are sure,
+	// and only their texts are written. Pairing by branch leaves this as it is.
+	it("pairs rows in another order by place, writing their texts", () => {
+		expect(
+			planOf(`<view><!--[--><text>a</text><text>b</text><!--]--></view>`, [
+				el(10, "view", [el(11, "text", ["b"]), el(12, "text", ["a"])]),
+			]),
+		).toEqual([
+			"adopt 10 <view> = 2",
+			"adopt 11 <text> = 3",
+			'adopt 1000 "b" = 4',
+			"adopt 12 <text> = 5",
+			'adopt 1001 "a" = 6',
+			'write 1000 text "b"',
+			'write 1001 text "a"',
 		]);
 	});
 
@@ -172,6 +195,12 @@ describe("hydration's match of a list", () => {
 		).toEqual({ kind: "list-keys", element: 10, expected: ["a", "b"], got: ["a", "x", "b"] });
 	});
 
+	it("refuses a held cell the background sent no row for", () => {
+		expect(
+			refusalOf(drawnList(["a"]), [list(10, [{ ...rows[0]!, sent: false }])], { cells: ["a"] }),
+		).toEqual({ kind: "extra", element: 10, got: "list-item" });
+	});
+
 	it("refuses an attribute that differs in a row it holds", () => {
 		expect(
 			refusalOf(
@@ -216,7 +245,7 @@ describe("hydration's match of a list", () => {
 		expect(
 			planOf(
 				`<list><list-item item-key="a"><!--[-1--><text>x</text><!--]--></list-item></list>`,
-				[list(10, [{ id: 20, key: "a", children: [el(21, "image")] }])],
+				[list(10, [{ id: 20, key: "a", children: [block(0, [el(21, "image")])] }])],
 				{ cells: ["a"] },
 			),
 		).toEqual([
@@ -228,22 +257,53 @@ describe("hydration's match of a list", () => {
 		]);
 	});
 
+	// Pairing by branch has yet to settle a list inside a block both threads took alike: keys
+	// that differ refuse outside every block, and such a block's content that does not line up is
+	// made again.
 	it("makes a list in a block again when its keys differ, and does not refuse", () => {
 		expect(
 			planOf(`<view><!--[0--><list><list-item item-key="a"></list-item></list><!--]--></view>`, [
-				el(10, "view", [list(11, [{ id: 20, key: "b" }])]),
+				el(10, "view", [block(0, [list(11, [{ id: 20, key: "b" }])])]),
 			]),
 		).toEqual(["adopt 10 <view> = 2", "make again in 10 = 2: make 11, drop 3"]);
 	});
 
-	it("refuses, inside a block, a held row whose tags differ, naming only where", () => {
-		expect(
-			refusalOf(
-				`<view><!--[0--><list><list-item item-key="a"><text>a</text></list-item></list><!--]--></view>`,
-				[el(10, "view", [list(11, [{ id: 20, key: "a", children: [el(21, "image")] }])])],
-				{ cells: ["a"] },
-			),
-		).toEqual({ kind: "tag", element: 21 });
+	// Pairing by branch has yet to settle a held row inside a block both threads took alike, as
+	// for the keys above.
+	describe("inside a block, refuses a held row naming only where", () => {
+		const markup = `<view><!--[0--><list><list-item item-key="a"><text>a</text></list-item></list><!--]--></view>`;
+
+		it("whose tags differ, by the element", () => {
+			expect(
+				refusalOf(
+					markup,
+					[
+						el(10, "view", [
+							block(0, [list(11, [{ id: 20, key: "a", children: [el(21, "image")] }])]),
+						]),
+					],
+					{ cells: ["a"] },
+				),
+			).toEqual({ kind: "tag", element: 21 });
+		});
+
+		it("whose elements are not as many, by the row", () => {
+			expect(
+				refusalOf(
+					markup,
+					[
+						el(10, "view", [
+							block(0, [
+								list(11, [
+									{ id: 20, key: "a", children: [el(21, "text", ["a"]), el(22, "image")] },
+								]),
+							]),
+						]),
+					],
+					{ cells: ["a"] },
+				),
+			).toEqual({ kind: "tag", element: 20 });
+		});
 	});
 });
 
@@ -251,30 +311,15 @@ describe("hydration's match of Svelte's blocks", () => {
 	it("adopts a block both threads drew alike, and is sure of it", () => {
 		expect(
 			planOf(`<view><!--[0--><text class="a">x</text><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["x"], { class: "a" })]),
+				el(10, "view", [block(0, [el(11, "text", ["x"], { class: "a" })])]),
 			]),
 		).toEqual(["adopt 10 <view> = 2", "adopt 11 <text> = 3", 'adopt 1000 "x" = 4']);
-	});
-
-	it("writes an attribute that differs in a block, and is not sure of what the block holds", () => {
-		expect(
-			planOf(`<view><!--[0--><text class="a" hidden="x">x</text><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["x"], { class: "b" })]),
-			]),
-		).toEqual([
-			"adopt 10 <view> = 2",
-			"adopt 11 <text> = 3",
-			'adopt 1000 "x" = 4',
-			'write 11 class "b"',
-			"write 11 hidden null",
-			"unsure 11 1000",
-		]);
 	});
 
 	it("writes the ids of $props.id() in a block without reporting them, and stays sure", () => {
 		expect(
 			planOf(`<view><!--[0--><text id="lynx-s1">x</text><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["x"], { id: "lynx-b1" })]),
+				el(10, "view", [block(0, [el(11, "text", ["x"], { id: "lynx-b1" })])]),
 			]),
 		).toEqual([
 			"adopt 10 <view> = 2",
@@ -284,10 +329,10 @@ describe("hydration's match of Svelte's blocks", () => {
 		]);
 	});
 
-	it("makes a block whose tags differ again in place, and keeps what is outside it", () => {
+	it("makes a block that took another branch again in place, and keeps what is outside it", () => {
 		expect(
 			planOf(`<view><text>Title</text><!--[0--><view class="a"></view><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["Title"]), el(12, "text", ["Now"])]),
+				el(10, "view", [el(11, "text", ["Title"]), block(1, [el(12, "text", ["Now"])])]),
 			]),
 		).toEqual([
 			"adopt 10 <view> = 2",
@@ -300,7 +345,7 @@ describe("hydration's match of Svelte's blocks", () => {
 	it("leaves a run settled where it made only an empty text among its parent's", () => {
 		expect(
 			planOf(`<text><!--[0--><text>a</text><!--]--></text>`, [
-				el(10, "text", ["", el(11, "text", ["a"])]),
+				el(10, "text", ["", block(0, [el(11, "text", ["a"])])]),
 			]),
 		).toEqual([
 			"adopt 10 <text> = 2",
@@ -310,30 +355,8 @@ describe("hydration's match of Svelte's blocks", () => {
 		]);
 	});
 
-	it("judges runs under different parents apart", () => {
-		expect(
-			planOf(
-				`<view><view><!--[0--><text>a</text><!--]--></view><view><!--[0--><text>b</text><!--]--></view></view>`,
-				[
-					el(10, "view", [
-						el(11, "view", [el(12, "text", ["a"])]),
-						el(13, "view", [el(14, "text", ["c"])]),
-					]),
-				],
-			),
-		).toEqual([
-			"adopt 10 <view> = 2",
-			"adopt 11 <view> = 3",
-			"adopt 12 <text> = 4",
-			'adopt 1000 "a" = 5',
-			"adopt 13 <view> = 6",
-			"adopt 14 <text> = 7",
-			'adopt 1001 "c" = 8',
-			'write 1001 text "c"',
-			"unsure 14 1001",
-		]);
-	});
-
+	// Pairing by branch has yet to settle the first frame's `{#await}` given a promise: the
+	// background reports nothing for it, and draws its content after the page rendered.
 	it("makes an {#await} given a promise again, and adopts what is around it", () => {
 		expect(
 			planOf(`<view><text>Title</text><!--[await--><text>Loading</text><!--]--></view>`, [
@@ -351,12 +374,57 @@ describe("hydration's match of Svelte's blocks", () => {
 // Pairs inside blocks the match guesses from tags. Each pins what the guess does for now; pairing
 // by the branch each `{#if}` took changes it as its comment says.
 describe("hydration's match of blocks, for now", () => {
+	// By branch: the same branch on both threads is an exact pair: written over, and sure.
+	it("writes an attribute that differs in a block, and is not sure of what the block holds", () => {
+		expect(
+			planOf(`<view><!--[0--><text class="a" hidden="x">x</text><!--]--></view>`, [
+				el(10, "view", [block(0, [el(11, "text", ["x"], { class: "b" })])]),
+			]),
+		).toEqual([
+			"adopt 10 <view> = 2",
+			"adopt 11 <text> = 3",
+			'adopt 1000 "x" = 4',
+			'write 11 class "b"',
+			"write 11 hidden null",
+			"unsure 11 1000",
+		]);
+	});
+
+	// By branch: the same branch on both threads is an exact pair: written over, and sure, in
+	// either parent.
+	it("judges runs under different parents apart", () => {
+		expect(
+			planOf(
+				`<view><view><!--[0--><text>a</text><!--]--></view><view><!--[0--><text>b</text><!--]--></view></view>`,
+				[
+					el(10, "view", [
+						el(11, "view", [block(0, [el(12, "text", ["a"])])]),
+						el(13, "view", [block(0, [el(14, "text", ["c"])])]),
+					]),
+				],
+			),
+		).toEqual([
+			"adopt 10 <view> = 2",
+			"adopt 11 <view> = 3",
+			"adopt 12 <text> = 4",
+			'adopt 1000 "a" = 5',
+			"adopt 13 <view> = 6",
+			"adopt 14 <text> = 7",
+			'adopt 1001 "c" = 8',
+			'write 1001 text "c"',
+			"unsure 14 1001",
+		]);
+	});
+
 	// By branch: the drawn text pairs with 11, whose `{#if}` took the same branch on both threads,
 	// and the background-only 12 is made.
 	it("pairs an element with one only the background renders beside it, from the end", () => {
 		expect(
 			planOf(`<view><!--[0--><text>Open</text><!--]--><!--[-1--><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["Open"]), el(12, "text", ["Later"])]),
+				el(10, "view", [
+					block(0, [el(11, "text", ["Open"])]),
+					block(0, [el(12, "text", ["Later"])]),
+				]),
 			]),
 		).toEqual([
 			"adopt 10 <view> = 2",
@@ -372,7 +440,7 @@ describe("hydration's match of blocks, for now", () => {
 	it("adopts another branch with the same tags, writing what differs", () => {
 		expect(
 			planOf(`<view><!--[-1--><text>Log in</text><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["Profile"])]),
+				el(10, "view", [block(0, [el(11, "text", ["Profile"])])]),
 			]),
 		).toEqual([
 			"adopt 10 <view> = 2",
@@ -388,7 +456,7 @@ describe("hydration's match of blocks, for now", () => {
 	it("adopts another branch that looks the same, and is sure of it", () => {
 		expect(
 			planOf(`<view><!--[-1--><text>Open</text><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["Open"])]),
+				el(10, "view", [block(0, [el(11, "text", ["Open"])])]),
 			]),
 		).toEqual(["adopt 10 <view> = 2", "adopt 11 <text> = 3", 'adopt 1000 "Open" = 4']);
 	});
@@ -410,29 +478,11 @@ describe("hydration's match of blocks, for now", () => {
 		]);
 	});
 
-	// By branch: the same. Nothing either thread reports says which row is which, so rows in
-	// another order, as many as the first frame drew, keep pairing by place, and are sure.
-	it("pairs rows in another order by place, writing their texts", () => {
-		expect(
-			planOf(`<view><!--[--><text>a</text><text>b</text><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["b"]), el(12, "text", ["a"])]),
-			]),
-		).toEqual([
-			"adopt 10 <view> = 2",
-			"adopt 11 <text> = 3",
-			'adopt 1000 "b" = 4',
-			"adopt 12 <text> = 5",
-			'adopt 1001 "a" = 6',
-			'write 1000 text "b"',
-			'write 1001 text "a"',
-		]);
-	});
-
 	// By branch: a block both took alike whose content does not line up is made again whole.
 	it("adopts a block's content from both ends and makes its middle again", () => {
 		expect(
 			planOf(`<view><!--[0--><text>a</text><view></view><text>c</text><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["a"]), el(12, "image"), el(13, "text", ["c"])]),
+				el(10, "view", [block(0, [el(11, "text", ["a"]), el(12, "image"), el(13, "text", ["c"])])]),
 			]),
 		).toEqual([
 			"adopt 10 <view> = 2",
@@ -445,11 +495,16 @@ describe("hydration's match of blocks, for now", () => {
 		]);
 	});
 
-	// By branch: each block stands alone, and the image between them is a fixed element, sure.
+	// By branch: each block stands alone. 11 pairs in its own block and is sure, the image between
+	// the blocks is a fixed element and sure, and 13 is made: the second block took another branch.
 	it("takes blocks beside each other, and the elements between them, as one run", () => {
 		expect(
 			planOf(`<view><!--[0--><text>a</text><!--]--><image></image><!--[-1--><!--]--></view>`, [
-				el(10, "view", [el(11, "text", ["a"]), el(12, "image"), el(13, "text", ["b"])]),
+				el(10, "view", [
+					block(0, [el(11, "text", ["a"])]),
+					el(12, "image"),
+					block(0, [el(13, "text", ["b"])]),
+				]),
 			]),
 		).toEqual([
 			"adopt 10 <view> = 2",
@@ -461,13 +516,14 @@ describe("hydration's match of blocks, for now", () => {
 		]);
 	});
 
-	// By branch: the `{#if}`'s element pairs with its own drawn element, and only the pending
-	// branch is made again.
+	// By branch: the `{#if}`'s element pairs with its own drawn element; the `{#await}` given a
+	// promise, which the background reports nothing for, has to be left out of the sequence for
+	// the rest to line up.
 	it("pairs an {#if} beside an {#await} given a promise with the pending branch", () => {
 		expect(
 			planOf(
 				`<view><!--[0--><text>a</text><!--]--><!--[await--><text>Loading</text><!--]--></view>`,
-				[el(10, "view", [el(11, "text", ["a"])])],
+				[el(10, "view", [block(0, [el(11, "text", ["a"])])])],
 			),
 		).toEqual([
 			"adopt 10 <view> = 2",
@@ -480,16 +536,16 @@ describe("hydration's match of blocks, for now", () => {
 	});
 
 	// By branch: the check goes: the block, not a main-thread binding, says which element is which.
-	describe("where the first frame bound a main-thread attribute", () => {
+	describe("where an element has a main-thread attribute", () => {
 		const markup = `<view><!--[0--><view class="go"></view><!--]--><!--[-1--><!--]--></view>`;
 		const built = [
 			el(10, "view", [
-				el(11, "view", [], { class: "go", "main-thread:bindtap": { id: 1 } }),
-				el(12, "view", [], { class: "go" }),
+				block(0, [el(11, "view", [], { class: "go", "main-thread:bindtap": { id: 1 } })]),
+				block(0, [el(12, "view", [], { class: "go" })]),
 			]),
 		];
 
-		it("pairs it with the background's element that has one too", () => {
+		it("pairs the first frame's that bound one with the background's that has one", () => {
 			expect(planOf(markup, built, { binds: [3] })).toEqual([
 				"adopt 10 <view> = 2",
 				"adopt 11 <view> = 3",
@@ -498,12 +554,29 @@ describe("hydration's match of blocks, for now", () => {
 			]);
 		});
 
-		it("pairs by tags alone where it bound none", () => {
+		it("pairs the first frame's that bound none with the background's that has none", () => {
 			expect(planOf(markup, built)).toEqual([
 				"adopt 10 <view> = 2",
 				"adopt 12 <view> = 3",
 				"make again in 10 = 2: make 11, drop none",
 				"unsure 12",
+			]);
+		});
+
+		it("does not pair the first frame's that bound none with one that has one", () => {
+			expect(
+				planOf(`<view><!--[0--><text>Open</text><!--]--><!--[-1--><!--]--></view>`, [
+					el(10, "view", [
+						block(0, [el(11, "text", ["Open"])]),
+						block(0, [el(12, "text", ["Later"], { "main-thread:bindtap": { id: 1 } })]),
+					]),
+				]),
+			).toEqual([
+				"adopt 10 <view> = 2",
+				"adopt 11 <text> = 3",
+				'adopt 1000 "Open" = 4',
+				"make again in 10 = 2: make 12, drop none",
+				"unsure 11 1000",
 			]);
 		});
 	});

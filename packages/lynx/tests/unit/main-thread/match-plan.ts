@@ -1,6 +1,8 @@
 // Hydration's match as a value: a first frame's markup and the page the background rendered in,
 // the plan out as lines of text, or the mismatch that refused it. The drawn ids are the parser's,
 // from 2 in the markup's order; the cells Lynx holds are parsed after the page, in the order given.
+// The lines go kind by kind, and are sorted within each kind: the order the match found its pairs
+// in means nothing.
 
 import { isBlock, parseCell, parsePage } from "../../../src/main-thread/frame/html.ts";
 import type { DrawnCell, DrawnChild } from "../../../src/main-thread/frame/html.ts";
@@ -12,10 +14,17 @@ import { encodeCell, listUpdateInfo, OpCode, ROOT_ID } from "../../../src/wire/i
 import type { AttrValue, HydrationMismatch, Op, PatchItem } from "../../../src/wire/index.ts";
 
 /**
- * A node the background rendered: a text, or an element with its attributes and children. A list
- * of the page has `rows` instead of children: its items, each a `<list-item>` sent as a cell item.
+ * A node the background rendered: a text, an element with its attributes and children, or an
+ * `{#if}` block with the branch it took, as Svelte numbers it. A list of the page has `rows`
+ * instead of children: its items, each a `<list-item>` sent as a cell item.
  */
-export type Built = string | BuiltElement;
+export type Built = string | BuiltElement | BuiltBlock;
+
+/** An `{#if}` the background rendered: its content goes among its parent's children. */
+export interface BuiltBlock {
+	branch: number;
+	children: Built[];
+}
 
 export interface BuiltElement {
 	id: number;
@@ -31,6 +40,8 @@ export interface BuiltRow {
 	key: string;
 	attrs?: Record<string, AttrValue>;
 	children?: Built[];
+	/** `false`: the background sent no cell item for the row. */
+	sent?: false;
 }
 
 /** The first frame's state that is not in its markup. */
@@ -55,6 +66,11 @@ function opsOf(options: { parent: number; built: Built; out: Op[]; cells: PatchI
 		out.push([OpCode.Insert, parent, id, 0]);
 		return;
 	}
+	// The rendered items say nothing of a block yet: its content is its parent's.
+	if ("branch" in built) {
+		for (const child of built.children) opsOf({ parent, built: child, out, cells });
+		return;
+	}
 	out.push([OpCode.Create, built.id, built.tag]);
 	for (const [name, value] of Object.entries(built.attrs ?? {}))
 		out.push([OpCode.SetAttr, built.id, name, value]);
@@ -73,7 +89,7 @@ function opsOf(options: { parent: number; built: Built; out: Op[]; cells: PatchI
 		opsOf({ parent: built.id, built: element, out: ops, cells });
 		// A cell's text makes its row; the list hears of it in its update, not by an insert.
 		ops.pop();
-		cells.push(["cell", row.id, encodeCell(ops)]);
+		if (row.sent !== false) cells.push(["cell", row.id, encodeCell(ops)]);
 	}
 	const infos = new Map(built.rows.map((row) => [row.id, { "item-key": row.key }]));
 	out.push([
@@ -121,12 +137,11 @@ function match(
 				state.set(cell.id, { bound: held.cells?.includes(key) ?? false });
 				parseCell(cell, nextId);
 			}
-	const binds = held.binds;
 	const result = matchFrame({
 		root,
 		rendered,
 		lists: { held: (list) => lists.get(list) ?? new Map() },
-		...(binds && { binds: (drawn: number) => binds.includes(drawn) }),
+		binds: (drawn) => held.binds?.includes(drawn) ?? false,
 	});
 	return { result, rendered };
 }
@@ -135,30 +150,51 @@ function match(
 function lines(plan: Plan, rendered: Rendered): string[] {
 	const out: string[] = [];
 	const ids = (list: number[]): string => list.join(" ") || "none";
+	const numeric = (a: number, b: number): number => a - b;
 	const what = (id: number): string => {
 		const node = rendered.nodes.get(id);
 		if (!node) return "?";
 		return node.tag === "#text" ? JSON.stringify(node.text) : `<${node.tag}>`;
 	};
-	for (const [id, drawn] of plan.adopt) out.push(`adopt ${id} ${what(id)} = ${drawn}`);
-	for (const { id, name, value } of plan.writes)
+	for (const [id, drawn] of [...plan.adopt].sort((a, b) => a[1] - b[1]))
+		out.push(`adopt ${id} ${what(id)} = ${drawn}`);
+	const writes = [...plan.writes].sort(
+		(a, b) => a.id - b.id || (a.name ?? "").localeCompare(b.name ?? ""),
+	);
+	for (const { id, name, value } of writes)
 		out.push(`write ${id} ${name ?? "text"} ${JSON.stringify(value)}`);
-	for (const { parent, drawnParent, make, drop } of plan.repairs)
+	for (const { parent, drawnParent, make, drop } of [...plan.repairs].sort(
+		(a, b) => a.drawnParent - b.drawnParent,
+	))
 		out.push(`make again in ${parent} = ${drawnParent}: make ${ids(make)}, drop ${ids(drop)}`);
 	// A parent's texts made again with none to make or drop change nothing: left out.
-	for (const { parent, drawnParent, make, drop } of plan.textRepairs)
+	for (const { parent, drawnParent, make, drop } of [...plan.textRepairs].sort(
+		(a, b) => a.drawnParent - b.drawnParent,
+	))
 		if (make.length > 0 || drop.length > 0)
 			out.push(`texts again in ${parent} = ${drawnParent}: make ${ids(make)}, drop ${ids(drop)}`);
-	for (const { id, drawn, items, cells } of plan.lists) {
+	for (const { id, drawn, items, cells } of [...plan.lists].sort((a, b) => a.drawn - b.drawn)) {
 		const kept = cells.map((cell) => cell ?? "-").join(" ");
 		out.push(`list ${id} = ${drawn}: items ${ids(items)}, cells ${kept || "none"}`);
 	}
-	if (plan.adoptedCells.size > 0) out.push(`adopted cells ${ids([...plan.adoptedCells])}`);
-	for (const { id, drawn } of plan.nestedLists) out.push(`list in a cell ${id} = ${drawn}`);
-	for (const { element, name, expected, got } of plan.propsIds)
+	if (plan.adoptedCells.size > 0)
+		out.push(`adopted cells ${ids([...plan.adoptedCells].sort(numeric))}`);
+	for (const { id, drawn } of [...plan.nestedLists].sort((a, b) => a.drawn - b.drawn))
+		out.push(`list in a cell ${id} = ${drawn}`);
+	const propsIds = [...plan.propsIds].sort(
+		(a, b) => a.element - b.element || a.name.localeCompare(b.name),
+	);
+	for (const { element, name, expected, got } of propsIds)
 		out.push(`props id ${element} ${name} ${JSON.stringify(expected)} over ${JSON.stringify(got)}`);
-	if (plan.unsure.size > 0) out.push(`unsure ${ids([...plan.unsure].sort((a, b) => a - b))}`);
+	if (plan.unsure.size > 0) out.push(`unsure ${ids([...plan.unsure].sort(numeric))}`);
 	return out;
+}
+
+/** The plan of a hydration the match accepts. Throws when it refuses. */
+export function matchPlan(markup: string, built: Built[], held: Held = {}): Plan {
+	const { result } = match(markup, built, held);
+	if ("mismatch" in result) throw new Error(`refused: ${JSON.stringify(result.mismatch)}`);
+	return result;
 }
 
 /** The plan of a hydration the match accepts, as lines. Throws when it refuses. */
