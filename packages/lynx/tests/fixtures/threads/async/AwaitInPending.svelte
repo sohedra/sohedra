@@ -8,7 +8,7 @@
 <view class="box">
 	<text class="s-before" ontap={() => log.push("s-before")}>before</text>
 	{#await outer}
-		<text class="s-opend" ontap={() => log.push("s-opend")}>outer pending</text>
+		<text class="s-outer-pending" ontap={() => log.push("s-outer-pending")}>outer pending</text>
 		{#await inner}
 			<text class="s-ipend" ontap={() => log.push("s-ipend")}>inner pending</text>
 		{:then value}
