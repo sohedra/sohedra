@@ -157,7 +157,8 @@ Issues and pull requests that don't meet these rules may be closed without revie
   Svelte, Lynx or a host dictates its signature, or it is a file-private function on a hot path.
 - **Exported functions state their types:** `isolatedDeclarations` is on.
 - **Type escapes** (`as`, `any`, `@ts-expect-error`) appear only at boundaries, such as thread
-  entries and untyped Svelte or Lynx APIs, each with a one-line comment giving the reason.
+  entries and untyped Svelte or Lynx APIs, each with a one-line comment that starts with `Boundary:`
+  and gives the reason.
 
 ### Design
 
