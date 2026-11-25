@@ -264,12 +264,10 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		const text = node.data?.trim();
 		if (parent?.kind === "element" && text) {
 			const where = sourceLocation(parent);
-			warnOnce(`text_outside_text:${where ?? `${parent.tag!}:${text}`}`, () =>
-				backgroundError({
-					code: "text_outside_text",
-					details: { text: text.slice(0, 40), parent: parent.tag!, where },
-				}),
-			);
+			warnOnce(`text_outside_text:${where ?? `${parent.tag!}:${text}`}`, () => ({
+				code: "text_outside_text",
+				details: { text: text.slice(0, 40), parent: parent.tag!, where },
+			}));
 		}
 	}
 
@@ -434,11 +432,10 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			if (value !== false && !isGesture(value))
 				reportOnce(
 					`main_thread_gesture_not_a_gesture:${where ?? tag}`,
-					() =>
-						backgroundError({
-							code: "main_thread_gesture_not_a_gesture",
-							details: { value: kindOf(value), tag, where },
-						}),
+					() => ({
+						code: "main_thread_gesture_not_a_gesture",
+						details: { value: kindOf(value), tag, where },
+					}),
 					{ node: element },
 				);
 			return;
@@ -446,11 +443,10 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		if (isFunction(value))
 			reportOnce(
 				`plain_function_under_main_thread:${where ?? tag}:${key}`,
-				() =>
-					backgroundError({
-						code: "plain_function_under_main_thread",
-						details: { name: key, tag, where },
-					}),
+				() => ({
+					code: "plain_function_under_main_thread",
+					details: { name: key, tag, where },
+				}),
 				{ node: element },
 			);
 		const removed = removedEventSpelling(key);
@@ -458,11 +454,10 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			const replacement = removed.replacement;
 			reportOnce(
 				`main_thread_event_spelling_removed:${where ?? tag}:${key}`,
-				() =>
-					backgroundError({
-						code: "main_thread_event_spelling_removed",
-						details: { name: key, replacement, tag, where },
-					}),
+				() => ({
+					code: "main_thread_event_spelling_removed",
+					details: { name: key, replacement, tag, where },
+				}),
 				{ node: element },
 			);
 		}

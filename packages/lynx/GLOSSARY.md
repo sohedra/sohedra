@@ -75,7 +75,8 @@ with when it can be deleted.\
 _Avoid_: hack, fix
 
 **Catalogue**: A program's table of messages. Each entry has a plain sentence, one fix and a docs
-page named by its code.\
+page named by its code. The entries only a development build reports are kept apart, so that a
+production build drops them.\
 _Avoid_: diagnostics, error table
 
 **Code**: The stable snake_case name of a catalogue entry and of its docs page.\

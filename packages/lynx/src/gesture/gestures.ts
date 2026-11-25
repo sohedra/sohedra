@@ -32,7 +32,7 @@ import type {
 	SerializedGesture,
 	SerializedPlainGesture,
 } from "../wire/index.ts";
-import { gestureError } from "./catalogue.ts";
+import { gestureDevelopmentError, gestureError } from "./catalogue.ts";
 import { DEV, MAIN_THREAD, reportWarning } from "./globals.ts";
 import type {
 	DefaultScrollGestureChangeEvent,
@@ -210,7 +210,7 @@ function warnExperimental(place: {
 }): void {
 	if (!DEV || MAIN_THREAD || warned.has(place.name)) return;
 	warned.add(place.name);
-	reportWarning(gestureError({ code: "gesture_relation_experimental", details: place }));
+	reportWarning(gestureDevelopmentError({ code: "gesture_relation_experimental", details: place }));
 }
 
 /** The refs a relation option names; throws, naming the option, when it holds something else. */

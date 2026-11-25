@@ -23,7 +23,7 @@
 // reload does. A message of a later generation than its receiver's therefore means the page
 // reloaded on one thread only, which a development build reports.
 
-import { wireError } from "./catalogue.ts";
+import { wireDevelopmentError } from "./development-catalogue.ts";
 import type { Thread } from "./names.ts";
 
 /** The version of the format. A change that a thread of an older build would misread bumps it. */
@@ -62,12 +62,12 @@ interface Receiver {
  */
 export function checkMessage(message: Stamped, { thread, generation }: Receiver): void {
 	if (message.v !== PROTOCOL_VERSION)
-		throw wireError({
+		throw wireDevelopmentError({
 			code: "threads_from_different_builds",
 			details: { thread, received: message.v, expected: PROTOCOL_VERSION },
 		});
 	if (message.generation > generation && message.t !== "error")
-		throw wireError({
+		throw wireDevelopmentError({
 			code: "page_reloaded_on_one_thread",
 			details: { thread, received: message.generation, generation },
 		});

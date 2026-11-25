@@ -5,7 +5,7 @@
 // nothing of the package: these are tables of names.
 
 import { wireMessage } from "./catalogue.ts";
-import type { WireCode, WireReport } from "./catalogue.ts";
+import type { WireReport } from "./catalogue.ts";
 import type { Thread } from "./names.ts";
 
 const POLYFILL = "@sohedra/lynx-polyfill";
@@ -159,7 +159,10 @@ const owns = (table: object, name: string): boolean =>
  * The report for the global `name`, read on `thread`, by the tables above, whether or not the
  * thread's engine has it; `undefined` for a global the tables don't name.
  */
-function missingGlobal(name: string, thread: Thread): WireReport<WireCode> | undefined {
+function missingGlobal(
+	name: string,
+	thread: Thread,
+): WireReport<"global_not_filled" | "global_background_only" | "global_not_on_lynx"> | undefined {
 	if (owns(NOT_ON_LYNX, name))
 		return { code: "global_not_on_lynx", details: { name, instead: NOT_ON_LYNX[name]! } };
 	if (thread === "main-thread" && BACKGROUND_ONLY.includes(name))

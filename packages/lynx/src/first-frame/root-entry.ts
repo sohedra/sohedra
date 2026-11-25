@@ -6,7 +6,7 @@
 
 import { FUNCTION_FIELDS, isMainThreadFunction, REF_FIELDS } from "../wire/index.ts";
 import type { FunctionsRuntime, MainThreadRefHandle } from "../wire/index.ts";
-import { firstFrameError } from "./catalogue.ts";
+import { firstFrameDevelopmentError, firstFrameError } from "./catalogue.ts";
 import { drawing } from "./drawing.ts";
 import { DEV, firstFrame, functionsGlobal } from "./globals.ts";
 
@@ -47,7 +47,10 @@ export function runOnMainThread<Args extends unknown[], Result>(
 			if (DEV && !warned.has(id)) {
 				warned.add(id);
 				firstFrame.lynx.reportError(
-					firstFrameError({ code: "run_on_main_thread_in_first_frame", details: { id } }),
+					firstFrameDevelopmentError({
+						code: "run_on_main_thread_in_first_frame",
+						details: { id },
+					}),
 					{ level: "warning" },
 				);
 			}

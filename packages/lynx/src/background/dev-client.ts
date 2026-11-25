@@ -9,7 +9,7 @@
 //   page again: a component that threw stays broken after a save that fixes it, since Svelte swaps
 //   the component and mounts nothing again.
 
-import { backgroundError } from "./catalogue.ts";
+import { backgroundDevelopmentError } from "./catalogue.ts";
 import { crashedSinceStart } from "./errors.ts";
 import { background } from "./globals.ts";
 import { warnOnce } from "./report.ts";
@@ -39,7 +39,7 @@ export function reportBuildErrors(errors: unknown): void {
 	if (texts.length > SHOWN) shown.push(`And ${texts.length - SHOWN} more: the terminal shows all.`);
 	try {
 		background.lynx.reportError(
-			backgroundError({ code: "build_failed", details: { where: shown.join("\n\n") } }),
+			backgroundDevelopmentError({ code: "build_failed", details: { where: shown.join("\n\n") } }),
 		);
 	} catch {
 		// Reporting must never throw.
@@ -76,9 +76,7 @@ export function reloadNeedsDevTool(): boolean {
 	// Both spellings, as the dev client looks for both.
 	if (canReload(modules?.["LynxDevToolSetModule"]) || canReload(modules?.["LynxDevtoolSetModule"]))
 		return false;
-	warnOnce("reload_needs_devtool", () =>
-		backgroundError({ code: "reload_needs_devtool", details: {} }),
-	);
+	warnOnce("reload_needs_devtool", () => ({ code: "reload_needs_devtool", details: {} }));
 	return true;
 }
 

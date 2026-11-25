@@ -2,7 +2,7 @@
 // `tests/unit/wire/catalogue.test.ts` fails for an entry without a fix or a page, and snapshots
 // every message.
 
-import { docsLink, formatMessage } from "./messages.ts";
+import { catalogueError, catalogueMessage } from "./messages.ts";
 import type { Catalogue } from "./messages.ts";
 import type { Thread } from "./names.ts";
 
@@ -34,29 +34,20 @@ export interface WireDetails {
 /** What a code of the wire names. */
 export type WireCode = keyof WireDetails;
 
-const THREAD_NAMES: Record<Thread, string> = {
+/** Each thread, as a message names it. */
+export const THREAD_NAMES: Record<Thread, string> = {
 	background: "the background",
 	"main-thread": "the main thread",
 };
 
-/** Every message of the wire. */
-export const WIRE_CATALOGUE: Catalogue<WireDetails> = {
-	threads_from_different_builds: {
-		message: ({ thread, received, expected }) =>
-			"This page's main thread and background thread come from different builds of the app.\n" +
-			`Seen on ${THREAD_NAMES[thread]}: it reads version ${expected} of what the threads send each other, and got version ${received}.`,
-		fix: () =>
-			"Build the app again and reopen the page, so both threads load from one build. If the host caches bundles, clear its cache.",
-		docs: "threads_from_different_builds",
-	},
-	page_reloaded_on_one_thread: {
-		message: ({ thread, received, generation }) =>
-			"This page reloaded on one of its threads only.\n" +
-			`Seen on ${THREAD_NAMES[thread]}: it shows load ${generation} of the page and got a message of load ${received}.`,
-		fix: () =>
-			"Reload the page through Lynx, with `lynx.reload()` or the host's reload, so both threads start the new page together.",
-		docs: "page_reloaded_on_one_thread",
-	},
+/**
+ * The codes only a development build reports. Only code a production build drops reaches their
+ * entries, which are kept apart (./development-catalogue.ts), so it drops their text too.
+ */
+export type WireDevelopmentCode = "threads_from_different_builds" | "page_reloaded_on_one_thread";
+
+/** Every message of the wire that a production build reports. */
+export const WIRE_CATALOGUE: Catalogue<Omit<WireDetails, WireDevelopmentCode>> = {
 	value_not_copyable: {
 		message: ({ thread, reason }) =>
 			`A value sent to ${THREAD_NAMES[thread]} cannot be copied (${reason.split("\n")[0]!.trim()}).`,
@@ -106,20 +97,19 @@ export interface WireReport<Code extends WireCode> {
 	details: WireDetails[Code];
 }
 
-/** The text of a message of the wire. */
-export function wireMessage<Code extends WireCode>({ code, details }: WireReport<Code>): string {
-	const entry = WIRE_CATALOGUE[code];
-	return formatMessage({
-		sentence: entry.message(details),
-		fix: entry.fix(details),
-		link: docsLink(entry.docs),
-	});
-}
-
 /** An error of the wire: its text is the message, and `code` the message's stable code. */
 type WireError = Error & { code: WireCode };
 
-/** The error for a message of the wire. */
-export function wireError<Code extends WireCode>(report: WireReport<Code>): WireError {
-	return Object.assign(new Error(wireMessage(report)), { code: report.code });
+/** The text of a message of the wire that a production build reports. */
+export function wireMessage<Code extends Exclude<WireCode, WireDevelopmentCode>>(
+	report: WireReport<Code>,
+): string {
+	return catalogueMessage(WIRE_CATALOGUE, report);
+}
+
+/** The error for a message of the wire that a production build reports. */
+export function wireError<Code extends Exclude<WireCode, WireDevelopmentCode>>(
+	report: WireReport<Code>,
+): WireError {
+	return catalogueError(WIRE_CATALOGUE, report);
 }

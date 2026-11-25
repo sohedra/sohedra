@@ -2,7 +2,7 @@
 // `tests/unit/main-thread/catalogue.test.ts` fails for an entry without a fix or a page, and
 // snapshots every message.
 
-import { docsLink, formatMessage } from "../wire/index.ts";
+import { catalogueError } from "../wire/index.ts";
 import type { Catalogue } from "../wire/index.ts";
 
 const REPORT =
@@ -54,119 +54,141 @@ export interface MainThreadDetails {
 /** What a code of the main thread names. */
 export type MainThreadCode = keyof MainThreadDetails;
 
-/** Every message of the main thread. */
-export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
-	change_not_applied: {
-		message: ({ reason, change }) =>
-			`A change to the page could not be applied on the main thread: ${reason.split("\n")[0]!.trim()}` +
-			(change === undefined ? "" : `\nWhile trying to ${change}.`),
-		fix: () => `The rest of the change was applied. ${REPORT}`,
-		docs: "change_not_applied",
-	},
-	element_missing: {
-		message: ({ id }) => `The main thread has no element ${id}.`,
-		fix: () => `The two threads disagree about the page. ${REPORT}`,
-		docs: "element_missing",
-	},
-	ui_method_failed: {
-		message: ({ method, code }) =>
-			`Lynx could not run ${method} on the element: it answered with the code ${code}.`,
-		fix: ({ method }) =>
-			`Check that the element is on the page, and that Lynx's docs list ${method} as a UI method of its tag.`,
-		docs: "ui_method_failed",
-	},
-	element_has_no_view: {
-		message: ({ method }) =>
-			`Lynx could not run ${method}: the element has no view on the screen. Lynx makes a view only for an element it draws, not for one that is hidden or not shown yet.`,
-		fix: ({ method }) =>
-			`Call ${method} once the element is shown, for example after a layoutchange event of the element.`,
-		docs: "element_has_no_view",
-	},
-	element_left_page: {
-		message: ({ method }) =>
-			`Lynx could not run ${method}: the element was removed from the page in the same update, before Lynx ran the call.`,
-		fix: () =>
-			"Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.",
-		docs: "element_left_page",
-	},
-	first_frame_markup_unreadable: {
-		message: ({ reason, at }) =>
-			`The first frame was not drawn: its markup could not be read at character ${at}, where ${reason}.`,
-		fix: () => `The page is shown when the background has made it. ${REPORT}`,
-		docs: "first_frame_markup_unreadable",
-	},
-	first_frame_threw: {
-		message: ({ reason }) =>
-			`The first frame was not drawn: a component threw as the page rendered it on the main thread (${reason.split("\n")[0]!.trim()}).`,
-		fix: () =>
-			"Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/environment. The page is shown when the background has made it.",
-		docs: "first_frame_threw",
-	},
-	rewrite_not_page: {
-		message: ({ id }) =>
-			`The background wrote element ${id} again, and the main thread writes only the whole page again.`,
-		fix: () => `The rest of the change was applied. ${REPORT}`,
-		docs: "rewrite_not_page",
-	},
-	list_row_not_written: {
-		message: ({ id }) =>
-			`A <list> asked for its row ${id}, which the page has not written, so the row stays empty.`,
-		fix: () => `The list's other rows are shown. ${REPORT}`,
-		docs: "list_row_not_written",
-	},
-	main_thread_function_not_found: {
-		message: ({ id }) =>
-			`The main-thread function ${id} has no body on the main thread: the module that declares it did not load there.`,
-		fix: () =>
-			`A function of a bundle loaded with import() runs once that bundle has loaded. Otherwise, ${REPORT.charAt(0).toLowerCase()}${REPORT.slice(1)}`,
-		docs: "main_thread_function_not_found",
-	},
-	main_thread_value_too_deep: {
-		message: ({ depth }) =>
-			`A value a main-thread function captured or was given is nested more than ${depth} levels deep, so the function did not run.`,
-		fix: () => "Give the function a flatter value, or only the part of it the function reads.",
-		docs: "main_thread_value_too_deep",
-	},
-	page_is_gone: {
-		message: ({ call }) =>
-			`A call of ${call} has no answer: the page it was made on has been closed or reloaded.`,
-		fix: () =>
-			"Nothing to fix when the page closed on purpose. Otherwise, stop the timers and animations of a page that reloads, so they make no calls for it.",
-		docs: "page_is_gone",
-	},
-	first_frame_call_unanswered: {
-		message: ({ count }) =>
-			`A main-thread function called runOnBackground in the first frame, and no background function took the call when the background took the page over, so it has no answer${count > 1 ? ` (${count} calls)` : ""}.`,
-		fix: () =>
-			"Call it from an element the background renders the same way as the first frame, not one inside {#if mainThread} or a branch the threads take apart, or once the page has started.",
-		docs: "first_frame_call_unanswered",
-	},
+/**
+ * The codes only a development build reports. Only code a production build drops reaches their
+ * entries, which are kept apart, so it drops their text too.
+ */
+export type MainThreadDevelopmentCode =
+	| "main_thread_value_not_runnable"
+	| "main_thread_update_loop";
+
+/** Every message of the main thread that a production build reports. */
+export const MAIN_THREAD_CATALOGUE: Catalogue<Omit<MainThreadDetails, MainThreadDevelopmentCode>> =
+	{
+		change_not_applied: {
+			message: ({ reason, change }) =>
+				`A change to the page could not be applied on the main thread: ${reason.split("\n")[0]!.trim()}` +
+				(change === undefined ? "" : `\nWhile trying to ${change}.`),
+			fix: () => `The rest of the change was applied. ${REPORT}`,
+			docs: "change_not_applied",
+		},
+		element_missing: {
+			message: ({ id }) => `The main thread has no element ${id}.`,
+			fix: () => `The two threads disagree about the page. ${REPORT}`,
+			docs: "element_missing",
+		},
+		ui_method_failed: {
+			message: ({ method, code }) =>
+				`Lynx could not run ${method} on the element: it answered with the code ${code}.`,
+			fix: ({ method }) =>
+				`Check that the element is on the page, and that Lynx's docs list ${method} as a UI method of its tag.`,
+			docs: "ui_method_failed",
+		},
+		element_has_no_view: {
+			message: ({ method }) =>
+				`Lynx could not run ${method}: the element has no view on the screen. Lynx makes a view only for an element it draws, not for one that is hidden or not shown yet.`,
+			fix: ({ method }) =>
+				`Call ${method} once the element is shown, for example after a layoutchange event of the element.`,
+			docs: "element_has_no_view",
+		},
+		element_left_page: {
+			message: ({ method }) =>
+				`Lynx could not run ${method}: the element was removed from the page in the same update, before Lynx ran the call.`,
+			fix: () =>
+				"Call the method while the element is on the page, or check that it still is, for example in the attachment that keeps it.",
+			docs: "element_left_page",
+		},
+		first_frame_markup_unreadable: {
+			message: ({ reason, at }) =>
+				`The first frame was not drawn: its markup could not be read at character ${at}, where ${reason}.`,
+			fix: () => `The page is shown when the background has made it. ${REPORT}`,
+			docs: "first_frame_markup_unreadable",
+		},
+		first_frame_threw: {
+			message: ({ reason }) =>
+				`The first frame was not drawn: a component threw as the page rendered it on the main thread (${reason.split("\n")[0]!.trim()}).`,
+			fix: () =>
+				"Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/environment. The page is shown when the background has made it.",
+			docs: "first_frame_threw",
+		},
+		rewrite_not_page: {
+			message: ({ id }) =>
+				`The background wrote element ${id} again, and the main thread writes only the whole page again.`,
+			fix: () => `The rest of the change was applied. ${REPORT}`,
+			docs: "rewrite_not_page",
+		},
+		list_row_not_written: {
+			message: ({ id }) =>
+				`A <list> asked for its row ${id}, which the page has not written, so the row stays empty.`,
+			fix: () => `The list's other rows are shown. ${REPORT}`,
+			docs: "list_row_not_written",
+		},
+		main_thread_function_not_found: {
+			message: ({ id }) =>
+				`The main-thread function ${id} has no body on the main thread: the module that declares it did not load there.`,
+			fix: () =>
+				`A function of a bundle loaded with import() runs once that bundle has loaded. Otherwise, ${REPORT.charAt(0).toLowerCase()}${REPORT.slice(1)}`,
+			docs: "main_thread_function_not_found",
+		},
+		main_thread_value_too_deep: {
+			message: ({ depth }) =>
+				`A value a main-thread function captured or was given is nested more than ${depth} levels deep, so the function did not run.`,
+			fix: () => "Give the function a flatter value, or only the part of it the function reads.",
+			docs: "main_thread_value_too_deep",
+		},
+		page_is_gone: {
+			message: ({ call }) =>
+				`A call of ${call} has no answer: the page it was made on has been closed or reloaded.`,
+			fix: () =>
+				"Nothing to fix when the page closed on purpose. Otherwise, stop the timers and animations of a page that reloads, so they make no calls for it.",
+			docs: "page_is_gone",
+		},
+		first_frame_call_unanswered: {
+			message: ({ count }) =>
+				`A main-thread function called runOnBackground in the first frame, and no background function took the call when the background took the page over, so it has no answer${count > 1 ? ` (${count} calls)` : ""}.`,
+			fix: () =>
+				"Call it from an element the background renders the same way as the first frame, not one inside {#if mainThread} or a branch the threads take apart, or once the page has started.",
+			docs: "first_frame_call_unanswered",
+		},
+		element_released: {
+			message: ({ method }) =>
+				`A main-thread function called ${method} on an element the page has let go of, so nothing happened.`,
+			fix: () =>
+				"Read the element where the function runs, from its event's target or a ref the element holds now, rather than keeping it past its element's life.",
+			docs: "element_released",
+		},
+		not_a_background_function_handle: {
+			message: ({ name }) =>
+				`The value given to runOnBackground, ${name}, is not a background function it can call, so the call has no answer.`,
+			fix: () =>
+				"Call runOnBackground(fn) in the body of a function that starts with 'main thread', with fn the background function itself: the build turns it into what the call needs there.",
+			docs: "not_a_background_function_handle",
+		},
+		main_thread_attribute_unknown: {
+			message: ({ name }) =>
+				`The attribute ${name} binds nothing: a main-thread attribute is main-thread:ref, main-thread:gesture or a main-thread event.`,
+			fix: () =>
+				"Write a main-thread event as main-thread:ontap, main-thread:ontapcapture, main-thread:oncatchtap or main-thread:oncatchtapcapture, with the event's name in place of tap.",
+			docs: "main_thread_attribute_unknown",
+		},
+		lazy_bundle_not_on_main_thread: {
+			message: ({ url }) =>
+				`The lazy bundle ${url} reached the background but not the main thread, so its main-thread functions and styles are missing.`,
+			fix: () =>
+				"Check that the bundle is served at that address and that the device reaches it: the main thread takes the bundle again only when the page is opened again.",
+			docs: "lazy_bundle_not_on_main_thread",
+		},
+	};
+
+/** The messages of the main thread that only a development build reports. */
+export const MAIN_THREAD_DEVELOPMENT_CATALOGUE: Catalogue<
+	Pick<MainThreadDetails, MainThreadDevelopmentCode>
+> = {
 	main_thread_value_not_runnable: {
 		message: () =>
 			"Lynx asked the main thread to run a value that is not a main-thread function, so nothing ran.",
 		fix: () => `The engine handed back something the page did not give it. ${REPORT}`,
 		docs: "main_thread_value_not_runnable",
-	},
-	element_released: {
-		message: ({ method }) =>
-			`A main-thread function called ${method} on an element the page has let go of, so nothing happened.`,
-		fix: () =>
-			"Read the element where the function runs, from its event's target or a ref the element holds now, rather than keeping it past its element's life.",
-		docs: "element_released",
-	},
-	not_a_background_function_handle: {
-		message: ({ name }) =>
-			`The value given to runOnBackground, ${name}, is not a background function it can call, so the call has no answer.`,
-		fix: () =>
-			"Call runOnBackground(fn) in the body of a function that starts with 'main thread', with fn the background function itself: the build turns it into what the call needs there.",
-		docs: "not_a_background_function_handle",
-	},
-	main_thread_attribute_unknown: {
-		message: ({ name }) =>
-			`The attribute ${name} binds nothing: a main-thread attribute is main-thread:ref, main-thread:gesture or a main-thread event.`,
-		fix: () =>
-			"Write a main-thread event as main-thread:ontap, main-thread:ontapcapture, main-thread:oncatchtap or main-thread:oncatchtapcapture, with the event's name in place of tap.",
-		docs: "main_thread_attribute_unknown",
 	},
 	main_thread_update_loop: {
 		message: ({ limit, fn, event, change }) =>
@@ -179,13 +201,6 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 			"Change the element only when the value differs, as a layout handler that sets a size or a scroll handler that sets a scroll position must. Until the main thread's next turn, what main-thread functions change is not shown.",
 		docs: "main_thread_update_loop",
 	},
-	lazy_bundle_not_on_main_thread: {
-		message: ({ url }) =>
-			`The lazy bundle ${url} reached the background but not the main thread, so its main-thread functions and styles are missing.`,
-		fix: () =>
-			"Check that the bundle is served at that address and that the device reaches it: the main thread takes the bundle again only when the page is opened again.",
-		docs: "lazy_bundle_not_on_main_thread",
-	},
 };
 
 /** One message of the main thread: its code and the details it is written from. */
@@ -194,25 +209,22 @@ interface MainThreadReport<Code extends MainThreadCode> {
 	details: MainThreadDetails[Code];
 }
 
-/** The text of a message of the main thread. */
-export function mainThreadMessage<Code extends MainThreadCode>({
-	code,
-	details,
-}: MainThreadReport<Code>): string {
-	const entry = MAIN_THREAD_CATALOGUE[code];
-	return formatMessage({
-		sentence: entry.message(details),
-		fix: entry.fix(details),
-		link: docsLink(entry.docs),
-	});
-}
-
 /** An error of the main thread: its text is the message, and `code` the message's stable code. */
 type MainThreadError = Error & { code: MainThreadCode };
 
-/** The error for a message of the main thread. */
-export function mainThreadError<Code extends MainThreadCode>(
+/** The error for a message of the main thread that a production build reports. */
+export function mainThreadError<Code extends Exclude<MainThreadCode, MainThreadDevelopmentCode>>(
 	report: MainThreadReport<Code>,
 ): MainThreadError {
-	return Object.assign(new Error(mainThreadMessage(report)), { code: report.code });
+	return catalogueError(MAIN_THREAD_CATALOGUE, report);
+}
+
+/**
+ * The error for a message only a development build reports, for code a production build drops:
+ * elsewhere, its entries would ship.
+ */
+export function mainThreadDevelopmentError<Code extends MainThreadDevelopmentCode>(
+	report: MainThreadReport<Code>,
+): MainThreadError {
+	return catalogueError(MAIN_THREAD_DEVELOPMENT_CATALOGUE, report);
 }

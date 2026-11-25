@@ -49,3 +49,33 @@ export function formatMessage({ sentence, where, frame, fix, link }: MessagePart
 	);
 	return blocks.join("\n\n");
 }
+
+/** One message of a catalogue: its code and the details it is written from. */
+export interface CatalogueReport<Details, Code extends keyof Details> {
+	code: Code;
+	details: Details[Code];
+}
+
+/** The text of one message of `catalogue`; a `where` in its details goes under the sentence. */
+export function catalogueMessage<Details, Code extends keyof Details>(
+	catalogue: Catalogue<Details>,
+	{ code, details }: CatalogueReport<Details, Code>,
+): string {
+	const entry = catalogue[code];
+	// Boundary: `where` is optional in the details of the codes that have it.
+	const where = (details as { where?: string | undefined }).where;
+	return formatMessage({
+		sentence: entry.message(details),
+		where,
+		fix: entry.fix(details),
+		link: docsLink(entry.docs),
+	});
+}
+
+/** The error for one message of `catalogue`: its text is the message, and `code` its stable code. */
+export function catalogueError<Details, Code extends keyof Details>(
+	catalogue: Catalogue<Details>,
+	report: CatalogueReport<Details, Code>,
+): Error & { code: Code } {
+	return Object.assign(new Error(catalogueMessage(catalogue, report)), { code: report.code });
+}
