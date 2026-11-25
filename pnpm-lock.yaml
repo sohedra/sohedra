@@ -329,6 +329,9 @@ importers:
       acorn:
         specifier: ^8.19.0
         version: 8.19.0
+      devalue:
+        specifier: ^5.9.4
+        version: 5.9.4
       dts-buddy:
         specifier: ^0.8.3
         version: 0.8.3(typescript@6.0.3)

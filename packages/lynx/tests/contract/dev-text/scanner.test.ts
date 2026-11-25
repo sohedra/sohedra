@@ -1,6 +1,6 @@
 // The scanner lists the text a production build must not contain. An empty or wrong list would pass
 // every build test, so this pins what it finds and what it leaves out, on a source written for it.
-// The check of built bundles is tests/build/development-text.test.ts.
+// The check of built bundles is in tests/build/size-budgets.test.ts.
 
 import path from "node:path";
 

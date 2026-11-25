@@ -1,8 +1,10 @@
 // Svelte's server runtime imports `devalue` for `hydratable`, which only its async rendering runs.
-// The main thread's build gives it a stand-in that throws, so a page's main-thread script leaves
-// `devalue` out, and the first frame, which renders synchronously, still draws.
+// The main thread's build gives Svelte's import a stand-in that throws, so a page's main-thread
+// script leaves `devalue` out, and the first frame, which renders synchronously, still draws. An
+// app that imports `devalue` itself gets the package.
 
 import { afterAll, beforeAll, describe, expect, it } from "@rstest/core";
+import { stringify } from "devalue";
 
 import { buildApp, cleanBuild, scriptsOf } from "../build-app.ts";
 import type { AppBuild } from "../build-app.ts";
@@ -32,6 +34,28 @@ describe("devalue on the main thread", () => {
 			expect(page.engine.texts()).toEqual(["Waiting"]);
 			await page.settle();
 			expect(page.engine.texts()).toEqual(["ready"]);
+			expect(page.errors.map(String)).toEqual([]);
+		} finally {
+			page.dispose();
+		}
+	});
+});
+
+describe("devalue in the app's own code", () => {
+	let own: AppBuild;
+	beforeAll(async () => {
+		own = await buildApp("own-devalue");
+	}, 180_000);
+	afterAll(() => cleanBuild(own));
+
+	it("is the package, which the app's first frame draws with", async () => {
+		expect(own.error + own.messages).toBe("");
+		const { page } = startDevicePage(scriptsOf(own));
+		try {
+			const drawn = `S:${stringify({ a: 1 })}`;
+			expect(page.engine.texts()).toEqual([drawn]);
+			await page.settle();
+			expect(page.engine.texts()).toEqual([drawn]);
 			expect(page.errors.map(String)).toEqual([]);
 		} finally {
 			page.dispose();
