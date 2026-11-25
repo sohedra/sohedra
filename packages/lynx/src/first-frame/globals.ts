@@ -1,4 +1,4 @@
-// The globals of the page's own main-thread script, as this folder's code may use them. Add a
+// The globals of the app's main-thread script, as this folder's code may use them. Add a
 // member when code first uses it, after checking it on the engine.
 
 import { FUNCTIONS_GLOBAL, REGISTER_FUNCTION } from "../wire/index.ts";

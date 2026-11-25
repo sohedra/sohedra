@@ -1,6 +1,6 @@
-// The first frame as the page's script recorded it: a function of the page's data that writes the
-// frame's markup, as the server would (src/first-frame/). Without one, or when it fails, there is
-// no frame, and the background's first patch makes the page.
+// The first frame as the app's main-thread script recorded it: a function of the page's data that
+// writes the frame's markup, as the server would (src/first-frame/). Without one, or when it fails,
+// there is no frame, and the background's first patch makes the page.
 
 import { FIRST_FRAME_GLOBAL } from "../../wire/index.ts";
 import { mainThreadError } from "../catalogue.ts";
@@ -10,7 +10,7 @@ import { drawFrame } from "./draw.ts";
 import type { DrawOptions, Frame } from "./draw.ts";
 import { UnreadableMarkup } from "./html.ts";
 
-/** Draws the first frame from the page's data, when the page's script recorded how. */
+/** Draws the first frame from the page's data, when the app's main-thread script recorded how. */
 export function drawRecordedFrame(
 	options: Omit<DrawOptions, "html"> & { data: unknown },
 ): Frame | undefined {
@@ -19,7 +19,8 @@ export function drawRecordedFrame(
 	if (typeof markup !== "function") return undefined;
 	let html: string | null;
 	try {
-		// Boundary: the page's script records a function of the page's data (src/first-frame/).
+		// Boundary: the app's main-thread script records a function of the page's data
+		// (src/first-frame/).
 		html = (markup as (data: Record<string, unknown>) => string | null)(isRecord(data) ? data : {});
 	} catch (error) {
 		const reason = error instanceof Error ? error.message : String(error);
