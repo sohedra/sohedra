@@ -18,11 +18,11 @@ export const requestsOf = (names: readonly string[]): RegExp =>
 
 /**
  * Resolves `svelte` and the `dedupe` packages from the app's folder, and this package's own
- * requests from this package's folder. A linked or nested library never brings a second copy of
- * Svelte (two copies break context and reactivity) or of the binding (two renderers reject each
- * other's snippets), and an app that gets the binding through a library, with no dependency of
- * its own, still builds. Resolving the request from a folder, not aliasing it to a path, keeps
- * each package's `exports` conditions working.
+ * requests from this package's folder. A linked or nested library never brings a second install of
+ * Svelte (two installs break context and reactivity) or of the binding (two renderers reject each
+ * other's snippets), and an app that gets the binding through a library, with no dependency of its
+ * own, still builds. Resolving the request from a folder, not aliasing it to a path, keeps each
+ * package's `exports` conditions working.
  */
 class DedupePlugin {
 	readonly rootPath: string;
@@ -45,7 +45,7 @@ class DedupePlugin {
 	}
 }
 
-/** Where the app's own Svelte and its `esm-env` are, and the binding's one copy of each. */
+/** Where the app's own Svelte and its `esm-env` are, and the binding's one install of each. */
 export function configureDedupe(
 	chain: RspackChain,
 	options: { rootPath: string; dedupe: readonly string[] },

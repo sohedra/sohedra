@@ -112,7 +112,10 @@ export interface Scope {
 
 const BOOLEANS = ["st.b0", "!st.b1", "st.n0 === 1", 'st.s0 === ""', "st.a0.length > 1"] as const;
 
-/** The tests of `@sohedra/lynx/environment` whose branch only one thread renders, as the build knows them. */
+/**
+ * The tests of `@sohedra/lynx/environment` whose branch only one thread renders, as the build knows
+ * them.
+ */
 export const THREAD_TESTS = ["background", "!background", "mainThread", "!mainThread"] as const;
 
 /** An `{#if}`'s test: the state's, or one in six a branch only one thread renders. */

@@ -69,10 +69,10 @@ root before a change lands (`pnpm -F <package> test` for one package).
 
 ## Svelte on Lynx
 
-- Lynx packages use Svelte's custom renderers (Svelte 5.59), an experimental API a minor may break,
-  so a Lynx package's Svelte peer range ends at a minor (`~5.59.0`). To support the next minor,
-  widen the range in a branch, update the dev copy, and merge once the tests and manifest checks
-  pass.
+- Lynx packages use Svelte 5.59's custom renderers, an experimental API a minor may break, so their
+  Svelte peer range ends at a minor (`~5.59.0`). To support the next minor, widen it
+  (`~5.59.0 || ~5.60.0`) in a branch, update the dev copy, and merge once the tests and manifest
+  checks pass.
 - Svelte's custom renderers do not support element `bind:`, `transition:`, `in:`, `out:`,
   `animate:`, `{@html}`, `on:`, `<svelte:window>`, `<svelte:document>`, `<svelte:body>`,
   `<svelte:head>` or `css: 'injected'`. Don't use them, offer them, or build stand-ins for them.

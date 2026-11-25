@@ -193,7 +193,7 @@ export interface TestList {
 	/** Lynx shows the cell at `index`; returns its `<list-item>`. */
 	show(index: number): LynxTestElement;
 	/** Lynx hands a shown cell back, with its `<list-item>`: it scrolled away. */
-	hide(item: LynxTestElement): void;
+	hide(listItem: LynxTestElement): void;
 }
 /** The Lynx around the page: what a test drives, or answers, in Lynx's place. */
 export interface TestLynx {

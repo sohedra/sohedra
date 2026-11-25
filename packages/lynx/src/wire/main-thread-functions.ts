@@ -1,4 +1,4 @@
-// What the compiled code of a main-thread function, the page's own main-thread code and the main
+// What the compiled code of a main-thread function, the app's main-thread script and the main
 // thread's runtime agree on. Each thread's copy of a function is an object, and the main thread
 // registers the body under the object's id.
 
@@ -125,7 +125,7 @@ export const FUNCTION_RUNTIME = {
 
 /**
  * The global where the main thread keeps what lives as long as its runtime: the registered bodies,
- * and the page's runtime of main-thread functions. The page's own main-thread code reaches the
+ * and the page's runtime of main-thread functions. The app's main-thread script reaches the
  * runtime only through it: they are separate roots of one script.
  */
 export const FUNCTIONS_GLOBAL = "__sohedraLynxFunctions";
@@ -140,7 +140,7 @@ export interface FunctionsGlobal {
 	nextFirstFrameRef: number;
 }
 
-/** What the page's own main-thread code asks of the main thread's runtime. */
+/** What the app's main-thread script asks of the main thread's runtime. */
 export interface FunctionsRuntime {
 	/** `runOnBackground(handle)(...params)` from a main-thread function. */
 	runOnBackground(handle: unknown, params: unknown[]): Promise<unknown>;

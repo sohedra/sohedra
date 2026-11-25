@@ -1,5 +1,5 @@
 // How packages in `node_modules` are built and resolved: compiled by each thread's rules whatever
-// the app says about `source.include`, and one copy of the packages `dedupe` names.
+// the app says about `source.include`, and one install of the packages `dedupe` names.
 
 import fs from "node:fs";
 import path from "node:path";

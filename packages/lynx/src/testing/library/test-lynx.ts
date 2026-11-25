@@ -71,7 +71,7 @@ export interface TestList {
 	/** Lynx shows the cell at `index`; returns its `<list-item>`. */
 	show(index: number): LynxTestElement;
 	/** Lynx hands a shown cell back, with its `<list-item>`: it scrolled away. */
-	hide(item: LynxTestElement): void;
+	hide(listItem: LynxTestElement): void;
 }
 
 /** The Lynx around the page: what a test drives, or answers, in Lynx's place. */
@@ -161,9 +161,9 @@ export function createTestLynx(session: Rendered): TestLynx {
 				throw testingError({ code: "not_a_list", details: { tag: element.localName } });
 			const handle = engine.list(target);
 			return {
-				// Boundary: a list's items are DOM elements.
+				// Boundary: a `<list-item>` is a DOM element.
 				show: (index) => handle.show(index) as LynxTestElement,
-				hide: (item) => handle.hide(item),
+				hide: (listItem) => handle.hide(listItem),
 			};
 		},
 		gesture(element, kind) {

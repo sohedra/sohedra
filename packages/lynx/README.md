@@ -76,8 +76,8 @@ thread only. These are errors:
   element functions on the background, and `lynx.querySelector`, which neither thread has in Svelte
   on Lynx;
 - a plain function a main-thread function calls without `runOnBackground`;
-- Svelte's own `mount` or `unmount`, imported from `svelte`: the binding's, from `@sohedra/lynx`,
-  mount on the page.
+- Svelte's own `mount` or `unmount`, imported from `svelte`, which work with the web's DOM: import
+  the binding's from `@sohedra/lynx`.
 
 The background has lynx-core's own `URL`, `URLSearchParams`, `fetch`, `Headers`, `Request`,
 `Response` and `AbortController`, so reading them there throws nothing and the build says nothing.

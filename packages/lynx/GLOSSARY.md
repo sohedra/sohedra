@@ -7,8 +7,7 @@ background starts, hydrates it with the background's first patch, and runs main-
 Some names are fixed by the engine or by ReactLynx's wire, such as `_wkltId`, `runWorklet`,
 `_isFirstScreen`, `updateCardData` and `initData`. They are spelled that way only where the wire
 needs them; everywhere else the terms below are used. Some public names keep Lynx's or ReactLynx's
-spelling, such as `initData`, `InitData` and `unmountRecycled`; the _Avoid_ words don't apply to
-them.
+spelling, such as `InitData` and `unmountRecycled`; the _Avoid_ words don't apply to them.
 
 ## Language
 
@@ -84,7 +83,7 @@ _Avoid_: error code
 
 **Repeats**: The counting of identical errors on one thread for one page, of which Lynx gets the
 1st, 10th, 100th and so on.\
-_Avoid_: dedupe (the plugin's option)
+_Avoid_: dedupe (that is the plugin's option)
 
 ### The patch protocol
 

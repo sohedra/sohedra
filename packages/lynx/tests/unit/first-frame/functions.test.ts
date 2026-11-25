@@ -1,4 +1,4 @@
-// The page's own main-thread code's side of main-thread functions: the registry compiled code
+// The app's main-thread script's side of main-thread functions: the registry compiled code
 // registers bodies with, refs the first frame makes, and calls, which reach the main thread's
 // runtime through the global they share.
 
