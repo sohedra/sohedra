@@ -62,6 +62,8 @@ const config: RstestConfig = defineConfig({
 				"tests/unit/background/functions/capture-copy.test.ts",
 				"tests/unit/main-thread/frame-html-pages.test.ts",
 			],
+			// It makes page models and compiles none: a second run would only compete for the CPU.
+			exclude: ["tests/threads/generated/grammar.test.ts"],
 		},
 		{
 			name: "node",

@@ -9,12 +9,18 @@ import fc from "fast-check";
 import { MOST_ROWS, pageModel } from "./grammar.ts";
 import type { ComponentModel, PageModel } from "./grammar.ts";
 import type { MarkupNode } from "./markup.ts";
-import { check, RUNS, TIMEOUT } from "./settings.ts";
+import { check, RUNS, timeoutOf } from "./settings.ts";
+import type { Pages } from "./settings.ts";
 import { pageShape } from "./shape.ts";
 import { describeSources, pageSources } from "./source.ts";
 
-/** A page takes milliseconds to make and walk: ten times the pages a rendering property tries. */
-const PAGES = RUNS * 10;
+/**
+ * A page takes milliseconds to make and walk, so this tries ten times the pages a rendering property
+ * does, each with its own time. A page took 26 ms on average with the generated tests running at
+ * once, and 113 ms on a loaded CI runner with both projects running it, at 300 runs; a quarter of a
+ * second is over twice the most.
+ */
+const MODELS: Pages = { runs: RUNS * 10, each: 250 };
 
 it(
 	`nests no long list or list past a list's item, and renders at most ${MOST_ROWS} rows`,
@@ -29,10 +35,10 @@ it(
 				expect(shape.rows, `Too many rows:\n${what}`).toBeLessThanOrEqual(MOST_ROWS);
 			}),
 			4,
-			PAGES,
+			MODELS,
 		);
 	},
-	TIMEOUT,
+	timeoutOf(MODELS),
 );
 
 /** A list of long rows, each holding `body`. */

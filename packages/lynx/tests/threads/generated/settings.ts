@@ -27,26 +27,40 @@ const PATH = variables["GENERATED_PATH"];
  */
 const PAGE_BUDGET = 1_000;
 
+/** How many pages a property tries, and the time each may take. */
+export interface Pages {
+	runs: number;
+	each: number;
+}
+
+/** The pages of a property that renders them. */
+const RENDERED: Pages = { runs: RUNS, each: PAGE_BUDGET };
+
 /**
  * How long a property may run: its pages, and 30 s to shrink. It stops itself then, and fails: a
  * property that timed out and ran on would share the next test's globals.
  */
-const BUDGET = 30_000 + RUNS * PAGE_BUDGET;
+const budget = ({ runs, each }: Pages): number => 30_000 + runs * each;
 
-/** The timeout of a generated test: its property's budget, and time to report. */
-export const TIMEOUT: number = BUDGET + 15_000;
+/** The timeout of a generated test that checks `pages`: its property's budget, and time to report. */
+export function timeoutOf(pages: Pages = RENDERED): number {
+	return budget(pages) + 15_000;
+}
 
-/** Checks `property` from `SEED + offset`, `runs` times, within `BUDGET`. */
+/** The timeout of a generated test that renders its pages. */
+export const TIMEOUT: number = timeoutOf();
+
+/** Checks `property` from `SEED + offset` on `pages`, within their budget. */
 export async function check<T>(
 	property: fc.IAsyncPropertyWithHooks<T>,
 	offset: number,
-	runs: number = RUNS,
+	pages: Pages = RENDERED,
 ): Promise<void> {
 	await fc.assert(property, {
 		seed: SEED + offset,
-		numRuns: runs,
+		numRuns: pages.runs,
 		...(PATH !== undefined && { path: PATH }),
-		interruptAfterTimeLimit: BUDGET,
+		interruptAfterTimeLimit: budget(pages),
 		markInterruptAsFailure: true,
 		includeErrorInReport: true,
 	});
