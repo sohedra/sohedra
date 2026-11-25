@@ -74,6 +74,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 		attribute: "main-thread:ontap",
 		branch: "`{#if background}`",
 	},
+	svelte_mount_imported: { name: "mount" },
 	unknown_plugin_option: { name: "firstframe", suggestion: "firstFrame" },
 	plugin_option_type: {
 		name: "firstFrame",
@@ -86,7 +87,7 @@ const SAMPLES: { [Code in BuildCode]: BuildDetails[Code] } = {
 	define_key_reserved: { name: "define.mainThread.__DEV__" },
 	define_key_invalid: { name: "define.mainThread.a.b" },
 	page_config_reserved: { key: "enableA11y" },
-	single_copy_name: { given: '["./local"]' },
+	dedupe_name: { given: '["./local"]' },
 	first_frame_not_boolean: { entry: "settings", given: '"yes"' },
 	css_not_stored: { file: "/app/src/Card.svelte" },
 	hot_footer_missing: { file: "/app/src/Card.svelte" },

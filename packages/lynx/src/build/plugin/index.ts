@@ -50,7 +50,7 @@ import {
 	configureBackgroundOnly,
 	configureQueueMicrotask,
 	configureResolve,
-	configureSingleCopies,
+	configureDedupe,
 	configureSvelteEvents,
 	ignoreUnusedSvelteServerCode,
 } from "./resolve.ts";
@@ -115,7 +115,7 @@ const EVERY_SCRIPT = /\.(?:js|mjs|cjs|ts|mts|cts)$/;
 export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): RsbuildPlugin {
 	checkPluginOptions(options);
 	const resolved = resolveOptions(options);
-	const { engineVersion, firstFrame, define, singleCopy, configFile } = resolved;
+	const { engineVersion, firstFrame, define, dedupe, configFile } = resolved;
 	const { template, pageConfig } = resolvePageConfig(resolved.pageConfig);
 
 	const plugin: RsbuildPlugin = {
@@ -164,7 +164,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 						});
 						// A first-frame copy's modules are the main thread's: a background-only one is a stub.
 						configureBackgroundOnly(chain, loaderPath("background-only"));
-						configureSingleCopies(chain, { rootPath: root, singleCopy });
+						configureDedupe(chain, { rootPath: root, dedupe });
 						configureSvelteEvents(chain);
 						configureTestResolve(chain, development);
 						ignoreUnusedSvelteServerCode(chain, bundler);
@@ -246,7 +246,7 @@ export function pluginSvelteLynx(options: PluginSvelteLynxOptions = {}): Rsbuild
 					});
 					defineDebugEnvironment(chain, bundler);
 					chain.plugin(`${PACKAGE_NAME}:source-map-ignore-list`).use(SourceMapIgnoreListPlugin);
-					configureSingleCopies(chain, { rootPath: root, singleCopy });
+					configureDedupe(chain, { rootPath: root, dedupe });
 					configureSvelteEvents(chain);
 					configureBackgroundOnly(chain, loaderPath("background-only"));
 					configureResolve(chain, isDev);

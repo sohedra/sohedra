@@ -77,7 +77,7 @@ interface PluginSvelteLynxOptions {
 	 * linked or nested package brings a second copy. Every import of a listed package resolves from
 	 * the app's folder on both threads, so the app must be able to resolve it.
 	 */
-	singleCopy?: string[];
+	dedupe?: string[];
 	/**
 	 * Settings of the page that Lynx's engine reads: `enableCSSRule`, `longPressDuration`,
 	 * `enableCSSInheritance` and the rest. The engine checks the keys, so a misspelt one is passed

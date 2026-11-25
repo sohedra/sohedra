@@ -6,7 +6,7 @@ import { describe, expect, it } from "@rstest/core";
 import { component } from "../compiling.ts";
 
 const ENV =
-	'<script>\n\timport { background, mainThread } from "@sohedra/lynx/env";\n\tconst tap = () => { "main thread"; };\n</script>\n';
+	'<script>\n\timport { background, mainThread } from "@sohedra/lynx/environment";\n\tconst tap = () => { "main thread"; };\n</script>\n';
 
 /** The handler warnings of a component, in a development build with checks. */
 async function warnings(markup: string, options: { development?: boolean } = {}) {
@@ -59,7 +59,7 @@ describe("a main-thread handler in a thread branch", () => {
 	it("is silenced by the comment above a multi-line element", async () => {
 		expect(
 			await warnings(
-				'{#if background}\n\t<!-- svelte-lynx-ignore main_thread_handler_in_thread_branch -->\n\t<view\n\t\tclass="row"\n\t\tmain-thread:ontap={tap}\n\t></view>\n{/if}',
+				'{#if background}\n\t<!-- sohedra-ignore main_thread_handler_in_thread_branch -->\n\t<view\n\t\tclass="row"\n\t\tmain-thread:ontap={tap}\n\t></view>\n{/if}',
 			),
 		).toEqual([]);
 	});
@@ -69,7 +69,7 @@ describe("a main-thread handler in a thread branch", () => {
 		expect(await warnings(markup, { development: false })).toEqual([]);
 		expect(
 			await warnings(
-				"{#if background}\n\t<!-- svelte-lynx-ignore main_thread_handler_in_thread_branch -->\n\t<view main-thread:ontap={tap}></view>\n{/if}",
+				"{#if background}\n\t<!-- sohedra-ignore main_thread_handler_in_thread_branch -->\n\t<view main-thread:ontap={tap}></view>\n{/if}",
 			),
 		).toEqual([]);
 	});

@@ -43,7 +43,7 @@ describe("the Vitest preset's plugins", { timeout: 60_000 }, () => {
 					mainThread: { __WHERE__: '"main"' },
 					background: { __WHERE__: '"background"' },
 				},
-				singleCopy: ["fast-check"],
+				dedupe: ["fast-check"],
 			}),
 			{ given: {} },
 		);

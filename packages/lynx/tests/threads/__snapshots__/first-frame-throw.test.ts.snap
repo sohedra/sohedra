@@ -12,6 +12,6 @@ https://sohedra.com/e/first_frame_markup_unreadable",
 exports[`a first frame that cannot be drawn > whose render throws is reported, and the background makes the page 1`] = `
 "The first frame was not drawn: a component threw as the page rendered it on the main thread (the component threw).
 
-Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/env. The page is shown when the background has made it.
+Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/environment. The page is shown when the background has made it.
 https://sohedra.com/e/first_frame_threw"
 `;

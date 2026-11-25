@@ -20,12 +20,12 @@ export type { FireEvent, LynxEventInit, LynxEventName } from "./library/fire-eve
 export { render } from "./library/render.ts";
 export type { LynxRenderOptions, RenderOptions, RenderResult } from "./library/render.ts";
 export type {
-	GestureKind,
 	Invocation,
 	InvokeHandler,
 	LynxTestElement,
 	TestGesture,
 	TestGestureEvent,
+	TestGestureKind,
 	TestList,
 	TestLynx,
 	TestRect,

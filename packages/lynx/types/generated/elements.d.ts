@@ -2598,18 +2598,18 @@ export interface LynxDefaultEvents<Tag extends string = string> {
 }
 
 /** The attributes and events of `<component>`. */
-export interface ComponentAttributes
+export interface LynxComponentAttributes
 	extends LynxCommonAttributes<"component">, LynxDefaultAttributes<"component"> {
 	/** Component name */
 	is?: string | null;
 }
 
 /** The events `<component>` sends, by name, as its listeners hear them. */
-export interface ComponentEvents
+export interface LynxComponentEvents
 	extends LynxCommonEvents<"component">, LynxDefaultEvents<"component"> {}
 
 /** The attributes and events of `<filter-image>`. */
-export interface FilterImageAttributes
+export interface LynxFilterImageAttributes
 	extends LynxCommonAttributes<"filter-image">, LynxDefaultAttributes<"filter-image"> {
 	/**
 	 * Supports http/https/base64
@@ -2684,7 +2684,7 @@ export interface FilterImageAttributes
 }
 
 /** The events `<filter-image>` sends, by name, as its listeners hear them. */
-export interface FilterImageEvents
+export interface LynxFilterImageEvents
 	extends LynxCommonEvents<"filter-image">, LynxDefaultEvents<"filter-image"> {
 	/** Image load success event */
 	load: LynxFilterImageLoadEvent<LynxNode, LynxNode<"filter-image">>;
@@ -2693,7 +2693,7 @@ export interface FilterImageEvents
 }
 
 /** The attributes and events of `<image>`. */
-export interface ImageAttributes
+export interface LynxImageAttributes
 	extends LynxCommonAttributes<"image">, LynxDefaultAttributes<"image"> {
 	/**
 	 * Supports http/https/base64
@@ -2879,7 +2879,7 @@ export interface ImageAttributes
 }
 
 /** The events `<image>` sends, by name, as its listeners hear them. */
-export interface ImageEvents extends LynxCommonEvents<"image">, LynxDefaultEvents<"image"> {
+export interface LynxImageEvents extends LynxCommonEvents<"image">, LynxDefaultEvents<"image"> {
 	/** Image load success event */
 	load: LynxLoadEvent<LynxNode, LynxNode<"image">>;
 	/** Image load error event */
@@ -2893,7 +2893,7 @@ export interface ImageEvents extends LynxCommonEvents<"image">, LynxDefaultEvent
 }
 
 /** The attributes and events of `<inline-image>`. */
-export interface InlineImageAttributes
+export interface LynxInlineImageAttributes
 	extends LynxCommonAttributes<"inline-image">, LynxDefaultAttributes<"inline-image"> {
 	/**
 	 * Supports http/https/base64
@@ -3089,7 +3089,7 @@ export interface InlineImageAttributes
 }
 
 /** The events `<inline-image>` sends, by name, as its listeners hear them. */
-export interface InlineImageEvents
+export interface LynxInlineImageEvents
 	extends LynxCommonEvents<"inline-image">, LynxDefaultEvents<"inline-image"> {
 	/** Image load success event */
 	load: LynxLoadEvent<LynxNode, LynxNode<"inline-image">>;
@@ -3104,7 +3104,7 @@ export interface InlineImageEvents
 }
 
 /** The attributes and events of `<inline-text>`. */
-export interface InlineTextAttributes
+export interface LynxInlineTextAttributes
 	extends LynxCommonAttributes<"inline-text">, LynxDefaultAttributes<"inline-text"> {
 	/**
 	 * Backported to 2.18 on Android and iOS; availability differs across later maintenance releases.
@@ -3240,7 +3240,7 @@ export interface InlineTextAttributes
 }
 
 /** The events `<inline-text>` sends, by name, as its listeners hear them. */
-export interface InlineTextEvents
+export interface LynxInlineTextEvents
 	extends LynxCommonEvents<"inline-text">, LynxDefaultEvents<"inline-text"> {
 	/** Text layout event */
 	layout: LynxLayoutEvent<LynxNode, LynxNode<"inline-text">>;
@@ -3249,13 +3249,13 @@ export interface InlineTextEvents
 }
 
 /** The attributes and events of `<inline-truncation>`. */
-export interface InlineTruncationAttributes extends LynxElementAttributes<"inline-truncation"> {}
+export interface LynxInlineTruncationAttributes extends LynxElementAttributes<"inline-truncation"> {}
 
 /** The events `<inline-truncation>` sends, by name, as its listeners hear them. */
-export interface InlineTruncationEvents {}
+export interface LynxInlineTruncationEvents {}
 
 /** The attributes and events of `<list>`. */
-export interface ListAttributes
+export interface LynxListAttributes
 	extends LynxCommonAttributes<"list">, LynxDefaultAttributes<"list"> {
 	/**
 	 * Sets the scrolling direction and layout direction.
@@ -3712,7 +3712,7 @@ export interface ListAttributes
 }
 
 /** The events `<list>` sends, by name, as its listeners hear them. */
-export interface ListEvents extends LynxCommonEvents<"list">, LynxDefaultEvents<"list"> {
+export interface LynxListEvents extends LynxCommonEvents<"list">, LynxDefaultEvents<"list"> {
 	/** Called when an animation type starts within a transaction. */
 	listanimationstart: LynxListAnimationStartEvent<LynxNode, LynxNode<"list">>;
 	/** Called when all participating items of an animation type finish normally. */
@@ -3736,7 +3736,7 @@ export interface ListEvents extends LynxCommonEvents<"list">, LynxDefaultEvents<
 }
 
 /** The attributes and events of `<list-item>`. */
-export interface ListItemAttributes
+export interface LynxListItemAttributes
 	extends LynxCommonAttributes<"list-item">, LynxDefaultAttributes<"list-item"> {
 	/** The unique key of list child node, and it's a mandatory property. */
 	"item-key"?: string | null;
@@ -3776,26 +3776,26 @@ export interface ListItemAttributes
 }
 
 /** The events `<list-item>` sends, by name, as its listeners hear them. */
-export interface ListItemEvents
+export interface LynxListItemEvents
 	extends LynxCommonEvents<"list-item">, LynxDefaultEvents<"list-item"> {}
 
 /** The attributes and events of `<list-row>`. */
-export interface ListRowAttributes
+export interface LynxListRowAttributes
 	extends LynxCommonAttributes<"list-row">, LynxDefaultAttributes<"list-row"> {}
 
 /** The events `<list-row>` sends, by name, as its listeners hear them. */
-export interface ListRowEvents
+export interface LynxListRowEvents
 	extends LynxCommonEvents<"list-row">, LynxDefaultEvents<"list-row"> {}
 
 /** The attributes and events of `<page>`. */
-export interface PageAttributes
+export interface LynxPageAttributes
 	extends LynxCommonAttributes<"page">, LynxDefaultAttributes<"page"> {}
 
 /** The events `<page>` sends, by name, as its listeners hear them. */
-export interface PageEvents extends LynxCommonEvents<"page">, LynxDefaultEvents<"page"> {}
+export interface LynxPageEvents extends LynxCommonEvents<"page">, LynxDefaultEvents<"page"> {}
 
 /** The attributes and events of `<scroll-view>`. */
-export interface ScrollViewAttributes
+export interface LynxScrollViewAttributes
 	extends LynxCommonAttributes<"scroll-view">, LynxDefaultAttributes<"scroll-view"> {
 	/**
 	 * Replacement of scroll-x and scroll-y
@@ -4045,7 +4045,7 @@ export interface ScrollViewAttributes
 }
 
 /** The events `<scroll-view>` sends, by name, as its listeners hear them. */
-export interface ScrollViewEvents
+export interface LynxScrollViewEvents
 	extends LynxCommonEvents<"scroll-view">, LynxDefaultEvents<"scroll-view"> {
 	/**
 	 * This event is triggered when the upper/left edge of the scrolling area intersects with the visible area defined by the upperThreshold.
@@ -4075,7 +4075,7 @@ export interface ScrollViewEvents
 }
 
 /** The attributes and events of `<text>`. */
-export interface TextAttributes
+export interface LynxTextAttributes
 	extends LynxCommonAttributes<"text">, LynxDefaultAttributes<"text"> {
 	/**
 	 * Backported to 2.18 on Android and iOS; availability differs across later maintenance releases.
@@ -4207,7 +4207,7 @@ export interface TextAttributes
 }
 
 /** The events `<text>` sends, by name, as its listeners hear them. */
-export interface TextEvents extends LynxCommonEvents<"text">, LynxDefaultEvents<"text"> {
+export interface LynxTextEvents extends LynxCommonEvents<"text">, LynxDefaultEvents<"text"> {
 	/** Text layout event */
 	layout: LynxLayoutEvent<LynxNode, LynxNode<"text">>;
 	/** Text selection change event */
@@ -4215,24 +4215,24 @@ export interface TextEvents extends LynxCommonEvents<"text">, LynxDefaultEvents<
 }
 
 /** The attributes and events of `<view>`. */
-export interface ViewAttributes
+export interface LynxViewAttributes
 	extends LynxCommonAttributes<"view">, LynxDefaultAttributes<"view"> {}
 
 /** The events `<view>` sends, by name, as its listeners hear them. */
-export interface ViewEvents extends LynxCommonEvents<"view">, LynxDefaultEvents<"view"> {}
+export interface LynxViewEvents extends LynxCommonEvents<"view">, LynxDefaultEvents<"view"> {}
 
 /** The attributes and events of `<raw-text>`. */
-export interface RawTextAttributes
+export interface LynxRawTextAttributes
 	extends LynxCommonAttributes<"raw-text">, LynxDefaultAttributes<"raw-text"> {
 	text: string | number;
 }
 
 /** The events `<raw-text>` sends, by name, as its listeners hear them. */
-export interface RawTextEvents
+export interface LynxRawTextEvents
 	extends LynxCommonEvents<"raw-text">, LynxDefaultEvents<"raw-text"> {}
 
 /** The attributes and events of `<input>`. */
-export interface InputAttributes extends LynxCommonAttributes<"input"> {
+export interface LynxInputAttributes extends LynxCommonAttributes<"input"> {
 	/**
 	 * Keep the editor focused after confirmation instead of dismissing the keyboard.
 	 * The next action still performs native focus traversal.
@@ -4408,7 +4408,7 @@ export interface InputAttributes extends LynxCommonAttributes<"input"> {
 }
 
 /** The events `<input>` sends, by name, as its listeners hear them. */
-export interface InputEvents extends LynxCommonEvents<"input"> {
+export interface LynxInputEvents extends LynxCommonEvents<"input"> {
 	/** Focused */
 	focus: LynxInputFocusEvent<LynxNode, LynxNode<"input">>;
 	/** Blurred */
@@ -4422,7 +4422,7 @@ export interface InputEvents extends LynxCommonEvents<"input"> {
 }
 
 /** The attributes and events of `<textarea>`. */
-export interface TextareaAttributes extends LynxCommonAttributes<"textarea"> {
+export interface LynxTextareaAttributes extends LynxCommonAttributes<"textarea"> {
 	/**
 	 * Keep the editor focused after confirmation instead of dismissing the keyboard.
 	 * The next action still performs native focus traversal.
@@ -4634,7 +4634,7 @@ export interface TextareaAttributes extends LynxCommonAttributes<"textarea"> {
 }
 
 /** The events `<textarea>` sends, by name, as its listeners hear them. */
-export interface TextareaEvents extends LynxCommonEvents<"textarea"> {
+export interface LynxTextareaEvents extends LynxCommonEvents<"textarea"> {
 	/** Focused */
 	focus: LynxTextAreaFocusEvent<LynxNode, LynxNode<"textarea">>;
 	/** Blurred */
@@ -4648,7 +4648,7 @@ export interface TextareaEvents extends LynxCommonEvents<"textarea"> {
 }
 
 /** The attributes and events of `<overlay>`. */
-export interface OverlayAttributes
+export interface LynxOverlayAttributes
 	extends LynxCommonAttributes<"overlay">, LynxDefaultAttributes<"overlay"> {
 	/**
 	 * Keeps a global overlay displayed when its authored view detaches.
@@ -4799,7 +4799,8 @@ export interface OverlayAttributes
 }
 
 /** The events `<overlay>` sends, by name, as its listeners hear them. */
-export interface OverlayEvents extends LynxCommonEvents<"overlay">, LynxDefaultEvents<"overlay"> {
+export interface LynxOverlayEvents
+	extends LynxCommonEvents<"overlay">, LynxDefaultEvents<"overlay"> {
 	/** Callback when the overlay is displayed */
 	showoverlay: LynxEvent<LynxNode, LynxNode<"overlay">>;
 	/** Callback when the overlay is hidden. */
@@ -4813,7 +4814,8 @@ export interface OverlayEvents extends LynxCommonEvents<"overlay">, LynxDefaultE
 }
 
 /** The attributes and events of `<svg>`. */
-export interface SvgAttributes extends LynxCommonAttributes<"svg">, LynxDefaultAttributes<"svg"> {
+export interface LynxSvgAttributes
+	extends LynxCommonAttributes<"svg">, LynxDefaultAttributes<"svg"> {
 	/** SVG resource URL */
 	src?: string | null;
 	/** SVG XML content */
@@ -4842,13 +4844,13 @@ export interface SvgAttributes extends LynxCommonAttributes<"svg">, LynxDefaultA
 }
 
 /** The events `<svg>` sends, by name, as its listeners hear them. */
-export interface SvgEvents extends LynxCommonEvents<"svg">, LynxDefaultEvents<"svg"> {
+export interface LynxSvgEvents extends LynxCommonEvents<"svg">, LynxDefaultEvents<"svg"> {
 	/** SVG Loaded */
 	load: LynxEvent<LynxNode, LynxNode<"svg">>;
 }
 
 /** The attributes and events of `<title-bar-view>`. */
-export interface TitleBarViewAttributes
+export interface LynxTitleBarViewAttributes
 	extends LynxCommonAttributes<"title-bar-view">, LynxDefaultAttributes<"title-bar-view"> {
 	/**
 	 * When set to true, the title bar view is able to move the window when dragged.
@@ -4858,11 +4860,11 @@ export interface TitleBarViewAttributes
 }
 
 /** The events `<title-bar-view>` sends, by name, as its listeners hear them. */
-export interface TitleBarViewEvents
+export interface LynxTitleBarViewEvents
 	extends LynxCommonEvents<"title-bar-view">, LynxDefaultEvents<"title-bar-view"> {}
 
 /** The attributes and events of `<refresh>`. */
-export interface RefreshAttributes
+export interface LynxRefreshAttributes
 	extends LynxCommonAttributes<"refresh">, LynxDefaultAttributes<"refresh"> {
 	/**
 	 * Determines if dragging down or calling autoStartRefresh can trigger the startrefresh event.
@@ -4964,7 +4966,8 @@ export interface RefreshAttributes
 }
 
 /** The events `<refresh>` sends, by name, as its listeners hear them. */
-export interface RefreshEvents extends LynxCommonEvents<"refresh">, LynxDefaultEvents<"refresh"> {
+export interface LynxRefreshEvents
+	extends LynxCommonEvents<"refresh">, LynxDefaultEvents<"refresh"> {
 	/** Triggered when enable-refresh is true, and dragging down or calling autoStartRefresh (enters refresh state). */
 	startrefresh: LynxRefreshStartRefreshEvent<LynxNode, LynxNode<"refresh">>;
 	/** Triggered during movement when `<refresh-header>` is exposed. */
@@ -4974,15 +4977,15 @@ export interface RefreshEvents extends LynxCommonEvents<"refresh">, LynxDefaultE
 }
 
 /** The attributes and events of `<refresh-header>`. */
-export interface RefreshHeaderAttributes
+export interface LynxRefreshHeaderAttributes
 	extends LynxCommonAttributes<"refresh-header">, LynxDefaultAttributes<"refresh-header"> {}
 
 /** The events `<refresh-header>` sends, by name, as its listeners hear them. */
-export interface RefreshHeaderEvents
+export interface LynxRefreshHeaderEvents
 	extends LynxCommonEvents<"refresh-header">, LynxDefaultEvents<"refresh-header"> {}
 
 /** The attributes and events of `<scroll-coordinator>`. */
-export interface ScrollCoordinatorAttributes
+export interface LynxScrollCoordinatorAttributes
 	extends LynxCommonAttributes<"scroll-coordinator">, LynxDefaultAttributes<"scroll-coordinator"> {
 	/**
 	 * Initial support was backported; component registration differs across later release branches.
@@ -5081,14 +5084,14 @@ export interface ScrollCoordinatorAttributes
 }
 
 /** The events `<scroll-coordinator>` sends, by name, as its listeners hear them. */
-export interface ScrollCoordinatorEvents
+export interface LynxScrollCoordinatorEvents
 	extends LynxCommonEvents<"scroll-coordinator">, LynxDefaultEvents<"scroll-coordinator"> {
 	/** Callback for folding progress */
 	offset: LynxScrollCoordinatorOffsetEvent<LynxNode, LynxNode<"scroll-coordinator">>;
 }
 
 /** The attributes and events of `<scroll-coordinator-header>`. */
-export interface ScrollCoordinatorHeaderAttributes
+export interface LynxScrollCoordinatorHeaderAttributes
 	extends
 		LynxCommonAttributes<"scroll-coordinator-header">,
 		LynxDefaultAttributes<"scroll-coordinator-header"> {
@@ -5100,25 +5103,25 @@ export interface ScrollCoordinatorHeaderAttributes
 }
 
 /** The events `<scroll-coordinator-header>` sends, by name, as its listeners hear them. */
-export interface ScrollCoordinatorHeaderEvents
+export interface LynxScrollCoordinatorHeaderEvents
 	extends
 		LynxCommonEvents<"scroll-coordinator-header">,
 		LynxDefaultEvents<"scroll-coordinator-header"> {}
 
 /** The attributes and events of `<scroll-coordinator-slot>`. */
-export interface ScrollCoordinatorSlotAttributes
+export interface LynxScrollCoordinatorSlotAttributes
 	extends
 		LynxCommonAttributes<"scroll-coordinator-slot">,
 		LynxDefaultAttributes<"scroll-coordinator-slot"> {}
 
 /** The events `<scroll-coordinator-slot>` sends, by name, as its listeners hear them. */
-export interface ScrollCoordinatorSlotEvents
+export interface LynxScrollCoordinatorSlotEvents
 	extends
 		LynxCommonEvents<"scroll-coordinator-slot">,
 		LynxDefaultEvents<"scroll-coordinator-slot"> {}
 
 /** The attributes and events of `<scroll-coordinator-slot-drag>`. */
-export interface ScrollCoordinatorSlotDragAttributes
+export interface LynxScrollCoordinatorSlotDragAttributes
 	extends
 		LynxCommonAttributes<"scroll-coordinator-slot-drag">,
 		LynxDefaultAttributes<"scroll-coordinator-slot-drag"> {
@@ -5130,25 +5133,25 @@ export interface ScrollCoordinatorSlotDragAttributes
 }
 
 /** The events `<scroll-coordinator-slot-drag>` sends, by name, as its listeners hear them. */
-export interface ScrollCoordinatorSlotDragEvents
+export interface LynxScrollCoordinatorSlotDragEvents
 	extends
 		LynxCommonEvents<"scroll-coordinator-slot-drag">,
 		LynxDefaultEvents<"scroll-coordinator-slot-drag"> {}
 
 /** The attributes and events of `<scroll-coordinator-toolbar>`. */
-export interface ScrollCoordinatorToolbarAttributes
+export interface LynxScrollCoordinatorToolbarAttributes
 	extends
 		LynxCommonAttributes<"scroll-coordinator-toolbar">,
 		LynxDefaultAttributes<"scroll-coordinator-toolbar"> {}
 
 /** The events `<scroll-coordinator-toolbar>` sends, by name, as its listeners hear them. */
-export interface ScrollCoordinatorToolbarEvents
+export interface LynxScrollCoordinatorToolbarEvents
 	extends
 		LynxCommonEvents<"scroll-coordinator-toolbar">,
 		LynxDefaultEvents<"scroll-coordinator-toolbar"> {}
 
 /** The attributes and events of `<viewpager>`. */
-export interface ViewpagerAttributes
+export interface LynxViewpagerAttributes
 	extends LynxCommonAttributes<"viewpager">, LynxDefaultAttributes<"viewpager"> {
 	/**
 	 * UIView's tag, be used to identify the UIView of the UIGestureRecognizer which identified by `ios-recognized-gesture-class`. This property is designed to let an UIPanGesture work together with viewpager.
@@ -5286,7 +5289,7 @@ export interface ViewpagerAttributes
 }
 
 /** The events `<viewpager>` sends, by name, as its listeners hear them. */
-export interface ViewpagerEvents
+export interface LynxViewpagerEvents
 	extends LynxCommonEvents<"viewpager">, LynxDefaultEvents<"viewpager"> {
 	/** Page switch event, it will only be triggered when the UI completely switches to the next page (from 100% to 200%). */
 	change: LynxViewPagerChangeEvent<LynxNode, LynxNode<"viewpager">>;
@@ -5297,15 +5300,15 @@ export interface ViewpagerEvents
 }
 
 /** The attributes and events of `<viewpager-item>`. */
-export interface ViewpagerItemAttributes
+export interface LynxViewpagerItemAttributes
 	extends LynxCommonAttributes<"viewpager-item">, LynxDefaultAttributes<"viewpager-item"> {}
 
 /** The events `<viewpager-item>` sends, by name, as its listeners hear them. */
-export interface ViewpagerItemEvents
+export interface LynxViewpagerItemEvents
 	extends LynxCommonEvents<"viewpager-item">, LynxDefaultEvents<"viewpager-item"> {}
 
 /** The attributes and events of `<blur-view>`. */
-export interface BlurViewAttributes
+export interface LynxBlurViewAttributes
 	extends LynxCommonAttributes<"blur-view">, LynxDefaultAttributes<"blur-view"> {
 	/**
 	 * Gaussian blur radius.
@@ -5366,11 +5369,11 @@ export interface BlurViewAttributes
 }
 
 /** The events `<blur-view>` sends, by name, as its listeners hear them. */
-export interface BlurViewEvents
+export interface LynxBlurViewEvents
 	extends LynxCommonEvents<"blur-view">, LynxDefaultEvents<"blur-view"> {}
 
 /** The attributes and events of `<webview>`. */
-export interface WebviewAttributes
+export interface LynxWebviewAttributes
 	extends LynxCommonAttributes<"webview">, LynxDefaultAttributes<"webview"> {
 	/** A string that represents the location of a resource on a remote server. Automatically trigger content refresh when the src changes */
 	src?: string | null;
@@ -5516,7 +5519,8 @@ export interface WebviewAttributes
 }
 
 /** The events `<webview>` sends, by name, as its listeners hear them. */
-export interface WebviewEvents extends LynxCommonEvents<"webview">, LynxDefaultEvents<"webview"> {
+export interface LynxWebviewEvents
+	extends LynxCommonEvents<"webview">, LynxDefaultEvents<"webview"> {
 	/** Load success event */
 	load: LynxEvent<LynxNode, LynxNode<"webview">>;
 	/** Error event */
@@ -5530,7 +5534,7 @@ export interface WebviewEvents extends LynxCommonEvents<"webview">, LynxDefaultE
 }
 
 /** The attributes and events of `<markdown>`. */
-export interface MarkdownAttributes
+export interface LynxMarkdownAttributes
 	extends LynxCommonAttributes<"markdown">, LynxDefaultAttributes<"markdown"> {
 	/**
 	 * Decorations and optional click targets attached to text ranges.
@@ -5867,7 +5871,7 @@ export interface MarkdownAttributes
 }
 
 /** The events `<markdown>` sends, by name, as its listeners hear them. */
-export interface MarkdownEvents
+export interface LynxMarkdownEvents
 	extends LynxCommonEvents<"markdown">, LynxDefaultEvents<"markdown"> {
 	/** Draw start. */
 	drawStart: LynxEvent<LynxNode, LynxNode<"markdown">>;
@@ -5890,7 +5894,7 @@ export interface MarkdownEvents
 }
 
 /** The attributes and events of `<video>`. */
-export interface VideoAttributes
+export interface LynxVideoAttributes
 	extends LynxCommonAttributes<"video">, LynxDefaultAttributes<"video"> {
 	/** Video source URL. Only online network URLs are supported. */
 	src?: string | null;
@@ -6114,7 +6118,7 @@ export interface VideoAttributes
 }
 
 /** The events `<video>` sends, by name, as its listeners hear them. */
-export interface VideoEvents extends LynxCommonEvents<"video">, LynxDefaultEvents<"video"> {
+export interface LynxVideoEvents extends LynxCommonEvents<"video">, LynxDefaultEvents<"video"> {
 	/** Fired when the first video frame has loaded. */
 	firstframe: LynxVideoFirstFrameEvent<LynxNode, LynxNode<"video">>;
 	/** Fired when video playback starts or resumes. */
@@ -6137,74 +6141,74 @@ export interface VideoEvents extends LynxCommonEvents<"video">, LynxDefaultEvent
 
 /** Every element, by tag: what a component may write on it. */
 export interface LynxElements {
-	component: ComponentAttributes;
-	"filter-image": FilterImageAttributes;
-	image: ImageAttributes;
-	"inline-image": InlineImageAttributes;
-	"inline-text": InlineTextAttributes;
-	"inline-truncation": InlineTruncationAttributes;
-	list: ListAttributes;
-	"list-item": ListItemAttributes;
-	"list-row": ListRowAttributes;
-	page: PageAttributes;
-	"scroll-view": ScrollViewAttributes;
-	text: TextAttributes;
-	view: ViewAttributes;
-	"raw-text": RawTextAttributes;
-	input: InputAttributes;
-	textarea: TextareaAttributes;
-	overlay: OverlayAttributes;
-	svg: SvgAttributes;
-	"title-bar-view": TitleBarViewAttributes;
-	refresh: RefreshAttributes;
-	"refresh-header": RefreshHeaderAttributes;
-	"scroll-coordinator": ScrollCoordinatorAttributes;
-	"scroll-coordinator-header": ScrollCoordinatorHeaderAttributes;
-	"scroll-coordinator-slot": ScrollCoordinatorSlotAttributes;
-	"scroll-coordinator-slot-drag": ScrollCoordinatorSlotDragAttributes;
-	"scroll-coordinator-toolbar": ScrollCoordinatorToolbarAttributes;
-	viewpager: ViewpagerAttributes;
-	"viewpager-item": ViewpagerItemAttributes;
-	"blur-view": BlurViewAttributes;
-	webview: WebviewAttributes;
-	markdown: MarkdownAttributes;
-	video: VideoAttributes;
+	component: LynxComponentAttributes;
+	"filter-image": LynxFilterImageAttributes;
+	image: LynxImageAttributes;
+	"inline-image": LynxInlineImageAttributes;
+	"inline-text": LynxInlineTextAttributes;
+	"inline-truncation": LynxInlineTruncationAttributes;
+	list: LynxListAttributes;
+	"list-item": LynxListItemAttributes;
+	"list-row": LynxListRowAttributes;
+	page: LynxPageAttributes;
+	"scroll-view": LynxScrollViewAttributes;
+	text: LynxTextAttributes;
+	view: LynxViewAttributes;
+	"raw-text": LynxRawTextAttributes;
+	input: LynxInputAttributes;
+	textarea: LynxTextareaAttributes;
+	overlay: LynxOverlayAttributes;
+	svg: LynxSvgAttributes;
+	"title-bar-view": LynxTitleBarViewAttributes;
+	refresh: LynxRefreshAttributes;
+	"refresh-header": LynxRefreshHeaderAttributes;
+	"scroll-coordinator": LynxScrollCoordinatorAttributes;
+	"scroll-coordinator-header": LynxScrollCoordinatorHeaderAttributes;
+	"scroll-coordinator-slot": LynxScrollCoordinatorSlotAttributes;
+	"scroll-coordinator-slot-drag": LynxScrollCoordinatorSlotDragAttributes;
+	"scroll-coordinator-toolbar": LynxScrollCoordinatorToolbarAttributes;
+	viewpager: LynxViewpagerAttributes;
+	"viewpager-item": LynxViewpagerItemAttributes;
+	"blur-view": LynxBlurViewAttributes;
+	webview: LynxWebviewAttributes;
+	markdown: LynxMarkdownAttributes;
+	video: LynxVideoAttributes;
 }
 
 /** The events of every element, by tag. */
 export interface LynxElementEvents {
-	component: ComponentEvents;
-	"filter-image": FilterImageEvents;
-	image: ImageEvents;
-	"inline-image": InlineImageEvents;
-	"inline-text": InlineTextEvents;
-	"inline-truncation": InlineTruncationEvents;
-	list: ListEvents;
-	"list-item": ListItemEvents;
-	"list-row": ListRowEvents;
-	page: PageEvents;
-	"scroll-view": ScrollViewEvents;
-	text: TextEvents;
-	view: ViewEvents;
-	"raw-text": RawTextEvents;
-	input: InputEvents;
-	textarea: TextareaEvents;
-	overlay: OverlayEvents;
-	svg: SvgEvents;
-	"title-bar-view": TitleBarViewEvents;
-	refresh: RefreshEvents;
-	"refresh-header": RefreshHeaderEvents;
-	"scroll-coordinator": ScrollCoordinatorEvents;
-	"scroll-coordinator-header": ScrollCoordinatorHeaderEvents;
-	"scroll-coordinator-slot": ScrollCoordinatorSlotEvents;
-	"scroll-coordinator-slot-drag": ScrollCoordinatorSlotDragEvents;
-	"scroll-coordinator-toolbar": ScrollCoordinatorToolbarEvents;
-	viewpager: ViewpagerEvents;
-	"viewpager-item": ViewpagerItemEvents;
-	"blur-view": BlurViewEvents;
-	webview: WebviewEvents;
-	markdown: MarkdownEvents;
-	video: VideoEvents;
+	component: LynxComponentEvents;
+	"filter-image": LynxFilterImageEvents;
+	image: LynxImageEvents;
+	"inline-image": LynxInlineImageEvents;
+	"inline-text": LynxInlineTextEvents;
+	"inline-truncation": LynxInlineTruncationEvents;
+	list: LynxListEvents;
+	"list-item": LynxListItemEvents;
+	"list-row": LynxListRowEvents;
+	page: LynxPageEvents;
+	"scroll-view": LynxScrollViewEvents;
+	text: LynxTextEvents;
+	view: LynxViewEvents;
+	"raw-text": LynxRawTextEvents;
+	input: LynxInputEvents;
+	textarea: LynxTextareaEvents;
+	overlay: LynxOverlayEvents;
+	svg: LynxSvgEvents;
+	"title-bar-view": LynxTitleBarViewEvents;
+	refresh: LynxRefreshEvents;
+	"refresh-header": LynxRefreshHeaderEvents;
+	"scroll-coordinator": LynxScrollCoordinatorEvents;
+	"scroll-coordinator-header": LynxScrollCoordinatorHeaderEvents;
+	"scroll-coordinator-slot": LynxScrollCoordinatorSlotEvents;
+	"scroll-coordinator-slot-drag": LynxScrollCoordinatorSlotDragEvents;
+	"scroll-coordinator-toolbar": LynxScrollCoordinatorToolbarEvents;
+	viewpager: LynxViewpagerEvents;
+	"viewpager-item": LynxViewpagerItemEvents;
+	"blur-view": LynxBlurViewEvents;
+	webview: LynxWebviewEvents;
+	markdown: LynxMarkdownEvents;
+	video: LynxVideoEvents;
 }
 
 /** The UI methods every element has, for `invoke`: what each takes and resolves with. */
@@ -6310,7 +6314,7 @@ export interface LynxCommonMethods {
 }
 
 /** The UI methods of `<list>`. */
-export interface ListMethods extends LynxCommonMethods {
+export interface LynxListMethods extends LynxCommonMethods {
 	/** Automatic scrolling. */
 	autoScroll: {
 		params: {
@@ -6384,7 +6388,7 @@ export interface ListMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<scroll-view>`. */
-export interface ScrollViewMethods extends LynxCommonMethods {
+export interface LynxScrollViewMethods extends LynxCommonMethods {
 	/** Automatic scrolling */
 	autoScroll: {
 		params: {
@@ -6456,7 +6460,7 @@ export interface ScrollViewMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<image>`. */
-export interface ImageMethods extends LynxCommonMethods {
+export interface LynxImageMethods extends LynxCommonMethods {
 	/** Pauses the animation, without resetting the loop-count. */
 	pauseAnimation: { params?: { [name: string]: never }; result: unknown };
 	/** Resumes the animation, without resetting the loop-count. */
@@ -6471,7 +6475,7 @@ export interface ImageMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<input>`. */
-export interface InputMethods extends LynxCommonMethods {
+export interface LynxInputMethods extends LynxCommonMethods {
 	/** Release focus */
 	blur: { params?: { [name: string]: never }; result: unknown };
 	/** Require focus */
@@ -6513,7 +6517,7 @@ export interface InputMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<textarea>`. */
-export interface TextareaMethods extends LynxCommonMethods {
+export interface LynxTextareaMethods extends LynxCommonMethods {
 	/** Release focus */
 	blur: { params?: { [name: string]: never }; result: unknown };
 	/** Require focus */
@@ -6555,7 +6559,7 @@ export interface TextareaMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<text>`. */
-export interface TextMethods extends LynxCommonMethods {
+export interface LynxTextMethods extends LynxCommonMethods {
 	/** Gets the selected text. */
 	getSelectedText: {
 		params?: { [name: string]: never };
@@ -6606,7 +6610,7 @@ export interface TextMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<refresh>`. */
-export interface RefreshMethods extends LynxCommonMethods {
+export interface LynxRefreshMethods extends LynxCommonMethods {
 	/** When enable-refresh is true, call this method to expose the entire `<refresh-header>`, triggering the startrefresh event, after which `<refresh-header>` will attach to the top edge of the refresh's viewport. */
 	autoStartRefresh: { params?: { [name: string]: never }; result: unknown };
 	/** Called after the startrefresh event to end the refresh state, making `<refresh-header>` rebound. */
@@ -6614,7 +6618,7 @@ export interface RefreshMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<scroll-coordinator>`. */
-export interface ScrollCoordinatorMethods extends LynxCommonMethods {
+export interface LynxScrollCoordinatorMethods extends LynxCommonMethods {
 	setFoldExpanded: {
 		params: {
 			/** Offset, supports px and rpx */
@@ -6627,7 +6631,7 @@ export interface ScrollCoordinatorMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<viewpager>`. */
-export interface ViewpagerMethods extends LynxCommonMethods {
+export interface LynxViewpagerMethods extends LynxCommonMethods {
 	/** Slide to the specified page. */
 	selectTab: {
 		params: {
@@ -6641,7 +6645,7 @@ export interface ViewpagerMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<webview>`. */
-export interface WebviewMethods extends LynxCommonMethods {
+export interface LynxWebviewMethods extends LynxCommonMethods {
 	/** Write any unwritten cookies data to disk for webview */
 	"cookies.flushStore": { params?: { [name: string]: never }; result: unknown };
 	/** Get cookies from webview */
@@ -6720,7 +6724,7 @@ export interface WebviewMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<markdown>`. */
-export interface MarkdownMethods extends LynxCommonMethods {
+export interface LynxMarkdownMethods extends LynxCommonMethods {
 	/** Get index of the character at the given position. */
 	getCharIndexByPoint: {
 		params: {
@@ -6846,7 +6850,7 @@ export interface MarkdownMethods extends LynxCommonMethods {
 }
 
 /** The UI methods of `<video>`. */
-export interface VideoMethods extends LynxCommonMethods {
+export interface LynxVideoMethods extends LynxCommonMethods {
 	/** Pause video playback. */
 	pause: { params?: { [name: string]: never }; result: LynxVideoMethodResponse };
 	/** Play the video. */
@@ -6865,18 +6869,18 @@ export interface VideoMethods extends LynxCommonMethods {
 
 /** The UI methods of the elements that have their own, by tag. */
 export interface LynxElementMethods {
-	list: ListMethods;
-	"scroll-view": ScrollViewMethods;
-	image: ImageMethods;
-	input: InputMethods;
-	textarea: TextareaMethods;
-	text: TextMethods;
-	refresh: RefreshMethods;
-	"scroll-coordinator": ScrollCoordinatorMethods;
-	viewpager: ViewpagerMethods;
-	webview: WebviewMethods;
-	markdown: MarkdownMethods;
-	video: VideoMethods;
+	list: LynxListMethods;
+	"scroll-view": LynxScrollViewMethods;
+	image: LynxImageMethods;
+	input: LynxInputMethods;
+	textarea: LynxTextareaMethods;
+	text: LynxTextMethods;
+	refresh: LynxRefreshMethods;
+	"scroll-coordinator": LynxScrollCoordinatorMethods;
+	viewpager: LynxViewpagerMethods;
+	webview: LynxWebviewMethods;
+	markdown: LynxMarkdownMethods;
+	video: LynxVideoMethods;
 }
 
 /** The name of every UI method Lynx's types know. */

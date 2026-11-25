@@ -1,4 +1,4 @@
-// `@sohedra/lynx/env`, bundled from the source by `pnpm -F @sohedra/lynx declarations`.
+// `@sohedra/lynx/environment`, bundled from the source by `pnpm -F @sohedra/lynx declarations`.
 
 /**
  * `true` in the main thread's bundle, where the first frame is drawn. In markup, `{#if mainThread}`

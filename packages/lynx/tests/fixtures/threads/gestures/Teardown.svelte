@@ -4,7 +4,7 @@
 	attribute differs on the two threads outside any block, so hydration cannot keep the first frame.
 -->
 <script lang="ts">
-	import { background, mainThread } from "@sohedra/lynx/env";
+	import { background, mainThread } from "@sohedra/lynx/environment";
 	import { PanGesture } from "@sohedra/lynx/gesture";
 	import type { PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
 

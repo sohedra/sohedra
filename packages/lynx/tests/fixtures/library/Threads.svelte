@@ -1,7 +1,7 @@
 <script lang="ts">
 	// Tells which thread's copy is rendering: the first frame's (Svelte's server renderer on the main
 	// thread) or the app's (background).
-	import { background, dev, mainThread } from "@sohedra/lynx/env";
+	import { background, dev, mainThread } from "@sohedra/lynx/environment";
 
 	let { onrender }: { onrender: (thread: string, dev: boolean) => void } = $props();
 

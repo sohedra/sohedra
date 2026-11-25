@@ -197,14 +197,14 @@ export const BACKGROUND_CATALOGUE: Catalogue<BackgroundDetails> = {
 				? "The first frame did not match the page the background rendered, so the page was made again."
 				: `The first frame did not match the page the background rendered: ${difference}. The page was made again.`,
 		fix: () =>
-			"Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/env.",
+			"Render the same markup on both threads from the page's data. Keep what only the background knows (a value an effect sets, the time, a random number) in an effect, or in {#if background} from @sohedra/lynx/environment.",
 		docs: "hydration_mismatch",
 	},
 	props_id_mismatch: {
 		message: ({ tag, name, expected, got }) =>
 			`The <${tag}>'s ${name} is "${got}" in the first frame and "${expected}" on the background: $props.id() gave another id on each thread, and the first frame showed its own until the background's replaced it.`,
 		fix: () =>
-			"Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/env, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.",
+			"Look before it for a component that only one thread renders, and put it inside {#if background} or {#if mainThread} from @sohedra/lynx/environment, or {#if BROWSER} from esm-env, with the flag alone as the test. Or look for a component binding whose child changes the bound value as it starts, which renders the first frame twice: give the value its start in the parent.",
 		docs: "props_id_mismatch",
 	},
 	list_item_defer_needs_async_list: {

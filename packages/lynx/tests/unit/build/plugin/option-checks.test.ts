@@ -30,7 +30,7 @@ describe("the six options", () => {
 				engineVersion: "4.3",
 				firstFrame: (entryName: string) => entryName === "main",
 				define: { mainThread: { __API__: '"x"', __N__: 1, __ON__: true, __NONE__: null } },
-				singleCopy: ["zustand", "@acme/state"],
+				dedupe: ["zustand", "@acme/state"],
 				pageConfig: { enableCSSRule: true, longPressDuration: 400, tapSlop: "5px" },
 				svelte: { configFile: "svelte.config.js" },
 			}),
@@ -88,7 +88,7 @@ describe("an unknown option", () => {
 		const message = rejection({ nonsense: 1 })?.message ?? "";
 		expect(message).not.toContain("Did you mean");
 		expect(message).toContain(
-			"The options are `engineVersion`, `firstFrame`, `define`, `singleCopy`, `pageConfig` and `svelte`.",
+			"The options are `engineVersion`, `firstFrame`, `define`, `dedupe`, `pageConfig` and `svelte`.",
 		);
 	});
 
@@ -164,10 +164,10 @@ describe("define", () => {
 	});
 });
 
-describe("singleCopy", () => {
+describe("dedupe", () => {
 	it("takes a list of package names, scoped ones included", () => {
-		expect(rejection({ singleCopy: [] })).toBeUndefined();
-		expect(rejection({ singleCopy: ["zustand", "@acme/shared-state"] })).toBeUndefined();
+		expect(rejection({ dedupe: [] })).toBeUndefined();
+		expect(rejection({ dedupe: ["zustand", "@acme/shared-state"] })).toBeUndefined();
 	});
 
 	it("rejects anything else, naming the option", () => {
@@ -181,8 +181,8 @@ describe("singleCopy", () => {
 			["/abs/path"],
 			["zustand/middleware"],
 		])
-			expect(sentences({ singleCopy: value })[0], JSON.stringify(value)).toMatch(
-				/^`singleCopy` must be a list of package names such as 'zustand' or '@acme\/state'; got /,
+			expect(sentences({ dedupe: value })[0], JSON.stringify(value)).toMatch(
+				/^`dedupe` must be a list of package names such as 'zustand' or '@acme\/state'; got /,
 			);
 	});
 });
@@ -234,20 +234,20 @@ describe("every mistake at once", () => {
 			sentences({
 				engineVersion: 4.2,
 				firstframe: 1,
-				singleCopy: ["./local"],
+				dedupe: ["./local"],
 				define: { worker: {} },
 			}),
 		).toEqual([
 			"`firstframe` is not an option of `pluginSvelteLynx()`.",
 			"`engineVersion` must be a version string such as '4.2'; got 4.2.",
 			"`define.worker` is not a thread.",
-			"`singleCopy` must be a list of package names such as 'zustand' or '@acme/state'; got [\"./local\"].",
+			"`dedupe` must be a list of package names such as 'zustand' or '@acme/state'; got [\"./local\"].",
 		]);
 	});
 
 	it("is what pluginSvelteLynx() throws when it is made", () => {
-		expect(() => pluginSvelteLynx({ firstFrame: 1, singleCopy: "x" } as never)).toThrow(
-			/`firstFrame` must be[^]*`singleCopy` must be/,
+		expect(() => pluginSvelteLynx({ firstFrame: 1, dedupe: "x" } as never)).toThrow(
+			/`firstFrame` must be[^]*`dedupe` must be/,
 		);
 		expect(() => pluginSvelteLynx({})).not.toThrow();
 	});

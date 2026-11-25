@@ -178,7 +178,7 @@ describe("a list's initial rows", () => {
 
 	it("counts no row only one thread renders, in {#if background}, on either thread", async () => {
 		const rows = `{#if background}<list-item item-key="h"><text>h</text></list-item><list-item defer><text>d</text></list-item>{/if}${deferred}`;
-		const source = `<script>import { background } from "@sohedra/lynx/env"; let rows = $state([1]);</script>\n<list custom-list-name="list-container">${rows}</list>`;
+		const source = `<script>import { background } from "@sohedra/lynx/environment"; let rows = $state([1]);</script>\n<list custom-list-name="list-container">${rows}</list>`;
 		const { code } = await background(source);
 		expect(code).not.toContain("__sohedraLynxCount");
 		expect(code).toContain("__sohedraLynxDeferredRow(() => true, { oneThread: true })");

@@ -2,7 +2,7 @@
 // on the background, taps, Lynx asking for list cells and handing them back, a scroll through a
 // list, a layer mounted above the page and taken away, the host's data and a reload.
 
-import * as env from "@sohedra/lynx/env";
+import * as env from "@sohedra/lynx/environment";
 import * as experimental from "@sohedra/lynx/experimental";
 import * as gesture from "@sohedra/lynx/gesture";
 import fc from "fast-check";
@@ -128,8 +128,8 @@ export interface StartOptions {
 	/** Draw the first frame from the data, as a built page whose script draws it. */
 	firstFrame: boolean;
 	/**
-	 * What `background` from `@sohedra/lynx/env` is on the background: `false` (and `mainThread`
-	 * `true`) renders there what the first frame renders, as a reference for it.
+	 * What `background` from `@sohedra/lynx/environment` is on the background: `false` (and
+	 * `mainThread` `true`) renders there what the first frame renders, as a reference for it.
 	 */
 	background?: boolean;
 	/** The keys of the data that come from the template; the host gives the rest. */
@@ -189,7 +189,7 @@ export function startGenerated(options: StartOptions): GeneratedPage {
 		[INTERNALS]: internals,
 		[RENDERER]: { default: renderer, deferredRow },
 		"@sohedra/lynx": root,
-		"@sohedra/lynx/env": backgroundEnv,
+		"@sohedra/lynx/environment": backgroundEnv,
 		"@sohedra/lynx/gesture": gesture,
 		"@sohedra/lynx/experimental": experimental,
 		"@sohedra/lynx/internal/main-thread-functions": functions,

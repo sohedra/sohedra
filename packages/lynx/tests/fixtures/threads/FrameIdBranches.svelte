@@ -1,6 +1,6 @@
 <script lang="ts">
-	import * as env from "@sohedra/lynx/env";
-	import { background, mainThread as main } from "@sohedra/lynx/env";
+	import * as env from "@sohedra/lynx/environment";
+	import { background, mainThread as main } from "@sohedra/lynx/environment";
 
 	import FrameLabeled from "./FrameLabeled.svelte";
 	import FrameSlot from "./FrameSlot.svelte";

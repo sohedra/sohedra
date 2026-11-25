@@ -1,5 +1,5 @@
 // How packages in `node_modules` are built and resolved: compiled by each thread's rules whatever
-// the app says about `source.include`, and one copy of the packages `singleCopy` names.
+// the app says about `source.include`, and one copy of the packages `dedupe` names.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -69,11 +69,11 @@ describe("a package of node_modules", () => {
 	}, 180_000);
 });
 
-describe("singleCopy", () => {
+describe("dedupe", () => {
 	it("resolves a package a library imports from the app's folder, not from the library's own", async () => {
-		build = await buildApp("single-copy", {
+		build = await buildApp("dedupe", {
 			packages: ["thread-lib", "outer-lib"],
-			plugin: { singleCopy: ["thread-lib"] },
+			plugin: { dedupe: ["thread-lib"] },
 		});
 		expect(build.error + build.messages).toBe("");
 		const { mainThread, background } = scriptsOf(build);

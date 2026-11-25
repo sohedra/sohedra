@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground } from "@sohedra/lynx";
-	import { background } from "@sohedra/lynx/env";
+	import { background } from "@sohedra/lynx/environment";
 
 	import StartThrowsChild from "./StartThrowsChild.svelte";
 

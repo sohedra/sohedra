@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { background } from "@sohedra/lynx/env";
+	import { background } from "@sohedra/lynx/environment";
 	import { onMount } from "svelte";
 
 	let { tone = "plain", log = [] }: { tone?: string; log?: unknown[] } = $props();

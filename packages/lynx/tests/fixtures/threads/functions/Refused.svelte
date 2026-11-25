@@ -4,7 +4,7 @@
 -->
 <script lang="ts">
 	import { mainThreadRef, runOnBackground, runOnMainThread } from "@sohedra/lynx";
-	import { mainThread } from "@sohedra/lynx/env";
+	import { mainThread } from "@sohedra/lynx/environment";
 
 	interface Element {
 		setAttribute(name: string, value: unknown): void;

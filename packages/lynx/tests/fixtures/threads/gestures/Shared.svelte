@@ -5,7 +5,7 @@
 	options differ on the two threads.
 -->
 <script lang="ts">
-	import { background, mainThread } from "@sohedra/lynx/env";
+	import { background, mainThread } from "@sohedra/lynx/environment";
 	import { PanGesture, TapGesture } from "@sohedra/lynx/gesture";
 	import type { PanGestureChangeEvent, StateManager } from "@sohedra/lynx/gesture";
 

@@ -86,7 +86,8 @@ export interface MountOptions<Props extends Bag = Bag> {
  * ```
  *
  * Throws when no page runs: before `mountPage`, or after the page closed. On the main thread it
- * throws too: call it from an effect, an attachment or an event handler.
+ * throws too: call it from an effect, an attachment or an event handler. Svelte's own `mount` works
+ * with the web's DOM, so the build refuses it in the app's code.
  */
 export function mount<Props extends Bag, Exports extends Bag>(
 	component: Component<Props, Exports, any>,

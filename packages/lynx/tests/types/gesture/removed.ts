@@ -5,7 +5,7 @@
 
 // @ts-expect-error `waitFor` and `continueWith` are options of each gesture, not functions.
 import { continueWith, waitFor } from "@sohedra/lynx/experimental";
-// @ts-expect-error a gesture's type is `Gesture`; `GestureKind` is the testing entry's string.
+// @ts-expect-error a gesture's type is `Gesture`; the testing entry's string is `TestGestureKind`.
 import type { GestureKind } from "@sohedra/lynx/gesture";
 // @ts-expect-error a gesture's element is `MainThread.Element` of `@sohedra/lynx/elements`.
 import type { GestureElement } from "@sohedra/lynx/gesture";

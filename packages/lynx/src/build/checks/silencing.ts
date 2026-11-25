@@ -1,15 +1,15 @@
 // The one comment that silences a diagnostic of the app's code on one line, in a script, in markup
 // and in a style sheet alike:
 //
-//   // svelte-lynx-ignore fill_not_imported
-//   <!-- svelte-lynx-ignore main_thread_handler_in_thread_branch -->
-//   /* svelte-lynx-ignore css_selector_unsupported */
+//   // sohedra-ignore fill_not_imported
+//   <!-- sohedra-ignore main_thread_handler_in_thread_branch -->
+//   /* sohedra-ignore css_selector_unsupported */
 //
 // It names one code or more, apart by spaces or commas, and silences them on its own line and on
 // the line after it. Svelte's own `svelte-ignore` is left to Svelte's warnings.
 
 /** The comment's word. */
-const IGNORE_COMMENT = "svelte-lynx-ignore";
+const IGNORE_COMMENT = "sohedra-ignore";
 
 /** The comment, after a comment's opening, and the codes it names, to the comment's end. */
 const IGNORE = new RegExp(

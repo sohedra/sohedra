@@ -78,7 +78,7 @@ describe("the warning", () => {
 	it("is silenced on its line by the comment", async () => {
 		expect(
 			await warnings(
-				"/* svelte-lynx-ignore css_selector_unsupported */\n.a:first-child { color: red; }",
+				"/* sohedra-ignore css_selector_unsupported */\n.a:first-child { color: red; }",
 			),
 		).toEqual([]);
 	});

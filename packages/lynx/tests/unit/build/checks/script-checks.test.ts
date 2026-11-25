@@ -85,12 +85,10 @@ describe("a global no fill gives", () => {
 	});
 
 	it("is silenced on its line by the comment", () => {
-		expect(moduleError("// svelte-lynx-ignore global_no_fill\nexport const c = crypto;")).toBe("");
-		expect(moduleError("export const c = crypto; /* svelte-lynx-ignore global_no_fill */")).toBe(
-			"",
-		);
+		expect(moduleError("// sohedra-ignore global_no_fill\nexport const c = crypto;")).toBe("");
+		expect(moduleError("export const c = crypto; /* sohedra-ignore global_no_fill */")).toBe("");
 		expect(
-			codes(moduleError("// svelte-lynx-ignore dom_not_on_lynx\nexport const c = crypto;")),
+			codes(moduleError("// sohedra-ignore dom_not_on_lynx\nexport const c = crypto;")),
 		).toEqual(["global_no_fill"]);
 	});
 });
@@ -130,7 +128,7 @@ describe("a global a fill gives", () => {
 
 	it("at the top level, under a thread's flag, is judged on that thread only", () => {
 		const text =
-			'import { background } from "@sohedra/lynx/env";\nexport const u = background ? new URL("https://a.b") : undefined;';
+			'import { background } from "@sohedra/lynx/environment";\nexport const u = background ? new URL("https://a.b") : undefined;';
 		expect(moduleOf(text).pending).toEqual([]);
 	});
 
@@ -189,7 +187,7 @@ describe("the web's DOM", () => {
 	it("is silenced in markup by the comment", async () => {
 		expect(
 			await componentError(
-				"<!-- svelte-lynx-ignore dom_not_on_lynx -->\n<view ontap={() => document.title}></view>",
+				"<!-- sohedra-ignore dom_not_on_lynx -->\n<view ontap={() => document.title}></view>",
 			),
 		).toBe("");
 	});
@@ -265,7 +263,7 @@ describe("an API of the other thread", () => {
 		expect(moduleError("if (__DEV__ && __BACKGROUND__) console.log(1);")).toBe("");
 		expect(
 			moduleError(
-				'import { mainThread } from "@sohedra/lynx/env";\nif (mainThread) __FlushElementTree();',
+				'import { mainThread } from "@sohedra/lynx/environment";\nif (mainThread) __FlushElementTree();',
 			),
 		).toBe("");
 	});

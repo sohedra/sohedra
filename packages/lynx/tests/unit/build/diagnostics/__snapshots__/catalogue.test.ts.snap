@@ -108,6 +108,18 @@ Select the element by its type, a class or an id, and set the class from the com
 https://sohedra.com/e/css_selector_unsupported"
 `;
 
+exports[`the build's catalogue > dedupe_name: the message 1`] = `
+"\`dedupe\` must be a list of package names such as 'zustand' or '@acme/state'; got ["./local"].
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Write the package's name, not a path into it or a file.
+https://sohedra.com/e/dedupe_name"
+`;
+
 exports[`the build's catalogue > define_key_invalid: the message 1`] = `
 "\`define.mainThread.a.b\` is not a plain identifier.
 /app/src/App.svelte:2:3
@@ -646,18 +658,6 @@ Import it with \`with { runtime: "shared" }\`, which gives the main thread its o
 https://sohedra.com/e/shared_import_needed"
 `;
 
-exports[`the build's catalogue > single_copy_name: the message 1`] = `
-"\`singleCopy\` must be a list of package names such as 'zustand' or '@acme/state'; got ["./local"].
-/app/src/App.svelte:2:3
-
-1: <script>
-2:   let a = 1;
-     ^
-
-Write the package's name, not a path into it or a file.
-https://sohedra.com/e/single_copy_name"
-`;
-
 exports[`the build's catalogue > spread_setter_moved: the message 1`] = `
 "Svelte's props code has changed, so the build cannot make bindings work beside a spread: get_descriptor(props, key)?.set ?? is not in /app/node_modules/svelte/src/internal/client/reactivity/props.js exactly once.
 /app/src/App.svelte:2:3
@@ -752,6 +752,18 @@ exports[`the build's catalogue > svelte_missing: the message 1`] = `
 
 Add Svelte ~5.59.0 to the app's package.json dependencies.
 https://sohedra.com/e/svelte_missing"
+`;
+
+exports[`the build's catalogue > svelte_mount_imported: the message 1`] = `
+"\`mount\` is imported from "svelte", whose \`mount\` works with the web's DOM, not with Lynx's page.
+/app/src/App.svelte:2:3
+
+1: <script>
+2:   let a = 1;
+     ^
+
+Import \`mount\` from "@sohedra/lynx", which mounts a component on the page.
+https://sohedra.com/e/svelte_mount_imported"
 `;
 
 exports[`the build's catalogue > svelte_version_untested: the message 1`] = `

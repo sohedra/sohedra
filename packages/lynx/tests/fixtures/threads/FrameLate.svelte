@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { background } from "@sohedra/lynx/env";
+	import { background } from "@sohedra/lynx/environment";
 
 	let { handles = {} }: { handles?: Record<string, unknown> } = $props();
 	const late = $state({ shown: false });

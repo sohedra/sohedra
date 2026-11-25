@@ -99,7 +99,7 @@ export const MAIN_THREAD_CATALOGUE: Catalogue<MainThreadDetails> = {
 		message: ({ reason }) =>
 			`The first frame was not drawn: a component threw as the page rendered it on the main thread (${reason.split("\n")[0]!.trim()}).`,
 		fix: () =>
-			"Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/env. The page is shown when the background has made it.",
+			"Keep code only the background can run, such as a native module or the background's lynx APIs, out of a component's top level: in an effect, an event handler, or in {#if background} from @sohedra/lynx/environment. The page is shown when the background has made it.",
 		docs: "first_frame_threw",
 	},
 	rewrite_not_page: {

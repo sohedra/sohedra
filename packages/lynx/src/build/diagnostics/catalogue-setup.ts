@@ -8,7 +8,7 @@ import { PLUGIN_OPTION_NAMES } from "../plugin/option-names.ts";
 export interface SetupDetails {
 	unknown_plugin_option: { name: string; suggestion?: string | undefined };
 	plugin_option_type: { name: string; expected: string; given: string };
-	single_copy_name: { given: string };
+	dedupe_name: { given: string };
 	engine_version_old: { version: string; minimum: string };
 	engine_version_new: { version: string; maximum: string };
 	define_thread_unknown: { name: string };
@@ -42,11 +42,11 @@ export const SETUP_CATALOGUE: Catalogue<SetupDetails> = {
 		fix: ({ name, expected }) => `Set \`${name}\` to ${expected}, or leave it out.`,
 		docs: "plugin_option_type",
 	},
-	single_copy_name: {
+	dedupe_name: {
 		message: ({ given }) =>
-			`\`singleCopy\` must be a list of package names such as 'zustand' or '@acme/state'; got ${given}.`,
+			`\`dedupe\` must be a list of package names such as 'zustand' or '@acme/state'; got ${given}.`,
 		fix: () => "Write the package's name, not a path into it or a file.",
-		docs: "single_copy_name",
+		docs: "dedupe_name",
 	},
 	engine_version_old: {
 		message: ({ version, minimum }) =>
