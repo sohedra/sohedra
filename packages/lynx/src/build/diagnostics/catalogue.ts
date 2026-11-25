@@ -313,9 +313,9 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 	},
 	thread_flag_outside_if: {
 		message: ({ read, flag }) =>
-			`${read === flag ? `\`${flag}\` is read` : `\`${read}\` depends on \`${flag}\` and is read`} outside an \`{#if}\` test, so the first frame and the background can draw different content here with no block between them, and a tap before the background takes the page over can run the handler of the other's content.`,
+			`${read === flag ? `\`${flag}\` is read` : `\`${read}\` depends on \`${flag}\` and is read`} outside an \`{#if}\` test, so the first frame can show something here other than the page shows once it starts.`,
 		fix: ({ flag }) =>
-			`Put what one thread draws in an \`{#if}\` whose test is \`${flag}\`, and what the other draws in its \`{:else}\`, or read \`${flag}\` in an event handler or an effect.`,
+			`Put each thread's part in its own branch, \`{#if ${flag}}…{:else}…{/if}\` (or \`{#if ${flag} && user}\`), or read \`${flag}\` in an event handler or an effect.`,
 		docs: "thread_flag_outside_if",
 	},
 	list_item_defer_ignored: {

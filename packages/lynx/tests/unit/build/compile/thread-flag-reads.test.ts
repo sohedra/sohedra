@@ -39,12 +39,12 @@ describe("a thread flag read outside an {#if} test", () => {
 		);
 		expect(rest).toEqual([]);
 		expect(message!.split("\n")[0]).toBe(
-			"`background` is read outside an `{#if}` test, so the first frame and the background can draw different content here with no block between them, and a tap before the background takes the page over can run the handler of the other's content.",
+			"`background` is read outside an `{#if}` test, so the first frame can show something here other than the page shows once it starts.",
 		);
 		expect(message).toContain("src/Component.svelte:6:9");
 		expect(message).toContain('6: \t<text>{background ? "page" : "frame"}</text>');
 		expect(message).toContain(
-			"Put what one thread draws in an `{#if}` whose test is `background`, and what the other draws in its `{:else}`, or read `background` in an event handler or an effect.",
+			"Put each thread's part in its own branch, `{#if background}…{:else}…{/if}` (or `{#if background && user}`), or read `background` in an event handler or an effect.",
 		);
 		expect(message).toContain(`https://sohedra.com/e/${CODE}`);
 	});
@@ -91,7 +91,7 @@ describe("a thread flag read outside an {#if} test", () => {
 			),
 		);
 		expect(found).toEqual([
-			"`label` depends on `background` and is read outside an `{#if}` test, so the first frame and the background can draw different content here with no block between them, and a tap before the background takes the page over can run the handler of the other's content.",
+			"`label` depends on `background` and is read outside an `{#if}` test, so the first frame can show something here other than the page shows once it starts.",
 			expect.stringMatching(/^`where` depends on `mainThread` and/),
 			expect.stringMatching(/^`describe` depends on `mainThread` and/),
 			expect.stringMatching(/^`doubled` depends on `background` and/),
@@ -131,9 +131,48 @@ describe("a thread flag read outside an {#if} test", () => {
 		expect(module).toEqual([expect.stringMatching(/^`loadedOn` depends on `background`/)]);
 	});
 
-	it("warns in production builds too", async () => {
-		const source = withScript("<text>{background ? 1 : 2}</text>");
-		expect(await warnings(source, { development: false })).toHaveLength(1);
+	it("warns at a component picked by a flag or a name that depends on one", async () => {
+		const found = await warnings(
+			withScript(
+				"<Shown />\n<Picked />",
+				'\timport A from "./A.svelte";\n\timport B from "./B.svelte";\n\tconst Shown = $derived(background ? A : B);\n\tlet Picked = A;\n\tif (mainThread) Picked = B;\n',
+			),
+		);
+		expect(found.map((message) => message.split("\n")[0]!.split(" ")[0])).toEqual([
+			"`Shown`",
+			"`Picked`",
+		]);
+		expect(found[0]).toContain("src/Component.svelte:10:2");
+	});
+
+	it("warns where markup reads a class, or a function's default parameter, that reads a flag", async () => {
+		const found = await sentences(
+			withScript(
+				"<text>{store.label}</text>\n<text>{shown()}</text>",
+				'\tclass Store {\n\t\tlabel = background ? "page" : "frame";\n\t}\n\tconst store = new Store();\n\tfunction shown(value = mainThread) {\n\t\treturn value;\n\t}\n',
+			),
+		);
+		expect(found.map((sentence) => sentence.split(" ")[0])).toEqual(["`store`", "`shown`"]);
+	});
+
+	it("warns inside an {#if} whose test only depends on a flag", async () => {
+		const found = await sentences(
+			withScript(
+				"{#if user}<text>{user.name}</text>{:else}<text>Log in</text>{/if}",
+				'\tlet user = $state(null);\n\tif (background) user = { name: "Ada" };\n',
+			),
+		);
+		expect(found).toEqual([expect.stringMatching(/^`user` depends on `background`/)]);
+	});
+
+	it("warns where a flag sets state before an await, or outside a deferred callback", async () => {
+		const found = await sentences(
+			withScript(
+				"<text>{before}</text>\n<text>{chained}</text>",
+				'\tlet before = $state(0);\n\tlet chained = $state(0);\n\tasync function load() {\n\t\tbefore = 1;\n\t\tawait fetch("x");\n\t}\n\tif (background) {\n\t\tload();\n\t\tchained = [1].map((n) => n)[0];\n\t}\n',
+			),
+		);
+		expect(found.map((sentence) => sentence.split(" ")[0])).toEqual(["`before`", "`chained`"]);
 	});
 });
 
@@ -180,6 +219,44 @@ describe("a thread flag read where it is safe", () => {
 				),
 			),
 		).toEqual([]);
+	});
+
+	it("is quiet inside a branch only one thread renders, as the fix asks", async () => {
+		expect(
+			await warnings(
+				withScript(
+					'{#if background}<text>{label}</text>{:else}<text>{mainThread ? "frame" : "page"}</text>{/if}\n{#if background}<text>{background ? "a" : "b"}</text>{/if}\n{#if background && user}<text>{user.name}</text>{:else}<text>Log in</text>{/if}\n{#if !mainThread}<Shown />{/if}',
+					'\tconst label = $derived(background ? "Hi" : "Loading");\n\tlet user = $state(null);\n\tif (background) user = { name: "Ada" };\n\tconst Shown = $derived(background ? Card : Card);\n',
+				),
+			),
+		).toEqual([]);
+	});
+
+	it("is quiet for data a flag loads after the first render: after an await, in .then and in timers", async () => {
+		expect(
+			await warnings(
+				withScript(
+					"{#each items as item}<text>{item}</text>{/each}\n<text>{data}</text>\n<text>{ticks}</text>\n<text>{late}</text>",
+					'\tlet items = $state([]);\n\tlet data = $state(null);\n\tlet ticks = $state(0);\n\tlet late = $state(0);\n\tasync function load() {\n\t\titems = await fetchItems();\n\t}\n\tasync function fetchItems() {\n\t\treturn [];\n\t}\n\tif (background) {\n\t\tload();\n\t\tfetch("x").then((response) => {\n\t\t\tdata = response;\n\t\t}).finally(() => { late = 1; });\n\t\tsetInterval(() => ticks++, 1000);\n\t\tsetTimeout(() => { late = 2; });\n\t}\n',
+				),
+			),
+		).toEqual([]);
+	});
+
+	it("is quiet for a markup or function name that shadows a flag or a name that depends on one", async () => {
+		expect(
+			await warnings(
+				withScript(
+					'{#each rows as label}<text>{label}</text>{/each}\n{#snippet swatch(background)}<view style:background-color={background}></view>{/snippet}\n{@render swatch("red")}\n{#each rows as row}{@const label = row}<text>{label}</text>{/each}\n<text>{shout("x")}</text>\n<text>{format(1)}</text>',
+					'\tconst rows = ["a"];\n\tconst label = $derived(background ? "p" : "f");\n\tfunction shout(label) {\n\t\treturn label + "!";\n\t}\n\tfunction format(n) {\n\t\tconst label = String(n);\n\t\treturn label;\n\t}\n',
+				),
+			),
+		).toEqual([]);
+	});
+
+	it("is quiet in production builds", async () => {
+		const source = withScript("<text>{background ? 1 : 2}</text>");
+		expect(await warnings(source, { development: false })).toEqual([]);
 	});
 
 	it("is quiet without a flag's import, on the main thread's copy, and when silenced", async () => {

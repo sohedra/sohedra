@@ -851,14 +851,14 @@ https://sohedra.com/e/thread_branch_test"
 `;
 
 exports[`the build's catalogue > thread_flag_outside_if: the message 1`] = `
-"\`label\` depends on \`background\` and is read outside an \`{#if}\` test, so the first frame and the background can draw different content here with no block between them, and a tap before the background takes the page over can run the handler of the other's content.
+"\`label\` depends on \`background\` and is read outside an \`{#if}\` test, so the first frame can show something here other than the page shows once it starts.
 /app/src/App.svelte:2:3
 
 1: <script>
 2:   let a = 1;
      ^
 
-Put what one thread draws in an \`{#if}\` whose test is \`background\`, and what the other draws in its \`{:else}\`, or read \`background\` in an event handler or an effect.
+Put each thread's part in its own branch, \`{#if background}…{:else}…{/if}\` (or \`{#if background && user}\`), or read \`background\` in an event handler or an effect.
 https://sohedra.com/e/thread_flag_outside_if"
 `;
 

@@ -153,7 +153,7 @@ describe("the app's code that fails on Lynx", () => {
 });
 
 describe("a thread flag read outside an {#if} test", () => {
-	it("builds, and warns in production with the file, line, column and code frame, once", async () => {
+	it("builds, and warns in development with the file, line, column and code frame, once", async () => {
 		build = await buildApp("broken", {
 			entry: "./flag.ts",
 			files: {
@@ -162,6 +162,7 @@ describe("a thread flag read outside an {#if} test", () => {
 				"flag.ts":
 					'import Flag from "./Flag.svelte";\n\n(globalThis as Record<string, unknown>)["page"] = Flag;\n',
 			},
+			development: true,
 		});
 		expect(build.ok).toBe(true);
 		const text = build.error + build.messages;
