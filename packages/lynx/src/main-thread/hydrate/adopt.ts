@@ -2,7 +2,7 @@
 // drawn elements under the background's ids, with what differs written over them, and makes in
 // place the runs that differ more. A list keeps the cells Lynx holds; a cell it handed back is let
 // go of, and is made from the background's text when Lynx asks for it again. Then the events the
-// first frame heard are replayed through the background's handlers, but those on an element the
+// first frame heard are replayed through the background's handlers, except those on an element the
 // match did not adopt or is not sure of, which it may have paired with another element.
 
 import { LIST_ITEM_INFO, OpCode, ROOT_ID } from "../../wire/index.ts";
@@ -185,9 +185,9 @@ function drawnParents(node: DrawnNode, parents: Map<number, DrawnNode>): Map<num
  * goes from its target up, as Lynx bubbles it (a `catch` stops it). A call of a background function
  * the first frame held goes in its place among them (`call`).
  *
- * An element the match did not adopt, or is not sure of, has no handler of its own: an event its
- * listener heard is dropped (`dropped`), and one the page caught goes on from its first ancestor
- * the match is sure of, unless an element on the way listened for it, where it is dropped whole.
+ * An element the match did not adopt, or is not sure of, has no handler of its own. An event goes
+ * on from its target's first ancestor the match is sure of, unless an element on the way listened
+ * for it: then it ends there, dropped whole (`dropped`), whether the page or a listener heard it.
  */
 export function replayEarly(options: {
 	frame: Frame;
@@ -208,16 +208,16 @@ export function replayEarly(options: {
 		return id === undefined || unsure.has(id) ? undefined : id;
 	};
 	/**
-	 * Where a caught event goes on from: its target's first ancestor hydration is sure of, unless
-	 * an element on the way listened for it.
+	 * Where an event goes on from: its target's first element hydration is sure of, unless one on
+	 * the way listened for it. A listener below another's hears it too, and its own record says so.
 	 */
 	const from = (early: EarlyEvent): number | undefined => {
-		let drawn = frame.node(early.at);
+		let drawn = frame.node(early.target ?? early.at);
 		while (drawn && drawn.id !== ROOT_ID) {
 			const at = sure(drawn.id);
 			if (at !== undefined) return at;
 			if (drawn.events.some((listener) => listener.name === early.name)) {
-				dropped?.(early, drawn);
+				if (early.slot === null || drawn.id === early.at) dropped?.(early, drawn);
 				return undefined;
 			}
 			drawn = (parents ??= drawnParents(frame.root, new Map())).get(drawn.id);
@@ -229,17 +229,14 @@ export function replayEarly(options: {
 			call(early);
 			continue;
 		}
-		if (early.slot !== null) {
-			const at = sure(early.at);
-			if (at === undefined) dropped?.(early, frame.node(early.at)!);
-			else {
-				const handler = applier.handlerOf(at, early.slot);
-				if (handler !== undefined) send(handler, early, at);
-			}
-			continue;
-		}
 		const at = from(early);
 		if (at === undefined) continue;
+		if (early.slot !== null) {
+			const listener = sure(early.at);
+			const handler = listener === undefined ? undefined : applier.handlerOf(listener, early.slot);
+			if (handler !== undefined) send(handler, early, listener!);
+			continue;
+		}
 		for (let id = at; id !== ROOT_ID && id !== 0; id = rendered.nodes.get(id)?.parent ?? 0) {
 			const caught = applier.handlerOf(id, `catchEvent:${early.name}`);
 			const bound = caught ?? applier.handlerOf(id, `bindEvent:${early.name}`);

@@ -31,10 +31,12 @@ export interface MainThreadDetails {
 	/** `count` is how many calls had no answer in the task it is reported in. */
 	first_frame_call_unanswered: { count: number };
 	/**
-	 * `event` is the event's name, `element` the first frame's element whose listener heard it, as
-	 * its tag and class, and `count` how many of its events were dropped. Two branches of an `{#if}`
-	 * that look the same are not told apart: an event on one still runs the other's handler, with no
-	 * warning.
+	 * `event` is the names of the events, `element` the first frame's element whose listener heard
+	 * them, as its tag, id and class, and `count` how many were dropped. Two cases stay wrong, with no
+	 * warning: two branches of an `{#if}` that look the same (the same tags, attributes and texts)
+	 * are not told apart, and a tap on one runs the other's handler; and rows of an `{#each}` in
+	 * another order, as many as the first frame drew, are paired by place, so a tap runs the handler
+	 * of the row now at that place.
 	 */
 	first_frame_event_dropped: { event: string; element: string; count: number };
 	main_thread_value_not_runnable: Record<string, never>;
@@ -211,9 +213,9 @@ export const MAIN_THREAD_DEVELOPMENT_CATALOGUE: Catalogue<
 	},
 	first_frame_event_dropped: {
 		message: ({ event, element, count }) =>
-			`A ${event} on ${element} before the page started was dropped: the element is in a part of the page the background rendered differently from the first frame, so no handler ran for it${count > 1 ? ` (${count} events)` : ""}.`,
+			`The first frame's ${event} event on ${element} was dropped${count > 1 ? `, ${count} times` : ""}: the element is in a part of the page that may differ between the first frame and the page once it started, so no handler ran for it.`,
 		fix: () =>
-			"Render that part from the page's data, which both threads have, so the first frame draws what the background renders. A part only the background renders, such as {#if background}, also drops the events heard before the page started in the {#if} blocks beside it, in the same element: give it an element of its own, as in <view>{#if background}…{/if}</view>. Events after the page has started are handled as usual.",
+			"Render that part from the page's data, which both threads have, so the first frame draws what the background renders. A part only the background renders, such as {#if background}, and an {#await} given a promise, which the page draws again once it started, also drop the events heard before then in the {#if} blocks beside them, in the same element: give each an element of its own, as in <view>{#if background}…{/if}</view>. Events after the page has started are handled as usual.",
 		docs: "first_frame_event_dropped",
 	},
 };

@@ -88,22 +88,30 @@ export function countDropped(): {
 	dropped: (early: EarlyEvent, at: DrawnNode) => void;
 	warnings: () => Error[];
 } {
-	const counts = new Map<DrawnNode, { event: string; count: number }>();
+	const counts = new Map<DrawnNode, { names: Set<string>; count: number }>();
+	/** An attribute of `at` as written in the markup, if it has one. */
+	const attribute = (at: DrawnNode, name: string): string => {
+		const value = at.attrs.get(name);
+		return typeof value === "string" && value !== "" ? ` ${name}="${value}"` : "";
+	};
 	return {
 		dropped(early, at) {
-			const seen = counts.get(at);
-			if (seen) seen.count++;
-			else counts.set(at, { event: early.name, count: 1 });
+			const seen = counts.get(at) ?? { names: new Set(), count: 0 };
+			counts.set(at, seen);
+			seen.names.add(early.name);
+			seen.count++;
 		},
 		warnings: () =>
-			[...counts].map(([at, { event, count }]) => {
-				const name = at.attrs.get("class");
-				const element = `<${at.tag}${typeof name === "string" && name !== "" ? ` class="${name}"` : ""}>`;
-				return mainThreadDevelopmentError({
+			[...counts].map(([at, { names, count }]) =>
+				mainThreadDevelopmentError({
 					code: "first_frame_event_dropped",
-					details: { event, element, count },
-				});
-			}),
+					details: {
+						event: [...names].join(" or "),
+						element: `<${at.tag}${attribute(at, "id")}${attribute(at, "class")}>`,
+						count,
+					},
+				}),
+			),
 	};
 }
 

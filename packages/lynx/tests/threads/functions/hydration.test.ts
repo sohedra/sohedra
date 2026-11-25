@@ -209,6 +209,9 @@ describe("a main-thread handler on an element hydration adopts from the other br
 		return { page, log };
 	}
 
+	// Two branches that look the same: hydration cannot tell them apart, and takes the element as
+	// the other branch's, a known hole (`SameLook` in ../hydration-dropped-events.test.ts) that
+	// pairing blocks by the branch each took closes, flipping this test.
 	it("has its held call answered by the background's, when it is the same function", async () => {
 		const { page, log } = adopting();
 		const element = page.byClass("same");

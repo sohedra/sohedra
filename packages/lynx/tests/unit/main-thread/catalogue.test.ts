@@ -29,7 +29,11 @@ const SAMPLES: { [Code in MainThreadCode]: MainThreadDetails[Code] } = {
 	main_thread_value_too_deep: { depth: 1000 },
 	page_is_gone: { call: "runOnBackground" },
 	first_frame_call_unanswered: { count: 3 },
-	first_frame_event_dropped: { event: "tap", element: '<text class="login">', count: 2 },
+	first_frame_event_dropped: {
+		event: "tap or touchstart",
+		element: '<text id="login" class="login">',
+		count: 2,
+	},
 	main_thread_value_not_runnable: {},
 	element_released: { method: "setStyleProperty" },
 	not_a_background_function_handle: { name: "save" },

@@ -24,6 +24,8 @@ export interface EarlyEvent {
 	name: string;
 	/** The drawn node whose listener heard it (`slot`), or, for one the page caught, its target. */
 	at: number;
+	/** For one a listener heard, the drawn node it was aimed at, when that is below the listener. */
+	target?: number;
 	/** The listener's slot (`bindEvent:scroll`), or `null` for an event the page caught. */
 	slot: string | null;
 	/** The event as Lynx gave it. */
@@ -49,6 +51,12 @@ export interface Frame {
 	/** Stops listening: the drawn elements' listeners and the page's. */
 	stop(): void;
 }
+
+/** The drawn node an event Lynx sends was aimed at, by the first frame's ids. */
+const targetOf = (applier: Applier, event: unknown): number | undefined => {
+	const uid = (event as { target?: { uid?: unknown } } | null)?.target?.uid;
+	return typeof uid === "number" ? applier.idForUid(uid) : undefined;
+};
 
 /** The events the page itself listens to for the first frame: they bubble to it from anywhere. */
 const PAGE_EVENTS = ["tap", "longpress"];
@@ -148,9 +156,12 @@ export function drawFrame(options: DrawOptions): Frame {
 			const name = slot[1].slice(slot[1].indexOf(":") + 1);
 			// The page's own listener hears these, on their way to their target.
 			if (PAGE_EVENTS.includes(name)) return;
+			// Read now: the first frame's ids of the engine's elements go with it.
+			const target = targetOf(applier, event);
 			early.push({
 				name,
 				at: slot[0],
+				...(target !== undefined && target !== slot[0] && { target }),
 				slot: slot[1],
 				event,
 				...(input !== undefined && { input }),
@@ -182,8 +193,7 @@ export function drawFrame(options: DrawOptions): Frame {
 	applier.flushLists();
 	for (const name of PAGE_EVENTS) {
 		const listener = (event: unknown): void => {
-			const uid = (event as { target?: { uid?: unknown } } | null)?.target?.uid;
-			const at = typeof uid === "number" ? applier.idForUid(uid) : undefined;
+			const at = targetOf(applier, event);
 			if (at !== undefined) early.push({ name, at, slot: null, event });
 		};
 		mainThread.__AddEventListener(page, name, listener, PAGE_CAPTURE);

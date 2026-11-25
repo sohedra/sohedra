@@ -116,12 +116,21 @@ describe("the nodes hydration is not sure of", () => {
 		expect(unsure(plan)).toEqual([]);
 	});
 
-	it("are only a nested run's, where it did not settle and the run around it did", () => {
+	// The run around it paired its element only because the difference was left to the inner run:
+	// nothing tells "the same branch, with a difference inside" from "another branch".
+	it("are every run's around a nested run that did not settle", () => {
 		const plan = match(
 			`<view><!--[0--><view class="a"><!--[0--><text class="b">x</text><!--]--></view><!--]--></view>`,
 			[view(10, [view(11, [text(12, ["x"], "c")], "a")])],
 		);
-		expect(unsure(plan)).toEqual([12, 1000]);
+		expect(unsure(plan)).toEqual([11, 12, 1000]);
+	});
+
+	it("are a run's whose parent holds a text that differs, beside its blocks", () => {
+		const plan = match(`<text>Shared: <!--[-1--><text class="go">Open</text><!--]--></text>`, [
+			text(10, ["Yours: ", text(11, ["Open"], "go")]),
+		]);
+		expect(unsure(plan)).toEqual([11, 1001]);
 	});
 
 	it("are a settled nested run's too, where the run around it did not settle", () => {
