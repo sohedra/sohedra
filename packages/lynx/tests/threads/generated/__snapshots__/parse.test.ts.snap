@@ -4,77 +4,101 @@ exports[`the first frame's parser, on generated pages > reads each page as befor
 [
   "[block]
 2 <list> {"main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}}
-  3 cell {"item-key":"r0","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  3 cell {"item-key":"r0","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     27 <view> bindEvent:tap
+    [block]
     28 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  4 cell {"item-key":"r1","recyclable":false,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  4 cell {"item-key":"r1","recyclable":false,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     29 <view> bindEvent:tap
+    [block]
     30 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  5 cell {"item-key":"r2","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  5 cell {"item-key":"r2","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     31 <view> bindEvent:tap
+    [block]
     32 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  6 cell {"item-key":"r3","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  6 cell {"item-key":"r3","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     33 <view> bindEvent:tap
+    [block]
     34 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  7 cell {"item-key":"r4","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  7 cell {"item-key":"r4","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     35 <view> bindEvent:tap
+    [block]
     36 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  8 cell {"item-key":"r5","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  8 cell {"item-key":"r5","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     37 <view> bindEvent:tap
+    [block]
     38 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  9 cell {"item-key":"r6","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  9 cell {"item-key":"r6","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     39 <view> bindEvent:tap
+    [block]
     40 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  10 cell {"item-key":"r7","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  10 cell {"item-key":"r7","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     41 <view> bindEvent:tap
+    [block]
     42 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  11 cell {"item-key":"r8","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  11 cell {"item-key":"r8","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     43 <view> bindEvent:tap
+    [block]
     44 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  12 cell {"item-key":"r9","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  12 cell {"item-key":"r9","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     45 <view> bindEvent:tap
+    [block]
     46 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  13 cell {"item-key":"r10","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  13 cell {"item-key":"r10","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     47 <view> bindEvent:tap
+    [block]
     48 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  14 cell {"item-key":"r11","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  14 cell {"item-key":"r11","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     49 <view> bindEvent:tap
+    [block]
     50 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  15 cell {"item-key":"r12","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  15 cell {"item-key":"r12","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     51 <view> bindEvent:tap
+    [block]
     52 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  16 cell {"item-key":"r13","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  16 cell {"item-key":"r13","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     53 <view> bindEvent:tap
+    [block]
     54 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  17 cell {"item-key":"r14","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  17 cell {"item-key":"r14","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     55 <view> bindEvent:tap
+    [block]
     56 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  18 cell {"item-key":"r15","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  18 cell {"item-key":"r15","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     57 <view> bindEvent:tap
+    [block]
     58 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  19 cell {"item-key":"r16","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  19 cell {"item-key":"r16","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     59 <view> bindEvent:tap
+    [block]
     60 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  20 cell {"item-key":"r17","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  20 cell {"item-key":"r17","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     61 <view> bindEvent:tap
+    [block]
     62 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  21 cell {"item-key":"r18","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  21 cell {"item-key":"r18","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     63 <view> bindEvent:tap
+    [block]
     64 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  22 cell {"item-key":"r19","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  22 cell {"item-key":"r19","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     65 <view> bindEvent:tap
+    [block]
     66 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  23 cell {"item-key":"r20","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  23 cell {"item-key":"r20","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     67 <view> bindEvent:tap
+    [block]
     68 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  24 cell {"item-key":"r21","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  24 cell {"item-key":"r21","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     69 <view> bindEvent:tap
+    [block]
     70 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  25 cell {"item-key":"r22","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  25 cell {"item-key":"r22","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     71 <view> bindEvent:tap
+    [block]
     72 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap
-  26 cell {"item-key":"r23","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
+  26 cell {"item-key":"r23","recyclable":true,"class":"two words","main-thread:gesture":{"__isSerialized":true,"id":-1,"type":0,"config":{"minDistance":1},"callbacks":{"onUpdate":{"_c":{"mtTaps":{"_wvid":-1,"_initValue":0}},"_wkltId":"624d:5b9d3:3"}},"waitFor":[],"simultaneousWith":[],"continueWith":[]}} "<view bindtap></view><!--[0--><!--[--><!--]--><!--]--><view data-o='{\\"s\\":\\"\\\\u003clist-item\\"}' bindtap data-n='1'></view>"
     73 <view> bindEvent:tap
+    [block]
     74 <view> {"data-o":{"s":"<list-item"},"data-n":1} bindEvent:tap",
   "2 <list> {"custom-list-name":"list-container","preload-buffer-count":2,"initial-item-count":3,"data-k":"v"}
   3 cell {"item-key":"e1-c","data-o":{"s":"c"},"class":"lit"} "<!--[0--><!----><view style=\\"color: blue;\\"><text data-v=\\"2\\" class=\\"c1\\"><!--[-1--><!--]--><text style=\\"color: red\\"></text></text><text bindtap class=\\"c1\\" style=\\"color: blue;\\">a &amp; b<!--[-1-->A<!--]--></text><!----></view><!----><text><!--[-1--><!--[-1-->litc<!--]--><!--[-1-->two words<!--]--><!--[-1-->a &amp; b{x}<!--]--><!--]-->a &amp; b</text><!--]-->"
@@ -412,8 +436,9 @@ exports[`the first frame's parser, on generated pages > reads each page as befor
   "[block]
 [block]
   [block]
-    2 <view>
-    [block]",
+    [block]
+      2 <view>
+      [block]",
   "",
   "2 <list>
   3 cell {"item-key":"r0","recyclable":true,"id":"lynx-s1"} "<!--[0--><!--]--><text main-thread:gesture='{\\"__isSerialized\\":true,\\"id\\":-4,\\"type\\":3,\\"config\\":{\\"maxDuration\\":500,\\"maxDistance\\":10},\\"callbacks\\":{\\"onEnd\\":{\\"_c\\":{\\"mtTaps\\":{\\"_wvid\\":-15,\\"_initValue\\":0}},\\"_wkltId\\":\\"624d:f2810:3\\"}},\\"waitFor\\":[{\\"id\\":-3}],\\"simultaneousWith\\":[],\\"continueWith\\":[]}'>{x}0</text><!----><!---->"
@@ -510,8 +535,9 @@ exports[`the first frame's parser, on generated pages > reads each page as befor
       28 <view> {"data-o":{"s":"'\\""},"id":"lynx-s1","data-v":"a"}
       29 <image> {"src":"a.png"}
   [block]
-    30 <view> {"class":"c1"}
-  [block]
+    [block]
+      30 <view> {"class":"c1"}
+    [block]
 31 <image> {"accessibility-label":"lynx-s1"}",
   "2 <list>",
   "2 <view>
@@ -795,13 +821,15 @@ exports[`the first frame's parser, on generated pages > reads each page as befor
       [block]
         [block]
           [block]
-            3 "a"
+            [block]
+              3 "a"
           4 " "
         5 " "
         6 <text>
           7 "lynx-m1 "
           [block]
-            8 "&"
+            [block]
+              8 "&"
       9 " "
       [block]
         10 "{x}\\n\\t "
@@ -1232,35 +1260,39 @@ exports[`the first frame's parser, on generated pages > reads each page as befor
   55 cell {"item-key":"r25","class":"<","main-thread:ref":{"_wkltId":"624d:394ab:2"},"accessibility-label":"2"} deferred "<!--[-1--><!--]-->"
     [block]
 [block]
-  56 <view>
   [block]
-    57 <text> {"class":"off","data-o":{"s":"a & b"}}
-      [block]
-        58 <text> {"accessibility-label":"<","main-thread:ref":{"_wvid":-48,"_initValue":null}} bindEvent:tap
-          [block]
-            59 "é ü\\n\\ta & b"
-          60 " "
-          [block]
-            61 "two words"
-          62 " "
-          [block]
-            63 "x y"
-      64 " "
-      [block]
+    56 <view>
+    [block]
+      57 <text> {"class":"off","data-o":{"s":"a & b"}}
         [block]
-          65 "two words"
-      66 " "
-      [block]
+          58 <text> {"accessibility-label":"<","main-thread:ref":{"_wvid":-48,"_initValue":null}} bindEvent:tap
+            [block]
+              59 "é ü\\n\\ta & b"
+            60 " "
+            [block]
+              61 "two words"
+            62 " "
+            [block]
+              [block]
+                63 "x y"
+        64 " "
         [block]
-          67 "x y "
-          68 "é"
-        69 " 2\\n\\té ü"
-      70 " é "
-      71 "2\\n\\t&"
-    72 <text>
-      73 <text> bindEvent:tap
-        74 "é ü\\n\\tlit"
-    75 <image> {"data-o":{"s":"lit"},"data-u":"<","class":"c1"}",
+          [block]
+            [block]
+              65 "two words"
+        66 " "
+        [block]
+          [block]
+            [block]
+              67 "x y "
+              68 "é"
+          69 " 2\\n\\té ü"
+        70 " é "
+        71 "2\\n\\t&"
+      72 <text>
+        73 <text> bindEvent:tap
+          74 "é ü\\n\\tlit"
+      75 <image> {"data-o":{"s":"lit"},"data-u":"<","class":"c1"}",
   "[block]
   2 <image>
   3 <view>

@@ -25,6 +25,7 @@ import type { LynxEventType } from "../../wire/index.ts";
 import { backgroundError } from "../catalogue.ts";
 import { background, DEV } from "../globals.ts";
 import { report, reportOnce, warnOnce } from "../report.ts";
+import { branchMarks } from "./branch-marks.ts";
 import { elementClass, svelteListener } from "./element.ts";
 import type { ElementNode, ListenerChange } from "./element.ts";
 import type { HandlerRegistry } from "./handlers.ts";
@@ -94,6 +95,13 @@ export interface LynxRenderer extends Renderer<LynxNodes> {
 	 * such a cell now.
 	 */
 	writeCell(id: number): boolean;
+	/**
+	 * The page starts: until `endBranchMarks`, the renderer writes which branch each of Svelte's
+	 * blocks took, for hydration.
+	 */
+	startBranchMarks(): void;
+	/** The page has rendered: the marks left are written, and no more. */
+	endBranchMarks(): void;
 }
 
 /** What the renderer writes into and keeps. */
@@ -181,6 +189,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 		nodeById: (id) => elementsById.get(id),
 	});
 	const pageRoot = new Element("page");
+	const marks = branchMarks(queue);
 	const answerLateLayout = lateLayouts({
 		pageLink: () => pageLink,
 		sent: () => queue.sent,
@@ -249,6 +258,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			if (child.lynxId !== 0) queue.push([OpCode.Insert, id, child.lynxId, 0]);
 			else for (const real of topReals(child)) queue.push([OpCode.Insert, id, real.lynxId, 0]);
 		}
+		// While the element waits to be inserted: the marks travel with its ops.
+		if (!again) marks.made(node);
 		if (DEV) checkScrollViewRows(node);
 	}
 
@@ -353,6 +364,7 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			unrealize(node);
 		realize(node, container);
 		reflectInsert(node, container);
+		marks.joined(container, node);
 		if (DEV) checkScrollViewRows(container);
 	}
 
@@ -558,6 +570,8 @@ export function createLynxRenderer({ queue, handlers }: RendererState): LynxRend
 			realize(node, container, true);
 			return true;
 		},
+		startBranchMarks: () => marks.start(),
+		endBranchMarks: () => marks.end(),
 
 		createFragment: () => new TreeNode("fragment"),
 		// The element that holds a component's `--x` properties is a `view` (see CSS_PROPS_HOLDERS).

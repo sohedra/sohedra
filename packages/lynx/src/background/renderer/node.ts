@@ -28,6 +28,15 @@ export interface InputState {
 	blurs: boolean;
 }
 
+/** A block recorded at its anchor as the page starts. */
+export interface RecordedBranch {
+	key: number;
+	/** The first node of its content; none when it is empty. */
+	first: TreeNode | null;
+	/** Whether its mark is written. */
+	written: boolean;
+}
+
 /** One node of the tree. */
 export class TreeNode {
 	readonly kind: NodeKind;
@@ -58,6 +67,8 @@ export class TreeNode {
 	codeStyles: Map<string, string | number> | null = null;
 	/** The detail of the last `layoutchange` the page heard on it, while its Lynx element lives. */
 	layout: Record<string, unknown> | null = null;
+	/** A block's anchor, while the page starts: the branch the block took (./branch-marks.ts). */
+	branch: RecordedBranch | null = null;
 
 	constructor(kind: NodeKind) {
 		this.kind = kind;
