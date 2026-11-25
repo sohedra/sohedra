@@ -8,6 +8,8 @@
 
 import { describe, expect, it } from "@rstest/core";
 
+import AdjacentEach from "../fixtures/threads/early/AdjacentEach.svelte";
+import drawAdjacentEach from "../fixtures/threads/early/AdjacentEach.svelte?first-frame";
 import AwaitBeside from "../fixtures/threads/early/AwaitBeside.svelte";
 import drawAwaitBeside from "../fixtures/threads/early/AwaitBeside.svelte?first-frame";
 import BesideBackgroundOnly from "../fixtures/threads/early/BesideBackgroundOnly.svelte";
@@ -295,6 +297,24 @@ describe("an early tap on keyed rows the background has in another order", () =>
 		});
 		await tapEarly(page, "row");
 		expect(log).not.toEqual(["delete c"]);
+	});
+});
+
+// The same hole for two `{#each}`s beside each other: a row moves from one list to the other,
+// each list's count shifts, and the rows pair by place across them. The tap runs the other list's
+// handler. Closing it needs every `{#each}` in a block of its own.
+describe("an early tap on a row that moved to the {#each} beside it", () => {
+	it.fails("does not run the other list's handler", async () => {
+		const { page, log } = start(AdjacentEach, drawAdjacentEach, {
+			drawn: { a: ["1", "2"], b: ["3"] },
+			built: { a: ["1"], b: ["2", "3"] },
+		});
+		const rows = page.engine
+			.all()
+			.filter((element) => page.engine.state(element).classes === "row");
+		page.engine.dispatch(rows[1]!, { type: "tap" });
+		await page.settle();
+		expect(log).not.toEqual(["pin 2"]);
 	});
 });
 

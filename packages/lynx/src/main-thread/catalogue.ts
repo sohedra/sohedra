@@ -31,16 +31,12 @@ export interface MainThreadDetails {
 	/** `count` is how many calls had no answer in the task it is reported in. */
 	first_frame_call_unanswered: { count: number };
 	/**
-	 * `event` is the names of the events, `element` the first frame's element whose listener heard
-	 * them, as its tag, id and class, and `count` how many were dropped. Two cases stay wrong, with no
-	 * warning: two branches of an `{#if}` that look the same (the same tags, attributes and texts)
-	 * are not told apart, and a tap on one runs the other's handler; and rows of an `{#each}` in
-	 * another order, as many as the first frame drew, are paired by place, so a tap runs the handler
-	 * of the row now at that place.
-	 */
-	/**
 	 * `event` names the events dropped on one drawn element, which hydration made again or wrote an
-	 * attribute over; `element` is its tag, `id` and `class`, as written; `count` how many.
+	 * attribute over (or one above it); `element` is its tag, `id` and `class`, as written; `count`
+	 * how many. Three cases still run another element's handler, with no warning: rows of an
+	 * `{#each}` in another order, as many as the first frame drew, paired by place; two `{#each}`s
+	 * beside each other whose counts shift, paired by place across them; and a part picked by thread
+	 * with no `{#if}` of its own that looks the same on both threads, attributes included.
 	 */
 	first_frame_event_dropped: { event: string; element: string; count: number };
 	main_thread_value_not_runnable: Record<string, never>;

@@ -7,6 +7,12 @@ import { describe, expect, it } from "@rstest/core";
 
 import AwaitGiven from "../fixtures/threads/early/AwaitGiven.svelte";
 import drawAwaitGiven from "../fixtures/threads/early/AwaitGiven.svelte?first-frame";
+import AwaitRowsBetween from "../fixtures/threads/early/AwaitRowsBetween.svelte";
+import drawAwaitRowsBetween from "../fixtures/threads/early/AwaitRowsBetween.svelte?first-frame";
+import AwaitSequence from "../fixtures/threads/early/AwaitSequence.svelte";
+import drawAwaitSequence from "../fixtures/threads/early/AwaitSequence.svelte?first-frame";
+import AwaitsShift from "../fixtures/threads/early/AwaitsShift.svelte";
+import drawAwaitsShift from "../fixtures/threads/early/AwaitsShift.svelte?first-frame";
 import AwaitThenInCell from "../fixtures/threads/early/AwaitThenInCell.svelte";
 import drawAwaitThenInCell from "../fixtures/threads/early/AwaitThenInCell.svelte?first-frame";
 import BoundaryFailed from "../fixtures/threads/early/BoundaryFailed.svelte";
@@ -101,6 +107,36 @@ describe("an early tap around an {#await}", () => {
 			expect(rewrites).toEqual([]);
 		},
 	);
+
+	it("whose rows only the background has, lets its neighbors' run", async () => {
+		const { page, log, rewrites } = await tapped(AwaitRowsBetween, drawAwaitRowsBetween, {
+			drawn: { rows: [] },
+			built: { rows: ["a"] },
+			taps: ["s-before", "s-after"],
+		});
+		expect(log).toEqual(["s-before", "s-after"]);
+		expect(page.errors).toEqual([]);
+		expect(rewrites).toEqual([]);
+	});
+
+	it("beside another whose rows moved to it, runs neither one's handler", async () => {
+		const { page, log } = await tapped(AwaitsShift, drawAwaitsShift, {
+			drawn: { a: ["1"], b: [] },
+			built: { a: [], b: ["1"] },
+			taps: ["row"],
+		});
+		expect(log).toEqual([]);
+		expect(page.warnings).toEqual([expect.objectContaining({ code: "first_frame_event_dropped" })]);
+	});
+
+	it("given a sequence expression, is given its last value on both threads", async () => {
+		const { page } = await tapped(AwaitSequence, drawAwaitSequence, {
+			drawn: { given: "value" },
+			taps: [],
+		});
+		expect(page.engine.texts()).toEqual(["value"]);
+		expect(page.errors).toEqual([]);
+	});
 
 	it("given a promise in a cell, lets its neighbors' run", async () => {
 		const log: unknown[] = [];

@@ -1,6 +1,6 @@
 // The blocks hydration pairs that are not an `{#if}`'s branch: the background's copy says which is
 // a second state, and where an `{#await}` given a promise is; both copies wrap an `{#each}` with an
-// `{:else}` and a boundary with a `pending` or a `failed` in an `{#if}` of their own. The edits are
+// `{:else}`, a boundary with a `pending` or a `failed`, and an `{#await}` in an `{#if}` of their own. The edits are
 // read as the component's text after every pass, and each copy must still compile.
 
 import { describe, expect, it } from "@rstest/core";
@@ -62,17 +62,23 @@ describe("the blocks hydration pairs", () => {
 		expect(both(markup)).toEqual({ background: markup, mainThread: markup });
 	});
 
-	it("say what an {#await} was given, and where it is, on the background only", () => {
+	it("put an {#await} in a region, and say what it was given and where it is on the background", () => {
 		expect(
 			both(
 				"{#await load()}<text>Loading</text>{:then value}<text>{value}</text>{/await}<view></view>",
 			),
 		).toEqual({
 			background:
-				"{#await __sohedraLynxAwaitGiven(load())}<text>Loading</text>{:then value}{#if __sohedraLynxSecond()}<text>{value}</text>{/if}{/await}{#if __sohedraLynxAwaitPlace()}{/if}<view></view>",
+				"{#if true}{#await __sohedraLynxAwaitGiven((load()))}<text>Loading</text>{:then value}{#if __sohedraLynxSecond()}<text>{value}</text>{/if}{/await}{#if __sohedraLynxAwaitPlace()}{/if}{/if}<view></view>",
 			mainThread:
-				"{#await load()}<text>Loading</text>{:then value}<text>{value}</text>{/await}<view></view>",
+				"{#if true}{#await load()}<text>Loading</text>{:then value}<text>{value}</text>{/await}{/if}<view></view>",
 		});
+	});
+
+	it("give an {#await} what a sequence expression gives", () => {
+		expect(both("{#await load(), rows}<text>Loading</text>{/await}").background).toBe(
+			"{#if true}{#await __sohedraLynxAwaitGiven((load(), rows))}<text>Loading</text>{/await}{#if __sohedraLynxAwaitPlace()}{/if}{/if}",
+		);
 	});
 
 	it("put a boundary with a pending in a region, its pending a second state on the background", () => {
@@ -109,7 +115,7 @@ describe("the blocks hydration pairs", () => {
 				"{#await load() then value}{#each rows as row}<text>{row}</text>{:else}<text>{value}</text>{/each}{/await}",
 			).background,
 		).toBe(
-			"{#await __sohedraLynxAwaitGiven(load()) then value}{#if __sohedraLynxSecond()}{#if true}{#each rows as row}<text>{row}</text>{:else}{#if __sohedraLynxSecond()}<text>{value}</text>{/if}{/each}{/if}{/if}{/await}{#if __sohedraLynxAwaitPlace()}{/if}",
+			"{#if true}{#await __sohedraLynxAwaitGiven((load())) then value}{#if __sohedraLynxSecond()}{#if true}{#each rows as row}<text>{row}</text>{:else}{#if __sohedraLynxSecond()}<text>{value}</text>{/if}{/each}{/if}{/if}{/await}{#if __sohedraLynxAwaitPlace()}{/if}{/if}",
 		);
 	});
 

@@ -13,10 +13,12 @@
 //
 //   {#await __sohedraLynxAwaitGiven(load())}…{/await}{#if __sohedraLynxAwaitPlace()}{/if}
 //
-// The first state of an `{#each}` with an `{:else}`, and a boundary's children, have no mark. So
-// both copies wrap such a block, and a boundary with a `pending` or a `failed`, in `{#if true}`: a
-// state only one thread drew is then made again inside it, and its neighbors are paired as they
-// are.
+// The first state of an `{#each}` with an `{:else}`, a boundary's children and an `{#await}`'s
+// `{:then}` with no element have no mark. So both copies wrap such an `{#each}`, a boundary with a
+// `pending` or a `failed`, and every `{#await}` in `{#if true}`: a state only one thread drew is
+// then made again inside it, and its neighbors are paired as they are. An `{#await}` whose
+// expression awaits (`{#await await x}`, async mode) says what it was given only once that settles,
+// after the page started: its place is not marked, and its parent's children are made again.
 //
 // What closes a block rewrites the block's last character, so that it goes before what another
 // pass inserts where the block ends, inner blocks first; what opens one is inserted after what
@@ -90,11 +92,13 @@ export function blockStateEdits(options: {
 			region(node);
 			second(fallback);
 		} else if (node.type === "AwaitBlock") {
+			region(node);
 			if (!background) continue;
 			const expression = field(node, "expression")!;
+			// In parentheses of its own: a sequence's commas would separate the hook's arguments.
 			edits.push(
-				{ start: expression.start!, end: expression.start!, text: `${hook("awaitGiven")}(` },
-				{ start: expression.end!, end: expression.end!, text: ")" },
+				{ start: expression.start!, end: expression.start!, text: `${hook("awaitGiven")}((` },
+				{ start: expression.end!, end: expression.end!, text: "))" },
 			);
 			second(fragmentNodes(node, "then"));
 			after(node, `{#if ${hook("awaitPlace")}()}{/if}`);
