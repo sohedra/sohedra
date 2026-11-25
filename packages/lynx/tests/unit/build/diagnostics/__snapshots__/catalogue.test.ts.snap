@@ -488,7 +488,7 @@ exports[`the build's catalogue > media_query_imported: the message 1`] = `
 2:   let a = 1;
      ^
 
-Read the screen's size from \`systemInfo\` in \`@sohedra/lynx/host\`, and listen to \`on(host, "onWindowResize", …)\` for the page's size as it changes.
+Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`, and follow the page's size with \`on(host, "onWindowResize", …)\`. For the color scheme, read the host's theme from \`globalProps\`.
 https://sohedra.com/e/media_query_imported"
 `;
 
@@ -766,8 +766,22 @@ Add Svelte ~5.59.0 to the app's package.json dependencies.
 https://sohedra.com/e/svelte_missing"
 `;
 
+exports[`the build's catalogue > svelte_module_unsupported for svelte/motion: the message 1`] = `
+"\`svelte/motion\` is not supported in Svelte on Lynx yet: it reads the web's \`window\` as it loads, which Lynx doesn't have, so the background throws as it loads it.
+
+Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
+https://sohedra.com/e/svelte_module_unsupported"
+`;
+
+exports[`the build's catalogue > svelte_module_unsupported for svelte/reactivity/window: the message 1`] = `
+"\`svelte/reactivity/window\` is not supported in Svelte on Lynx yet: it reads the web's \`window\` as it loads, which Lynx doesn't have, so the background throws as it loads it.
+
+Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`, and follow the page's size with \`on(host, "onWindowResize", …)\`.
+https://sohedra.com/e/svelte_module_unsupported"
+`;
+
 exports[`the build's catalogue > svelte_module_unsupported: the message 1`] = `
-"\`svelte/motion\` is not supported in Svelte on Lynx yet: it reads the web's \`window\` as it loads, which Lynx doesn't have, so the page throws as it starts.
+"\`svelte/motion\` is not supported in Svelte on Lynx yet: it reads the web's \`window\` as it loads, which Lynx doesn't have, so the background throws as it loads it.
 /app/src/App.svelte:2:3
 
 1: <script>
@@ -776,6 +790,27 @@ exports[`the build's catalogue > svelte_module_unsupported: the message 1`] = `
 
 Animate the element with its \`animate()\` method from an attachment (\`{@attach}\`), or set its style from a main-thread function with \`setStyleProperty()\`.
 https://sohedra.com/e/svelte_module_unsupported"
+`;
+
+exports[`the build's catalogue > svelte_mount_imported for hydrate: the message 1`] = `
+"\`hydrate\` is imported from "svelte", whose \`hydrate\` works with the web's DOM, not with Lynx's page.
+
+Use \`mountPage\` from "@sohedra/lynx" in the page's entry: it draws the first frame on the main thread and mounts over it.
+https://sohedra.com/e/svelte_mount_imported"
+`;
+
+exports[`the build's catalogue > svelte_mount_imported for mount: the message 1`] = `
+"\`mount\` is imported from "svelte", whose \`mount\` works with the web's DOM, not with Lynx's page.
+
+Import \`mount\` from "@sohedra/lynx", which mounts a component on the page.
+https://sohedra.com/e/svelte_mount_imported"
+`;
+
+exports[`the build's catalogue > svelte_mount_imported for unmount: the message 1`] = `
+"\`unmount\` is imported from "svelte", whose \`unmount\` works with the web's DOM, not with Lynx's page.
+
+Import \`unmount\` from "@sohedra/lynx", which unmounts a component its \`mount\` returned.
+https://sohedra.com/e/svelte_mount_imported"
 `;
 
 exports[`the build's catalogue > svelte_mount_imported: the message 1`] = `
@@ -810,7 +845,7 @@ exports[`the build's catalogue > svelte_window: the message 1`] = `
 2:   let a = 1;
      ^
 
-Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`. Listen to the page's events with \`on(root, …)\`.
+Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`, and follow the page's size with \`on(host, "onWindowResize", …)\`. Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_window"
 `;
 

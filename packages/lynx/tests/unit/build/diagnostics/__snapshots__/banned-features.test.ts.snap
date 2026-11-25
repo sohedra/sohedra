@@ -40,7 +40,7 @@ exports[`a feature that custom renderers do not support > <svelte:window>: says 
 1: <svelte:window />
    ^
 
-Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`. Listen to the page's events with \`on(root, …)\`.
+Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`, and follow the page's size with \`on(host, "onWindowResize", …)\`. Listen to the page's events with \`on(root, …)\`.
 https://sohedra.com/e/svelte_window"
 `;
 

@@ -3,6 +3,8 @@
 // an app reaches for; the web's globals that `@sohedra/lynx-polyfill` fills, or that the wire's
 // table says Lynx lacks for good (`matchMedia`, `localStorage`), are not repeated here.
 
+import { PAGE_EVENTS, SCREEN_SIZE } from "../diagnostics/catalogue-checks.ts";
+
 /** What a group of the DOM's globals is replaced by on Lynx. */
 type DomInstead = "element" | "screen" | "layout" | "visibility" | "address";
 
@@ -10,8 +12,7 @@ type DomInstead = "element" | "screen" | "layout" | "visibility" | "address";
 export const DOM_INSTEAD: Readonly<Record<DomInstead, string>> = {
 	element:
 		"Reach an element with `{@attach}` on the background, or with `main-thread:ref` in a main-thread function, and use its methods.",
-	screen:
-		"Read the screen's size from `systemInfo` in `@sohedra/lynx/host`, and listen to the page's events with `on(root, …)`.",
+	screen: `${SCREEN_SIZE} ${PAGE_EVENTS}`,
 	layout: "Listen to the element's `layoutchange` event, which gives its size and place.",
 	visibility:
 		"Use the element's `onuiappear` and `onuidisappear` events, or `lynx.createIntersectionObserver({})` on the background.",

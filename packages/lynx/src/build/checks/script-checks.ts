@@ -137,7 +137,7 @@ export function checkScripts(source: SourceText, roots: ScriptRoots): ScriptFind
 		// Boundary: `finding` pairs each code with its own details.
 		findings.errors.push({ ...found, place } as AnyReport);
 	}
-	for (const { report, start, anchor } of refusedSvelteUses(roots.programs)) {
+	for (const { report, start, anchor } of refusedSvelteUses(roots)) {
 		if (quiet(report.code, start, anchor)) continue;
 		findings.errors.push({ ...report, place: placeAt(source, start) });
 	}

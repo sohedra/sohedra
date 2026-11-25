@@ -3,7 +3,7 @@
 // page, and snapshots every message.
 
 import type { Catalogue } from "../../wire/index.ts";
-import { CHECK_CATALOGUE, MOTION } from "./catalogue-checks.ts";
+import { CHECK_CATALOGUE, MOTION, PAGE_EVENTS, SCREEN_SIZE } from "./catalogue-checks.ts";
 import type { CheckDetails } from "./catalogue-checks.ts";
 import { LOADER_CATALOGUE } from "./catalogue-loaders.ts";
 import type { LoaderDetails } from "./catalogue-loaders.ts";
@@ -110,7 +110,6 @@ export interface BuildDetails extends SetupDetails, LoaderDetails, PluginDetails
 export type BuildCode = keyof BuildDetails;
 
 const NOT_AVAILABLE = (feature: string): string => `${feature} is not available in Svelte on Lynx.`;
-const PAGE_EVENTS = "Listen to the page's events with `on(root, …)`.";
 
 /** Every message of the build. */
 export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
@@ -175,8 +174,7 @@ export const BUILD_CATALOGUE: Catalogue<BuildDetails> = {
 	},
 	svelte_window: {
 		message: ({ feature }) => NOT_AVAILABLE(feature),
-		fix: () =>
-			`Read the screen's size, which does not change as the page runs, from \`systemInfo\` in \`@sohedra/lynx/host\`. ${PAGE_EVENTS}`,
+		fix: () => `${SCREEN_SIZE} ${PAGE_EVENTS}`,
 		docs: "svelte_window",
 	},
 	svelte_document: {
