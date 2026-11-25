@@ -363,6 +363,21 @@ describe("Svelte's own mount and unmount", () => {
 		expect(text.split("\n")[0]).toContain("`unmount`");
 	});
 
+	it("are an error through a namespace import, and re-exported", () => {
+		const read = moduleError('import * as svelte from "svelte";\nexport const m = svelte.mount;');
+		expect(codes(read)).toEqual(["svelte_mount_imported"]);
+		expect(read).toContain("util.ts:2:18");
+		expect(codes(moduleError('import * as s from "svelte";\ns["unmount"]({});'))).toEqual([
+			"svelte_mount_imported",
+		]);
+		expect(codes(moduleError('export { tick, mount } from "svelte";'))).toEqual([
+			"svelte_mount_imported",
+		]);
+		expect(moduleError('import * as svelte from "svelte";\nexport const t = svelte.tick;')).toBe(
+			"",
+		);
+	});
+
 	it("leave the binding's, a type import and the silencing comment alone", () => {
 		expect(
 			moduleError('import { mount, unmount } from "@sohedra/lynx";\nvoid [mount, unmount];'),
@@ -370,6 +385,17 @@ describe("Svelte's own mount and unmount", () => {
 		expect(moduleError('import type { mount } from "svelte";\nexport type M = typeof mount;')).toBe(
 			"",
 		);
+		expect(
+			moduleError(
+				'import { type mount, tick } from "svelte";\nexport type M = typeof mount;\nvoid tick;',
+			),
+		).toBe("");
+		expect(moduleError('export type { mount } from "svelte";')).toBe("");
+		expect(
+			moduleError(
+				'// sohedra-ignore svelte_mount_imported\nimport {\n\ttick,\n\tmount,\n} from "svelte";\nvoid [tick, mount];',
+			),
+		).toBe("");
 		expect(
 			moduleError(
 				'// sohedra-ignore svelte_mount_imported\nimport { mount } from "svelte";\nvoid mount;',
