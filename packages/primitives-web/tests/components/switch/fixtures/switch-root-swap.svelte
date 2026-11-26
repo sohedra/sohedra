@@ -1,0 +1,40 @@
+<!--
+  Swaps one Switch.Root for another inside a form, through `{#if}` (the old one optionally playing
+  an `out:` transition, so its teardown runs after the new one mounts) or `{#key}`. Both bind the
+  same `ref`.
+-->
+<script lang="ts">
+	import { fade } from "svelte/transition";
+
+	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
+
+	let { mode = "if", outro = 0 }: { mode?: "if" | "key"; outro?: number } = $props();
+
+	let which = $state<"a" | "b">("a");
+	let ref: HTMLElement | null = $state(null);
+
+	export function swap() {
+		which = which === "a" ? "b" : "a";
+	}
+
+	export function getRef() {
+		return ref;
+	}
+</script>
+
+<form>
+	{#if mode === "if"}
+		{#if which === "a"}
+			<span out:fade={{ duration: outro }}>
+				<SwitchRoot bind:ref name="a" data-testid="a" defaultChecked />
+			</span>
+		{:else}
+			<SwitchRoot bind:ref name="b" data-testid="b" />
+		{/if}
+	{:else}
+		{#key which}
+			<SwitchRoot bind:ref name={which} data-testid={which} defaultChecked={which === "a"} />
+		{/key}
+	{/if}
+	<button type="reset">Reset</button>
+</form>

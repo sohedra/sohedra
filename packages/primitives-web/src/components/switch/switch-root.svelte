@@ -1,0 +1,92 @@
+<!--
+  @component
+  Represents the switch itself. Renders a `<span>` element and a hidden `<input>` beside it.
+-->
+<script lang="ts">
+	import { SwitchStore } from "@sohedra/primitives-core/components/switch/index.js";
+	import { bound, sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
+
+	import {
+		FieldRootContext,
+		FieldsetRootContext,
+		NULL_FIELD,
+		NULL_FIELDSET,
+		useCheckedControl,
+	} from "../../foundation/form/index.js";
+	import { Part, type WebTypes } from "../../foundation/kernel/index.js";
+	import { switchAttributes } from "./attributes.js";
+	import { SwitchRootContext } from "./context.js";
+	import type { SwitchRootProps } from "./types.js";
+
+	// 1. Props
+	let {
+		checked = $bindable(),
+		defaultChecked,
+		onCheckedChange,
+		disabled,
+		readOnly,
+		required,
+		name,
+		form,
+		value,
+		uncheckedValue,
+		id,
+		nativeButton = false,
+		"aria-labelledby": ariaLabelledBy,
+		inputRef = $bindable(null),
+		ref = $bindable(null),
+		...rest
+	}: SwitchRootProps = $props();
+
+	const uid = $props.id();
+
+	// 2. Store and context
+	const sw = new SwitchStore<WebTypes>(
+		() => ({ defaultChecked, onCheckedChange, disabled, readOnly, required, name, uncheckedValue }),
+		{
+			checked: bound(
+				() => checked,
+				(next) => (checked = next),
+			),
+			field: FieldRootContext.getOr(NULL_FIELD),
+			fieldset: FieldsetRootContext.getOr(NULL_FIELDSET),
+		},
+	);
+	sw.connect();
+	SwitchRootContext.set(sw);
+
+	// 3. Shared behaviours
+	const input = bound(
+		() => inputRef,
+		(element) => (inputRef = element),
+	);
+	const control = useCheckedControl(sw, () => ({
+		type: "checkbox",
+		id,
+		inputId: sohedraId(uid, "input"),
+		rootId: sohedraId(uid),
+		native: nativeButton,
+		form,
+		value,
+		uncheckedValue,
+		labelledBy: ariaLabelledBy,
+		label: rest["aria-label"],
+		inputRef: input,
+	}));
+</script>
+
+<!-- No whitespace between the elements: it would render text beside the switch. -->
+<Part
+	tag="span"
+	bind:ref
+	state={sw.state}
+	attrs={switchAttributes}
+	id={control.id}
+	role="switch"
+	aria-checked={sw.checked}
+	aria-readonly={sw.readOnly || undefined}
+	aria-required={sw.required || undefined}
+	{...control.props}
+	user={rest}
+	after={control.after}
+/>{#if sw.submitsUncheckedValue}<input {...control.unchecked} />{/if}<input {...control.hidden} />
