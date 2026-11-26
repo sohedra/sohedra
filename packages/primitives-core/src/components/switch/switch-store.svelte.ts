@@ -6,7 +6,7 @@ import {
 	type FieldsetContextValue,
 } from "../../foundation/form/index.js";
 import { type Bound, Controllable, type PlatformTypes } from "../../foundation/kernel/index.js";
-import type { SwitchRootChangeEventDetails, SwitchRootState } from "./types.js";
+import type { SwitchRootChangeEventDetails, SwitchRootState } from "./switch-types.js";
 
 /** The Switch.Root props the store reads. */
 export interface SwitchStoreProps<T extends PlatformTypes> {

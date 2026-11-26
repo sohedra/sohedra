@@ -1,7 +1,7 @@
 import type { Component } from "svelte";
 
 import SwitchThumb from "#lib/components/switch/switch-thumb.svelte";
-import type { SwitchThumbState } from "#lib/components/switch/types.js";
+import type { SwitchThumbState } from "#lib/components/switch/switch-types.js";
 
 import type { ConformanceSetup } from "../../../conformance/conformance-setup.js";
 import SwitchThumbWrapper from "./switch-thumb-wrapper.svelte";

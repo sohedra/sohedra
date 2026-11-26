@@ -1,7 +1,7 @@
 // Switch's styling hooks on the web: the data attributes its parts render, and how state maps to
 // them.
 import type { StateAttributesMapping } from "../../foundation/kernel/index.js";
-import type { SwitchRootState } from "./types.js";
+import type { SwitchRootState } from "./switch-types.js";
 
 /** The data attributes Switch.Root renders. */
 export const SwitchRootDataAttributes = {

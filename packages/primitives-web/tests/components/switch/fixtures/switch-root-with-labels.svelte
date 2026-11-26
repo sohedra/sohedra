@@ -1,7 +1,7 @@
 <!-- Native labels placed before the switch and linked with `for`. -->
 <script lang="ts">
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
-	import type { SwitchRootProps } from "#lib/components/switch/types.js";
+	import type { SwitchRootProps } from "#lib/components/switch/switch-types.js";
 
 	let {
 		labels,

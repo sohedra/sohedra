@@ -14,9 +14,9 @@
 		useCheckedControl,
 	} from "../../foundation/form/index.js";
 	import { Part, type WebTypes } from "../../foundation/kernel/index.js";
-	import { switchAttributes } from "./attributes.js";
-	import { SwitchRootContext } from "./context.js";
-	import type { SwitchRootProps } from "./types.js";
+	import { switchAttributes } from "./switch-attributes.js";
+	import { SwitchRootContext } from "./switch-context.js";
+	import type { SwitchRootProps } from "./switch-types.js";
 
 	// 1. Props
 	let {

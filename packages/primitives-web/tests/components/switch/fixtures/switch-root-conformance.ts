@@ -1,7 +1,7 @@
 import type { Component } from "svelte";
 
 import SwitchRoot from "#lib/components/switch/switch-root.svelte";
-import type { SwitchRootState } from "#lib/components/switch/types.js";
+import type { SwitchRootState } from "#lib/components/switch/switch-types.js";
 
 import type { ConformanceSetup } from "../../../conformance/conformance-setup.js";
 

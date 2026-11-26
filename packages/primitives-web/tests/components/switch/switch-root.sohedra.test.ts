@@ -6,7 +6,7 @@ import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";
 
 import SwitchRoot from "#lib/components/switch/switch-root.svelte";
-import type { SwitchRootChangeEventDetails } from "#lib/components/switch/types.js";
+import type { SwitchRootChangeEventDetails } from "#lib/components/switch/switch-types.js";
 
 import SwitchRootBound from "./fixtures/switch-root-bound.svelte";
 import SwitchRootContextValue from "./fixtures/switch-root-context-value.svelte";

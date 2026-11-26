@@ -1,7 +1,7 @@
 <!-- `bind:checked` to the parent's `$state`, shown in `data-testid="bound"`. -->
 <script lang="ts">
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
-	import type { SwitchRootProps } from "#lib/components/switch/types.js";
+	import type { SwitchRootProps } from "#lib/components/switch/switch-types.js";
 
 	let { initial, ...rest }: { initial?: boolean } & SwitchRootProps = $props();
 

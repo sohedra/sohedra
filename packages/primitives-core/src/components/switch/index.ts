@@ -4,4 +4,4 @@ export type {
 	SwitchRootChangeEventDetails,
 	SwitchRootChangeEventReason,
 	SwitchRootState,
-} from "./types.js";
+} from "./switch-types.js";

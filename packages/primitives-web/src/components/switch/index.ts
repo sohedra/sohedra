@@ -1,4 +1,5 @@
-export * as Switch from "./parts.js";
+// Switch's public namespace, types and styling hooks.
+export * as Switch from "./switch-parts.js";
 
-export type * from "./types.js";
-export { SwitchRootDataAttributes, SwitchThumbDataAttributes } from "./attributes.js";
+export type * from "./switch-types.js";
+export { SwitchRootDataAttributes, SwitchThumbDataAttributes } from "./switch-attributes.js";

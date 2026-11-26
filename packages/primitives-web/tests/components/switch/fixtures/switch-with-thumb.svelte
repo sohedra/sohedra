@@ -2,7 +2,7 @@
 <script lang="ts">
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
 	import SwitchThumb from "#lib/components/switch/switch-thumb.svelte";
-	import type { SwitchRootProps } from "#lib/components/switch/types.js";
+	import type { SwitchRootProps } from "#lib/components/switch/switch-types.js";
 
 	let { ...rest }: SwitchRootProps = $props();
 </script>

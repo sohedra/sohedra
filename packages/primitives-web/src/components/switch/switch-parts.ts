@@ -7,7 +7,7 @@ import type {
 	SwitchRootState,
 	SwitchThumbProps,
 	SwitchThumbState,
-} from "./types.js";
+} from "./switch-types.js";
 
 export const Root = SwitchRoot;
 export declare namespace Root {

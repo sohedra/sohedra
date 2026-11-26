@@ -7,7 +7,7 @@
 	import type { Attachment } from "svelte/attachments";
 
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
-	import type { SwitchRootProps } from "#lib/components/switch/types.js";
+	import type { SwitchRootProps } from "#lib/components/switch/switch-types.js";
 
 	let {
 		attach,

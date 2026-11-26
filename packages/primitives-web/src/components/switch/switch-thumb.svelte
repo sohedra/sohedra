@@ -5,9 +5,9 @@
 -->
 <script lang="ts">
 	import { Part } from "../../foundation/kernel/index.js";
-	import { switchAttributes } from "./attributes.js";
-	import { SwitchRootContext } from "./context.js";
-	import type { SwitchThumbProps } from "./types.js";
+	import { switchAttributes } from "./switch-attributes.js";
+	import { SwitchRootContext } from "./switch-context.js";
+	import type { SwitchThumbProps } from "./switch-types.js";
 
 	// 1. Props
 	let { ref = $bindable(null), ...rest }: SwitchThumbProps = $props();
