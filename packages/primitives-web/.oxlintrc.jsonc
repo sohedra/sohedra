@@ -1,0 +1,105 @@
+{
+	"$schema": "../../node_modules/oxlint/configuration_schema.json",
+	// The root's rules, then this package's. oxlint reads every glob here relative to this folder.
+	"extends": ["../../.oxlintrc.jsonc"],
+	"overrides": [
+		{
+			"files": ["src/**"],
+			"rules": {
+				"max-lines": ["warn", { "max": 500, "skipBlankLines": true, "skipComments": true }],
+			},
+		},
+		{
+			// A component reads a foundation job, and core, only through an index.js.
+			"files": ["src/components/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../../foundation/*/*",
+									"!../../foundation/*/index.js",
+									"@sohedra/primitives-core/**",
+									"!@sohedra/primitives-core/*/*/index.js",
+								],
+								"message": "A component reads a foundation job, and core, through an index.js.",
+							},
+						],
+					},
+				],
+			},
+		},
+		{
+			// A job imports its own files by name, another job and core only through an index.js, and no component.
+			"files": ["src/foundation/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"./index.js",
+									"../*/*",
+									"!../*/index.js",
+									"**/components/**",
+									"@sohedra/primitives-core/**",
+									"!@sohedra/primitives-core/*/*/index.js",
+								],
+								"message": "A job imports its own files by name, another job and core through an index.js, and no component.",
+							},
+						],
+					},
+				],
+			},
+		},
+		{
+			// The kernel imports nothing else of the package, and only core's kernel.
+			"files": ["src/foundation/kernel/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"../**",
+									"./index.js",
+									"@sohedra/primitives-core/**",
+									"!@sohedra/primitives-core/foundation/kernel/index.js",
+								],
+								"message": "The kernel imports only its own files, by name, and core's kernel through its index.js.",
+							},
+						],
+					},
+				],
+			},
+		},
+		{
+			// The conformance suite every part runs: its checks branch on the part's setup, and a
+			// check that does not apply to a part is left out rather than skipped.
+			"files": ["tests/conformance/**"],
+			"rules": {
+				"vitest/expect-expect": "off",
+				"vitest/no-conditional-expect": "off",
+				"vitest/no-disabled-tests": "off",
+				"vitest/valid-title": "off",
+			},
+		},
+		{
+			// Tests that pin behavior keep their code as written; only their imports and the calls
+			// whose signature changed are edited. These rules flag code in them that does no harm.
+			"files": [
+				"tests/components/switch/switch-root.form.test.ts",
+				"tests/foundation/kernel/kernel-merged-props.test.ts",
+			],
+			"rules": {
+				"typescript/await-thenable": "off",
+				"typescript/no-floating-promises": "off",
+				"vitest/no-disabled-tests": "off",
+			},
+		},
+	],
+}

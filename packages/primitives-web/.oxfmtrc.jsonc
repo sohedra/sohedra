@@ -1,0 +1,18 @@
+{
+	"$schema": "../../node_modules/oxfmt/configuration_schema.json",
+	// The root's settings, restated: a nested config replaces the root's for the files below it.
+	"useTabs": true,
+	"proseWrap": "always",
+	"sortImports": true,
+	"svelte": true,
+	// The server HTML the tests pin, kept byte for byte as Svelte renders it: the browser tests
+	// hydrate it, so a reformatted fixture no longer matches what the parts render.
+	"ignorePatterns": ["tests/**/__ssr__/**"],
+	"overrides": [
+		{
+			// YAML forbids tabs; GitHub shows them eight wide in Markdown
+			"files": ["*.md", "*.yml", "*.yaml"],
+			"options": { "useTabs": false },
+		},
+	],
+}

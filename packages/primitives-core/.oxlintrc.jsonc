@@ -1,0 +1,186 @@
+{
+	"$schema": "../../node_modules/oxlint/configuration_schema.json",
+	// The root's rules, then this package's. oxlint reads every glob here relative to this folder.
+	"extends": ["../../.oxlintrc.jsonc"],
+	"overrides": [
+		{
+			"files": ["src/**"],
+			"rules": {
+				"max-lines": ["warn", { "max": 500, "skipBlankLines": true, "skipComments": true }],
+				// Core runs on the web and on Lynx: it names no DOM global, and its time, focus, order,
+				// locale and form submission come from the platform. `console` is the one global.
+				"no-restricted-globals": [
+					"error",
+					{ "name": "window", "message": "Core never names or touches the DOM." },
+					{ "name": "document", "message": "Core never names or touches the DOM." },
+					{ "name": "navigator", "message": "Core never names or touches the DOM." },
+					{ "name": "getComputedStyle", "message": "Core never names or touches the DOM." },
+					{ "name": "matchMedia", "message": "Core never names or touches the DOM." },
+					{ "name": "MutationObserver", "message": "Core never names or touches the DOM." },
+					{ "name": "ResizeObserver", "message": "Core never names or touches the DOM." },
+					{ "name": "IntersectionObserver", "message": "Core never names or touches the DOM." },
+					{ "name": "Node", "message": "Core never names or touches the DOM." },
+					{ "name": "Element", "message": "Core never names or touches the DOM." },
+					{ "name": "HTMLElement", "message": "Core never names or touches the DOM." },
+					{ "name": "Event", "message": "Core never names or touches the DOM." },
+					{ "name": "CustomEvent", "message": "Core never names or touches the DOM." },
+					{ "name": "EventTarget", "message": "Core never names or touches the DOM." },
+					{ "name": "Image", "message": "Core never names or touches the DOM." },
+					{ "name": "location", "message": "Core never names or touches the DOM." },
+					{ "name": "history", "message": "Core never names or touches the DOM." },
+					{ "name": "localStorage", "message": "Core never names or touches the DOM." },
+					{ "name": "sessionStorage", "message": "Core never names or touches the DOM." },
+					{
+						"name": "requestAnimationFrame",
+						"message": "Core takes time only from platform.scheduler.",
+					},
+					{
+						"name": "cancelAnimationFrame",
+						"message": "Core takes time only from platform.scheduler.",
+					},
+					{ "name": "setTimeout", "message": "Core takes time only from platform.scheduler." },
+					{ "name": "clearTimeout", "message": "Core takes time only from platform.scheduler." },
+					{ "name": "setInterval", "message": "Core takes time only from platform.scheduler." },
+					{ "name": "clearInterval", "message": "Core takes time only from platform.scheduler." },
+					{ "name": "queueMicrotask", "message": "Core takes time only from platform.scheduler." },
+					{
+						"name": "requestIdleCallback",
+						"message": "Core takes time only from platform.scheduler.",
+					},
+					{
+						"name": "cancelIdleCallback",
+						"message": "Core takes time only from platform.scheduler.",
+					},
+					{ "name": "performance", "message": "Core takes time only from platform.scheduler." },
+					{ "name": "AbortController", "message": "Core runs on engines without it (Lynx)." },
+					{ "name": "AbortSignal", "message": "Core runs on engines without it (Lynx)." },
+					{ "name": "structuredClone", "message": "Core runs on engines without it (Lynx)." },
+					{ "name": "TextEncoder", "message": "Core runs on engines without it (Lynx)." },
+					{ "name": "TextDecoder", "message": "Core runs on engines without it (Lynx)." },
+					{ "name": "URL", "message": "Core runs on engines without it (Lynx)." },
+					{
+						"name": "globalThis",
+						"message": "Core never touches a platform's globals: what it needs comes from the platform.",
+					},
+					{
+						"name": "self",
+						"message": "Core never touches a platform's globals: what it needs comes from the platform.",
+					},
+					{
+						"name": "lynx",
+						"message": "Core never touches a platform's globals: what it needs comes from the platform.",
+					},
+					{ "name": "Intl", "message": "Locale work comes from platform.locale." },
+					{
+						"name": "fetch",
+						"message": "Core never fetches: data comes in through props and calls.",
+					},
+				],
+				// Core imports only `svelte`, `svelte/reactivity` and `esm-env`, and nothing of a platform.
+				"no-restricted-imports": [
+					"error",
+					{
+						"paths": [
+							{
+								"name": "svelte/reactivity",
+								"importNames": ["MediaQuery"],
+								"message": "MediaQuery reads the DOM: it belongs to a platform.",
+							},
+						],
+						"patterns": [
+							{
+								"group": ["**", "!svelte", "!svelte/reactivity", "!esm-env", "!./**", "!../**"],
+								"message": "Core imports only svelte, svelte/reactivity, esm-env and its own files.",
+							},
+							{
+								"group": ["*.svelte"],
+								"message": "Core has no components: markup belongs to a platform.",
+							},
+						],
+					},
+				],
+			},
+		},
+		{
+			// A component reads a foundation job only through its index.js.
+			"files": ["src/components/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"**",
+									"!svelte",
+									"!svelte/reactivity",
+									"!esm-env",
+									"!./**",
+									"!../**",
+									"../../foundation/*/*",
+									"!../../foundation/*/index.js",
+									"**/*.svelte",
+								],
+								"message": "Core imports only svelte, svelte/reactivity, esm-env and its own files, and a component reads a foundation job through its index.js.",
+							},
+						],
+					},
+				],
+			},
+		},
+		{
+			// A job imports its own files by name, another job only through its index.js, and no component.
+			"files": ["src/foundation/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"**",
+									"!svelte",
+									"!svelte/reactivity",
+									"!esm-env",
+									"!./**",
+									"!../**",
+									"./index.js",
+									"../*/*",
+									"!../*/index.js",
+									"**/components/**",
+									"**/*.svelte",
+								],
+								"message": "Core imports only svelte, svelte/reactivity, esm-env and its own files; a job imports its own files by name, another job through its index.js, and no component.",
+							},
+						],
+					},
+				],
+			},
+		},
+		{
+			// The kernel imports nothing else of core.
+			"files": ["src/foundation/kernel/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"**",
+									"!svelte",
+									"!svelte/reactivity",
+									"!esm-env",
+									"!./**",
+									"./index.js",
+									"**/*.svelte",
+								],
+								"message": "Core imports only svelte, svelte/reactivity, esm-env and its own files; the kernel imports only its own files, by name.",
+							},
+						],
+					},
+				],
+			},
+		},
+	],
+}

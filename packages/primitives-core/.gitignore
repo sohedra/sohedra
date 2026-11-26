@@ -1,0 +1,4 @@
+# svelte-package output and its working folder, and Vitest failure screenshots
+/dist/
+/.svelte-kit/
+/.vitest/

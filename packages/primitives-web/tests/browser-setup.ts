@@ -1,0 +1,19 @@
+// Browser-only test setup: keeps state the browser holds across tests and files (the tester
+// frame Playwright acts on, the real pointer's position) from leaking into a test.
+import { beforeAll, beforeEach } from "vitest";
+import { commands } from "vitest/browser";
+
+declare module "vitest/browser" {
+	interface BrowserCommands {
+		awaitTesterFrame: () => Promise<void>;
+		parkPointer: () => Promise<void>;
+	}
+}
+
+beforeAll(async () => {
+	await commands.awaitTesterFrame();
+});
+
+beforeEach(async () => {
+	await commands.parkPointer();
+});

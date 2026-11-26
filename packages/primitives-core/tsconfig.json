@@ -1,0 +1,19 @@
+{
+	// Compiled without the DOM library and with ES2019 built-ins only (the level of Lynx's PrimJS): a
+	// DOM type, a global only the DOM library declares or a newer built-in fails `pnpm check`.
+	// `globalThis`, `Intl` and locale methods are ES2019, so only lint bans them.
+	"compilerOptions": {
+		"strict": true,
+		"lib": ["ES2019"],
+		"types": ["svelte"],
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"moduleDetection": "force",
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"skipLibCheck": true,
+		"noEmit": true
+	},
+	"include": ["src/**/*.ts", "env.d.ts"]
+}

@@ -1,0 +1,9 @@
+{
+	// The tests run in Node with Vitest and name a few DOM types for fake events, so they are
+	// checked apart from `src`, which must compile without the DOM library.
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"lib": ["ES2022", "DOM"]
+	},
+	"include": ["tests/**/*.ts", "vitest.config.ts"]
+}

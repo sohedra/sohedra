@@ -1,0 +1,70 @@
+{
+	"name": "@sohedra/primitives-core",
+	"version": "0.0.0",
+	"description": "The state and decisions behind Sohedra Primitives, shared by the web and Lynx packages. It never touches the DOM.",
+	"keywords": [
+		"components",
+		"headless",
+		"svelte"
+	],
+	"homepage": "https://github.com/sohedra/sohedra#readme",
+	"bugs": "https://github.com/sohedra/sohedra/issues",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/sohedra/sohedra.git",
+		"directory": "packages/primitives-core"
+	},
+	"files": [
+		"dist",
+		"NOTICE.txt"
+	],
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		"./*.js": {
+			"types": "./src/*.ts",
+			"svelte": "./src/*.ts",
+			"default": "./src/*.ts"
+		}
+	},
+	"publishConfig": {
+		"exports": {
+			"./*.js": {
+				"types": "./dist/*.d.ts",
+				"svelte": "./dist/*.js",
+				"default": "./dist/*.js"
+			}
+		},
+		"access": "public"
+	},
+	"scripts": {
+		"dev": "svelte-package -i src --watch",
+		"build": "pnpm run prepack",
+		"prepack": "svelte-package -i src && publint",
+		"check": "tsc -p tsconfig.json && tsc -p tsconfig.tests.json",
+		"test": "vitest run",
+		"test:async": "vitest run --mode async"
+	},
+	"dependencies": {
+		"esm-env": "^1.2.2"
+	},
+	"devDependencies": {
+		"@sveltejs/package": "^3.0.2",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
+		"publint": "^0.3.25",
+		"svelte": "~5.59.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.3.8",
+		"vitest": "^5.1.1"
+	},
+	"peerDependencies": {
+		"svelte": "^5.57.0"
+	},
+	"sohedra": {
+		"runsOn": [
+			"web",
+			"lynx"
+		]
+	}
+}
