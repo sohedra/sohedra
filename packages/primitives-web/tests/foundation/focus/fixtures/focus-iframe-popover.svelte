@@ -1,6 +1,7 @@
 <!--
   The tree of "iframe focus navigation": links around a non-modal popover whose Portal renders
-  into `container` (the iframe's root), with two links in the popup.
+  into `container` (the iframe's root), with two links in the popup. No other fixture portals into
+  a container it is given. The links carry `tabindex="0"`: WebKit's Tab skips a link without one.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";
@@ -9,19 +10,19 @@
 </script>
 
 <div>
-	<a href="#prev">prev iframe link</a>
+	<a tabindex="0" href="#prev">prev iframe link</a>
 	<Popover.Root>
 		<Popover.Trigger>Open</Popover.Trigger>
 		<Popover.Portal {container}>
 			<Popover.Positioner>
 				<Popover.Popup>
 					<div data-testid="popover">
-						<a href="#one">popover link 1</a>
-						<a href="#two">popover link 2</a>
+						<a tabindex="0" href="#one">popover link 1</a>
+						<a tabindex="0" href="#two">popover link 2</a>
 					</div>
 				</Popover.Popup>
 			</Popover.Positioner>
 		</Popover.Portal>
 	</Popover.Root>
-	<a href="#next">next iframe link</a>
+	<a tabindex="0" href="#next">next iframe link</a>
 </div>

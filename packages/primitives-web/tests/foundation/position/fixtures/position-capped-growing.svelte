@@ -3,7 +3,8 @@
   and scrolls. The trigger is fixed `anchorTop` pixels below the top of the viewport and the popup
   is nearly as wide as the viewport, so it only fits above or below. Its content is
   `contentHeight` pixels tall; `setContentHeight` changes that while the popover is open, and
-  `setOpen` closes and opens it.
+  `setOpen` closes and opens it. No other fixture fixes its trigger at a chosen height or grows its
+  content while open.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

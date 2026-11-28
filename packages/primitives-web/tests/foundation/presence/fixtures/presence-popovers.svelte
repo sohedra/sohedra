@@ -2,7 +2,7 @@
   Popovers for the animation-finished cases: `first` and, with `second`, a second Popover, each with
   a bindable `open` and `onOpenChangeComplete`. A closing Popover unmounts its popup (`popup-1`,
   `popup-2`) once the popup's animations finish. With `reopenSecond`, the first popover's close
-  completion opens the second.
+  completion opens the second. No other fixture renders two popovers whose completions meet.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

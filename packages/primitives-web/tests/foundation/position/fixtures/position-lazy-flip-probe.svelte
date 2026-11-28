@@ -2,7 +2,8 @@
   `usePositioner` inside an open Popover.Root whose store it positions against: a fixed 20×20
   `anchor` 200px from the right and 30px from the bottom of the viewport, and a 100px wide
   `floating` element whose height drops from 100px to 10px on "Shrink". It carries the rendered
-  side and alignment as `data-side` and `data-align`.
+  side and alignment as `data-side` and `data-align`. Rendered only by position-lazy-flip.svelte,
+  which gives it the Root.
 -->
 <script lang="ts">
 	import {

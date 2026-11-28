@@ -1,7 +1,8 @@
 <!--
   `usePopupUnmount` on a stand-in popup store: `awaiting` is its `awaitingUnmount`, the "popup"
   div its popup element and `onUnmount` its `unmount`. With `awaitOther`, the root is given the
-  "other" div as the element whose exit animations it waits for.
+  "other" div as the element whose exit animations it waits for. A real popup decides
+  `awaitingUnmount` and its element itself, so the cases hold them on a stand-in instead.
 -->
 <script lang="ts">
 	import {

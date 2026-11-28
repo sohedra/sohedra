@@ -91,12 +91,7 @@
 		{
 			// Tests that pin behavior keep their code as written; only their imports and the calls
 			// whose signature changed are edited. These rules flag code in them that does no harm.
-			"files": [
-				"tests/components/popover/popover-root.detached-triggers.test.ts",
-				"tests/foundation/focus/focus-manager.iframe.test.ts",
-				"tests/foundation/kernel/kernel-event.virtual-pointer.test.ts",
-				"tests/foundation/position/position-viewport-size.test.ts",
-			],
+			"files": ["tests/components/popover/popover-root.detached-triggers.test.ts"],
 			"rules": {
 				"typescript/await-thenable": "off",
 				"typescript/consistent-type-imports": "off",

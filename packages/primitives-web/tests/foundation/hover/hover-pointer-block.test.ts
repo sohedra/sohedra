@@ -1,9 +1,7 @@
-import { HoverInteraction } from "@sohedra/primitives-core/foundation/hover/index.js";
-// The trigger block takes a third argument (whether only a mouse-like pointer blocks), which a
-// test-local adapter passes as `false`.
 // The pointer block a hover-opened popup sets while the pointer travels to it: re-applying it on
 // the same scope (the pointer moving again over a trigger, or a switch between a menu's
 // triggers) keeps the scope blocked; clearing it lifts every style it set.
+import { HoverInteraction } from "@sohedra/primitives-core/foundation/hover/index.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {

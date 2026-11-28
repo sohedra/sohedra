@@ -1,85 +1,63 @@
-// `usePopupUnmount` unmounts a closed popup once the exit animations of the popup, or of the
-// element `element` names instead (an inline combobox list waits for the dialog it is rendered in),
-// finish.
+// usePopupUnmount: a closed popup unmounts once the exit animations of the popup, or of the
+// element it names instead (an inline combobox list waits for the dialog it is rendered in),
+// finish. The popup store is a stand-in (fixtures/popup-root-exit.svelte), and animations are on.
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render } from "vitest-browser-svelte";
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { createRenderer, screen, waitFor } from "../../shim/index.js";
+import { nextFrame } from "../../kit/kit-frames.js";
 import PopupRootExit from "./fixtures/popup-root-exit.svelte";
 
-function nextFrames(count: number) {
-	return new Promise<void>((resolve) => {
-		const step = (left: number) =>
-			left === 0 ? resolve() : requestAnimationFrame(() => step(left - 1));
-		step(count);
-	});
-}
-
-function animate(testId: string) {
-	return screen
-		.getByTestId(testId)
-		.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
-}
-
-describe("connectPopupRoot", () => {
-	const { render } = createRenderer();
-	let disabled: boolean | undefined;
-
+describe("usePopupUnmount", () => {
 	beforeEach(() => {
-		disabled = globalThis.SOHEDRA_ANIMATIONS_DISABLED;
+		// The reset in setup-reset.ts turns animations off again after each test.
 		globalThis.SOHEDRA_ANIMATIONS_DISABLED = false;
 	});
 
-	afterEach(() => {
-		globalThis.SOHEDRA_ANIMATIONS_DISABLED = disabled;
-	});
+	async function setup(awaitOther: boolean) {
+		const onUnmount = vi.fn();
+		const screen = await render(PopupRootExit, { awaiting: false, awaitOther, onUnmount });
+		/** Starts a 200ms fade-out on the element with `testId`. */
+		const animate = (testId: string) =>
+			screen
+				.getByTestId(testId)
+				.element()
+				.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: "forwards" });
+		return { screen, onUnmount, animate };
+	}
 
 	it("waits for the popup's exit animations by default", async () => {
-		const onUnmount = vi.fn();
-		const { setProps } = await render(PopupRootExit, {
-			awaiting: false,
-			awaitOther: false,
-			onUnmount,
-		});
+		const { screen, onUnmount, animate } = await setup(false);
 		const animation = animate("popup");
 
-		await setProps({ awaiting: true });
-		await nextFrames(2);
+		await screen.rerender({ awaiting: true });
+		await nextFrame();
+		await nextFrame();
 		expect(onUnmount).not.toHaveBeenCalled();
 
 		await animation.finished;
-		await waitFor(() => expect(onUnmount).toHaveBeenCalledTimes(1));
+		await vi.waitFor(() => expect(onUnmount).toHaveBeenCalledTimes(1));
 	});
 
 	it("waits for the element getElement names instead of the popup", async () => {
-		const onUnmount = vi.fn();
-		const { setProps } = await render(PopupRootExit, {
-			awaiting: false,
-			awaitOther: true,
-			onUnmount,
-		});
+		const { screen, onUnmount, animate } = await setup(true);
 		animate("popup");
 		const animation = animate("other");
 
-		await setProps({ awaiting: true });
-		await nextFrames(2);
+		await screen.rerender({ awaiting: true });
+		await nextFrame();
+		await nextFrame();
 		expect(onUnmount).not.toHaveBeenCalled();
 
 		await animation.finished;
-		await waitFor(() => expect(onUnmount).toHaveBeenCalledTimes(1));
+		await vi.waitFor(() => expect(onUnmount).toHaveBeenCalledTimes(1));
 	});
 
 	it("doesn't wait for the popup's animations when getElement names another element", async () => {
-		const onUnmount = vi.fn();
-		const { setProps } = await render(PopupRootExit, {
-			awaiting: false,
-			awaitOther: true,
-			onUnmount,
-		});
+		const { screen, onUnmount, animate } = await setup(true);
 		const animation = animate("popup");
 
-		await setProps({ awaiting: true });
-		await waitFor(() => expect(onUnmount).toHaveBeenCalledTimes(1));
+		await screen.rerender({ awaiting: true });
+		await vi.waitFor(() => expect(onUnmount).toHaveBeenCalledTimes(1));
 		expect(animation.playState).toBe("running");
 	});
 });

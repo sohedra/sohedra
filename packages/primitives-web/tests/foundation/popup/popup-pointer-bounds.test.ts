@@ -1,40 +1,33 @@
-// Pseudo-element bounds count in browsers: a browser unit test of
-// src/foundation/popup/popup-pointer-bounds.ts, which Select and Combobox triggers use to tell a
-// press released on the trigger from a drag off it.
-// `getPseudoElementBounds` is private to `isMouseWithinBounds`, so the expected bounds (left 90,
-// right 130, top 40, bottom 70) are read through it: a mouseup is within them up to the 5px drift
-// (pinned through the Select trigger's tests) and outside one pixel further. Every project here is
-// a real browser.
-
+// isMouseWithinBounds, which Select and Combobox triggers use to tell a press released on the
+// trigger from a drag off it: an element's bounds take in its pseudo-elements, plus a 5px drift.
+// The element below is 20×10 at (100, 50) with a 40×30 `::before`, so its bounds are left 90,
+// right 130, top 40, bottom 70; a mouseup is within them up to 5px past and outside 6px past.
 import { describe, expect, it } from "vitest";
 
 import { isMouseWithinBounds } from "#lib/foundation/popup/popup-pointer-bounds.js";
 
-describe("getPseudoElementBounds", () => {
+import { injectStyle } from "../../kit/kit-style.js";
+
+describe("isMouseWithinBounds", () => {
 	it("includes pseudo-element bounds in browsers", () => {
-		const style = document.createElement("style");
-		style.textContent = `
-      .pseudo-element-bounds-test {
-        position: absolute;
-        left: 100px;
-        top: 50px;
-        width: 20px;
-        height: 10px;
-      }
+		injectStyle(`
+			.pseudo-element-bounds-test {
+				position: absolute;
+				left: 100px;
+				top: 50px;
+				width: 20px;
+				height: 10px;
+			}
 
-      .pseudo-element-bounds-test::before {
-        content: "";
-        display: block;
-        width: 40px;
-        height: 30px;
-      }
-    `;
-
-		const element = document.createElement("div");
+			.pseudo-element-bounds-test::before {
+				content: "";
+				display: block;
+				width: 40px;
+				height: 30px;
+			}
+		`);
+		const element = document.body.appendChild(document.createElement("div"));
 		element.className = "pseudo-element-bounds-test";
-
-		document.head.appendChild(style);
-		document.body.appendChild(element);
 
 		try {
 			const rect = element.getBoundingClientRect();
@@ -58,7 +51,6 @@ describe("getPseudoElementBounds", () => {
 			expect(within(x(110), y(70 + 6))).toBe(false);
 		} finally {
 			element.remove();
-			style.remove();
 		}
 	});
 });

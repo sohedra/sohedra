@@ -1,10 +1,10 @@
 <!--
   An initially open Popover for the dismiss cases: the trigger (`reference`) and the popup
   (`floating`), which holds an `input` and, with `scrubber`, a `scrubber` whose `pointerdown` is
-  prevented. The Root's `open` is bindable; `controls` adds the outside `open`/`close` buttons
-  that set it, and `openOnPointerDown` an `opener` button that opens on `pointerdown`. A new
-  `popupKey` re-creates the Positioner (the floating element) while open, which re-attaches the
-  dismissal's document listeners. `onStore` hands the Root's store out.
+  prevented. The Root's `open` is bindable; `openOnPointerDown` adds an `opener` button that opens
+  it on `pointerdown`. A new `popupKey` re-creates the Positioner (the floating element) while
+  open, which re-attaches the dismissal's document listeners. `onStore` hands the Root's store out.
+  No other fixture starts open with a field in its popup, or re-creates its Positioner on demand.
 -->
 <script lang="ts">
 	import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
@@ -19,7 +19,6 @@
 		open = $bindable(true),
 		rootProps = {},
 		scrubber = false,
-		controls = false,
 		openOnPointerDown = false,
 		popupKey = 0,
 		onStore,
@@ -27,7 +26,6 @@
 		open?: boolean;
 		rootProps?: Partial<PopoverRootProps>;
 		scrubber?: boolean;
-		controls?: boolean;
 		openOnPointerDown?: boolean;
 		popupKey?: number;
 		onStore?: (store: PopoverStore<unknown, WebTypes>) => void;
@@ -54,7 +52,3 @@
 		{/key}
 	</Popover.Portal>
 </Popover.Root>
-{#if controls}
-	<button data-testid="open" onclick={() => (open = true)}>open</button>
-	<button data-testid="close" onclick={() => (open = false)}>close</button>
-{/if}

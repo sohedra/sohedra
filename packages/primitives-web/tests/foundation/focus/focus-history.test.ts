@@ -1,7 +1,6 @@
-// New cases: the focus history's look further back, for a return of focus whose target is in the
-// document but hidden. The history is module state shared by every case here, so each case adds
-// its own elements and takes them out again; entries that left the document are dropped.
-
+// The focus history's look back for a focus return: the newest remembered element that is in the
+// document and can take focus. The history is module state shared by every case here, so each
+// case adds its own elements and takes them out again; entries that left the document are dropped.
 import { afterEach, describe, expect, it } from "vitest";
 
 import {

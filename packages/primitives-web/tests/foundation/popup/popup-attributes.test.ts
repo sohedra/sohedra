@@ -1,6 +1,5 @@
-// The state-mapping case no other test checks. The open, trigger and pressed attributes are checked
-// by the popup and trigger component tests.
-
+// The popup's state mapping for the anchor-hidden attribute; the open, trigger and pressed
+// attributes are checked by the popup and trigger component tests.
 import { describe, expect, it } from "vitest";
 
 import { popupStateMapping } from "#lib/foundation/popup/index.js";

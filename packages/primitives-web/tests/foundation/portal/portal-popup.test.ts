@@ -1,0 +1,34 @@
+// The popup Portal part, through a Popover: a container that only exists after mount, and the
+// rendered portal id the `aria-owns` relationship names. The Popover's own portal tests and the
+// Portal conformance runs cover the rest.
+// - The portal element is the one marked `data-sohedra-portal` around the Positioner.
+// - The `aria-owns` case renders the open non-modal Popover of the focus cases
+//   (../focus/fixtures/focus-popover.svelte), whose Portal gets the `id`.
+import { describe, expect, it } from "vitest";
+import { render } from "vitest-browser-svelte";
+import { userEvent } from "vitest/browser";
+
+import FocusPopover from "../focus/fixtures/focus-popover.svelte";
+import PortalNullContainer from "./fixtures/portal-null-container.svelte";
+
+describe("PortalPopup", () => {
+	it("allows containers to be initially null", async () => {
+		const screen = await render(PortalNullContainer);
+
+		await userEvent.click(screen.getByTestId("reference"));
+		const floating = screen.getByTestId("floating");
+		await expect.element(floating).toBeInTheDocument();
+
+		const subRoot = floating.element().closest("[data-sohedra-portal]");
+		const root = screen.getByTestId("root").element();
+		expect(root).toBe(subRoot?.parentElement);
+	});
+
+	it("uses the rendered portal ID for the aria-owns relationship", async () => {
+		await render(FocusPopover, { open: true, portalProps: { id: "custom-portal" } });
+
+		await expect
+			.poll(() => document.querySelector("[aria-owns]"))
+			.toHaveAttribute("aria-owns", "custom-portal");
+	});
+});

@@ -1,22 +1,30 @@
+// The Viewport's activation direction: core's getActivationDirection as the web runs it, and the
+// distance between two triggers it is given, which is not exported. Its only use is the Viewport's
+// `data-activation-direction` when the popup moves from one trigger to another, so each row
+// renders two Popover triggers at the given rects
+// (../../components/popover/fixtures/popover-viewport.svelte), opens the popover on the first,
+// switches to the second, and expects the attribute's tokens for the expected offset. The rows
+// tell the outcomes apart: the corners of "compares centers, not corners …" would give `right`
+// instead of `left up`.
 import { getActivationDirection } from "@sohedra/primitives-core/foundation/position/index.js";
-// The Viewport cases the Popover and Tooltip Viewport tests don't cover (those check that there
-// is no `data-activation-direction` before a switch).
-// - `getActivationDirection` is core's rule and runs as it is.
-// - The distance between two triggers isn't exported; its only use is the Viewport's
-//   `data-activation-direction` when the popup moves from one trigger to another. So each row
-//   renders two Popover triggers at the given rects
-//   (../../components/popover/fixtures/popover-viewport.svelte), opens the popover on the
-//   first, switches to the second, and expects the attribute's tokens for the expected offset.
-//   The rows tell the outcomes apart: the corners of "compares centers, not corners …" would
-//   give `right` instead of `left up`.
 import { describe, expect, it } from "vitest";
+import { render } from "vitest-browser-svelte";
+import { userEvent } from "vitest/browser";
 
 import PartViewportPopover from "../../components/popover/fixtures/popover-viewport.svelte";
-import { createRenderer, fireEvent, screen, waitFor } from "../../shim/index.js";
 
 type Offset = { horizontal: number; vertical: number };
+type Rect = [left: number, top: number, width: number, height: number];
+
+// Where a click lands on a trigger: near its top-left corner, since a trigger that shares the
+// other one's center covers it there.
+const CORNER = { position: { x: 5, y: 5 } };
 
 const tokens = (value: string | null | undefined) => (value ?? "").split(" ").filter(Boolean);
+
+function rectStyle([left, top, width, height]: Rect) {
+	return `position: fixed; left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px; padding: 0; border: 0; box-sizing: border-box`;
+}
 
 describe("getActivationDirection", () => {
 	// The value is a space-separated token list (matched with `~=` selectors), so compare tokens
@@ -46,13 +54,7 @@ describe("getActivationDirection", () => {
 	);
 });
 
-describe("calculateRelativePosition", () => {
-	const { render } = createRenderer();
-
-	function rectStyle([left, top, width, height]: [number, number, number, number]) {
-		return `position: fixed; left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px; padding: 0; border: 0; box-sizing: border-box`;
-	}
-
+describe("the distance between two triggers", () => {
 	it.each([
 		{
 			name: "measures from the previous trigger to the new one",
@@ -79,35 +81,29 @@ describe("calculateRelativePosition", () => {
 			to: [25, 25, 50, 50],
 			expected: { horizontal: 0, vertical: 0 },
 		},
-	] satisfies Array<{
-		name: string;
-		from: [number, number, number, number];
-		to: [number, number, number, number];
-		expected: Offset;
-	}>)("$name", async ({ from, to, expected }) => {
-		await render(PartViewportPopover, {
-			triggers: [
-				{ payload: 0, testId: "trigger1", style: rectStyle(from), text: "1" },
-				{ payload: 1, testId: "trigger2", style: rectStyle(to), text: "2" },
-			],
-			viewport: { "data-testid": "viewport" } as never,
-			content: "numbered",
-		});
+	] satisfies Array<{ name: string; from: Rect; to: Rect; expected: Offset }>)(
+		"$name",
+		async ({ from, to, expected }) => {
+			const screen = await render(PartViewportPopover, {
+				triggers: [
+					{ payload: 0, testId: "trigger1", style: rectStyle(from), text: "1" },
+					{ payload: 1, testId: "trigger2", style: rectStyle(to), text: "2" },
+				],
+				viewport: { "data-testid": "viewport" } as never,
+				content: "numbered",
+			});
 
-		fireEvent.click(screen.getByTestId("trigger1"));
-		await waitFor(() => {
-			expect(screen.getByText("Content 0")).toBeInTheDocument();
-		});
+			await userEvent.click(screen.getByTestId("trigger1"), CORNER);
+			await expect.element(screen.getByText("Content 0")).toBeInTheDocument();
 
-		fireEvent.click(screen.getByTestId("trigger2"));
+			await userEvent.click(screen.getByTestId("trigger2"), CORNER);
 
-		await waitFor(() => {
-			expect(screen.getByText("Content 1")).toBeInTheDocument();
-		});
-		const viewport = screen.getByTestId("viewport");
-		expect(viewport).toHaveAttribute("data-activation-direction");
-		expect(tokens(viewport.getAttribute("data-activation-direction"))).toEqual(
-			tokens(getActivationDirection(expected)),
-		);
-	});
+			await expect.element(screen.getByText("Content 1")).toBeInTheDocument();
+			const viewport = screen.getByTestId("viewport");
+			await expect.element(viewport).toHaveAttribute("data-activation-direction");
+			expect(tokens(viewport.element().getAttribute("data-activation-direction"))).toEqual(
+				tokens(getActivationDirection(expected)),
+			);
+		},
+	);
 });

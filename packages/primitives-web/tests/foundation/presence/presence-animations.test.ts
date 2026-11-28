@@ -1,19 +1,17 @@
-// Cases through a closing Popover (fixtures/presence-popovers.svelte), whose Root unmounts the
-// popup once the popup's animations finish (`waitForAnimations`,
-// src/foundation/presence/presence-animations.svelte.ts).
-// Notes:
+// waitForAnimations through a closing Popover (fixtures/presence-popovers.svelte), whose Root
+// unmounts the popup once the popup's animations finish: which animations it waits for, and how
+// the completions of two popups closing together commit.
 // - The popup of an open Popover has its `getAnimations` stubbed once it has opened, then closed:
 //   `onFinished` is `onOpenChangeComplete(false)`, and the popup leaves the document with it.
-// - "commits each callback separately by default so later callbacks observe earlier updates": two
-//   Popovers closed together, the first's completion opening the second; `onSecondUnmount` is the
-//   second Popover's `onOpenChangeComplete(false)`.
-// - `flushMicrotasks` is an empty `act`.
+// - Two Popovers closed together, the first's completion opening the second: `onSecondUnmount` is
+//   the second Popover's `onOpenChangeComplete(false)`.
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render } from "vitest-browser-svelte";
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { act, createRenderer, screen, waitFor } from "../../shim/index.js";
+import { nextTask } from "../../kit/kit-frames.js";
 import PresencePopovers from "./fixtures/presence-popovers.svelte";
 
+/** A stand-in animation whose `finished` the test settles with `finish` or `cancel`. */
 function createAnimation(iterations = 1, duration = 1) {
 	let resolveFinished!: () => void;
 	let rejectFinished!: () => void;
@@ -37,37 +35,25 @@ function createAnimation(iterations = 1, duration = 1) {
 	};
 }
 
-const flushMicrotasks = () => act(async () => {});
-
-describe("useAnimationsFinished", () => {
-	const { render } = createRenderer();
-	let animationsDisabled: boolean | undefined;
-
+describe("waitForAnimations", () => {
 	beforeEach(() => {
-		animationsDisabled = globalThis.SOHEDRA_ANIMATIONS_DISABLED;
+		// The reset in setup-reset.ts turns animations off again after each test.
 		globalThis.SOHEDRA_ANIMATIONS_DISABLED = false;
 	});
 
-	afterEach(() => {
-		globalThis.SOHEDRA_ANIMATIONS_DISABLED = animationsDisabled;
-	});
-
-	// An open Popover whose popup's `getAnimations` is stubbed, then closed.
-	async function renderTest(getAnimations: () => Animation[]) {
+	/** An open Popover whose popup's `getAnimations` is stubbed, then closed. */
+	async function setup(getAnimations: () => Animation[]) {
 		const onFinished = vi.fn();
 		const onOpenChangeComplete = vi.fn((open: boolean) => {
 			if (!open) {
 				onFinished();
 			}
 		});
-		const { setProps } = await render(PresencePopovers, {
-			onFirstComplete: onOpenChangeComplete,
-		});
-		await waitFor(() => expect(onOpenChangeComplete).toHaveBeenCalledWith(true));
-		const popup = screen.getByTestId("popup-1");
-		popup.getAnimations = getAnimations;
-		await setProps({ firstOpen: false });
-		return { onFinished, popup };
+		const screen = await render(PresencePopovers, { onFirstComplete: onOpenChangeComplete });
+		await vi.waitFor(() => expect(onOpenChangeComplete).toHaveBeenCalledWith(true));
+		screen.getByTestId("popup-1").element().getAnimations = getAnimations;
+		await screen.rerender({ firstOpen: false });
+		return { onFinished };
 	}
 
 	it.each(["finish", "cancel"] as const)(
@@ -78,17 +64,14 @@ describe("useAnimationsFinished", () => {
 			let animations = [finite.animation, infinite.animation];
 			const getAnimations = vi.fn(() => animations);
 
-			const { onFinished } = await renderTest(getAnimations);
-			await waitFor(() => expect(getAnimations).toHaveBeenCalled());
+			const { onFinished } = await setup(getAnimations);
+			await vi.waitFor(() => expect(getAnimations).toHaveBeenCalled());
 			expect(onFinished).not.toHaveBeenCalled();
 
 			animations = [infinite.animation];
-			await act(async () => {
-				finite[completion]();
-				await flushMicrotasks();
-			});
+			finite[completion]();
 
-			expect(onFinished).toHaveBeenCalledTimes(1);
+			await vi.waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
 		},
 	);
 
@@ -100,8 +83,8 @@ describe("useAnimationsFinished", () => {
 		async (_timing, iterations, duration) => {
 			const infinite = createAnimation(iterations, duration);
 
-			const { onFinished } = await renderTest(() => [infinite.animation]);
-			await waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
+			const { onFinished } = await setup(() => [infinite.animation]);
+			await vi.waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
 		},
 	);
 
@@ -112,32 +95,26 @@ describe("useAnimationsFinished", () => {
 		let animations: Animation[] = [initialAnimation.animation, infiniteAnimation.animation];
 		let getAnimationsCallCount = 0;
 
-		const { onFinished } = await renderTest(() => {
+		const { onFinished } = await setup(() => {
 			getAnimationsCallCount += 1;
 			return animations;
 		});
 
-		await waitFor(() => {
+		await vi.waitFor(() => {
 			expect(getAnimationsCallCount).toBeGreaterThan(0);
 		});
 
 		animations = [replacementAnimation.animation, infiniteAnimation.animation];
-
-		await act(async () => {
-			initialAnimation.cancel();
-			await flushMicrotasks();
-		});
+		initialAnimation.cancel();
+		// Every reaction to the cancel runs in microtasks, all done before the next task.
+		await nextTask();
 
 		expect(onFinished).not.toHaveBeenCalled();
 
 		animations = [];
+		replacementAnimation.finish();
 
-		await act(async () => {
-			replacementAnimation.finish();
-			await flushMicrotasks();
-		});
-
-		expect(onFinished).toHaveBeenCalledTimes(1);
+		await vi.waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
 	});
 
 	it("finishes when a canceled animation has no replacement", async () => {
@@ -145,26 +122,22 @@ describe("useAnimationsFinished", () => {
 		let animations: Animation[] = [initialAnimation.animation];
 		let getAnimationsCallCount = 0;
 
-		const { onFinished } = await renderTest(() => {
+		const { onFinished } = await setup(() => {
 			getAnimationsCallCount += 1;
 			return animations;
 		});
 
-		await waitFor(() => {
+		await vi.waitFor(() => {
 			expect(getAnimationsCallCount).toBeGreaterThan(0);
 		});
 
 		animations = [];
+		initialAnimation.cancel();
 
-		await act(async () => {
-			initialAnimation.cancel();
-			await flushMicrotasks();
-		});
-
-		expect(onFinished).toHaveBeenCalledTimes(1);
+		await vi.waitFor(() => expect(onFinished).toHaveBeenCalledTimes(1));
 	});
 
-	it("commits each callback separately by default so later callbacks observe earlier updates", async () => {
+	it("commits each callback separately so later callbacks observe earlier updates", async () => {
 		const first = createAnimation();
 		const second = createAnimation();
 		const firstGetAnimations = vi.fn(() => [first.animation]);
@@ -178,35 +151,34 @@ describe("useAnimationsFinished", () => {
 			}
 		});
 
-		const { setProps } = await render(PresencePopovers, {
+		const screen = await render(PresencePopovers, {
 			second: true,
 			reopenSecond: true,
 			onFirstComplete,
 			onSecondComplete,
 		});
-		await waitFor(() => expect(onFirstComplete).toHaveBeenCalledWith(true));
-		await waitFor(() => expect(onSecondComplete).toHaveBeenCalledWith(true));
-		screen.getByTestId("popup-1").getAnimations = firstGetAnimations;
-		screen.getByTestId("popup-2").getAnimations = secondGetAnimations;
+		await vi.waitFor(() => expect(onFirstComplete).toHaveBeenCalledWith(true));
+		await vi.waitFor(() => expect(onSecondComplete).toHaveBeenCalledWith(true));
+		screen.getByTestId("popup-1").element().getAnimations = firstGetAnimations;
+		screen.getByTestId("popup-2").element().getAnimations = secondGetAnimations;
 
-		await setProps({ firstOpen: false, secondOpen: false });
+		await screen.rerender({ firstOpen: false, secondOpen: false });
 
-		await waitFor(() => {
+		await vi.waitFor(() => {
 			expect(firstGetAnimations).toHaveBeenCalled();
 		});
-		await waitFor(() => {
+		await vi.waitFor(() => {
 			expect(secondGetAnimations).toHaveBeenCalled();
 		});
 
 		// Both popups are closing. The first popup's close completion reopens the second,
 		// which must prevent the second popup's queued completion from unmounting it.
-		await act(async () => {
-			first.finish();
-			second.finish();
-			await flushMicrotasks();
-		});
+		first.finish();
+		second.finish();
 
-		expect(onFirstComplete).toHaveBeenCalledWith(false);
+		await vi.waitFor(() => expect(onFirstComplete).toHaveBeenCalledWith(false));
+		// The second's queued completion runs in microtasks, all done before the next task.
+		await nextTask();
 		expect(onSecondUnmount).not.toHaveBeenCalled();
 	});
 });

@@ -1,6 +1,7 @@
 <!--
   A Popover whose Portal's `container` starts `null`: a `root` element rendered after mount
-  becomes it.
+  becomes it. A container that appears after mount needs the fixture to render it itself, which
+  no other fixture does.
 -->
 <script lang="ts">
 	import { onMount } from "svelte";

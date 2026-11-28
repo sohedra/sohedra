@@ -7,6 +7,8 @@
   button and `controlled-open`/`controlled-close` buttons that set the bound `open`, and a
   `reopen-on-close` button that reopens the popover in the update that closes it.
   `onStore` hands the Root's store out.
+  The buttons Tab moves through carry `tabindex="0"`: WebKit's Tab skips a button without one.
+  A Popover demo has none of these outside elements or the store handle.
 -->
 <script lang="ts">
 	import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
@@ -76,7 +78,7 @@
 </script>
 
 {#if openState}<span data-testid="open-state">{String(open)}</span>{/if}
-{#if before}<button data-testid="before">before</button>{/if}
+{#if before}<button tabindex="0" data-testid="before">before</button>{/if}
 <Popover.Root bind:open {...rootProps}>
 	{#if onStore}<StoreProbe {onStore} />{/if}
 	<Popover.Trigger data-testid="reference" {...triggerProps}>reference</Popover.Trigger>
@@ -84,9 +86,11 @@
 		<Popover.Positioner>
 			<Popover.Popup data-testid="floating" {...popupProps}>
 				{#if content === "child"}
-					<button data-testid="child">child</button>
+					<button tabindex="0" data-testid="child">child</button>
 				{:else if content === "nested-trigger"}
-					<button data-sohedra-click-trigger="" data-testid="nested-trigger">nested</button>
+					<button tabindex="0" data-sohedra-click-trigger="" data-testid="nested-trigger"
+						>nested</button
+					>
 				{/if}
 				{#if withClose}<Popover.Close data-testid="popup-close">x</Popover.Close>{/if}
 			</Popover.Popup>
@@ -101,5 +105,5 @@
 {#if reopenOnClose}
 	<button data-testid="reopen-on-close" onclick={() => (reopenPending = true)}>reopen</button>
 {/if}
-{#if after}<button data-testid="after">after</button>{/if}
-{#if last}<button data-testid="last">last</button>{/if}
+{#if after}<button tabindex="0" data-testid="after">after</button>{/if}
+{#if last}<button tabindex="0" data-testid="last">last</button>{/if}

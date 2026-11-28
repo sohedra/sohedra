@@ -1,7 +1,5 @@
-// A browser unit test of `getCssDimensions` in src/foundation/position/position-viewport-size.ts
-// (popup auto-resize and Navigation Menu sizing). Tabs.Indicator keeps a private copy with the same
-// logic. Every project here is a real browser, so no case is skipped for a simulated DOM.
-
+// getCssDimensions: the CSS size of an element, which popup auto-resize and Navigation Menu sizing
+// read. Tabs.Indicator keeps a private copy with the same logic.
 import { describe, expect, it } from "vitest";
 
 import { getCssDimensions } from "#lib/foundation/position/position-viewport-size.js";
@@ -13,6 +11,7 @@ describe("getCssDimensions", () => {
 	// lacks, so it returns `{ width: undefined, height: undefined }`
 	// (src/foundation/position/position-viewport-size.ts). Parts that accept a `render` prop can
 	// be SVG elements, which have no `offsetWidth`/`offsetHeight`.
+	// oxlint-disable-next-line vitest/no-disabled-tests -- a known failure, kept until it is fixed
 	it.skip("reads the CSS size of an SVG element", () => {
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 		svg.setAttribute("width", "80");
