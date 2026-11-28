@@ -6,7 +6,7 @@ import {
 	type SafePolygonSession,
 } from "@sohedra/primitives-core/foundation/hover/index.js";
 import type { OpenChangeDetails } from "@sohedra/primitives-core/foundation/popup/index.js";
-import { flushSync, untrack } from "svelte";
+import { flushSync } from "svelte";
 
 import {
 	closest,
@@ -208,9 +208,6 @@ export function useHoverTrigger(
 				trigger.removeEventListener("mouseleave", onMouseLeave as EventListener);
 			};
 		});
-
-		// The popup's hover timers and safe polygon never outlive a trigger.
-		$effect(() => () => untrack(popup).hover.dispose());
 	}
 
 	function setPointerType(event: PointerEvent) {
@@ -300,7 +297,4 @@ export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOp
 			intent.dispose();
 		};
 	});
-
-	// The popup's hover timers and safe polygon never outlive the Popup.
-	$effect(() => () => popup.hover.dispose());
 }

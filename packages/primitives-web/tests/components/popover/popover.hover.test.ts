@@ -17,6 +17,7 @@ import { dispatch } from "../../kit/kit-events.js";
 import { settle } from "../../kit/kit-frames.js";
 import PopoverAppOpen from "./fixtures/popover-app-open.svelte";
 import PopoverDemo from "./fixtures/popover-demo.svelte";
+import PopoverHandleMove from "./fixtures/popover-handle-move.svelte";
 import PopoverHoverTriggers from "./fixtures/popover-hover-triggers.svelte";
 
 const DELAY = 100;
@@ -618,6 +619,23 @@ describe("Popover with detached hover triggers", () => {
 			await settle();
 			expect(popup()).not.toBe(null);
 		});
+	});
+
+	it("doesn't open a popover from a trigger's pending hover once its handle moved on and it unmounted", async () => {
+		const onOpenChange = vi.fn();
+		const screen = await render(PopoverHandleMove, {
+			onOpenChange,
+			triggerProps: { openOnHover: true, delay: 100 },
+		});
+
+		// Fake time: the trigger moves to the other handle 50 ms into the 100 ms delay, then goes.
+		fakeHover(page.getByRole("button", { name: "Trigger" }).element());
+		await rest(50);
+		await screen.rerender({ which: 2 });
+		await screen.rerender({ showTrigger: false });
+		await rest(200);
+
+		expect(onOpenChange).not.toHaveBeenCalled();
 	});
 });
 

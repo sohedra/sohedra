@@ -378,8 +378,12 @@ export abstract class PopupStore<
 	}
 
 	// 4. Intents
+	/** The Popup part's element; `null` once it is gone, and the popup's hover goes with it. */
 	setPopupElement = (element: T["element"] | null): void => {
 		this.#popupElement = element;
+		if (element === null) {
+			this.hover?.dispose();
+		}
 	};
 
 	setPositionerElement = (element: T["element"] | null): void => {
@@ -411,6 +415,12 @@ export abstract class PopupStore<
 		element: T["element"],
 		data: Parameters<this["applyTriggerData"]>[0],
 	): (() => void) => this.activeTrigger.register(id, element, () => this.applyTriggerData(data));
+
+	/**
+	 * A trigger reads this popup until the returned leave: it unmounts, or its handle gives it
+	 * another popup. The popup's hover timers and safe polygon never outlive a trigger that left.
+	 */
+	joinTrigger = (): (() => void) => () => this.hover?.dispose();
 
 	/** While the trigger `id` owns the mounted popup, its element and data are the popup's. */
 	forwardTriggerData = (

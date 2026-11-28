@@ -11,6 +11,8 @@ export interface TriggerRegistrationView<T extends PlatformTypes, Data> {
 	registerTrigger(id: string, element: T["element"], data: Data): () => void;
 	forwardTriggerData(id: string, element: T["element"] | null, data: Data): void;
 	readonly activeTrigger: { isMountedBy(id: string | undefined): boolean };
+	/** The trigger reads this popup until the returned leave. */
+	joinTrigger(): () => void;
 }
 
 /** What a trigger's registration reads, from the options function. */
@@ -33,6 +35,10 @@ export function useTriggerRegistration<
 	T extends PlatformTypes,
 	Data extends PopupTriggerData<unknown>,
 >(options: () => TriggerRegistrationOptions<T, Data>): void {
+	// The popup the trigger reads now, compared by value: it is told when the trigger leaves it.
+	const store = $derived(options().store);
+	$effect(() => store.joinTrigger());
+
 	// The element is registered under the trigger's id while it is attached.
 	$effect(() => {
 		const { store, id, element } = options();
