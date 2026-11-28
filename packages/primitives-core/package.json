@@ -22,18 +22,118 @@
 	"type": "module",
 	"sideEffects": false,
 	"exports": {
-		"./*.js": {
-			"types": "./src/*.ts",
-			"svelte": "./src/*.ts",
-			"default": "./src/*.ts"
+		".": {
+			"types": "./src/index.ts",
+			"svelte": "./src/index.ts",
+			"default": "./src/index.ts"
+		},
+		"./popover": {
+			"types": "./src/components/popover/index.ts",
+			"svelte": "./src/components/popover/index.ts",
+			"default": "./src/components/popover/index.ts"
+		},
+		"./switch": {
+			"types": "./src/components/switch/index.ts",
+			"svelte": "./src/components/switch/index.ts",
+			"default": "./src/components/switch/index.ts"
+		},
+		"./foundation/dismiss": {
+			"types": "./src/foundation/dismiss/index.ts",
+			"svelte": "./src/foundation/dismiss/index.ts",
+			"default": "./src/foundation/dismiss/index.ts"
+		},
+		"./foundation/focus": {
+			"types": "./src/foundation/focus/index.ts",
+			"svelte": "./src/foundation/focus/index.ts",
+			"default": "./src/foundation/focus/index.ts"
+		},
+		"./foundation/form": {
+			"types": "./src/foundation/form/index.ts",
+			"svelte": "./src/foundation/form/index.ts",
+			"default": "./src/foundation/form/index.ts"
+		},
+		"./foundation/hover": {
+			"types": "./src/foundation/hover/index.ts",
+			"svelte": "./src/foundation/hover/index.ts",
+			"default": "./src/foundation/hover/index.ts"
+		},
+		"./foundation/kernel": {
+			"types": "./src/foundation/kernel/index.ts",
+			"svelte": "./src/foundation/kernel/index.ts",
+			"default": "./src/foundation/kernel/index.ts"
+		},
+		"./foundation/popup": {
+			"types": "./src/foundation/popup/index.ts",
+			"svelte": "./src/foundation/popup/index.ts",
+			"default": "./src/foundation/popup/index.ts"
+		},
+		"./foundation/position": {
+			"types": "./src/foundation/position/index.ts",
+			"svelte": "./src/foundation/position/index.ts",
+			"default": "./src/foundation/position/index.ts"
+		},
+		"./foundation/presence": {
+			"types": "./src/foundation/presence/index.ts",
+			"svelte": "./src/foundation/presence/index.ts",
+			"default": "./src/foundation/presence/index.ts"
 		}
 	},
 	"publishConfig": {
 		"exports": {
-			"./*.js": {
-				"types": "./dist/*.d.ts",
-				"svelte": "./dist/*.js",
-				"default": "./dist/*.js"
+			".": {
+				"types": "./dist/index.d.ts",
+				"svelte": "./dist/index.js",
+				"default": "./dist/index.js"
+			},
+			"./popover": {
+				"types": "./dist/components/popover/index.d.ts",
+				"svelte": "./dist/components/popover/index.js",
+				"default": "./dist/components/popover/index.js"
+			},
+			"./switch": {
+				"types": "./dist/components/switch/index.d.ts",
+				"svelte": "./dist/components/switch/index.js",
+				"default": "./dist/components/switch/index.js"
+			},
+			"./foundation/dismiss": {
+				"types": "./dist/foundation/dismiss/index.d.ts",
+				"svelte": "./dist/foundation/dismiss/index.js",
+				"default": "./dist/foundation/dismiss/index.js"
+			},
+			"./foundation/focus": {
+				"types": "./dist/foundation/focus/index.d.ts",
+				"svelte": "./dist/foundation/focus/index.js",
+				"default": "./dist/foundation/focus/index.js"
+			},
+			"./foundation/form": {
+				"types": "./dist/foundation/form/index.d.ts",
+				"svelte": "./dist/foundation/form/index.js",
+				"default": "./dist/foundation/form/index.js"
+			},
+			"./foundation/hover": {
+				"types": "./dist/foundation/hover/index.d.ts",
+				"svelte": "./dist/foundation/hover/index.js",
+				"default": "./dist/foundation/hover/index.js"
+			},
+			"./foundation/kernel": {
+				"types": "./dist/foundation/kernel/index.d.ts",
+				"svelte": "./dist/foundation/kernel/index.js",
+				"default": "./dist/foundation/kernel/index.js"
+			},
+			"./foundation/popup": {
+				"types": "./dist/foundation/popup/index.d.ts",
+				"svelte": "./dist/foundation/popup/index.js",
+				"default": "./dist/foundation/popup/index.js"
+			},
+			"./foundation/position": {
+				"types": "./dist/foundation/position/index.d.ts",
+				"svelte": "./dist/foundation/position/index.js",
+				"default": "./dist/foundation/position/index.js"
+			},
+			"./foundation/presence": {
+				"types": "./dist/foundation/presence/index.d.ts",
+				"svelte": "./dist/foundation/presence/index.js",
+				"default": "./dist/foundation/presence/index.js"
 			}
 		},
 		"access": "public"

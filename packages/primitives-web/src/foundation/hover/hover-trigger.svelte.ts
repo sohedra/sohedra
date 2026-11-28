@@ -2,11 +2,8 @@ import {
 	type HoverTriggerTarget,
 	HoverTriggerStore,
 	type SafePolygonSession,
-} from "@sohedra/primitives-core/foundation/hover/index.js";
-import type {
-	OpenChangeDetails,
-	PopupView,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
+} from "@sohedra/primitives-core/foundation/hover";
+import type { OpenChangeDetails, PopupView } from "@sohedra/primitives-core/foundation/popup";
 import { flushSync } from "svelte";
 import { on } from "svelte/events";
 

@@ -2,7 +2,7 @@
 // opening after the enter animations, hears Escape and presses inside, keeps a hovered popup
 // open, and manages focus for a popup that takes it. Which of these a kind has is read from its
 // behaviour row.
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 import { getAbortSignal, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 import type { HTMLAttributes } from "svelte/elements";

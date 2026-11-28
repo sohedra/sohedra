@@ -4,8 +4,8 @@
 // is Dialog's, set by Dialog.Root, AlertDialog.Root and Drawer.Root: every popup Root reads it
 // to learn whether it is nested in a popup (`isNestedInPopup`).
 
-import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type { PopupTree } from "@sohedra/primitives-core/foundation/popup/index.js";
+import { defineContext } from "@sohedra/primitives-core/foundation/kernel";
+import type { PopupTree } from "@sohedra/primitives-core/foundation/popup";
 
 import type { WebTypes } from "../kernel/index.js";
 

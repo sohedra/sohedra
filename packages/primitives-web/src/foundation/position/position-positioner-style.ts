@@ -1,7 +1,4 @@
-import type {
-	OriginOffset,
-	MeasuredPosition,
-} from "@sohedra/primitives-core/foundation/position/index.js";
+import type { OriginOffset, MeasuredPosition } from "@sohedra/primitives-core/foundation/position";
 
 import { PositionerCssVariables } from "./position-attributes.js";
 import { getDevicePixelRatio, type Measured, toPx } from "./position-positioner-middleware.js";

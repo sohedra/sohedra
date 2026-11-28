@@ -1,4 +1,4 @@
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 
 import type { WebTypes } from "../kernel/index.js";
 import { closeOnEscape } from "./dismiss-escape.js";

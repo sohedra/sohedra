@@ -1,4 +1,4 @@
-import { getHoverTiming } from "@sohedra/primitives-core/foundation/hover/index.js";
+import { getHoverTiming } from "@sohedra/primitives-core/foundation/hover";
 // A popup trigger's work on the web: it finds the trigger's popup (its handle's store, else its
 // Root's), registers the element under the trigger's id, forwards the trigger's data while it
 // owns the popup, and wires the interactions the popup's kind has. The press itself stays in the
@@ -6,13 +6,13 @@ import { getHoverTiming } from "@sohedra/primitives-core/foundation/hover/index.
 import {
 	keepShallowEqual,
 	missingProviderMessage,
-} from "@sohedra/primitives-core/foundation/kernel/index.js";
+} from "@sohedra/primitives-core/foundation/kernel";
 import {
 	HANDLE_STORE,
 	type PopupTriggerData,
 	type PopupView,
 	useTriggerRegistration,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
+} from "@sohedra/primitives-core/foundation/popup";
 import { untrack } from "svelte";
 import type { HTMLAttributes } from "svelte/elements";
 

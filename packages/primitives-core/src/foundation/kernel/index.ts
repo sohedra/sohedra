@@ -10,7 +10,7 @@ export { CommittedValue } from "./kernel-committed-value.svelte.js";
 export { defineContext, type DefinedContext, missingProviderMessage } from "./kernel-context.js";
 export { Controllable } from "./kernel-controllable.svelte.js";
 export { sohedraId } from "./kernel-id.js";
-export { error, warn } from "./kernel-log.js";
+export { error, resetLogs, warn } from "./kernel-log.js";
 export { ClaimedValue } from "./kernel-claimed-value.svelte.js";
 export type {
 	InteractionEventType,

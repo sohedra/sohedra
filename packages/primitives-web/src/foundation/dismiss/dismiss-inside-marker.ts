@@ -1,12 +1,8 @@
 // The markers that tell a popup a press passed through a portal nested in it: a popup's Portal part
 // attaches them, and the dismissal reads them.
 
-import { Timeout } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type {
-	PopupNode,
-	PopupTree,
-	PopupView,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
+import { Timeout } from "@sohedra/primitives-core/foundation/kernel";
+import type { PopupNode, PopupTree, PopupView } from "@sohedra/primitives-core/foundation/popup";
 import type { Attachment } from "svelte/attachments";
 
 import { attachmentProps, type Props, webScheduler, type WebTypes } from "../kernel/index.js";

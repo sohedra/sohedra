@@ -7,7 +7,7 @@
   No other fixture starts open with a field in its popup, or re-creates its Positioner on demand.
 -->
 <script lang="ts">
-	import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
+	import type { PopoverStore } from "@sohedra/primitives-core/popover";
 
 	import { Popover } from "#lib/components/popover/index.js";
 	import type { PopoverRootProps } from "#lib/components/popover/popover-types.js";

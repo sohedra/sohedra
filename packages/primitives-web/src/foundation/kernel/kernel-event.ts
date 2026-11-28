@@ -2,7 +2,7 @@ import type {
 	InteractionEventType,
 	PointerType,
 	SohedraEvent,
-} from "@sohedra/primitives-core/foundation/kernel/index.js";
+} from "@sohedra/primitives-core/foundation/kernel";
 
 import { userAgent } from "./kernel-user-agent.js";
 

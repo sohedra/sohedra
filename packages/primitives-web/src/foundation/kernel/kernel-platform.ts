@@ -7,7 +7,7 @@ import type {
 	PlatformTypes,
 	REASONS,
 	Scheduler,
-} from "@sohedra/primitives-core/foundation/kernel/index.js";
+} from "@sohedra/primitives-core/foundation/kernel";
 
 // One `requestAnimationFrame` runs every frame callback requested before it, in request order,
 // so that what the callbacks change (popups unmounting after their exit

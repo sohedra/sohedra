@@ -5,7 +5,7 @@
   `awaitingUnmount` and its element itself, so the cases hold them on a stand-in instead.
 -->
 <script lang="ts">
-	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+	import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 
 	import type { WebTypes } from "#lib/foundation/kernel/index.js";
 	import { usePopupUnmount } from "#lib/foundation/popup/popup-unmount.svelte.js";

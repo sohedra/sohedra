@@ -1,10 +1,7 @@
 // The text direction a DirectionProvider sets for the parts inside it. Core never reads a context;
 // a direction-aware part reads this one and passes the direction to its store.
 
-import {
-	defineContext,
-	type TextDirection,
-} from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { defineContext, type TextDirection } from "@sohedra/primitives-core/foundation/kernel";
 
 export type { TextDirection };
 

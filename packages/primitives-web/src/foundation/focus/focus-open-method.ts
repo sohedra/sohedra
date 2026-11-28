@@ -1,9 +1,6 @@
 // A trigger's record of how it is opening its popup, which the Popup's initial focus reads.
 
-import type {
-	InteractionType,
-	PopupView,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { InteractionType, PopupView } from "@sohedra/primitives-core/foundation/popup";
 
 import { getPointerType, type Props, userAgent, type WebTypes } from "../kernel/index.js";
 

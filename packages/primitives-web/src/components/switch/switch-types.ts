@@ -3,7 +3,7 @@ import type {
 	SwitchRootChangeEventReason,
 	SwitchRootState,
 	SwitchThumbState,
-} from "@sohedra/primitives-core/components/switch/index.js";
+} from "@sohedra/primitives-core/switch";
 import type { HTMLAttributes } from "svelte/elements";
 
 import type {

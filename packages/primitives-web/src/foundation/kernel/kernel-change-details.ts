@@ -4,7 +4,7 @@ import {
 	createGenericEventDetails as createPlatformGenericEventDetails,
 	type GenericEventDetails,
 	type PlatformEvent,
-} from "@sohedra/primitives-core/foundation/kernel/index.js";
+} from "@sohedra/primitives-core/foundation/kernel";
 
 import type { WebTypes } from "./kernel-platform.js";
 

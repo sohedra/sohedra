@@ -1,7 +1,4 @@
-import {
-	createPopoverHandle,
-	PopoverHandle,
-} from "@sohedra/primitives-core/components/popover/index.js";
+import { createPopoverHandle, PopoverHandle } from "@sohedra/primitives-core/popover";
 
 import PopoverArrow from "./popover-arrow.svelte";
 import PopoverBackdrop from "./popover-backdrop.svelte";

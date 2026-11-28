@@ -6,7 +6,7 @@
 // switches to the second, and expects the attribute's tokens for the expected offset. The rows
 // tell the outcomes apart: the corners of "compares centers, not corners …" would give `right`
 // instead of `left up`.
-import { getActivationDirection } from "@sohedra/primitives-core/foundation/position/index.js";
+import { getActivationDirection } from "@sohedra/primitives-core/foundation/position";
 import { describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { userEvent } from "vitest/browser";

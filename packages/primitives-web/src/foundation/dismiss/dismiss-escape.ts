@@ -1,6 +1,6 @@
 // Escape on a popup, its trigger or the page: the one handler every side of dismissal shares.
 
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 
 import type { WebTypes } from "../kernel/index.js";
 

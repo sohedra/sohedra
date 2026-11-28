@@ -5,8 +5,8 @@
   Close or unmount it imperatively with `bind:this` and `close()` / `unmount()`.
 -->
 <script lang="ts" generics="Payload = unknown">
-	import { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
-	import { bound, REASONS, sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import { bound, REASONS, sohedraId } from "@sohedra/primitives-core/foundation/kernel";
+	import { PopoverStore } from "@sohedra/primitives-core/popover";
 
 	import {
 		createChangeEventDetails,

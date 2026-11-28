@@ -1,5 +1,5 @@
 // A closed popup's unmount on the web: once its exit animations finish, unless the store waits.
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 import { getAbortSignal, untrack } from "svelte";
 
 import type { WebTypes } from "../kernel/index.js";

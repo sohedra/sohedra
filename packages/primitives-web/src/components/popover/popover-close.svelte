@@ -3,8 +3,8 @@
   A button that closes the popover. Renders a `<button>` element.
 -->
 <script lang="ts">
-	import { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
-	import { useClosePart } from "@sohedra/primitives-core/foundation/popup/index.js";
+	import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
+	import { useClosePart } from "@sohedra/primitives-core/foundation/popup";
 	import type { MouseEventHandler } from "svelte/elements";
 
 	import { useButton } from "../../foundation/button/index.js";

@@ -1,7 +1,7 @@
 // The styling hooks the position job writes: the CSS variables a Positioner sets on its element,
 // the popup size variables a Viewport sets, and the Viewport's data attributes and how its state
 // maps to them.
-import type { AnchoredViewportState } from "@sohedra/primitives-core/foundation/position/index.js";
+import type { AnchoredViewportState } from "@sohedra/primitives-core/foundation/position";
 
 import type { StateAttributesMapping } from "../kernel/index.js";
 

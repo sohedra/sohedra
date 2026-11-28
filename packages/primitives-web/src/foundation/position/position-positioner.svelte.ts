@@ -1,6 +1,6 @@
 import { autoUpdate, computePosition, type ReferenceElement } from "@floating-ui/dom";
-import { keepShallowEqual, watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import { keepShallowEqual, watch } from "@sohedra/primitives-core/foundation/kernel";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 import {
 	getAlignment,
 	getSide,
@@ -11,7 +11,7 @@ import {
 	requestedPlacement,
 	roundToDevicePixels,
 	samePosition,
-} from "@sohedra/primitives-core/foundation/position/index.js";
+} from "@sohedra/primitives-core/foundation/position";
 import { flushSync, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 

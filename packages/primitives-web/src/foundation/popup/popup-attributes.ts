@@ -1,6 +1,6 @@
 // A popup's styling hooks on the web: the data attributes every popup's parts render, and how
 // popup state maps to them.
-import type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence/index.js";
+import type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence";
 
 import type { StateAttributesMapping } from "../kernel/index.js";
 import { transitionStatusMapping } from "../presence/index.js";

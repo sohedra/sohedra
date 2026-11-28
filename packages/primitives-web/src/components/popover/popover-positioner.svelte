@@ -3,8 +3,8 @@
   Positions the popover against the trigger. Renders a `<div>` element.
 -->
 <script lang="ts">
-	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
-	import { POPUP_BEHAVIOR } from "@sohedra/primitives-core/foundation/popup/index.js";
+	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel";
+	import { POPUP_BEHAVIOR } from "@sohedra/primitives-core/foundation/popup";
 
 	import { popupStateMapping } from "../../foundation/popup/index.js";
 	import { AnchoredPositioner } from "../../foundation/position/index.js";

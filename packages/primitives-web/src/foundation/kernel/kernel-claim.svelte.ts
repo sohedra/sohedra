@@ -1,4 +1,4 @@
-import type { ClaimedValue } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { ClaimedValue } from "@sohedra/primitives-core/foundation/kernel";
 import { untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 

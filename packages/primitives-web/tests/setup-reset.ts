@@ -1,5 +1,5 @@
 // Sets each test's starting state: dev warnings and errors log again, and animations are off.
-import { resetLogs } from "@sohedra/primitives-core/foundation/kernel/kernel-log.js";
+import { resetLogs } from "@sohedra/primitives-core/foundation/kernel";
 import { afterEach } from "vitest";
 
 // Parts that wait for animations complete right away unless a test opts back in.

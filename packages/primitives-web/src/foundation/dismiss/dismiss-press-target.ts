@@ -1,7 +1,7 @@
 // Where a press landed, relative to a popup: in its own elements, in a popup nested in it, or on
 // something a press never dismisses for. The dismiss behaviour asks these.
 
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 
 import { INERT_MARKER } from "../focus/index.js";
 import {

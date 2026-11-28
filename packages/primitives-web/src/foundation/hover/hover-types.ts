@@ -1,8 +1,8 @@
 import type {
 	HoverPopupStoreProps,
 	HoverTriggerStoreProps,
-} from "@sohedra/primitives-core/foundation/hover/index.js";
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+} from "@sohedra/primitives-core/foundation/hover";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 
 import type { Props, WebTypes } from "../kernel/index.js";
 

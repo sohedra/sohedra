@@ -4,7 +4,7 @@
   state, its public state and its attribute mapping.
 -->
 <script lang="ts" generics="State extends object">
-	import type { PositionerStore } from "@sohedra/primitives-core/foundation/position/index.js";
+	import type { PositionerStore } from "@sohedra/primitives-core/foundation/position";
 
 	import {
 		attachRef,

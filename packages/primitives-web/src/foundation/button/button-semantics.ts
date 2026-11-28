@@ -1,4 +1,4 @@
-import { error, watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { error, watch } from "@sohedra/primitives-core/foundation/kernel";
 import { DEV } from "esm-env";
 import { untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";

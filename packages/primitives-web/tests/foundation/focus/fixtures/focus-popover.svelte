@@ -11,7 +11,7 @@
   A Popover demo has none of these outside elements or the store handle.
 -->
 <script lang="ts">
-	import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
+	import type { PopoverStore } from "@sohedra/primitives-core/popover";
 	import { flushSync } from "svelte";
 
 	import { Popover } from "#lib/components/popover/index.js";

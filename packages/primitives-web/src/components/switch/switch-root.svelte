@@ -3,8 +3,8 @@
   Represents the switch itself. Renders a `<span>` element and a hidden `<input>` beside it.
 -->
 <script lang="ts">
-	import { SwitchStore } from "@sohedra/primitives-core/components/switch/index.js";
-	import { bound, sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import { bound, sohedraId } from "@sohedra/primitives-core/foundation/kernel";
+	import { SwitchStore } from "@sohedra/primitives-core/switch";
 
 	import {
 		FieldRootContext,

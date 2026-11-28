@@ -6,7 +6,7 @@ import type {
 	OffsetFunction,
 	Padding,
 	Side,
-} from "@sohedra/primitives-core/foundation/position/index.js";
+} from "@sohedra/primitives-core/foundation/position";
 import type { HTMLAttributes } from "svelte/elements";
 
 import type { Props } from "../kernel/index.js";

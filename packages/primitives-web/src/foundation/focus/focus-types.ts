@@ -1,8 +1,5 @@
-import type { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type {
-	InteractionType,
-	PopupView,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { REASONS } from "@sohedra/primitives-core/foundation/kernel";
+import type { InteractionType, PopupView } from "@sohedra/primitives-core/foundation/popup";
 import type { HTMLAttributes } from "svelte/elements";
 
 import type { SohedraChangeEventDetails, WebTypes } from "../kernel/index.js";

@@ -1,4 +1,4 @@
-import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { defineContext } from "@sohedra/primitives-core/foundation/kernel";
 
 /**
  * Layout a Viewport measures for its Popup and Positioner (size variables, pinned edges), and

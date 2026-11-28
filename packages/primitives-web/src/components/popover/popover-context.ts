@@ -2,10 +2,10 @@
 // The contexts Popover shares with other popups (the popup tree and its nodes, the portal) are
 // the popup and portal jobs'.
 
-import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
-import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type { PopupPortalStore } from "@sohedra/primitives-core/foundation/popup/index.js";
-import type { PositionerStore } from "@sohedra/primitives-core/foundation/position/index.js";
+import { defineContext } from "@sohedra/primitives-core/foundation/kernel";
+import type { PopupPortalStore } from "@sohedra/primitives-core/foundation/popup";
+import type { PositionerStore } from "@sohedra/primitives-core/foundation/position";
+import type { PopoverStore } from "@sohedra/primitives-core/popover";
 
 import type { WebTypes } from "../../foundation/kernel/index.js";
 

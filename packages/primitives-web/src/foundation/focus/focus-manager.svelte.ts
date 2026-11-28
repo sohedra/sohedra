@@ -1,9 +1,9 @@
-import { REASONS, Timeout } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { REASONS, Timeout } from "@sohedra/primitives-core/foundation/kernel";
 import type {
 	InteractionType,
 	OpenChangeDetails,
 	PopupView,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
+} from "@sohedra/primitives-core/foundation/popup";
 /* oxlint-disable max-lines -- One idea: a popup's focus on open, while open and on close share state that six separate files had to pass around. */
 import { tick, untrack } from "svelte";
 import { on } from "svelte/events";

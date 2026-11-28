@@ -1,4 +1,4 @@
-import { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 import { flushSync } from "svelte";
 
 import {

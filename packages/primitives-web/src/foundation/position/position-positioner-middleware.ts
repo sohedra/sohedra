@@ -5,7 +5,7 @@ import {
 	measureFromFarEdges,
 	positionerMiddleware,
 	type PositionerMiddlewareOptions,
-} from "@sohedra/primitives-core/foundation/position/index.js";
+} from "@sohedra/primitives-core/foundation/position";
 
 import { ownerDocument, ownerWindow } from "../kernel/index.js";
 import { PositionerCssVariables } from "./position-attributes.js";

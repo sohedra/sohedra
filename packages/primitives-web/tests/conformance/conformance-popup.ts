@@ -1,7 +1,7 @@
 // The suite every popup runs (Popover, Dialog, Tooltip, Menu, Select…): axe closed and open, the
 // controlled and default open state, `onOpenChange` and its cancel, the trigger's ARIA, and
 // `onOpenChangeComplete` with and without animations.
-import { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 import { isInaccessible } from "@testing-library/dom";
 import type { Component } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

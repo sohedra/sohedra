@@ -1,5 +1,5 @@
 // The data attributes of a part's enter and exit transitions, as styling hooks.
-import type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence/index.js";
+import type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence";
 
 import type { StateAttributesMapping } from "../kernel/index.js";
 

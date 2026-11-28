@@ -1,6 +1,6 @@
 // mergeProps and mergePropsN: plain props, chained handlers and their prevention, callback props,
 // class and style, attachments, and function sources.
-import type { SohedraEvent } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { SohedraEvent } from "@sohedra/primitives-core/foundation/kernel";
 import { createAttachmentKey } from "svelte/attachments";
 import { describe, expect, it, vi } from "vitest";
 

@@ -7,7 +7,7 @@ import {
 	isNestedInPopup,
 	type PopupStoreDeps,
 	type PopupView,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
+} from "@sohedra/primitives-core/foundation/popup";
 
 import { useDismissRoot } from "../dismiss/index.js";
 import { fallbackEvent, webPlatform, type WebTypes } from "../kernel/index.js";

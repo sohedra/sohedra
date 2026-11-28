@@ -1,4 +1,4 @@
-import type { ControlLabels } from "@sohedra/primitives-core/foundation/form/index.js";
+import type { ControlLabels } from "@sohedra/primitives-core/foundation/form";
 import type { Attachment } from "svelte/attachments";
 
 type LabelSource = HTMLElement & { labels?: NodeListOf<HTMLLabelElement> | null | undefined };

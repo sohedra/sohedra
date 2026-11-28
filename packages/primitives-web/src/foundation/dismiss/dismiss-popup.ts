@@ -1,4 +1,4 @@
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 import type { Attachment } from "svelte/attachments";
 
 import { attachmentProps, contains, getTarget, type WebTypes } from "../kernel/index.js";

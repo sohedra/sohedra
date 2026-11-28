@@ -1,4 +1,4 @@
-import type { WithSohedraEvent } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { WithSohedraEvent } from "@sohedra/primitives-core/foundation/kernel";
 import type { Snippet } from "svelte";
 import type { ClassValue, HTMLAttributes } from "svelte/elements";
 

@@ -1,7 +1,7 @@
 // `describeConformance`: the contract every part keeps in the browser (its element, extra props,
 // handlers, class and style, state attributes, `bind:ref`, attachments, the render and children
 // snippets, and server rendering with hydration).
-import type { SohedraEvent } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { SohedraEvent } from "@sohedra/primitives-core/foundation/kernel";
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";

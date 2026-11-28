@@ -1,7 +1,7 @@
 // The portal a part is rendered in. It is one context for the whole page, so a popup nested in
 // another finds its parent's portal.
 
-import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { defineContext } from "@sohedra/primitives-core/foundation/kernel";
 
 import type { PortalStore } from "./portal-store.svelte.js";
 

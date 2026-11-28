@@ -35,7 +35,7 @@
 	lang="ts"
 	generics="Tag extends keyof SvelteHTMLElements & string, State extends object, RefElement extends HTMLElement = HTMLElement"
 >
-	import { warn } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import { warn } from "@sohedra/primitives-core/foundation/kernel";
 	import type { Snippet } from "svelte";
 	import type { HTMLAttributes, SvelteHTMLElements } from "svelte/elements";
 

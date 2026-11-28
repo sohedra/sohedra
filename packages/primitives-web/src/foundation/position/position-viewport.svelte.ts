@@ -1,11 +1,11 @@
-import { watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+import { watch } from "@sohedra/primitives-core/foundation/kernel";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 import {
 	pinnedEdges,
 	type Side,
 	type TriggerOffset,
 	ViewportContentStore,
-} from "@sohedra/primitives-core/foundation/position/index.js";
+} from "@sohedra/primitives-core/foundation/position";
 import { flushSync, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 

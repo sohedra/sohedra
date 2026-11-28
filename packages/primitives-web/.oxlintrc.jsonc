@@ -10,7 +10,7 @@
 			},
 		},
 		{
-			// A component reads a foundation job, and core, only through an index.js.
+			// A component reads a foundation job only through an index.js, and core through an entry.
 			"files": ["src/components/**"],
 			"rules": {
 				"no-restricted-imports": [
@@ -22,9 +22,10 @@
 									"../../foundation/*/*",
 									"!../../foundation/*/index.js",
 									"@sohedra/primitives-core/**",
-									"!@sohedra/primitives-core/*/*/index.js",
+									"!@sohedra/primitives-core/*",
+									"!@sohedra/primitives-core/foundation/*",
 								],
-								"message": "A component reads a foundation job, and core, through an index.js.",
+								"message": "A component reads a foundation job through an index.js, and core through an entry.",
 							},
 						],
 					},
@@ -32,7 +33,7 @@
 			},
 		},
 		{
-			// A job imports its own files by name, another job and core only through an index.js, and no component.
+			// A job imports its own files by name, another job only through an index.js, core through an entry, and no component.
 			"files": ["src/foundation/**"],
 			"rules": {
 				"no-restricted-imports": [
@@ -46,9 +47,10 @@
 									"!../*/index.js",
 									"**/components/**",
 									"@sohedra/primitives-core/**",
-									"!@sohedra/primitives-core/*/*/index.js",
+									"!@sohedra/primitives-core/*",
+									"!@sohedra/primitives-core/foundation/*",
 								],
-								"message": "A job imports its own files by name, another job and core through an index.js, and no component.",
+								"message": "A job imports its own files by name, another job through an index.js, core through an entry, and no component.",
 							},
 						],
 					},
@@ -68,9 +70,9 @@
 									"../**",
 									"./index.js",
 									"@sohedra/primitives-core/**",
-									"!@sohedra/primitives-core/foundation/kernel/index.js",
+									"!@sohedra/primitives-core/foundation/kernel",
 								],
-								"message": "The kernel imports only its own files, by name, and core's kernel through its index.js.",
+								"message": "The kernel imports only its own files, by name, and core's kernel through its entry.",
 							},
 						],
 					},

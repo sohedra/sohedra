@@ -7,12 +7,12 @@ import {
 	type FieldsetView,
 	type LabelableView,
 	NULL_FIELD as CORE_NULL_FIELD,
-} from "@sohedra/primitives-core/foundation/form/index.js";
-import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
+} from "@sohedra/primitives-core/foundation/form";
+import { defineContext } from "@sohedra/primitives-core/foundation/kernel";
 
 import type { WebTypes } from "../kernel/index.js";
 
-export { NULL_FIELDSET, NULL_LABELABLE } from "@sohedra/primitives-core/foundation/form/index.js";
+export { NULL_FIELDSET, NULL_LABELABLE } from "@sohedra/primitives-core/foundation/form";
 
 /** The field a control sits in: Field.Root sets its store. */
 export const FieldRootContext = defineContext<FieldRootView<WebTypes>>("Field.Root");

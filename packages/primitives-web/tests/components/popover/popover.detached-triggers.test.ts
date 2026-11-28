@@ -1,4 +1,4 @@
-import { HANDLE_STORE } from "@sohedra/primitives-core/foundation/popup/index.js";
+import { HANDLE_STORE } from "@sohedra/primitives-core/foundation/popup";
 // Popover's triggers outside the Root, on a handle: opening from a mount effect, registration when
 // a trigger's element changes, the active trigger's press state and focus guards, and the
 // `instant` state when the popup moves between triggers.

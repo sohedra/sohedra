@@ -4,8 +4,8 @@
   element is appended to `<body>`. Renders a `<div>` element.
 -->
 <script lang="ts">
-	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
-	import { PopupPortalStore } from "@sohedra/primitives-core/foundation/popup/index.js";
+	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel";
+	import { PopupPortalStore } from "@sohedra/primitives-core/foundation/popup";
 
 	import { useAncestorsInsideMarker } from "../../foundation/dismiss/index.js";
 	import type { WebTypes } from "../../foundation/kernel/index.js";

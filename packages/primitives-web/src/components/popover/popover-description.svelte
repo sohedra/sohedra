@@ -3,7 +3,7 @@
   A paragraph with additional information about the popover. Renders a `<p>` element.
 -->
 <script lang="ts">
-	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel";
 
 	import { Part, useClaimedId } from "../../foundation/kernel/index.js";
 	import { PopoverRootContext } from "./popover-context.js";

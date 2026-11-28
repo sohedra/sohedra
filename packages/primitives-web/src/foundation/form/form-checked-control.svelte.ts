@@ -4,8 +4,8 @@ import type {
 	FieldRootView,
 	LabelableControlId,
 	LabelableView,
-} from "@sohedra/primitives-core/foundation/form/index.js";
-import { type Bound, REASONS, watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
+} from "@sohedra/primitives-core/foundation/form";
+import { type Bound, REASONS, watch } from "@sohedra/primitives-core/foundation/kernel";
 import { untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 import type { FocusEventHandler, HTMLInputAttributes, MouseEventHandler } from "svelte/elements";

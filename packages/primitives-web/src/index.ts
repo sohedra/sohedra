@@ -51,11 +51,8 @@ export {
 	type SwitchThumbProps,
 	type SwitchThumbState,
 } from "./components/switch/index.js";
-export type {
-	InstantType,
-	InteractionType,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
-export type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence/index.js";
+export type { InstantType, InteractionType } from "@sohedra/primitives-core/foundation/popup";
+export type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence";
 export type { FocusTarget } from "./foundation/focus/index.js";
 export type { PortalContainer } from "./foundation/portal/index.js";
 export type {

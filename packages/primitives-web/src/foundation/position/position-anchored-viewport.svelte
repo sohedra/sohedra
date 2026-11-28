@@ -6,11 +6,8 @@
   store's.
 -->
 <script lang="ts">
-	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
-	import type {
-		AnchoredViewportState,
-		Side,
-	} from "@sohedra/primitives-core/foundation/position/index.js";
+	import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
+	import type { AnchoredViewportState, Side } from "@sohedra/primitives-core/foundation/position";
 	import { untrack } from "svelte";
 
 	import {

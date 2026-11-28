@@ -31,22 +31,39 @@
 	},
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"svelte": "./dist/index.js",
-			"default": "./dist/index.js"
+			"types": "./src/index.ts",
+			"svelte": "./src/index.ts",
+			"default": "./src/index.ts"
 		},
 		"./popover": {
-			"types": "./dist/components/popover/index.d.ts",
-			"svelte": "./dist/components/popover/index.js",
-			"default": "./dist/components/popover/index.js"
+			"types": "./src/components/popover/index.ts",
+			"svelte": "./src/components/popover/index.ts",
+			"default": "./src/components/popover/index.ts"
 		},
 		"./switch": {
-			"types": "./dist/components/switch/index.d.ts",
-			"svelte": "./dist/components/switch/index.js",
-			"default": "./dist/components/switch/index.js"
+			"types": "./src/components/switch/index.ts",
+			"svelte": "./src/components/switch/index.ts",
+			"default": "./src/components/switch/index.ts"
 		}
 	},
 	"publishConfig": {
+		"exports": {
+			".": {
+				"types": "./dist/index.d.ts",
+				"svelte": "./dist/index.js",
+				"default": "./dist/index.js"
+			},
+			"./popover": {
+				"types": "./dist/components/popover/index.d.ts",
+				"svelte": "./dist/components/popover/index.js",
+				"default": "./dist/components/popover/index.js"
+			},
+			"./switch": {
+				"types": "./dist/components/switch/index.d.ts",
+				"svelte": "./dist/components/switch/index.js",
+				"default": "./dist/components/switch/index.js"
+			}
+		},
 		"access": "public"
 	},
 	"scripts": {

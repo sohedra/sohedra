@@ -1,3 +1,4 @@
+import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 // The dismissal's wiring, through an initially open Popover (fixtures/dismiss-popover.svelte):
 // which outside presses close it, with its mouse outside press `intentional` (it dismisses on
 // `click`), what a press stopped on its way does, and when Escape belongs to a text composition
@@ -11,8 +12,7 @@
 // - "press survives listener re-attachment while open": a Popover has no dismissal option that
 //   can change while open, so the fixture re-creates the Positioner (the popup, which
 //   the document listeners depend on) instead.
-import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
-import { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { PopoverStore } from "@sohedra/primitives-core/popover";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { server, userEvent } from "vitest/browser";

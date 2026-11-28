@@ -4,7 +4,7 @@
 // guards while a hover holds the popover open, and Tab follows the document's own order.
 // - The fixture is the Popover of the focus manager cases with `openOnHover` on its trigger and
 //   a `before` and an `after` button around it.
-import { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { userEvent } from "vitest/browser";

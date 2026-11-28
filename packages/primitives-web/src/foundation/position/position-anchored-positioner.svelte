@@ -12,15 +12,15 @@
   Positioner store's.
 -->
 <script lang="ts">
-	import type { DefinedContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
-	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+	import type { DefinedContext } from "@sohedra/primitives-core/foundation/kernel";
+	import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 	import {
 		type AnchoredPositionerState,
 		initialPosition,
 		POSITIONER_DEFAULTS,
 		PositionerStore,
 		type Side,
-	} from "@sohedra/primitives-core/foundation/position/index.js";
+	} from "@sohedra/primitives-core/foundation/position";
 	import { getAbortSignal, untrack } from "svelte";
 
 	import { INERT_MARKER } from "../focus/index.js";

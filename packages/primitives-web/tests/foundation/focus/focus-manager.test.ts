@@ -1,3 +1,4 @@
+import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 // The focus manager through a Popover: where focus returns on close and with which
 // `focusVisible`, the close type a click reports, the inert marker of a non-modal popup, a manager
 // that turns on while open, keep-mounted sessions, focus leaving the trigger of a closed popover,
@@ -15,8 +16,7 @@
 //   going from `() => true` to unset.
 // - The unportalled popups of the marker cases keep the Popover's portal in the same parent as
 //   the rest of the tree (its `container` is a `div` at the end of it).
-import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
-import { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { PopoverStore } from "@sohedra/primitives-core/popover";
 import testingUserEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";

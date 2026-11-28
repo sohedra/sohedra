@@ -13,7 +13,7 @@ import type {
 	PopoverTitleState,
 	PopoverTriggerState,
 	PopoverViewportState,
-} from "@sohedra/primitives-core/components/popover/index.js";
+} from "@sohedra/primitives-core/popover";
 import type { Component, ComponentInternals, Snippet, SvelteComponent } from "svelte";
 import type { HTMLAttributes, HTMLButtonAttributes } from "svelte/elements";
 

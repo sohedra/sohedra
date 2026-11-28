@@ -3,9 +3,9 @@
   A button that opens the popover. Renders a `<button>` element.
 -->
 <script lang="ts" generics="Payload = unknown">
-	import { OPEN_DELAY } from "@sohedra/primitives-core/components/popover/index.js";
-	import { REASONS, sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
-	import { PopupTriggerStore } from "@sohedra/primitives-core/foundation/popup/index.js";
+	import { REASONS, sohedraId } from "@sohedra/primitives-core/foundation/kernel";
+	import { PopupTriggerStore } from "@sohedra/primitives-core/foundation/popup";
+	import { OPEN_DELAY } from "@sohedra/primitives-core/popover";
 	import type { MouseEventHandler } from "svelte/elements";
 
 	import { useButton } from "../../foundation/button/index.js";
