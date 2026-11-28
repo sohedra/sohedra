@@ -1,7 +1,7 @@
-import { HANDLE_STORE } from "@sohedra/primitives-core/foundation/popup";
 // Popover's triggers outside the Root, on a handle: opening from a mount effect, registration when
 // a trigger's element changes, the active trigger's press state and focus guards, and the
 // `instant` state when the popup moves between triggers.
+import { HANDLE_STORE } from "@sohedra/primitives-core/foundation/popup";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { commands, type Locator, page, userEvent } from "vitest/browser";

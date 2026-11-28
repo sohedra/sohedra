@@ -1,7 +1,7 @@
-import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 // Popover's hover-opening triggers over time. The real pointer runs under fake timers with real
 // frames (async mode needs them); DOM state is read with a plain `expect` once Svelte has settled,
 // since `expect.element` retries by advancing fake time.
+import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 import { PATIENT_CLICK_THRESHOLD } from "@sohedra/primitives-core/popover";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";

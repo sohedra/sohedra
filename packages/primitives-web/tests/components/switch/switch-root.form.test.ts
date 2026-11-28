@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
-import { render } from "vitest-browser-svelte";
 // Switch.Root in a plain form: the data it submits as its props change, the input event the form
 // sees, and a native reset, which restores defaultChecked without onCheckedChange.
+import { describe, expect, it, vi } from "vitest";
+import { render } from "vitest-browser-svelte";
 import type { Locator } from "vitest/browser";
 import { userEvent } from "vitest/browser";
 
