@@ -1,0 +1,17 @@
+{
+	"popover": {
+		"part:arrow": "The part contract in popover.conformance; its placement is the shared arrow's, tested in tests/foundation/position.",
+		"part:close": "A Close is a button and one intent: the part contract in popover.conformance, closing and focus return in popover.focus and popover.detached-triggers.",
+		"part:description": "The part contract in popover.conformance; the popup it describes in popover.a11y.",
+		"part:positioner": "Placement spans the popup and its trigger: popover.position and popover.position.async.",
+		"part:root": "The Root's behavior spans its parts: popover.dismiss, popover.hover, popover.focus and popover.detached-triggers.",
+		"part:title": "The part contract in popover.conformance; the popup it names in popover.a11y.",
+		"scheme:popover.detached-triggers.test.ts": "todo: move the comment that says what the file covers to its first line, above the imports.",
+		"scheme:popover.hover.test.ts": "todo: move the comment that says what the file covers to its first line, and split the file by topic below 600 lines.",
+		"scheme:fixtures/svelte.config.js": "svelte-check reads the fixtures' Svelte config from here, to type the `await` the late-content fixtures use."
+	},
+	"switch": {
+		"exports": "todo: the entry's runtime test waits for the Field family, whose components it lists beside Switch.",
+		"scheme:switch-root.form.test.ts": "todo: move the comment that says what the file covers to its first line, above the imports."
+	}
+}

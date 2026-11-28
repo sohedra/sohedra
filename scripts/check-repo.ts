@@ -1,4 +1,4 @@
-// Checks the repository's own setup, so decisions written in AGENTS.md and CONTRIBUTING.md can't
+// Checks the repository's own setup, so decisions written in AGENTS.md and contributing/ can't
 // drift. Runs as part of `pnpm lint`.
 
 import { execFileSync } from "node:child_process";
@@ -7,11 +7,23 @@ import { dirname, join, relative } from "node:path";
 
 import { parse } from "yaml";
 
+import {
+	checkBannedWords,
+	checkCommentLength,
+	checkEffectComments,
+	mergeBase,
+} from "./comments.ts";
 import { lowered, readCoverageBaseline } from "./coverage-baseline.ts";
+import { checkDeadExports } from "./dead-exports.ts";
+import { checkDocComments } from "./doc-comments.ts";
 import { readLabels } from "./labels.ts";
 import { checkMissingGlobals } from "./missing-globals.ts";
+import { checkPrimitivesLayout } from "./primitives-layout.ts";
+import { checkPrimitivesNames } from "./primitives-names.ts";
+import { checkPrimitivesTests } from "./primitives-tests.ts";
 import { checkRenovate } from "./renovate.ts";
 import { checkSharedPackages } from "./shared-packages.ts";
+import { checkStylingHooks } from "./styling-hooks.ts";
 import { listIsCurrent, scanRepository } from "./workarounds.ts";
 import { checkWorkflows } from "./workflows.ts";
 
@@ -85,12 +97,14 @@ for (const form of forms) {
 	}
 }
 
-// 2. Agent instructions: AGENTS.md files only, each within its length budget.
+// 2. Agent instructions live in AGENTS.md files, each within its length budget. The root CLAUDE.md
+// only imports the root AGENTS.md, so Claude Code reads the same file as every other harness.
 for (const file of allFiles) {
 	const name = file.split("/").pop();
-	if (name === "CLAUDE.md" || name === "CLAUDE.local.md") {
+	const isImport = file === "CLAUDE.md" && readFileSync(file, "utf8") === "@AGENTS.md\n";
+	if ((name === "CLAUDE.md" && !isImport) || name === "CLAUDE.local.md") {
 		problems.push(
-			`${file}: remove it. Any CLAUDE.md file stops Claude Code from reading AGENTS.md.`,
+			`${file}: remove it. Agent instructions go in AGENTS.md; the root CLAUDE.md holds only "@AGENTS.md".`,
 		);
 	}
 	if (name === "AGENTS.md") {
@@ -174,6 +188,36 @@ if (existsSync(".claude/skills")) {
 		if (!skills.includes(entry)) {
 			problems.push(
 				`.claude/skills/${entry} isn't a link to .agents/skills/. Put the skill in .agents/skills/ and link it.`,
+			);
+		}
+	}
+}
+
+// 5b. Experts: each in .agents/experts/<name>/ with its three files, and a Claude Code subagent in
+// .claude/agents/<name>-expert.md that only points at it.
+const experts = existsSync(".agents/experts")
+	? readdirSync(".agents/experts", { withFileTypes: true })
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name)
+	: [];
+for (const expert of experts) {
+	for (const part of ["expert.md", "knowledge.md", "decisions.md"]) {
+		if (!existsSync(join(".agents/experts", expert, part))) {
+			problems.push(`.agents/experts/${expert} has no ${part}.`);
+		}
+	}
+	const wrapper = join(".claude/agents", `${expert}-expert.md`);
+	const pointer = `Read \`.agents/experts/${expert}/expert.md\` and follow it.`;
+	if (!existsSync(wrapper) || !readFileSync(wrapper, "utf8").includes(pointer)) {
+		problems.push(`${wrapper}: add the subagent, whose body is "${pointer}"`);
+	}
+}
+if (existsSync(".claude/agents")) {
+	for (const entry of readdirSync(".claude/agents")) {
+		const expert = /^(.+)-expert\.md$/.exec(entry)?.[1];
+		if (expert === undefined || !experts.includes(expert)) {
+			problems.push(
+				`.claude/agents/${entry} isn't an expert's subagent. Put the expert in .agents/experts/ and point to it.`,
 			);
 		}
 	}
@@ -263,6 +307,30 @@ problems.push(...checkRenovate("."));
 
 // 13. The binding's missing-global hints name what @sohedra/lynx-polyfill's entries install.
 problems.push(...checkMissingGlobals("."));
+
+// 14. The primitives' layout: folders, file names after their main export, one class per file,
+// index lines, `.svelte.ts` for runes, the numbered sections of parts and stores.
+problems.push(...checkPrimitivesLayout("."));
+
+// 15. Each primitive component has its kinds of tests, named by the scheme, or a listed exemption.
+problems.push(...checkPrimitivesTests("."));
+
+// 16. The primitives' names keep to the word list.
+problems.push(...checkPrimitivesNames("."));
+
+// 17. Every data attribute and CSS variable the primitives write is named once, in its constant.
+problems.push(...checkStylingHooks("."));
+
+// 18. Comments in the primitives: one above every effect, no banned words, doc comments on exports
+// and public fields, and new comments three lines at most (against origin/main, when known here).
+problems.push(...checkEffectComments("."), ...checkBannedWords("."), ...checkDocComments("."));
+const base = mergeBase(".");
+if (base !== undefined) {
+	problems.push(...checkCommentLength(".", base));
+}
+
+// 19. No exported value in the primitives goes unused.
+problems.push(...checkDeadExports("."));
 
 if (problems.length > 0) {
 	console.error(["Repository check failed:", ...problems].join("\n- "));
