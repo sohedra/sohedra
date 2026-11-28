@@ -1,11 +1,14 @@
 <!--
   The Positioner part of every anchored popup: it places the popup against its anchor and holds
-  the position state the Popup, the Arrow and a Viewport inside read. Renders a `<div>` element,
-  after the internal backdrop of a modal popup when it has one.
+  the position state the Popup, the Arrow and a Viewport inside read. Beside that, it is the
+  popup's node in the popup tree (popups nested in it are its children), it lets the transitions
+  run once more when the popup moves to another trigger, and it locks the page scroll while the
+  store says so. Renders a `<div>` element, after the internal backdrop of a modal popup when it
+  has one.
 
-  A component's own Positioner file hands over its store, the context it publishes its position
-  state in, what its Portal says about staying mounted, its `instant` value, its default side and
-  its attribute mapping. The placement props come with the user's props.
+  A component's own Positioner file hands over its store, its node id, the context it publishes
+  its position state in, what its Portal says about staying mounted, its `instant` value, its
+  default side and its attribute mapping. The placement props come with the user's props.
 -->
 <script lang="ts" generics="Instant extends string | undefined">
 	import type { DefinedContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
@@ -18,7 +21,7 @@
 		PositionerStore,
 		type Side,
 	} from "@sohedra/primitives-core/foundation/position/index.js";
-	import { untrack } from "svelte";
+	import { getAbortSignal, untrack } from "svelte";
 
 	import { INERT_MARKER } from "../focus/index.js";
 	import {
@@ -32,8 +35,9 @@
 		type StateAttributesMapping,
 		type WebTypes,
 	} from "../kernel/index.js";
-	import { DISABLED_TRANSITIONS_STYLE } from "../presence/index.js";
-	import { PopupLayoutContext, PopupLayoutStore } from "./position-popup-layout.svelte.js";
+	import { PopupLayoutContext, PopupLayoutStore, PopupNodeContext } from "../popup/index.js";
+	import { DISABLED_TRANSITIONS_STYLE, waitForAnimations } from "../presence/index.js";
+	import { useAnchoredScrollLock } from "./position-anchored-scroll-lock.svelte.js";
 	import { usePositioner } from "./position-positioner.svelte.js";
 	import type { AnchoredPositionerPlacement } from "./position-types.js";
 
@@ -55,6 +59,8 @@
 	interface Props {
 		/** The Positioner's view of the popup: a component passes its store. */
 		popup: PopupView<WebTypes>;
+		/** The Positioner's node id in the popup tree, fixed for its life (`$props.id()`). */
+		nodeId: string;
 		/** The component's context for this Positioner's state: its Popup, Arrow and Viewport read it. */
 		context: DefinedContext<PositionerStore<WebTypes>>;
 		/** Whether the component's Portal keeps the popup mounted while closed. */
@@ -74,6 +80,7 @@
 
 	let {
 		popup,
+		nodeId,
 		context,
 		keepMounted,
 		instant,
@@ -84,9 +91,15 @@
 		user,
 	}: Props = $props();
 
-	// A part's store never changes while it is mounted.
-	const view = untrack(() => popup);
+	// A part's store, node id and context never change while it is mounted.
+	const fixed = untrack(() => ({ popup, nodeId, context }));
+	const view = fixed.popup;
 	const direction = DirectionContext.getOr(LTR);
+	const parentNodeId = PopupNodeContext.getOr(null);
+	PopupNodeContext.set(fixed.nodeId);
+
+	// The popup's node is in the popup tree while its Positioner is mounted.
+	$effect(() => view.joinPopupTree(fixed.nodeId, parentNodeId));
 
 	// The position state the Popup and the Arrow read, and the sizes and anchoring a Viewport
 	// inside measures.
@@ -102,8 +115,32 @@
 	});
 	positioner.connect();
 	const layout = new PopupLayoutStore();
-	untrack(() => context).set(positioner);
+	fixed.context.set(positioner);
 	PopupLayoutContext.set(layout);
+
+	// While the popup moves to another trigger, waits for the Positioner's animations, then tells
+	// the popup the move finished. A move to yet another trigger waits afresh.
+	$effect(() => {
+		void view.anchorElement;
+		if (!view.activeTrigger.triggerChanging) {
+			return;
+		}
+		const signal = getAbortSignal();
+		untrack(() => {
+			const element = view.positionerElement as HTMLElement | null;
+			if (element) {
+				waitForAnimations(element, { signal }, view.activeTrigger.finishTriggerChange);
+			}
+		});
+	});
+
+	// The page scroll is locked while the store says so.
+	useAnchoredScrollLock(() => ({
+		enabled: view.anchoredScrollLockEnabled,
+		touchOpen: view.openMethod === "touch",
+		positionerElement: view.positionerElement as HTMLElement | null,
+		triggerElement: view.activeTriggerElement,
+	}));
 
 	const position = usePositioner(view, positioner, () => ({
 		layout,

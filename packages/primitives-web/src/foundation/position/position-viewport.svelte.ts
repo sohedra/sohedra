@@ -17,8 +17,8 @@ import {
 	webScheduler,
 	type WebTypes,
 } from "../kernel/index.js";
+import { PopupLayoutContext } from "../popup/index.js";
 import { waitForAnimations } from "../presence/index.js";
-import { PopupLayoutContext } from "./position-popup-layout.svelte.js";
 import type { Viewport, ViewportOptions } from "./position-types.js";
 import { type Dimensions, measurePopupSize, sizeVars } from "./position-viewport-size.js";
 

@@ -19,8 +19,8 @@ import {
 	type WebTypes,
 } from "../kernel/index.js";
 import { PortalContext } from "../portal/index.js";
-import { PopupLayoutContext } from "../position/index.js";
 import { DISABLED_TRANSITIONS_STYLE, waitForAnimations } from "../presence/index.js";
+import { PopupLayoutContext } from "./popup-layout.svelte.js";
 
 /** What the Popup part tells `usePopupElement`, from its options function. */
 export interface PopupElementOptions {

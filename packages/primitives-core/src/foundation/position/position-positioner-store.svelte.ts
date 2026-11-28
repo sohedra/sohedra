@@ -1,7 +1,7 @@
 import { untrack } from "svelte";
 
 import { type PlatformTypes, watch } from "../kernel/index.js";
-import type { PopupView } from "../popup/index.js";
+import { movesToOtherTrigger, type PopupView } from "../popup/index.js";
 import type { Align, MeasuredPosition, Side } from "./position-types.js";
 
 /** What a Positioner's state reads of its part. */
@@ -72,6 +72,36 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 
 	/** Lifetime work. Called once by the Positioner part. */
 	connect(): void {
+		const popup = this.#popup;
+		const activeTrigger = popup.activeTrigger;
+		// Closing drops a pending or applied trigger change.
+		watch(
+			() => popup.open,
+			(open) => {
+				if (!open) {
+					activeTrigger.closeTriggerChange();
+				}
+			},
+		);
+		// A new trigger while open: the transitions run once more, and the platform reports when
+		// they finished. The last trigger is this Positioner's own memory, not the watched previous
+		// value: an anchor cleared while closed keeps it, so the next opening still compares against
+		// it. Any anchor change ends a move that is still pending.
+		let lastTrigger: T["element"] | null = null;
+		watch(
+			() => popup.anchorElement,
+			(current) => {
+				const previous = lastTrigger;
+				if (current) {
+					lastTrigger = current;
+				}
+				if (!movesToOtherTrigger(previous, current, popup.open)) {
+					return;
+				}
+				activeTrigger.beginTriggerChange();
+				return activeTrigger.cancelTriggerChange;
+			},
+		);
 		// A kept-mounted popup's next opening starts unpositioned (a closing one unmounts instead).
 		watch(
 			[() => this.#props().keepMounted, () => this.#popup.mounted],

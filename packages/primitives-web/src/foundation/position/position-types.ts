@@ -7,7 +7,7 @@ import type {
 } from "@sohedra/primitives-core/foundation/position/index.js";
 import type { Attachment } from "svelte/attachments";
 
-import type { PopupLayoutStore } from "./position-popup-layout.svelte.js";
+import type { PopupLayoutStore } from "../popup/index.js";
 import type { Boundary } from "./position-positioner-middleware.js";
 
 /** An anchor: an element, a virtual element, or a function returning one. */

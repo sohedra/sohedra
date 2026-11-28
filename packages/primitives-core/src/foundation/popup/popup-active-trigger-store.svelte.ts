@@ -2,8 +2,7 @@
 
 import { untrack } from "svelte";
 
-import { type Bound, CommittedValue, type PlatformTypes, watch } from "../kernel/index.js";
-import { movesToOtherTrigger } from "./popup-rules.js";
+import { type Bound, CommittedValue, type PlatformTypes } from "../kernel/index.js";
 import type { PopupTriggerMap } from "./popup-trigger-map.js";
 import type { InstantType } from "./popup-types.js";
 
@@ -25,12 +24,6 @@ export interface ActiveTriggerStoreDeps<T extends PlatformTypes = PlatformTypes>
 }
 
 /**
- * How the platform waits for the animations of a move to another trigger: it calls `finish` once
- * they are done, and returns a cancel that keeps `finish` from counting.
- */
-export type TriggerChangeWait = (finish: () => void) => (() => void) | void;
-
-/**
  * Which registered trigger a popup belongs to, including the one it claims implicitly: the active
  * trigger's id and element, the element the popup is anchored to, and whether it opened without a
  * trigger. `PopupStore` owns one and decides when it changes.
@@ -43,6 +36,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	#id: string | null = $state(null);
 	#element: T["element"] | null = $state.raw(null);
 	#openedWithoutTrigger = $state(false);
+	#triggerChanging = $state(false);
 	// The last trigger element stays the popup's anchor after the popup unmounts (only element
 	// values are synced); a kept-mounted Positioner clears it. Committed by `connect()` after each
 	// update, never while deriving.
@@ -79,6 +73,14 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 			!this.#openedWithoutTrigger &&
 			this.#triggers.size === 1
 		);
+	}
+
+	/**
+	 * Whether the open popup moved to another trigger and its transitions run once more: the
+	 * platform waits for them, then calls {@link finishTriggerChange}.
+	 */
+	get triggerChanging(): boolean {
+		return this.#triggerChanging;
 	}
 
 	/** Whether the trigger with `triggerId` is the active one. */
@@ -172,6 +174,42 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		}
 	};
 
+	/**
+	 * The open popup moved to another trigger: its transitions run once more (it repositions), so
+	 * the instant type is cleared until {@link finishTriggerChange}.
+	 */
+	beginTriggerChange = (): void => {
+		this.#instant.value = undefined;
+		this.#triggerChanging = true;
+	};
+
+	/**
+	 * The move's transitions finished: while the popup stays with that trigger, it skips its
+	 * transitions (`trigger-change`). Ignored once the move is over or the popup closed.
+	 */
+	finishTriggerChange = (): void => {
+		if (!this.#triggerChanging) {
+			return;
+		}
+		this.#triggerChanging = false;
+		if (this.#props().open) {
+			this.#instant.value = "trigger-change";
+		}
+	};
+
+	/** The move is over before it finished: another move superseded it, or its follower left. */
+	cancelTriggerChange = (): void => {
+		this.#triggerChanging = false;
+	};
+
+	/** The popup closed: a pending move is over, and an applied `trigger-change` is dropped. */
+	closeTriggerChange = (): void => {
+		this.#triggerChanging = false;
+		if (this.#instant.value === "trigger-change") {
+			this.#instant.value = undefined;
+		}
+	};
+
 	/** Forgets the last trigger element (a kept-mounted popup that closed). */
 	forgetLastTrigger = (): void => {
 		this.#lastAnchor.commit(null);
@@ -220,66 +258,5 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 				}
 			});
 		});
-	}
-
-	/**
-	 * Decides when the popup moved to another trigger: when the active trigger changes while the
-	 * popup is open, its transitions run once more (it repositions), so the instant type is cleared
-	 * and `waitForMove` is called; once the platform calls the `finish` it was given, the instant
-	 * type is `trigger-change` while the popup stays with that trigger. Closing drops a pending or
-	 * applied `trigger-change`. `waitForMove` returns a cancel, called when the move is superseded,
-	 * the popup closes, or the caller goes away.
-	 *
-	 * Call once during the init of the part that animates the move (the Positioner): what it
-	 * remembers lives as long as that part.
-	 */
-	connectTriggerChange(waitForMove: TriggerChangeWait): void {
-		const instant = this.#instant;
-		// The last trigger the popup was anchored to. Not the watched previous value: an anchor
-		// cleared while closed keeps it, so the next opening still compares against it.
-		let lastTrigger: T["element"] | null = null;
-		let cancelPending: (() => void) | void = undefined;
-
-		// Closing drops a pending or applied trigger-change.
-		watch(
-			() => this.#props().open,
-			(open) => {
-				if (open) {
-					return;
-				}
-				cancelPending?.();
-				cancelPending = undefined;
-				if (instant.value === "trigger-change") {
-					instant.value = undefined;
-				}
-			},
-		);
-
-		// A new trigger while open: lets the transitions run, then marks the popup instant.
-		watch(
-			() => this.anchor,
-			(current) => {
-				const previous = lastTrigger;
-				if (current) {
-					lastTrigger = current;
-				}
-				if (!movesToOtherTrigger(previous, current, this.#props().open)) {
-					return;
-				}
-				instant.value = undefined;
-				let canceled = false;
-				const cancelWait = waitForMove(() => {
-					if (!canceled && this.#props().open) {
-						instant.value = "trigger-change";
-					}
-				});
-				const cancel = () => {
-					canceled = true;
-					cancelWait?.();
-				};
-				cancelPending = cancel;
-				return cancel;
-			},
-		);
 	}
 }

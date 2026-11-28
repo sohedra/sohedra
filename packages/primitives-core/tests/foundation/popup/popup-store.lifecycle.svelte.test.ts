@@ -13,8 +13,10 @@ import {
 	type PopupHooks,
 	PopupStore,
 	type PopupStoreProps,
+	type PopupView,
 } from "../../../src/foundation/popup/index.js";
 import type { PopupChangeEventDetails } from "../../../src/foundation/popup/popup-types.js";
+import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
 import { changeDetails } from "../../kit/kit-details.js";
 import { root } from "../../kit/kit-effects.svelte.js";
 import { createFakePlatform } from "../../kit/kit-fake-platform.js";
@@ -323,7 +325,10 @@ describe("PopupStore", () => {
 	});
 
 	describe("a move to another trigger", () => {
-		/** A store with two registered triggers and a follower whose waits the test finishes. */
+		/**
+		 * A store with two registered triggers and a follower: a Positioner's state, with the
+		 * platform's wait for the move's animations, which the test finishes.
+		 */
 		function setupMove(initial: Partial<MutableProps> = {}) {
 			const setupResult = setup({}, initial);
 			const { store } = setupResult;
@@ -332,13 +337,32 @@ describe("PopupStore", () => {
 			store.activeTrigger.register("a", a, () => {});
 			store.activeTrigger.register("b", b, () => {});
 			const waits: { finish: () => void; cancel: ReturnType<typeof vi.fn> }[] = [];
-			const follower = root(() =>
-				store.activeTrigger.connectTriggerChange((finish) => {
-					const cancel = vi.fn();
-					waits.push({ finish, cancel });
+			const follower = root(() => {
+				new PositionerStore(() => ({ keepMounted: false }), {
+					initial: initialPosition({ side: "bottom", align: "center", rtl: false }),
+					popup: store as unknown as PopupView,
+				}).connect();
+				// The platform's wait: one per move, canceled when the move is over.
+				$effect(() => {
+					void store.anchorElement;
+					if (!store.activeTrigger.triggerChanging) {
+						return;
+					}
+					let canceled = false;
+					const cancel = vi.fn(() => {
+						canceled = true;
+					});
+					waits.push({
+						finish: () => {
+							if (!canceled) {
+								store.activeTrigger.finishTriggerChange();
+							}
+						},
+						cancel,
+					});
 					return cancel;
-				}),
-			);
+				});
+			});
 			flushSync();
 			const open = (trigger: Element) => {
 				store.setOpen(true, details(REASONS.triggerPress, trigger), { eventType: "click" });
