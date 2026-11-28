@@ -95,7 +95,6 @@
 				"tests/components/popover/popover-root.detached-triggers.test.ts",
 				"tests/foundation/focus/focus-manager.iframe.test.ts",
 				"tests/foundation/kernel/kernel-event.virtual-pointer.test.ts",
-				"tests/foundation/kernel/kernel-merged-props.test.ts",
 				"tests/foundation/position/position-viewport-size.test.ts",
 			],
 			"rules": {

@@ -1,3 +1,5 @@
+// attachmentProps: an attachment carried through a props spread, applied once while the props are
+// built again, and removed when the element goes.
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 
