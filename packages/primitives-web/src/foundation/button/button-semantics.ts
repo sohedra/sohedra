@@ -36,7 +36,15 @@ export interface Button {
 	readonly after: (merged: Props) => Props;
 }
 
-type Handler = ((event: Event) => void) | undefined;
+/** An event whose `currentTarget` is the element the handler is on, as Svelte types its handlers. */
+type OnElement<E extends Event> = E & { currentTarget: EventTarget & Element };
+
+/** Calls a handler another part merged in, if there is one. */
+function call(handler: unknown, event: Event): void {
+	if (typeof handler === "function") {
+		handler(event);
+	}
+}
 
 /**
  * The props that keep a disabled element focusable or not:
@@ -84,7 +92,7 @@ export function useButton(options: () => ButtonOptions): Button {
 			onkeydown: externalOnKeyDown,
 			onpointerdown: externalOnPointerDown,
 			...otherExternalProps
-		} = external as Record<string, unknown>;
+		} = external;
 
 		return mergeProps(
 			{
@@ -93,25 +101,25 @@ export function useButton(options: () => ButtonOptions): Button {
 						event.preventDefault();
 						return;
 					}
-					(externalOnClick as Handler)?.(event);
+					call(externalOnClick, event);
 				},
 				onmousedown(event: MouseEvent) {
 					if (!options().disabled) {
-						(externalOnMouseDown as Handler)?.(event);
+						call(externalOnMouseDown, event);
 					}
 				},
-				onkeydown(event: KeyboardEvent) {
+				onkeydown(event: OnElement<KeyboardEvent>) {
 					const { disabled, native, composite } = options();
 					if (disabled) {
 						return;
 					}
 					const preventable = makeEventPreventable(event);
-					(externalOnKeyDown as Handler)?.(event);
+					call(externalOnKeyDown, event);
 					if (preventable.sohedraHandlerPrevented) {
 						return;
 					}
 					const isCurrentTarget = event.target === event.currentTarget;
-					const currentTarget = event.currentTarget as Element;
+					const currentTarget = event.currentTarget;
 					const isButton = isButtonElement(currentTarget);
 					const isLink = !native && isValidLinkElement(currentTarget);
 					const shouldClick = isCurrentTarget && (native ? isButton : !isLink);
@@ -152,19 +160,19 @@ export function useButton(options: () => ButtonOptions): Button {
 						dispatchSyntheticClick(currentTarget, event);
 					}
 				},
-				onkeyup(event: KeyboardEvent) {
+				onkeyup(event: OnElement<KeyboardEvent>) {
 					const { disabled, native, composite } = options();
 					if (disabled) {
 						return;
 					}
 					const preventable = makeEventPreventable(event);
-					(externalOnKeyUp as Handler)?.(event);
+					call(externalOnKeyUp, event);
 					// A composite native button was pressed on keydown: its keyup click would repeat it.
 					if (
 						event.target === event.currentTarget &&
 						native &&
 						composite &&
-						isButtonElement(event.currentTarget as Element) &&
+						isButtonElement(event.currentTarget) &&
 						event.key === " "
 					) {
 						event.preventDefault();
@@ -183,7 +191,7 @@ export function useButton(options: () => ButtonOptions): Button {
 						event.key === " "
 					) {
 						preventable.preventSohedraHandler();
-						dispatchSyntheticClick(event.currentTarget as Element, event);
+						dispatchSyntheticClick(event.currentTarget, event);
 					}
 				},
 				onpointerdown(event: PointerEvent) {
@@ -191,7 +199,7 @@ export function useButton(options: () => ButtonOptions): Button {
 						event.preventDefault();
 						return;
 					}
-					(externalOnPointerDown as Handler)?.(event);
+					call(externalOnPointerDown, event);
 				},
 			},
 			options().native ? { type: "button" } : { role: "button" },

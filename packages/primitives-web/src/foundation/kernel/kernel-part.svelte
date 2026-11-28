@@ -119,16 +119,16 @@
 		const className = typeof classProp === "function" ? classProp(state) : classProp;
 		const style = typeof styleProp === "function" ? styleProp(state) : styleProp;
 		if (className !== undefined) {
-			merged.class = mergeClasses(merged.class as string | undefined, className);
+			merged.class = mergeClasses(merged.class, className);
 		}
 		if (style != null) {
-			merged.style = mergeStyles(merged.style as string | undefined, style);
+			merged.style = mergeStyles(merged.style, style);
 		}
 		return merged;
 	});
 
 	// The style, applied property by property in the browser (see `STYLE`).
-	const attachPartStyle = attachStyle(() => partProps.style as string | null | undefined);
+	const attachPartStyle = attachStyle(() => partProps.style);
 
 	function withStyleAttachment(source: Props): Props {
 		if (!BROWSER) {

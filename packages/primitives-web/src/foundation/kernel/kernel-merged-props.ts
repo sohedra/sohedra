@@ -2,8 +2,14 @@ import type { ClassValue } from "svelte/elements";
 
 import { makeEventPreventable } from "./kernel-event.js";
 
-/** Props as Sohedra merges them: string keys, plus symbol keys for attachments. */
-export type Props = Record<PropertyKey, unknown>;
+/**
+ * Props as Sohedra merges them: string keys, plus symbol keys for attachments. `class` and
+ * `style` are the two keys the merge treats on their own, so they carry their types.
+ */
+export type Props = Record<PropertyKey, unknown> & {
+	class?: ClassValue | undefined;
+	style?: string | undefined;
+};
 
 /** A props object, or a function of the props merged so far (left to right) returning new ones. */
 export type PropsInput = Props | ((merged: Props) => Props) | undefined;
@@ -63,15 +69,13 @@ function mergeInto(merged: Props, input: PropsInput): Props {
 		const value = input[key];
 		switch (key) {
 			case "style":
-				merged.style = mergeStyles(merged.style as string | undefined, value as string | undefined);
+				merged.style = mergeStyles(merged.style, input.style);
 				break;
 			case "class":
-				merged.class = mergeClasses(merged.class as ClassValue, value as ClassValue);
+				merged.class = mergeClasses(merged.class, input.class);
 				break;
 			default:
-				merged[key] = isEventHandler(key, value)
-					? mergeEventHandlers(merged[key] as Handler | undefined, value)
-					: value;
+				merged[key] = isEventHandler(key, value) ? mergeEventHandlers(merged[key], value) : value;
 		}
 	}
 	for (const key of Object.getOwnPropertySymbols(input)) {
@@ -91,11 +95,11 @@ function isEventHandler(key: string, value: unknown): value is Handler | undefin
 	);
 }
 
-function mergeEventHandlers(ours: Handler | undefined, theirs: Handler | undefined) {
+function mergeEventHandlers(ours: unknown, theirs: Handler | undefined) {
 	if (!theirs) {
 		return ours;
 	}
-	if (!ours) {
+	if (typeof ours !== "function") {
 		return wrapEventHandler(theirs);
 	}
 	return (...args: unknown[]) => {
