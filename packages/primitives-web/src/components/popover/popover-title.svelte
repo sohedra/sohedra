@@ -7,7 +7,7 @@
 
 	import { Part, useClaimedId } from "../../foundation/kernel/index.js";
 	import { PopoverRootContext } from "./popover-context.js";
-	import type { PopoverTitleProps, PopoverTitleState } from "./popover-types.js";
+	import type { PopoverTitleProps } from "./popover-types.js";
 
 	// 1. Props
 	let { id, ref = $bindable(null), ...rest }: PopoverTitleProps = $props();
@@ -22,9 +22,6 @@
 	// effect timing, so the attribute appears after hydration, and not while the part is still
 	// loading offscreen.
 	const claimed = useClaimedId(popover.titleId, () => ({ id }), { defaultId: sohedraId(uid) });
-
-	// 4. Own wiring
-	const state: PopoverTitleState = {};
 </script>
 
-<Part tag="h2" bind:ref {state} {...claimed.props} user={rest} />
+<Part tag="h2" bind:ref state={popover.titleState} {...claimed.props} user={rest} />

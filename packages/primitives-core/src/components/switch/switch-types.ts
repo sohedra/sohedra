@@ -12,6 +12,9 @@ export interface SwitchRootState extends FieldRootState {
 	required: boolean;
 }
 
+/** Switch.Thumb's state: the same as the root's. */
+export interface SwitchThumbState extends SwitchRootState {}
+
 export type SwitchRootChangeEventReason = typeof REASONS.none;
 export type SwitchRootChangeEventDetails<T extends PlatformTypes> = ChangeEventDetails<
 	SwitchRootChangeEventReason | T["reasons"],

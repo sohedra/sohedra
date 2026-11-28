@@ -7,15 +7,15 @@
   has one.
 
   A component's own Positioner file hands over its store, its node id, the context it publishes
-  its position state in, what its Portal says about staying mounted, its `instant` value, its
-  default side and its attribute mapping. The placement props come with the user's props.
+  its position state in, what its Portal says about staying mounted, its default side and its
+  attribute mapping. The placement props come with the user's props. Its state is its
+  Positioner store's.
 -->
-<script lang="ts" generics="Instant extends string | undefined">
+<script lang="ts">
 	import type { DefinedContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
 	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 	import {
-		type Align,
-		type CollisionAvoidance,
+		type AnchoredPositionerState,
 		initialPosition,
 		POSITIONER_DEFAULTS,
 		PositionerStore,
@@ -41,17 +41,7 @@
 	import { usePositioner } from "./position-positioner.svelte.js";
 	import type { AnchoredPositionerPlacement } from "./position-types.js";
 
-	/**
-	 * The Positioner's state, the same in every anchored popup; `instant` is each component's own
-	 * type.
-	 */
-	interface State {
-		open: boolean;
-		side: Side;
-		align: Align;
-		anchorHidden: boolean;
-		instant: Instant;
-	}
+	type State = AnchoredPositionerState;
 
 	/** What the user passed to the component's Positioner: the placement props and the rest. */
 	type UserProps = PartUserProps<State> & AnchoredPositionerPlacement;
@@ -65,7 +55,6 @@
 		context: DefinedContext<PositionerStore<WebTypes>>;
 		/** Whether the component's Portal keeps the popup mounted while closed. */
 		keepMounted: boolean;
-		instant: Instant;
 		attrs: StateAttributesMapping<State>;
 		/** The side when the user gives none: a fixed answer of the kind of popup. */
 		defaultSide: Side;
@@ -83,7 +72,6 @@
 		nodeId,
 		context,
 		keepMounted,
-		instant,
 		attrs,
 		defaultSide,
 		backdrop = false,
@@ -172,13 +160,6 @@
 		() => positioner,
 	);
 
-	const state: State = $derived({
-		open: view.open,
-		side: positioner.side,
-		align: positioner.align,
-		anchorHidden: positioner.anchorHidden,
-		instant,
-	});
 	// The positioned style, with no transitions on the first frame.
 	const style = $derived(
 		mergeStyles(
@@ -224,7 +205,7 @@
 <Part
 	tag="div"
 	bind:ref
-	{state}
+	state={positioner.state}
 	{attrs}
 	role="presentation"
 	hidden={!view.mounted}

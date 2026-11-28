@@ -1,7 +1,6 @@
 import { watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import {
-	getActivationDirection,
 	pinnedEdges,
 	type Side,
 	type TriggerOffset,
@@ -74,24 +73,19 @@ export function useViewport(
 ): Viewport {
 	const direction = DirectionContext.getOr(LTR);
 	const layout = PopupLayoutContext.get(fixed.part);
-	const content = new ViewportContentStore<WebTypes>({ popup });
-	content.connect();
-
-	// Where the content moves from, during the update that changes the trigger. Measured while
-	// deriving (a layout read in a derived, on purpose): the new container renders with its
-	// starting style and `data-activation-direction` in that same update, before the browser
-	// first styles it, whichever order Svelte runs block effects and effects in. An effect would
-	// be an update late.
-	const incomingOffset = $derived.by(() => {
-		const change = content.triggerChange;
-		return change ? relativePosition(change.from, change.to) : null;
+	// The trigger change's offset is measured while core derives it, in the update that changes the
+	// trigger, so the new container renders with its starting style and `data-activation-direction`
+	// before the browser first styles it, whichever order Svelte runs block effects and effects in.
+	const content = new ViewportContentStore<WebTypes>({
+		popup,
+		measureTriggerOffset: relativePosition,
 	});
+	content.connect();
 	const anchoring = $derived(anchoringStyle(options().side, direction.direction === "rtl"));
 
 	// The inert copy of the content shown before the trigger change (`data-previous`), while it
-	// animates out.
+	// animates out. Core hears of it, for the Viewport's state.
 	let previousContent: HTMLElement | null = $state.raw(null);
-	let offset: TriggerOffset | null = $state.raw(null);
 	let previousDimensions: Dimensions | null = $state.raw(null);
 	// The content key whose container has left its starting style; `null` restarts it.
 	let settledKey: number | null = $state(null);
@@ -128,11 +122,11 @@ export function useViewport(
 			() => content.contentKey,
 		],
 		([, , , key], [, , , shownKey]) => {
-			const changeOffset = incomingOffset;
+			const changeOffset = content.incomingOffset;
 			const shown = shownKey === undefined ? undefined : containers.get(shownKey);
 			if (changeOffset && shown) {
 				previousContent = cloneContent(shown);
-				offset = changeOffset;
+				content.showPrevious(changeOffset);
 				settledKey = null;
 				fillPrevious();
 			}
@@ -172,17 +166,13 @@ export function useViewport(
 				const controller = new AbortController();
 				cleanupController = controller;
 				if (!currentContainer) {
-					previousContent = null;
-					previousDimensions = null;
+					clearPrevious();
 					return;
 				}
 				waitForAnimations(
 					currentContainer,
 					{ waitForStartingStyleRemoved: true, signal: controller.signal },
-					() => {
-						previousContent = null;
-						previousDimensions = null;
-					},
+					clearPrevious,
 				);
 			});
 		});
@@ -267,6 +257,13 @@ export function useViewport(
 		};
 	});
 
+	// The snapshot is gone.
+	function clearPrevious() {
+		previousContent = null;
+		previousDimensions = null;
+		content.clearPrevious();
+	}
+
 	// Shows the snapshot in the `data-previous` container, from whichever runs second: the
 	// trigger-change effect that takes the snapshot, or the container's attachment. A copy, so
 	// showing it twice is harmless.
@@ -304,17 +301,14 @@ export function useViewport(
 	};
 
 	return {
+		get state() {
+			return content.state;
+		},
 		get contentKey() {
 			return content.contentKey;
 		},
-		get transitioning() {
-			return previousContent != null || incomingOffset != null;
-		},
-		get activationDirection() {
-			return getActivationDirection(incomingOffset ?? offset);
-		},
 		get showStartingStyle() {
-			return incomingOffset != null || settledKey !== content.contentKey;
+			return content.incomingOffset != null || settledKey !== content.contentKey;
 		},
 		get previousStyle() {
 			const size = previousDimensions ? `${sizeVars("popup", previousDimensions)}; ` : "";

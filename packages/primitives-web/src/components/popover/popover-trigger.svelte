@@ -5,6 +5,7 @@
 <script lang="ts" generics="Payload = unknown">
 	import { OPEN_DELAY } from "@sohedra/primitives-core/components/popover/index.js";
 	import { REASONS, sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import { PopupTriggerStore } from "@sohedra/primitives-core/foundation/popup/index.js";
 	import type { MouseEventHandler } from "svelte/elements";
 
 	import { useButton } from "../../foundation/button/index.js";
@@ -13,6 +14,7 @@
 		getInteractionEventType,
 		mergePropsN,
 		Part,
+		type WebTypes,
 	} from "../../foundation/kernel/index.js";
 	import { usePopupTrigger } from "../../foundation/popup/index.js";
 	import { popoverTriggerAttributes } from "./popover-attributes.js";
@@ -53,6 +55,8 @@
 		{ part: "Popover.Trigger" },
 	);
 	const popover = $derived(trigger.popup);
+	// The trigger's state, and whether a press of it opened the popover.
+	const triggerState = new PopupTriggerStore<WebTypes>(() => ({ popup: popover, id, disabled }));
 	const button = useButton(() => ({
 		disabled,
 		native: nativeButton,
@@ -78,8 +82,8 @@
 {#if trigger.guarded}<span {...trigger.guardBefore}></span>{/if}<Part
 	tag="button"
 	bind:ref
-	state={popover.triggerState(id, disabled)}
-	attrs={popoverTriggerAttributes(popover.isPressOpenedByTrigger(id))}
+	state={triggerState.state}
+	attrs={popoverTriggerAttributes(triggerState.pressed)}
 	{...own}
 	{id}
 	aria-haspopup="dialog"

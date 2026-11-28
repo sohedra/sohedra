@@ -10,9 +10,12 @@ import { element as trigger } from "../../kit/kit-stand-ins.js";
 
 type MutableProps = {
 	-readonly [
-		K in "open" | "mounted" | "activeTriggerId" | "activeTriggerElement" | "payload"
+		K in "open" | "mounted" | "activeTriggerId" | "activeTriggerElement" | "payload" | "instantType"
 	]: PopupView[K];
 };
+
+/** The platform's layout read, which these tests never reach for. */
+const measureTriggerOffset = () => ({ horizontal: 0, vertical: 0 });
 
 function setup(initial: Partial<MutableProps> = {}) {
 	const props = $state<MutableProps>({
@@ -21,9 +24,10 @@ function setup(initial: Partial<MutableProps> = {}) {
 		activeTriggerId: null,
 		activeTriggerElement: null,
 		payload: undefined,
+		instantType: undefined,
 		...initial,
 	});
-	const store = new ViewportContentStore({ popup: props });
+	const store = new ViewportContentStore({ popup: props, measureTriggerOffset });
 	// Keep the deriveds connected, as the Viewport's `{#key}` block and data attributes do.
 	root(() => {
 		store.connect();
@@ -134,8 +138,9 @@ describe("ViewportContentStore", () => {
 				activeTriggerId: "a",
 				activeTriggerElement: null,
 				payload: "A",
+				instantType: undefined,
 			});
-			const store = new ViewportContentStore({ popup: props });
+			const store = new ViewportContentStore({ popup: props, measureTriggerOffset });
 			const first = store.contentKey;
 			props.activeTriggerId = "b";
 			root(() => {

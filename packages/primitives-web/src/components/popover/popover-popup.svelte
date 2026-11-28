@@ -3,8 +3,6 @@
   A container for the popover contents. Renders a `<div>` element.
 -->
 <script lang="ts">
-	import { popoverPopupState } from "@sohedra/primitives-core/components/popover/index.js";
-
 	import { FOCUSABLE_POPUP_PROPS } from "../../foundation/focus/index.js";
 	import { Part } from "../../foundation/kernel/index.js";
 	import { usePopupElement } from "../../foundation/popup/index.js";
@@ -37,7 +35,7 @@
 {#if popup.guarded}<span {...popup.guardBefore}></span>{/if}<Part
 	tag="div"
 	bind:ref
-	state={popoverPopupState(popover, positioner)}
+	state={positioner.popupState}
 	attrs={popoverPopupAttributes}
 	{...popup.props}
 	id={popover.defaultPopupId}

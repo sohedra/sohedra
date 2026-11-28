@@ -10,7 +10,7 @@
 	import { useButton } from "../../foundation/button/index.js";
 	import { createChangeEventDetails, Part } from "../../foundation/kernel/index.js";
 	import { PopoverPopupContext, PopoverRootContext } from "./popover-context.js";
-	import type { PopoverCloseProps, PopoverCloseState } from "./popover-types.js";
+	import type { PopoverCloseProps } from "./popover-types.js";
 
 	// 1. Props
 	let {
@@ -32,8 +32,6 @@
 	}));
 
 	// 4. Own wiring
-	const state: PopoverCloseState = {};
-
 	const onclick: MouseEventHandler<HTMLElement> = (event) => {
 		popover.close(createChangeEventDetails(REASONS.closePress, event));
 	};
@@ -42,4 +40,4 @@
 	useClosePart(popup);
 </script>
 
-<Part tag="button" bind:ref {state} {onclick} user={rest} after={button.after} />
+<Part tag="button" bind:ref state={popover.closeState} {onclick} user={rest} after={button.after} />

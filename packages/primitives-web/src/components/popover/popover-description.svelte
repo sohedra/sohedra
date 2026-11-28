@@ -7,7 +7,7 @@
 
 	import { Part, useClaimedId } from "../../foundation/kernel/index.js";
 	import { PopoverRootContext } from "./popover-context.js";
-	import type { PopoverDescriptionProps, PopoverDescriptionState } from "./popover-types.js";
+	import type { PopoverDescriptionProps } from "./popover-types.js";
 
 	// 1. Props
 	let { id, ref = $bindable(null), ...rest }: PopoverDescriptionProps = $props();
@@ -24,9 +24,6 @@
 	const claimed = useClaimedId(popover.descriptionId, () => ({ id }), {
 		defaultId: sohedraId(uid),
 	});
-
-	// 4. Own wiring
-	const state: PopoverDescriptionState = {};
 </script>
 
-<Part tag="p" bind:ref {state} {...claimed.props} user={rest} />
+<Part tag="p" bind:ref state={popover.descriptionState} {...claimed.props} user={rest} />

@@ -2,6 +2,7 @@ import type {
 	SwitchRootChangeEventDetails as PlatformSwitchRootChangeEventDetails,
 	SwitchRootChangeEventReason,
 	SwitchRootState,
+	SwitchThumbState,
 } from "@sohedra/primitives-core/components/switch/index.js";
 import type { HTMLAttributes } from "svelte/elements";
 
@@ -11,7 +12,7 @@ import type {
 	WebTypes,
 } from "../../foundation/kernel/index.js";
 
-export type { SwitchRootChangeEventReason, SwitchRootState };
+export type { SwitchRootChangeEventReason, SwitchRootState, SwitchThumbState };
 
 export type SwitchRootChangeEventDetails = PlatformSwitchRootChangeEventDetails<WebTypes>;
 
@@ -77,8 +78,6 @@ export interface SwitchRootProps
 	 */
 	uncheckedValue?: string | undefined;
 }
-
-export interface SwitchThumbState extends SwitchRootState {}
 
 export interface SwitchThumbProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLSpanElement>,

@@ -5,10 +5,8 @@ export {
 	isTouchPressOpen,
 	OPEN_DELAY,
 	PATIENT_CLICK_THRESHOLD,
-	popoverArrowState,
 	popoverInstantType,
 	popoverOutsidePress,
-	popoverPopupState,
 	triggerHasFocusGuards,
 } from "./popover-rules.js";
 export {

@@ -24,7 +24,6 @@ import {
 	isAnchorHidden,
 	normalizePadding,
 	offsetInput,
-	type PaddingInput,
 	placeArrow,
 	shiftLimitOffset,
 	type Size,
@@ -36,6 +35,7 @@ import type {
 	CollisionAvoidance,
 	OffsetFunction,
 	OriginOffset,
+	Padding,
 	Side,
 } from "./position-types.js";
 
@@ -54,7 +54,7 @@ export interface PositionerMiddlewareOptions {
 	readonly alignOffset: number | OffsetFunction;
 	readonly sticky: boolean;
 	readonly arrowPadding: number;
-	readonly collisionPadding: PaddingInput;
+	readonly collisionPadding: Padding;
 	readonly collisionAvoidance: CollisionAvoidance;
 	/**
 	 * Overrides of the shift collision avoidance sets up (a context menu shifts along both axes

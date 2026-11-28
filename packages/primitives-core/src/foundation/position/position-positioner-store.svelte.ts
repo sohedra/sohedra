@@ -2,7 +2,14 @@ import { untrack } from "svelte";
 
 import { type PlatformTypes, watch } from "../kernel/index.js";
 import { movesToOtherTrigger, type PopupView } from "../popup/index.js";
-import type { Align, MeasuredPosition, Side } from "./position-types.js";
+import type {
+	AnchoredArrowState,
+	AnchoredPopupState,
+	AnchoredPositionerState,
+	Align,
+	MeasuredPosition,
+	Side,
+} from "./position-types.js";
 
 /** What a Positioner's state reads of its part. */
 export interface PositionerStoreProps {
@@ -19,9 +26,10 @@ export interface PositionerStoreDeps<T extends PlatformTypes = PlatformTypes> {
 }
 
 /**
- * A Positioner's measured state, shared with the Popup, Arrow and Viewport parts. The platform
- * writes {@link position} after each computation (one object per computation); parts derive
- * styles and data attributes from it.
+ * A Positioner's measured state, shared with the Popup, Arrow and Viewport parts, and the state
+ * of the Positioner, the Popup and the Arrow parts, which read the popup and the placement. The
+ * platform writes {@link position} after each computation (one object per computation); parts
+ * derive styles from it.
  */
 export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #props: () => PositionerStoreProps;
@@ -36,6 +44,31 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	readonly anchorHidden: boolean = $derived(this.#position.anchorHidden);
 	/** Whether the arrow can't point at the anchor's centre (also before it is measured). */
 	readonly arrowUncentered: boolean = $derived(this.#position.arrow?.centerOffset !== 0);
+
+	// `$derived.by` because `#popup` is assigned in the constructor, after these initialisers.
+	/** The Positioner part's state. */
+	readonly state: AnchoredPositionerState = $derived.by(() => ({
+		open: this.#popup.open,
+		side: this.side,
+		align: this.align,
+		anchorHidden: this.anchorHidden,
+		instant: this.#popup.instantType,
+	}));
+	/** The Popup part's state: the popup's open state and transition, this placement. */
+	readonly popupState: AnchoredPopupState = $derived.by(() => ({
+		open: this.#popup.open,
+		side: this.side,
+		align: this.align,
+		instant: this.#popup.instantType,
+		transitionStatus: this.#popup.transitionStatus,
+	}));
+	/** The Arrow part's state: the popup's open state, this placement of the arrow. */
+	readonly arrowState: AnchoredArrowState = $derived.by(() => ({
+		open: this.#popup.open,
+		side: this.side,
+		align: this.align,
+		uncentered: this.arrowUncentered,
+	}));
 
 	constructor(props: () => PositionerStoreProps, deps: PositionerStoreDeps<T>) {
 		this.#props = props;

@@ -31,7 +31,6 @@
 	nodeId={sohedraId(uid)}
 	context={PopoverPositionerContext}
 	keepMounted={portal.keepMounted}
-	instant={popover.instantType}
 	attrs={popoverPositionerAttributes}
 	defaultSide={POPUP_BEHAVIOR.popover.side}
 	backdrop={popover.internalBackdropMounted}

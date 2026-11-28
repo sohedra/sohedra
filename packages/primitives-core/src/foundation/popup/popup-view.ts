@@ -21,6 +21,7 @@ import type { EventEmitter } from "./popup-event-emitter.js";
 import type { PopupTree } from "./popup-tree.js";
 import type { PopupTriggerMap } from "./popup-trigger-map.js";
 import type {
+	InstantType,
 	InteractionType,
 	OpenChangeSource,
 	PopupEvents,
@@ -58,6 +59,10 @@ export interface PopupView<T extends PlatformTypes = PlatformTypes> {
 	readonly openEvent: AnyPlatformEvent<T> | undefined;
 	/** The kind of event that opened the popup: a hover never closes a click-opened one. */
 	readonly openEventType: InteractionEventType | undefined;
+	/** Why the popup last opened or closed. */
+	readonly openChangeReason: string | null;
+	/** Why the popup skips its transitions now (`data-instant`). */
+	readonly instantType: InstantType;
 	/** The popup's open changes, with the reason and the event of each. */
 	readonly events: EventEmitter<PopupEvents<T>>;
 

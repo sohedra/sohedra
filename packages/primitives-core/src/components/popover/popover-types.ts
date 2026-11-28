@@ -44,7 +44,7 @@ export interface PopoverPositionerState {
 	/** Whether the anchor element is hidden. */
 	anchorHidden: boolean;
 	/** Whether CSS transitions should be disabled. */
-	instant: string | undefined;
+	instant: InstantType;
 }
 
 export interface PopoverPopupState {

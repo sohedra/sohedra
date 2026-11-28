@@ -21,7 +21,6 @@
 	part="Popover.Viewport"
 	popup={popover}
 	side={positioner.side}
-	instant={popover.instantType}
 	attrs={popoverViewportAttributes}
 	user={rest}
 />

@@ -1,5 +1,5 @@
 // The types every popup shares: what an open change carries in and out, what a trigger forwards,
-// and the popup's own events.
+// the Portal's and a trigger's part state, and the popup's own events.
 
 import type {
 	AnyPlatformEvent,
@@ -38,6 +38,17 @@ export type InteractionType = PointerType | "keyboard";
 
 /** Why a popup skips its CSS transitions (`data-instant`). */
 export type InstantType = "dismiss" | "click" | "focus" | "group" | "trigger-change" | undefined;
+
+/** A popup Portal part's state: it has no fields. */
+export interface PopupPortalState {}
+
+/** A popup trigger part's state. */
+export interface PopupTriggerState {
+	/** Whether the trigger is currently disabled. */
+	disabled: boolean;
+	/** Whether the popup is currently open and was opened by this trigger. */
+	open: boolean;
+}
 
 /** What an open change tells the popup's interactions. */
 export interface OpenChangeDetails<T extends PlatformTypes = PlatformTypes> {

@@ -3,8 +3,6 @@
   Displays an element positioned against the popover anchor. Renders a `<div>` element.
 -->
 <script lang="ts">
-	import { popoverArrowState } from "@sohedra/primitives-core/components/popover/index.js";
-
 	import { AnchoredArrow } from "../../foundation/position/index.js";
 	import { popoverArrowAttributes } from "./popover-attributes.js";
 	import { PopoverPositionerContext, PopoverRootContext } from "./popover-context.js";
@@ -14,13 +12,14 @@
 	let { ref = $bindable(null), ...rest }: PopoverArrowProps = $props();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get("Popover.Arrow");
+	// The Arrow belongs in a Popover.Root: outside one this throws first.
+	PopoverRootContext.get("Popover.Arrow");
 	const positioner = PopoverPositionerContext.get("Popover.Arrow");
 </script>
 
 <AnchoredArrow
 	bind:ref
-	state={popoverArrowState(popover, positioner)}
+	state={positioner.arrowState}
 	attrs={popoverArrowAttributes}
 	{positioner}
 	user={rest}

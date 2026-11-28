@@ -1,4 +1,4 @@
-// Position: placing a popup against its anchor: the placement rules, the steps of one positioning, the Positioner's measured state and what a Viewport shows.
+// Position: placing a popup against its anchor: the placement rules, the steps of one positioning, the Positioner's measured state, what a Viewport shows, and the state of an anchored popup's Positioner, Popup, Arrow and Viewport parts.
 export {
 	type Measured,
 	positionerMiddleware,
@@ -18,14 +18,22 @@ export {
 } from "./position-rules.js";
 export type {
 	Align,
+	AnchoredArrowState,
+	AnchoredPopupState,
+	AnchoredPositionerState,
+	AnchoredViewportState,
 	CollisionAvoidance,
 	OffsetFunction,
 	OriginOffset,
+	Padding,
 	PhysicalSide,
 	MeasuredPosition,
 	Side,
 } from "./position-types.js";
-export { ViewportContentStore } from "./position-viewport-content-store.svelte.js";
+export {
+	ViewportContentStore,
+	type ViewportContentStoreDeps,
+} from "./position-viewport-content-store.svelte.js";
 export {
 	getActivationDirection,
 	pinnedEdges,

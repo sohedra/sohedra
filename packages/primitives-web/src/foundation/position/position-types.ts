@@ -1,6 +1,7 @@
 import type { Padding, VirtualElement } from "@floating-ui/dom";
 import type {
 	Align,
+	AnchoredViewportState,
 	CollisionAvoidance,
 	OffsetFunction,
 	Side,
@@ -78,12 +79,10 @@ export interface ViewportOptions {
 }
 
 export interface Viewport {
+	/** The Viewport part's state, from its content store in core. */
+	readonly state: AnchoredViewportState;
 	/** Changes when the content has to be created anew: the part keys its content on it. */
 	readonly contentKey: number;
-	/** Whether the previous content is still on its way out. */
-	readonly transitioning: boolean;
-	/** The tokens of `data-activation-direction`. */
-	readonly activationDirection: string | undefined;
 	/** Whether the current content shows its starting style. */
 	readonly showStartingStyle: boolean;
 	/** The inline style of the container that shows the previous content. */

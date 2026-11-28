@@ -2,11 +2,15 @@
   The Viewport part of every anchored popup: it shows the content of the active trigger and, while
   the popup moves to another trigger, an inert copy of the previous content on its way out.
   Renders a `<div>` element. A component's own Viewport file hands over its public name, its store,
-  the side its Positioner placed the popup on, its `instant` value and its attribute mapping.
+  the side its Positioner placed the popup on and its attribute mapping. Its state is its content
+  store's.
 -->
-<script lang="ts" generics="Instant">
+<script lang="ts">
 	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
-	import type { Side } from "@sohedra/primitives-core/foundation/position/index.js";
+	import type {
+		AnchoredViewportState,
+		Side,
+	} from "@sohedra/primitives-core/foundation/position/index.js";
 	import { untrack } from "svelte";
 
 	import {
@@ -17,12 +21,7 @@
 	} from "../kernel/index.js";
 	import { useViewport } from "./position-viewport.svelte.js";
 
-	/** The Viewport's state; `instant` is each component's own type. */
-	interface State {
-		activationDirection: string | undefined;
-		transitioning: boolean;
-		instant: Instant;
-	}
+	type State = AnchoredViewportState;
 
 	interface Props {
 		/** The Viewport part's public name (`Popover.Viewport`), for its errors. */
@@ -31,23 +30,16 @@
 		popup: PopupView<WebTypes>;
 		/** The side the enclosing Positioner placed the popup on. */
 		side: Side;
-		instant: Instant;
 		attrs: StateAttributesMapping<State>;
 		ref?: HTMLDivElement | null | undefined;
 		user: PartUserProps<State>;
 	}
 
-	let { part, popup, side, instant, attrs, ref = $bindable(null), user }: Props = $props();
+	let { part, popup, side, attrs, ref = $bindable(null), user }: Props = $props();
 
 	// A part's store and name never change while it is mounted.
 	const fixed = untrack(() => ({ popup, part }));
 	const viewport = useViewport(fixed.popup, () => ({ side }), { part: fixed.part });
-
-	const state: State = $derived({
-		activationDirection: viewport.activationDirection,
-		transitioning: viewport.transitioning,
-		instant,
-	});
 </script>
 
 <!--
@@ -55,7 +47,7 @@
   trigger and payload, beside an inert copy of the previous content while it transitions out.
 -->
 {#snippet body({ state: viewportState }: { state: State })}
-	{#if viewport.transitioning}
+	{#if viewport.state.transitioning}
 		<div
 			data-previous=""
 			inert
@@ -67,7 +59,9 @@
 	{#key viewport.contentKey}
 		<div
 			data-current=""
-			data-starting-style={viewport.transitioning && viewport.showStartingStyle ? "" : undefined}
+			data-starting-style={viewport.state.transitioning && viewport.showStartingStyle
+				? ""
+				: undefined}
 			{...viewport.current}
 		>
 			{@render user.children?.({ state: viewportState })}
@@ -75,4 +69,4 @@
 	{/key}
 {/snippet}
 
-<Part tag="div" bind:ref {state} {attrs} {body} {user} />
+<Part tag="div" bind:ref state={viewport.state} {attrs} {body} {user} />

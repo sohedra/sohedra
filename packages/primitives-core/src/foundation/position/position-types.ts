@@ -1,5 +1,9 @@
-// The words of placement: sides, alignment, how a popup avoids collisions, its offset, and the
-// measured position a Positioner shares with its parts.
+// The words of placement: sides, alignment, how a popup avoids collisions, its offset and
+// padding, the measured position a Positioner shares with its parts, and the state of the parts
+// every anchored popup has.
+
+import type { InstantType } from "../popup/index.js";
+import type { TransitionStatus } from "../presence/index.js";
 
 /** The side of the anchor a popup is placed on, logical sides included. */
 export type Side = "top" | "bottom" | "left" | "right" | "inline-end" | "inline-start";
@@ -21,6 +25,16 @@ export type CollisionAvoidance =
 			side?: "shift" | "none" | undefined;
 			align?: "shift" | "none" | undefined;
 			fallbackAxisSide?: "start" | "end" | "none" | undefined;
+	  };
+
+/** A padding: one number for every side, or a number per side. */
+export type Padding =
+	| number
+	| {
+			readonly top?: number | undefined;
+			readonly right?: number | undefined;
+			readonly bottom?: number | undefined;
+			readonly left?: number | undefined;
 	  };
 
 /** An offset, or a function of the placement and sizes returning one. */
@@ -72,4 +86,54 @@ export interface MeasuredPosition {
 	readonly sides?:
 		| { readonly sideX: "left" | "right"; readonly sideY: "top" | "bottom" }
 		| undefined;
+}
+
+/** An anchored popup's Positioner part's state. */
+export interface AnchoredPositionerState {
+	/** Whether the popup is currently open. */
+	open: boolean;
+	/** The side of the anchor the component is placed on. */
+	side: Side;
+	/** The alignment of the component relative to the anchor. */
+	align: Align;
+	/** Whether the anchor element is hidden. */
+	anchorHidden: boolean;
+	/** Why CSS transitions are skipped, if they are. */
+	instant: InstantType;
+}
+
+/** An anchored popup's Popup part's state: the popup's open state, its Positioner's placement. */
+export interface AnchoredPopupState {
+	/** Whether the popup is currently open. */
+	open: boolean;
+	/** The side of the anchor the component is placed on. */
+	side: Side;
+	/** The alignment of the component relative to the anchor. */
+	align: Align;
+	/** Why CSS transitions are skipped, if they are. */
+	instant: InstantType;
+	/** The transition status of the component. */
+	transitionStatus: TransitionStatus;
+}
+
+/** An anchored popup's Arrow part's state. */
+export interface AnchoredArrowState {
+	/** Whether the popup is currently open. */
+	open: boolean;
+	/** The side of the anchor the component is placed on. */
+	side: Side;
+	/** The alignment of the component relative to the anchor. */
+	align: Align;
+	/** Whether the arrow cannot be centered on the anchor. */
+	uncentered: boolean;
+}
+
+/** An anchored popup's Viewport part's state. */
+export interface AnchoredViewportState {
+	/** The direction the content moved in when the active trigger changed. */
+	activationDirection: string | undefined;
+	/** Whether the viewport is transitioning between contents. */
+	transitioning: boolean;
+	/** Why CSS transitions are skipped, if they are. */
+	instant: InstantType;
 }

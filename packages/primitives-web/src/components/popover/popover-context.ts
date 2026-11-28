@@ -4,6 +4,7 @@
 
 import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";
 import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { PopupPortalStore } from "@sohedra/primitives-core/foundation/popup/index.js";
 import type { PositionerStore } from "@sohedra/primitives-core/foundation/position/index.js";
 
 import type { WebTypes } from "../../foundation/kernel/index.js";
@@ -15,14 +16,8 @@ export const PopoverRootContext = defineContext<PopoverStore<unknown, WebTypes>>
 export const PopoverPositionerContext =
 	defineContext<PositionerStore<WebTypes>>("Popover.Positioner");
 
-/** What Popover.Portal tells its descendants. */
-export interface PopoverPortalView {
-	/** Whether the portal keeps the popup mounted while closed. */
-	readonly keepMounted: boolean;
-}
-
-/** The Portal a part sits in. */
-export const PopoverPortalContext = defineContext<PopoverPortalView>("Popover.Portal");
+/** The Portal a part sits in: Popover.Portal sets its store, which says whether it keeps the popup mounted. */
+export const PopoverPortalContext = defineContext<PopupPortalStore<WebTypes>>("Popover.Portal");
 
 /**
  * The Popup a part sits in: Popover.Popup sets its popover's store. A Close part counts only

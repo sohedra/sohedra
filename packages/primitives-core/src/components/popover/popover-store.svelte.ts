@@ -35,8 +35,10 @@ import {
 } from "./popover-rules.js";
 import type {
 	PopoverBackdropState,
+	PopoverCloseState,
+	PopoverDescriptionState,
 	PopoverRootChangeEventDetails,
-	PopoverTriggerState,
+	PopoverTitleState,
 } from "./popover-types.js";
 
 /** The Popover.Root props the store reads. The `open` binding is one of the deps. */
@@ -183,6 +185,12 @@ export class PopoverStore<
 		open: this.open,
 		transitionStatus: this.transitionStatus,
 	}));
+	/** The Title part's state: it has no fields. */
+	readonly titleState: PopoverTitleState = {};
+	/** The Description part's state: it has no fields. */
+	readonly descriptionState: PopoverDescriptionState = {};
+	/** The Close part's state: it has no fields. */
+	readonly closeState: PopoverCloseState = {};
 	/**
 	 * Whether the Backdrop lets pointer input through: a hover-opened popover's, so leaving the
 	 * popup closes it.
@@ -229,18 +237,6 @@ export class PopoverStore<
 	 */
 	get stickIfOpen(): boolean {
 		return this.#stick;
-	}
-
-	/** A trigger's state: whether it is disabled, and whether the popover is open from it. */
-	triggerState(triggerId: string, disabled: boolean): PopoverTriggerState {
-		return { disabled, open: this.activeTrigger.isOpenedBy(triggerId) };
-	}
-
-	/** Whether the trigger with `triggerId` opened the popup with a press. */
-	isPressOpenedByTrigger(triggerId: string | undefined): boolean {
-		return (
-			this.openChangeReason === REASONS.triggerPress && this.activeTrigger.isOpenedBy(triggerId)
-		);
 	}
 
 	/** Whether a hover-enabled popover was opened by a touch press. */

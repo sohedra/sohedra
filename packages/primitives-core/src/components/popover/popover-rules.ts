@@ -7,9 +7,6 @@ import {
 	type InteractionType,
 	POPUP_BEHAVIOR,
 } from "../../foundation/popup/index.js";
-import type { Align, Side } from "../../foundation/position/index.js";
-import type { TransitionStatus } from "../../foundation/presence/index.js";
-import type { PopoverArrowState, PopoverPopupState } from "./popover-types.js";
 
 /** A click this soon after a hover-open keeps it open. */
 export const PATIENT_CLICK_THRESHOLD = 500;
@@ -81,45 +78,4 @@ export function popoverOutsidePress(modal: boolean | "trap-focus"): {
 } {
 	const { mouse, touch } = POPUP_BEHAVIOR.popover.outsidePress;
 	return { mouse: modal === "trap-focus" ? "sloppy" : mouse, touch };
-}
-
-/** What the Popup's and the Arrow's state read of the popover. */
-interface PopoverStateView {
-	readonly open: boolean;
-	readonly instantType: InstantType;
-	readonly transitionStatus: TransitionStatus;
-}
-
-/** What the Popup's and the Arrow's state read of the Positioner. */
-interface PositionerStateView {
-	readonly side: Side;
-	readonly align: Align;
-	readonly arrowUncentered: boolean;
-}
-
-/** The Popup part's state: the popover's open state and transition, the Positioner's placement. */
-export function popoverPopupState(
-	popover: PopoverStateView,
-	positioner: PositionerStateView,
-): PopoverPopupState {
-	return {
-		open: popover.open,
-		side: positioner.side,
-		align: positioner.align,
-		instant: popover.instantType,
-		transitionStatus: popover.transitionStatus,
-	};
-}
-
-/** The Arrow part's state: the popover's open state, the Positioner's placement of the arrow. */
-export function popoverArrowState(
-	popover: PopoverStateView,
-	positioner: PositionerStateView,
-): PopoverArrowState {
-	return {
-		open: popover.open,
-		side: positioner.side,
-		align: positioner.align,
-		uncentered: positioner.arrowUncentered,
-	};
 }

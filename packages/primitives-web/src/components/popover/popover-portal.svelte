@@ -5,11 +5,13 @@
 -->
 <script lang="ts">
 	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import { PopupPortalStore } from "@sohedra/primitives-core/foundation/popup/index.js";
 
 	import { useAncestorsInsideMarker } from "../../foundation/dismiss/index.js";
+	import type { WebTypes } from "../../foundation/kernel/index.js";
 	import { PopupPortal } from "../../foundation/portal/index.js";
 	import { PopoverPortalContext, PopoverRootContext } from "./popover-context.js";
-	import type { PopoverPortalProps, PopoverPortalState } from "./popover-types.js";
+	import type { PopoverPortalProps } from "./popover-types.js";
 
 	// 1. Props
 	let {
@@ -23,24 +25,18 @@
 
 	// 2. Store and context
 	const popover = PopoverRootContext.get("Popover.Portal");
-	PopoverPortalContext.set({
-		get keepMounted() {
-			return keepMounted;
-		},
-	});
+	const portal = new PopupPortalStore<WebTypes>(() => ({ keepMounted }), { popup: popover });
+	PopoverPortalContext.set(portal);
 
 	// 3. Shared behaviours
 	// A press anywhere in the portal is inside the popups this one is nested in.
 	const inside = useAncestorsInsideMarker(popover);
-
-	// 4. Own wiring
-	const state: PopoverPortalState = {};
 </script>
 
 <PopupPortal
 	bind:ref
-	{state}
-	mounted={popover.mounted || keepMounted}
+	state={portal.state}
+	mounted={portal.mounted}
 	{container}
 	id={sohedraId(uid)}
 	inside={inside.props}

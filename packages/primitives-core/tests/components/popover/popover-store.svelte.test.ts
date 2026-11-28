@@ -7,8 +7,6 @@ import { describe, expect, it, onTestFinished, vi } from "vitest";
 import {
 	createPopoverHandle,
 	PATIENT_CLICK_THRESHOLD,
-	popoverArrowState,
-	popoverPopupState,
 	type PopoverRootChangeEventDetails,
 	type PopoverStore,
 } from "../../../src/components/popover/index.js";
@@ -17,6 +15,7 @@ import {
 	type PlatformTypes,
 	REASONS,
 } from "../../../src/foundation/kernel/index.js";
+import { PopupTriggerStore } from "../../../src/foundation/popup/index.js";
 import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
 import { createPopover, type PopoverProps } from "../../kit/kit-popover.svelte.js";
 import { element, event } from "../../kit/kit-stand-ins.js";
@@ -347,10 +346,13 @@ describe("PopoverStore", () => {
 			const { store } = setup();
 			const trigger = register(store, "t");
 			register(store, "other");
-			expect(store.triggerState("t", true)).toEqual({ disabled: true, open: false });
+			// The state of a trigger part with this id and `disabled` prop, as Popover.Trigger reads it.
+			const triggerState = (id: string, disabled: boolean) =>
+				new PopupTriggerStore(() => ({ popup: store, id, disabled })).state;
+			expect(triggerState("t", true)).toEqual({ disabled: true, open: false });
 			pressTrigger(store, trigger);
-			expect(store.triggerState("t", false)).toEqual({ disabled: false, open: true });
-			expect(store.triggerState("other", false)).toEqual({ disabled: false, open: false });
+			expect(triggerState("t", false)).toEqual({ disabled: false, open: true });
+			expect(triggerState("other", false)).toEqual({ disabled: false, open: false });
 		});
 
 		it("gives the Backdrop the open state and the transition status", () => {
@@ -392,14 +394,14 @@ describe("PopoverStore", () => {
 				initial: initialPosition({ side: "top", align: "start", rtl: false }),
 				popup: store,
 			});
-			expect(popoverPopupState(store, positioner)).toEqual({
+			expect(positioner.popupState).toEqual({
 				open: true,
 				side: "top",
 				align: "start",
 				instant: store.instantType,
 				transitionStatus: store.transitionStatus,
 			});
-			expect(popoverArrowState(store, positioner)).toEqual({
+			expect(positioner.arrowState).toEqual({
 				open: true,
 				side: "top",
 				align: "start",

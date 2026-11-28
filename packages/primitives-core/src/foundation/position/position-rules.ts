@@ -5,6 +5,7 @@ import type {
 	Align,
 	CollisionAvoidance,
 	OriginOffset,
+	Padding,
 	PhysicalSide,
 	MeasuredPosition,
 	Side,
@@ -34,16 +35,6 @@ export interface SideDistances {
 	readonly left: number;
 }
 
-/** A padding as a part gives it: one number for every side, or a number per side. */
-export type PaddingInput =
-	| number
-	| {
-			readonly top?: number | undefined;
-			readonly right?: number | undefined;
-			readonly bottom?: number | undefined;
-			readonly left?: number | undefined;
-	  };
-
 /** The placement a Positioner asks for, before anything is measured. */
 export interface PositionerRequest {
 	readonly side: Side;
@@ -64,7 +55,7 @@ export const POSITIONER_DEFAULTS = {
 	align: Align;
 	sideOffset: number;
 	alignOffset: number;
-	collisionPadding: PaddingInput;
+	collisionPadding: Padding;
 	collisionAvoidance: CollisionAvoidance;
 	sticky: boolean;
 	arrowPadding: number;
@@ -130,7 +121,7 @@ export function toPlacement(side: PhysicalSide, align: Align): Placement {
 	return align === "center" ? side : `${side}-${align}`;
 }
 
-export function normalizePadding(padding: PaddingInput): SideDistances {
+export function normalizePadding(padding: Padding): SideDistances {
 	if (typeof padding === "number") {
 		return { top: padding, right: padding, bottom: padding, left: padding };
 	}
