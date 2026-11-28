@@ -31,10 +31,10 @@ function createTrigger(initial: PopoverStore) {
 	let forwarded = $state.raw(data("one"));
 	const trigger = {
 		id: "t",
-		get store() {
+		get popup() {
 			return store;
 		},
-		set store(next) {
+		set popup(next) {
 			store = next;
 		},
 		get element() {
@@ -97,7 +97,7 @@ describe("useTriggerRegistration", () => {
 		trigger.element = button;
 		flushSync();
 
-		trigger.store = second;
+		trigger.popup = second;
 		flushSync();
 		expect(first.triggers.getById("t")).toBeUndefined();
 		expect(second.triggers.getById("t")).toBe(button);
@@ -110,7 +110,12 @@ describe("useTriggerRegistration", () => {
 		let forwarded = $state.raw(data("one"));
 		// A new options object on each call, built from every value, as a trigger part builds it.
 		const stop = root(() =>
-			useTriggerRegistration(() => ({ store, id: "t", element: current, data: forwarded })),
+			useTriggerRegistration(() => ({
+				popup: store,
+				id: "t",
+				element: current,
+				data: forwarded,
+			})),
 		);
 		current = element("button");
 		flushSync();

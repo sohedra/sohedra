@@ -59,27 +59,31 @@ export function attachClaim<T>(
 export interface ClaimedIdOptions {
 	/** The `id` prop. */
 	readonly id: string | null | undefined;
-	/** The generated id, used when the prop gives none. */
-	readonly defaultId: string;
 }
 
 /**
- * The props of a part whose id another element names (a Title, a Description, a Label): its `id`,
- * with its claim on `slot` riding inside as an attachment, so the store names it only while the
- * element is in the document. Spread once on the part's element. Call once while the part
- * initialises.
+ * A part whose id another element names (a Title, a Description, a Label): `props` hold its `id`
+ * (the prop, else `fixed.defaultId`, the generated one), with its claim on `slot` riding inside as
+ * an attachment, so the store names it only while the element is in the document. Spread `props`
+ * once on the part's element. Call once while the part initialises.
  */
-export function useClaimedId(slot: ClaimedValue<string>, options: () => ClaimedIdOptions): Props {
-	const id = $derived(options().id ?? options().defaultId);
+export function useClaimedId(
+	slot: ClaimedValue<string>,
+	options: () => ClaimedIdOptions,
+	fixed: { readonly defaultId: string },
+): { readonly props: Props } {
+	const id = $derived(options().id ?? fixed.defaultId);
 	return {
-		get id() {
-			return id;
-		},
-		...attachmentProps(
-			attachClaim(
-				(token, value: string) => slot.claim(token, value),
-				() => id,
+		props: {
+			get id() {
+				return id;
+			},
+			...attachmentProps(
+				attachClaim(
+					(token, value: string) => slot.claim(token, value),
+					() => id,
+				),
 			),
-		),
+		},
 	};
 }

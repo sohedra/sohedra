@@ -5,9 +5,10 @@
 import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { getAbortSignal, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
+import type { HTMLAttributes } from "svelte/elements";
 
 import { useDismissPopup } from "../dismiss/index.js";
-import { type FocusGuardProps, type FocusTarget, useFocusManager } from "../focus/index.js";
+import { type FocusTarget, useFocusManager } from "../focus/index.js";
 import { useHoverPopup } from "../hover/index.js";
 import {
 	attachClaim,
@@ -43,8 +44,8 @@ export interface PopupElement {
 	readonly style: string | undefined;
 	/** Whether the focus guards render around the popup element. */
 	readonly guarded: boolean;
-	readonly guardBefore: FocusGuardProps;
-	readonly guardAfter: FocusGuardProps;
+	readonly guardBefore: HTMLAttributes<HTMLSpanElement>;
+	readonly guardAfter: HTMLAttributes<HTMLSpanElement>;
 }
 
 /**
@@ -109,6 +110,7 @@ export function usePopupElement(
 						restoreFocus: behavior.restoreFocus,
 						openInteractionType: store.openMethod,
 					}),
+					// The store is the Tab bridge to the trigger: it keeps the trigger's guards.
 					{ portal, bridge: store },
 				);
 

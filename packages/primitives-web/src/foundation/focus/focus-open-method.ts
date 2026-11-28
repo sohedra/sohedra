@@ -9,15 +9,17 @@ import { getPointerType, type Props, userAgent, type WebTypes } from "../kernel/
 
 /**
  * A trigger's record of how it is opening its popup (`openMethod`, read by the Popup's initial
- * focus): the pointer type of the press, or `keyboard` for a click without one. Spread the
- * returned props onto the trigger.
+ * focus): the pointer type of the press, or `keyboard` for a click without one. `options().popup`
+ * is the popup the trigger reads now, asked on each event. Spread `props` onto the trigger.
  */
-export function useOpenMethod(getPopup: () => PopupView<WebTypes>): Props {
+export function useOpenMethod(options: () => { readonly popup: PopupView<WebTypes> }): {
+	readonly props: Props;
+} {
 	// Local bookkeeping: the press's pointer type, for the click after it.
 	let lastPressType: InteractionType = "";
 
 	function setOpenMethod(type: InteractionType) {
-		const popup = getPopup();
+		const popup = options().popup;
 		if (!popup.open) {
 			// WORKAROUND(ios): a tap's click can come without a pointer type; on iOS it is a touch.
 			// Remove when iOS gives every click its pointer type.
@@ -25,7 +27,7 @@ export function useOpenMethod(getPopup: () => PopupView<WebTypes>): Props {
 		}
 	}
 
-	return {
+	const props: Props = {
 		onpointerdown(event: PointerEvent) {
 			if (event.defaultPrevented) {
 				return;
@@ -44,4 +46,5 @@ export function useOpenMethod(getPopup: () => PopupView<WebTypes>): Props {
 			lastPressType = "";
 		},
 	};
+	return { props };
 }

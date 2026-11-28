@@ -1,6 +1,7 @@
 import { HoverPopupStore } from "@sohedra/primitives-core/foundation/hover/index.js";
 import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { flushSync } from "svelte";
+import { on } from "svelte/events";
 
 import {
 	closest,
@@ -24,8 +25,7 @@ function isInteractiveElement(element: Element | null): boolean {
  * The popup side of a popup's hover: keeps a hover-opened popup open while the pointer is over
  * it, and closes it when the pointer leaves. Call once, while the Popup part initialises.
  *
- * `popup` is what the behaviour reads of the popup (its store satisfies the view as it is);
- * `options` returns the Popup's hover options as a plain object.
+ * `popup` is the popup's store; `options` returns the Popup's hover options as a plain object.
  */
 export function useHoverPopup(popup: PopupView<WebTypes>, options: () => HoverPopupOptions): void {
 	const hover = new HoverPopupStore<WebTypes>(options, { popup, flush: flushSync });
@@ -61,14 +61,15 @@ export function useHoverPopup(popup: PopupView<WebTypes>, options: () => HoverPo
 			});
 		}
 
-		const onMouseEnter = () => hover.enter();
-		positioner.addEventListener("mouseenter", onMouseEnter);
-		positioner.addEventListener("mouseleave", onMouseLeave);
-		positioner.addEventListener("pointerdown", onInteractInside, true);
+		const offs = [
+			on(positioner, "mouseenter", () => hover.enter()),
+			on(positioner, "mouseleave", onMouseLeave),
+			on(positioner, "pointerdown", onInteractInside, { capture: true }),
+		];
 		return () => {
-			positioner.removeEventListener("mouseenter", onMouseEnter);
-			positioner.removeEventListener("mouseleave", onMouseLeave);
-			positioner.removeEventListener("pointerdown", onInteractInside, true);
+			for (const off of offs) {
+				off();
+			}
 			hover.stop();
 		};
 	});

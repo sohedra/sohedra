@@ -1,7 +1,7 @@
 import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
-import { createAttachmentKey, type Attachment } from "svelte/attachments";
+import type { Attachment } from "svelte/attachments";
 
-import { contains, getTarget, type WebTypes } from "../kernel/index.js";
+import { attachmentProps, contains, getTarget, type WebTypes } from "../kernel/index.js";
 import { closeOnEscape } from "./dismiss-escape.js";
 import { PRESS_EVENTS } from "./dismiss-inside-marker.js";
 import type { DismissPopup } from "./dismiss-types.js";
@@ -21,7 +21,7 @@ export function useDismissPopup(popup: PopupView<WebTypes>): DismissPopup {
 	}
 
 	// Native capture listeners on the popup element, attached as soon as it exists (Svelte defers
-	// spread pointer listeners by a microtask).
+	// spread pointer listeners, and `on`'s, by a microtask).
 	const attachInsideMarkers: Attachment<HTMLElement> = (element) => {
 		const mark = () => dismiss.markInside();
 		const onPress = (event: Event) => {
@@ -49,7 +49,7 @@ export function useDismissPopup(popup: PopupView<WebTypes>): DismissPopup {
 			onkeydown: (event: KeyboardEvent) => closeOnEscape(popup, event),
 			onpointerdown: onPressStart,
 			onmousedown: onPressStart,
-			[createAttachmentKey()]: attachInsideMarkers,
+			...attachmentProps(attachInsideMarkers),
 		},
 	};
 }

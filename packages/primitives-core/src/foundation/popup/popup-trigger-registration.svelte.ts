@@ -6,8 +6,8 @@ import type { PopupView } from "./popup-view.js";
 
 /** What a trigger's registration reads, from the options function. */
 export interface TriggerRegistrationOptions<T extends PlatformTypes, Data> {
-	/** The store the trigger reads now: a handle's store changes when a Root attaches. */
-	readonly store: PopupView<T>;
+	/** The popup the trigger reads now: a handle's store changes when a Root attaches. */
+	readonly popup: PopupView<T>;
 	readonly id: string;
 	/** The trigger element, once attached. */
 	readonly element: T["element"] | null;
@@ -26,19 +26,19 @@ export function useTriggerRegistration<
 >(options: () => TriggerRegistrationOptions<T, Data>): void {
 	// Compared by value: the trigger registers again only when one of these changes, not when the
 	// data it forwards does (the effect below forwards that).
-	const store = $derived(options().store);
+	const popup = $derived(options().popup);
 	const id = $derived(options().id);
 	const element = $derived(options().element);
 
 	// The popup the trigger reads now is told when the trigger leaves it.
-	$effect(() => store.joinTrigger());
+	$effect(() => popup.joinTrigger());
 
 	// The element is registered under the trigger's id while it is attached.
 	$effect(() => {
 		if (!element) {
 			return;
 		}
-		return store.registerTrigger(
+		return popup.registerTrigger(
 			id,
 			element,
 			untrack(() => options().data),
@@ -47,9 +47,9 @@ export function useTriggerRegistration<
 
 	// While this trigger owns the mounted popup, its element and data are the popup's.
 	$effect(() => {
-		const { store, id, element, data } = options();
-		if (store.activeTrigger.isMountedBy(id)) {
-			store.forwardTriggerData(id, element, data);
+		const { popup, id, element, data } = options();
+		if (popup.activeTrigger.isMountedBy(id)) {
+			popup.forwardTriggerData(id, element, data);
 		}
 	});
 }

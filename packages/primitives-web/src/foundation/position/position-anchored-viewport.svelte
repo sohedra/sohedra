@@ -39,11 +39,9 @@
 
 	let { part, popup, side, instant, attrs, ref = $bindable(null), user }: Props = $props();
 
-	// A part's store never changes while it is mounted.
-	const viewport = useViewport(
-		untrack(() => popup),
-		() => ({ part, side }),
-	);
+	// A part's store and name never change while it is mounted.
+	const fixed = untrack(() => ({ popup, part }));
+	const viewport = useViewport(fixed.popup, () => ({ side }), { part: fixed.part });
 
 	const state: State = $derived({
 		activationDirection: viewport.activationDirection,
@@ -63,14 +61,14 @@
 			inert
 			style={viewport.previousStyle}
 			data-ending-style={viewport.showStartingStyle ? undefined : ""}
-			{@attach viewport.attachPrevious}
+			{...viewport.previous}
 		></div>
 	{/if}
 	{#key viewport.contentKey}
 		<div
 			data-current=""
 			data-starting-style={viewport.transitioning && viewport.showStartingStyle ? "" : undefined}
-			{@attach viewport.attachCurrent}
+			{...viewport.current}
 		>
 			{@render user.children?.({ state: viewportState })}
 		</div>

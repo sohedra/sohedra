@@ -11,6 +11,7 @@ import { flushSync, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 
 import {
+	attachmentProps,
 	DirectionContext,
 	LTR,
 	ownerDocument,
@@ -62,12 +63,17 @@ function finishTransitions(element: HTMLElement) {
  * A popup Viewport: when the open popup moves to another trigger, the previous content stays as
  * an inert snapshot (`data-previous`) while the new content (`data-current`, re-created per
  * trigger and payload) transitions in, and the popup's size variables animate from the old size
- * to the new one, written to the enclosing Positioner's layout. `popup` is the behaviour's view
- * of the popup; a part passes its store. Call once during the Viewport part's init.
+ * to the new one, written to the enclosing Positioner's layout. `popup` is the popup's store;
+ * `fixed.part` is the Viewport part's public name, for the error outside a Positioner. Call once
+ * during the Viewport part's init.
  */
-export function useViewport(popup: PopupView<WebTypes>, options: () => ViewportOptions): Viewport {
+export function useViewport(
+	popup: PopupView<WebTypes>,
+	options: () => ViewportOptions,
+	fixed: { readonly part: string },
+): Viewport {
 	const direction = DirectionContext.getOr(LTR);
-	const layout = PopupLayoutContext.get(options().part);
+	const layout = PopupLayoutContext.get(fixed.part);
 	const content = new ViewportContentStore<WebTypes>({ popup });
 	content.connect();
 
@@ -314,7 +320,7 @@ export function useViewport(popup: PopupView<WebTypes>, options: () => ViewportO
 			const size = previousDimensions ? `${sizeVars("popup", previousDimensions)}; ` : "";
 			return `${size}position: absolute`;
 		},
-		attachCurrent,
-		attachPrevious,
+		current: attachmentProps(attachCurrent),
+		previous: attachmentProps(attachPrevious),
 	};
 }

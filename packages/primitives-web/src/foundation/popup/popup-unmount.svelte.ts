@@ -7,19 +7,20 @@ import { waitForAnimations } from "../presence/index.js";
 
 /**
  * Unmounts a closed popup once its exit animations finish, unless `preventUnmountOnClose()` was
- * called (the store decides when it waits). `element` gives the element whose animations are
- * awaited when it isn't the popup. Call once while the Root initialises: it starts its own effect.
+ * called (the store decides when it waits). `options().element` gives the element whose
+ * animations are awaited when it isn't the popup. Call once while the Root initialises: it starts
+ * its own effect.
  */
 export function usePopupUnmount(
 	store: PopupView<WebTypes>,
-	element: () => HTMLElement | null = () => store.popupElement as HTMLElement | null,
+	options?: () => { readonly element: HTMLElement | null },
 ): void {
 	// Waits for the exit animations of a closed popup, then unmounts it.
 	$effect(() => {
 		if (!store.awaitingUnmount) {
 			return;
 		}
-		const awaited = element();
+		const awaited = options ? options().element : (store.popupElement as HTMLElement | null);
 		const signal = getAbortSignal();
 		untrack(() => {
 			// Without a popup element (its Portal was removed) there is nothing to wait for: the

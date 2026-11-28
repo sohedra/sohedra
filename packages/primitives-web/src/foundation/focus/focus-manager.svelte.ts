@@ -6,10 +6,11 @@ import type {
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 /* oxlint-disable max-lines -- One idea: a popup's focus on open, while open and on close share state that six separate files had to pass around. */
 import { tick, untrack } from "svelte";
-import { createAttachmentKey } from "svelte/attachments";
+import { on } from "svelte/events";
 
 import {
 	activeElement,
+	attachmentProps,
 	attachRef,
 	closest,
 	contains,
@@ -46,7 +47,7 @@ import {
 import { focusedOtherPortal, markOutside, type OutsideMarking } from "./focus-mark-outside.js";
 import { CLICK_TRIGGER_IDENTIFIER } from "./focus-markers.js";
 import { getPopupFocusElement, handleTabIndex } from "./focus-tabbability.js";
-import type { FocusManager, FocusManagerDeps, FocusManagerOptions } from "./focus-types.js";
+import type { FocusManager, FocusManagerFixed, FocusManagerOptions } from "./focus-types.js";
 
 /** A resolved focus target, when it is an element. */
 function resolveTarget(target: HTMLElement | null | undefined | boolean | void) {
@@ -105,18 +106,18 @@ function isPreventScrollSupported(doc: Document): boolean {
  * `aria-hidden` and the inert marker on outside content, Tab bridging through portal guards for a
  * non-modal popup, and closing when focus leaves.
  *
- * `popup` is what the manager reads of the popup (its store satisfies the view as it is) and
- * `options` returns the part's focus options as a plain object; it is called whenever one is
- * needed, so every option stays live. It starts its effects when called, once, while the Popup
- * part initialises. The Popup renders `guardBefore` and `guardAfter` around its element while
- * `guarded`.
+ * `popup` is the popup's store, `options` returns the part's focus options as a plain object; it
+ * is called whenever one is needed, so every option stays live. `fixed` is read once: the portal
+ * the popup renders in and its Tab bridge. It starts its effects when called, once, while the
+ * Popup part initialises. The Popup renders `guardBefore` and `guardAfter` around its element
+ * while `guarded`.
  */
 export function useFocusManager(
 	popup: PopupView<WebTypes>,
 	options: () => FocusManagerOptions,
-	deps: FocusManagerDeps,
+	fixed: FocusManagerFixed,
 ): FocusManager {
-	const { portal, bridge } = deps;
+	const { portal, bridge } = fixed;
 
 	// Value-compared views of the options an effect depends on: the effect re-runs when the value
 	// changes, not when any signal the options object reads does (a close changes the reason a
@@ -235,11 +236,11 @@ export function useFocusManager(
 
 	const guardBefore = {
 		...focusGuardProps(onGuardBeforeFocus, { "data-type": "inside" }),
-		[createAttachmentKey()]: attachRef<HTMLElement>(setGuardBefore),
+		...attachmentProps(attachRef<HTMLElement>(setGuardBefore)),
 	};
 	const guardAfter = {
 		...focusGuardProps(onGuardAfterFocus, { "data-type": "inside" }),
-		[createAttachmentKey()]: attachRef<HTMLElement>(setGuardAfter),
+		...attachmentProps(attachRef<HTMLElement>(setGuardAfter)),
 	};
 
 	// Whether focus moving to `relatedTarget` left the popup's tree: its trigger, popup, portal,
@@ -342,8 +343,7 @@ export function useFocusManager(
 					stopEvent(event);
 				}
 			};
-			doc.addEventListener("keydown", onKeyDown);
-			return () => doc.removeEventListener("keydown", onKeyDown);
+			return on(doc, "keydown", onKeyDown);
 		});
 
 		// Pointer and keyboard tracking, to tell focus moves and outside presses apart.
@@ -373,15 +373,16 @@ export function useFocusManager(
 			const onKeyDown = () => {
 				lastInteractionType = "keyboard";
 			};
-			doc.addEventListener("pointerdown", onPointerDown, true);
-			doc.addEventListener("pointerup", clearPointerDownOutside, true);
-			doc.addEventListener("pointercancel", clearPointerDownOutside, true);
-			doc.addEventListener("keydown", onKeyDown, true);
+			const offs = [
+				on(doc, "pointerdown", onPointerDown, { capture: true }),
+				on(doc, "pointerup", clearPointerDownOutside, { capture: true }),
+				on(doc, "pointercancel", clearPointerDownOutside, { capture: true }),
+				on(doc, "keydown", onKeyDown, { capture: true }),
+			];
 			return () => {
-				doc.removeEventListener("pointerdown", onPointerDown, true);
-				doc.removeEventListener("pointerup", clearPointerDownOutside, true);
-				doc.removeEventListener("pointercancel", clearPointerDownOutside, true);
-				doc.removeEventListener("keydown", onKeyDown, true);
+				for (const off of offs) {
+					off();
+				}
 				clearPointerDownOutside();
 			};
 		});
@@ -491,20 +492,27 @@ export function useFocusManager(
 			if (!positioner && !anchorElement) {
 				return;
 			}
-			anchorElement?.addEventListener("focusout", handleFocusOutside);
-			// In Safari, buttons lose focus when pressed.
-			anchorElement?.addEventListener("pointerdown", markPointerDown);
-			positioner?.addEventListener("focusin", handleFocusIn);
-			positioner?.addEventListener("focusout", handleFocusOutside);
-			if (positioner && portal) {
-				positioner.addEventListener("focusout", markInsideTree, true);
+			const offs: (() => void)[] = [];
+			if (anchorElement) {
+				offs.push(
+					on(anchorElement, "focusout", handleFocusOutside),
+					// In Safari, buttons lose focus when pressed.
+					on(anchorElement, "pointerdown", markPointerDown),
+				);
+			}
+			if (positioner) {
+				offs.push(
+					on(positioner, "focusin", handleFocusIn),
+					on(positioner, "focusout", handleFocusOutside),
+				);
+				if (portal) {
+					offs.push(on(positioner, "focusout", markInsideTree, { capture: true }));
+				}
 			}
 			return () => {
-				anchorElement?.removeEventListener("focusout", handleFocusOutside);
-				anchorElement?.removeEventListener("pointerdown", markPointerDown);
-				positioner?.removeEventListener("focusin", handleFocusIn);
-				positioner?.removeEventListener("focusout", handleFocusOutside);
-				positioner?.removeEventListener("focusout", markInsideTree, true);
+				for (const off of offs) {
+					off();
+				}
 				cancelRestoreFocus?.();
 			};
 		});
@@ -541,10 +549,10 @@ export function useFocusManager(
 			const cancel = webScheduler.microtask(() => {
 				marking = untrack(() => hideOutside(positioner, isModal, anchor, untrapped, portalNode));
 			});
-			doc.addEventListener("focusin", onFocusIn, true);
+			const off = on(doc, "focusin", onFocusIn, { capture: true });
 			return () => {
 				cancel();
-				doc.removeEventListener("focusin", onFocusIn, true);
+				off();
 				marking?.undo();
 			};
 		});

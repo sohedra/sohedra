@@ -4,7 +4,6 @@ import { getHoverTiming } from "@sohedra/primitives-core/foundation/hover/index.
 // owns the popup, and wires the interactions the popup's kind has. The press itself stays in the
 // part, as one intent.
 import {
-	type DefinedContext,
 	keepShallowEqual,
 	missingProviderMessage,
 } from "@sohedra/primitives-core/foundation/kernel/index.js";
@@ -14,14 +13,10 @@ import {
 	useTriggerRegistration,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { untrack } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
 
 import { useDismissTrigger } from "../dismiss/index.js";
-import {
-	CLICK_TRIGGER_IDENTIFIER,
-	type FocusGuardProps,
-	useOpenMethod,
-	useTriggerFocusGuards,
-} from "../focus/index.js";
+import { CLICK_TRIGGER_IDENTIFIER, useOpenMethod, useTriggerFocusGuards } from "../focus/index.js";
 import { useHoverTrigger } from "../hover/index.js";
 import {
 	attachmentProps,
@@ -38,8 +33,6 @@ export interface PopupTriggerHandle {
 
 /** What the trigger part tells `usePopupTrigger`, from its options function. */
 export interface PopupTriggerOptions<Data> {
-	/** The part's public name, for the error when it has neither a Root nor a handle. */
-	readonly part: string;
 	/** The `handle` prop. */
 	readonly handle: PopupTriggerHandle | undefined;
 	/** The trigger's id. */
@@ -69,8 +62,8 @@ export interface PopupTrigger<Store> {
 	readonly props: Props;
 	/** Whether the focus guards render around the trigger now. */
 	readonly guarded: boolean;
-	readonly guardBefore: FocusGuardProps;
-	readonly guardAfter: FocusGuardProps;
+	readonly guardBefore: HTMLAttributes<HTMLSpanElement>;
+	readonly guardAfter: HTMLAttributes<HTMLSpanElement>;
 	/** Whether a composite widget around the trigger (a toolbar) owns its tab stop. */
 	readonly inComposite: boolean;
 }
@@ -78,18 +71,23 @@ export interface PopupTrigger<Store> {
 /**
  * A popup trigger's work: finds its popup, registers its element, forwards its data while it owns
  * the popup, and wires what the popup's kind has: hover, the open method, focus guards, and
- * Escape while it has focus. Call once while the trigger part initialises: it reads `context`
- * (a context can be read only then) and starts its own effects. It is the one wiring that takes a
- * context, since a handle can give the trigger another store.
+ * Escape while it has focus. `root` is the store of the Root the trigger is in, from its context
+ * (`null` outside one); the trigger reads its handle's store instead while it has a handle, which
+ * changes when a Root attaches to the handle. `fixed.part` is the part's public name, for the
+ * error when it has neither. Call once while the trigger part initialises: it starts its own
+ * effects.
  */
 export function usePopupTrigger<
 	Store extends PopupView<WebTypes>,
 	Data extends PopupTriggerData<unknown>,
->(context: DefinedContext<Store>, options: () => PopupTriggerOptions<Data>): PopupTrigger<Store> {
-	const root = context.getOr(null);
-	const { part, handle } = untrack(options);
-	if (!root && !handle) {
-		throw new Error(missingProviderMessage(part, "Root", "given a handle"));
+>(
+	root: Store | null,
+	options: () => PopupTriggerOptions<Data>,
+	fixed: { readonly part: string },
+): PopupTrigger<Store> {
+	// The handle the part starts with: a trigger needs a Root or a handle.
+	if (!root && !options().handle) {
+		throw new Error(missingProviderMessage(fixed.part, "Root", "given a handle"));
 	}
 	// A handle is made at module scope, before any platform: its store is this platform's once a
 	// Root attaches, else an inert one. The one cast of a handle's store is here.
@@ -103,9 +101,11 @@ export function usePopupTrigger<
 	let element: HTMLElement | null = $state.raw(null);
 
 	// Escape while the trigger has focus closes the popup.
-	const dismiss = useDismissTrigger(() => popup);
+	const dismiss = useDismissTrigger(() => ({ popup }));
 	// How the popup is being opened, which the Popup's initial focus reads.
-	const openMethod = behavior.trigger?.recordsOpenMethod ? useOpenMethod(() => popup) : undefined;
+	const openMethod = behavior.trigger?.recordsOpenMethod
+		? useOpenMethod(() => ({ popup }))
+		: undefined;
 
 	let hover: Props | undefined;
 	const hoverRow = behavior.hover;
@@ -116,26 +116,24 @@ export function usePopupTrigger<
 			const { hover: own, disabled } = options();
 			return popup.triggerHoverEnabled(own?.openOnHover ?? false, disabled);
 		});
-		hover = useHoverTrigger(
-			() => popup,
-			() => {
-				const { hover: own, id } = options();
-				return {
-					enabled: hoverEnabled,
-					...getHoverTiming(hoverRow, own?.delay ?? 0, own?.closeDelay ?? 0),
-					safePolygon: true,
-					isActiveTrigger: popup.activeTrigger.isActive(id),
-					triggerElement: element,
-				};
-			},
-		).props;
+		hover = useHoverTrigger(() => {
+			const { hover: own, id } = options();
+			return {
+				popup,
+				enabled: hoverEnabled,
+				...getHoverTiming(hoverRow, own?.delay ?? 0, own?.closeDelay ?? 0),
+				safePolygon: true,
+				isActiveTrigger: popup.activeTrigger.isActive(id),
+				triggerElement: element,
+			};
+		}).props;
 	}
 
 	// What the trigger forwards to the popup while it owns it: the same object while its fields
 	// are equal, so the registration forwards again only when one changes.
 	const data: Data = $derived.by(keepShallowEqual(() => options().data));
 	useTriggerRegistration<WebTypes, Data>(() => ({
-		store: popup,
+		popup,
 		id: options().id,
 		element,
 		data,
@@ -143,16 +141,13 @@ export function usePopupTrigger<
 
 	// The guards that carry Tab between the trigger and its portalled popup.
 	const guards = behavior.trigger?.focusGuards
-		? useTriggerFocusGuards(
-				() => popup,
-				() => element,
-			)
+		? useTriggerFocusGuards(() => ({ popup, trigger: element }))
 		: { guardBefore: {}, guardAfter: {} };
 
 	const props = mergePropsN([
 		hover,
 		dismiss.props,
-		openMethod,
+		openMethod?.props,
 		{ [CLICK_TRIGGER_IDENTIFIER]: "" },
 		attachmentProps(attachRef<HTMLElement>((trigger) => (element = trigger))),
 	]);

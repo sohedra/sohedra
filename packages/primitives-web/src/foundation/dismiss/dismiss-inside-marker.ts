@@ -9,7 +9,7 @@ import type {
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 import type { Attachment } from "svelte/attachments";
 
-import { webScheduler, type WebTypes } from "../kernel/index.js";
+import { attachmentProps, type Props, webScheduler, type WebTypes } from "../kernel/index.js";
 
 /** The events a press passes through, from its start to its click (and a touch's moves and end). */
 export const PRESS_EVENTS = [
@@ -45,6 +45,8 @@ function attachInsideMarker(
 				}
 			});
 		};
+		// Native capture listeners, live as soon as the element is: `on` would add the pointer and
+		// touch ones a microtask later.
 		for (const type of PRESS_EVENTS) {
 			element.addEventListener(type, mark, true);
 		}
@@ -58,15 +60,20 @@ function attachInsideMarker(
 }
 
 /**
- * On a popup's Portal element: a press anywhere in the portal (the popup, but also a backdrop or a
- * viewport beside it) marks the popup's ancestors in the popup tree as pressed inside until the
+ * For a popup's Portal element: a press anywhere in the portal (the popup, but also a backdrop or
+ * a viewport beside it) marks the popup's ancestors in the popup tree as pressed inside until the
  * next task, so a parent popup doesn't take it for an outside press. A portal moves the popup out
  * of its parent's element, so the parent can't see the press pass through itself. The popup
- * itself isn't marked: a press on its own backdrop still dismisses it.
+ * itself isn't marked: a press on its own backdrop still dismisses it. `props` hold the marker as
+ * an attachment. Call once while the Portal part initialises.
  */
-export function attachAncestorsInsideMarker(popup: PopupView<WebTypes>): Attachment<HTMLElement> {
-	return attachInsideMarker(() => {
-		const tree = popup.tree;
-		return { tree, nodes: tree ? tree.ancestors(popup.nodeId) : [] };
-	});
+export function useAncestorsInsideMarker(store: PopupView<WebTypes>): { readonly props: Props } {
+	return {
+		props: attachmentProps(
+			attachInsideMarker(() => {
+				const tree = store.tree;
+				return { tree, nodes: tree ? tree.ancestors(store.nodeId) : [] };
+			}),
+		),
+	};
 }

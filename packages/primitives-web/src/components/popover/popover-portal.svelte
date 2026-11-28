@@ -6,7 +6,7 @@
 <script lang="ts">
 	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
 
-	import { attachAncestorsInsideMarker } from "../../foundation/dismiss/index.js";
+	import { useAncestorsInsideMarker } from "../../foundation/dismiss/index.js";
 	import { PopupPortal } from "../../foundation/portal/index.js";
 	import { PopoverPortalContext, PopoverRootContext } from "./popover-context.js";
 	import type { PopoverPortalProps, PopoverPortalState } from "./popover-types.js";
@@ -29,10 +29,12 @@
 		},
 	});
 
+	// 3. Shared behaviours
+	// A press anywhere in the portal is inside the popups this one is nested in.
+	const inside = useAncestorsInsideMarker(popover);
+
 	// 4. Own wiring
 	const state: PopoverPortalState = {};
-	// A press anywhere in the portal is inside the popups this one is nested in.
-	const inside = attachAncestorsInsideMarker(popover);
 </script>
 
 <PopupPortal
@@ -41,6 +43,6 @@
 	mounted={popover.mounted || keepMounted}
 	{container}
 	id={sohedraId(uid)}
-	{inside}
+	inside={inside.props}
 	user={rest}
 />

@@ -30,7 +30,7 @@
 	} as unknown as PopupView<WebTypes>;
 
 	// svelte-ignore state_referenced_locally
-	usePopupUnmount(store, awaitOther ? () => other : undefined);
+	usePopupUnmount(store, awaitOther ? () => ({ element: other }) : undefined);
 </script>
 
 <div data-testid="popup" {@attach (element) => void (popup = element)}></div>

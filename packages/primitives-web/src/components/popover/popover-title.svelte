@@ -21,10 +21,10 @@
 	// The popup's `aria-labelledby` names this id while the element is in the document: claimed in
 	// effect timing, so the attribute appears after hydration, and not while the part is still
 	// loading offscreen.
-	const claimed = useClaimedId(popover.titleId, () => ({ id, defaultId: sohedraId(uid) }));
+	const claimed = useClaimedId(popover.titleId, () => ({ id }), { defaultId: sohedraId(uid) });
 
 	// 4. Own wiring
 	const state: PopoverTitleState = {};
 </script>
 
-<Part tag="h2" bind:ref {state} {...claimed} user={rest} />
+<Part tag="h2" bind:ref {state} {...claimed.props} user={rest} />

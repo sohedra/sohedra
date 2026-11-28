@@ -2,6 +2,7 @@ import type { OutsidePress } from "@sohedra/primitives-core/foundation/dismiss/i
 import type { Point } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { untrack } from "svelte";
+import { on } from "svelte/events";
 
 import {
 	getInteractionEventType,
@@ -19,12 +20,11 @@ import {
 	isSparedPressTarget,
 } from "./dismiss-press-target.js";
 
-type Listener = [string, EventListener, AddEventListenerOptions | boolean];
-
 /**
  * Runs `listener` once `event` reaches its target (after the capture phase). An event that is
  * stopped on its way never arrives: the next event of its type that passes the target only ends
- * the wait, and `listener` isn't run for an event that is over.
+ * the wait, and `listener` isn't run for an event that is over. A native listener: it is added
+ * while the event is on its way, and `on` would add a pointer or touch one a microtask later.
  */
 function addTargetListenerOnce<E extends Event>(event: E, listener: (event: E) => void) {
 	const target = getTarget(event);
@@ -114,39 +114,15 @@ export function useDismissRoot(popup: PopupView<WebTypes>): void {
 		});
 	}
 
-	const passiveCapture = { capture: true, passive: true };
-	const pressListeners: Listener[] = [
-		["click", onPressCapture as EventListener, true],
-		["pointerdown", onPressCapture as EventListener, true],
-		["pointerup", onPressEndCapture as EventListener, true],
-		["pointercancel", onPressEndCapture as EventListener, true],
-		["mousedown", onPressCapture as EventListener, true],
-		["mouseup", onPressEndCapture as EventListener, true],
-		["touchstart", onTouchStartCapture as EventListener, passiveCapture],
-		[
-			"touchmove",
-			((event: TouchEvent) =>
-				addTargetListenerOnce(event, (targetEvent) =>
-					dismiss.touchMove(touchPoint(targetEvent), toPress(targetEvent)),
-				)) as EventListener,
-			passiveCapture,
-		],
-		[
-			"touchend",
-			((event: TouchEvent) =>
-				addTargetListenerOnce(event, (targetEvent) =>
-					dismiss.touchEnd(toPress(targetEvent)),
-				)) as EventListener,
-			passiveCapture,
-		],
-	];
-	const keyListeners: Listener[] = [
-		["keydown", ((event: KeyboardEvent) => closeOnEscape(popup, event)) as EventListener, false],
-		// WORKAROUND(safari): Safari fires `compositionend` before the `keydown` that ended the
-		// composition, so it counts a little longer there (5ms works in WebKit). Remove when the
-		// order matches the other engines.
-		["compositionend", () => dismiss.compositionEnd(userAgent.engine.webkit ? 5 : 0), false],
-	];
+	function onTouchMoveCapture(event: TouchEvent) {
+		addTargetListenerOnce(event, (targetEvent) =>
+			dismiss.touchMove(touchPoint(targetEvent), toPress(targetEvent)),
+		);
+	}
+
+	function onTouchEndCapture(event: TouchEvent) {
+		addTargetListenerOnce(event, (targetEvent) => dismiss.touchEnd(toPress(targetEvent)));
+	}
 
 	// The document listeners while the popup is open and its dismissal is on. The bookkeeping
 	// around them (a close, the Root going away) is the dismissal's own, in its `connect()`.
@@ -158,13 +134,27 @@ export function useDismissRoot(popup: PopupView<WebTypes>): void {
 			return;
 		}
 		const doc = ownerDocument(positioner);
-		const listeners = [...keyListeners, ...pressListeners];
-		for (const [type, listener, listenerOptions] of listeners) {
-			doc.addEventListener(type, listener, listenerOptions);
-		}
+		const capture = { capture: true };
+		const passiveCapture = { capture: true, passive: true };
+		const offs = [
+			on(doc, "keydown", (event) => closeOnEscape(popup, event)),
+			// WORKAROUND(safari): Safari fires `compositionend` before the `keydown` that ended the
+			// composition, so it counts a little longer there (5ms works in WebKit). Remove when the
+			// order matches the other engines.
+			on(doc, "compositionend", () => dismiss.compositionEnd(userAgent.engine.webkit ? 5 : 0)),
+			on(doc, "click", onPressCapture, capture),
+			on(doc, "pointerdown", onPressCapture, capture),
+			on(doc, "pointerup", onPressEndCapture, capture),
+			on(doc, "pointercancel", onPressEndCapture, capture),
+			on(doc, "mousedown", onPressCapture, capture),
+			on(doc, "mouseup", onPressEndCapture, capture),
+			on(doc, "touchstart", onTouchStartCapture, passiveCapture),
+			on(doc, "touchmove", onTouchMoveCapture, passiveCapture),
+			on(doc, "touchend", onTouchEndCapture, passiveCapture),
+		];
 		return () => {
-			for (const [type, listener, listenerOptions] of listeners) {
-				doc.removeEventListener(type, listener, listenerOptions);
+			for (const off of offs) {
+				off();
 			}
 			untrack(() => dismiss.listeningStopped());
 		};

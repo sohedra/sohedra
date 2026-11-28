@@ -9,4 +9,4 @@ export {
 } from "./focus-markers.js";
 export { useOpenMethod } from "./focus-open-method.js";
 export { useTriggerFocusGuards } from "./focus-trigger-guards.js";
-export type { FocusGuardProps, FocusTarget } from "./focus-types.js";
+export type { FocusTarget } from "./focus-types.js";

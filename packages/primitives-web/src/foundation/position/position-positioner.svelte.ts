@@ -15,7 +15,7 @@ import {
 import { flushSync, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 
-import { isElement, type WebTypes } from "../kernel/index.js";
+import { attachmentProps, isElement, type WebTypes } from "../kernel/index.js";
 import {
 	createPositionerMiddleware,
 	getDevicePixelRatio,
@@ -28,14 +28,15 @@ import type { Positioner, PositionerOptions } from "./position-types.js";
 /**
  * Positions a popup against its anchor: it follows the anchor while the popup is mounted and
  * writes each result to the Positioner's state, which the parts derive their styles and data
- * attributes from. `popup` is the behaviour's view of the popup; a part passes its store.
- * `options` is called inside the deriveds below, so each option stays reactive.
+ * attributes from. `positioner` is that state; `options` is called inside the deriveds below, so
+ * each option stays reactive; `fixed.popup` is the popup's store.
  */
 export function usePositioner(
-	popup: PopupView<WebTypes>,
 	positioner: PositionerStore<WebTypes>,
 	options: () => PositionerOptions,
+	fixed: { readonly popup: PopupView<WebTypes> },
 ): Positioner {
+	const popup = fixed.popup;
 	// Compared by value, one derived per option: what reads them (the recompute watch, the
 	// subscription, the styles) runs again only when that option's value changes, not whenever
 	// the part builds its options again.
@@ -239,7 +240,7 @@ export function usePositioner(
 	});
 
 	return {
-		attach,
+		props: attachmentProps(attach),
 		get style() {
 			return style;
 		},

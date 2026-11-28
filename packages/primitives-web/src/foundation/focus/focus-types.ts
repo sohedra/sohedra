@@ -38,8 +38,8 @@ export interface FocusManagerOptions {
 	readonly openInteractionType?: InteractionType | null | undefined;
 }
 
-/** What a focus manager is given from around its Popup part. */
-export interface FocusManagerDeps {
+/** What a focus manager reads once, from around its Popup part. */
+export interface FocusManagerFixed {
 	/** The portal the popup renders in, if any. */
 	readonly portal: PortalStore | null;
 	/**
@@ -49,22 +49,26 @@ export interface FocusManagerDeps {
 	readonly bridge?: PopupView<WebTypes> | undefined;
 }
 
-/** The props of one focus guard `<span>`, with the attachment that registers it. */
-export type FocusGuardProps = HTMLAttributes<HTMLSpanElement>;
-
 export interface FocusManager {
-	/** Installs the manager's effects. Call once, while the Popup part initialises. */
 	/** Whether the Popup renders the two guards around its element. */
 	readonly guarded: boolean;
-	/** Spread on a `<span>` right before the Popup's element. */
-	readonly guardBefore: FocusGuardProps;
-	/** Spread on a `<span>` right after the Popup's element. */
-	readonly guardAfter: FocusGuardProps;
+	/** Spread on a `<span>` right before the Popup's element. It holds an attachment. */
+	readonly guardBefore: HTMLAttributes<HTMLSpanElement>;
+	/** Spread on a `<span>` right after the Popup's element. It holds an attachment. */
+	readonly guardAfter: HTMLAttributes<HTMLSpanElement>;
 }
 
-export interface TriggerFocusGuardProps {
-	/** Spread on a `<span>` right before the trigger's element. */
-	readonly guardBefore: FocusGuardProps;
-	/** Spread on a `<span>` right after the trigger's element. */
-	readonly guardAfter: FocusGuardProps;
+/** What a trigger's focus guards read, from the options function. */
+export interface TriggerFocusGuardsOptions {
+	/** The popup the trigger reads now: a handle's store changes when a Root attaches. */
+	readonly popup: PopupView<WebTypes>;
+	/** The trigger element, once attached. */
+	readonly trigger: HTMLElement | null;
+}
+
+export interface TriggerFocusGuards {
+	/** Spread on a `<span>` right before the trigger's element. It holds an attachment. */
+	readonly guardBefore: HTMLAttributes<HTMLSpanElement>;
+	/** Spread on a `<span>` right after the trigger's element. It holds an attachment. */
+	readonly guardAfter: HTMLAttributes<HTMLSpanElement>;
 }

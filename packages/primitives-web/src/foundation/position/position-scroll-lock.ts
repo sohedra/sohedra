@@ -1,6 +1,7 @@
 // The page scroll lock a modal popup holds while open: one lock for the page, counted, so nested
 // and stacked popups share it.
 import { Timeout } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import { on } from "svelte/events";
 
 import {
 	isOverflowElement,
@@ -167,11 +168,11 @@ function preventScrollInsetScrollbars(pageElement: Element | null) {
 	}
 
 	lockScroll();
-	win.addEventListener("resize", handleResize);
+	const offResize = on(win, "resize", handleResize);
 	return () => {
 		cancelResizeFrame?.();
 		cleanup();
-		win.removeEventListener("resize", handleResize);
+		offResize();
 	};
 }
 

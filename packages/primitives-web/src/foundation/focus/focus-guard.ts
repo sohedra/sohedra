@@ -1,7 +1,7 @@
-import { createAttachmentKey } from "svelte/attachments";
 import type { HTMLAttributes } from "svelte/elements";
+import { on } from "svelte/events";
 
-import { userAgent, visuallyHidden } from "../kernel/index.js";
+import { attachmentProps, userAgent, visuallyHidden } from "../kernel/index.js";
 
 /** Marks a focus guard. */
 export const FOCUS_GUARD_ATTRIBUTE = "data-sohedra-focus-guard";
@@ -27,9 +27,6 @@ export function focusGuardProps(
 		// `focusin` (React's `onFocus`), so a portal's capture-phase `focusin` listener re-enables
 		// focus inside it first; `focus` fires before `focusin`. Not delegated: Svelte's delegated
 		// listener misses a focus move between two elements of one shadow root.
-		[createAttachmentKey()]: (element: HTMLElement) => {
-			element.addEventListener("focusin", onfocus);
-			return () => element.removeEventListener("focusin", onfocus);
-		},
+		...attachmentProps<HTMLSpanElement>((element) => on(element, "focusin", onfocus)),
 	};
 }

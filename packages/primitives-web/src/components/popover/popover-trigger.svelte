@@ -36,16 +36,22 @@
 	const uid = $props.id();
 	const id = $derived(idProp ?? sohedraId(uid));
 
+	// 2. Store and context
+	const root = PopoverRootContext.getOr(null);
+
 	// 3. Shared behaviours
 	// The trigger's popover is its handle's while it has one, else its Root's.
-	const trigger = usePopupTrigger(PopoverRootContext, () => ({
-		part: "Popover.Trigger",
-		handle,
-		id,
-		disabled,
-		data: { payload, disabled, openOnHover, closeDelay },
-		hover: { openOnHover, delay, closeDelay },
-	}));
+	const trigger = usePopupTrigger(
+		root,
+		() => ({
+			handle,
+			id,
+			disabled,
+			data: { payload, disabled, openOnHover, closeDelay },
+			hover: { openOnHover, delay, closeDelay },
+		}),
+		{ part: "Popover.Trigger" },
+	);
 	const popover = $derived(trigger.popup);
 	const button = useButton(() => ({
 		disabled,

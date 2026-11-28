@@ -7,9 +7,7 @@
   presses that count as inside, its state and the user's props.
 -->
 <script lang="ts" generics="State extends object">
-	import type { Attachment } from "svelte/attachments";
-
-	import { Part, type PartUserProps } from "../kernel/index.js";
+	import { Part, type PartUserProps, type Props as ElementProps } from "../kernel/index.js";
 	import {
 		ownerVisuallyHidden,
 		type PortalContainer,
@@ -24,8 +22,11 @@
 		container: PortalContainer;
 		/** The portal element's generated id. */
 		id: string;
-		/** Marks the presses in the portal that are inside the popups the popup is nested in. */
-		inside: Attachment<HTMLElement>;
+		/**
+		 * For the portal element: marks the presses in the portal that are inside the popups the popup
+		 * is nested in. It holds an attachment.
+		 */
+		inside: ElementProps;
 		ref?: HTMLDivElement | null | undefined;
 		user: PartUserProps<State>;
 	}
@@ -54,7 +55,7 @@
 		></span>{/if}
 	{#if portal.container}
 		{#key portal.container}
-			<Part tag="div" bind:ref {state} {id} {...portal.nodeProps} {@attach inside} {user} />
+			<Part tag="div" bind:ref {state} {id} {...portal.props} {...inside} {user} />
 		{/key}
 	{/if}
 	{#if portal.guarded}<span {...portal.guardAfter}></span>{/if}

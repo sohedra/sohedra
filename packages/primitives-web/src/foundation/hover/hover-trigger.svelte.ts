@@ -8,6 +8,7 @@ import type {
 	PopupView,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { flushSync } from "svelte";
+import { on } from "svelte/events";
 
 import {
 	contains,
@@ -125,14 +126,15 @@ function trackSafePolygon(
 			}),
 		});
 	};
+	let off = () => {};
 	popup.hover.setCloseTracker({
 		handler,
 		stop() {
-			doc.removeEventListener("mousemove", handler);
+			off();
 			session.stop();
 		},
 	});
-	doc.addEventListener("mousemove", handler);
+	off = on(doc, "mousemove", handler);
 	handler(leave);
 }
 
@@ -140,20 +142,19 @@ function trackSafePolygon(
  * The trigger side of a popup's hover: forwards the trigger's pointer events, with what they
  * hit, to the popup's hover store, which decides whether the popup opens or closes.
  *
- * `popup` is what the behaviour reads of the popup (its store satisfies the view as it is); it is
- * a function because a trigger attached through a handle can be given another popup. `options`
- * returns the trigger's hover options as a plain object and is called whenever one is needed, so
- * every option stays live. It installs the listeners when called, once, while the trigger part
- * initialises; `props` go on the trigger's element.
+ * `options` returns the trigger's hover options as a plain object and is called whenever one is
+ * needed, so every option stays live. Its `popup` is the popup the trigger reads now: a trigger
+ * attached through a handle can be given another popup. It installs the listeners when called,
+ * once, while the trigger part initialises; `props` go on the trigger's element.
  */
-export function useHoverTrigger(
-	popup: () => PopupView<WebTypes>,
-	options: () => HoverTriggerOptions,
-): HoverTrigger {
-	const hover = new HoverTriggerStore<WebTypes>(options, { popup, flush: flushSync });
-
+export function useHoverTrigger(options: () => HoverTriggerOptions): HoverTrigger {
 	// Value-compared views of the options an effect depends on: the effect re-runs when the value
 	// changes, not when any signal the options object reads does.
+	const popup = $derived(options().popup);
+	const hover = new HoverTriggerStore<WebTypes>(options, {
+		popup: () => popup,
+		flush: flushSync,
+	});
 	const enabled = $derived(options().enabled);
 	const isActiveTrigger = $derived(options().isActiveTrigger);
 	const triggerElement = $derived(options().triggerElement);
@@ -165,7 +166,7 @@ export function useHoverTrigger(
 			if (!enabled) {
 				return;
 			}
-			const view = popup();
+			const view = popup;
 			const onOpenChange = (details: OpenChangeDetails<WebTypes>) => hover.openChanged(details);
 			view.events.on("openchange", onOpenChange);
 			return () => view.events.off("openchange", onOpenChange);
@@ -174,7 +175,7 @@ export function useHoverTrigger(
 		// The pointer entering and leaving the trigger, on the element itself: neither event
 		// bubbles.
 		$effect(() => {
-			const view = popup();
+			const view = popup;
 			const trigger = triggerElement ?? (isActiveTrigger ? view.anchorElement : null);
 			if (!enabled || !isElement(trigger)) {
 				return;
@@ -196,11 +197,13 @@ export function useHoverTrigger(
 					trackSafePolygon(view, session, event);
 				}
 			}
-			trigger.addEventListener("mouseenter", onMouseEnter as EventListener);
-			trigger.addEventListener("mouseleave", onMouseLeave as EventListener);
+			// A store's element is an `Element` on the web; the trigger is an HTML element.
+			const target = trigger as HTMLElement;
+			const offs = [on(target, "mouseenter", onMouseEnter), on(target, "mouseleave", onMouseLeave)];
 			return () => {
-				trigger.removeEventListener("mouseenter", onMouseEnter as EventListener);
-				trigger.removeEventListener("mouseleave", onMouseLeave as EventListener);
+				for (const off of offs) {
+					off();
+				}
 			};
 		});
 	}
@@ -218,7 +221,7 @@ export function useHoverTrigger(
 				if (!options().enabled) {
 					return;
 				}
-				const view = popup();
+				const view = popup;
 				const trigger = event.currentTarget as Element;
 				hover.move(
 					event,

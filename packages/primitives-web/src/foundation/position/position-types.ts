@@ -5,8 +5,9 @@ import type {
 	OffsetFunction,
 	Side,
 } from "@sohedra/primitives-core/foundation/position/index.js";
-import type { Attachment } from "svelte/attachments";
+import type { HTMLAttributes } from "svelte/elements";
 
+import type { Props } from "../kernel/index.js";
 import type { PopupLayoutStore } from "../popup/index.js";
 import type { Boundary } from "./position-positioner-middleware.js";
 
@@ -59,8 +60,11 @@ export type AnchoredPositionerPlacement = Partial<
 >;
 
 export interface Positioner {
-	/** Goes on the Positioner element: positions it while the popup is mounted. */
-	readonly attach: Attachment<HTMLElement>;
+	/**
+	 * For the Positioner element: as an attachment inside, its positioning while the popup is
+	 * mounted.
+	 */
+	readonly props: Props;
 	/** The Positioner element's inline style (position, transform and CSS variables). */
 	readonly style: string;
 	/** The internal backdrop's inline style, with the active trigger (or the cutout) cut out. */
@@ -69,8 +73,6 @@ export interface Positioner {
 
 /** A Viewport's options, as a plain object the part builds from its Positioner. */
 export interface ViewportOptions {
-	/** The Viewport part's public name, for the error outside a Positioner. Read once. */
-	readonly part: string;
 	/** The side the enclosing Positioner placed the popup on. */
 	readonly side: Side;
 }
@@ -86,10 +88,10 @@ export interface Viewport {
 	readonly showStartingStyle: boolean;
 	/** The inline style of the container that shows the previous content. */
 	readonly previousStyle: string;
-	/** Goes on the container of the current content. */
-	readonly attachCurrent: Attachment<HTMLElement>;
-	/** Goes on the container of the previous content. */
-	readonly attachPrevious: Attachment<HTMLElement>;
+	/** For the container of the current content. It holds an attachment. */
+	readonly current: HTMLAttributes<HTMLDivElement>;
+	/** For the container of the previous content. It holds an attachment. */
+	readonly previous: HTMLAttributes<HTMLDivElement>;
 }
 
 export interface AnchoredScrollLockOptions {

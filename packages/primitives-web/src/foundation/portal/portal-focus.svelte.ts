@@ -1,12 +1,13 @@
 import { warn } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import { DEV } from "esm-env";
 import { untrack } from "svelte";
-import { type Attachment, createAttachmentKey } from "svelte/attachments";
+import type { Attachment } from "svelte/attachments";
 import type { HTMLAttributes } from "svelte/elements";
 import { on } from "svelte/events";
 
 import { focusGuardProps, PORTAL_ATTRIBUTE } from "../focus/index.js";
 import {
+	attachmentProps,
 	attachRef,
 	disableFocusInside,
 	enableFocusInside,
@@ -14,6 +15,7 @@ import {
 	getPreviousTabbable,
 	isOutsideEvent,
 	isShadowRoot,
+	type Props,
 } from "../kernel/index.js";
 import { PortalContext } from "./portal-context.js";
 import { PortalStore } from "./portal-store.svelte.js";
@@ -26,21 +28,20 @@ export interface PortalOptions {
 	readonly container: PortalContainer;
 }
 
-/** A portal that only moves its element. */
-export interface Portal {
+/** A portal that also manages focus across it, for a popup that takes focus. */
+export interface FocusPortal {
+	/**
+	 * The portal element's own props: its marker and, as an attachment inside, the move into the
+	 * container.
+	 */
+	readonly props: Props;
 	/** The container the element moves into, once the document is there; `null` while it waits. */
 	readonly container: HTMLElement | ShadowRoot | null;
-	/** The portal element's own props: its marker and the move into the container. */
-	readonly nodeProps: HTMLAttributes<HTMLElement>;
-}
-
-/** A portal that also manages focus across it, for a popup that takes focus. */
-export interface FocusPortal extends Portal {
 	/** Whether the two guards around the portal element render (an open non-modal popup). */
 	readonly guarded: boolean;
-	/** Spread on a `<span>` right before the portal element. */
+	/** Spread on a `<span>` right before the portal element. It holds an attachment. */
 	readonly guardBefore: HTMLAttributes<HTMLSpanElement>;
-	/** Spread on a `<span>` right after the portal element. */
+	/** Spread on a `<span>` right after the portal element. It holds an attachment. */
 	readonly guardAfter: HTMLAttributes<HTMLSpanElement>;
 }
 
@@ -165,10 +166,7 @@ function movePortalNode(
 		get container() {
 			return container;
 		},
-		nodeProps: {
-			[PORTAL_ATTRIBUTE]: "",
-			[createAttachmentKey()]: attachPortal,
-		} as HTMLAttributes<HTMLElement>,
+		props: { [PORTAL_ATTRIBUTE]: "", ...attachmentProps(attachPortal) },
 	};
 }
 
@@ -215,11 +213,14 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 				}
 			}
 		};
-		node.addEventListener("focusin", onFocus, true);
-		node.addEventListener("focusout", onFocus, true);
+		const offs = [
+			on(node, "focusin", onFocus, { capture: true }),
+			on(node, "focusout", onFocus, { capture: true }),
+		];
 		return () => {
-			node.removeEventListener("focusin", onFocus, true);
-			node.removeEventListener("focusout", onFocus, true);
+			for (const off of offs) {
+				off();
+			}
 		};
 	});
 
@@ -242,7 +243,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 		get guarded() {
 			return guarded;
 		},
-		nodeProps: moved.nodeProps,
+		props: moved.props,
 		guardBefore: {
 			...focusGuardProps(
 				(event) => {
@@ -255,10 +256,10 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 				},
 				{ "data-type": "outside" },
 			),
-			[createAttachmentKey()]: attachRef<HTMLElement>((element) =>
-				portal.setGuardBeforeOutside(element),
+			...attachmentProps(
+				attachRef<HTMLElement>((element) => portal.setGuardBeforeOutside(element)),
 			),
-		} as HTMLAttributes<HTMLSpanElement>,
+		},
 		guardAfter: {
 			...focusGuardProps(
 				(event) => {
@@ -273,9 +274,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 				},
 				{ "data-type": "outside" },
 			),
-			[createAttachmentKey()]: attachRef<HTMLElement>((element) =>
-				portal.setGuardAfterOutside(element),
-			),
-		} as HTMLAttributes<HTMLSpanElement>,
+			...attachmentProps(attachRef<HTMLElement>((element) => portal.setGuardAfterOutside(element))),
+		},
 	};
 }

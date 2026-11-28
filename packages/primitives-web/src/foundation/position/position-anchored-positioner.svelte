@@ -142,24 +142,28 @@
 		triggerElement: view.activeTriggerElement,
 	}));
 
-	const position = usePositioner(view, positioner, () => ({
-		layout,
-		anchor: user.anchor,
-		positionMethod: user.positionMethod,
-		side: user.side ?? defaultSide,
-		align: user.align,
-		sideOffset: user.sideOffset,
-		alignOffset: user.alignOffset,
-		collisionBoundary: user.collisionBoundary,
-		collisionPadding: user.collisionPadding,
-		arrowPadding: user.arrowPadding,
-		sticky: user.sticky,
-		disableAnchorTracking: user.disableAnchorTracking,
-		collisionAvoidance: user.collisionAvoidance ?? POSITIONER_DEFAULTS.collisionAvoidance,
-		keepMounted,
-		rtl: direction.direction === "rtl",
-		inert: view.positionerIgnoresPointer,
-	}));
+	const position = usePositioner(
+		positioner,
+		() => ({
+			layout,
+			anchor: user.anchor,
+			positionMethod: user.positionMethod,
+			side: user.side ?? defaultSide,
+			align: user.align,
+			sideOffset: user.sideOffset,
+			alignOffset: user.alignOffset,
+			collisionBoundary: user.collisionBoundary,
+			collisionPadding: user.collisionPadding,
+			arrowPadding: user.arrowPadding,
+			sticky: user.sticky,
+			disableAnchorTracking: user.disableAnchorTracking,
+			collisionAvoidance: user.collisionAvoidance ?? POSITIONER_DEFAULTS.collisionAvoidance,
+			keepMounted,
+			rtl: direction.direction === "rtl",
+			inert: view.positionerIgnoresPointer,
+		}),
+		{ popup: view },
+	);
 
 	// The popup reads this Positioner's measured state (for the safe polygon's side) while its
 	// element is in the document.
@@ -227,6 +231,6 @@
 	{style}
 	{@attach attachPositioner}
 	{@attach attachPositionerClaim}
-	{@attach position.attach}
+	{...position.props}
 	user={elementProps}
 />
