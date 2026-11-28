@@ -12,7 +12,6 @@ export {
 	triggerHasFocusGuards,
 } from "./popover-rules.js";
 export {
-	type ClosePartCount,
 	type PopoverOpenChangeSource,
 	PopoverStore,
 	type PopoverStoreDeps,

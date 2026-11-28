@@ -1,6 +1,7 @@
 // Popup: what every popup shares: its store and open pipeline, the behaviour rows, trigger registration, the handle base, the floating tree and the open-change details.
 export type { TriggerChangeWait } from "./popup-active-trigger-store.svelte.js";
 export { POPUP_BEHAVIOR, type PopupBehavior } from "./popup-behavior.js";
+export { type ClosePartCount, closePartCount, useClosePart } from "./popup-close-parts.svelte.js";
 export { type FloatingNode, FloatingTree } from "./popup-floating-tree.js";
 export { detachedPopupDeps, PopupHandle } from "./popup-handle.svelte.js";
 export { isNestedInFloating, pressOpenState } from "./popup-rules.js";

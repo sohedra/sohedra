@@ -4,6 +4,7 @@ import type {
 	Align,
 	CollisionAvoidance,
 	OffsetFunction,
+	PositionerPopupView,
 	PositionerStore,
 	Side,
 } from "@sohedra/primitives-core/foundation/position/index.js";
@@ -35,11 +36,6 @@ export interface PositionerView {
 	readonly positionerElement: Element | null;
 	/** The active trigger's element: what a modal popup's backdrop leaves pressable. */
 	readonly activeTriggerElement: Element | null;
-	/** The popup's active trigger. */
-	readonly activeTrigger: {
-		/** A kept-mounted popup that closed forgets the element it was anchored to. */
-		clearDomReference(): void;
-	};
 }
 
 /** A Positioner's placement options, as a plain object the part builds from its props. */
@@ -87,7 +83,7 @@ export type AnchoredPositionerPlacement = Partial<
  * Everything the shared Positioner part reads from a popup, and what it asks of it: the
  * positioning's own view and what the part renders with. The names are a popup store's own.
  */
-export interface AnchoredPositionerView extends PositionerView {
+export interface AnchoredPositionerView extends PositionerView, PositionerPopupView {
 	readonly open: boolean;
 	readonly transitionStatus: TransitionStatus;
 	/** Whether the Positioner lets pointer input through. */

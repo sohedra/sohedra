@@ -1,9 +1,9 @@
-import {
+import type {
 	ControlLabels,
-	type FieldControlLink,
-	type FieldRootContextValue,
+	FieldControlLink,
+	FieldRootContextValue,
 	LabelableControlId,
-	type LabelableContextValue,
+	LabelableContextValue,
 } from "@sohedra/primitives-core/foundation/form/index.js";
 import { type Bound, REASONS, watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import { untrack } from "svelte";
@@ -24,13 +24,18 @@ import {
 	webScheduler,
 	type WebTypes,
 } from "../kernel/index.js";
-import { LabelableContext, NULL_LABELABLE } from "./form-context.js";
 import { attachLabelFallback } from "./form-label-fallback.svelte.js";
 
 /** What the wiring reads of a checked control's store (Switch, Checkbox, Radio). */
 export interface CheckedControlView {
 	readonly field: FieldRootContextValue<WebTypes>;
 	readonly link: FieldControlLink<WebTypes>;
+	/** The labelable scope the control is in. */
+	readonly labelable: LabelableContextValue;
+	/** The labelable control's id in its scope. */
+	readonly controlId: LabelableControlId;
+	/** The control's `aria-labelledby`. */
+	readonly labels: ControlLabels;
 	readonly checked: boolean;
 	readonly defaultChecked: boolean;
 	readonly disabled: boolean;
@@ -51,13 +56,6 @@ export interface CheckedControlView {
 export interface CheckedControlOptions {
 	/** The hidden input's type. */
 	readonly type: "checkbox" | "radio";
-	/** The `id` prop. */
-	readonly id: string | undefined;
-	/**
-	 * The hidden input's id when neither the prop nor a Field gives one. Fixed for the control's
-	 * life (`$props.id()`): read once, when the wiring is called.
-	 */
-	readonly inputId: string;
 	/** The visible element's id when it is not the labelable control. */
 	readonly rootId: string;
 	/** Whether the visible element is a native button, and so the labelable control itself. */
@@ -68,10 +66,6 @@ export interface CheckedControlOptions {
 	readonly value: string | undefined;
 	/** The value a form gets while the control is off: the `uncheckedValue` prop. */
 	readonly uncheckedValue?: string | undefined;
-	/** The user's own `aria-labelledby`. */
-	readonly labelledBy: string | null | undefined;
-	/** The user's own `aria-label`. A non-blank one wins over associated labels. */
-	readonly label: string | null | undefined;
 	/** The `inputRef` binding. */
 	readonly inputRef: Bound<HTMLInputElement | null | undefined>;
 }
@@ -100,8 +94,8 @@ export interface CheckedControl {
 /**
  * A control whose value is a checked state (Switch, Checkbox, Radio): its place in its field, its
  * labelling, the hidden input beside it and the forwarding of a press to that input, focus and
- * blur, and button semantics. Call it once while the part initialises: it reads the labelable
- * context and registers the control's id.
+ * blur, and button semantics. Call it once while the part initialises. Its store holds the
+ * control's id in its labelable scope and its labels.
  *
  * The hidden input is a props object, not a component: a component beside the part's element
  * adds a hydration marker to the server HTML.
@@ -111,24 +105,7 @@ export function useCheckedControl(
 	options: () => CheckedControlOptions,
 ): CheckedControl {
 	const field = store.field;
-	const labelable = LabelableContext.getOr(NULL_LABELABLE);
-
-	const controlId = new LabelableControlId(
-		labelable,
-		() => ({ id: options().id }),
-		untrack(options).inputId,
-	);
-	const labels = new ControlLabels(() => {
-		const { labelledBy, label, native } = options();
-		return {
-			explicit: labelledBy ?? undefined,
-			labelId: labelable.labelId,
-			ariaLabel: label ?? undefined,
-			enableFallback: !native,
-			sourceId: native ? undefined : controlId.value,
-		};
-	});
-	controlId.connect();
+	const { labelable, controlId, labels } = store;
 
 	const button = useButton(() => ({ disabled: store.disabled, native: options().native }));
 	const validation = fieldValidationProps(field, labelable, store);

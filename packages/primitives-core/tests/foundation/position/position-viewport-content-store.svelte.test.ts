@@ -4,12 +4,12 @@ import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 
 import { ViewportContentStore } from "../../../src/foundation/position/index.js";
-import type { ViewportContentStoreProps } from "../../../src/foundation/position/position-viewport-content-store.svelte.js";
+import type { ViewportContentPopupView } from "../../../src/foundation/position/index.js";
 import { root } from "../../kit/kit-effects.svelte.js";
 import { element as trigger } from "../../kit/kit-stand-ins.js";
 
 type MutableProps = {
-	-readonly [K in keyof ViewportContentStoreProps]: ViewportContentStoreProps[K];
+	-readonly [K in keyof ViewportContentPopupView]: ViewportContentPopupView[K];
 };
 
 function setup(initial: Partial<MutableProps> = {}) {
@@ -17,11 +17,11 @@ function setup(initial: Partial<MutableProps> = {}) {
 		open: false,
 		mounted: false,
 		activeTriggerId: null,
-		activeTrigger: null,
+		activeTriggerElement: null,
 		payload: undefined,
 		...initial,
 	});
-	const store = new ViewportContentStore(() => props);
+	const store = new ViewportContentStore({ popup: props });
 	// Keep the deriveds connected, as the Viewport's `{#key}` block and data attributes do.
 	root(() => {
 		store.connect();
@@ -51,10 +51,10 @@ describe("ViewportContentStore", () => {
 		});
 
 		it("stays when only the trigger element changes", () => {
-			const { props, store } = setup({ activeTriggerId: "a", activeTrigger: trigger("a") });
+			const { props, store } = setup({ activeTriggerId: "a", activeTriggerElement: trigger("a") });
 			const key = store.contentKey;
 
-			props.activeTrigger = trigger("a again");
+			props.activeTriggerElement = trigger("a again");
 			flushSync();
 			expect(store.contentKey).toBe(key);
 		});
@@ -130,10 +130,10 @@ describe("ViewportContentStore", () => {
 				open: false,
 				mounted: false,
 				activeTriggerId: "a",
-				activeTrigger: null,
+				activeTriggerElement: null,
 				payload: "A",
 			});
-			const store = new ViewportContentStore(() => props);
+			const store = new ViewportContentStore({ popup: props });
 			const first = store.contentKey;
 			props.activeTriggerId = "b";
 			root(() => {
@@ -155,7 +155,12 @@ describe("ViewportContentStore", () => {
 		const b = trigger("b");
 
 		function setupOpen() {
-			const context = setup({ open: true, mounted: true, activeTriggerId: "a", activeTrigger: a });
+			const context = setup({
+				open: true,
+				mounted: true,
+				activeTriggerId: "a",
+				activeTriggerElement: a,
+			});
 			context.store.settle();
 			flushSync();
 			return context;
@@ -166,12 +171,12 @@ describe("ViewportContentStore", () => {
 				open: true,
 				mounted: true,
 				activeTriggerId: "a",
-				activeTrigger: a,
+				activeTriggerElement: a,
 			});
 			expect(store.switching).toBe(null);
 
 			props.activeTriggerId = "b";
-			props.activeTrigger = b;
+			props.activeTriggerElement = b;
 			flushSync();
 			expect(store.switching).toBe(null);
 		});
@@ -181,7 +186,7 @@ describe("ViewportContentStore", () => {
 			expect(store.switching).toBe(null);
 
 			props.activeTriggerId = "b";
-			props.activeTrigger = b;
+			props.activeTriggerElement = b;
 			flushSync();
 			expect(store.switching).toEqual({ from: a, to: b });
 
@@ -194,7 +199,7 @@ describe("ViewportContentStore", () => {
 			const { props, store } = setupOpen();
 			const replacement = trigger("a, re-created");
 
-			props.activeTrigger = replacement;
+			props.activeTriggerElement = replacement;
 			flushSync();
 			expect(store.switching).toEqual({ from: a, to: replacement });
 		});
@@ -203,7 +208,7 @@ describe("ViewportContentStore", () => {
 			const { props, store } = setupOpen();
 
 			props.open = false;
-			props.activeTrigger = b;
+			props.activeTriggerElement = b;
 			flushSync();
 			expect(store.switching).toBe(null);
 
@@ -221,7 +226,7 @@ describe("ViewportContentStore", () => {
 			store.settle();
 
 			props.activeTriggerId = "b";
-			props.activeTrigger = b;
+			props.activeTriggerElement = b;
 			props.open = true;
 			flushSync();
 			expect(store.switching).toBe(null);

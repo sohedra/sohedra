@@ -45,6 +45,7 @@ import { PopupTriggerMap } from "./popup-trigger-map.js";
 import type {
 	InstantType,
 	InteractionType,
+	OpenChangeDetails,
 	OpenChangeSource,
 	PopupChangeEventDetails,
 	PopupEvents,
@@ -59,6 +60,10 @@ export interface PopupStoreProps<Details> {
 	readonly defaultTriggerId: string | null | undefined;
 	readonly onOpenChange: ((open: boolean, details: Details) => void) | undefined;
 	readonly onOpenChangeComplete: ((open: boolean) => void) | undefined;
+	/** The handle that holds the store while it is connected, if any. */
+	readonly handle?:
+		| { attachStore(store: never, imperativeEvent: () => unknown): () => void }
+		| undefined;
 }
 
 /** One request to open or close a popup. */
@@ -110,6 +115,8 @@ export interface PopupStoreDeps<T extends PlatformTypes = PlatformTypes> {
 	readonly platform: Platform<T>;
 	/** An inert store for a handle without a Root: it never opens. */
 	readonly detached?: boolean | undefined;
+	/** The platform's event for a change a handle asks for: a handle call runs no platform code. */
+	readonly imperativeEvent?: (() => unknown) | undefined;
 }
 
 /** What a kind of popup fixes about its store. */
@@ -141,6 +148,9 @@ export abstract class PopupStore<
 	protected abstract readonly hooks: PopupHooks<Details, Source, this>;
 	readonly #props: () => PopupStoreProps<Details>;
 	readonly #detached: boolean;
+	readonly #imperativeEvent: () => unknown;
+	// Compared by value: the store attaches to its handle again only when the handle changes.
+	readonly #handle = $derived.by(() => this.#props().handle);
 
 	/** The component name in warnings, e.g. `Popover`. */
 	readonly name: string;
@@ -249,6 +259,7 @@ export abstract class PopupStore<
 		const { kind, platform } = deps;
 		this.#props = props;
 		this.#detached = deps.detached ?? false;
+		this.#imperativeEvent = deps.imperativeEvent ?? (() => undefined);
 		this.name = kind.name;
 		this.behavior = kind.behavior;
 		this.floatingId = deps.floatingId;
@@ -648,5 +659,37 @@ export abstract class PopupStore<
 
 		// The active trigger follows registrations.
 		this.activeTrigger.connect();
+
+		// The dismissal's bookkeeping around the platform's listeners. A same-flush close and reopen
+		// never renders closed; only the open-change event sees it.
+		const dismiss = this.dismiss;
+		$effect(() => {
+			const onOpenChange = (details: OpenChangeDetails<T>) => {
+				if (!details.open) {
+					dismiss.closed();
+				}
+			};
+			this.events.on("openchange", onOpenChange);
+			return () => this.events.off("openchange", onOpenChange);
+		});
+		// The Root unmounted: drops the dismissal's timers.
+		$effect(() => () => dismiss.dispose());
+		// While closed or not dismissing: a close forgets the press, and the inside mark is cleared
+		// when this ends, not now (a close made while focus moves out, by a trigger's focus guard,
+		// leaves the focus behaviour's pending focus-out check to read it).
+		watch([() => this.open, () => dismiss.enabled], ([open, enabled]) => {
+			if (open && enabled) {
+				return;
+			}
+			if (!open) {
+				dismiss.reset();
+			}
+			return dismiss.clearInside;
+		});
+
+		// The handle holds this store while it is connected. Attached before the parts inside
+		// initialise (a pre-effect runs first), so they can use the handle in their first effects.
+		const imperativeEvent = this.#imperativeEvent;
+		$effect.pre(() => this.#handle?.attachStore(this as never, imperativeEvent));
 	}
 }

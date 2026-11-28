@@ -4,7 +4,11 @@ export {
 	positionerMiddleware,
 	type PositionerMiddlewareOptions,
 } from "./position-positioner-middleware.js";
-export { PositionerStore } from "./position-positioner-store.svelte.js";
+export {
+	type PositionerPopupView,
+	PositionerStore,
+	type PositionerStoreProps,
+} from "./position-positioner-store.svelte.js";
 export {
 	getAlignment,
 	getSide,
@@ -25,7 +29,10 @@ export type {
 	PositionState,
 	Side,
 } from "./position-types.js";
-export { ViewportContentStore } from "./position-viewport-content-store.svelte.js";
+export {
+	type ViewportContentPopupView,
+	ViewportContentStore,
+} from "./position-viewport-content-store.svelte.js";
 export {
 	getActivationDirection,
 	pinnedEdges,

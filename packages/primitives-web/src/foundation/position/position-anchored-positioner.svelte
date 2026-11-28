@@ -89,7 +89,7 @@
 
 	// The position state the Popup and the Arrow read, and the sizes and anchoring a Viewport
 	// inside measures.
-	const positioner = new PositionerStore<WebTypes>({
+	const positioner = new PositionerStore<WebTypes>(() => ({ keepMounted }), {
 		initial: untrack(() =>
 			initialPosition({
 				side: user.side ?? defaultSide,
@@ -97,7 +97,9 @@
 				rtl: direction.direction === "rtl",
 			}),
 		),
+		popup: view,
 	});
+	positioner.connect();
 	const layout = new PopupLayoutState();
 	untrack(() => context).set(positioner);
 	PopupLayoutContext.set(layout);

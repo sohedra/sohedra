@@ -1,12 +1,30 @@
 import { untrack } from "svelte";
 
-import type { PlatformTypes } from "../kernel/index.js";
+import { type PlatformTypes, watch } from "../kernel/index.js";
 import type { Align, PositionState, Side } from "./position-types.js";
+
+/** What a Positioner's state reads of its part. */
+export interface PositionerStoreProps {
+	/** Whether the popup stays mounted while closed (its Portal's `keepMounted`). */
+	readonly keepMounted: boolean;
+}
+
+/** What a Positioner's state reads of its popup, and asks of it. A popup store is one. */
+export interface PositionerPopupView {
+	/** Whether the popup is in the document: open, or closing. */
+	readonly mounted: boolean;
+	readonly activeTrigger: {
+		/** Forgets the last trigger element (a kept-mounted popup that closed). */
+		clearDomReference(): void;
+	};
+}
 
 /** What a Positioner's state is given once. */
 export interface PositionerStoreDeps {
 	/** The position before the first computation. */
 	readonly initial: PositionState;
+	/** The popup the Positioner places. */
+	readonly popup: PositionerPopupView;
 }
 
 /**
@@ -15,6 +33,8 @@ export interface PositionerStoreDeps {
  * styles and data attributes from it.
  */
 export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
+	readonly #props: () => PositionerStoreProps;
+	readonly #popup: PositionerPopupView;
 	#position: PositionState = $state.raw() as PositionState;
 	#arrowElement: T["element"] | null = $state.raw(null);
 
@@ -26,7 +46,9 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	/** Whether the arrow can't point at the anchor's centre (also before it is measured). */
 	readonly arrowUncentered: boolean = $derived(this.#position.arrow?.centerOffset !== 0);
 
-	constructor(deps: PositionerStoreDeps) {
+	constructor(props: () => PositionerStoreProps, deps: PositionerStoreDeps) {
+		this.#props = props;
+		this.#popup = deps.popup;
 		this.#position = deps.initial;
 	}
 
@@ -55,5 +77,20 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 
 	setArrowElement(element: T["element"] | null): void {
 		this.#arrowElement = element;
+	}
+
+	/** Lifetime work. Called once by the Positioner part. */
+	connect(): void {
+		// A kept-mounted popup's next opening starts unpositioned (a closing one unmounts instead).
+		watch(
+			[() => this.#props().keepMounted, () => this.#popup.mounted],
+			([keepsMounted, mounted]) => {
+				if (keepsMounted && !mounted) {
+					// While a kept-mounted popup is closed, it has no element it is anchored to.
+					this.#popup.activeTrigger.clearDomReference();
+					this.markUnpositioned();
+				}
+			},
+		);
 	}
 }

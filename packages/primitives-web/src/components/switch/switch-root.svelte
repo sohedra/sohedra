@@ -9,8 +9,10 @@
 	import {
 		FieldRootContext,
 		FieldsetRootContext,
+		LabelableContext,
 		NULL_FIELD,
 		NULL_FIELDSET,
+		NULL_LABELABLE,
 		useCheckedControl,
 	} from "../../foundation/form/index.js";
 	import { Part, type WebTypes } from "../../foundation/kernel/index.js";
@@ -42,7 +44,19 @@
 
 	// 2. Store and context
 	const sw = new SwitchStore<WebTypes>(
-		() => ({ defaultChecked, onCheckedChange, disabled, readOnly, required, name, uncheckedValue }),
+		() => ({
+			defaultChecked,
+			onCheckedChange,
+			disabled,
+			readOnly,
+			required,
+			name,
+			uncheckedValue,
+			id,
+			nativeButton,
+			ariaLabelledBy,
+			ariaLabel: rest["aria-label"],
+		}),
 		{
 			checked: bound(
 				() => checked,
@@ -50,6 +64,8 @@
 			),
 			field: FieldRootContext.getOr(NULL_FIELD),
 			fieldset: FieldsetRootContext.getOr(NULL_FIELDSET),
+			labelable: LabelableContext.getOr(NULL_LABELABLE),
+			inputId: sohedraId(uid, "input"),
 		},
 	);
 	sw.connect();
@@ -62,15 +78,11 @@
 	);
 	const control = useCheckedControl(sw, () => ({
 		type: "checkbox",
-		id,
-		inputId: sohedraId(uid, "input"),
 		rootId: sohedraId(uid),
 		native: nativeButton,
 		form,
 		value,
 		uncheckedValue,
-		labelledBy: ariaLabelledBy,
-		label: rest["aria-label"],
 		inputRef: input,
 	}));
 </script>

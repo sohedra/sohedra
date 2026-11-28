@@ -388,8 +388,9 @@ describe("PopoverStore", () => {
 
 		it("gives the Popup and the Arrow the popover's state and the Positioner's placement", () => {
 			const { store } = setup({ defaultOpen: true });
-			const positioner = new PositionerStore({
+			const positioner = new PositionerStore(() => ({ keepMounted: false }), {
 				initial: initialPosition({ side: "top", align: "start", rtl: false }),
+				popup: store,
 			});
 			expect(popoverPopupState(store, positioner)).toEqual({
 				open: true,

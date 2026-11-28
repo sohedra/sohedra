@@ -3,16 +3,22 @@ import { untrack } from "svelte";
 import { CommittedValue, type PlatformTypes } from "../kernel/index.js";
 import { type ContentKeyState, nextContentKey } from "./position-viewport-rules.js";
 
-/** What a popup Viewport's content bookkeeping reads from its popup. */
-export interface ViewportContentStoreProps<T extends PlatformTypes = PlatformTypes> {
+/** What a popup Viewport's content bookkeeping reads from its popup. A popup store is one. */
+export interface ViewportContentPopupView<T extends PlatformTypes = PlatformTypes> {
 	readonly open: boolean;
 	readonly mounted: boolean;
 	/** The id of the trigger the popup belongs to. */
 	readonly activeTriggerId: string | null;
 	/** The trigger the popup belongs to; compared by identity only. */
-	readonly activeTrigger: T["element"] | null;
+	readonly activeTriggerElement: T["element"] | null;
 	/** The active trigger's payload; compared by identity only. */
 	readonly payload: unknown;
+}
+
+/** What a popup Viewport's content bookkeeping is given once. */
+export interface ViewportContentStoreDeps<T extends PlatformTypes = PlatformTypes> {
+	/** The popup the Viewport is in. */
+	readonly popup: ViewportContentPopupView<T>;
 }
 
 /** The open popup moving its content from one trigger to another. */
@@ -30,7 +36,7 @@ export interface ViewportSwitch<T extends PlatformTypes = PlatformTypes> {
  *   last showed. The platform shows the switch (snapshot, animation), then calls {@link settle}.
  */
 export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
-	readonly #props: () => ViewportContentStoreProps<T>;
+	readonly #popup: ViewportContentPopupView<T>;
 
 	// What the last update settled on; written only by the commit in `connect()`.
 	readonly #committed: CommittedValue<ContentKeyState>;
@@ -38,7 +44,7 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	// renders with it. A re-run with older values (an effect teardown) changes nothing.
 	// `$derived.by` because `#props` is set in the constructor, after these initialisers.
 	readonly #next: ContentKeyState = $derived.by(() =>
-		nextContentKey(this.#committed.current, this.#props().activeTriggerId, this.#props().payload),
+		nextContentKey(this.#committed.current, this.#popup.activeTriggerId, this.#popup.payload),
 	);
 	readonly contentKey: number = $derived(this.#next.key);
 
@@ -47,19 +53,20 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 
 	readonly switching: ViewportSwitch<T> | null = $derived.by(() => {
 		const from = this.#shown;
-		const to = this.#props().activeTrigger;
-		if (!from || !to || from === to || !this.#props().open || !this.#props().mounted) {
+		const to = this.#popup.activeTriggerElement;
+		if (!from || !to || from === to || !this.#popup.open || !this.#popup.mounted) {
 			return null;
 		}
 		return { from, to };
 	});
 
-	/** Pure: `props` is called inside the deriveds, so each value stays reactive. */
-	constructor(props: () => ViewportContentStoreProps<T>) {
-		this.#props = props;
+	/** Pure: the popup is read inside the deriveds, so each value stays reactive. */
+	constructor(deps: ViewportContentStoreDeps<T>) {
+		const popup = deps.popup;
+		this.#popup = popup;
 		this.#committed = new CommittedValue<ContentKeyState>({
-			triggerId: untrack(() => props().activeTriggerId),
-			payload: untrack(() => props().payload),
+			triggerId: untrack(() => popup.activeTriggerId),
+			payload: untrack(() => popup.payload),
 			pendingPayload: false,
 			key: 0,
 		});
@@ -71,7 +78,7 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	 */
 	settle(): void {
 		untrack(() => {
-			this.#shown = this.#props().open ? this.#props().activeTrigger : null;
+			this.#shown = this.#popup.open ? this.#popup.activeTriggerElement : null;
 		});
 	}
 

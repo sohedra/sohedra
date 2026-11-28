@@ -56,7 +56,7 @@
 	PopoverRootContext.set(popover as PopoverStore<unknown, WebTypes>);
 
 	// 3. Shared behaviours
-	usePopupRoot(popover, () => ({ handle }));
+	usePopupRoot(popover);
 
 	// 4. Own wiring
 	/** Closes the popover. */

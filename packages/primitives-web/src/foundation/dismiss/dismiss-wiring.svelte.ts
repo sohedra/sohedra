@@ -2,7 +2,6 @@ import type {
 	OutsidePress,
 	TouchPoint,
 } from "@sohedra/primitives-core/foundation/dismiss/index.js";
-import type { OpenChangeDetails } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { untrack } from "svelte";
 import { type Attachment, createAttachmentKey } from "svelte/attachments";
 
@@ -165,33 +164,14 @@ export function useDismiss(popup: DismissView): void {
 		["compositionend", () => dismiss.compositionEnd(userAgent.engine.webkit ? 5 : 0), false],
 	];
 
-	// A same-flush close and reopen never renders closed; only the open-change event sees it.
-	$effect(() => {
-		const onOpenChange = (details: OpenChangeDetails<WebTypes>) => {
-			if (!details.open) {
-				dismiss.closed();
-			}
-		};
-		popup.events.on("openchange", onOpenChange);
-		return () => popup.events.off("openchange", onOpenChange);
-	});
-
-	// The Root unmounted: drops the dismissal's timers.
-	$effect(() => () => dismiss.dispose());
-
-	// The document listeners while the popup is open and its dismissal is on.
+	// The document listeners while the popup is open and its dismissal is on. The bookkeeping
+	// around them (a close, the Root going away) is the dismissal's own, in its `connect()`.
 	$effect(() => {
 		const open = popup.open;
 		const isEnabled = enabled;
 		const floating = popup.floatingElement;
 		if (!open || !isEnabled) {
-			// Reset in the body, not the cleanup, which also runs mid-gesture on dependency changes.
-			if (!open) {
-				dismiss.reset();
-			}
-			// Cleared when this closed state ends, not now: a close made while focus moves out (a
-			// trigger's focus guard) leaves the focus behaviour's pending focus-out check to read it.
-			return dismiss.clearInside;
+			return;
 		}
 		const doc = ownerDocument(floating);
 		const listeners = [...keyListeners, ...pressListeners];

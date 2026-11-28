@@ -1,9 +1,13 @@
 import { untrack } from "svelte";
 
 import {
+	ControlLabels,
 	FieldControlLink,
 	type FieldRootContextValue,
 	type FieldsetContextValue,
+	LabelableControlId,
+	type LabelableContextValue,
+	NULL_LABELABLE,
 } from "../../foundation/form/index.js";
 import { type Bound, Controllable, type PlatformTypes } from "../../foundation/kernel/index.js";
 import type { SwitchRootChangeEventDetails, SwitchRootState } from "./switch-types.js";
@@ -26,6 +30,14 @@ export interface SwitchStoreProps<T extends PlatformTypes> {
 	readonly name: string | undefined;
 	/** The value a form gets while the switch is off. */
 	readonly uncheckedValue: string | undefined;
+	/** The `id` prop: the labelable control's id, unless its scope gives one. */
+	readonly id?: string | undefined;
+	/** Whether the visible element is a native button, and so the labelable control itself. */
+	readonly nativeButton?: boolean | undefined;
+	/** The user's own `aria-labelledby`. */
+	readonly ariaLabelledBy?: string | null | undefined;
+	/** The user's own `aria-label`. A non-blank one wins over associated labels. */
+	readonly ariaLabel?: string | null | undefined;
 }
 
 /** What a switch is given once, when it is built. */
@@ -36,6 +48,10 @@ export interface SwitchStoreDeps<T extends PlatformTypes> {
 	readonly field: FieldRootContextValue<T>;
 	/** The fieldset around the switch: disabling it disables the switch. Absent means not disabled. */
 	readonly fieldset?: FieldsetContextValue | undefined;
+	/** The labelable scope the switch is in. Absent means none. */
+	readonly labelable?: LabelableContextValue | undefined;
+	/** The hidden input's id when neither the `id` prop nor the scope gives one. */
+	readonly inputId?: string | undefined;
 }
 
 /** A switch's state and the changes it accepts. */
@@ -50,6 +66,12 @@ export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #checked: Controllable<boolean>;
 	/** The switch as its field sees it: value, name, filled, disabled. */
 	readonly link: FieldControlLink<T>;
+	/** The labelable scope the switch is in. */
+	readonly labelable: LabelableContextValue;
+	/** The labelable control's id in its scope. */
+	readonly controlId: LabelableControlId;
+	/** The switch's `aria-labelledby`. */
+	readonly labels: ControlLabels;
 
 	// 3. Public state. `$derived.by` because `#props` is assigned in the constructor, after these
 	// initialisers (deriveds are lazy; TS rejects a plain `$derived(this.#props()…)` with TS2729).
@@ -102,6 +124,23 @@ export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 			filled: this.checked,
 			disabled: this.disabled,
 		}));
+		const labelable = deps.labelable ?? NULL_LABELABLE;
+		this.labelable = labelable;
+		this.controlId = new LabelableControlId(
+			labelable,
+			() => ({ id: props().id }),
+			deps.inputId ?? "",
+		);
+		this.labels = new ControlLabels(() => {
+			const { ariaLabelledBy, ariaLabel, nativeButton } = props();
+			return {
+				explicit: ariaLabelledBy ?? undefined,
+				labelId: labelable.labelId,
+				ariaLabel: ariaLabel ?? undefined,
+				enableFallback: !nativeButton,
+				sourceId: nativeButton ? undefined : this.controlId.value,
+			};
+		});
 	}
 
 	/** The field the switch is in. */
@@ -149,9 +188,10 @@ export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 	};
 
 	// 5. Lifetime
-	/** Development warnings and the field link. Called once by Switch.Root. */
+	/** Development warnings, the field link and the control's id. Called once by Switch.Root. */
 	connect(): void {
 		this.#checked.connect();
 		this.link.connect();
+		this.controlId.connect();
 	}
 }

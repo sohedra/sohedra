@@ -211,15 +211,6 @@ export function usePositioner(
 				}
 			},
 		);
-
-		// A kept-mounted popup's next opening starts unpositioned (a closing one unmounts instead).
-		watch([() => keepMounted, () => popup.mounted], ([keepsMounted, mounted]) => {
-			if (keepsMounted && !mounted) {
-				// While a kept-mounted popup is closed, it has no element it is anchored to.
-				popup.activeTrigger.clearDomReference();
-				positioner.markUnpositioned();
-			}
-		});
 	};
 
 	const style = $derived(

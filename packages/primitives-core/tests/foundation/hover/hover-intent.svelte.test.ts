@@ -333,8 +333,9 @@ describe("HoverTriggerIntent", () => {
 		intent.enter(event("mouseenter"), target);
 		store.positionerClaim.claim(
 			{},
-			new PositionerStore({
+			new PositionerStore(() => ({ keepMounted: false }), {
 				initial: initialPosition({ side: "bottom", align: "center", rtl: false }),
+				popup: store,
 			}),
 		);
 		expect(intent.leave(event("mouseleave"), leave)).toBeInstanceOf(SafePolygonSession);
@@ -697,8 +698,9 @@ describe("a close from outside", () => {
 			});
 			store.positionerClaim.claim(
 				{},
-				new PositionerStore({
+				new PositionerStore(() => ({ keepMounted: false }), {
 					initial: initialPosition({ side: "bottom", align: "center", rtl: false }),
+					popup: store,
 				}),
 			);
 			hover();

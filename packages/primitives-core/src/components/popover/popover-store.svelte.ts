@@ -5,6 +5,8 @@ import { TriggerFocusGuards } from "../../foundation/focus/index.js";
 import type { HoverInteraction } from "../../foundation/hover/index.js";
 import { OwnedValue, type PlatformTypes, REASONS, Timeout } from "../../foundation/kernel/index.js";
 import {
+	type ClosePartCount,
+	closePartCount,
 	type InteractionType,
 	type OpenChangeSource,
 	POPUP_BEHAVIOR,
@@ -58,30 +60,6 @@ export interface PopoverOpenChangeSource extends OpenChangeSource {
 }
 
 type Details<T extends PlatformTypes> = PopoverRootChangeEventDetails<T>;
-
-/** The Close parts rendered inside a popup: a modal popover traps focus only with one to leave by. */
-export interface ClosePartCount {
-	readonly count: number;
-	/** Registers a Close part; returns its unregistration. */
-	register(): () => void;
-}
-
-/** A count of Close parts. Close parts register from an effect, which must not depend on it. */
-function closePartCount(): ClosePartCount {
-	let count = $state(0);
-	return {
-		get count() {
-			return count;
-		},
-		register: () =>
-			untrack(() => {
-				count += 1;
-				return () => {
-					count = Math.max(0, untrack(() => count) - 1);
-				};
-			}),
-	};
-}
 
 /** Popover's kind of popup: its name and its behaviour row. */
 const POPOVER_KIND: PopupStoreKind = {

@@ -4,6 +4,7 @@
 -->
 <script lang="ts">
 	import { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import { useClosePart } from "@sohedra/primitives-core/foundation/popup/index.js";
 	import type { MouseEventHandler } from "svelte/elements";
 
 	import { useButton } from "../../foundation/button/index.js";
@@ -38,7 +39,7 @@
 	};
 
 	// Counted by the Popup it is in (a modal popover traps focus only with a Close part inside).
-	$effect(() => popup?.closeParts.register());
+	useClosePart(popup);
 </script>
 
 <Part tag="button" bind:ref {state} {onclick} user={rest} after={button.after} />

@@ -67,14 +67,7 @@ function finishTransitions(element: HTMLElement) {
 export function useViewport(popup: ViewportView, options: () => ViewportOptions): Viewport {
 	const direction = DirectionContext.getOr(LTR);
 	const layout = PopupLayoutContext.get();
-	// Core's content rules take these five under its own names.
-	const content = new ViewportContentStore<WebTypes>(() => ({
-		open: popup.open,
-		mounted: popup.mounted,
-		activeTriggerId: popup.activeTriggerId,
-		activeTrigger: popup.activeTriggerElement,
-		payload: popup.payload,
-	}));
+	const content = new ViewportContentStore<WebTypes>({ popup });
 	content.connect();
 
 	// Where the content moves from, during the update that switches triggers. Measured while
