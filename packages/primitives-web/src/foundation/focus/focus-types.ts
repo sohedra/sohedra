@@ -56,7 +56,7 @@ export interface FocusManagerFixed {
 	readonly bridge?: PopupView<WebTypes> | undefined;
 }
 
-export interface FocusManager {
+export interface FocusManagerGuards {
 	/** Whether the Popup renders the two guards around its element. */
 	readonly guarded: boolean;
 	/** Spread on a `<span>` right before the Popup's element. It holds an attachment. */

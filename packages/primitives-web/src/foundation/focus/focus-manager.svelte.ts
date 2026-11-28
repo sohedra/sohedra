@@ -47,7 +47,7 @@ import {
 import { focusedOtherPortal, markOutside, type OutsideMarking } from "./focus-mark-outside.js";
 import { CLICK_TRIGGER_IDENTIFIER } from "./focus-markers.js";
 import { getPopupFocusElement, handleTabIndex } from "./focus-tabbability.js";
-import type { FocusManager, FocusManagerFixed, FocusManagerOptions } from "./focus-types.js";
+import type { FocusManagerFixed, FocusManagerGuards, FocusManagerOptions } from "./focus-types.js";
 
 /** A resolved focus target, when it is an element. */
 function resolveTarget(target: HTMLElement | null | undefined | boolean | void) {
@@ -110,7 +110,7 @@ export function useFocusManager(
 	popup: PopupView<WebTypes>,
 	options: () => FocusManagerOptions,
 	fixed: FocusManagerFixed,
-): FocusManager {
+): FocusManagerGuards {
 	const { portal, bridge } = fixed;
 
 	// Value-compared views of the options effects depend on: an effect re-runs when the value

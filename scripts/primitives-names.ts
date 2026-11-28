@@ -47,8 +47,6 @@ const EXEMPTIONS: Record<string, string> = {
 		"The public state every popup's Trigger renders, built by PopupTriggerStore.",
 	"packages/primitives-core/src/foundation/form/form-types.ts#FieldRootState":
 		"Field.Root's public state, which a control in a Field reads; the Field family brings the part.",
-	"packages/primitives-web/src/foundation/focus/focus-types.ts#FocusManager":
-		"todo: the word list leaves out `…Manager`; rename the focus manager's return type for what it holds.",
 };
 
 /** Where a declared name in the primitives packages of `root` breaks the word list. */
