@@ -1,5 +1,6 @@
 import type {
-	HoverTriggerOptions as CoreHoverTriggerOptions,
+	HoverPopupStoreProps,
+	HoverTriggerStoreProps,
 	HoverView,
 } from "@sohedra/primitives-core/foundation/hover/index.js";
 import type { OpenChangeDetails } from "@sohedra/primitives-core/foundation/popup/index.js";
@@ -30,12 +31,15 @@ export interface HoverPopupView extends HoverView<WebTypes> {
 }
 
 /** A trigger's hover options, as a plain object the part builds from its props and store. */
-export interface HoverTriggerOptions extends CoreHoverTriggerOptions {
+export interface HoverTriggerOptions extends HoverTriggerStoreProps {
 	/** Whether this trigger is the popup's active one. */
 	readonly isActiveTrigger: boolean;
 	/** The trigger element. */
 	readonly triggerElement: Element | null;
 }
+
+/** The Popup's hover options, as a plain object the part builds from its props and store. */
+export type HoverPopupOptions = HoverPopupStoreProps;
 
 export interface HoverTrigger {
 	/** Installs the listeners and effects. Call once, while the trigger part initialises. */

@@ -4,13 +4,13 @@
 // move comes.
 import { describe, expect, it } from "vitest";
 
-import { SafePolygon } from "../../../src/foundation/hover/hover-intent.js";
 import {
 	decideSafePolygon,
 	isPointInQuadrilateral,
 	type SafePolygonInput,
 	startSafePolygon,
 } from "../../../src/foundation/hover/hover-safe-polygon-rules.js";
+import { SafePolygon } from "../../../src/foundation/hover/hover-safe-polygon.js";
 import { box } from "../../kit/kit-geometry.js";
 
 // Trigger at 100,100 (100×20); popup below it at 50,130 (200×100), a 10px gap.

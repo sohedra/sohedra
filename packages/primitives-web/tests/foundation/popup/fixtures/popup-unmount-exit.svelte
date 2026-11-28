@@ -8,7 +8,7 @@
 	import {
 		type PopupUnmountView,
 		usePopupUnmount,
-	} from "#lib/foundation/popup/popup-root.svelte.js";
+	} from "#lib/foundation/popup/popup-unmount.svelte.js";
 
 	let {
 		awaiting,

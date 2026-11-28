@@ -26,11 +26,11 @@ export {
 	getPointerType,
 	isVirtualClick,
 	isVirtualPointerEvent,
+	makeEventPreventable,
 	stopEvent,
 } from "./kernel-event.js";
 export { enqueueFocus } from "./kernel-focus-queue.js";
 export {
-	makeEventPreventable,
 	mergeClasses,
 	mergeProps,
 	mergePropsN,
@@ -45,7 +45,7 @@ export { activeElement, closest, contains, getTarget } from "./kernel-shadow-dom
 export { ssrSafeProps } from "./kernel-ssr-safe-props.js";
 export { getStateAttributesProps, type StateAttributesMapping } from "./kernel-state-attributes.js";
 export { attachStyle } from "./kernel-style.js";
-export { dispatchClickWithModifiers } from "./kernel-synthetic-click.js";
+export { dispatchSyntheticClick } from "./kernel-synthetic-click.js";
 export {
 	disableFocusInside,
 	enableFocusInside,

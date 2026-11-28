@@ -7,25 +7,14 @@ import {
 	isNestedInFloating,
 	type PopupStoreDeps,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
-import { getAbortSignal, untrack } from "svelte";
 
-import { type DismissView, useDismiss } from "../dismiss/index.js";
+import { type DismissView, useDismissRoot } from "../dismiss/index.js";
 import { fallbackEvent, webPlatform, type WebTypes } from "../kernel/index.js";
-import { waitForAnimations } from "../presence/index.js";
 import { DialogRootContext, FloatingNodeContext, FloatingTreeContext } from "./popup-context.js";
+import { type PopupUnmountView, usePopupUnmount } from "./popup-unmount.svelte.js";
 
-/** What `usePopupDeps` gives a popup store: every dep but the `open` binding. */
+/** What `usePopupRootDeps` gives a popup store: every dep but the `open` binding. */
 export type PopupRootDeps = Omit<PopupStoreDeps<WebTypes>, "open">;
-
-/** What `usePopupUnmount` reads of its store and asks of it. */
-export interface PopupUnmountView {
-	/** Whether a closed popup is waiting for its exit animations before unmounting. */
-	readonly awaitingUnmount: boolean;
-	/** The popup element, whose exit animations are awaited by default. */
-	readonly popupElement: Element | null;
-	/** Ends the closing phase. */
-	unmount(): void;
-}
 
 /** What `usePopupRoot` reads of its store and asks of it. A popup store is one as it is. */
 export interface PopupRootView extends DismissView, PopupUnmountView {}
@@ -36,7 +25,7 @@ export interface PopupRootView extends DismissView, PopupUnmountView {}
  * tree; the outermost creates one. Call once while the Root initialises: it reads and sets the
  * tree's context.
  */
-export function usePopupDeps(floatingId: string): PopupRootDeps {
+export function usePopupRootDeps(floatingId: string): PopupRootDeps {
 	const tree = FloatingTreeContext.getOr(null) ?? new FloatingTree<WebTypes>();
 	FloatingTreeContext.set(tree);
 	return {
@@ -58,31 +47,5 @@ export function usePopupRoot(store: PopupRootView): void {
 	usePopupUnmount(store);
 
 	// Escape and outside presses, through the document listeners of the store's dismissal.
-	useDismiss(store);
-}
-
-/**
- * Unmounts a closed popup once its exit animations finish, unless `preventUnmountOnClose()` was
- * called (the store decides when it waits). `element` gives the element whose animations are
- * awaited when it isn't the popup. Call once while the Root initialises: it starts its own effect.
- */
-export function usePopupUnmount(
-	store: PopupUnmountView,
-	element: () => HTMLElement | null = () => store.popupElement as HTMLElement | null,
-): void {
-	// Waits for the exit animations of a closed popup, then unmounts it.
-	$effect(() => {
-		if (!store.awaitingUnmount) {
-			return;
-		}
-		const awaited = element();
-		const signal = getAbortSignal();
-		untrack(() => {
-			// Without a popup element (its Portal was removed) there is nothing to wait for: the
-			// close never completes.
-			if (awaited) {
-				waitForAnimations(awaited, { signal }, store.unmount);
-			}
-		});
-	});
+	useDismissRoot(store);
 }

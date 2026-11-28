@@ -8,7 +8,7 @@ import type {
 import type { HTMLAttributes } from "svelte/elements";
 
 import type { SohedraChangeEventDetails, WebTypes } from "../kernel/index.js";
-import type { FloatingPortalState } from "../portal/index.js";
+import type { PortalStore } from "../portal/index.js";
 
 /** The details of a close that happens because focus left the popup. */
 export type FocusOutDetails = SohedraChangeEventDetails<typeof REASONS.focusOut>;
@@ -94,7 +94,7 @@ export interface TriggerFocusBridge {
 /** What a focus manager is given from around its Popup part. */
 export interface FocusManagerDeps {
 	/** The portal the popup renders in, if any. */
-	readonly portal: FloatingPortalState | null;
+	readonly portal: PortalStore | null;
 	/** For a popup whose trigger renders focus guards. */
 	readonly bridge?: TriggerFocusBridge | undefined;
 }

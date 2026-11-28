@@ -1,6 +1,6 @@
 import { ownerWindow } from "./kernel-dom.js";
 
-interface ModifierState {
+interface ClickModifiers {
 	shiftKey: boolean;
 	ctrlKey: boolean;
 	altKey: boolean;
@@ -14,9 +14,9 @@ interface ModifierState {
  * `detail` defaults to 0 and `pointerType` to `''` (the native convention for keyboard-generated
  * clicks).
  */
-export function dispatchClickWithModifiers(
+export function dispatchSyntheticClick(
 	target: Element,
-	sourceEvent: ModifierState,
+	sourceEvent: ClickModifiers,
 	{ detail = 0, pointerType = "" }: { detail?: number; pointerType?: string } = {},
 ): void {
 	target.dispatchEvent(

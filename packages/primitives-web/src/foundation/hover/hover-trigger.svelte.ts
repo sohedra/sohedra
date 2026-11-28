@@ -1,28 +1,24 @@
 import {
-	HoverPopupIntent,
-	type HoverPopupOptions,
-	HoverTriggerIntent,
 	type HoverTriggerTarget,
+	HoverTriggerStore,
 	type SafePolygonSession,
 } from "@sohedra/primitives-core/foundation/hover/index.js";
 import type { OpenChangeDetails } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { flushSync } from "svelte";
 
 import {
-	closest,
 	contains,
 	getInteractionEventType,
 	getPointerType,
 	getTarget,
 	isElement,
 	ownerDocument,
-	TYPEABLE_SELECTOR,
 	type WebTypes,
 } from "../kernel/index.js";
 import type { HoverPopupView, HoverTrigger, HoverTriggerOptions } from "./hover-types.js";
 
 /** Whether `target` is in a registered trigger. */
-function isInsideEnabledTrigger(
+export function isInsideEnabledTrigger(
 	target: EventTarget | null,
 	triggers: HoverPopupView["triggers"],
 ): boolean {
@@ -38,13 +34,6 @@ function isInsideEnabledTrigger(
 		}
 	}
 	return false;
-}
-
-const INTERACTIVE_SELECTOR = `button,a[href],[role="button"],select,[tabindex]:not([tabindex="-1"]),${TYPEABLE_SELECTOR}`;
-
-/** Whether `element` is (inside) something a press activates or types into. */
-function isInteractiveElement(element: Element | null): boolean {
-	return closest(element, INTERACTIVE_SELECTOR) != null;
 }
 
 /** Whether `currentTarget` (or `target` in it) is a registered trigger other than the reference. */
@@ -143,7 +132,7 @@ function trackSafePolygon(
 
 /**
  * The trigger side of a popup's hover: forwards the trigger's pointer events, with what they
- * hit, to the popup's hover intent, which decides whether the popup opens or closes.
+ * hit, to the popup's hover store, which decides whether the popup opens or closes.
  *
  * `popup` is what the behaviour reads of the popup (its store satisfies the view as it is); it is
  * a function because a trigger attached through a handle can be given another popup. `options`
@@ -155,7 +144,7 @@ export function useHoverTrigger(
 	popup: () => HoverPopupView,
 	options: () => HoverTriggerOptions,
 ): HoverTrigger {
-	const intent = new HoverTriggerIntent<WebTypes>(options, { popup, flush: flushSync });
+	const hover = new HoverTriggerStore<WebTypes>(options, { popup, flush: flushSync });
 
 	// Value-compared views of the options an effect depends on: the effect re-runs when the value
 	// changes, not when any signal the options object reads does.
@@ -171,7 +160,7 @@ export function useHoverTrigger(
 				return;
 			}
 			const view = popup();
-			const onOpenChange = (details: OpenChangeDetails<WebTypes>) => intent.openChanged(details);
+			const onOpenChange = (details: OpenChangeDetails<WebTypes>) => hover.openChanged(details);
 			view.events.on("openchange", onOpenChange);
 			return () => view.events.off("openchange", onOpenChange);
 		});
@@ -187,10 +176,10 @@ export function useHoverTrigger(
 			// The trigger the leave handler names is the one this listener was installed for.
 			const ownTrigger = triggerElement;
 			function onMouseEnter(event: MouseEvent) {
-				intent.enter(event, resolveTarget(view, event));
+				hover.enter(event, resolveTarget(view, event));
 			}
 			function onMouseLeave(event: MouseEvent) {
-				const session = intent.leave(event, {
+				const session = hover.leave(event, {
 					trigger: ownTrigger,
 					intoEnabledTrigger: isInsideEnabledTrigger(event.relatedTarget, view.triggers),
 					intoFloating: contains(view.floatingElement, event.relatedTarget as Element | null),
@@ -211,7 +200,7 @@ export function useHoverTrigger(
 	}
 
 	function setPointerType(event: PointerEvent) {
-		intent.pointerType(getPointerType(event));
+		hover.pointerType(getPointerType(event));
 	}
 
 	startEffects();
@@ -225,7 +214,7 @@ export function useHoverTrigger(
 				}
 				const view = popup();
 				const trigger = event.currentTarget as Element;
-				intent.move(
+				hover.move(
 					event,
 					{
 						trigger,
@@ -243,58 +232,4 @@ export function useHoverTrigger(
 			},
 		},
 	};
-}
-
-/**
- * The popup side of a popup's hover: keeps a hover-opened popup open while the pointer is over
- * it, and closes it when the pointer leaves. Call once, while the Popup part initialises.
- *
- * `popup` is what the behaviour reads of the popup (its store satisfies the view as it is);
- * `options` returns the Popup's hover options as a plain object.
- */
-export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOptions): void {
-	const intent = new HoverPopupIntent<WebTypes>(options, { popup, flush: flushSync });
-
-	// Value-compared: the listeners are installed again only when this changes.
-	const enabled = $derived(options().enabled);
-
-	// The pointer entering, leaving and pressing inside the popup's positioned element.
-	$effect(() => {
-		const floating = popup.floatingElement as HTMLElement | null;
-		if (!enabled || !floating) {
-			return;
-		}
-		const tree = popup.tree;
-
-		function onInteractInside(event: PointerEvent) {
-			const target = getTarget(event) as Element | null;
-			const interactive = isInteractiveElement(target);
-			intent.pressInside(interactive, interactive && closest(target, "[aria-haspopup]") != null);
-		}
-
-		function onMouseLeave(event: MouseEvent) {
-			const relatedTarget = event.relatedTarget;
-			intent.leave(event, {
-				enabledTrigger: isInsideEnabledTrigger(relatedTarget, popup.triggers),
-				descendant: Boolean(
-					tree &&
-					isElement(relatedTarget) &&
-					tree
-						.children(popup.nodeId, false)
-						.some((node) => contains(node.context?.floatingElement, relatedTarget)),
-				),
-			});
-		}
-
-		const onMouseEnter = () => intent.enter();
-		floating.addEventListener("mouseenter", onMouseEnter);
-		floating.addEventListener("mouseleave", onMouseLeave);
-		floating.addEventListener("pointerdown", onInteractInside, true);
-		return () => {
-			floating.removeEventListener("mouseenter", onMouseEnter);
-			floating.removeEventListener("mouseleave", onMouseLeave);
-			floating.removeEventListener("pointerdown", onInteractInside, true);
-			intent.stop();
-		};
-	});
 }

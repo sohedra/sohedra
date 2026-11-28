@@ -1,12 +1,4 @@
-function isShadowRoot(node: Node | null | undefined): node is ShadowRoot {
-	return (
-		!!node && node.nodeType === 11 /* DOCUMENT_FRAGMENT_NODE */ && "host" in (node as ShadowRoot)
-	);
-}
-
-function isElement(node: Node | null | undefined): node is Element {
-	return !!node && node.nodeType === 1; /* ELEMENT_NODE */
-}
+import { isElement, isShadowRoot } from "./kernel-dom.js";
 
 /**
  * Finds the closest matching element in the composed tree, crossing slots and shadow roots.

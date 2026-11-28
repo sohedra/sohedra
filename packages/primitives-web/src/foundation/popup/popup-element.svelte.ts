@@ -28,7 +28,7 @@ import {
 	mergeStyles,
 	type Props,
 } from "../kernel/index.js";
-import { FloatingPortalContext } from "../portal/index.js";
+import { PortalContext } from "../portal/index.js";
 import { PopupLayoutContext } from "../position/index.js";
 import { DISABLED_TRANSITIONS_STYLE, waitForAnimations } from "../presence/index.js";
 
@@ -125,7 +125,7 @@ export function usePopupElement(
 	options: () => PopupElementOptions,
 ): PopupElement {
 	const behavior = store.behavior;
-	const portal = FloatingPortalContext.getOr(null);
+	const portal = PortalContext.getOr(null);
 	const layout = PopupLayoutContext.getOr(null);
 
 	// A hover-opened popup stays open while the popup is hovered.

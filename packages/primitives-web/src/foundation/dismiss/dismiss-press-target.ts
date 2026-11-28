@@ -1,14 +1,7 @@
 // Where a press landed, relative to a popup: in its own elements, in a popup nested in it, or on
-// something a press never dismisses for. Also the markers that tell a popup a press passed
-// through a portal nested in it. The dismiss behaviour asks these; a popup's Portal part attaches
-// the markers.
+// something a press never dismisses for. The dismiss behaviour asks these.
 
-import { Timeout } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type {
-	FloatingNode,
-	FloatingTree,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
-import type { Attachment } from "svelte/attachments";
+import type { FloatingTree } from "@sohedra/primitives-core/foundation/popup/index.js";
 
 import { INERT_MARKER } from "../focus/index.js";
 import {
@@ -21,7 +14,6 @@ import {
 	isLastTraversableNode,
 	isShadowRoot,
 	ownerDocument,
-	webScheduler,
 	type WebTypes,
 } from "../kernel/index.js";
 
@@ -84,25 +76,6 @@ function isScrollbarPress(event: MouseEvent | PointerEvent | TouchEvent, target:
 			: event.offsetX > target.clientWidth);
 	const pressedHorizontal = canScrollX && event.offsetY > target.clientHeight;
 	return pressedVertical || pressedHorizontal;
-}
-
-/**
- * Runs `listener` once `event` reaches its target (after the capture phase). An event that is
- * stopped on its way never arrives: the next event of its type that passes the target only ends
- * the wait, and `listener` isn't run for an event that is over.
- */
-export function addTargetListenerOnce<E extends Event>(event: E, listener: (event: E) => void) {
-	const target = getTarget(event);
-	if (!target) {
-		return;
-	}
-	const handle = (arrived: Event) => {
-		target.removeEventListener(event.type, handle);
-		if (arrived === event) {
-			listener(event);
-		}
-	};
-	target.addEventListener(event.type, handle);
 }
 
 /** Whether `event` passed through the popup or the element it is anchored to. */
@@ -178,64 +151,4 @@ export function isSparedPressTarget(
 	}
 
 	return isEventWithinFloatingTree(popup, event);
-}
-
-/** The events a press passes through, from its start to its click (and a touch's moves and end). */
-export const PRESS_EVENTS = [
-	"click",
-	"mousedown",
-	"pointerdown",
-	"mouseup",
-	"touchend",
-	"touchmove",
-] as const;
-
-/**
- * Marks `nodes` in their tree as pressed inside on every press passing through the element, until
- * the next task.
- */
-function attachInsideMarker(
-	getNodes: () => { tree: FloatingTree<WebTypes> | null; nodes: FloatingNode<WebTypes>[] },
-): Attachment<HTMLElement> {
-	return (element) => {
-		const clearTimeout = new Timeout(webScheduler);
-		const mark = () => {
-			const { tree, nodes } = getNodes();
-			for (const node of nodes) {
-				if (node.context) {
-					tree?.markInside(node.id);
-				}
-			}
-			clearTimeout.start(0, () => {
-				for (const node of nodes) {
-					if (node.context) {
-						tree?.clearInside(node.id);
-					}
-				}
-			});
-		};
-		for (const type of PRESS_EVENTS) {
-			element.addEventListener(type, mark, true);
-		}
-		return () => {
-			for (const type of PRESS_EVENTS) {
-				element.removeEventListener(type, mark, true);
-			}
-			clearTimeout.clear();
-		};
-	};
-}
-
-/**
- * On a popup's Portal element: a press anywhere in the portal (the popup, but also a backdrop or a
- * viewport beside it) marks the popup's ancestors in the floating tree as pressed inside until the
- * next task, so a parent popup doesn't take it for an outside press. A portal moves the popup out
- * of its parent's element, so the parent can't see the press pass through itself. The popup
- * itself isn't marked: a press on its own backdrop still dismisses it.
- */
-export function attachAncestorsInsideMarker(popup: TreePlaceView): Attachment<HTMLElement> {
-	return attachInsideMarker(() => {
-		const tree = popup.tree;
-		return { tree, nodes: tree ? tree.ancestors(popup.nodeId) : [] };
-	});
 }

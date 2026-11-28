@@ -176,7 +176,7 @@ function preventScrollInsetScrollbars(referenceElement: Element | null) {
 }
 
 // One page lock, reference-counted across popups.
-class ScrollLocker {
+class ScrollLock {
 	lockCount = 0;
 	restore: (() => void) | null = null;
 	timeoutLock = new Timeout(webScheduler);
@@ -236,9 +236,9 @@ class ScrollLocker {
 	}
 }
 
-const SCROLL_LOCKER = new ScrollLocker();
+const SCROLL_LOCK = new ScrollLock();
 
 /** Locks the page scroll; returns the release. Locks apply after a tick, reference-counted. */
 export function acquireScrollLock(referenceElement: Element | null): () => void {
-	return SCROLL_LOCKER.acquire(referenceElement);
+	return SCROLL_LOCK.acquire(referenceElement);
 }

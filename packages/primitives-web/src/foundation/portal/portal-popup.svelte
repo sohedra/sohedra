@@ -14,7 +14,7 @@
 		ownerVisuallyHidden,
 		type PortalContainer,
 		useFocusPortal,
-	} from "./portal-wiring.svelte.js";
+	} from "./portal-focus.svelte.js";
 
 	interface Props {
 		state: State;

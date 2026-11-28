@@ -7,5 +7,6 @@ export {
 export { default as PopupBackdrop } from "./popup-backdrop.svelte";
 export { usePopupElement } from "./popup-element.svelte.js";
 export { usePopupPositioner } from "./popup-positioner.svelte.js";
-export { usePopupDeps, usePopupRoot, usePopupUnmount } from "./popup-root.svelte.js";
+export { usePopupRoot, usePopupRootDeps } from "./popup-root.js";
+export { usePopupUnmount } from "./popup-unmount.svelte.js";
 export { usePopupTrigger } from "./popup-trigger.svelte.js";

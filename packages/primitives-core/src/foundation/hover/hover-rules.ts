@@ -1,7 +1,8 @@
-// The decisions of the hover behaviour, as pure functions: facts in, outcome out. No state, no
-// Svelte and no platform.
+// The decisions of the hover behaviour, as pure functions: facts or a popup's view in, outcome
+// out. No effects, no Svelte and no platform.
 
-import type { InteractionEventType, PointerType } from "../kernel/index.js";
+import type { InteractionEventType, PlatformTypes, PointerType } from "../kernel/index.js";
+import type { HoverTreeView, HoverView } from "./hover-types.js";
 
 /** A hover delay: one value, or separate open and close delays. */
 export type HoverDelay = number | Partial<{ open: number; close: number }>;
@@ -101,4 +102,15 @@ export function opensAtOnceOnEnter(
 		return open || closingAfterHover;
 	}
 	return withinReference && closingAfterHover;
+}
+
+/** Whether a popup nested in this one is open. */
+export function hasOpenChild<T extends PlatformTypes>(popup: HoverTreeView<T>): boolean {
+	const tree = popup.tree;
+	return Boolean(tree && tree.children(popup.nodeId).length > 0);
+}
+
+/** Whether a click holds the open popup open, which a hover never closes or reopens. */
+export function isPinned<T extends PlatformTypes>(popup: HoverView<T>): boolean {
+	return isPinnedByClick(popup.open, popup.openEventType, popup.hover.interactedInside);
 }

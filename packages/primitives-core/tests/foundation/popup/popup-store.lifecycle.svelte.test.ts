@@ -94,7 +94,7 @@ function setup(
 	return { props, store, hover, scheduler: store.platform.scheduler };
 }
 
-describe("PopupLifecycle", () => {
+describe("PopupStore", () => {
 	describe("its hooks", () => {
 		it("runs the rule, onOpenChange, the open-change event, the commit, then the hook", () => {
 			const order: string[] = [];

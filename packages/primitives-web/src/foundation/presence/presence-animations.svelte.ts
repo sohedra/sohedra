@@ -1,36 +1,12 @@
-import type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence/index.js";
 import { flushSync } from "svelte";
 
-import { type StateAttributesMapping, webScheduler } from "../kernel/index.js";
+import { webScheduler } from "../kernel/index.js";
+import { TransitionStatusDataAttributes } from "./presence-attributes.js";
 
 declare global {
 	/** Set to `true` to skip waiting for animations (for example in tests). */
 	var SOHEDRA_ANIMATIONS_DISABLED: boolean | undefined;
 }
-
-/** The data attributes of a part's enter and exit transitions. */
-const TransitionStatusDataAttributes = {
-	/** Present when the component begins animating in. */
-	startingStyle: "data-starting-style",
-	/** Present when the component is animating out. */
-	endingStyle: "data-ending-style",
-} as const;
-
-const STARTING = { [TransitionStatusDataAttributes.startingStyle]: "" };
-const ENDING = { [TransitionStatusDataAttributes.endingStyle]: "" };
-
-/** `transitionStatus` → `data-starting-style` / `data-ending-style`. */
-export const transitionStatusMapping = {
-	transitionStatus(value: TransitionStatus): Record<string, string> | null {
-		if (value === "starting") {
-			return STARTING;
-		}
-		if (value === "ending") {
-			return ENDING;
-		}
-		return null;
-	},
-} satisfies StateAttributesMapping<{ transitionStatus: TransitionStatus }>;
 
 /** Animations excluding infinite ones, whose `finished` promises never resolve while they run. */
 function getFiniteAnimations(element: Element): Animation[] {

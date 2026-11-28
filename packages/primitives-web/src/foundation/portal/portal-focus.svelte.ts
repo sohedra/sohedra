@@ -15,7 +15,8 @@ import {
 	isOutsideEvent,
 	isShadowRoot,
 } from "../kernel/index.js";
-import { FloatingPortalContext, FloatingPortalState } from "./portal-context.svelte.js";
+import { PortalContext } from "./portal-context.js";
+import { PortalStore } from "./portal-store.svelte.js";
 
 /** Where a portal renders: an element or shadow root; `null` waits; `undefined` is the body. */
 export type PortalContainer = HTMLElement | ShadowRoot | null | undefined;
@@ -118,8 +119,8 @@ function delegateInto(root: ShadowRoot): () => void {
  */
 function movePortalNode(
 	options: () => PortalOptions,
-	portal: FloatingPortalState,
-	parent: FloatingPortalState | null,
+	portal: PortalStore,
+	parent: PortalStore | null,
 ) {
 	// The container, resolved after mount (never on the server).
 	let container: HTMLElement | ShadowRoot | null = $state.raw(null);
@@ -178,9 +179,9 @@ function movePortalNode(
  * inside it portal into its element. Call during the Portal part's init.
  */
 export function useFocusPortal(options: () => PortalOptions): FocusPortal {
-	const parent = FloatingPortalContext.getOr(null);
-	const portal = new FloatingPortalState();
-	FloatingPortalContext.set(portal);
+	const parent = PortalContext.getOr(null);
+	const portal = new PortalStore();
+	PortalContext.set(portal);
 	const moved = movePortalNode(options, portal, parent);
 
 	// Only the flags count, since a trigger switch replaces the focus manager's state while the

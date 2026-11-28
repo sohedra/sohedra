@@ -1,11 +1,11 @@
 // usePopupUnmount: a closed popup unmounts once the exit animations of the popup, or of the
 // element it names instead (an inline combobox list waits for the dialog it is rendered in),
-// finish. The popup store is a stand-in (fixtures/popup-root-exit.svelte), and animations are on.
+// finish. The popup store is a stand-in (fixtures/popup-unmount-exit.svelte), and animations are on.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 
 import { nextFrame } from "../../kit/kit-frames.js";
-import PopupRootExit from "./fixtures/popup-root-exit.svelte";
+import PopupUnmountExit from "./fixtures/popup-unmount-exit.svelte";
 
 describe("usePopupUnmount", () => {
 	beforeEach(() => {
@@ -15,7 +15,7 @@ describe("usePopupUnmount", () => {
 
 	async function setup(awaitOther: boolean) {
 		const onUnmount = vi.fn();
-		const screen = await render(PopupRootExit, { awaiting: false, awaitOther, onUnmount });
+		const screen = await render(PopupUnmountExit, { awaiting: false, awaitOther, onUnmount });
 		/** Starts a 200ms fade-out on the element with `testId`. */
 		const animate = (testId: string) =>
 			screen

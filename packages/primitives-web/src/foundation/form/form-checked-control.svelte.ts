@@ -16,7 +16,7 @@ import {
 	attachmentProps,
 	attachRef,
 	createChangeEventDetails,
-	dispatchClickWithModifiers,
+	dispatchSyntheticClick,
 	type Props,
 	type SohedraChangeEventDetails,
 	visuallyHidden,
@@ -122,7 +122,7 @@ export function useCheckedControl(
 		// Keeps a wrapping <label> from clicking the input a second time.
 		event.preventDefault();
 		if (input) {
-			dispatchClickWithModifiers(input, event);
+			dispatchSyntheticClick(input, event);
 		}
 	};
 	const onfocus: FocusEventHandler<HTMLElement> = () => store.link.focus();

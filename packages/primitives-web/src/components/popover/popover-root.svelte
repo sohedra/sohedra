@@ -13,7 +13,7 @@
 		fallbackEvent,
 		type WebTypes,
 	} from "../../foundation/kernel/index.js";
-	import { usePopupDeps, usePopupRoot } from "../../foundation/popup/index.js";
+	import { usePopupRootDeps, usePopupRoot } from "../../foundation/popup/index.js";
 	import { PopoverRootContext } from "./popover-context.js";
 	import type { PopoverRootProps } from "./popover-types.js";
 
@@ -48,7 +48,7 @@
 				() => open,
 				(next) => (open = next),
 			),
-			...usePopupDeps(sohedraId(uid)),
+			...usePopupRootDeps(sohedraId(uid)),
 		},
 	);
 	popover.connect();

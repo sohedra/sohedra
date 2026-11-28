@@ -5,7 +5,7 @@ import type { Attachment } from "svelte/attachments";
 
 import {
 	attachmentProps,
-	dispatchClickWithModifiers,
+	dispatchSyntheticClick,
 	isHTMLElement,
 	makeEventPreventable,
 	mergeProps,
@@ -129,7 +129,7 @@ export function useButton(options: () => ButtonOptions): Button {
 						event.preventDefault();
 						if (!native || isButton) {
 							preventable.preventSohedraHandler();
-							dispatchClickWithModifiers(currentTarget, event);
+							dispatchSyntheticClick(currentTarget, event);
 						}
 						return;
 					}
@@ -149,7 +149,7 @@ export function useButton(options: () => ButtonOptions): Button {
 					event.preventDefault();
 					if (isEnterKey) {
 						preventable.preventSohedraHandler();
-						dispatchClickWithModifiers(currentTarget, event);
+						dispatchSyntheticClick(currentTarget, event);
 					}
 				},
 				onkeyup(event: KeyboardEvent) {
@@ -183,7 +183,7 @@ export function useButton(options: () => ButtonOptions): Button {
 						event.key === " "
 					) {
 						preventable.preventSohedraHandler();
-						dispatchClickWithModifiers(event.currentTarget as Element, event);
+						dispatchSyntheticClick(event.currentTarget as Element, event);
 					}
 				},
 				onpointerdown(event: PointerEvent) {

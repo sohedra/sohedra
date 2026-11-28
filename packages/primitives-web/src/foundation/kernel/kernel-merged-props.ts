@@ -1,5 +1,6 @@
-import type { SohedraEvent } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import type { ClassValue } from "svelte/elements";
+
+import { makeEventPreventable } from "./kernel-event.js";
 
 /** Props as Sohedra merges them: string keys, plus symbol keys for attachments. */
 export type Props = Record<PropertyKey, unknown>;
@@ -124,15 +125,6 @@ function wrapEventHandler(handler: Handler | undefined) {
 		}
 		return handler(...args);
 	};
-}
-
-/** Adds `preventSohedraHandler()` to an event, for handlers that call user handlers themselves. */
-export function makeEventPreventable<E extends Event>(event: E): SohedraEvent<E> {
-	const preventable = event as SohedraEvent<E> & { sohedraHandlerPrevented?: boolean };
-	preventable.preventSohedraHandler = () => {
-		preventable.sohedraHandlerPrevented = true;
-	};
-	return preventable;
 }
 
 /** `class` merged as `[theirs, ours]`, dropping an undefined side. */

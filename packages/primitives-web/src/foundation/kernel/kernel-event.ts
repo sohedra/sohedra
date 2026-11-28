@@ -1,6 +1,7 @@
 import type {
 	InteractionEventType,
 	PointerType,
+	SohedraEvent,
 } from "@sohedra/primitives-core/foundation/kernel/index.js";
 
 import { userAgent } from "./kernel-user-agent.js";
@@ -75,4 +76,13 @@ export function isVirtualPointerEvent(event: PointerEvent): boolean {
 /** The event change details carry when there is no native event. */
 export function fallbackEvent(): Event {
 	return new Event("sohedra");
+}
+
+/** Adds `preventSohedraHandler()` to an event, for handlers that call user handlers themselves. */
+export function makeEventPreventable<E extends Event>(event: E): SohedraEvent<E> {
+	const preventable = event as SohedraEvent<E> & { sohedraHandlerPrevented?: boolean };
+	preventable.preventSohedraHandler = () => {
+		preventable.sohedraHandlerPrevented = true;
+	};
+	return preventable;
 }
