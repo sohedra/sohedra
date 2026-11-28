@@ -1,18 +1,10 @@
+// watch: when its callback runs (lazy or not, on a change, never on an equal value), what it
+// receives, what it tracks, its cleanup, and watch.pre's place before other effects.
 import { flushSync } from "svelte";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { watch } from "../../../src/foundation/kernel/index.js";
-
-const roots: (() => void)[] = [];
-afterEach(() => {
-	roots.splice(0).forEach((cleanup) => cleanup());
-});
-
-function root(setup: () => void): () => void {
-	const cleanup = $effect.root(setup);
-	roots.push(cleanup);
-	return cleanup;
-}
+import { root } from "../../kit/kit-effects.svelte.js";
 
 describe("watch", () => {
 	it("is lazy by default: skips the first run and compares with the value at the call", () => {
@@ -202,50 +194,52 @@ describe("watch", () => {
 		expect(log).toEqual(["run 1", "cleanup 1", "run 2", "cleanup 2"]);
 	});
 
-	it("watch.pre runs before the effects scheduled after it", () => {
-		let value = $state(1);
-		const log: string[] = [];
-		root(() => {
-			$effect(() => {
-				log.push(`effect ${value}`);
+	describe("watch.pre", () => {
+		it("runs before the effects scheduled after it", () => {
+			let value = $state(1);
+			const log: string[] = [];
+			root(() => {
+				$effect(() => {
+					log.push(`effect ${value}`);
+				});
+				watch.pre(
+					() => value,
+					(next) => {
+						log.push(`pre ${next}`);
+					},
+				);
 			});
-			watch.pre(
-				() => value,
-				(next) => {
-					log.push(`pre ${next}`);
-				},
-			);
+			flushSync();
+			log.length = 0;
+
+			value = 2;
+			flushSync();
+			expect(log).toEqual(["pre 2", "effect 2"]);
 		});
-		flushSync();
-		log.length = 0;
 
-		value = 2;
-		flushSync();
-		expect(log).toEqual(["pre 2", "effect 2"]);
-	});
+		it("has the same comparison and cleanup", () => {
+			let source = $state({ a: 1 });
+			const log: string[] = [];
+			const destroy = root(() =>
+				watch.pre(
+					() => source.a,
+					(value, previous) => {
+						log.push(`run ${value} from ${previous}`);
+						return () => log.push(`cleanup ${value}`);
+					},
+				),
+			);
+			flushSync();
+			source = { a: 1 };
+			flushSync();
+			expect(log).toEqual([]);
 
-	it("watch.pre has the same comparison and cleanup", () => {
-		let source = $state({ a: 1 });
-		const log: string[] = [];
-		const destroy = root(() =>
-			watch.pre(
-				() => source.a,
-				(value, previous) => {
-					log.push(`run ${value} from ${previous}`);
-					return () => log.push(`cleanup ${value}`);
-				},
-			),
-		);
-		flushSync();
-		source = { a: 1 };
-		flushSync();
-		expect(log).toEqual([]);
-
-		source = { a: 2 };
-		flushSync();
-		source = { a: 3 };
-		flushSync();
-		destroy();
-		expect(log).toEqual(["run 2 from 1", "cleanup 2", "run 3 from 2", "cleanup 3"]);
+			source = { a: 2 };
+			flushSync();
+			source = { a: 3 };
+			flushSync();
+			destroy();
+			expect(log).toEqual(["run 2 from 1", "cleanup 2", "run 3 from 2", "cleanup 3"]);
+		});
 	});
 });

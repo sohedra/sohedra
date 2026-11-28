@@ -1,13 +1,10 @@
+// CommittedValue: a memory that holds its initial value, commits the step it follows after each
+// update, and takes a direct commit.
 import { flushSync } from "svelte";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { CommittedValue } from "../../../src/foundation/kernel/index.js";
-
-const roots: (() => void)[] = [];
-
-afterEach(() => {
-	roots.splice(0).forEach((cleanup) => cleanup());
-});
+import { root } from "../../kit/kit-effects.svelte.js";
 
 /** A step counted from the memory: how often the source moved since the memory last settled. */
 function setup() {
@@ -19,7 +16,7 @@ function setup() {
 			? memory.current
 			: { value: source.value, moves: memory.current.moves + 1 },
 	);
-	roots.push($effect.root(() => memory.follow(() => step)));
+	root(() => memory.follow(() => step));
 	return { source, memory, read: () => step };
 }
 

@@ -1,4 +1,5 @@
-// Svelte behaviour the stores rely on, checked headless.
+// Svelte behaviour the stores' class fields rely on, checked headless: a lazy `$derived` reading a
+// `#private` field, and a writable `$derived`.
 import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 

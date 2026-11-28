@@ -1,4 +1,5 @@
-// `track`: an effect a test watches, for what a store's reactive reads re-run.
+// Effects in a test: `track`, an effect the test watches, and `root`, an effect root for code that
+// creates effects of its own. Both are destroyed when the test finishes.
 import { flushSync } from "svelte";
 import { onTestFinished } from "vitest";
 
@@ -23,4 +24,15 @@ export function track<T>(fn: () => T): Tracked<T> {
 	onTestFinished(destroy);
 	flushSync();
 	return { runs };
+}
+
+/**
+ * Runs `fn` inside an `$effect.root`, as a component's script runs: the effects it creates (a
+ * `watch`, a `follow`) belong to the root and first run at the next `flushSync()`. Returns the
+ * root's destroy, which also runs when the test finishes; destroying twice does nothing more.
+ */
+export function root(fn: () => void): () => void {
+	const destroy = $effect.root(fn);
+	onTestFinished(destroy);
+	return destroy;
 }

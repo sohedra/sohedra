@@ -1,3 +1,4 @@
+// createChangeEventDetails: what a change carries, and the cancel and propagation it records.
 import { describe, expect, it } from "vitest";
 
 import { createChangeEventDetails, REASONS } from "../../../src/foundation/kernel/index.js";
