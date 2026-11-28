@@ -492,27 +492,23 @@ export function useFocusManager(
 			if (!positioner && !anchorElement) {
 				return;
 			}
-			const offs: (() => void)[] = [];
-			if (anchorElement) {
-				offs.push(
-					on(anchorElement, "focusout", handleFocusOutside),
-					// In Safari, buttons lose focus when pressed.
-					on(anchorElement, "pointerdown", markPointerDown),
-				);
-			}
-			if (positioner) {
-				offs.push(
-					on(positioner, "focusin", handleFocusIn),
-					on(positioner, "focusout", handleFocusOutside),
-				);
-				if (portal) {
-					offs.push(on(positioner, "focusout", markInsideTree, { capture: true }));
-				}
+			// Native listeners, not `on`: on an element in a portal outside the app's root, `on` would
+			// mark the event handled there, and Svelte's document listener would then skip the
+			// delegated handlers on that element and above it (a user's `onfocusout` on the Positioner).
+			anchorElement?.addEventListener("focusout", handleFocusOutside);
+			// In Safari, buttons lose focus when pressed.
+			anchorElement?.addEventListener("pointerdown", markPointerDown);
+			positioner?.addEventListener("focusin", handleFocusIn);
+			positioner?.addEventListener("focusout", handleFocusOutside);
+			if (positioner && portal) {
+				positioner.addEventListener("focusout", markInsideTree, true);
 			}
 			return () => {
-				for (const off of offs) {
-					off();
-				}
+				anchorElement?.removeEventListener("focusout", handleFocusOutside);
+				anchorElement?.removeEventListener("pointerdown", markPointerDown);
+				positioner?.removeEventListener("focusin", handleFocusIn);
+				positioner?.removeEventListener("focusout", handleFocusOutside);
+				positioner?.removeEventListener("focusout", markInsideTree, true);
 				cancelRestoreFocus?.();
 			};
 		});
