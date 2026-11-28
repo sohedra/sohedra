@@ -4,10 +4,9 @@ import { defineConfig } from "vitest/config";
 
 import { browserCommands } from "./tests/browser-commands.js";
 
-// Two projects: `ssr` runs the `*.ssr.test.ts` files in Node, `browser` every other test in the
-// browsers; the stores' own tests are `primitives-core`'s. `vitest --mode async` compiles with
-// Svelte's `experimental.async`. The browser commands are the ones `tests/setup-browser.ts` and
-// `tests/kit/kit-server.ts` call.
+// Two projects: `ssr` runs the `*.ssr.test.ts` files in Node, `browser` the other tests in the
+// browsers. `vitest --mode async` compiles with Svelte's `experimental.async`. The browser
+// commands are the ones `tests/setup-browser.ts` and `tests/kit/kit-server.ts` call.
 export default defineConfig(({ mode }) => ({
 	test: {
 		setupFiles: ["./tests/setup-reset.ts", ...(mode === "async" ? ["./tests/setup-async.ts"] : [])],

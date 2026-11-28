@@ -58,12 +58,7 @@ const SKIPS: Record<string, string> = {
 const WORD_SKIPS = new Set(["NOTICE.txt"]);
 
 /** Files whose long comments the length rule allows, each with why, or "todo:" to fix. */
-const LENGTH_EXEMPTIONS: Record<string, string> = {
-	"packages/primitives-web/vite.config.ts":
-		"todo: cut the comment above the config to three lines.",
-	"packages/primitives-web/tests/components/popover/fixtures/svelte.config.js":
-		"todo: cut the file's first comment to three lines.",
-};
+const LENGTH_EXEMPTIONS: Record<string, string> = {};
 
 /** Where an effect in the primitives' `src/` has no comment above it. */
 export function checkEffectComments(root: string): string[] {
