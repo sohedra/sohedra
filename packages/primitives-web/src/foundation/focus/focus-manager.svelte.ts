@@ -4,7 +4,7 @@ import type {
 	OpenChangeDetails,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 /* oxlint-disable max-lines -- One idea: a popup's focus on open, while open and on close share state that six separate files had to pass around. */
-import { untrack } from "svelte";
+import { tick, untrack } from "svelte";
 import { createAttachmentKey } from "svelte/attachments";
 
 import {
@@ -572,8 +572,10 @@ export function useFocusManager(
 				lastInteractionType = "";
 				const doc = ownerDocument(focusElement);
 				const previouslyFocused = activeElement(doc);
-				// Wait for the current flush (tabindex updates) to land.
-				webScheduler.microtask(() => {
+				// Wait for Svelte's pending updates to land: the tabindex updates, and content behind a
+				// `<svelte:boundary>` whose `await` has already resolved (Svelte 5.59 renders it after the
+				// open's own microtasks). Content still loading is not waited for.
+				void tick().then(() => {
 					const current = options();
 					const value = current.initialFocus ?? true;
 					const resolved =
