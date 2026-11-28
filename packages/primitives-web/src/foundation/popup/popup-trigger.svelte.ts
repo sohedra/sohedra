@@ -147,7 +147,7 @@ export function usePopupTrigger<
 				() => popup,
 				() => element,
 			)
-		: { before: {}, after: {} };
+		: { guardBefore: {}, guardAfter: {} };
 
 	const props = mergePropsN([
 		hover,
@@ -165,8 +165,8 @@ export function usePopupTrigger<
 		get guarded() {
 			return behavior.trigger?.focusGuards === true && popup.hasTriggerFocusGuards(options().id);
 		},
-		guardBefore: guards.before,
-		guardAfter: guards.after,
+		guardBefore: guards.guardBefore,
+		guardAfter: guards.guardAfter,
 		// The composite widgets set no context the trigger reads yet: none owns its tab stop.
 		inComposite: false,
 	};

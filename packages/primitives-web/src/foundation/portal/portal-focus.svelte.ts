@@ -37,11 +37,11 @@ export interface Portal {
 /** A portal that also manages focus across it, for a popup that takes focus. */
 export interface FocusPortal extends Portal {
 	/** Whether the two guards around the portal element render (an open non-modal popup). */
-	readonly shouldRenderGuards: boolean;
+	readonly guarded: boolean;
 	/** Spread on a `<span>` right before the portal element. */
-	readonly beforeOutsideGuardProps: HTMLAttributes<HTMLSpanElement>;
+	readonly guardBefore: HTMLAttributes<HTMLSpanElement>;
 	/** Spread on a `<span>` right after the portal element. */
-	readonly afterOutsideGuardProps: HTMLAttributes<HTMLSpanElement>;
+	readonly guardAfter: HTMLAttributes<HTMLSpanElement>;
 }
 
 /** `clip-path` hidden, out of the layout, for the `aria-owns` owner span. */
@@ -188,7 +188,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 	// popup stays open.
 	const modal = $derived(portal.focusManagerState?.modal === true);
 	const open = $derived(portal.focusManagerState?.open === true);
-	const shouldRenderGuards = $derived.by(() => {
+	const guarded = $derived.by(() => {
 		const state = portal.focusManagerState;
 		return !!state && !state.modal && state.open && !!portal.portalNode;
 	});
@@ -239,16 +239,16 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 		get container() {
 			return moved.container;
 		},
-		get shouldRenderGuards() {
-			return shouldRenderGuards;
+		get guarded() {
+			return guarded;
 		},
 		nodeProps: moved.nodeProps,
-		beforeOutsideGuardProps: {
+		guardBefore: {
 			...focusGuardProps(
 				(event) => {
 					const node = portal.portalNode;
 					if (node && isOutsideEvent(event, node)) {
-						portal.beforeInsideGuard?.focus();
+						portal.guardBeforeInside?.focus();
 					} else {
 						getPreviousTabbable(portal.focusManagerState?.anchorElement ?? null)?.focus();
 					}
@@ -256,15 +256,15 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 				{ "data-type": "outside" },
 			),
 			[createAttachmentKey()]: attachRef<HTMLElement>((element) =>
-				portal.setBeforeOutsideGuard(element),
+				portal.setGuardBeforeOutside(element),
 			),
 		} as HTMLAttributes<HTMLSpanElement>,
-		afterOutsideGuardProps: {
+		guardAfter: {
 			...focusGuardProps(
 				(event) => {
 					const node = portal.portalNode;
 					if (node && isOutsideEvent(event, node)) {
-						portal.afterInsideGuard?.focus();
+						portal.guardAfterInside?.focus();
 					} else {
 						const state = portal.focusManagerState;
 						getNextTabbable(state?.anchorElement ?? null)?.focus();
@@ -274,7 +274,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 				{ "data-type": "outside" },
 			),
 			[createAttachmentKey()]: attachRef<HTMLElement>((element) =>
-				portal.setAfterOutsideGuard(element),
+				portal.setGuardAfterOutside(element),
 			),
 		} as HTMLAttributes<HTMLSpanElement>,
 	};

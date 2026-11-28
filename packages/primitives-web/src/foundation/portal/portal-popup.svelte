@@ -48,7 +48,7 @@
   renders beside it.
 -->
 {#if mounted}
-	{#if portal.shouldRenderGuards}<span {...portal.beforeOutsideGuardProps}></span><span
+	{#if portal.guarded}<span {...portal.guardBefore}></span><span
 			aria-owns={ownedId}
 			style={ownerVisuallyHidden}
 		></span>{/if}
@@ -57,5 +57,5 @@
 			<Part tag="div" bind:ref {state} {id} {...portal.nodeProps} {@attach inside} {user} />
 		{/key}
 	{/if}
-	{#if portal.shouldRenderGuards}<span {...portal.afterOutsideGuardProps}></span>{/if}
+	{#if portal.guarded}<span {...portal.guardAfter}></span>{/if}
 {/if}

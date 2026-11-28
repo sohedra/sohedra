@@ -108,8 +108,8 @@ function isPreventScrollSupported(doc: Document): boolean {
  * `popup` is what the manager reads of the popup (its store satisfies the view as it is) and
  * `options` returns the part's focus options as a plain object; it is called whenever one is
  * needed, so every option stays live. It starts its effects when called, once, while the Popup
- * part initialises. The Popup renders `beforeGuard` and `afterGuard` around its element while
- * `renderGuards`.
+ * part initialises. The Popup renders `guardBefore` and `guardAfter` around its element while
+ * `guarded`.
  */
 export function useFocusManager(
 	popup: PopupView<WebTypes>,
@@ -133,7 +133,7 @@ export function useFocusManager(
 	const untrappedCombobox = $derived(
 		isTypeableCombobox(popup.anchorElement) && options().initialFocus === false,
 	);
-	const renderGuards = $derived(
+	const guarded = $derived(
 		!disabled && (modal ? !untrappedCombobox : true) && (portal != null || modal),
 	);
 
@@ -146,8 +146,8 @@ export function useFocusManager(
 	let closeType: InteractionType = "";
 	let lastInteractionType: InteractionType = "";
 	/** The popup's own guards, around its element. */
-	let beforeGuardElement: HTMLElement | null = null;
-	let afterGuardElement: HTMLElement | null = null;
+	let guardBeforeElement: HTMLElement | null = null;
+	let guardAfterElement: HTMLElement | null = null;
 	let pointerDownOutside = false;
 	let lastFocusedTabbable: FocusableElement | null = null;
 	let cancelRestoreFocus: (() => void) | undefined;
@@ -163,7 +163,7 @@ export function useFocusManager(
 
 	/** The elements treated as inside the popup although rendered elsewhere. */
 	function insideElements(): Element[] {
-		const guard = bridge?.guards?.beforeTrigger;
+		const guard = bridge?.guards?.guardBeforeTrigger;
 		return guard ? [guard] : [];
 	}
 
@@ -175,7 +175,7 @@ export function useFocusManager(
 
 	/** The element Tab goes to when leaving the popup forwards: the guard after the trigger. */
 	function nextFocusable(): HTMLElement | null | undefined {
-		return bridge?.guards?.afterTrigger as HTMLElement | null | undefined;
+		return bridge?.guards?.guardAfterTrigger as HTMLElement | null | undefined;
 	}
 
 	function setOpen(open: boolean, event: FocusEvent): void {
@@ -191,7 +191,7 @@ export function useFocusManager(
 
 	// The guards around the Popup's element. A trap sends focus to its other end as the guard
 	// takes it, not a frame later: a Tab pressed before that frame would leave from the guard.
-	function onBeforeGuardFocus(event: FocusEvent) {
+	function onGuardBeforeFocus(event: FocusEvent) {
 		if (modal) {
 			const elements = tabbableContent();
 			enqueueFocus(elements[elements.length - 1], { sync: true });
@@ -200,12 +200,12 @@ export function useFocusManager(
 			if (isOutsideEvent(event, portal.portalNode)) {
 				getNextTabbable(popup.anchorElement)?.focus();
 			} else {
-				(previousFocusable() ?? portal.beforeOutsideGuard)?.focus();
+				(previousFocusable() ?? portal.guardBeforeOutside)?.focus();
 			}
 		}
 	}
 
-	function onAfterGuardFocus(event: FocusEvent) {
+	function onGuardAfterFocus(event: FocusEvent) {
 		if (modal) {
 			enqueueFocus(tabbableContent()[0], { sync: true });
 		} else if (portal?.portalNode) {
@@ -213,33 +213,33 @@ export function useFocusManager(
 			if (isOutsideEvent(event, portal.portalNode)) {
 				getPreviousTabbable(popup.anchorElement)?.focus();
 			} else {
-				(nextFocusable() ?? portal.afterOutsideGuard)?.focus();
+				(nextFocusable() ?? portal.guardAfterOutside)?.focus();
 			}
 		}
 	}
 
-	function setBeforeGuard(element: HTMLElement | null) {
-		beforeGuardElement = element;
+	function setGuardBefore(element: HTMLElement | null) {
+		guardBeforeElement = element;
 		if (portal) {
-			portal.setBeforeInsideGuard(element);
+			portal.setGuardBeforeInside(element);
 		}
-		bridge?.guards?.setBeforeContent(element);
+		bridge?.guards?.setGuardBeforeContent(element);
 	}
 
-	function setAfterGuard(element: HTMLElement | null) {
-		afterGuardElement = element;
+	function setGuardAfter(element: HTMLElement | null) {
+		guardAfterElement = element;
 		if (portal) {
-			portal.setAfterInsideGuard(element);
+			portal.setGuardAfterInside(element);
 		}
 	}
 
-	const beforeGuard = {
-		...focusGuardProps(onBeforeGuardFocus, { "data-type": "inside" }),
-		[createAttachmentKey()]: attachRef<HTMLElement>(setBeforeGuard),
+	const guardBefore = {
+		...focusGuardProps(onGuardBeforeFocus, { "data-type": "inside" }),
+		[createAttachmentKey()]: attachRef<HTMLElement>(setGuardBefore),
 	};
-	const afterGuard = {
-		...focusGuardProps(onAfterGuardFocus, { "data-type": "inside" }),
-		[createAttachmentKey()]: attachRef<HTMLElement>(setAfterGuard),
+	const guardAfter = {
+		...focusGuardProps(onGuardAfterFocus, { "data-type": "inside" }),
+		[createAttachmentKey()]: attachRef<HTMLElement>(setGuardAfter),
 	};
 
 	// Whether focus moving to `relatedTarget` left the popup's tree: its trigger, popup, portal,
@@ -254,12 +254,12 @@ export function useFocusManager(
 		const isRelatedFocusGuard =
 			relatedTarget?.hasAttribute(FOCUS_GUARD_ATTRIBUTE) &&
 			[
-				beforeGuardElement,
-				afterGuardElement,
-				portal?.beforeInsideGuard,
-				portal?.afterInsideGuard,
-				portal?.beforeOutsideGuard,
-				portal?.afterOutsideGuard,
+				guardBeforeElement,
+				guardAfterElement,
+				portal?.guardBeforeInside,
+				portal?.guardAfterInside,
+				portal?.guardBeforeOutside,
+				portal?.guardAfterOutside,
 				previousFocusable(),
 				nextFocusable(),
 			].includes(relatedTarget);
@@ -309,10 +309,10 @@ export function useFocusManager(
 			isTypeableCombobox(node.context?.anchorElement || null),
 		)?.context?.anchorElement;
 		const exposed = [
-			beforeGuardElement,
-			afterGuardElement,
-			portal?.beforeOutsideGuard,
-			portal?.afterOutsideGuard,
+			guardBeforeElement,
+			guardAfterElement,
+			portal?.guardBeforeOutside,
+			portal?.guardAfterOutside,
 			...insideElements(),
 			rootAncestorComboboxAnchor,
 			previousFocusable(),
@@ -837,10 +837,10 @@ export function useFocusManager(
 
 	startEffects();
 	return {
-		get renderGuards() {
-			return renderGuards;
+		get guarded() {
+			return guarded;
 		},
-		beforeGuard,
-		afterGuard,
+		guardBefore,
+		guardAfter,
 	};
 }

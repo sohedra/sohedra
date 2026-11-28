@@ -19,7 +19,7 @@ import type { TriggerFocusGuardProps } from "./focus-types.js";
  * popup's focus manager holds the other end (its `bridge`).
  *
  * `popup` and `trigger` are read when a guard takes focus, so a trigger may change popups. The
- * part renders `before` and `after` around its element while it owns the open popup.
+ * part renders `guardBefore` and `guardAfter` around its element while it owns the open popup.
  */
 export function useTriggerFocusGuards(
 	popup: () => PopupView<WebTypes>,
@@ -41,25 +41,25 @@ export function useTriggerFocusGuards(
 	}
 
 	return {
-		before: {
+		guardBefore: {
 			...focusGuardProps((event) => closeAndFocus(event, -1)),
 			[createAttachmentKey()]: attachRef<HTMLElement>((guard) =>
-				popup().guards?.setBeforeTrigger(guard),
+				popup().guards?.setGuardBeforeTrigger(guard),
 			),
 		},
-		after: {
+		guardAfter: {
 			...focusGuardProps((event) => {
 				const view = popup();
 				const positionerElement = view.positionerElement;
 				// Tab from the trigger enters the popup; Tab from the popup's end leaves it.
 				if (positionerElement && isOutsideEvent(event, positionerElement)) {
-					(view.guards?.beforeContent as HTMLElement | null)?.focus();
+					(view.guards?.guardBeforeContent as HTMLElement | null)?.focus();
 				} else {
 					closeAndFocus(event, 1);
 				}
 			}),
 			[createAttachmentKey()]: attachRef<HTMLElement>((guard) =>
-				popup().guards?.setAfterTrigger(guard),
+				popup().guards?.setGuardAfterTrigger(guard),
 			),
 		},
 	};

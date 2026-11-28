@@ -55,16 +55,16 @@ export type FocusGuardProps = HTMLAttributes<HTMLSpanElement>;
 export interface FocusManager {
 	/** Installs the manager's effects. Call once, while the Popup part initialises. */
 	/** Whether the Popup renders the two guards around its element. */
-	readonly renderGuards: boolean;
+	readonly guarded: boolean;
 	/** Spread on a `<span>` right before the Popup's element. */
-	readonly beforeGuard: FocusGuardProps;
+	readonly guardBefore: FocusGuardProps;
 	/** Spread on a `<span>` right after the Popup's element. */
-	readonly afterGuard: FocusGuardProps;
+	readonly guardAfter: FocusGuardProps;
 }
 
 export interface TriggerFocusGuardProps {
 	/** Spread on a `<span>` right before the trigger's element. */
-	readonly before: FocusGuardProps;
+	readonly guardBefore: FocusGuardProps;
 	/** Spread on a `<span>` right after the trigger's element. */
-	readonly after: FocusGuardProps;
+	readonly guardAfter: FocusGuardProps;
 }

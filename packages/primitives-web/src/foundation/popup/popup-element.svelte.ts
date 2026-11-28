@@ -70,7 +70,7 @@ function attachOpenComplete(store: PopupView<WebTypes>): Attachment<HTMLElement>
 	};
 }
 
-const NO_GUARDS = { renderGuards: false, beforeGuard: {}, afterGuard: {} } as const;
+const NO_GUARDS = { guarded: false, guardBefore: {}, guardAfter: {} } as const;
 
 /**
  * The Popup part's work: hands the element to the store, reports a finished opening, hears
@@ -139,9 +139,9 @@ export function usePopupElement(
 			return style;
 		},
 		get guarded() {
-			return focus.renderGuards;
+			return focus.guarded;
 		},
-		guardBefore: focus.beforeGuard,
-		guardAfter: focus.afterGuard,
+		guardBefore: focus.guardBefore,
+		guardAfter: focus.guardAfter,
 	};
 }

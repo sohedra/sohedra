@@ -18,10 +18,10 @@ export interface PortalFocusManagerView {
 export class PortalStore {
 	#portalNode: HTMLElement | null = $state.raw(null);
 	#focusManagerState: PortalFocusManagerView | null = $state.raw(null);
-	#beforeOutsideGuard: HTMLElement | null = null;
-	#afterOutsideGuard: HTMLElement | null = null;
-	#beforeInsideGuard: HTMLElement | null = null;
-	#afterInsideGuard: HTMLElement | null = null;
+	#guardBeforeOutside: HTMLElement | null = null;
+	#guardAfterOutside: HTMLElement | null = null;
+	#guardBeforeInside: HTMLElement | null = null;
+	#guardAfterInside: HTMLElement | null = null;
 
 	/** The portal node, once rendered. */
 	get portalNode(): HTMLElement | null {
@@ -34,23 +34,23 @@ export class PortalStore {
 	}
 
 	/** The guard before the portal. */
-	get beforeOutsideGuard(): HTMLElement | null {
-		return this.#beforeOutsideGuard;
+	get guardBeforeOutside(): HTMLElement | null {
+		return this.#guardBeforeOutside;
 	}
 
 	/** The guard after the portal. */
-	get afterOutsideGuard(): HTMLElement | null {
-		return this.#afterOutsideGuard;
+	get guardAfterOutside(): HTMLElement | null {
+		return this.#guardAfterOutside;
 	}
 
 	/** The guard before the popup, inside the portal. */
-	get beforeInsideGuard(): HTMLElement | null {
-		return this.#beforeInsideGuard;
+	get guardBeforeInside(): HTMLElement | null {
+		return this.#guardBeforeInside;
 	}
 
 	/** The guard after the popup, inside the portal. */
-	get afterInsideGuard(): HTMLElement | null {
-		return this.#afterInsideGuard;
+	get guardAfterInside(): HTMLElement | null {
+		return this.#guardAfterInside;
 	}
 
 	setPortalNode = (value: HTMLElement | null): void => {
@@ -61,19 +61,19 @@ export class PortalStore {
 		this.#focusManagerState = value;
 	};
 
-	setBeforeOutsideGuard = (value: HTMLElement | null): void => {
-		this.#beforeOutsideGuard = value;
+	setGuardBeforeOutside = (value: HTMLElement | null): void => {
+		this.#guardBeforeOutside = value;
 	};
 
-	setAfterOutsideGuard = (value: HTMLElement | null): void => {
-		this.#afterOutsideGuard = value;
+	setGuardAfterOutside = (value: HTMLElement | null): void => {
+		this.#guardAfterOutside = value;
 	};
 
-	setBeforeInsideGuard = (value: HTMLElement | null): void => {
-		this.#beforeInsideGuard = value;
+	setGuardBeforeInside = (value: HTMLElement | null): void => {
+		this.#guardBeforeInside = value;
 	};
 
-	setAfterInsideGuard = (value: HTMLElement | null): void => {
-		this.#afterInsideGuard = value;
+	setGuardAfterInside = (value: HTMLElement | null): void => {
+		this.#guardAfterInside = value;
 	};
 }

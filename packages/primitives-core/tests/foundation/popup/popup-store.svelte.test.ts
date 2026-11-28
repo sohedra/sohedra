@@ -357,18 +357,18 @@ describe("PopupStore", () => {
 		const before = element("before-trigger");
 		const after = element("after-trigger");
 		const content = element("before-content");
-		store.guards.setBeforeTrigger(before);
-		store.guards.setAfterTrigger(after);
-		store.guards.setBeforeContent(content);
-		expect(store.guards.beforeTrigger).toBe(before);
-		expect(store.guards.afterTrigger).toBe(after);
-		expect(store.guards.beforeContent).toBe(content);
-		store.guards.setBeforeTrigger(null);
-		store.guards.setAfterTrigger(null);
-		store.guards.setBeforeContent(null);
-		expect(store.guards.beforeTrigger).toBe(null);
-		expect(store.guards.afterTrigger).toBe(null);
-		expect(store.guards.beforeContent).toBe(null);
+		store.guards.setGuardBeforeTrigger(before);
+		store.guards.setGuardAfterTrigger(after);
+		store.guards.setGuardBeforeContent(content);
+		expect(store.guards.guardBeforeTrigger).toBe(before);
+		expect(store.guards.guardAfterTrigger).toBe(after);
+		expect(store.guards.guardBeforeContent).toBe(content);
+		store.guards.setGuardBeforeTrigger(null);
+		store.guards.setGuardAfterTrigger(null);
+		store.guards.setGuardBeforeContent(null);
+		expect(store.guards.guardBeforeTrigger).toBe(null);
+		expect(store.guards.guardAfterTrigger).toBe(null);
+		expect(store.guards.guardBeforeContent).toBe(null);
 	});
 
 	it("adds its popup node while connected", () => {
