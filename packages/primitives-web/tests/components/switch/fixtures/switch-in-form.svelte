@@ -1,11 +1,7 @@
 <!--
-  A switch in a plain `<form>` with Submit and Reset buttons, sized so a real pointer can press it.
-  Submitting is always prevented, then reported through `onFormSubmit`.
-  - `form`: the switch is rendered outside the form, which gets this id.
-  - `binding`: `"state"` binds `checked` to a `$state` starting at `initial`, shown in
-    `data-testid="bound"`; `"function"` binds it to `get` / `set`.
-  - `onFormReset`: the form's own `onreset` handler.
-  - `nativeCheckbox`: also renders a native checkbox with this name in the form.
+  A switch in a plain `<form>` with Submit and Reset buttons, sized for a real pointer; submitting
+  is prevented and reported through `onFormSubmit`. `form` renders the switch outside the form,
+  `binding` binds `checked` to `$state` or to `get`/`set`.
 -->
 <script lang="ts">
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";

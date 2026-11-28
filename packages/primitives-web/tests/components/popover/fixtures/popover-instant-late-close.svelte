@@ -1,9 +1,7 @@
 <!--
-  Two hover triggers inside a Root whose parent accepts a close but commits `open = false` only
-  `commitDelay` ms later. `open={open}` alone doesn't hold the popup open, so the close is
-  refused with `cancel()` until the parent commits it, which the demo cannot express. `onRender`
-  sees the popup's state each time it changes, `closeRequested` tells whether the close was asked
-  for.
+  Two hover triggers in a Root whose parent accepts a close but commits `open = false` only
+  `commitDelay` ms later, refusing the close with `cancel()` until then, which the demo can't
+  express. `onRender` sees each state of the popup.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

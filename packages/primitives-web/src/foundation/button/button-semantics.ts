@@ -78,10 +78,9 @@ function focusableWhenDisabledProps(options: ButtonOptions): Props {
 }
 
 /**
- * Native and non-native button semantics: Enter/Space activation on non-buttons, disabled
- * handling, focusability. `after` goes at the end of a part's merge chain: it wraps the handlers
- * merged so far. A composite item (a menu item) is pressed with Space on keydown, and leaves its
- * tab index to the widget. Call it once while the part initialises.
+ * Button semantics, native or not: Enter and Space on non-buttons, disabled handling and
+ * focusability; a composite item (a menu item) presses on Space keydown and leaves its tab index
+ * to the widget. `after` goes last in a part's merge chain: it wraps the handlers before it.
  */
 export function useButton(options: () => ButtonOptions): Button {
 	function after(external: Props): Props {
@@ -210,10 +209,9 @@ export function useButton(options: () => ButtonOptions): Button {
 	}
 
 	/**
-	 * A focusable disabled composite item whose element another part made natively disabled (a
-	 * disabled Toolbar.Button rendering a Menu.Trigger or a grouped Toggle: `disabled` passes
-	 * through both parts' buttons) clears the `disabled` attribute, so the item stays focusable.
-	 * Then, in development, checks that the rendered element matches `native`.
+	 * A focusable disabled composite item that another part made natively disabled (a disabled
+	 * Toolbar.Button rendering a Menu.Trigger) clears `disabled`, so it stays focusable. In
+	 * development, then checks that the rendered element matches `native`.
 	 */
 	const attach: Attachment<Element> = (element) => {
 		if (untrack(options).composite) {

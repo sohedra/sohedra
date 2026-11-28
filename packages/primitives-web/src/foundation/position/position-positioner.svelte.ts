@@ -26,10 +26,9 @@ import { internalBackdropStyle, positionerStyle } from "./position-positioner-st
 import type { Positioner, PositionerOptions } from "./position-types.js";
 
 /**
- * Positions a popup against its anchor: it follows the anchor while the popup is mounted and
- * writes each result to the Positioner's state, which the parts derive their styles and data
- * attributes from. `positioner` is that state; `options` is called inside the deriveds below, so
- * each option stays reactive; `fixed.popup` is the popup's store.
+ * Positions a popup against its anchor while it is mounted and writes each result to
+ * `positioner`, the state the parts derive their styles from. `options` is read inside deriveds,
+ * so each option stays reactive; `fixed.popup` is the popup's store.
  */
 export function usePositioner(
 	positioner: PositionerStore<WebTypes>,

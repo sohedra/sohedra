@@ -13,11 +13,8 @@ import type { TriggerFocusGuards, TriggerFocusGuardsOptions } from "./focus-type
 
 /**
  * The two focus guards around a trigger whose non-modal popup is portalled elsewhere: they carry
- * Tab from the trigger into the popup, and out of the popup to what follows the trigger. The
- * popup's focus manager holds the other end (its `bridge`).
- *
- * The options are read when a guard takes focus, so a trigger may change popups. The part renders
- * `guardBefore` and `guardAfter` around its element while it owns the open popup.
+ * Tab into the popup and out of it to what follows the trigger (the popup's focus manager holds
+ * the other end). The options are read when a guard takes focus, so the popup may change.
  */
 export function useTriggerFocusGuards(
 	options: () => TriggerFocusGuardsOptions,

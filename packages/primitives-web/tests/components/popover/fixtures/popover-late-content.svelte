@@ -1,8 +1,7 @@
 <!--
-  A popover whose content arrives after it opens: the Popup (or a Viewport in it) holds a
-  `<svelte:boundary>` that shows its `pending` snippet until `promise` resolves. The resolved
-  content is a 300×200 box with the popup's only button. `focusLate` points `initialFocus` at that
-  button. The demo's content is there from the start.
+  A popover whose content arrives after it opens: a `<svelte:boundary>` in the Popup (or a
+  Viewport) shows `pending` until `promise` resolves to a 300×200 box with the popup's only button,
+  which `focusLate` gives initial focus. The demo's content is there from the start.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

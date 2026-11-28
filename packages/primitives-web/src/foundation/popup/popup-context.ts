@@ -1,7 +1,6 @@
-// The contexts every popup shares on the web. Core never reads a context. The popup tree is
-// created by the outermost popup Root and joined by every Root nested in it; the node context
-// holds the id of the nearest popup node, which nested popups hang under. Every popup Root reads
-// the dialog context to learn whether it is nested in a popup (`isNestedInPopup`).
+// The contexts every popup shares on the web; core never reads a context. The outermost popup Root
+// creates the tree and nested Roots join it; the node context holds the nearest node's id. Every
+// popup Root reads the dialog context to learn whether it is nested (`isNestedInPopup`).
 
 import { defineContext } from "@sohedra/primitives-core/foundation/kernel";
 import type { PopupTree } from "@sohedra/primitives-core/foundation/popup";

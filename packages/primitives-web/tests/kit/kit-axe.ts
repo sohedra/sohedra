@@ -10,10 +10,9 @@ import { expect } from "vitest";
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"];
 
 /**
- * Rules switched off everywhere, each with the reason. Only rules that judge styling the fixtures
- * don't have, or the page the fixture sits in rather than the component, are off; every rule about
- * the semantics a part renders stays on. `avoid-inline-spacing` and `css-orientation-lock` stay on
- * too: they read styles the parts themselves write.
+ * Rules switched off everywhere, each with the reason: only rules on styling the fixtures don't
+ * have or on the page around them. Every rule on the semantics a part renders stays on, as do
+ * `avoid-inline-spacing` and `css-orientation-lock`, which read styles parts write.
  */
 const DISABLED_RULES: Record<string, string> = {
 	// Styling: the parts are headless and the fixtures unstyled, so text and background colours are
@@ -77,10 +76,9 @@ const ACCEPTED: readonly {
 const FOCUS_GUARD = "[data-sohedra-focus-guard]";
 
 /**
- * Rules whose failures axe reports as "needs review" (`incomplete`) by policy, though the check
- * itself is exact. They fail like violations. Other `incomplete` results stay out: they are the
- * checks axe can't decide (an `aria-controls` target inside a closed popup, a focus guard in a
- * hidden region) and need a person, not a test.
+ * Rules axe reports as "needs review" by policy, though the check is exact: they fail like
+ * violations. Other `incomplete` results stay out: axe can't decide them (an `aria-controls`
+ * target in a closed popup, a focus guard in a hidden region).
  */
 const REVIEW_AS_VIOLATION = new Set([
 	// Two elements with an id that an ARIA attribute references: axe 4.x marks it for review since

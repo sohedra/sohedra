@@ -100,11 +100,9 @@ export interface PressEnd {
 }
 
 /**
- * What the end of a press that began inside the popup means for the click after it, which lands
- * on the common ancestor of both ends and so looks like an outside click:
- * - `suppress-next`: the press was dragged out, so the next outside click doesn't dismiss;
- * - `suppress-immediate`: its start was prevented, so it may make no click at all; only a click
- *   that arrives at once is absorbed.
+ * What the end of a press that began inside means for the click after it, which looks like an
+ * outside click: `suppress-next` (dragged out: the next outside click doesn't dismiss) or
+ * `suppress-immediate` (its start was prevented: only a click that arrives at once is absorbed).
  */
 export function pressEndOutcome(end: PressEnd): "none" | "suppress-immediate" | "suppress-next" {
 	if (end.pressType !== "intentional") {

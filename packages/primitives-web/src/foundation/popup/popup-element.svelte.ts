@@ -1,7 +1,6 @@
-// The Popup part's work on the web: it hands the popup element to its store, reports a finished
-// opening after the enter animations, hears Escape and presses inside, keeps a hovered popup
-// open, and manages focus for a popup that takes it. Which of these a kind has is read from its
-// behaviour row.
+// The Popup part's work on the web: it hands the element to its store, reports a finished opening,
+// hears Escape and presses inside, keeps a hovered popup open and manages focus. Which of these a
+// kind has is read from its behaviour row.
 import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 import { getAbortSignal, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
@@ -74,10 +73,9 @@ function attachOpenComplete(store: PopupView<WebTypes>): Attachment<HTMLElement>
 const NO_GUARDS = { guarded: false, guardBefore: {}, guardAfter: {} } as const;
 
 /**
- * The Popup part's work: hands the element to the store, reports a finished opening, hears
- * Escape and presses inside, keeps a hovered popup open (a kind whose row has `hover`) and
- * manages focus (a kind whose row has `restoreFocus`). Call once while the Popup part initialises:
- * it reads the portal and layout contexts and starts its own effects.
+ * The Popup part's work: hands the element to the store, reports a finished opening, hears Escape
+ * and presses inside, keeps a hovered popup open (`hover` in the row) and manages focus
+ * (`restoreFocus`). Call once while the Popup initialises: it reads the portal and layout contexts.
  */
 export function usePopupElement(
 	store: PopupView<WebTypes>,

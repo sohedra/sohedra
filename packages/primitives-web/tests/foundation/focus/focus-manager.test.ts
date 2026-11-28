@@ -1,21 +1,7 @@
 import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
-// The focus manager through a Popover: where focus returns on close and with which
-// `focusVisible`, the close type a click reports, the inert marker of a non-modal popup, a manager
-// that turns on while open, keep-mounted sessions, focus leaving the trigger of a closed popover,
-// and a focused element removed from the popup.
-// - The fixtures are Popovers (fixtures/focus-popover.svelte and the scenario fixtures beside it):
-//   the trigger is the anchor, the return target is the Popup's `finalFocus`, a kept-mounted
-//   manager is a `keepMounted` Portal, and the outside buttons set the Root's bound `open`.
-// - A Popover closes on an outside click unless `modal="trap-focus"`, which dismisses on
-//   `pointerdown` too, so the cases with outside buttons or an outside `pointerdown` use it. With
-//   a Popover.Close it also traps focus.
-// - "true -> false" (the manager's `disabled`): Popover turns its manager off while hover-opened,
-//   and a click on the trigger turns it on.
-// - "uses the latest explicitReturnFocus value without moving focus while open": a Popover's
-//   return is explicit while `finalFocus` is a function, so the change while open is `finalFocus`
-//   going from `() => true` to unset.
-// - The unportalled popups of the marker cases keep the Popover's portal in the same parent as
-//   the rest of the tree (its `container` is a `div` at the end of it).
+// The focus manager through a Popover: return focus and its `focusVisible`, the close type, the
+// inert marker, a manager that turns on while open, keep-mounted sessions and focus removal. The
+// cases with outside presses use `modal="trap-focus"`, which also dismisses on `pointerdown`.
 import type { PopoverStore } from "@sohedra/primitives-core/popover";
 import testingUserEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -122,6 +108,8 @@ describe("FocusManager", () => {
 			await expect.element(anchor).toHaveFocus();
 		});
 
+		// A Popover's return is explicit while `finalFocus` is a function: the change while open is
+		// `finalFocus` going from `() => true` to unset.
 		it("uses the latest explicitReturnFocus value without moving focus while open", async () => {
 			const { screen } = await openWithClick({
 				outsideClose: true,
@@ -357,6 +345,7 @@ describe("FocusManager", () => {
 	});
 
 	describe("disabled", () => {
+		// A Popover turns its manager off while hover-opened; a click on the trigger turns it on.
 		it("true -> false", async () => {
 			const screen = await render(FocusPopover, {
 				content: "empty",
@@ -409,10 +398,9 @@ describe("FocusManager", () => {
 	});
 
 	describe("focus leaving the trigger of a closed popover", () => {
-		// The manager keeps listening while the closed popup is still mounted (an exit animation,
-		// or a close the app keeps mounted with `preventUnmountOnClose()`), and the close it queues
-		// when focus leaves runs a microtask later, so it must not report a `focus-out` close for
-		// a popup that is already closed.
+		// The manager keeps listening while the closed popup is still mounted, and its focus-leave
+		// close runs a microtask later, so it must not report a `focus-out` close for a popup that is
+		// already closed.
 		async function setup(onOpenChange: (...args: OpenChange) => void) {
 			const { screen, anchor } = await openWithClick({
 				rootProps: { onOpenChange },
@@ -478,11 +466,9 @@ describe("FocusManager", () => {
 		});
 	});
 
-	// The focused element is removed: focus falls to the body, so the manager focuses the popup,
-	// and once more on the next frame, for the browsers that hand focus back to the removed element
-	// in between. That second focus must not take focus the app has moved meanwhile. The frames are
-	// held, then run by the test, so the order is fixed. WebKit fires no `focusout` when a focused
-	// element is removed, so the manager never hears of the removal there.
+	// A removed focused element: the manager focuses the popup, and again on the next frame (some
+	// browsers hand focus back in between), never taking focus the app moved meanwhile. Frames are
+	// held; WebKit fires no `focusout` on removal, so the manager never hears of it there.
 	describe("a focused element removed from a popover", () => {
 		async function setup() {
 			const screen = await render(RemovalPopover);

@@ -1,9 +1,7 @@
 <!--
-  A hover-opening popover whose open state the app owns (`bind:open`), which the demo cannot
-  express: its "Done" button closes the popup by setting `open` the way an app does, not through a
-  close the popover reports (as Popover.Close does), and `setOpen` does the same from the test.
-  `onOpenChange` hears every change the popover reports. With `detached`, two triggers sit
-  outside the Root on `handle` instead: "Trigger 1" opens on hover, "Trigger 2" on a press.
+  A hover-opening popover whose open state the app owns (`bind:open`), which the demo can't express:
+  "Done" and `setOpen` set `open` as an app does, not through a close the popover reports. With
+  `detached`, "Trigger 1" (hover) and "Trigger 2" (press) sit outside the Root on `handle`.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

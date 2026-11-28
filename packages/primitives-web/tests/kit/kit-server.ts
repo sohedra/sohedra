@@ -68,10 +68,9 @@ export function hydrateOnPage<Props extends Record<string, unknown>>(
 }
 
 /**
- * Puts the server HTML `html` on the page and hydrates `Component` with `props` over it, as
- * `serverHtmlOnPage` and `hydrateOnPage` do, then unmounts it and removes the container before it
- * returns. Returns every element's snapshot before and after hydration. `inspect` runs with the
- * hydrated container, before it is unmounted, for checks that need the live DOM.
+ * Puts the server HTML on the page, hydrates `Component` over it, then unmounts it and removes
+ * the container; returns every element's snapshot before and after hydration. `inspect` runs with
+ * the hydrated container first.
  */
 export function ssrHydration<Props extends Record<string, unknown>>(
 	Component: Component<Props>,

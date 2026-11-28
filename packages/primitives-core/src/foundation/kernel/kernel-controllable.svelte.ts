@@ -23,10 +23,9 @@ interface Cancelable {
 }
 
 /**
- * A value that is controlled through a `$bindable` prop or kept locally, with Svelte semantics.
- * There is no controlled/uncontrolled mode lock: a binding already merges the two modes, and a
- * parent's `undefined` falls back to the local value. Writes call the change callback first and
- * skip the write when it cancels.
+ * A value controlled through a `$bindable` prop or kept locally, with Svelte semantics: no mode
+ * lock, since a binding already merges both modes and a parent's `undefined` falls back to the
+ * local value. Writes call the change callback first and skip the write when it cancels.
  */
 export class Controllable<T> {
 	#source: Bound<T | undefined>;
@@ -36,10 +35,9 @@ export class Controllable<T> {
 	#local = $state.raw() as T;
 	#initiallyUncontrolled: boolean;
 	/**
-	 * The object last written through the source and what the source read back instead: a user's
-	 * `$state` proxies an object assigned to it. While the source still reads back that proxy, the
-	 * written object is the value (bookkeeping, read with the source, which is reactive). For an
-	 * array, `items` maps each item the proxy made of a written object back to that object.
+	 * The object last written through the source and the `$state` proxy it reads back instead.
+	 * While the source reads back that proxy, the written object is the value; for an array,
+	 * `items` maps each item the proxy made back to the written one.
 	 */
 	#echo: { readBack: unknown; written: T; items: Map<unknown, unknown> | null } | null = null;
 
@@ -93,13 +91,9 @@ export class Controllable<T> {
 	}
 
 	/**
-	 * Proposes `next`. Calls `onChange(next, details)` first; returns `false` when it canceled or
-	 * the source declined the write (a function binding whose getter still returns the old
-	 * value), so the caller can undo native side effects.
-	 *
-	 * A callback that sets the source itself (a controlled pattern,
-	 * `value={v} onValueChange={(x) => (v = x.toUpperCase())}`) wins: the source isn't
-	 * overwritten, and the result says whether it now holds `next`.
+	 * Proposes `next`: calls `onChange(next, details)` first, and returns `false` when it canceled
+	 * or the source declined the write, so the caller can undo native side effects. A callback that
+	 * sets the source itself wins; the result says whether the source now holds `next`.
 	 */
 	set<D extends Cancelable>(
 		next: T,

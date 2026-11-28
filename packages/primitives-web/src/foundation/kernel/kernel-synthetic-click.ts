@@ -8,11 +8,9 @@ interface ClickModifiers {
 }
 
 /**
- * Dispatches a constructed click on the target so it carries the source event's modifier state,
- * which `click()` always reports as unpressed. Like `click()`, the untrusted click still runs
- * native activation behaviour (form submission, link navigation, checkbox toggling).
- * `detail` defaults to 0 and `pointerType` to `''` (the native convention for keyboard-generated
- * clicks).
+ * Dispatches a constructed click carrying the source event's modifier state, which `click()`
+ * reports as unpressed; it still runs native activation. `detail` defaults to 0 and `pointerType`
+ * to `''`, as for a keyboard click.
  */
 export function dispatchSyntheticClick(
 	target: Element,

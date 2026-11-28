@@ -1,7 +1,6 @@
-// The safe polygon: a point in a quadrilateral, the pure step from one track and move to the next,
-// and one hover-out's polygon deciding moves between a trigger and its popup on every side. A
-// decision of `"close"` is a close at once, `"stay"` none, `"close-soon"` a close unless another
-// move comes.
+// The safe polygon: a point in a quadrilateral, the step from one track and move to the next, and
+// one hover-out's polygon on every side. `"close"` closes at once, `"stay"` doesn't, and
+// `"close-soon"` closes unless another move comes.
 import { describe, expect, it } from "vitest";
 
 import {

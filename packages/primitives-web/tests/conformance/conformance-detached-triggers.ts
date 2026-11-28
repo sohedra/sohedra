@@ -468,10 +468,9 @@ export function describeDetachedTriggersConformance(
 					}
 
 					try {
-						// The detached trigger settles into the outgoing root's store (it is no longer in the
-						// fallback map). The incoming root then attaches while the outgoing one is still
-						// mounted, and an effect in that same update opens by trigger id, before the trigger
-						// has migrated to the incoming root's store.
+						// The detached trigger settles into the outgoing root's store; the incoming root
+						// attaches while the outgoing one is still mounted, and an effect in that update
+						// opens by trigger id before the trigger has moved to the incoming store.
 						const { Root, Trigger, Portal, Positioner, Popup, triggerProps } = setup();
 						const screen = await render(ConformanceDetachedOverlap, {
 							Root,

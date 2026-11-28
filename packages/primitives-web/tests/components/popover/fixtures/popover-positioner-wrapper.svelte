@@ -1,8 +1,7 @@
 <!--
-  The conformance wrapper of the parts that live in the positioned popup (Popup, Arrow, Viewport):
-  places the part within Root > Portal > Positioner (and Popup with `inPopup`). The Root is open unless the part's props
-  say `open: false`, for its trigger from the first render (so the server renders the trigger
-  as the client does); the Portal is kept mounted so a closed part stays in the DOM.
+  The conformance wrapper of the parts in the positioned popup: Root > Portal > Positioner (and
+  Popup with `inPopup`), open for its trigger from the first render unless the props say
+  `open: false`, with the Portal kept mounted so a closed part stays in the DOM.
 -->
 <script lang="ts">
 	import type { Snippet } from "svelte";

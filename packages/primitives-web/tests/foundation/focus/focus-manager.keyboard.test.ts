@@ -1,13 +1,6 @@
-// The focus manager's Tab handling: a popup that traps focus, with Tab pressed faster than a
-// frame, and the Tab bridge between a trigger and its portalled popup inside an iframe.
-// - Trapping: a Popover with `modal="trap-focus"` and a Popover.Close (fixtures/focus-popover.svelte)
-//   holds a `child` button and the close button, with a `before` and an `after` button outside.
-//   The guards around the popup send focus back to its other end; that has to happen as the guard
-//   takes focus, because a Tab pressed before the next frame starts from wherever focus is. The
-//   frames are held, so no frame can run between two key presses.
-// - The iframe: a non-modal Popover whose Portal renders into the iframe's root
-//   (fixtures/focus-iframe-popover.svelte), mounted there. `toHaveFocus` doesn't follow focus
-//   into a nested document, so the checks read each document's active element.
+// The focus manager's Tab handling: a trap with Tab pressed faster than a frame (the guards send
+// focus on as they take it, with frames held), and the Tab bridge into a portalled popup inside an
+// iframe, where `toHaveFocus` can't follow, so each document's active element is read.
 import { describe, expect, it, onTestFinished } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";

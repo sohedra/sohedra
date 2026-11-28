@@ -89,10 +89,9 @@ export interface FieldRootView<T extends PlatformTypes = PlatformTypes> {
 	 */
 	attachControl(token: object, control: FieldControlRegistration<T>): () => void;
 	/**
-	 * Registers a native input of the control `owner` (its attachment token): while that control is
-	 * the active one, the input's validity represents the field. A group's controls register their
-	 * inputs under the group's token, each with the value it stands for and its focus target.
-	 * Returns the unregister function.
+	 * Registers a native input of the control `owner` (its attachment token); while that control is
+	 * active, the input's validity represents the field. A group registers its inputs under its own
+	 * token, each with its value and focus target. Returns the unregister function.
 	 */
 	registerInput(
 		owner: object,

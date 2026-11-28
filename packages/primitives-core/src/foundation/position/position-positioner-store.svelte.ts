@@ -26,10 +26,9 @@ export interface PositionerStoreDeps<T extends PlatformTypes = PlatformTypes> {
 }
 
 /**
- * A Positioner's measured state, shared with the Popup, Arrow and Viewport parts, and the state
- * of the Positioner, the Popup and the Arrow parts, which read the popup and the placement. The
- * platform writes {@link position} after each computation (one object per computation); parts
- * derive styles from it.
+ * A Positioner's measured state, shared with the Popup, Arrow and Viewport parts, and the state of
+ * the Positioner, Popup and Arrow parts. The platform writes {@link position} after each
+ * computation (one object each); parts derive their styles from it.
  */
 export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #props: () => PositionerStoreProps;
@@ -116,10 +115,9 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 				}
 			},
 		);
-		// A new trigger while open: the transitions run once more, and the platform reports when
-		// they finished. The last trigger is this Positioner's own memory, not the watched previous
-		// value: an anchor cleared while closed keeps it, so the next opening still compares against
-		// it. Any anchor change ends a move that is still pending.
+		// A new trigger while open runs the transitions once more. The last trigger is this
+		// Positioner's own memory, not the watched previous value: an anchor cleared while closed
+		// keeps it. Any anchor change ends a move that is still pending.
 		let lastTrigger: T["element"] | null = null;
 		watch(
 			() => popup.anchorElement,

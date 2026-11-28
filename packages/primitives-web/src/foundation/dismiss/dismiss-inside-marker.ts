@@ -56,12 +56,9 @@ function attachInsideMarker(
 }
 
 /**
- * For a popup's Portal element: a press anywhere in the portal (the popup, but also a backdrop or
- * a viewport beside it) marks the popup's ancestors in the popup tree as pressed inside until the
- * next task, so a parent popup doesn't take it for an outside press. A portal moves the popup out
- * of its parent's element, so the parent can't see the press pass through itself. The popup
- * itself isn't marked: a press on its own backdrop still dismisses it. `props` hold the marker as
- * an attachment. Call once while the Portal part initialises.
+ * For a popup's Portal element: a press anywhere in the portal marks the popup's ancestors in the
+ * popup tree as pressed inside until the next task, since the portal moved the popup out of their
+ * elements. The popup itself isn't marked: a press on its own backdrop still dismisses it.
  */
 export function useAncestorsInsideMarker(store: PopupView<WebTypes>): { readonly props: Props } {
 	return {

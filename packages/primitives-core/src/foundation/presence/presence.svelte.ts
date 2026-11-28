@@ -57,10 +57,9 @@ export function step(committed: PresencePhase, open: boolean): PresencePhase {
 }
 
 /**
- * Mounting and transition status for an element that animates in and out. Opening mounts the
- * element with `'starting'` for one frame; closing keeps it mounted with `'ending'` until the
- * platform reports its animations finished through {@link Presence.complete}. How "finished" is
- * detected is the platform's business (the web waits on `getAnimations()`).
+ * Mounting and transition status for an element that animates in and out: opening mounts it
+ * `'starting'` for one frame; closing keeps it `'ending'` until the platform calls
+ * {@link Presence.complete} (the web waits on `getAnimations()`).
  */
 export class Presence {
 	readonly #props: () => PresenceProps;

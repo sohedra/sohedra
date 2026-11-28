@@ -27,13 +27,9 @@ export interface FieldControlLinkProps<T extends PlatformTypes = PlatformTypes> 
 }
 
 /**
- * Connects a control (Field.Control, Switch, Checkbox, CheckboxGroup…) to its field: attaches it
- * with an owner token, and turns value changes into the field's dirty/validation bookkeeping.
- *
- * Changes the field hasn't seen are programmatic (a bound value set from outside) and validate
- * as a controlled value does. A user change is announced by the platform before it flushes
- * (`beginUserChange`), so the watcher skips it, and reported after the flush (`endUserChange`), so
- * validation reads the updated element.
+ * Connects a control to its field under an owner token and turns value changes into the field's
+ * dirty and validation state. A change the field hasn't seen is programmatic and validates as a
+ * controlled value; a user change is bracketed by `beginUserChange` and `endUserChange`.
  */
 export class FieldControlLink<
 	T extends PlatformTypes = PlatformTypes,

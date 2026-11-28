@@ -210,10 +210,9 @@ describe("mergeProps", () => {
 			expect(handler).toHaveBeenCalledWith(true, eventDetails);
 		});
 
-		// Differs on purpose: only lowercase `on[a-z]` handlers (Svelte's DOM event names) are
-		// chained, so a camelCase callback is a plain prop and only the rightmost runs. The case
-		// stays, skipped, as the record of the behaviour chaining it would have
-		// (src/foundation/kernel/kernel-merged-props.ts, `isEventHandler`).
+		// Differs on purpose: only lowercase `on[a-z]` handlers (Svelte's DOM event names) chain, so a
+		// camelCase callback is a plain prop and only the rightmost runs. The skipped case records the
+		// chaining it would have (`isEventHandler`).
 		// oxlint-disable-next-line vitest/no-disabled-tests -- the skipped case records a deliberate difference
 		it.skip("forwards all arguments for merged non-standard event handlers", () => {
 			const log: Array<[string, boolean, { reason: string }]> = [];

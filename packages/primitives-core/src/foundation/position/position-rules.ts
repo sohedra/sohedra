@@ -210,13 +210,9 @@ export function collisionPlan(
 const FLIP_BIAS = 1;
 
 /**
- * The collision padding a flip measures with: one pixel more on every side, and one more again
- * on the side opposite the requested one, so the popup prefers the side it was asked for (a
- * phone centres a focused input exactly).
- *
- * `capRaised`: this computation already sized the popup on the side being tried. A popup capped
- * to the room it has then fills that room to the plain padding, so the extra pixels would count
- * it as overflowing and send it back to the smaller side it just left: the plain padding is used.
+ * The collision padding a flip measures with: one pixel more on every side and one more on the
+ * side opposite the requested one, so the popup prefers that side. `capRaised` (this computation
+ * already sized a capped popup on the tried side) uses the plain padding, or it would flip back.
  */
 export function flipPadding(
 	padding: SideDistances,

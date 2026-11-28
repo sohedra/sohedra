@@ -1,8 +1,7 @@
 <!--
-  The detached-triggers fixture with its open state in the parent: the open state and the active
-  trigger live in the parent, which `onOpenChange` updates, and buttons outside the
-  popup open it for a given trigger or close it. The buttons come first, above the triggers, so the
-  open popup below a trigger never covers them.
+  The detached-triggers fixture with its open state and active trigger in the parent, which
+  `onOpenChange` updates; buttons above the triggers (so the popup never covers them) open it for
+  a trigger or close it.
 -->
 <script lang="ts">
 	import type { ComponentProps } from "svelte";

@@ -1,11 +1,6 @@
-// The Viewport's activation direction: core's getActivationDirection as the web runs it, and the
-// distance between two triggers it is given, which is not exported. Its only use is the Viewport's
-// `data-activation-direction` when the popup moves from one trigger to another, so each row
-// renders two Popover triggers at the given rects
-// (../../components/popover/fixtures/popover-viewport.svelte), opens the popover on the first,
-// switches to the second, and expects the attribute's tokens for the expected offset. The rows
-// tell the outcomes apart: the corners of "compares centers, not corners …" would give `right`
-// instead of `left up`.
+// The Viewport's activation direction as the web runs it: each row renders two Popover triggers
+// at the given rects, moves the popup from the first to the second, and expects the attribute's
+// tokens; the rows tell the outcomes apart (corners instead of centres would give `right`).
 import { getActivationDirection } from "@sohedra/primitives-core/foundation/position";
 import { describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";

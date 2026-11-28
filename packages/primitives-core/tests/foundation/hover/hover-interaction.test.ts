@@ -1,7 +1,6 @@
 // HoverInteraction: one popup's hover timers and close tracker, and hovering after the app closed
-// the popup itself: a bound `open` set to false from outside passes no request, so nothing clears
-// the recorded open event (a reopen from outside still needs it) and no open-change event reaches
-// the triggers.
+// the popup itself, which passes no request: the recorded open event stays (a reopen from outside
+// needs it) and no open-change event reaches the triggers.
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 

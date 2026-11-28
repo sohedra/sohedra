@@ -4,10 +4,9 @@ import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
 
 import type { WebTypes } from "../kernel/index.js";
 
-// Events whose propagation a dismissal stopped: other popups' document listeners (on the same
-// node as Svelte's delegation root) must not handle them again. Module-level: one event is seen
-// by every popup on the page. Each also reads the event's `cancelBubble`, which a stopped event
-// carries either way.
+// Events whose propagation a dismissal stopped, so other popups' document listeners (beside
+// Svelte's delegation root) skip them; each also reads `cancelBubble`. Module-level: one event is
+// seen by every popup on the page.
 const stoppedEvents = new WeakSet<Event>();
 
 /** Escape on the popup, a trigger or the page: closes the popup unless something else owns the key. */

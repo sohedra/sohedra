@@ -87,12 +87,9 @@ function create(
 }
 
 /**
- * Runs `callback(value, previous)` when `source()` changes (`Object.is`), or, given an array of
- * sources, `callback(values, previous)` when at least one of them changes. Only the sources are
- * tracked: the callback runs inside `untrack`. It may return a cleanup, which runs before the next
- * call and on destroy. It runs on the first run too, unless `lazy` (see `WatchOptions.lazy`).
- * `watch.pre` does the same in an `$effect.pre`. Call during component init or inside
- * `$effect.root`.
+ * Runs `callback(value, previous)` when `source()` changes (`Object.is`), or `callback(values,
+ * previous)` when one of an array of sources does; only the sources are tracked. The callback may
+ * return a cleanup and runs first at once unless `lazy`; `watch.pre` uses `$effect.pre`.
  */
 export const watch: WatchFunction & { readonly pre: WatchFunction } = Object.assign(
 	((sources: never, callback: AnyCallback, options?: WatchOptions) =>

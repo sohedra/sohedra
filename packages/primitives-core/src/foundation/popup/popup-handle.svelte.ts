@@ -67,10 +67,9 @@ interface Attachment<Store> {
 }
 
 /**
- * Connects a Root with triggers rendered outside it and opens or closes it imperatively. Its
- * constructor is pure, so handles can be created at module scope. Detached triggers read the store
- * under {@link HANDLE_STORE}: the attached Root's store, or an inert fallback while no Root is
- * attached.
+ * Connects a Root with triggers rendered outside it and opens or closes it imperatively; pure to
+ * construct, so it can be made at module scope. Detached triggers read the store under
+ * {@link HANDLE_STORE}: the attached Root's, or an inert fallback.
  */
 export class PopupHandle<Store extends HandleAttachableStore> {
 	readonly #fallback: Store;
@@ -95,10 +94,9 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	}
 
 	/**
-	 * Attaches a Root's store; the newest attached store takes over. `imperativeEvent` makes the
-	 * event of the changes this handle requests: the Root's platform passes it, since a
-	 * handle call runs no platform code. Returns the detachment, which hands control back to the
-	 * newest store still attached.
+	 * Attaches a Root's store; the newest takes over. `imperativeEvent` makes the event of this
+	 * handle's changes (the Root's platform passes it: a handle call runs no platform code). Returns
+	 * the detachment, which hands control back to the newest store still attached.
 	 */
 	[HANDLE_ATTACH] = (store: Store, imperativeEvent: () => unknown): (() => void) => {
 		const attachment: Attachment<Store> = { store, imperativeEvent };

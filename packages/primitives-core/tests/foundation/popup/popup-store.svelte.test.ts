@@ -1,7 +1,6 @@
-// PopupStore, through the Popover store and a kind without hover: unmounting from onOpenChange,
-// the open event it records, the press toggle, trigger registration and forwarded data, the exit
-// gate, the Popup's and Positioner's options, focus guards, its popup node, its hover state and
-// timers, and the outside press of its behaviour row.
+// PopupStore through the Popover store and a kind without hover: onOpenChange unmounts, the open
+// event, the press toggle, triggers and their data, the exit gate, part options, focus guards, the
+// popup node, hover and the outside press of its behaviour row.
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 
@@ -211,10 +210,9 @@ describe("PopupStore", () => {
 		expect(store.disabled).toBe(true);
 	});
 
-	// Svelte re-runs a derived read in an effect teardown with the values from before the flush.
-	// Return focus reads the active trigger in a teardown; while the presence and the trigger's
-	// anchor wrote memory while deriving, that read rewound them, so the popup didn't unmount or
-	// reopen.
+	// Svelte re-runs a derived read in an effect teardown with the values from before the flush:
+	// return focus reads the active trigger there, so state written while deriving would rewind and
+	// the popup would neither unmount nor reopen.
 	it("closes, unmounts and reopens when an effect teardown reads the active trigger", () => {
 		const { store } = setup();
 		const trigger = element("t");

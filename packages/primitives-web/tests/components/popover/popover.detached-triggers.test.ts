@@ -264,13 +264,9 @@ describe("Popover.Root with detached triggers", () => {
 		const away = () => commands.parkPointer();
 
 		/**
-		 * Renders two detached hover triggers with a real position transition on the positioner and a
-		 * real exit transition on the popup, then hands the popover off from trigger 1 to trigger 2
-		 * so `instantType` is `trigger-change`.
-		 *
-		 * `instantsWhileEnding` records the `instant` state of every closing render, which is the
-		 * only way to observe a stale value that a later render clears before the DOM can be
-		 * asserted on.
+		 * Renders two detached hover triggers with real position and exit transitions and hands the
+		 * popover from trigger 1 to trigger 2. `instantsWhileEnding` records each closing render's
+		 * `instant`, the only way to see a stale value a later render clears.
 		 */
 		async function renderHoverDetachedTriggers({
 			withClose = false,
@@ -434,10 +430,9 @@ describe("Popover.Root with detached triggers", () => {
 		});
 
 		it("does not restore the trigger-change instant when a controlled close commits late", async () => {
-			// A controlled consumer can accept the close but commit `open={false}` later. That commit
-			// goes straight through the prop without passing back through `setOpen`, so a
-			// `trigger-change` restored in the meantime would never be cleared and would collapse
-			// the exit transition.
+			// A controlled consumer can accept the close but commit `open={false}` later, straight
+			// through the prop: a `trigger-change` restored meanwhile would never be cleared and would
+			// collapse the exit transition.
 			globalThis.SOHEDRA_ANIMATIONS_DISABLED = false;
 
 			const instantsWhileEnding: (string | undefined)[] = [];

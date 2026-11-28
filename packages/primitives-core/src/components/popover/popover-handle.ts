@@ -18,9 +18,8 @@ function createDetachedPopoverStore<Payload>(): PopoverStore<Payload> {
 
 /**
  * Controls a Popover imperatively and associates detached `Popover.Trigger` components with a
- * `Popover.Root`. Create one with `Popover.createHandle()` and pass it to the `handle` prop of the
- * root and of any triggers rendered outside of it. The imperative methods take effect only while
- * a root using this handle is mounted.
+ * `Popover.Root`: pass it to the `handle` prop of the root and of triggers rendered outside it.
+ * The imperative methods take effect only while a root using this handle is mounted.
  */
 export class PopoverHandle<Payload = unknown> extends PopupHandle<PopoverStore<Payload>> {
 	constructor() {

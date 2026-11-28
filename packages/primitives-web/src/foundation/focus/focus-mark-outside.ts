@@ -30,11 +30,9 @@ export function focusedOtherPortal(positioner: Element): Element | null {
 }
 
 /**
- * Marks everything outside `positioner`. Another popup's portal that holds focus is never hidden
- * from assistive technology: `aria-hidden` on focused content is an accessibility error, and it
- * would happen when an unrelated popup opens in the same update, comes later in the markup and so
- * takes focus. The inert marker still covers that portal: outside-press dismissal reads the
- * marker, not `aria-hidden`.
+ * Marks everything outside `positioner`, except that another popup's portal holding focus is
+ * never `aria-hidden` (hiding focused content is an accessibility error). The inert marker still
+ * covers that portal, since outside-press dismissal reads the marker.
  */
 export function markOutside(positioner: Element, options: MarkOutsideOptions): OutsideMarking {
 	const { portalNode, exposed, ariaHidden } = options;

@@ -1,9 +1,7 @@
 <!--
-  The trees for the inert marker of a non-modal Popover. `outside-nodes` ("false - does not apply
-  inert to outside nodes") and `anchor-siblings` ("false - keeps marker on top-level outside
-  ancestor when anchor has siblings") keep the popup in the same parent as the rest: the
-  Portal's container is a `div` at the end of the tree. `portalled` ("does not mark anchor
-  siblings due to outside focus guards") portals the popup to the body.
+  The trees for the inert marker of a non-modal Popover: `outside-nodes` and `anchor-siblings`
+  keep the popup in the same parent as the rest (the Portal's container is a `div` at the end),
+  `portalled` portals it to the body.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

@@ -1,10 +1,8 @@
 <!--
+  @component
   The Portal part of every popup that takes focus: it moves the popup's subtree into another
   container (`<body>` by default) and manages focus across the move. Renders a `<div>` element,
   with the outside focus guards around it while a non-modal popup inside is open.
-
-  A component's own Portal file hands over whether the portal is mounted, its generated id, the
-  presses that count as inside, its state and the user's props.
 -->
 <script lang="ts" generics="State extends object">
 	import { Part, type PartUserProps, type Props as ElementProps } from "../kernel/index.js";

@@ -110,10 +110,9 @@ export class HoverInteraction<T extends PlatformTypes = PlatformTypes> {
 	};
 
 	/**
-	 * The popup was closed from outside (the app set `open` to false itself), so no open-change
-	 * event told the triggers. Does for them what each does on hearing of a close: drops everything
-	 * still pending, and ignores pointer moves over a trigger until the pointer enters one again,
-	 * so the popup stays closed while the pointer rests where it was.
+	 * The app closed the popup itself, so no open-change event told the triggers. Does what each
+	 * does on a close: drops what is pending and ignores pointer moves over a trigger until the
+	 * pointer enters one again, so the popup stays closed under a resting pointer.
 	 */
 	closedFromOutside = (): void => {
 		this.cancelPending();

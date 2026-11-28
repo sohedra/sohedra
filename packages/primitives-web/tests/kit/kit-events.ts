@@ -1,7 +1,6 @@
-// Synthetic events, for what no real input produces: an event sequence, a click count, a pointer
-// type or a key state that a case is about. Each is dispatched as the browser sends a user's
-// event (bubbling and composed), and Svelte's updates are applied after it, as they are after a
-// real event, so the next event meets what this one rendered.
+// Synthetic events, for what no real input produces (an event sequence, a click count, a pointer
+// type, a key state). Each is dispatched bubbling and composed, and Svelte's updates are applied
+// after it, so the next event meets what this one rendered.
 import { flushSync } from "svelte";
 import type { Locator } from "vitest/browser";
 

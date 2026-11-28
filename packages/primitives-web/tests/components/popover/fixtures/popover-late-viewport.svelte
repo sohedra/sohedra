@@ -1,8 +1,7 @@
 <!--
-  A Viewport popover whose content awaits `load(payload)` without a `<svelte:boundary>`: switching
-  triggers re-creates the content, which stays pending until that payload's promise resolves. One
-  trigger per entry of `payloads`, each with that payload. The demo has no Viewport and no
-  payloads.
+  A Viewport popover whose content awaits `load(payload)` without a `<svelte:boundary>`, one trigger
+  per `payloads` entry: a trigger change re-creates the content, pending until its promise
+  resolves. The demo has no Viewport and no payloads.
 -->
 <script lang="ts">
 	import type { Attachment } from "svelte/attachments";

@@ -28,14 +28,9 @@ export interface ViewportTriggerChange<T extends PlatformTypes = PlatformTypes> 
 }
 
 /**
- * Which content a popup Viewport shows, when the trigger changes, and the Viewport part's state:
- *
- * - {@link contentKey} changes whenever the content has to be created anew: on every new active
- *   trigger id, and once more when that trigger's payload arrives an update after the trigger.
- * - {@link triggerChange} is set while the open popup's trigger differs from the one whose content
- *   it last showed. The platform shows the change (snapshot, animation), then calls {@link settle}.
- * - {@link state} is transitioning while the trigger changes and while the previous content is on
- *   its way out ({@link showPrevious} to {@link clearPrevious}).
+ * Which content a popup Viewport shows, and the Viewport part's state: {@link contentKey} changes
+ * on each new trigger and once more when its payload arrives; {@link triggerChange} holds until
+ * the platform has shown the change and calls {@link settle}.
  */
 export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #popup: ViewportContentStoreDeps<T>["popup"];
@@ -64,10 +59,9 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	});
 
 	/**
-	 * Where the content moves from, during the update that changes the trigger. Measured while
-	 * deriving (a layout read in a derived, on purpose): the new content renders with its starting
-	 * style and `data-activation-direction` in that same update, before the platform first styles
-	 * it, whichever order its effects run in. An effect would be an update late.
+	 * Where the content moves from, during the update that changes the trigger. A layout read in a
+	 * derived, on purpose: the new content renders with its starting style in that same update,
+	 * before the platform first styles it; an effect would be an update late.
 	 */
 	readonly incomingOffset: TriggerOffset | null = $derived.by(() => {
 		const change = this.triggerChange;

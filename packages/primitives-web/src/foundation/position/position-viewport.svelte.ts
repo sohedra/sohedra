@@ -60,12 +60,9 @@ function finishTransitions(element: HTMLElement) {
 }
 
 /**
- * A popup Viewport: when the open popup moves to another trigger, the previous content stays as
- * an inert snapshot (`data-previous`) while the new content (`data-current`, re-created per
- * trigger and payload) transitions in, and the popup's size variables animate from the old size
- * to the new one, written to the enclosing Positioner's layout. `popup` is the popup's store;
- * `fixed.part` is the Viewport part's public name, for the error outside a Positioner. Call once
- * during the Viewport part's init.
+ * A popup Viewport: on a trigger change the previous content stays as an inert snapshot
+ * (`data-previous`) while the new one (`data-current`) transitions in and the size variables
+ * animate. `fixed.part` names the part in the error outside a Positioner.
  */
 export function useViewport(
 	popup: PopupView<WebTypes>,
@@ -95,26 +92,14 @@ export function useViewport(
 	let cleanupController: AbortController | null = null;
 	let committedDimensions: Dimensions | null = null;
 
-	// The `data-current` containers by the content key each was created for, until the
-	// trigger-change effect moves past that key. A container that left the document keeps its
-	// children (Svelte removes only a destroyed block's top-level nodes, and an outroing one stays
-	// as it was), so the snapshot doesn't depend on whether the old container's teardown, the new
-	// one's attachment or the trigger-change effect runs first. The teardown can run before the
-	// clone, though, so nodes that a teardown inside the old content removes (an attachment's
-	// cleanup, say) are missing from the snapshot.
-	//
-	// In Svelte's async mode, a container whose content awaits outside a `<svelte:boundary>` is
-	// attached only once that content resolves. A trigger change before then finds no container
-	// for the shown key: it keeps the earlier snapshot, and the earlier trigger change's offset.
+	// The `data-current` containers by content key, until the trigger-change watch moves past that
+	// key. A container out of the document keeps its children, so the snapshot holds whatever runs
+	// first, minus nodes a teardown inside the old content removed.
 	const containers = new Map<number, HTMLElement>();
 
-	// Takes the snapshot of a trigger change, after every update that can change what the popup
-	// shows (open state, trigger, content key): if the trigger changed, the content shown before
-	// the update is copied into the snapshot, then core is told the change is shown. Every content
-	// key passes through here, payload re-creations included, so the previous key is always the key
-	// of the content that was on screen. The trigger change is read untracked, so settling it
-	// doesn't run this again. On mount nothing was shown yet, so there is no previous key and no
-	// trigger change.
+	// Snapshots a trigger change after every update that can change what is shown: the content shown
+	// before the update is copied, then core is told the change is shown. Every content key passes
+	// here, so the previous key is always the one that was on screen.
 	watch(
 		[
 			() => popup.open,
@@ -124,6 +109,8 @@ export function useViewport(
 		],
 		([, , , key], [, , , shownKey]) => {
 			const changeOffset = content.incomingOffset;
+			// In async mode a container whose content awaits outside a boundary attaches only once it
+			// resolves; a change before then keeps the earlier snapshot and offset.
 			const shown = shownKey === undefined ? undefined : containers.get(shownKey);
 			if (changeOffset && shown) {
 				previousContent = cloneContent(shown);
@@ -153,11 +140,9 @@ export function useViewport(
 		return untrack(() => {
 			cleanupController?.abort();
 			return webScheduler.frame(() => {
-				// The new container's enter transition runs from its starting styles only if the browser
-				// styled it with them first. When the Viewport's own attributes (`data-transitioning`)
-				// land after a layout read already styled the inserted container (Svelte's async mode
-				// runs those effects in another order), it is transitioning into its starting styles
-				// instead: complete that, so removing them below starts the enter transition.
+				// The enter transition starts from the starting styles only if the browser styled the
+				// container with them first; in async mode a layout read can style it before
+				// `data-transitioning` lands, so that transition is completed here.
 				if (currentContainer) {
 					finishTransitions(currentContainer);
 				}

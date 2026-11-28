@@ -18,10 +18,9 @@ export type PopupChangeEventDetails<
 /** What the platform knows about an open change, passed with it. */
 export interface OpenChangeSource {
 	/**
-	 * The interaction that caused the change, in core's vocabulary (`click`, `mouseenter`,
-	 * `keydown`…), which the platform maps its native event onto (a tap is `click`): whether the
-	 * change came from a press or a hover. An imperative change passes `imperative-action`; none
-	 * for a change without an event or with one core doesn't interpret.
+	 * The interaction that caused the change, in core's vocabulary (a tap is `click`): whether it
+	 * came from a press or a hover. `imperative-action` for a handle's change; none for a change
+	 * without an event or with one core doesn't interpret.
 	 */
 	readonly eventType?: InteractionEventType | undefined;
 	/** The trigger's id when the store may not know the element (a handle's other root). */

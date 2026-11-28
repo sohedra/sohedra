@@ -1,17 +1,7 @@
 import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
-// The dismissal's wiring, through an initially open Popover (fixtures/dismiss-popover.svelte):
-// which outside presses close it, with its mouse outside press `intentional` (it dismisses on
-// `click`), what a press stopped on its way does, and when Escape belongs to a text composition
-// instead of the popup.
-// - The outside presses land on the page itself (`document.body`), where the dismissal's document
-//   listeners see them, and each case composes the exact events it is about (a drag's
-//   compatibility events, a click count, a button), so they are synthetic (kit dispatch).
-// - The reopening anchor is the Popover trigger, the `pointerdown`-opening button is `opener`,
-//   the prevented `scrubber` is `scrubber`, and the store the cases call `setOpen` on is the
-//   Root's (`onStore`), whose details carry a `fallbackEvent()`.
-// - "press survives listener re-attachment while open": a Popover has no dismissal option that
-//   can change while open, so the fixture re-creates the Positioner (the popup, which
-//   the document listeners depend on) instead.
+// The dismissal's wiring through an initially open Popover: which outside presses close it, a
+// press stopped on its way, and Escape during a text composition. Outside presses land on
+// `document.body` as synthetic events, since each case composes the exact events it is about.
 import type { PopoverStore } from "@sohedra/primitives-core/popover";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
@@ -208,6 +198,8 @@ describe("dismiss", () => {
 			await expect.element(popup).not.toBeInTheDocument();
 		});
 
+		// No Popover option re-attaches the document listeners while open, so a new `popupKey`
+		// re-creates the Positioner, which they depend on.
 		it("press survives listener re-attachment while open", async () => {
 			const { screen, popup } = await setup();
 			const positioner = popup.element().parentElement;
@@ -310,11 +302,9 @@ describe("dismiss", () => {
 		});
 	});
 
-	// A press that something else stops before it reaches its target. The dismissal sees every
-	// press at the document and follows it to its target, where it decides. A drag library that
-	// swallows the click after a drag stops it on the way, so it never arrives: what was waiting
-	// for it at the target must not act on a later click instead, with the stopped one's stale
-	// data. The clicks are a drag's trailing clicks, with no press, so they are synthetic.
+	// A press stopped before its target (a drag library swallowing the click after a drag) never
+	// arrives, so what waited for it there must not act on a later click with its stale data. The
+	// clicks are a drag's trailing clicks, with no press, so they are synthetic.
 	describe("a press stopped before it reaches its target", () => {
 		let removeStopper: (() => void) | undefined;
 

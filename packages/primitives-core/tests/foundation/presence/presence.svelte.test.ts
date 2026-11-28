@@ -1,7 +1,6 @@
 // Presence: mounting, the starting and ending statuses with their frames, complete(), reads in an
-// effect teardown, and `step()`, the pure transition
-// from a committed phase to the current `open`. Frames come from the fake platform's scheduler,
-// which the test steps.
+// effect teardown, and `step()`, the pure transition from a committed phase to the current `open`.
+// Frames come from the fake platform's scheduler, which the test steps.
 import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 

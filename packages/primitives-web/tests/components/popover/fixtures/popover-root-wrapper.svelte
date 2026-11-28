@@ -1,10 +1,7 @@
 <!--
-  Places a Popover part within a Popover.Root that is open unless the part's props say
-  `open: false`. `triggerId` makes the
-  root open for that trigger from the first render, also on the server (a trigger otherwise
-  becomes the active one after mount). `withTrigger` adds a trigger with that id
-  beside the part, so a part's effect on the open state can be read from it.
-  `ignoreOutsidePress` cancels closing on a press outside the popup (such as on the backdrop).
+  Places a Popover part within a Root that is open unless the props say `open: false`, for
+  `triggerId` from the first render (also on the server). `withTrigger` adds that trigger beside
+  the part; `ignoreOutsidePress` cancels closing on an outside press.
 -->
 <script lang="ts">
 	import type { Snippet } from "svelte";

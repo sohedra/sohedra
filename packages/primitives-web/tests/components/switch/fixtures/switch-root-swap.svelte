@@ -1,8 +1,7 @@
 <!--
-  Swaps one Switch.Root for another inside a form, through `{#if}` (the old one optionally playing
-  an `out:` transition, so its teardown runs after the new one mounts) or `{#key}`. Both bind the
-  same `ref`. The demo is one switch and can't be swapped. Each switch is sized so a real pointer
-  can press it.
+  Swaps one Switch.Root for another bound to the same `ref` inside a form, through `{#if}` (the
+  first optionally playing an `out:` transition, so its teardown runs after the next mounts) or
+  `{#key}`. The demo is one switch and can't be swapped.
 -->
 <script lang="ts">
 	import { fade } from "svelte/transition";

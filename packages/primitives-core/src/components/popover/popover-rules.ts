@@ -56,9 +56,8 @@ export function isTouchPressOpen(
 
 /**
  * Whether a trigger renders the focus guards that carry Tab into its popup and out of it: the
- * trigger that opened a popover which doesn't trap focus, unless a hover opened it. A
- * hover-opened popover takes no focus, so its popup has no guard for the trigger's to hand focus
- * to, and Tab follows the document's own order.
+ * trigger that opened a popover which doesn't trap focus, unless a hover opened it (such a popup
+ * takes no focus and has no guard to hand focus to, so Tab follows the document's order).
  */
 export function triggerHasFocusGuards(
 	openedByTrigger: boolean,

@@ -1,7 +1,6 @@
 // The elements that had focus before popups opened, newest last: where a popup returns focus when
-// its own trigger and the element focused before it are gone, or are in the document but hidden.
-// The history is one list per page, kept in module state: focus is one per document, and a popup
-// returns focus to where it was before any popup opened.
+// its trigger and the element focused before it are gone or hidden. One list per page, in module
+// state: focus is one per document.
 
 import { getNodeName, isElementVisible } from "../kernel/index.js";
 

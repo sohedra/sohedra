@@ -125,14 +125,9 @@ export interface PopupStoreKind {
 }
 
 /**
- * What every popup's parts and interactions share: the open state and the one pipeline that
- * changes it (`onOpenChange` first, which may cancel or call `preventUnmountOnClose()`, then the
- * open-change event, then the commit), the presence, the triggers and the payload of the one
- * that owns the popup, the popup and positioner elements and the node in the popup tree. A
- * kind's store extends it once and passes its {@link hooks}; it writes no `setOpen` of its own.
- *
- * The platform reports both ends of the presence: {@link completeOpen} once the enter animations
- * finished, {@link unmount} once the exit animations did.
+ * What every popup's parts and interactions share: the open state and its one pipeline, the
+ * presence, the triggers and their payload, the elements and the tree node. A kind's store extends
+ * it with its {@link hooks}; the platform calls {@link completeOpen} and {@link unmount}.
  */
 export abstract class PopupStore<
 	Payload = unknown,
@@ -432,10 +427,9 @@ export abstract class PopupStore<
 	};
 
 	/**
-	 * Opens or closes the popup: the kind's `open` or `close` hook first, then `onOpenChange` (it
-	 * may cancel or call `preventUnmountOnClose()`), then the open-change event, then the commit,
-	 * then the `opened` or `closed` hook. `details` are the kind's own change details; `source`,
-	 * what the platform knows about the change. Returns whether the change went through.
+	 * Opens or closes the popup: the kind's `open` or `close` hook, `onOpenChange` (may cancel),
+	 * the open-change event, the commit, then the `opened` or `closed` hook. `source` is what the
+	 * platform knows of the change. Returns whether the change went through.
 	 */
 	setOpen = (
 		next: boolean,
@@ -486,10 +480,9 @@ export abstract class PopupStore<
 	};
 
 	/**
-	 * Tells the popup's interactions about an open change, after recording the event that opened the
-	 * popup (see `keepsOpenEvent`). Runs before the change is committed, so listeners still read the
-	 * previous state. Also called on its own, for a close the interactions must hear that changes
-	 * nothing (a press that cancels a pending open).
+	 * Tells the interactions of an open change after recording its open event, before the commit,
+	 * so listeners read the previous state. Also called alone, for a close that changes nothing
+	 * (a press that cancels a pending open).
 	 */
 	announce = (
 		open: boolean,
@@ -613,10 +606,9 @@ export abstract class PopupStore<
 	}
 
 	/**
-	 * The store hears of the open value: an accepted change at once, before the kind's `opened` or
-	 * `closed` hook, and a change from outside in the watch on `open`. A new opening drops the
-	 * stored instant type, so it never inherits one from an earlier opening or close; a hook that
-	 * runs after sets the opening's own.
+	 * The store hears of the open value: an accepted change at once, one from outside in the watch
+	 * on `open`. A new opening drops the stored instant type, so it never inherits an earlier one;
+	 * a hook that runs after sets the opening's own.
 	 */
 	#hear(open: boolean): void {
 		if (opensUnheard(open, this.#heardOpen)) {
@@ -636,22 +628,18 @@ export abstract class PopupStore<
 			// Hover timers and the safe polygon never outlive the popup.
 			$effect(() => () => hover.stop());
 		}
-		// Follows `open` however it changed. A bound `open` set from outside passes no request, so
-		// this is where the store hears of it: an opening starts a new close cycle and drops the
-		// instant type an earlier opening or close stored (until then `heardOpen` hides it), a close
-		// forgets how the popup was opened (on `open` alone: a trigger that registers while closed
-		// keeps the method a press just recorded). A close the store had not heard of came from
-		// outside: no open-change event told the triggers, so hover is told here.
-		//
-		// `heardOpen` is watched too: a request and the app can cancel each other out in one update,
-		// which leaves `open` where it was (see `openValuesToFollow`).
+		// Follows `open` however it changed, since a bound `open` set from outside passes no request.
+		// A close the store had not heard of came from outside, so hover is told here. `heardOpen` is
+		// watched too: a request and the app can cancel out in one update (`openValuesToFollow`).
 		let followed: boolean | undefined;
 		const follow = (open: boolean) => {
 			const fromOutside = closesUnheard(open, this.#heardOpen);
 			this.#hear(open);
 			if (open) {
+				// A new opening starts a new close cycle.
 				this.#preventUnmount = false;
 			} else {
+				// On `open` alone: a trigger that registers while closed keeps a just-recorded method.
 				this.#method = null;
 				if (fromOutside) {
 					hover?.closedFromOutside();

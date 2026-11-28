@@ -9,10 +9,9 @@ import type { ServerExport, ServerHarness } from "./conformance/conformance-setu
 const TESTER_FRAME = "vitest-iframe";
 
 /**
- * Resolves once Playwright's first `vitest-iframe` frame is this file's tester. Vitest replaces
- * the previous file's iframe in the same page, and its Playwright provider runs every command on
- * the first frame with that name: while Playwright hasn't yet seen the old frame go (a loaded
- * machine), a command would run on it and fail with "Frame was detached".
+ * Resolves once Playwright's first `vitest-iframe` frame is this file's tester: Vitest replaces the
+ * previous file's iframe and Playwright runs commands on the first frame of that name, so a
+ * command on the old one, not yet gone on a loaded machine, fails with "Frame was detached".
  */
 const awaitTesterFrame: BrowserCommand<[]> = async ({ page, testPath }) => {
 	const deadline = Date.now() + 10_000;
@@ -29,10 +28,9 @@ const awaitTesterFrame: BrowserCommand<[]> = async ({ page, testPath }) => {
 };
 
 /**
- * Moves the real pointer off the page. The pointer stays where the last real pointer action left
- * it, across tests and files of the same page, and the browser sends real `mouseover`,
- * `mouseenter` and `mousemove` events to content that renders under it: a toast viewport that
- * then pauses its timers, a filterable menu's input that then takes focus.
+ * Moves the real pointer off the page. It stays where the last real action left it, across tests
+ * and files of a page, and content rendered under it gets real `mouseover`, `mouseenter` and
+ * `mousemove` events (a toast viewport would pause, a menu's input take focus).
  */
 const parkPointer: BrowserCommand<[]> = async ({ page }) => {
 	await page.mouse.move(-1, -1);
@@ -55,10 +53,9 @@ const renderOnServer: BrowserCommand<[component: string, props: Record<string, u
 };
 
 /**
- * Renders a part's conformance harness with Svelte's server renderer and returns its HTML. The
- * part and its wrapper are the exports `harness` names (modules by their path from the package
- * root, exports by a dotted path); the props are the ones the conformance hydration test hydrates
- * with, and the part is in its `on` state, so its `isOn` is `harness.stateful`.
+ * Renders a part's conformance harness on the server and returns its HTML: the part and wrapper
+ * `harness` names (module path from the package root, dotted export), with the props the hydration
+ * test hydrates with, in its `on` state.
  */
 const renderPartOnServer: BrowserCommand<[harness: ServerHarness]> = async (
 	{ project },

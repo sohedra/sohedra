@@ -1,7 +1,6 @@
-// What a control sees outside a field, a labelable, a form, a fieldset and a field item:
-// values that do nothing and say `isNull`. A platform hands them to a store when its context holds
-// none. The field's null value carries the form's, and the field state a control has outside any
-// field.
+// What a control sees outside a field, a labelable, a form, a fieldset and a field item: values
+// that do nothing and say `isNull`. A platform hands them to a store when its context holds none;
+// the field's null value carries the form's.
 import { inertPlatform } from "../kernel/index.js";
 import type {
 	FieldRootView,

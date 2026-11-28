@@ -1,7 +1,5 @@
-// usePositioner through an open Popover: a popup capped to the space it has whose content grows
-// while open.
-// - Growing: fixtures/position-capped-growing.svelte, asked for below its anchor. The collision
-//   padding is the default 5 pixels.
+// usePositioner through an open Popover asked for below its anchor: a popup capped to its space
+// whose content grows while open, with the default 5-pixel collision padding.
 import { describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 

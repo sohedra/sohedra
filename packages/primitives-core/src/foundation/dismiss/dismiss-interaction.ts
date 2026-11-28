@@ -1,7 +1,6 @@
-// Closing a popup with Escape or a press outside it. One popup's
-// dismissal: the press being followed, the timers around it and the calls a platform makes with
-// what happened. The platform finds out where a press landed and tells this; what the press
-// means is decided here, with the plain functions of `dismiss-rules.ts`.
+// One popup's dismissal by Escape or a press outside it: the press being followed, its timers and
+// the calls a platform makes with what happened. The platform finds where a press landed; what
+// the press means is decided here, with the functions of `dismiss-rules.ts`.
 
 import {
 	type ChangeEventDetails,
@@ -266,10 +265,9 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	// Presses anywhere, while the popup is open
 
 	/**
-	 * A press event is on its way to its target. `pointerType` comes with the event that starts a
-	 * press with a pointer (web: `pointerdown`); `compatibility` marks the mouse press that follows
-	 * it (web: `mousedown`), which a touch makes too. Returns whether the event is followed to its
-	 * target: not the mouse press of a touch that lasted too long.
+	 * A press event is on its way to its target: `pointerType` comes with a pointer's press start
+	 * (web: `pointerdown`), `compatibility` marks the mouse press after it (web: `mousedown`).
+	 * Returns whether it is followed: not the mouse press of a touch that lasted too long.
 	 */
 	pressSeen = (press: {
 		readonly button: number;
@@ -348,11 +346,9 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	};
 
 	/**
-	 * A whole press reached its target, on a platform that reports a press as one event (a tap)
-	 * and not as its start, its end and the click after them. `pointerType` is the pointer that
-	 * made it. Such a press is its own start and its own click, so it dismisses under either press
-	 * type: closes the popup unless the press landed in its own elements or where one never
-	 * dismisses.
+	 * A whole press (a tap) reached its target, on a platform that reports a press as one event.
+	 * It is its own start and click, so it dismisses under either press type: it closes the popup
+	 * unless it landed in the popup's own elements or where a press never dismisses.
 	 */
 	wholePress = (press: OutsidePress<T>, pointerType: PointerType): void => {
 		const view = this.#view;
@@ -378,10 +374,9 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	};
 
 	/**
-	 * A press ended or was cancelled, anywhere. `endedInTree`: in the popup, its anchor or a popup
-	 * nested in it; read only for a press that began inside. `dismissible`: the kind's own test of
-	 * the press, as for {@link OutsidePress}; read only for a press dragged out, whose next outside
-	 * click it otherwise keeps from dismissing.
+	 * A press ended or was cancelled, anywhere. `endedInTree` (in the popup, its anchor or a nested
+	 * popup) is read only for a press that began inside; `dismissible` (as for {@link OutsidePress})
+	 * only for a press dragged out, whose next outside click it otherwise keeps from dismissing.
 	 */
 	pressEnd = (end: {
 		readonly canceled: boolean;

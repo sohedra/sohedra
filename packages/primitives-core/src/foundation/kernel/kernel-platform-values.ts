@@ -23,16 +23,9 @@ export type Anchor<T extends PlatformTypes = PlatformTypes> =
 	| { readonly rect: Rect };
 
 /**
- * The event types core interprets, spelled as on the web: core's vocabulary, not a platform's
- * native names. A platform maps its native interactions onto them before it passes one in (a tap
- * that presses a trigger is `click`) and passes `undefined` for an interaction core doesn't
- * interpret.
- *
- * - `click`: a press (a trigger press, or the end of an outside press);
- * - `mousedown`: the start of a press;
- * - `keydown`, `keyup`: a key that presses;
- * - `mouseenter`, `mousemove`: the pointer entering or moving over a trigger (a hover);
- * - `imperative-action`: a change made through a handle, with no native event.
+ * The event types core interprets, in web spelling: a platform maps its interactions onto them
+ * (a tap that presses a trigger is `click`) and passes `undefined` for others. `mousedown` starts
+ * a press, `mouseenter`/`mousemove` hover, `imperative-action` is a handle's change.
  */
 export type InteractionEventType =
 	| "click"

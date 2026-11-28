@@ -69,9 +69,11 @@ export interface PopoverRootProps<Payload = unknown> {
 	onOpenChangeComplete?: ((open: boolean) => void) | undefined;
 	/**
 	 * Determines if the popover enters a modal state when open.
-	 * - `true`: user interaction is limited to the popover: document page scroll is locked, and pointer interactions on outside elements are disabled.
+	 * - `true`: user interaction is limited to the popover: document page scroll is locked, and
+	 *   pointer interactions on outside elements are disabled.
 	 * - `false`: user interaction with the rest of the document is allowed.
-	 * - `'trap-focus'`: focus is trapped inside the popover, but document page scroll is not locked and pointer interactions outside of it remain enabled.
+	 * - `'trap-focus'`: focus is trapped inside the popover, but document page scroll is not locked
+	 *   and pointer interactions outside of it remain enabled.
 	 *
 	 * When `modal` is `true`, focus trapping is enabled only if `<Popover.Close>` is rendered
 	 * inside `<Popover.Popup>`.

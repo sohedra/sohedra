@@ -1,10 +1,6 @@
-// waitForAnimations through a closing Popover (fixtures/presence-popovers.svelte), whose Root
-// unmounts the popup once the popup's animations finish: which animations it waits for, and how
-// the completions of two popups closing together commit.
-// - The popup of an open Popover has its `getAnimations` stubbed once it has opened, then closed:
-//   `onFinished` is `onOpenChangeComplete(false)`, and the popup leaves the document with it.
-// - Two Popovers closed together, the first's completion opening the second: `onSecondUnmount` is
-//   the second Popover's `onOpenChangeComplete(false)`.
+// waitForAnimations through a closing Popover, whose Root unmounts the popup once its animations
+// finish: which animations it waits for (its `getAnimations` stubbed), and how two completions
+// commit when the first's opens the second.
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 

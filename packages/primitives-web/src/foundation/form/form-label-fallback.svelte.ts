@@ -4,11 +4,9 @@ import type { Attachment } from "svelte/attachments";
 type LabelSource = HTMLElement & { labels?: NodeListOf<HTMLLabelElement> | null | undefined };
 
 /**
- * Finds the native `<label>` associated with the attached element (wrapping, or linked with
- * `for`), gives it an id when it has none, and reports it as the control's fallback
- * `aria-labelledby`. It re-checks when the source id or the fallback conditions change, and while a
- * fallback is wanted, whenever a label is added or removed or a label's `for` or `id` changes in the
- * control's tree (a label mounted later).
+ * Finds the native `<label>` of the attached element (wrapping, or by `for`), gives it an id if it
+ * has none and reports it as the fallback `aria-labelledby`. While one is wanted, it re-checks
+ * whenever a label or a label's `for` or `id` changes in the control's tree.
  */
 export function attachLabelFallback(labels: ControlLabels): Attachment<LabelSource> {
 	return (source) => {

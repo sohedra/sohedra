@@ -1,9 +1,7 @@
 <!--
-  The viewport conformance tree for Popover: a Root whose children receive the
-  payload, one Trigger per `triggers` entry (keyed, so a new `key` remounts it), and
-  Portal > Positioner > Popup > Viewport holding the content `content` names for the payload.
-  `direction` emulates a DirectionProvider; `css` goes into a `<style>` element; `open` is
-  bindable.
+  The viewport conformance tree for Popover: a Root, one keyed Trigger per `triggers` entry, and
+  Portal > Positioner > Popup > Viewport holding the `content` for the payload. `direction`
+  emulates a DirectionProvider; `css` goes into a `<style>` element.
 -->
 <script lang="ts" module>
 	export interface ViewportTestTrigger {
@@ -16,10 +14,9 @@
 	}
 
 	/**
-	 * The content for a payload: a `content` div, an image per payload, `Content <n>` in a
-	 * `content` div, or plain `Content <payload>` text. `fade` is `Content <payload>` in a div with a
-	 * global fade, so a replaced container stays in the document until its outro ends. `instance`
-	 * numbers each rendering of the content, so every container shows a different text.
+	 * The content for a payload. `fade` wraps it in a div with a global fade, so a replaced
+	 * container stays until its outro ends; `instance` numbers each rendering, so every container
+	 * shows a different text.
 	 */
 	export type ViewportTestContent =
 		| "content"

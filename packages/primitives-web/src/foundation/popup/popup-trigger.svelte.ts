@@ -70,13 +70,9 @@ export interface PopupTrigger<Store> {
 }
 
 /**
- * A popup trigger's work: finds its popup, registers its element, forwards its data while it owns
- * the popup, and wires what the popup's kind has: hover, the open method, focus guards, and
- * Escape while it has focus. `root` is the store of the Root the trigger is in, from its context
- * (`null` outside one); the trigger reads its handle's store instead while it has a handle, which
- * changes when a Root attaches to the handle. `fixed.part` is the part's public name, for the
- * error when it has neither. Call once while the trigger part initialises: it starts its own
- * effects.
+ * A popup trigger's work: finds its popup (its handle's store while it has a handle, else `root`),
+ * registers its element, forwards its data while it owns the popup and wires its kind's hover,
+ * open method, focus guards and Escape. `fixed.part` names the part in the error without either.
  */
 export function usePopupTrigger<
 	Store extends PopupView<WebTypes>,

@@ -1,8 +1,7 @@
 <!--
-  A type test, checked by `pnpm check` and never rendered, so no demo prop could stand in for it:
-  each `@ts-expect-error` must match an error, so a trigger payload that stops being typed fails the
-  check. The `children` snippet's payload is checked in popover-payload-types.svelte, where a
-  payload typed `unknown` or `{}` has no `text`.
+  A type test, checked by `pnpm check` and never rendered: each `@ts-expect-error` must match an
+  error, so a payload that stops being typed fails the check. The `children` payload is checked
+  in popover-payload-types.svelte.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

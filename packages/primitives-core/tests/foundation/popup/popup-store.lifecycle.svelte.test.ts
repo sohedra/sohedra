@@ -1,7 +1,6 @@
-// The popup store's open pipeline (once its own lifecycle class): a change through its kind's
-// hooks, an `open` set from outside, a detached store, what it keeps of an opening and for how
-// long, the instant type of a new opening, a move to another trigger, and a request the app
-// cancelled out.
+// The popup store's open pipeline: its kind's hooks, an `open` set from outside, a detached store,
+// what it keeps of an opening and for how long, a new opening's instant type, a move to another
+// trigger, and a request the app cancelled out.
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 

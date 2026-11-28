@@ -1,9 +1,6 @@
-// The focus guards around the trigger of a hover-opened popover. Such a popover takes no focus,
-// so its popup renders no focus guards, and the trigger's own guards would have nothing to hand
-// focus to: Tab would stop on one of them, an element nobody can see. The trigger renders no
-// guards while a hover holds the popover open, and Tab follows the document's own order.
-// - The fixture is the Popover of the focus manager cases with `openOnHover` on its trigger and
-//   a `before` and an `after` button around it.
+// The focus guards around the trigger of a hover-opened popover, which takes no focus: the trigger
+// renders no guards while a hover holds it open, so Tab follows the document's order instead of
+// stopping on an invisible guard.
 import { REASONS } from "@sohedra/primitives-core/foundation/kernel";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";

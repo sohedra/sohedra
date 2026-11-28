@@ -1,7 +1,6 @@
-// The form contexts a control reads, typed for the web, and the null values it reads outside each.
-// Core never reads a context. Field.Root sets `FieldRootContext`; Field.Root and Field.Item set
-// `LabelableContext`; Fieldset.Root sets and reads `FieldsetRootContext`. Every field-aware control
-// reads them.
+// The form contexts a control reads, typed for the web, and their null values. Core never reads a
+// context. Field.Root sets the field's, Field.Root and Field.Item the labelable's, Fieldset.Root
+// sets and reads the fieldset's.
 import {
 	type FieldRootView,
 	type FieldsetView,

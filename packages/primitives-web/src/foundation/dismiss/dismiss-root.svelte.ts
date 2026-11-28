@@ -21,10 +21,9 @@ import {
 } from "./dismiss-press-target.js";
 
 /**
- * Runs `listener` once `event` reaches its target (after the capture phase). An event that is
- * stopped on its way never arrives: the next event of its type that passes the target only ends
- * the wait, and `listener` isn't run for an event that is over. A native listener: it is added
- * while the event is on its way, and `on` would add a pointer or touch one a microtask later.
+ * Runs `listener` once `event` reaches its target. A stopped event never arrives: the next event
+ * of its type at the target only ends the wait. Native, because it is added while the event is
+ * on its way and `on` would add a pointer or touch listener a microtask late.
  */
 function addTargetListenerOnce<E extends Event>(event: E, listener: (event: E) => void) {
 	const target = getTarget(event);

@@ -1,8 +1,6 @@
-// The steps of one positioning computation, in their order: offset, flip and shift as the
-// collision plan says, size, the arrow, the transform origin and whether the anchor is hidden.
-// They are built from the placement rules on the platform-free half of Floating UI. A platform
-// runs them with its own `computePosition`, says how it measures, and may add a step at either
-// end; what the steps find lands in `measured`.
+// The steps of one positioning computation, in order: offset, flip and shift as the collision
+// plan says, size, the arrow, the transform origin and anchor hiding, on Floating UI's core. A
+// platform runs them with its own `computePosition` and may add steps; findings land in `measured`.
 
 import {
 	flip,
@@ -97,9 +95,7 @@ export interface PlatformPositioning {
 	readonly arrow: PositionerArrow;
 	/**
 	 * Measures how far the anchor overflows the area it is clipped to and hands that to `next`.
-	 * The positioning library measures it asynchronously
-	 * (`state.platform.detectOverflow(state, { elementContext: "reference" })`) and core never
-	 * awaits, so the platform waits.
+	 * Floating UI measures it asynchronously and core never awaits, so the platform waits.
 	 */
 	anchorOverflow(
 		state: MiddlewareState,

@@ -89,10 +89,9 @@ const DELEGATED_EVENTS = [
 const delegatingRoots = new WeakMap<ShadowRoot, { count: number; off: () => void }>();
 
 /**
- * A closed shadow root hides its event path from the document, so Svelte's delegated handlers on
- * elements portalled into it (outside the mount target) never run. Svelte's `on` on the shadow
- * root runs them, from the event's target up to the root, in Svelte's own order. Returns the
- * release.
+ * A closed shadow root hides its event path, so Svelte's delegated handlers on elements portalled
+ * into it never run; Svelte's `on` on the root runs them, target to root, in Svelte's order.
+ * Returns the release.
  */
 function delegateInto(root: ShadowRoot): () => void {
 	let entry = delegatingRoots.get(root);
@@ -113,10 +112,9 @@ function delegateInto(root: ShadowRoot): () => void {
 }
 
 /**
- * The move of a part's element into another container while it stays in its Svelte component
- * tree. The element is the only node of its block, so Svelte's removal of that block removes
- * exactly it; the teardown removes it otherwise (an enclosing block's removal only walks the
- * nodes left in place).
+ * Moves a part's element into another container while it stays in its component tree. It is the
+ * only node of its block, so Svelte's removal of the block removes exactly it; the teardown
+ * removes it otherwise (an enclosing block's removal walks only the nodes left in place).
  */
 function movePortalNode(
 	options: () => PortalOptions,
@@ -171,10 +169,9 @@ function movePortalNode(
 }
 
 /**
- * A portal that also manages focus across it, for a popup that takes focus: it gives the focus
- * manager inside its state, keeps a non-modal popup's content out of the tab order until focus
- * enters it, and has the two outside guards a non-modal popup needs around its element. Popups
- * inside it portal into its element. Call during the Portal part's init.
+ * A portal that manages focus across it: it gives the focus manager its state, keeps a non-modal
+ * popup's content out of the tab order until focus enters it, and has that popup's two outside
+ * guards. Popups inside portal into its element. Call during the Portal part's init.
  */
 export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 	const parent = PortalContext.getOr(null);

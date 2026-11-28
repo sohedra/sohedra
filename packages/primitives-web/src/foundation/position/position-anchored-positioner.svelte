@@ -1,15 +1,8 @@
 <!--
-  The Positioner part of every anchored popup: it places the popup against its anchor and holds
-  the position state the Popup, the Arrow and a Viewport inside read. Beside that, it is the
-  popup's node in the popup tree (popups nested in it are its children), it lets the transitions
-  run once more when the popup moves to another trigger, and it locks the page scroll while the
-  store says so. Renders a `<div>` element, after the internal backdrop of a modal popup when it
-  has one.
-
-  A component's own Positioner file hands over its store, its node id, the context it publishes
-  its position state in, what its Portal says about staying mounted, its default side and its
-  attribute mapping. The placement props come with the user's props. Its state is its
-  Positioner store's.
+  @component
+  The Positioner part of every anchored popup: places the popup against its anchor, holds the
+  position state the parts inside read, is the popup's tree node and locks the page scroll when
+  its store says so. Renders a `<div>` element, after a modal popup's internal backdrop.
 -->
 <script lang="ts">
 	import type { DefinedContext } from "@sohedra/primitives-core/foundation/kernel";

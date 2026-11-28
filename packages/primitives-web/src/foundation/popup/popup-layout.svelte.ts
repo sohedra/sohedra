@@ -1,10 +1,9 @@
 import { defineContext } from "@sohedra/primitives-core/foundation/kernel";
 
 /**
- * Layout a Viewport measures for its Popup and Positioner (size variables, pinned edges), and
- * whether the Positioner places the popup from its far edges. The Positioner owns it; the Popup
- * and Positioner put the styles in their declarative `style`, so nothing is written to an
- * element's style outside a synchronous measurement.
+ * Layout a Viewport measures for its Popup and Positioner (size variables, pinned edges) and
+ * whether the Positioner places from its far edges. The parts put it in their declarative
+ * `style`, so nothing writes an element's style outside a synchronous measurement.
  */
 export class PopupLayoutStore {
 	#popupStyle = $state("");

@@ -34,12 +34,9 @@ function whenConnected(element: Element, connect: () => () => void): () => void 
 }
 
 /**
- * An attachment that holds `claim(token, value)` while its element is in the document, releasing
- * and claiming again when `get` returns a new value (`undefined` claims nothing). A part whose id
- * another element names in an `aria-*` attribute claims it this way, so the attribute never names
- * an element that isn't in the document, as when the part is still loading inside a boundary.
- * Each attachment claims with its own token, so an element replacing another (a `render` swap)
- * keeps its claim when the old one detaches after it.
+ * An attachment that holds `claim(token, value)` while its element is in the document, so an
+ * `aria-*` attribute never names a missing element; a new `get` value claims again. Each has its
+ * own token, so an element replacing another (a `render` swap) keeps its claim.
  */
 export function attachClaim<T>(
 	claim: (token: object, value: T) => () => void,
@@ -63,9 +60,8 @@ export interface ClaimedIdOptions {
 
 /**
  * A part whose id another element names (a Title, a Description, a Label): `props` hold its `id`
- * (the prop, else `fixed.defaultId`, the generated one), with its claim on `slot` riding inside as
- * an attachment, so the store names it only while the element is in the document. Spread `props`
- * once on the part's element. Call once while the part initialises.
+ * (the prop, else `fixed.defaultId`) with its claim on `slot` as an attachment, so the store names
+ * it only while it is in the document. Spread `props` once on the part's element.
  */
 export function useClaimedId(
 	slot: ClaimedValue<string>,

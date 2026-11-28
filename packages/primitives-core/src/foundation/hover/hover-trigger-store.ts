@@ -1,6 +1,5 @@
-// The trigger side of a popup's hover: entering, resting on and leaving one trigger opens or
-// closes the popup. The platform forwards pointer events with what it measured; every decision
-// (delays, rest-only opening, re-entering during a hover close, the safe polygon, touch) is made
+// The trigger side of a popup's hover: entering, resting on and leaving a trigger opens or closes
+// the popup. The platform forwards pointer events with what it measured; every decision is made
 // here and in the popup side, on the timers and pointer state of the popup's `HoverInteraction`.
 
 import {

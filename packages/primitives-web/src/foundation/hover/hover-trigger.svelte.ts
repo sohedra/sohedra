@@ -136,13 +136,9 @@ function trackSafePolygon(
 }
 
 /**
- * The trigger side of a popup's hover: forwards the trigger's pointer events, with what they
- * hit, to the popup's hover store, which decides whether the popup opens or closes.
- *
- * `options` returns the trigger's hover options as a plain object and is called whenever one is
- * needed, so every option stays live. Its `popup` is the popup the trigger reads now: a trigger
- * attached through a handle can be given another popup. It installs the listeners when called,
- * once, while the trigger part initialises; `props` go on the trigger's element.
+ * The trigger side of a popup's hover: forwards the trigger's pointer events, with what they hit,
+ * to the popup's hover store, which decides. `options` is read whenever needed; its `popup` is the
+ * one the trigger reads now, which a handle can change. `props` go on the trigger's element.
  */
 export function useHoverTrigger(options: () => HoverTriggerOptions): HoverTrigger {
 	// Value-compared views of the options an effect depends on: the effect re-runs when the value

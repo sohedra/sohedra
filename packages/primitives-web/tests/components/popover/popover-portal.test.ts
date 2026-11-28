@@ -1,8 +1,6 @@
-// Popover.Portal: it moves its element into the container while the element stays in its Svelte
-// component tree, so removing a popover never removes the container's other children, across
-// Svelte's block boundaries ({#each}, {#if} component swaps, {#key}, nesting, keepMounted, render
-// snippets and container changes); a Portal removed while its popover is open; and the user's own
-// handlers on the Portal and the Positioner.
+// Popover.Portal: its element moves into the container but stays in its component tree, so
+// removing a popover never removes the container's other children across Svelte's blocks; a
+// Portal removed while open; and the user's handlers on the Portal and the Positioner.
 import { flushSync } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";

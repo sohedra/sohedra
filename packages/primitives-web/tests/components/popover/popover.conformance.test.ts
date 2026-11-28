@@ -34,9 +34,8 @@ import PopoverTriggerWrapper from "./fixtures/popover-trigger-wrapper.svelte";
 const POPOVER = new URL("../../../src/components/popover/index.ts", import.meta.url).href;
 
 /**
- * Popover.Trigger as the conformance suite sees it: inside a Popover.Root whose `open` the state
- * props set. The root names the trigger with `triggerId`, so the server renders it open too
- * (a trigger otherwise becomes the active one after hydration). Its own click handler toggles the
+ * Popover.Trigger as the conformance suite sees it: in a Root whose `open` the state props set,
+ * naming the trigger with `triggerId` so the server renders it open too. Its own click toggles the
  * popover, read back from `aria-expanded`.
  */
 const triggerSetup: ConformanceSetup<PopoverTriggerState> = {

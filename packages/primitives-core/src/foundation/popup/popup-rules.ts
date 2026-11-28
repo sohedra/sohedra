@@ -51,11 +51,9 @@ export function movesToOtherTrigger(
 }
 
 /**
- * Whether an accepted change leaves the recorded open event as it is: only an opening of an
- * open popup by something other than a press or a key, from the trigger it belongs to.
- * So a pending hover open doesn't replace a click-like open event, a click-like event upgrades a
- * hover open, and a close forgets the event. A hover that moves the popup to another trigger
- * (`triggerChanged`) is a new opening: the press on the trigger it left no longer counts.
+ * Whether an accepted change keeps the recorded open event: only an opening of an open popup,
+ * not by a press or a key, from its own trigger. A hover onto another trigger (`triggerChanged`)
+ * is a new opening, and a close forgets the event.
  */
 export function keepsOpenEvent(
 	next: boolean,
@@ -85,13 +83,9 @@ export function closesUnheard(open: boolean, heardOpen: boolean): boolean {
 }
 
 /**
- * The open values a popup store's watch still has to follow, in order. `followed` is the value it
- * followed last (`undefined` before its first run), `heardOpen` what the store last heard.
- * Normally that is `open`, once. Nothing when only `heardOpen` caught up with an `open` already
- * followed. And when a request and the app cancelled each other out in one update (a requested
- * close, then `open` set back to true from outside before effects ran), `open` is where it was but
- * the store heard of the change: that one is followed first, then the one back, as if the two
- * had come in separate updates.
+ * The open values a popup store's watch still has to follow, in order, from the one it `followed`
+ * last and the one it `heardOpen`: normally `open`, once. When a request and the app cancelled
+ * each other out in one update, the heard change is followed first, then the one back.
  */
 export function openValuesToFollow(
 	open: boolean,
@@ -129,10 +123,9 @@ export function awaitsUnmount(open: boolean, mounted: boolean, preventUnmount: b
 }
 
 /**
- * Whether a popup is nested in another popup (its stores' `nested`), from the id of
- * its nearest popup-tree node and the dialog it is rendered in. A dialog is a node of the tree
- * but not a popup: a popup directly under a dialog's node is nested only when that
- * dialog is.
+ * Whether a popup is nested in another popup, from its nearest popup-tree node and the dialog it
+ * is in. A dialog is a node of the tree but not a popup: a popup right under a dialog's node is
+ * nested only when that dialog is.
  */
 export function isNestedInPopup(
 	parentNodeId: string | null,

@@ -102,15 +102,9 @@ function isPreventScrollSupported(doc: Document): boolean {
 }
 
 /**
- * Focus management for a popup: initial focus, return focus, a modal trap with focus guards,
- * `aria-hidden` and the inert marker on outside content, Tab bridging through portal guards for a
- * non-modal popup, and closing when focus leaves.
- *
- * `popup` is the popup's store, `options` returns the part's focus options as a plain object; it
- * is called whenever one is needed, so every option stays live. `fixed` is read once: the portal
- * the popup renders in and its Tab bridge. It starts its effects when called, once, while the
- * Popup part initialises. The Popup renders `guardBefore` and `guardAfter` around its element
- * while `guarded`.
+ * Focus management for a popup: initial and return focus, a modal trap with guards, hiding
+ * outside content, Tab bridging for a non-modal popup and closing when focus leaves. `options` is
+ * read whenever needed, so each stays live; `fixed` (the portal and its bridge) is read once.
  */
 export function useFocusManager(
 	popup: PopupView<WebTypes>,
@@ -119,10 +113,9 @@ export function useFocusManager(
 ): FocusManager {
 	const { portal, bridge } = fixed;
 
-	// Value-compared views of the options an effect depends on: the effect re-runs when the value
-	// changes, not when any signal the options object reads does (a close changes the reason a
-	// Popup's `disabled` reads). `options()` itself is never called from a teardown, where a read
-	// of derived state can go stale: a teardown reads plain copies.
+	// Value-compared views of the options effects depend on: an effect re-runs when the value
+	// changes, not when a signal the options read does. Teardowns read plain copies, never
+	// `options()`: a teardown's read of derived state can be stale.
 	const disabled = $derived(options().disabled);
 	const modal = $derived(options().modal ?? true);
 	const restoreFocus = $derived(options().restoreFocus ?? false);
@@ -627,11 +620,9 @@ export function useFocusManager(
 			});
 		});
 
-		// What the options say while the popup is mounted, kept as plain values for the close's
-		// teardown: a teardown read of state derived from an unbound `$bindable` `open`, in the flush
-		// that wrote it, leaves that state stale (sveltejs/svelte#19099), and a return target may read
-		// the active trigger. A teardown saw the values from before the flush anyway, which are the
-		// last ones read while mounted.
+		// The options while mounted, kept as plain values for the close's teardown: a teardown read of
+		// state derived from an unbound `$bindable` `open`, in the flush that wrote it, is stale
+		// (sveltejs/svelte#19099).
 		let returnFocus = untrack(() => returnFocusOption);
 		// Copies the return-focus options before the DOM updates, while mounted.
 		$effect.pre(() => {
@@ -768,10 +759,9 @@ export function useFocusManager(
 								focusOptions.focusVisible = true;
 							}
 							tabbableReturnElement.focus(focusOptions);
-							// A target in the document can still be hidden, as a control of a closed popup
-							// that stays mounted is, and focusing it does nothing: focus then goes to the
-							// newest element focused before a popup opened that can take it, unless it has
-							// moved on since the close.
+							// A target in the document can be hidden (a control of a closed popup that stays
+							// mounted), and focusing it does nothing: focus goes to the newest element focused
+							// before a popup opened that can take it, unless focus moved on since the close.
 							const focused = activeElement(doc);
 							if (
 								focused !== tabbableReturnElement &&

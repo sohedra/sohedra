@@ -63,10 +63,9 @@ function parseStyle(text: string | null | undefined): Map<string, Declaration> {
 }
 
 /**
- * Applies a part's computed `style` to its element property by property: a changed declaration is set, one this attachment set that is gone is removed,
- * and inline styles others set (an attachment, a measuring wiring) are left alone. A spread
- * `style` string would replace the whole attribute on every change. The attachment re-runs when
- * the style changes; put it before the element's other attachments, so they see it applied.
+ * Applies a part's computed `style` property by property, leaving inline styles others set alone
+ * (a spread string would replace the attribute). Re-runs when the style changes; put it before the
+ * element's other attachments, so they see it applied.
  */
 export function attachStyle(get: () => string | null | undefined): Attachment<HTMLElement> {
 	// What was applied to each element (a render swap attaches a new one).

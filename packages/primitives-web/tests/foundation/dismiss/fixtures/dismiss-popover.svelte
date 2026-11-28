@@ -1,10 +1,7 @@
 <!--
-  An initially open Popover for the dismiss cases: the trigger (`anchor`) and the popup
-  (`popup`), which holds an `input` and, with `scrubber`, a `scrubber` whose `pointerdown` is
-  prevented. The Root's `open` is bindable; `openOnPointerDown` adds an `opener` button that opens
-  it on `pointerdown`. A new `popupKey` re-creates the Positioner (the popup) while
-  open, which re-attaches the dismissal's document listeners. `onStore` hands the Root's store out.
-  No other fixture starts open with a field in its popup, or re-creates its Positioner on demand.
+  An initially open Popover with an `input` (and a `scrubber` whose `pointerdown` is prevented)
+  in its popup; a new `popupKey` re-creates the Positioner while open. No other fixture starts
+  open with a field in its popup or re-creates its Positioner on demand.
 -->
 <script lang="ts">
 	import type { PopoverStore } from "@sohedra/primitives-core/popover";

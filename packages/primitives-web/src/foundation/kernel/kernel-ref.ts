@@ -5,16 +5,8 @@ import { webScheduler } from "./kernel-platform.js";
 
 /**
  * An attachment that reports its element to `set`, and `null` when it detaches, unless the ref
- * has moved on: another element of the same part attached in the meantime (a `render` swap
- * attaches the new element before the old one detaches), or `get` (the bound ref) holds a
- * different element (a replacement part attached first, as when the old one plays an `out:`
- * transition).
- *
- * With `get`, the bound ref is read a microtask after the element detaches and compared with the
- * element this attachment captured, as Svelte's own `bind:this` does. A `$bindable` prop read
- * inside a teardown returns the value its own component last wrote, which is that element even
- * when a replacement has bound another one since; a microtask later it reads the binding's
- * current value.
+ * moved on: another element of the part attached since (a `render` swap), or `get` (the bound ref)
+ * holds another element (a replacement attached first, as during an `out:` transition).
  */
 export function attachRef<T extends Element>(
 	set: (element: T | null) => void,
@@ -33,6 +25,8 @@ export function attachRef<T extends Element>(
 				untrack(() => set(null));
 				return;
 			}
+			// The bound ref is read a microtask later, as `bind:this` does: a `$bindable` read in a
+			// teardown returns what this component last wrote, not the binding's current value.
 			webScheduler.microtask(() => {
 				// Another element of the same part attached since: the ref is its now.
 				if (current !== null) {

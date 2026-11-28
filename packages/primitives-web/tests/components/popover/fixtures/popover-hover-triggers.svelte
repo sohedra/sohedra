@@ -1,8 +1,6 @@
 <!--
-  Two hover-opening triggers of one popover, named by `labels` and carrying them as payloads, and
-  a popup that shows the payload of the trigger it belongs to: "Details for <payload>", the payload
-  in `data-testid="content"`. The demo's triggers carry no payloads. `onOpenChange` hears every
-  change the popover reports.
+  Two hover-opening triggers of one popover carrying their `labels` as payloads, and a popup that
+  shows its trigger's payload ("Details for <payload>"): the demo's triggers carry no payloads.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

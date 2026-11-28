@@ -1,14 +1,7 @@
 <!--
-  A click-opened Popover for the focus manager's cases: the trigger (`anchor`) and the popup
-  (`popup`). `content` picks the popup's children: a `child` button, a button carrying the
-  click-trigger attribute (`nested-trigger`), or nothing; `withClose` adds a Popover.Close after
-  it (a `modal` popover traps focus only with one).
-  The optional outside elements: an `open-state` text, `before`/`after`/`last` buttons, a `close`
-  button and `controlled-open`/`controlled-close` buttons that set the bound `open`, and a
-  `reopen-on-close` button that reopens the popover in the update that closes it.
-  `onStore` hands the Root's store out.
-  The buttons Tab moves through carry `tabindex="0"`: WebKit's Tab skips a button without one.
-  A Popover demo has none of these outside elements or the store handle.
+  A click-opened Popover for the focus manager's cases, with `content` and `withClose` in its
+  popup and buttons outside it that set the bound `open`, which the demo doesn't have. The buttons
+  Tab moves through carry `tabindex="0"`: WebKit's Tab skips a button without one.
 -->
 <script lang="ts">
 	import type { PopoverStore } from "@sohedra/primitives-core/popover";

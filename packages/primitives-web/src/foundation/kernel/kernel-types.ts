@@ -85,10 +85,9 @@ export type PartUserProps<State> = {
 };
 
 /**
- * The options of a class-style component constructor. A generic Root or Trigger declares a
- * construct signature taking these, because svelte-check infers a component's type parameters
- * from that signature; Svelte's own `ComponentConstructorOptions` is deprecated with class
- * components.
+ * The options of a class-style component constructor: svelte-check infers a generic Root's or
+ * Trigger's type parameters from a construct signature taking these (Svelte's own
+ * `ComponentConstructorOptions` is deprecated).
  */
 export interface ConstructorOptions<Props> {
 	target: Element | Document | ShadowRoot;

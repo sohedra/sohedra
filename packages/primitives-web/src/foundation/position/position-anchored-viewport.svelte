@@ -1,9 +1,8 @@
 <!--
-  The Viewport part of every anchored popup: it shows the content of the active trigger and, while
-  the popup moves to another trigger, an inert copy of the previous content on its way out.
-  Renders a `<div>` element. A component's own Viewport file hands over its public name, its store,
-  the side its Positioner placed the popup on and its attribute mapping. Its state is its content
-  store's.
+  @component
+  The Viewport part of every anchored popup: it shows the active trigger's content and, while the
+  popup moves to another trigger, an inert copy of the previous content on its way out. Renders a
+  `<div>` element; its state is its content store's.
 -->
 <script lang="ts">
 	import type { PopupView } from "@sohedra/primitives-core/foundation/popup";

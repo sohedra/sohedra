@@ -7,9 +7,8 @@ import { waitForAnimations } from "../presence/index.js";
 
 /**
  * Unmounts a closed popup once its exit animations finish, unless `preventUnmountOnClose()` was
- * called (the store decides when it waits). `options().element` gives the element whose
- * animations are awaited when it isn't the popup. Call once while the Root initialises: it starts
- * its own effect.
+ * called. `options().element` is the element whose animations are awaited when it isn't the
+ * popup. Call once while the Root initialises.
  */
 export function usePopupUnmount(
 	store: PopupView<WebTypes>,

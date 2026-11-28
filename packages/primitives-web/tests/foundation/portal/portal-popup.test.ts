@@ -1,9 +1,6 @@
-// The popup Portal part, through a Popover: a container that only exists after mount, and the
-// rendered portal id the `aria-owns` relationship names. The Popover's own portal tests and the
-// Portal conformance runs cover the rest.
-// - The portal element is the one marked `data-sohedra-portal` around the Positioner.
-// - The `aria-owns` case renders the open non-modal Popover of the focus cases
-//   (../focus/fixtures/focus-popover.svelte), whose Portal gets the `id`.
+// The popup Portal part through a Popover (the element marked `data-sohedra-portal`): a container
+// that only exists after mount, and the portal id that `aria-owns` names. The Popover's portal
+// tests and the Portal conformance runs cover the rest.
 import { describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { userEvent } from "vitest/browser";

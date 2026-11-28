@@ -1,17 +1,8 @@
 <!--
-  A part's element. A part writes its own attributes, handlers and attachments on the `<Part>` tag,
-  as it would on an element: they are typed by the element its `tag` names (`tag="form"` takes
-  `novalidate`, `tag="fieldset"` takes `disabled`). It hands over what its user passed as `user`.
-  `Part` renders `<svelte:element this={tag}>` with everything merged, or the user's `render`
-  snippet given the merged props and the part's state. The element holds the user's `children`, or the part's own
-  `body` when it wraps them in markup of its own.
-
-  One merge order for every part: the state's styling hooks, the part's own props, `bind:ref`, the
-  user's props, then `after`. The user's `class` goes in front of the part's own and the user's
-  `style` after it, each resolved against the state when it is a function.
-
-  Attachments written on the tag must be stable functions from the part's script: an inline arrow
-  would detach and attach again every time the props are merged.
+  @component
+  A part's element: `<svelte:element this={tag}>`, or the user's `render` snippet, given the
+  state's styling hooks, the part's own props, `bind:ref`, the `user` props and `after`, merged in
+  that order. The user's `class` goes in front of the part's own and their `style` after it.
 -->
 <script module lang="ts">
 	import { BROWSER, DEV } from "esm-env";
@@ -57,6 +48,8 @@
 	import { attachStyle } from "./kernel-style.js";
 	import type { PartUserProps, RenderProps } from "./kernel-types.js";
 
+	// The part's own props, written on the tag. An attachment among them must be a stable function
+	// from the part's script: an inline arrow would detach and attach again on every merge.
 	type OwnProps = Omit<SvelteHTMLElements[Tag], "children" | "this">;
 
 	/** One source of `after`: the element's own props, or a function of the props merged so far. */

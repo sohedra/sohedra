@@ -1,11 +1,9 @@
 import { watch } from "./kernel-watch.svelte.js";
 
 /**
- * The memory of what the last update settled on: a step derived from the committed value and the
- * current state is committed after each update, before the platform draws it, so the next step
- * is counted from it. An intent that resets the step writes the memory directly.
- *
- * A store holds it as an owned object and calls `follow` once in its `connect()`.
+ * What the last update settled on: a step derived from it and the current state is committed
+ * after each update, before the platform draws, so the next step counts from it. An intent that
+ * resets the step writes it directly. A store owns one and calls `follow` once in `connect()`.
  */
 export class CommittedValue<T> {
 	#current: T = $state.raw() as T;

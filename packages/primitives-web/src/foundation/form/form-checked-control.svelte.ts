@@ -92,13 +92,9 @@ export interface CheckedControl {
 }
 
 /**
- * A control whose value is a checked state (Switch, Checkbox, Radio): its place in its field, its
- * labelling, the hidden input beside it and the forwarding of a press to that input, focus and
- * blur, and button semantics. Call it once while the part initialises. Its store holds the
- * control's id in its labelable and its labels.
- *
- * The hidden input is a props object, not a component: a component beside the part's element
- * adds a hydration marker to the server HTML.
+ * A control whose value is a checked state (Switch, Checkbox, Radio): its field, labels, hidden
+ * input and the press forwarded to it, focus and blur, and button semantics. The hidden input is
+ * a props object, not a component: a component beside the element adds a hydration marker.
  */
 export function useCheckedControl(
 	store: CheckedControlView,
@@ -185,10 +181,9 @@ export function useCheckedControl(
 }
 
 /**
- * The element a form focuses: it becomes the field's control element, and holds the field's
- * focused state while it is focused and enabled. Disabling or unmounting a focused control moves
- * focus away without a `blur`, so the attachment lets go of the focused state then, and claims it
- * at mount for a control focused before hydration (autofocus).
+ * The element a form focuses: the field's control element, holding the field's focused state
+ * while focused and enabled. Disabling or unmounting it moves focus without a `blur`, so it lets
+ * go then; it claims the state at mount for a control focused before hydration (autofocus).
  */
 function attachFocusTarget(link: FieldControlLink<WebTypes>): Attachment<HTMLElement> {
 	return (element) => {
@@ -243,10 +238,9 @@ function fieldValidationProps(
 }
 
 /**
- * The hidden input's behaviour. User changes arrive as clicks on it (the visible control forwards
- * its clicks, and native labels click it): the browser toggles it first, then the store decides,
- * and a click it refuses is canceled, which reverts the input and suppresses its `input` and
- * `change` events. A form reset restores the default.
+ * The hidden input's behaviour. User changes arrive as clicks on it (forwarded or from a label):
+ * the browser toggles it, then the store decides, and a refused click is canceled, which reverts
+ * the input and suppresses `input` and `change`. A form reset restores the default.
  */
 function attachCheckedInput(
 	store: CheckedControlView,
@@ -296,14 +290,9 @@ function attachCheckedInput(
 }
 
 /**
- * Calls `onReset` when the form `control` belongs to is natively reset, so the control can restore
- * its default without its change callback. Returns the cleanup.
- *
- * The `reset` event fires before the browser resets the controls, and a later listener may still
- * cancel it, so `onReset` runs a task after the event, and only if the reset wasn't prevented.
- * (Not a microtask: after a trusted click on a reset button, microtasks run between the reset
- * event and the browser's reset of the controls.) `reset` isn't composed, so the listener sits on
- * the control's own tree (its document or shadow root), which holds the form it belongs to.
+ * Calls `onReset` a task after the control's form is natively reset and not prevented: `reset`
+ * fires before the browser resets the controls, and a trusted click runs microtasks in between.
+ * `reset` isn't composed, so the listener sits on the control's own document or shadow root.
  */
 function onFormReset(control: HTMLInputElement, onReset: () => void): () => void {
 	let cancelPending: (() => void) | undefined;

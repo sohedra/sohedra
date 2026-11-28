@@ -17,15 +17,9 @@ export type PropsInput = Props | ((merged: Props) => Props) | undefined;
 type Handler = (...args: unknown[]) => unknown;
 
 /**
- * Merges props with Svelte's names:
- * - the rightmost plain prop wins;
- * - `on*` handlers (lowercase, as Svelte names them) are chained, rightmost first, and the
- *   rightmost can skip the ones to its left with `event.preventSohedraHandler()`;
- * - `class` becomes `[theirs, ours]` (Svelte resolves class arrays), and `style` strings are
- *   joined so the rightmost declaration wins;
- * - attachments (symbol keys) from every source are kept;
- * - a function source receives the props merged so far and its result replaces them; it chains
- *   handlers itself if it needs to.
+ * Merges props with Svelte's names: the rightmost plain prop wins; lowercase `on*` handlers chain
+ * rightmost first (`event.preventSohedraHandler()` skips the rest); `class` becomes `[theirs,
+ * ours]`, `style` strings join; every attachment stays; a function source replaces the merge.
  */
 export function mergeProps(...props: PropsInput[]): Props {
 	return mergePropsN(props);

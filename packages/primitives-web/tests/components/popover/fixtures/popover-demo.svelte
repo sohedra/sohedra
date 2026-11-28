@@ -1,15 +1,7 @@
 <!--
   The canonical Popover: a Root, its triggers, and Portal > Positioner > Popup, each part with its
-  own props object (`rootProps`, `triggerProps`, `portalProps`, `positionerProps`, `popupProps`,
-  and `backdropProps` / `arrowProps`, which add those parts). The popup holds `content`, and
-  a Title, a Description and a Close when `title`, `description` and `close` give their text.
-  `variant: "detached"` puts the triggers outside the Root, on `handle` (one is made when none
-  is given). `triggers` names one trigger per entry (ids `trigger-1`, `trigger-2`, …), each a
-  button unless `triggerAs` renders it as a `<span>` or `<div>`. `afterTriggers` adds a span after
-  them, `outsideButton` a button after the popover, `portal: false` leaves the popup out, and
-  `show: false` removes the Root (detached triggers stay). `open` is bindable, and the way to
-  set it: a spread `rootProps.open` doesn't override the binding. Parts without a role carry test
-  ids: `positioner` and `backdrop`.
+  own props object; `variant: "detached"` puts the triggers outside the Root on `handle`. `open` is
+  bindable and the way to set it: a spread `rootProps.open` doesn't override the binding.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";

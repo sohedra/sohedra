@@ -1,8 +1,7 @@
 <!--
-  `usePopupUnmount` on a stand-in popup store: `awaiting` is its `awaitingUnmount`, the "popup"
-  div its popup element and `onUnmount` its `unmount`. With `awaitOther`, the root is given the
-  "other" div as the element whose exit animations it waits for. A real popup decides
-  `awaitingUnmount` and its element itself, so the cases hold them on a stand-in instead.
+  `usePopupUnmount` on a stand-in popup store (`awaiting`, the "popup" div, `onUnmount`), since a
+  real popup decides `awaitingUnmount` and its element itself. With `awaitOther`, the root waits
+  for the "other" div's exit animations.
 -->
 <script lang="ts">
 	import type { PopupView } from "@sohedra/primitives-core/foundation/popup";

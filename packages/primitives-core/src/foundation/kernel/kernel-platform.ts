@@ -9,10 +9,9 @@ export interface PlatformTypes {
 	/** The platform's element handle. Core compares handles by identity and hands them back. */
 	element: object;
 	/**
-	 * The native event per change reason: the type of a change's `event`. It must have a `none`
-	 * entry: a reason the map doesn't list gets the `none` entry's event (without one, such a
-	 * change's event is typed `unknown`). It includes `imperative-action`, the event of a change no
-	 * native event caused.
+	 * The native event per change reason: the type of a change's `event`, including
+	 * `imperative-action`. It must have a `none` entry, which a reason it doesn't list gets
+	 * (without one, such a change's event is typed `unknown`).
 	 */
 	events: Record<string, unknown>;
 	/** Change reasons the platform adds to core's `REASONS` (a platform's back key). */
@@ -29,10 +28,9 @@ export type PlatformEvent<
 export type AnyPlatformEvent<T extends PlatformTypes> = T["events"][keyof T["events"]];
 
 /**
- * Time. Every method is synchronous and returns at once; `timeout`, `frame` and `microtask`
- * return a function that cancels the callback if it hasn't run. None of them ever runs its
- * callback before it returns, not even `timeout(callback, 0)`: core relies on it (a callback run
- * during the call would leave `Timeout.isStarted()` true after it ran).
+ * Time. Every method returns at once; `timeout`, `frame` and `microtask` return a cancel
+ * function. None ever runs its callback before it returns, not even `timeout(callback, 0)`:
+ * `Timeout.isStarted()` relies on it.
  */
 export interface Scheduler {
 	/** Runs `callback` once, after at least `ms` milliseconds; never before it returns. */
@@ -142,10 +140,9 @@ function noLocale(): never {
 }
 
 /**
- * The platform of a store no platform runs yet, such as the fallback store of a handle created at module
- * scope: its timers never fire, its time stands still, document order and focus moves and form
- * submits do nothing, and asking it for a locale formatter or collator throws (a detached store
- * has no locale). Such a store never opens, so nothing asks it for more.
+ * The platform of a store no platform runs yet (a handle's fallback store at module scope): no
+ * timer fires, time stands still, order, focus and submits do nothing, and a locale formatter or
+ * collator throws. Such a store never opens, so nothing asks it for more.
  */
 export const inertPlatform: Platform = Object.freeze({
 	scheduler: Object.freeze({ timeout: never, frame: never, microtask: never, now: () => 0 }),
