@@ -6,6 +6,10 @@
 	"js/ts.preferences.preferTypeOnlyAutoImports": true,
 	"scm.defaultViewMode": "tree",
 
+	// The TypeScript native preview doesn't load the Svelte TypeScript plugin yet, so `.svelte`
+	// imports in `.ts` files fall back to a generic component type. Turn it on once it does.
+	"js/ts.experimental.useTsgo": false,
+
 	// Per-language formatters in user settings beat the default above, so set each language here too
 	"[css]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
 	"[javascript]": { "editor.defaultFormatter": "oxc.oxc-vscode" },
