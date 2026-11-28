@@ -72,3 +72,18 @@ export type PartUserProps<State> = {
 	children?: Snippet<[{ state: State }]> | undefined;
 	readonly [key: PropertyKey]: unknown;
 };
+
+/**
+ * The options of a class-style component constructor. A generic Root or Trigger declares a
+ * construct signature taking these, because svelte-check infers a component's type parameters
+ * from that signature; Svelte's own `ComponentConstructorOptions` is deprecated with class
+ * components.
+ */
+export interface ConstructorOptions<Props> {
+	target: Element | Document | ShadowRoot;
+	anchor?: Element;
+	props?: Props;
+	context?: Map<unknown, unknown>;
+	hydrate?: boolean;
+	intro?: boolean;
+}
