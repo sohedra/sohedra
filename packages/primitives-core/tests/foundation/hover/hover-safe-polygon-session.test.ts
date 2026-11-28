@@ -13,10 +13,10 @@ describe("SafePolygonSession", () => {
 		clientX: 95,
 		clientY: 128,
 		isLeave: false,
-		isOverFloating: false,
-		isOverReference: false,
-		leavingIntoFloating: false,
-		measure: () => ({ reference: box(100, 100, 100, 20), floating: box(50, 130, 200, 100) }),
+		isOverPopup: false,
+		isOverAnchor: false,
+		leavingIntoPopup: false,
+		measure: () => ({ anchor: box(100, 100, 100, 20), popup: box(50, 130, 200, 100) }),
 	};
 
 	it("closes 40ms after a close-soon move unless another move arrives", () => {
@@ -75,13 +75,13 @@ describe("SafePolygonSession", () => {
 
 	it("stays open while a nested popup is open", () => {
 		const { store, tree, scheduler } = createPopover();
-		store.joinFloatingTree("parent", null);
+		store.joinPopupTree("parent", null);
 		tree.addNode({
 			id: "child",
 			parentId: "parent",
 			context: {
 				open: true,
-				floatingElement: null,
+				positionerElement: null,
 				anchorElement: null,
 				dismissBubbles: { escapeKey: false, outsidePress: true },
 			},

@@ -3,7 +3,7 @@
 // that turns on while open, keep-mounted sessions, focus leaving the trigger of a closed popover,
 // and a focused element removed from the popup.
 // - The fixtures are Popovers (fixtures/focus-popover.svelte and the scenario fixtures beside it):
-//   the trigger is the reference, the return target is the Popup's `finalFocus`, a kept-mounted
+//   the trigger is the anchor, the return target is the Popup's `finalFocus`, a kept-mounted
 //   manager is a `keepMounted` Portal, and the outside buttons set the Root's bound `open`.
 // - A Popover closes on an outside click unless `modal="trap-focus"`, which dismisses on
 //   `pointerdown` too, so the cases with outside buttons or an outside `pointerdown` use it. With
@@ -32,8 +32,8 @@ import { dispatch } from "../../kit/kit-events.js";
 import { holdFrames, nextFrame, nextTask, settle } from "../../kit/kit-frames.js";
 import MarkerPopover from "./fixtures/focus-marker-popover.svelte";
 import FocusPopover from "./fixtures/focus-popover.svelte";
-import ReferenceSwitchPopover from "./fixtures/focus-reference-switch-popover.svelte";
 import RemovalPopover from "./fixtures/focus-removal-popover.svelte";
+import TriggerChangePopover from "./fixtures/focus-trigger-change-popover.svelte";
 
 const INERT = "data-sohedra-inert";
 
@@ -54,17 +54,17 @@ function closes(onOpenChange: ReturnType<typeof vi.fn>) {
 /** Renders the focus Popover with `props` and opens it with a click on its trigger. */
 async function openWithClick(props: Parameters<typeof render<typeof FocusPopover>>[1] = {}) {
 	const screen = await render(FocusPopover, props);
-	const reference = screen.getByTestId("reference");
-	await userEvent.click(reference);
-	return { screen, reference };
+	const anchor = screen.getByTestId("anchor");
+	await userEvent.click(anchor);
+	return { screen, anchor };
 }
 
 describe("FocusManager", () => {
 	describe("returnFocus", () => {
 		it("passes focusVisible when returning focus after keyboard close", async () => {
-			const { screen, reference } = await openWithClick({ content: "empty" });
-			await expect.element(screen.getByTestId("floating")).toHaveFocus();
-			const focusSpy = vi.spyOn(reference.element() as HTMLElement, "focus");
+			const { screen, anchor } = await openWithClick({ content: "empty" });
+			await expect.element(screen.getByTestId("popup")).toHaveFocus();
+			const focusSpy = vi.spyOn(anchor.element() as HTMLElement, "focus");
 
 			await userEvent.keyboard("{Escape}");
 
@@ -74,13 +74,13 @@ describe("FocusManager", () => {
 		});
 
 		it("omits focusVisible when returning focus after pointer close", async () => {
-			const { screen, reference } = await openWithClick({ content: "empty" });
-			await expect.element(screen.getByTestId("floating")).toHaveFocus();
-			const focusSpy = vi.spyOn(reference.element() as HTMLElement, "focus");
+			const { screen, anchor } = await openWithClick({ content: "empty" });
+			await expect.element(screen.getByTestId("popup")).toHaveFocus();
+			const focusSpy = vi.spyOn(anchor.element() as HTMLElement, "focus");
 
 			// Closing with a pointer must not force `:focus-visible`; `focusVisible` is omitted
 			// entirely so the browser's own heuristics decide.
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 
 			await vi.waitFor(() => {
 				expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
@@ -88,14 +88,14 @@ describe("FocusManager", () => {
 			expect(focusSpy).not.toHaveBeenCalledWith(expect.objectContaining({ focusVisible: true }));
 		});
 
-		it("does not return focus while open when the reference changes", async () => {
-			const screen = await render(ReferenceSwitchPopover, { triggerId: "first" });
+		it("does not return focus while open when the anchor changes", async () => {
+			const screen = await render(TriggerChangePopover, { triggerId: "first" });
 			await userEvent.click(screen.getByTestId("first"));
 			const child = screen.getByTestId("child");
 			await expect.element(child).toBeInTheDocument();
 			(child.element() as HTMLElement).focus();
 
-			// The return-focus effect re-arms for the new reference while the popup stays open, so
+			// The return-focus effect re-arms for the new anchor while the popup stays open, so
 			// the cleanup's queued return focus must be cancelled rather than yank focus mid-open.
 			await screen.rerender({ triggerId: "second" });
 			await nextFrame();
@@ -109,7 +109,7 @@ describe("FocusManager", () => {
 		});
 
 		it("treats a returnFocus resolver returning true as explicit", async () => {
-			const { screen, reference } = await openWithClick({
+			const { screen, anchor } = await openWithClick({
 				rootProps: { modal: "trap-focus" },
 				withClose: true,
 				outsideClose: true,
@@ -121,7 +121,7 @@ describe("FocusManager", () => {
 			// clicked button after the outside press has returned focus to the trigger.
 			await simulatedUser.click(screen.getByTestId("close").element());
 
-			await expect.element(reference).toHaveFocus();
+			await expect.element(anchor).toHaveFocus();
 		});
 
 		it("uses the latest explicitReturnFocus value without moving focus while open", async () => {
@@ -146,7 +146,7 @@ describe("FocusManager", () => {
 	describe("the close type", () => {
 		it("resets close modality between keep-mounted open sessions", async () => {
 			const finalFocus = vi.fn((_closeType: InteractionType) => true);
-			const { screen, reference } = await openWithClick({
+			const { screen, anchor } = await openWithClick({
 				rootProps: { modal: "trap-focus" },
 				withClose: true,
 				controlled: true,
@@ -154,7 +154,7 @@ describe("FocusManager", () => {
 				popupProps: { finalFocus },
 			});
 			const child = screen.getByTestId("child");
-			const focusSpy = vi.spyOn(reference.element() as HTMLElement, "focus");
+			const focusSpy = vi.spyOn(anchor.element() as HTMLElement, "focus");
 			await expect.element(child).toHaveFocus();
 
 			await userEvent.keyboard("{Escape}");
@@ -165,7 +165,7 @@ describe("FocusManager", () => {
 
 			focusSpy.mockClear();
 
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 			await expect.element(child).toHaveFocus();
 
 			// A script's click on an outside button: a close with no pointer or key behind it.
@@ -184,7 +184,7 @@ describe("FocusManager", () => {
 			await expect.element(child).toHaveFocus();
 
 			// A mouse pointerdown on the trigger with no click after it, then a script's close.
-			dispatch(reference, "pointerdown", { pointerType: "mouse" });
+			dispatch(anchor, "pointerdown", { pointerType: "mouse" });
 			dispatch(screen.getByTestId("controlled-close"), "click");
 
 			await vi.waitFor(() => {
@@ -200,7 +200,7 @@ describe("FocusManager", () => {
 			await expect.element(child).toHaveFocus();
 
 			// A click with no click count, as a key press on the trigger reports it.
-			dispatch(reference, "click", { detail: 0 });
+			dispatch(anchor, "click", { detail: 0 });
 
 			await vi.waitFor(() => {
 				expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true, focusVisible: true });
@@ -243,15 +243,15 @@ describe("FocusManager", () => {
 			async ({ pointerType, detail, expected }) => {
 				const finalFocus = vi.fn((_closeType: InteractionType) => true);
 				const screen = await render(FocusPopover, { open: true, popupProps: { finalFocus } });
-				const reference = screen.getByTestId("reference");
+				const anchor = screen.getByTestId("anchor");
 
 				// Pointer types and a click shape no real pointer here produces: a PointerEvent click
 				// with an empty pointerType, after a pointerdown of the given type.
 				if (pointerType) {
-					dispatch(reference, "pointerdown", { pointerType });
+					dispatch(anchor, "pointerdown", { pointerType });
 				}
 				dispatch(
-					reference,
+					anchor,
 					new PointerEvent("click", { bubbles: true, cancelable: true, detail, pointerType: "" }),
 				);
 
@@ -262,14 +262,14 @@ describe("FocusManager", () => {
 		);
 
 		it("preserves keyboard close modality when reopening before focus restoration", async () => {
-			const { screen, reference } = await openWithClick({
+			const { screen, anchor } = await openWithClick({
 				rootProps: { modal: "trap-focus" },
 				withClose: true,
 				openState: true,
 				reopenOnClose: true,
 				portalProps: { keepMounted: true },
 			});
-			const focusSpy = vi.spyOn(reference.element() as HTMLElement, "focus");
+			const focusSpy = vi.spyOn(anchor.element() as HTMLElement, "focus");
 			await expect.element(screen.getByTestId("child")).toHaveFocus();
 
 			// A script's click arms the reopen; a real one would press outside and close.
@@ -292,69 +292,69 @@ describe("FocusManager", () => {
 
 			await userEvent.tab();
 
-			await expect.element(screen.getByTestId("floating")).not.toBeInTheDocument();
+			await expect.element(screen.getByTestId("popup")).not.toBeInTheDocument();
 			await expect.element(screen.getByTestId("last")).toHaveFocus();
 		});
 
 		it("false - does not apply inert to outside nodes", async () => {
 			const screen = await render(MarkerPopover, { layout: "outside-nodes" });
-			const reference = screen.getByTestId("reference");
+			const anchor = screen.getByTestId("anchor");
 
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 
-			await expect.element(reference).toHaveAttribute(INERT);
+			await expect.element(anchor).toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("outside-wrapper")).toHaveAttribute(INERT);
-			await expect.element(screen.getByTestId("floating")).not.toHaveAttribute("inert");
+			await expect.element(screen.getByTestId("popup")).not.toHaveAttribute("inert");
 			await expect.element(screen.getByTestId("aria-live")).not.toHaveAttribute("inert");
 			await expect.element(screen.getByTestId("btn-1")).not.toHaveAttribute("inert");
 			await expect.element(screen.getByTestId("btn-2")).not.toHaveAttribute("inert");
 			await expect.element(screen.getByTestId("btn-1")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("btn-2")).not.toHaveAttribute(INERT);
 
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 
-			await expect.element(reference).not.toHaveAttribute(INERT);
+			await expect.element(anchor).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("outside-wrapper")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("btn-1")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("btn-2")).not.toHaveAttribute(INERT);
 		});
 
-		it("false - keeps marker on top-level outside ancestor when reference has siblings", async () => {
-			const screen = await render(MarkerPopover, { layout: "reference-siblings" });
-			const reference = screen.getByTestId("reference");
+		it("false - keeps marker on top-level outside ancestor when anchor has siblings", async () => {
+			const screen = await render(MarkerPopover, { layout: "anchor-siblings" });
+			const anchor = screen.getByTestId("anchor");
 
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 
 			await expect.element(screen.getByTestId("outside-wrapper")).toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("outside-sibling")).toHaveAttribute(INERT);
-			await expect.element(screen.getByTestId("floating")).not.toHaveAttribute("inert");
-			await expect.element(reference).not.toHaveAttribute(INERT);
+			await expect.element(screen.getByTestId("popup")).not.toHaveAttribute("inert");
+			await expect.element(anchor).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("btn-1")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("btn-2")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("nested-wrapper")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("nested-btn")).not.toHaveAttribute(INERT);
 
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 
 			await expect.element(screen.getByTestId("outside-wrapper")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("outside-sibling")).not.toHaveAttribute(INERT);
-			await expect.element(reference).not.toHaveAttribute(INERT);
+			await expect.element(anchor).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("btn-1")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("btn-2")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("nested-wrapper")).not.toHaveAttribute(INERT);
 			await expect.element(screen.getByTestId("nested-btn")).not.toHaveAttribute(INERT);
 		});
 
-		it("does not mark reference siblings due to outside focus guards", async () => {
+		it("does not mark anchor siblings due to outside focus guards", async () => {
 			const screen = await render(MarkerPopover, { layout: "portalled" });
-			const reference = screen.getByTestId("reference");
+			const anchor = screen.getByTestId("anchor");
 
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 
-			await expect.element(screen.getByTestId("floating")).toBeInTheDocument();
-			await expect.element(reference).not.toHaveAttribute(INERT);
-			await expect.element(screen.getByTestId("reference-sibling-1")).not.toHaveAttribute(INERT);
-			await expect.element(screen.getByTestId("reference-sibling-2")).not.toHaveAttribute(INERT);
+			await expect.element(screen.getByTestId("popup")).toBeInTheDocument();
+			await expect.element(anchor).not.toHaveAttribute(INERT);
+			await expect.element(screen.getByTestId("anchor-sibling-1")).not.toHaveAttribute(INERT);
+			await expect.element(screen.getByTestId("anchor-sibling-2")).not.toHaveAttribute(INERT);
 		});
 	});
 
@@ -364,24 +364,24 @@ describe("FocusManager", () => {
 				content: "empty",
 				triggerProps: { openOnHover: true, delay: 0 },
 			});
-			const reference = screen.getByTestId("reference");
-			const floating = screen.getByTestId("floating");
+			const anchor = screen.getByTestId("anchor");
+			const popup = screen.getByTestId("popup");
 
-			await userEvent.hover(reference);
-			await expect.poll(() => floating.query()).not.toBe(null);
+			await userEvent.hover(anchor);
+			await expect.poll(() => popup.query()).not.toBe(null);
 			await nextFrame();
 			await nextFrame();
-			await expect.element(floating).not.toHaveFocus();
+			await expect.element(popup).not.toHaveFocus();
 
-			await userEvent.click(reference);
-			await expect.element(floating).toHaveFocus();
+			await userEvent.click(anchor);
+			await expect.element(popup).toHaveFocus();
 		});
 	});
 
 	describe("keep-mounted sessions", () => {
 		it("clears outside pointer state between keep-mounted open sessions", async () => {
 			let store: PopoverStore<unknown, WebTypes> | undefined;
-			const { screen, reference } = await openWithClick({
+			const { screen, anchor } = await openWithClick({
 				rootProps: { modal: "trap-focus" },
 				openState: true,
 				before: true,
@@ -399,7 +399,7 @@ describe("FocusManager", () => {
 
 			await expect.element(screen.getByTestId("open-state")).toHaveTextContent("false");
 
-			await userEvent.click(reference);
+			await userEvent.click(anchor);
 			await expect.element(child).toHaveFocus();
 
 			// A focusout toward an outside element with no focus move behind it: what the store
@@ -416,13 +416,13 @@ describe("FocusManager", () => {
 		// when focus leaves runs a microtask later, so it must not report a `focus-out` close for
 		// a popup that is already closed.
 		async function setup(onOpenChange: (...args: OpenChange) => void) {
-			const { screen, reference } = await openWithClick({
+			const { screen, anchor } = await openWithClick({
 				rootProps: { onOpenChange },
 				before: true,
 				after: true,
 			});
 			await expect.element(screen.getByTestId("child")).toHaveFocus();
-			return { screen, trigger: reference };
+			return { screen, trigger: anchor };
 		}
 
 		it("reports one close when Shift+Tab leaves the trigger", async () => {
@@ -449,7 +449,7 @@ describe("FocusManager", () => {
 			await userEvent.keyboard("{Escape}");
 			await expect.element(trigger).toHaveAttribute("aria-expanded", "false");
 			// Closed, and still in the document.
-			expect(screen.getByTestId("floating").query()).not.toBe(null);
+			expect(screen.getByTestId("popup").query()).not.toBe(null);
 			onOpenChange.mockClear();
 
 			// The app moves focus off the trigger and back, twice.
@@ -488,10 +488,10 @@ describe("FocusManager", () => {
 	describe("a focused element removed from a popover", () => {
 		async function setup() {
 			const screen = await render(RemovalPopover);
-			await userEvent.click(screen.getByTestId("reference"));
+			await userEvent.click(screen.getByTestId("anchor"));
 			await expect.element(screen.getByTestId("remove")).toHaveFocus();
 			const frames = holdFrames();
-			const popup = screen.getByTestId("floating");
+			const popup = screen.getByTestId("popup");
 			screen.component.removeFocused();
 			// Focus fell to the body and the popup took it.
 			await expect.element(popup).toHaveFocus();

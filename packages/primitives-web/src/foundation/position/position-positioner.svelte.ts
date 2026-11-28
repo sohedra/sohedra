@@ -123,63 +123,70 @@ export function usePositioner(
 	// Local bookkeeping: a computation that a newer one or a resubscription superseded is dropped.
 	let generation = 0;
 
-	function update(reference: ReferenceElement, floating: HTMLElement) {
+	function update(currentAnchor: ReferenceElement, positionerElement: HTMLElement) {
 		const current = ++generation;
 		const measured: Measured = {};
 		const requested = untrack(() => placement);
 		const strategy = untrack(() => positionMethod);
 		const middleware = untrack(() => createPositionerMiddleware(middlewareOptions, measured));
-		void computePosition(reference, floating, { placement: requested, strategy, middleware }).then(
-			(data) => {
-				if (current !== generation) {
-					return;
-				}
-				const renderedSide = getSide(data.placement);
-				const dpr = getDevicePixelRatio(floating);
-				const arrow = data.middlewareData.arrow;
-				const next: MeasuredPosition = {
-					// A kept-mounted popup computed while closed must start unpositioned on the next open.
-					isPositioned: untrack(() => !keepMounted || popup.mounted),
-					x: roundToDevicePixels(data.x, dpr),
-					y: roundToDevicePixels(data.y, dpr),
-					strategy: data.strategy,
-					side: untrack(() => logicalSide(side, renderedSide, rtl)),
-					physicalSide: renderedSide,
-					align: getAlignment(data.placement) || "center",
-					anchorHidden: Boolean(data.middlewareData.hide?.referenceHidden),
-					arrow: arrow ? { x: arrow.x, y: arrow.y, centerOffset: arrow.centerOffset } : null,
-					...measured,
-					sides: (data.middlewareData.adaptiveOrigin as MeasuredPosition["sides"]) ?? undefined,
-				};
-				if (
-					!samePosition(
-						untrack(() => positioner.position),
-						next,
-					)
-				) {
-					positioner.setPosition(next);
-					flushSync();
-				}
-			},
-		);
+		void computePosition(currentAnchor, positionerElement, {
+			placement: requested,
+			strategy,
+			middleware,
+		}).then((data) => {
+			if (current !== generation) {
+				return;
+			}
+			const renderedSide = getSide(data.placement);
+			const dpr = getDevicePixelRatio(positionerElement);
+			const arrow = data.middlewareData.arrow;
+			const next: MeasuredPosition = {
+				// A kept-mounted popup computed while closed must start unpositioned on the next open.
+				isPositioned: untrack(() => !keepMounted || popup.mounted),
+				x: roundToDevicePixels(data.x, dpr),
+				y: roundToDevicePixels(data.y, dpr),
+				strategy: data.strategy,
+				side: untrack(() => logicalSide(side, renderedSide, rtl)),
+				physicalSide: renderedSide,
+				align: getAlignment(data.placement) || "center",
+				anchorHidden: Boolean(data.middlewareData.hide?.referenceHidden),
+				arrow: arrow ? { x: arrow.x, y: arrow.y, centerOffset: arrow.centerOffset } : null,
+				...measured,
+				sides: (data.middlewareData.adaptiveOrigin as MeasuredPosition["sides"]) ?? undefined,
+			};
+			if (
+				!samePosition(
+					untrack(() => positioner.position),
+					next,
+				)
+			) {
+				positioner.setPosition(next);
+				flushSync();
+			}
+		});
 	}
 
-	const attach: Attachment<HTMLElement> = (floating) => {
+	const attach: Attachment<HTMLElement> = (positionerElement) => {
 		// Follows the anchor while mounted. Subscribes again only when the anchor, the element or
 		// mounting changes; the options are read when a position is computed.
 		$effect(() => {
-			const reference = anchorElement;
+			const currentAnchor = anchorElement;
 			const mounted = popup.mounted;
 			const disableTracking = disableAnchorTracking;
-			if (!mounted || !reference) {
+			if (!mounted || !currentAnchor) {
 				return;
 			}
 			const cleanup = untrack(() =>
-				autoUpdate(reference, floating, () => update(reference, floating), {
-					ancestorScroll: !disableTracking,
-					elementResize: !disableTracking && typeof ResizeObserver !== "undefined",
-					layoutShift: !disableTracking && typeof IntersectionObserver !== "undefined",
-				}),
+				autoUpdate(
+					currentAnchor,
+					positionerElement,
+					() => update(currentAnchor, positionerElement),
+					{
+						ancestorScroll: !disableTracking,
+						elementResize: !disableTracking && typeof ResizeObserver !== "undefined",
+						layoutShift: !disableTracking && typeof IntersectionObserver !== "undefined",
+					},
+				),
 			);
 			return () => {
 				generation += 1;
@@ -205,9 +212,9 @@ export function usePositioner(
 				() => layout?.adaptiveOrigin,
 			],
 			(_, [previousPlacement]) => {
-				const reference = anchorElement;
-				if (previousPlacement !== undefined && popup.mounted && reference) {
-					update(reference, floating);
+				const currentAnchor = anchorElement;
+				if (previousPlacement !== undefined && popup.mounted && currentAnchor) {
+					update(currentAnchor, positionerElement);
 				}
 			},
 		);

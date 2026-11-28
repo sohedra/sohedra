@@ -11,7 +11,7 @@ export { defineContext, type DefinedContext } from "./kernel-context.js";
 export { Controllable } from "./kernel-controllable.svelte.js";
 export { sohedraId } from "./kernel-id.js";
 export { error, warn } from "./kernel-log.js";
-export { OwnedValue } from "./kernel-owned-value.svelte.js";
+export { ClaimedValue } from "./kernel-claimed-value.svelte.js";
 export type {
 	InteractionEventType,
 	KeyInput,

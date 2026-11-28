@@ -6,7 +6,7 @@
 export interface PortalFocusManagerView {
 	readonly modal: boolean;
 	readonly open: boolean;
-	readonly domReference: Element | null;
+	readonly anchorElement: Element | null;
 	readonly onOpenChange: (open: boolean, event: Event) => void;
 }
 

@@ -74,12 +74,15 @@ export function createPositionerMiddleware(
 					const realElement = options.arrowElement;
 					const element =
 						realElement || ownerDocument(state.elements.floating).createElement("div");
-					const floating: HTMLElement = state.elements.floating;
+					const positionerElement: HTMLElement = state.elements.floating;
 					const size = await state.platform.getDimensions(element);
 					return place({
 						present: realElement != null,
 						size,
-						popupClient: { width: floating.clientWidth, height: floating.clientHeight },
+						popupClient: {
+							width: positionerElement.clientWidth,
+							height: positionerElement.clientHeight,
+						},
 					});
 				},
 			},
@@ -89,9 +92,12 @@ export function createPositionerMiddleware(
 			sized({ elements, availableWidth, availableHeight }) {
 				// Set right away too, so the rest of this computation (a flip after a capped height)
 				// measures the constrained popup.
-				const floating: HTMLElement = elements.floating;
-				floating.style.setProperty(PositionerCssVars.availableWidth, toPx(availableWidth));
-				floating.style.setProperty(PositionerCssVars.availableHeight, toPx(availableHeight));
+				const positionerElement: HTMLElement = elements.floating;
+				positionerElement.style.setProperty(PositionerCssVars.availableWidth, toPx(availableWidth));
+				positionerElement.style.setProperty(
+					PositionerCssVars.availableHeight,
+					toPx(availableHeight),
+				);
 			},
 			// A style read, so it is read only when the transform origin asks.
 			popupRtl: (state) =>
@@ -108,18 +114,18 @@ const adaptiveOriginMiddleware: Middleware = {
 	name: "adaptiveOrigin",
 	async fn(state) {
 		const { x: rawX, y: rawY, rects, elements, platform, strategy, placement } = state;
-		const floating = elements.floating;
-		const win = ownerWindow(floating);
-		const duration = win.getComputedStyle(floating).transitionDuration;
+		const positionerElement = elements.floating;
+		const win = ownerWindow(positionerElement);
+		const duration = win.getComputedStyle(positionerElement).transitionDuration;
 		if (duration === "0s" || duration === "") {
 			return { x: rawX, y: rawY, data: { sideX: "left", sideY: "top" } };
 		}
-		const offsetParent = await platform.getOffsetParent?.(floating);
+		const offsetParent = await platform.getOffsetParent?.(positionerElement);
 		let container = { width: 0, height: 0 };
 		if (strategy === "fixed" && win.visualViewport) {
 			container = { width: win.visualViewport.width, height: win.visualViewport.height };
 		} else if (offsetParent === win) {
-			const doc = ownerDocument(floating);
+			const doc = ownerDocument(positionerElement);
 			container = {
 				width: doc.documentElement.clientWidth,
 				height: doc.documentElement.clientHeight,

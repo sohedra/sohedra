@@ -22,20 +22,20 @@ function isPageScrollLocked(win: Window, html: HTMLElement, body: HTMLElement) {
 	return /hidden|clip/.test(win.getComputedStyle(getViewportScroller(html, body)).overflowY);
 }
 
-function hasInsetScrollbars(referenceElement: Element | null) {
+function hasInsetScrollbars(pageElement: Element | null) {
 	if (typeof document === "undefined") {
 		return false;
 	}
-	const doc = ownerDocument(referenceElement);
+	const doc = ownerDocument(pageElement);
 	return ownerWindow(doc.documentElement).innerWidth - doc.documentElement.clientWidth > 0;
 }
 
-function supportsStableScrollbarGutter(referenceElement: Element | null) {
+function supportsStableScrollbarGutter(pageElement: Element | null) {
 	const supported = typeof CSS !== "undefined" && CSS.supports?.("scrollbar-gutter", "stable");
 	if (!supported || typeof document === "undefined") {
 		return false;
 	}
-	const doc = ownerDocument(referenceElement);
+	const doc = ownerDocument(pageElement);
 	const html = doc.documentElement;
 	const scrollContainer = getViewportScroller(html, doc.body);
 	const originalOverflowY = scrollContainer.style.overflowY;
@@ -50,8 +50,8 @@ function supportsStableScrollbarGutter(referenceElement: Element | null) {
 	return before === after;
 }
 
-function preventScrollOverlayScrollbars(referenceElement: Element | null) {
-	const doc = ownerDocument(referenceElement);
+function preventScrollOverlayScrollbars(pageElement: Element | null) {
+	const doc = ownerDocument(pageElement);
 	// Lock <html> when it has an overflow style (a <body> lock wouldn't work), else <body>.
 	const element = getViewportScroller(doc.documentElement, doc.body);
 	const original = { overflowY: element.style.overflowY, overflowX: element.style.overflowX };
@@ -61,8 +61,8 @@ function preventScrollOverlayScrollbars(referenceElement: Element | null) {
 	};
 }
 
-function preventScrollInsetScrollbars(referenceElement: Element | null) {
-	const doc = ownerDocument(referenceElement);
+function preventScrollInsetScrollbars(pageElement: Element | null) {
+	const doc = ownerDocument(pageElement);
 	const html = doc.documentElement;
 	const body = doc.body;
 	const win = ownerWindow(html);
@@ -114,7 +114,7 @@ function preventScrollInsetScrollbars(referenceElement: Element | null) {
 		const marginY = parseFloat(bodyStyles.marginTop) + parseFloat(bodyStyles.marginBottom);
 		const marginX = parseFloat(bodyStyles.marginLeft) + parseFloat(bodyStyles.marginRight);
 		const elementToLock = getViewportScroller(html, body);
-		updateGutterOnly = supportsStableScrollbarGutter(referenceElement);
+		updateGutterOnly = supportsStableScrollbarGutter(pageElement);
 
 		if (updateGutterOnly) {
 			html.style.scrollbarGutter = gutter;
@@ -182,10 +182,10 @@ class ScrollLock {
 	timeoutLock = new Timeout(webScheduler);
 	timeoutUnlock = new Timeout(webScheduler);
 
-	acquire(referenceElement: Element | null) {
+	acquire(pageElement: Element | null) {
 		this.lockCount += 1;
 		if (this.lockCount === 1 && this.restore === null) {
-			this.timeoutLock.start(0, () => this.lock(referenceElement));
+			this.timeoutLock.start(0, () => this.lock(pageElement));
 		}
 		return this.release;
 	}
@@ -204,11 +204,11 @@ class ScrollLock {
 		}
 	};
 
-	private lock(referenceElement: Element | null) {
+	private lock(pageElement: Element | null) {
 		if (this.lockCount === 0 || this.restore !== null) {
 			return;
 		}
-		const doc = ownerDocument(referenceElement);
+		const doc = ownerDocument(pageElement);
 		const html = doc.documentElement;
 		const body = doc.body;
 		const win = ownerWindow(html);
@@ -220,7 +220,7 @@ class ScrollLock {
 				}
 				observer.disconnect();
 				this.restore = null;
-				this.lock(referenceElement);
+				this.lock(pageElement);
 			});
 			observer.observe(html, { attributes: true });
 			observer.observe(body, { attributes: true });
@@ -229,16 +229,16 @@ class ScrollLock {
 		}
 		// WORKAROUND(ios): iOS scrollbars always overlay the page, which the inset check can't tell.
 		// Remove when the check sees them.
-		const overlayScrollbars = userAgent.os.ios || !hasInsetScrollbars(referenceElement);
+		const overlayScrollbars = userAgent.os.ios || !hasInsetScrollbars(pageElement);
 		this.restore = overlayScrollbars
-			? preventScrollOverlayScrollbars(referenceElement)
-			: preventScrollInsetScrollbars(referenceElement);
+			? preventScrollOverlayScrollbars(pageElement)
+			: preventScrollInsetScrollbars(pageElement);
 	}
 }
 
 const SCROLL_LOCK = new ScrollLock();
 
 /** Locks the page scroll; returns the release. Locks apply after a tick, reference-counted. */
-export function acquireScrollLock(referenceElement: Element | null): () => void {
-	return SCROLL_LOCK.acquire(referenceElement);
+export function acquireScrollLock(pageElement: Element | null): () => void {
+	return SCROLL_LOCK.acquire(pageElement);
 }

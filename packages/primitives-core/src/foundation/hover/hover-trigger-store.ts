@@ -69,10 +69,10 @@ export interface HoverTriggerTarget<T extends PlatformTypes = PlatformTypes> {
 	 * native event onto; recorded when it opens the popup.
 	 */
 	readonly eventType: InteractionEventType | undefined;
-	/** Whether it is a registered trigger other than the popup's current reference. */
+	/** Whether it is a registered trigger other than the popup's current anchor. */
 	readonly overInactiveTrigger: boolean;
-	/** Whether it is inside the popup's current reference element. */
-	readonly withinReference: boolean;
+	/** Whether it is inside the popup's current anchor element. */
+	readonly withinAnchor: boolean;
 }
 
 /** What the platform knows about a pointer leaving a trigger. */
@@ -82,7 +82,7 @@ export interface HoverTriggerLeave<T extends PlatformTypes = PlatformTypes> {
 	/** Whether the pointer moved into another enabled trigger. */
 	readonly intoEnabledTrigger: boolean;
 	/** Whether the pointer moved into the popup. */
-	readonly intoFloating: boolean;
+	readonly intoPopup: boolean;
 	readonly clientX: number;
 	readonly clientY: number;
 }
@@ -122,7 +122,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		const closeDelay = getDelay(this.#props().delay, "close", shared.pointerType);
 		const close = () => {
 			changeOpen(popup, this.#flush, false, event);
-			popup.tree?.events.emit("floating.closed", event);
+			popup.tree?.events.emit("popup.closed", event);
 		};
 		if (closeDelay) {
 			shared.openChangeTimeout.start(closeDelay, close);
@@ -135,7 +135,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	#open(
 		popup: HoverView<T>,
 		event: HoverEvent<T>,
-		target: Omit<HoverTriggerTarget<T>, "withinReference">,
+		target: Omit<HoverTriggerTarget<T>, "withinAnchor">,
 	) {
 		changeOpen(popup, this.#flush, true, event, target.trigger, target.eventType);
 	}
@@ -180,12 +180,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		const opens = !isOpen || target.overInactiveTrigger;
 
 		if (
-			opensAtOnceOnEnter(
-				isOpen,
-				closingAfterHover,
-				target.overInactiveTrigger,
-				target.withinReference,
-			)
+			opensAtOnceOnEnter(isOpen, closingAfterHover, target.overInactiveTrigger, target.withinAnchor)
 		) {
 			this.#open(popup, event, target);
 			return;
@@ -211,7 +206,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	 */
 	move = (
 		event: HoverEvent<T>,
-		target: Omit<HoverTriggerTarget<T>, "withinReference">,
+		target: Omit<HoverTriggerTarget<T>, "withinAnchor">,
 		movementX: number,
 		movementY: number,
 	): void => {
@@ -297,7 +292,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 			return session;
 		}
 		// A touch pointer that moved into the popup keeps it open.
-		if (shared.pointerType !== "touch" || !leave.intoFloating) {
+		if (shared.pointerType !== "touch" || !leave.intoPopup) {
 			this.#closeWithDelay(popup, event);
 		}
 		return undefined;

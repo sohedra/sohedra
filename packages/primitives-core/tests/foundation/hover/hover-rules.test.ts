@@ -73,7 +73,7 @@ describe("opensAtOnceOnEnter", () => {
 	it("opens at once when the pointer returns while a hover close runs", () => {
 		expect(opensAtOnceOnEnter(false, true, false, true)).toBe(true);
 		expect(opensAtOnceOnEnter(false, true, true, false)).toBe(true);
-		// Not on the popup's own reference, and not another trigger of it.
+		// Not on the popup's own anchor, and not another trigger of it.
 		expect(opensAtOnceOnEnter(false, true, false, false)).toBe(false);
 	});
 

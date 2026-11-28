@@ -263,7 +263,7 @@ describe("PopoverStore", () => {
 	});
 
 	it("keeps the open method a press recorded while the closed popup's triggers change", () => {
-		// It is cleared on `open` alone: a press that moves the reference (Combobox's trigger)
+		// It is cleared on `open` alone: a press that moves the anchor (Combobox's trigger)
 		// registers a trigger before the popup opens.
 		const { store } = setup();
 		store.setOpenMethod("touch");

@@ -1,7 +1,7 @@
 // Where a press landed, relative to a popup: in its own elements, in a popup nested in it, or on
 // something a press never dismisses for. The dismiss behaviour asks these.
 
-import type { FloatingTree } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type { PopupTree } from "@sohedra/primitives-core/foundation/popup/index.js";
 
 import { INERT_MARKER } from "../focus/index.js";
 import {
@@ -19,7 +19,7 @@ import {
 
 /** The popup's place in the tree of nested popups. */
 export interface TreePlaceView {
-	readonly tree: FloatingTree<WebTypes> | null;
+	readonly tree: PopupTree<WebTypes> | null;
 	/** The popup's node in {@link tree}. */
 	readonly nodeId: string | undefined;
 }
@@ -30,7 +30,7 @@ export interface TreePlaceView {
  */
 export interface PressTargetView extends TreePlaceView {
 	/** The positioned element that holds the popup. */
-	readonly floatingElement: Element | null;
+	readonly positionerElement: Element | null;
 	/** The element the popup is anchored to. */
 	readonly anchorElement: Element | null;
 	/** The popup's registered triggers. */
@@ -80,23 +80,23 @@ function isScrollbarPress(event: MouseEvent | PointerEvent | TouchEvent, target:
 
 /** Whether `event` passed through the popup or the element it is anchored to. */
 export function isEventWithinOwnElements(
-	popup: Pick<PressTargetView, "floatingElement" | "anchorElement">,
+	popup: Pick<PressTargetView, "positionerElement" | "anchorElement">,
 	event: Event,
 ): boolean {
 	return (
-		isEventTargetWithin(event, popup.floatingElement) ||
+		isEventTargetWithin(event, popup.positionerElement) ||
 		isEventTargetWithin(event, popup.anchorElement)
 	);
 }
 
 /** Whether `event` passed through the popup, its anchor, or a popup nested in it. */
-export function isEventWithinFloatingTree(popup: PressTargetView, event: Event): boolean {
+export function isEventWithinPopupTree(popup: PressTargetView, event: Event): boolean {
 	const tree = popup.tree;
 	const inChild =
 		tree != null &&
 		tree
 			.children(popup.nodeId)
-			.some((node) => isEventTargetWithin(event, node.context?.floatingElement));
+			.some((node) => isEventTargetWithin(event, node.context?.positionerElement));
 	return isEventWithinOwnElements(popup, event) || inChild;
 }
 
@@ -111,9 +111,10 @@ export function isSparedPressTarget(
 	const target = getTarget(event);
 	const targetRoot = isElement(target) ? target.getRootNode() : null;
 	const markers = Array.from(
-		(isShadowRoot(targetRoot) ? targetRoot : ownerDocument(popup.floatingElement)).querySelectorAll(
-			`[${INERT_MARKER}]`,
-		),
+		(isShadowRoot(targetRoot)
+			? targetRoot
+			: ownerDocument(popup.positionerElement)
+		).querySelectorAll(`[${INERT_MARKER}]`),
 	);
 
 	// Pressing another trigger doesn't close the popup.
@@ -140,7 +141,7 @@ export function isSparedPressTarget(
 		markers.length &&
 		isElement(target) &&
 		!isRootElement(target) &&
-		!contains(target, popup.floatingElement) &&
+		!contains(target, popup.positionerElement) &&
 		markers.every((marker) => !contains(targetRootAncestor, marker))
 	) {
 		return true;
@@ -150,5 +151,5 @@ export function isSparedPressTarget(
 		return true;
 	}
 
-	return isEventWithinFloatingTree(popup, event);
+	return isEventWithinPopupTree(popup, event);
 }

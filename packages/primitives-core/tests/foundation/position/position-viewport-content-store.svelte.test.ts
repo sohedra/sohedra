@@ -1,5 +1,5 @@
 // ViewportContentStore: when the Viewport's content is created anew (the content key) and when the
-// open popup switches from one trigger's content to another's.
+// open popup changes from one trigger's content to another's.
 import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 
@@ -27,7 +27,7 @@ function setup(initial: Partial<MutableProps> = {}) {
 		store.connect();
 		$effect(() => {
 			void store.contentKey;
-			void store.switching;
+			void store.triggerChange;
 		});
 	});
 	flushSync();
@@ -150,7 +150,7 @@ describe("ViewportContentStore", () => {
 		});
 	});
 
-	describe("switching", () => {
+	describe("triggerChange", () => {
 		const a = trigger("a");
 		const b = trigger("b");
 
@@ -173,52 +173,52 @@ describe("ViewportContentStore", () => {
 				activeTriggerId: "a",
 				activeTriggerElement: a,
 			});
-			expect(store.switching).toBe(null);
+			expect(store.triggerChange).toBe(null);
 
 			props.activeTriggerId = "b";
 			props.activeTriggerElement = b;
 			flushSync();
-			expect(store.switching).toBe(null);
+			expect(store.triggerChange).toBe(null);
 		});
 
 		it("goes from the shown trigger to the active one until settled", () => {
 			const { props, store } = setupOpen();
-			expect(store.switching).toBe(null);
+			expect(store.triggerChange).toBe(null);
 
 			props.activeTriggerId = "b";
 			props.activeTriggerElement = b;
 			flushSync();
-			expect(store.switching).toEqual({ from: a, to: b });
+			expect(store.triggerChange).toEqual({ from: a, to: b });
 
 			store.settle();
 			flushSync();
-			expect(store.switching).toBe(null);
+			expect(store.triggerChange).toBe(null);
 		});
 
-		it("switches when the same trigger id moves to a new element", () => {
+		it("changes when the same trigger id moves to a new element", () => {
 			const { props, store } = setupOpen();
 			const replacement = trigger("a, re-created");
 
 			props.activeTriggerElement = replacement;
 			flushSync();
-			expect(store.switching).toEqual({ from: a, to: replacement });
+			expect(store.triggerChange).toEqual({ from: a, to: replacement });
 		});
 
-		it("doesn't switch while closed or unmounted", () => {
+		it("doesn't change while closed or unmounted", () => {
 			const { props, store } = setupOpen();
 
 			props.open = false;
 			props.activeTriggerElement = b;
 			flushSync();
-			expect(store.switching).toBe(null);
+			expect(store.triggerChange).toBe(null);
 
 			props.open = true;
 			props.mounted = false;
 			flushSync();
-			expect(store.switching).toBe(null);
+			expect(store.triggerChange).toBe(null);
 		});
 
-		it("doesn't switch on reopening after settling closed", () => {
+		it("doesn't change on reopening after settling closed", () => {
 			const { props, store } = setupOpen();
 
 			props.open = false;
@@ -229,7 +229,7 @@ describe("ViewportContentStore", () => {
 			props.activeTriggerElement = b;
 			props.open = true;
 			flushSync();
-			expect(store.switching).toBe(null);
+			expect(store.triggerChange).toBe(null);
 		});
 	});
 });

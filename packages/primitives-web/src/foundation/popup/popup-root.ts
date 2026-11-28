@@ -3,14 +3,14 @@
 // unmounts a closed popup after its exit animations, and listens for Escape and outside presses
 // while the popup is open.
 import {
-	FloatingTree,
-	isNestedInFloating,
+	PopupTree,
+	isNestedInPopup,
 	type PopupStoreDeps,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 
 import { type DismissView, useDismissRoot } from "../dismiss/index.js";
 import { fallbackEvent, webPlatform, type WebTypes } from "../kernel/index.js";
-import { DialogRootContext, FloatingNodeContext, FloatingTreeContext } from "./popup-context.js";
+import { DialogRootContext, PopupNodeContext, PopupTreeContext } from "./popup-context.js";
 import { type PopupUnmountView, usePopupUnmount } from "./popup-unmount.svelte.js";
 
 /** What `usePopupRootDeps` gives a popup store: every dep but the `open` binding. */
@@ -25,13 +25,13 @@ export interface PopupRootView extends DismissView, PopupUnmountView {}
  * tree; the outermost creates one. Call once while the Root initialises: it reads and sets the
  * tree's context.
  */
-export function usePopupRootDeps(floatingId: string): PopupRootDeps {
-	const tree = FloatingTreeContext.getOr(null) ?? new FloatingTree<WebTypes>();
-	FloatingTreeContext.set(tree);
+export function usePopupRootDeps(defaultPopupId: string): PopupRootDeps {
+	const tree = PopupTreeContext.getOr(null) ?? new PopupTree<WebTypes>();
+	PopupTreeContext.set(tree);
 	return {
-		floatingId,
+		defaultPopupId,
 		tree,
-		nested: isNestedInFloating(FloatingNodeContext.getOr(null), DialogRootContext.getOr(null)),
+		nested: isNestedInPopup(PopupNodeContext.getOr(null), DialogRootContext.getOr(null)),
 		platform: webPlatform,
 		imperativeEvent: fallbackEvent,
 	};

@@ -278,7 +278,7 @@ describe("markOthers", () => {
 
 		const shadowRoot = host.attachShadow({ mode: "open" });
 		const anchor = document.createElement("a");
-		anchor.href = "https://floating-ui.com";
+		anchor.href = "https://popup-ui.com";
 
 		const target = document.createElement("button");
 		anchor.appendChild(target);
@@ -302,7 +302,7 @@ describe("markOthers", () => {
 
 		const shadowRoot = host.attachShadow({ mode: "open" });
 		const anchor = document.createElement("a");
-		anchor.href = "https://floating-ui.com";
+		anchor.href = "https://popup-ui.com";
 
 		const target = document.createElement("button");
 		anchor.appendChild(target);

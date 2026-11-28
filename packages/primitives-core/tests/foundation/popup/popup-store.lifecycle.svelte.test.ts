@@ -46,7 +46,7 @@ class TestStore extends PopupStore<unknown, PlatformTypes, Details> {
 				() => props.open,
 				(next) => (props.open = next),
 			),
-			floatingId: "popup",
+			defaultPopupId: "popup",
 			tree: null,
 			nested: false,
 			platform: createFakePlatform(),

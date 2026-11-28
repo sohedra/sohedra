@@ -22,44 +22,44 @@ describe("the trigger of a hover-opened popover", () => {
 			before: true,
 			after: true,
 		});
-		const trigger = screen.getByTestId("reference");
-		const floating = screen.getByTestId("floating");
+		const trigger = screen.getByTestId("anchor");
+		const popup = screen.getByTestId("popup");
 		await userEvent.hover(trigger);
-		await expect.poll(() => floating.query()).not.toBe(null);
+		await expect.poll(() => popup.query()).not.toBe(null);
 		expect(onOpenChange.mock.lastCall?.[1].reason).toBe(REASONS.triggerHover);
 		onOpenChange.mockClear();
-		return { screen, trigger, floating, onOpenChange };
+		return { screen, trigger, popup, onOpenChange };
 	}
 
 	it("lets Tab go from the trigger to the element after it", async () => {
-		const { screen, trigger, floating } = await setup();
+		const { screen, trigger, popup } = await setup();
 		trigger.element().focus();
 
 		await userEvent.tab();
 
 		await expect.element(screen.getByTestId("after")).toHaveFocus();
-		expect(floating.query()).not.toBe(null);
+		expect(popup.query()).not.toBe(null);
 	});
 
 	it("lets Shift+Tab go from the element after the trigger onto the trigger", async () => {
-		const { screen, trigger, floating } = await setup();
+		const { screen, trigger, popup } = await setup();
 		screen.getByTestId("after").element().focus();
 
 		await userEvent.tab({ shift: true });
 
 		await expect.element(trigger).toHaveFocus();
-		expect(floating.query()).not.toBe(null);
+		expect(popup.query()).not.toBe(null);
 	});
 
 	it("lets Shift+Tab go from the trigger to the element before it, and stays open", async () => {
-		const { screen, trigger, floating, onOpenChange } = await setup();
+		const { screen, trigger, popup, onOpenChange } = await setup();
 		trigger.element().focus();
 
 		await userEvent.tab({ shift: true });
 
 		await expect.element(screen.getByTestId("before")).toHaveFocus();
 		// The pointer still holds it open: only its leaving closes a hover-opened popover.
-		expect(floating.query()).not.toBe(null);
+		expect(popup.query()).not.toBe(null);
 		expect(onOpenChange).not.toHaveBeenCalled();
 	});
 

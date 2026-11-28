@@ -24,31 +24,31 @@ export interface MarkOutsideOptions {
 }
 
 /** The portal of another popup that holds focus, if any. */
-export function focusedOtherPortal(floating: Element): Element | null {
-	const portal = activeElement(ownerDocument(floating))?.closest(`[${PORTAL_ATTRIBUTE}]`);
-	return portal && !contains(portal, floating) ? portal : null;
+export function focusedOtherPortal(positioner: Element): Element | null {
+	const portal = activeElement(ownerDocument(positioner))?.closest(`[${PORTAL_ATTRIBUTE}]`);
+	return portal && !contains(portal, positioner) ? portal : null;
 }
 
 /**
- * Marks everything outside `floating`. Another popup's portal that holds focus is never hidden
+ * Marks everything outside `positioner`. Another popup's portal that holds focus is never hidden
  * from assistive technology: `aria-hidden` on focused content is an accessibility error, and it
  * would happen when an unrelated popup opens in the same update, comes later in the markup and so
  * takes focus. The inert marker still covers that portal: outside-press dismissal reads the
  * marker, not `aria-hidden`.
  */
-export function markOutside(floating: Element, options: MarkOutsideOptions): OutsideMarking {
+export function markOutside(positioner: Element, options: MarkOutsideOptions): OutsideMarking {
 	const { portalNode, exposed, ariaHidden } = options;
 	// Don't hide portals nested in the parent portal.
 	const portalNodes = Array.from(portalNode?.querySelectorAll(`[${PORTAL_ATTRIBUTE}]`) || []);
-	const insideElements = [floating, ...portalNodes, ...exposed];
+	const insideElements = [positioner, ...portalNodes, ...exposed];
 	const hide = (focusedPortal: Element | null) =>
 		markOthers(focusedPortal ? [...insideElements, focusedPortal] : insideElements, {
 			ariaHidden,
 			mark: false,
 		});
-	let exempt = focusedOtherPortal(floating);
+	let exempt = focusedOtherPortal(positioner);
 	let ariaHiddenCleanup = hide(exempt);
-	const markerCleanup = markOthers([floating, ...portalNodes]);
+	const markerCleanup = markOthers([positioner, ...portalNodes]);
 	return {
 		get exempt() {
 			return exempt;

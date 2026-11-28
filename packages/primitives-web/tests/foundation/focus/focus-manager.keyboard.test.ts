@@ -43,7 +43,7 @@ describe("FocusManager", () => {
 				before: true,
 				after: true,
 			});
-			await userEvent.click(screen.getByTestId("reference"));
+			await userEvent.click(screen.getByTestId("anchor"));
 			const child = screen.getByTestId("child");
 			await expect.element(child).toHaveFocus();
 			return { child, close: screen.getByTestId("popup-close") };

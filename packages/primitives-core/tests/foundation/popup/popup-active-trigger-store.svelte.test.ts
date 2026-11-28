@@ -52,8 +52,8 @@ describe("ActiveTriggerStore", () => {
 			expect(store.anchor).toBeNull();
 		});
 
-		// Svelte re-runs a derived read in an effect teardown with the values from before the flush. A
-		// reference remembered while deriving rewound to the previous trigger there.
+		// Svelte re-runs a derived read in an effect teardown with the values from before the flush.
+		// An anchor remembered while deriving rewound to the previous trigger there.
 		it("keeps the current trigger when an effect teardown reads it", () => {
 			const { props, store } = setup();
 			const a = { name: "a" };

@@ -44,7 +44,7 @@ import {
 } from "./focus-history.js";
 import { focusedOtherPortal, markOutside, type OutsideMarking } from "./focus-mark-outside.js";
 import { CLICK_TRIGGER_IDENTIFIER } from "./focus-markers.js";
-import { getFloatingFocusElement, handleTabIndex } from "./focus-tabbability.js";
+import { getPopupFocusElement, handleTabIndex } from "./focus-tabbability.js";
 import type {
 	FocusManager,
 	FocusManagerDeps,
@@ -130,10 +130,10 @@ export function useFocusManager(
 	const modal = $derived(options().modal ?? true);
 	const restoreFocus = $derived(options().restoreFocus ?? false);
 	const returnFocusOption = $derived(options().returnFocus);
-	const floatingFocusElement = $derived(
-		getFloatingFocusElement(popup.floatingElement as HTMLElement | null),
+	const popupFocusElement = $derived(
+		getPopupFocusElement(popup.positionerElement as HTMLElement | null),
 	);
-	// A typeable combobox reference keeps focus while its popup is open.
+	// A typeable combobox anchor keeps focus while its popup is open.
 	const untrappedCombobox = $derived(
 		isTypeableCombobox(popup.anchorElement) && options().initialFocus === false,
 	);
@@ -161,7 +161,7 @@ export function useFocusManager(
 	const pointerDownTimeout = new Timeout(webScheduler);
 
 	/** The tabbable elements in `container` (the popup's focus element by default). */
-	function tabbableContent(container: Element | null = floatingFocusElement): FocusableElement[] {
+	function tabbableContent(container: Element | null = popupFocusElement): FocusableElement[] {
 		return container ? tabbable(container) : [];
 	}
 
@@ -250,8 +250,8 @@ export function useFocusManager(
 	// inside elements, other triggers, its guards, or a nested or parent popup.
 	function movedToUnrelatedNode(
 		relatedTarget: HTMLElement | null,
-		floating: HTMLElement | null,
-		domReference: Element | null,
+		positioner: HTMLElement | null,
+		anchor: Element | null,
 	) {
 		const nodeId = popup.nodeId;
 		const tree = popup.tree;
@@ -268,9 +268,9 @@ export function useFocusManager(
 				nextFocusable(),
 			].includes(relatedTarget);
 		return !(
-			contains(domReference, relatedTarget) ||
-			contains(floating, relatedTarget) ||
-			contains(relatedTarget, floating) ||
+			contains(anchor, relatedTarget) ||
+			contains(positioner, relatedTarget) ||
+			contains(relatedTarget, positioner) ||
 			contains(portal?.portalNode, relatedTarget) ||
 			insideElements().some(
 				(element) => element === relatedTarget || contains(element, relatedTarget),
@@ -282,7 +282,7 @@ export function useFocusManager(
 					.children(nodeId)
 					.find(
 						(node) =>
-							contains(node.context?.floatingElement, relatedTarget) ||
+							contains(node.context?.positionerElement, relatedTarget) ||
 							contains(node.context?.anchorElement, relatedTarget),
 					) ||
 					tree
@@ -290,9 +290,9 @@ export function useFocusManager(
 						.find(
 							(node) =>
 								[
-									node.context?.floatingElement,
-									getFloatingFocusElement(
-										node.context?.floatingElement as HTMLElement | null | undefined,
+									node.context?.positionerElement,
+									getPopupFocusElement(
+										node.context?.positionerElement as HTMLElement | null | undefined,
 									),
 								].includes(relatedTarget) || node.context?.anchorElement === relatedTarget,
 						)))
@@ -301,15 +301,15 @@ export function useFocusManager(
 
 	/** Everything outside the popup's tree, marked. Runs after the flush, untracked. */
 	function hideOutside(
-		floating: Element,
+		positioner: Element,
 		isModal: boolean,
-		domReference: Element | null,
+		anchor: Element | null,
 		untrapped: boolean,
 		portalNode: HTMLElement | null | undefined,
 	): OutsideMarking {
 		const tree = popup.tree;
 		const ancestors = tree ? tree.ancestors(popup.nodeId) : [];
-		const rootAncestorComboboxReference = ancestors.find((node) =>
+		const rootAncestorComboboxAnchor = ancestors.find((node) =>
 			isTypeableCombobox(node.context?.anchorElement || null),
 		)?.context?.anchorElement;
 		const exposed = [
@@ -318,12 +318,12 @@ export function useFocusManager(
 			portal?.beforeOutsideGuard,
 			portal?.afterOutsideGuard,
 			...insideElements(),
-			rootAncestorComboboxReference,
+			rootAncestorComboboxAnchor,
 			previousFocusable(),
 			nextFocusable(),
-			untrapped ? domReference : null,
+			untrapped ? anchor : null,
 		].filter((element): element is Element => element != null);
-		return markOutside(floating, { portalNode, exposed, ariaHidden: isModal || untrapped });
+		return markOutside(positioner, { portalNode, exposed, ariaHidden: isModal || untrapped });
 	}
 
 	/** Lifetime work: every effect of the manager, in a fixed order. */
@@ -333,7 +333,7 @@ export function useFocusManager(
 			if (disabled || !modal) {
 				return;
 			}
-			const focusElement = floatingFocusElement;
+			const focusElement = popupFocusElement;
 			const untrapped = untrappedCombobox;
 			const doc = ownerDocument(focusElement);
 			const onKeyDown = (event: KeyboardEvent) => {
@@ -355,17 +355,17 @@ export function useFocusManager(
 			if (disabled || !popup.open) {
 				return;
 			}
-			const floating = popup.floatingElement as HTMLElement | null;
-			const domReference = popup.anchorElement;
-			const doc = ownerDocument(floatingFocusElement);
+			const positioner = popup.positionerElement as HTMLElement | null;
+			const anchor = popup.anchorElement;
+			const doc = ownerDocument(popupFocusElement);
 			const clearPointerDownOutside = () => {
 				pointerDownOutside = false;
 			};
 			const onPointerDown = (event: PointerEvent) => {
 				const target = getTarget(event) as Element | null;
 				const pointerTargetInside =
-					contains(floating, target) ||
-					contains(domReference, target) ||
+					contains(positioner, target) ||
+					contains(anchor, target) ||
 					contains(portal?.portalNode, target) ||
 					insideElements().some((element) => element === target || contains(element, target));
 				pointerDownOutside = !pointerTargetInside;
@@ -396,9 +396,9 @@ export function useFocusManager(
 			if (disabled) {
 				return;
 			}
-			const floating = popup.floatingElement as HTMLElement | null;
-			const domReference = popup.anchorElement;
-			const focusElement = floatingFocusElement;
+			const positioner = popup.positionerElement as HTMLElement | null;
+			const anchor = popup.anchorElement;
+			const focusElement = popupFocusElement;
 			const isModal = modal;
 			const restore = restoreFocus;
 			const untrapped = untrappedCombobox;
@@ -442,17 +442,17 @@ export function useFocusManager(
 				const currentTarget = event.currentTarget;
 				const target = getTarget(event) as HTMLElement | null;
 				// Focus lost to the body (a backdrop press): remember where it was, for a later dialog.
-				if (isModal && relatedTarget == null && target != null && contains(floating, target)) {
+				if (isModal && relatedTarget == null && target != null && contains(positioner, target)) {
 					addPreviouslyFocusedElement(target);
 				}
 				webScheduler.microtask(() => {
-					const movedOut = movedToUnrelatedNode(relatedTarget, floating, domReference);
-					if (currentTarget === domReference && focusElement) {
+					const movedOut = movedToUnrelatedNode(relatedTarget, positioner, anchor);
+					if (currentTarget === anchor && focusElement) {
 						handleTabIndex(focusElement);
 					}
 					if (
 						restore &&
-						currentTarget !== domReference &&
+						currentTarget !== anchor &&
 						!isElementVisible(target) &&
 						activeElement(doc) === doc.body
 					) {
@@ -491,24 +491,24 @@ export function useFocusManager(
 				});
 			};
 
-			const anchorElement = isHTMLElement(domReference) ? domReference : null;
-			if (!floating && !anchorElement) {
+			const anchorElement = isHTMLElement(anchor) ? anchor : null;
+			if (!positioner && !anchorElement) {
 				return;
 			}
 			anchorElement?.addEventListener("focusout", handleFocusOutside);
 			// In Safari, buttons lose focus when pressed.
 			anchorElement?.addEventListener("pointerdown", markPointerDown);
-			floating?.addEventListener("focusin", handleFocusIn);
-			floating?.addEventListener("focusout", handleFocusOutside);
-			if (floating && portal) {
-				floating.addEventListener("focusout", markInsideTree, true);
+			positioner?.addEventListener("focusin", handleFocusIn);
+			positioner?.addEventListener("focusout", handleFocusOutside);
+			if (positioner && portal) {
+				positioner.addEventListener("focusout", markInsideTree, true);
 			}
 			return () => {
 				anchorElement?.removeEventListener("focusout", handleFocusOutside);
 				anchorElement?.removeEventListener("pointerdown", markPointerDown);
-				floating?.removeEventListener("focusin", handleFocusIn);
-				floating?.removeEventListener("focusout", handleFocusOutside);
-				floating?.removeEventListener("focusout", markInsideTree, true);
+				positioner?.removeEventListener("focusin", handleFocusIn);
+				positioner?.removeEventListener("focusout", handleFocusOutside);
+				positioner?.removeEventListener("focusout", markInsideTree, true);
 				cancelRestoreFocus?.();
 			};
 		});
@@ -523,29 +523,27 @@ export function useFocusManager(
 		// document and elements other components register, so it runs after the flush: every portal
 		// placed in this update is in its container by then.
 		$effect(() => {
-			const floating = popup.floatingElement;
-			if (disabled || !floating || !popup.open) {
+			const positioner = popup.positionerElement;
+			if (disabled || !positioner || !popup.open) {
 				return;
 			}
 			const isModal = modal;
-			const domReference = popup.anchorElement;
+			const anchor = popup.anchorElement;
 			const untrapped = untrappedCombobox;
 			const portalNode = portal?.portalNode;
-			const doc = ownerDocument(floating);
+			const doc = ownerDocument(positioner);
 			let marking: OutsideMarking | undefined;
 			// Focus can land in another popup's portal after the marking (an unrelated popup opened in
 			// the same update takes focus in its own effect, or moves to another container): hide again
 			// around the portal that now holds it. The inert marker stays as first applied.
 			const onFocusIn = () => {
-				const focused = focusedOtherPortal(floating);
+				const focused = focusedOtherPortal(positioner);
 				if (marking && focused && focused !== marking.exempt) {
 					marking.hideAround(focused);
 				}
 			};
 			const cancel = webScheduler.microtask(() => {
-				marking = untrack(() =>
-					hideOutside(floating, isModal, domReference, untrapped, portalNode),
-				);
+				marking = untrack(() => hideOutside(positioner, isModal, anchor, untrapped, portalNode));
 			});
 			doc.addEventListener("focusin", onFocusIn, true);
 			return () => {
@@ -558,7 +556,7 @@ export function useFocusManager(
 		// Focuses the initial element when the popup opens: the `initialFocus` target, else the
 		// first tabbable element, else the popup.
 		$effect(() => {
-			const focusElement = floatingFocusElement;
+			const focusElement = popupFocusElement;
 			if (!popup.open || disabled || !isHTMLElement(focusElement)) {
 				return;
 			}
@@ -645,9 +643,9 @@ export function useFocusManager(
 
 		// Remembers where focus was before the popup opened and returns it on close.
 		$effect(() => {
-			const focusElement = floatingFocusElement;
-			const floating = popup.floatingElement;
-			const domReference = popup.anchorElement;
+			const focusElement = popupFocusElement;
+			const positioner = popup.positionerElement;
+			const anchor = popup.anchorElement;
 			if (disabled || !focusElement) {
 				pendingReturnFocus = null;
 				return;
@@ -666,19 +664,19 @@ export function useFocusManager(
 				// then, so a popup opened from inside this one can still return focus to it.
 				const pressedWithoutFocus =
 					!preferPreviousFocus &&
-					domReference != null &&
+					anchor != null &&
 					(!elementFocusedBeforeOpen || getNodeName(elementFocusedBeforeOpen) === "body");
-				addPreviouslyFocusedElement(pressedWithoutFocus ? domReference : elementFocusedBeforeOpen);
+				addPreviouslyFocusedElement(pressedWithoutFocus ? anchor : elementFocusedBeforeOpen);
 
 				const onOpenChange = (details: OpenChangeDetails<WebTypes>) => {
 					if (!details.open) {
-						closeType = getEventType(details.nativeEvent, lastInteractionType);
+						closeType = getEventType(details.event, lastInteractionType);
 					}
 					// Focus guards move focus themselves; a hover-out never returns focus.
 					if (
 						(details.reason === REASONS.focusOut &&
-							details.triggerElement?.hasAttribute(FOCUS_GUARD_ATTRIBUTE)) ||
-						(details.reason === REASONS.triggerHover && details.nativeEvent.type === "mouseleave")
+							details.trigger?.hasAttribute(FOCUS_GUARD_ATTRIBUTE)) ||
+						(details.reason === REASONS.triggerHover && details.event.type === "mouseleave")
 					) {
 						preventReturnFocus = true;
 					}
@@ -688,8 +686,8 @@ export function useFocusManager(
 					if (details.nested) {
 						preventReturnFocus = false;
 					} else if (
-						isVirtualClick(details.nativeEvent as MouseEvent) ||
-						isVirtualPointerEvent(details.nativeEvent as PointerEvent)
+						isVirtualClick(details.event as MouseEvent) ||
+						isVirtualPointerEvent(details.event as PointerEvent)
 					) {
 						preventReturnFocus = false;
 					} else {
@@ -707,15 +705,15 @@ export function useFocusManager(
 					if (resolved === null) {
 						resolved = true;
 					}
-					const referenceReturn = domReference?.isConnected ? domReference : null;
+					const anchorReturn = anchor?.isConnected ? anchor : null;
 					const previousReturn =
 						elementFocusedBeforeOpen?.isConnected &&
 						getNodeName(elementFocusedBeforeOpen) !== "body"
 							? elementFocusedBeforeOpen
 							: null;
 					let defaultReturn = preferPreviousFocus
-						? previousReturn || referenceReturn
-						: referenceReturn || previousReturn;
+						? previousReturn || anchorReturn
+						: anchorReturn || previousReturn;
 					if (!defaultReturn) {
 						defaultReturn = getPreviouslyFocusedElement() || null;
 					}
@@ -729,18 +727,18 @@ export function useFocusManager(
 					popup.events.off("openchange", onOpenChange);
 					const activeEl = activeElement(doc);
 					const tree = popup.tree;
-					const isFocusInsideFloatingTree =
-						contains(floating, activeEl) ||
+					const isFocusInsidePopupTree =
+						contains(positioner, activeEl) ||
 						insideElements().some(
 							(element) => element === activeEl || contains(element, activeEl),
 						) ||
 						(tree != null &&
 							tree
 								.children(popup.nodeId, false)
-								.some((node) => contains(node.context?.floatingElement, activeEl)));
+								.some((node) => contains(node.context?.positionerElement, activeEl)));
 					const returnValue = returnFocus ?? true;
 					const type = closeType;
-					// Resolved now: the return target and the reference's connection are read while the
+					// Resolved now: the return target and the anchor's connection are read while the
 					// popup is still in the DOM.
 					const returnElement = getReturnElement(type);
 					const job = { cancelled: false };
@@ -760,7 +758,7 @@ export function useFocusManager(
 							(!hasExplicitReturnFocus &&
 							tabbableReturnElement !== activeEl &&
 							activeEl !== doc.body
-								? isFocusInsideFloatingTree
+								? isFocusInsidePopupTree
 								: true)
 						) {
 							const focusOptions: FocusOptions & { focusVisible?: boolean } = {
@@ -778,7 +776,7 @@ export function useFocusManager(
 							if (
 								focused !== tabbableReturnElement &&
 								!isElementVisible(tabbableReturnElement) &&
-								(!focused || focused === doc.body || contains(floating, focused))
+								(!focused || focused === doc.body || contains(positioner, focused))
 							) {
 								const fallback = getFirstTabbableElement(
 									getFocusablePreviouslyFocusedElement() ?? null,
@@ -798,15 +796,15 @@ export function useFocusManager(
 		// WORKAROUND(safari): Safari may scroll to the bottom if an input inside unmounts focused, so
 		// it is blurred first. Remove when Safari keeps the scroll position.
 		$effect(() => {
-			const floating = popup.floatingElement;
-			if (!userAgent.engine.webkit || popup.open || !floating) {
+			const positioner = popup.positionerElement;
+			if (!userAgent.engine.webkit || popup.open || !positioner) {
 				return;
 			}
-			const activeEl = activeElement(ownerDocument(floating));
+			const activeEl = activeElement(ownerDocument(positioner));
 			if (
 				isHTMLElement(activeEl) &&
 				activeEl.matches(TYPEABLE_SELECTOR) &&
-				contains(floating, activeEl)
+				contains(positioner, activeEl)
 			) {
 				activeEl.blur();
 			}
@@ -820,7 +818,7 @@ export function useFocusManager(
 			portal.setFocusManagerState({
 				modal,
 				open: popup.open,
-				domReference: popup.anchorElement,
+				anchorElement: popup.anchorElement,
 				onOpenChange: (open, event) => setOpen(open, event as FocusEvent),
 			});
 			return () => {
@@ -830,7 +828,7 @@ export function useFocusManager(
 
 		// Keeps the popup's tabindex in step with its content.
 		$effect(() => {
-			const focusElement = floatingFocusElement;
+			const focusElement = popupFocusElement;
 			if (disabled || !focusElement) {
 				return;
 			}

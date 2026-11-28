@@ -1,4 +1,4 @@
-import type { OwnedValue } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { ClaimedValue } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import { untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 
@@ -65,11 +65,11 @@ export interface ClaimedIdOptions {
 
 /**
  * The props of a part whose id another element names (a Title, a Description, a Label): its `id`,
- * with the claim of that id by `owner` riding inside as an attachment, so the owner names it only
- * while the element is in the document. Spread once on the part's element. Call once while the
- * part initialises.
+ * with its claim on `slot` riding inside as an attachment, so the store names it only while the
+ * element is in the document. Spread once on the part's element. Call once while the part
+ * initialises.
  */
-export function useClaimedId(owner: OwnedValue<string>, options: () => ClaimedIdOptions): Props {
+export function useClaimedId(slot: ClaimedValue<string>, options: () => ClaimedIdOptions): Props {
 	const id = $derived(options().id ?? options().defaultId);
 	return {
 		get id() {
@@ -77,7 +77,7 @@ export function useClaimedId(owner: OwnedValue<string>, options: () => ClaimedId
 		},
 		...attachmentProps(
 			attachClaim(
-				(token, value: string) => owner.claim(token, value),
+				(token, value: string) => slot.claim(token, value),
 				() => id,
 			),
 		),

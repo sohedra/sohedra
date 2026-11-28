@@ -8,7 +8,7 @@ import type {
 	REASONS,
 	Scheduler,
 } from "../kernel/index.js";
-import type { FloatingTree, OpenChangeSource } from "../popup/index.js";
+import type { PopupTree, OpenChangeSource } from "../popup/index.js";
 import type { PhysicalSide } from "../position/index.js";
 import type { TransitionStatus } from "../presence/index.js";
 import type { HoverInteraction } from "./hover-interaction.js";
@@ -35,7 +35,7 @@ export interface HoverView<T extends PlatformTypes = PlatformTypes> {
 	/** The popup's hover state: its timers, its pointer and the active safe polygon. */
 	readonly hover: HoverInteraction<T>;
 	/** The tree of nested popups: an open child keeps its parent open. */
-	readonly tree: FloatingTree<T> | null;
+	readonly tree: PopupTree<T> | null;
 	/** The popup's node in {@link tree}. */
 	readonly nodeId: string | undefined;
 	/** The kind of event that opened the popup: a hover never closes a click-opened one. */

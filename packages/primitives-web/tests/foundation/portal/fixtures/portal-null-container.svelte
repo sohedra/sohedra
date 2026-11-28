@@ -25,10 +25,10 @@
 
 {#if renderContainer}<div {@attach attachContainer} data-testid="root"></div>{/if}
 <Popover.Root>
-	<Popover.Trigger data-testid="reference">reference</Popover.Trigger>
+	<Popover.Trigger data-testid="anchor">anchor</Popover.Trigger>
 	<Popover.Portal {container}>
 		<Popover.Positioner>
-			<Popover.Popup data-testid="floating" />
+			<Popover.Popup data-testid="popup" />
 		</Popover.Positioner>
 	</Popover.Portal>
 </Popover.Root>

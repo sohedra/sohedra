@@ -1,6 +1,6 @@
 <!--
-  A click-opened Popover for the focus manager's cases: the trigger (`reference`) and the popup
-  (`floating`). `content` picks the popup's children: a `child` button, a button carrying the
+  A click-opened Popover for the focus manager's cases: the trigger (`anchor`) and the popup
+  (`popup`). `content` picks the popup's children: a `child` button, a button carrying the
   click-trigger attribute (`nested-trigger`), or nothing; `withClose` adds a Popover.Close after
   it (a `modal` popover traps focus only with one).
   The optional outside elements: an `open-state` text, `before`/`after`/`last` buttons, a `close`
@@ -81,10 +81,10 @@
 {#if before}<button tabindex="0" data-testid="before">before</button>{/if}
 <Popover.Root bind:open {...rootProps}>
 	{#if onStore}<StoreProbe {onStore} />{/if}
-	<Popover.Trigger data-testid="reference" {...triggerProps}>reference</Popover.Trigger>
+	<Popover.Trigger data-testid="anchor" {...triggerProps}>anchor</Popover.Trigger>
 	<Popover.Portal {...portalProps}>
 		<Popover.Positioner>
-			<Popover.Popup data-testid="floating" {...popupProps}>
+			<Popover.Popup data-testid="popup" {...popupProps}>
 				{#if content === "child"}
 					<button tabindex="0" data-testid="child">child</button>
 				{:else if content === "nested-trigger"}

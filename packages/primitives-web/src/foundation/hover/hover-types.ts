@@ -15,7 +15,7 @@ import type { WebTypes } from "../kernel/index.js";
  */
 export interface HoverPopupView extends HoverView<WebTypes> {
 	/** The positioned element that holds the popup. */
-	readonly floatingElement: Element | null;
+	readonly positionerElement: Element | null;
 	/** The popup's registered triggers. */
 	readonly triggers: {
 		hasElement(element: Element): boolean;

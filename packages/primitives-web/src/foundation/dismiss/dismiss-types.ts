@@ -14,7 +14,7 @@ export interface DismissTriggerView {
 /** What the Popup part's dismiss wiring reads from a popup. */
 export interface DismissPopupView extends DismissTriggerView {
 	/** The positioned element that holds the popup. */
-	readonly floatingElement: Element | null;
+	readonly positionerElement: Element | null;
 }
 
 /**

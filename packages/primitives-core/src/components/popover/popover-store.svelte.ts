@@ -3,7 +3,12 @@ import { untrack } from "svelte";
 import type { DismissInteractionProps, PressType } from "../../foundation/dismiss/index.js";
 import { TriggerFocusGuards } from "../../foundation/focus/index.js";
 import type { HoverInteraction } from "../../foundation/hover/index.js";
-import { OwnedValue, type PlatformTypes, REASONS, Timeout } from "../../foundation/kernel/index.js";
+import {
+	ClaimedValue,
+	type PlatformTypes,
+	REASONS,
+	Timeout,
+} from "../../foundation/kernel/index.js";
 import {
 	type ClosePartCount,
 	closePartCount,
@@ -116,8 +121,8 @@ export class PopoverStore<
 	readonly #stickTimeout: Timeout;
 	/** Close parts rendered inside the Popup; a modal popover traps focus only with one. */
 	readonly closeParts: ClosePartCount = closePartCount();
-	readonly titleId: OwnedValue<string> = new OwnedValue<string>();
-	readonly descriptionId: OwnedValue<string> = new OwnedValue<string>();
+	readonly titleId: ClaimedValue<string> = new ClaimedValue<string>();
+	readonly descriptionId: ClaimedValue<string> = new ClaimedValue<string>();
 	/**
 	 * The focus guards that bridge Tab between the active trigger and the portalled popup (set by
 	 * the trigger and the Popup's focus manager): bookkeeping nothing renders.
@@ -140,7 +145,7 @@ export class PopoverStore<
 		() => this.modal !== false && this.closeParts.count > 0,
 	);
 	/** Whether the Popup keeps a hover-opened popover open while hovered. */
-	readonly hoverFloatingEnabled: boolean = $derived.by(() => this.#openOnHover && !this.#disabled);
+	readonly hoverPopupEnabled: boolean = $derived.by(() => this.#openOnHover && !this.#disabled);
 	/**
 	 * Whether the Popup's focus management is off: while unmounted, and for a hover-opened popover,
 	 * which never takes focus.
@@ -267,10 +272,8 @@ export class PopoverStore<
 	 * trigger; on the owning trigger, closes it, unless it was hover-opened within the
 	 * patient-click threshold.
 	 */
-	pressOpen(isActiveReference: boolean): boolean {
-		return untrack(() =>
-			pressOpenState(this.open, isActiveReference, this.openEventType, this.stickIfOpen),
-		);
+	pressOpen(isAnchor: boolean): boolean {
+		return untrack(() => pressOpenState(this.open, isAnchor, this.openEventType, this.stickIfOpen));
 	}
 
 	/**

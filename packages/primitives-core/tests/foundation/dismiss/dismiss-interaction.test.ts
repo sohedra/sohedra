@@ -10,12 +10,12 @@ import {
 	type DismissInteractionProps,
 	type OutsidePress,
 } from "../../../src/foundation/dismiss/index.js";
-import { FloatingTree } from "../../../src/foundation/popup/index.js";
+import { PopupTree } from "../../../src/foundation/popup/index.js";
 import { createFakePlatform, type FakeTypes } from "../../kit/kit-fake-platform.js";
 
 const EVENT = {} as never;
 
-function setup(options: DismissInteractionProps = {}, tree: FloatingTree | null = null) {
+function setup(options: DismissInteractionProps = {}, tree: PopupTree | null = null) {
 	const platform = createFakePlatform();
 	const view: DismissView<FakeTypes> = {
 		open: true,
@@ -51,7 +51,7 @@ function setup(options: DismissInteractionProps = {}, tree: FloatingTree | null 
 function treeContext(fields: { outsidePress?: boolean } = {}) {
 	return {
 		open: true,
-		floatingElement: null,
+		positionerElement: null,
 		anchorElement: null,
 		dismissBubbles: { escapeKey: false, outsidePress: fields.outsidePress ?? true },
 	};
@@ -112,7 +112,7 @@ describe("DismissInteraction", () => {
 		});
 
 		it("leaves Escape to an open child that doesn't let it bubble", () => {
-			const tree = new FloatingTree();
+			const tree = new PopupTree();
 			const { dismiss } = setup({}, tree);
 			tree.addNode({ id: "popup", parentId: null, context: treeContext() });
 			const child = treeContext();
@@ -267,7 +267,7 @@ describe("DismissInteraction", () => {
 	});
 
 	it("leaves an outside press to an open child that doesn't let it bubble", () => {
-		const tree = new FloatingTree();
+		const tree = new PopupTree();
 		const { dismiss, reasons } = setup({ outsidePressEvent: "sloppy" }, tree);
 		tree.addNode({ id: "popup", parentId: null, context: treeContext() });
 		const child = treeContext({ outsidePress: false });
@@ -281,7 +281,7 @@ describe("DismissInteraction", () => {
 	});
 
 	it("marks the popups it is nested in when a press passes through it", () => {
-		const tree = new FloatingTree();
+		const tree = new PopupTree();
 		const { dismiss, scheduler } = setup({}, tree);
 		const parent = treeContext();
 		tree.addNode({ id: "parent", parentId: null, context: parent });
@@ -336,7 +336,7 @@ describe("DismissInteraction", () => {
 		});
 
 		it("waits for an open child that keeps outside presses to itself", () => {
-			const tree = new FloatingTree();
+			const tree = new PopupTree();
 			const { dismiss, reasons } = setup({}, tree);
 			tree.addNode({ id: "popup", parentId: null, context: treeContext() });
 			tree.addNode({

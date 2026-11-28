@@ -4,7 +4,7 @@ import { flushSync } from "svelte";
 
 import { PopoverStore, type PopoverStoreProps } from "../../src/components/popover/index.js";
 import { bound, type PlatformTypes } from "../../src/foundation/kernel/index.js";
-import { FloatingTree } from "../../src/foundation/popup/index.js";
+import { PopupTree } from "../../src/foundation/popup/index.js";
 import { root } from "./kit-effects.svelte.js";
 import { createFakePlatform } from "./kit-fake-platform.js";
 
@@ -39,7 +39,7 @@ export function createPopover(initial: Partial<PopoverProps> = {}, options: Popo
 		...initial,
 	});
 	const platform = createFakePlatform();
-	const tree = new FloatingTree();
+	const tree = new PopupTree();
 	const store = new PopoverStore(() => props, {
 		open: bound(
 			() => props.open,
@@ -49,7 +49,7 @@ export function createPopover(initial: Partial<PopoverProps> = {}, options: Popo
 				}
 			},
 		),
-		floatingId: "popup",
+		defaultPopupId: "popup",
 		tree,
 		nested: false,
 		platform,

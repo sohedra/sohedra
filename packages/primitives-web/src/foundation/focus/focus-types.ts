@@ -1,7 +1,7 @@
 import type { TriggerFocusGuards } from "@sohedra/primitives-core/foundation/focus/index.js";
 import type { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import type {
-	FloatingTree,
+	PopupTree,
 	InteractionType,
 	OpenChangeDetails,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
@@ -31,11 +31,11 @@ export interface FocusManagerView {
 	/** Whether the popup is in the document: open, or closing. */
 	readonly mounted: boolean;
 	/** The positioned element that holds the popup. */
-	readonly floatingElement: Element | null;
+	readonly positionerElement: Element | null;
 	/** The element the popup is anchored to. Focus returns to it. */
 	readonly anchorElement: Element | null;
 	/** The tree of nested popups, so focus moving into a child or a parent isn't focus leaving. */
-	readonly tree: FloatingTree<WebTypes> | null;
+	readonly tree: PopupTree<WebTypes> | null;
 	/** The popup's node in {@link tree}. */
 	readonly nodeId: string | undefined;
 	/** The event that opened the popup. */

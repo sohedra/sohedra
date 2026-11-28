@@ -15,11 +15,11 @@ describe("PortalPopup", () => {
 	it("allows containers to be initially null", async () => {
 		const screen = await render(PortalNullContainer);
 
-		await userEvent.click(screen.getByTestId("reference"));
-		const floating = screen.getByTestId("floating");
-		await expect.element(floating).toBeInTheDocument();
+		await userEvent.click(screen.getByTestId("anchor"));
+		const popup = screen.getByTestId("popup");
+		await expect.element(popup).toBeInTheDocument();
 
-		const subRoot = floating.element().closest("[data-sohedra-portal]");
+		const subRoot = popup.element().closest("[data-sohedra-portal]");
 		const root = screen.getByTestId("root").element();
 		expect(root).toBe(subRoot?.parentElement);
 	});

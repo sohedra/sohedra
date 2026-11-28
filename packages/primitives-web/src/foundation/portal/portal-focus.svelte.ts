@@ -184,7 +184,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 	PortalContext.set(portal);
 	const moved = movePortalNode(options, portal, parent);
 
-	// Only the flags count, since a trigger switch replaces the focus manager's state while the
+	// Only the flags count, since a trigger change replaces the focus manager's state while the
 	// popup stays open.
 	const modal = $derived(portal.focusManagerState?.modal === true);
 	const open = $derived(portal.focusManagerState?.open === true);
@@ -250,7 +250,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 					if (node && isOutsideEvent(event, node)) {
 						portal.beforeInsideGuard?.focus();
 					} else {
-						getPreviousTabbable(portal.focusManagerState?.domReference ?? null)?.focus();
+						getPreviousTabbable(portal.focusManagerState?.anchorElement ?? null)?.focus();
 					}
 				},
 				{ "data-type": "outside" },
@@ -267,7 +267,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 						portal.afterInsideGuard?.focus();
 					} else {
 						const state = portal.focusManagerState;
-						getNextTabbable(state?.domReference ?? null)?.focus();
+						getNextTabbable(state?.anchorElement ?? null)?.focus();
 						state?.onOpenChange(false, event);
 					}
 				},

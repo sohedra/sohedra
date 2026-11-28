@@ -28,7 +28,7 @@ export function useDismissPopup(popup: DismissPopupView): DismissPopup {
 			// Only presses that start in the popup's own subtree count (not nested portals).
 			dismiss.pressStart(
 				(event as PointerEvent).button,
-				contains(popup.floatingElement, getTarget(event) as Element | null),
+				contains(popup.positionerElement, getTarget(event) as Element | null),
 			);
 		};
 		const listenerOf = (type: string) =>

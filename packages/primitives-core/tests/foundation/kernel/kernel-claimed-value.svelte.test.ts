@@ -1,15 +1,15 @@
-// OwnedValue: a slot the newest claim owns, released only by its owner.
+// ClaimedValue: a slot the newest claim holds, released only by the token that holds it.
 import { describe, expect, it } from "vitest";
 
-import { OwnedValue } from "../../../src/foundation/kernel/index.js";
+import { ClaimedValue } from "../../../src/foundation/kernel/index.js";
 
-describe("OwnedValue", () => {
+describe("ClaimedValue", () => {
 	it("is unclaimed at first", () => {
-		expect(new OwnedValue<string>().current).toBeUndefined();
+		expect(new ClaimedValue<string>().current).toBeUndefined();
 	});
 
-	it("is owned by the newest claim; a stale release is ignored", () => {
-		const slot = new OwnedValue<string>();
+	it("is held by the newest claim; a stale release is ignored", () => {
+		const slot = new ClaimedValue<string>();
 		const releaseA = slot.claim({}, "a");
 		const releaseB = slot.claim({}, "b");
 		expect(slot.current).toBe("b");
@@ -19,8 +19,8 @@ describe("OwnedValue", () => {
 		expect(slot.current).toBeUndefined();
 	});
 
-	it("lets the owner re-claim with a new value", () => {
-		const slot = new OwnedValue<string>();
+	it("lets the holder re-claim with a new value", () => {
+		const slot = new ClaimedValue<string>();
 		const token = {};
 		const first = slot.claim(token, "a");
 		const second = slot.claim(token, "b");

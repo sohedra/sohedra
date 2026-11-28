@@ -43,15 +43,15 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	#id: string | null = $state(null);
 	#element: T["element"] | null = $state.raw(null);
 	#openedWithoutTrigger = $state(false);
-	// The last trigger element stays the popup's reference after the popup unmounts (only element
+	// The last trigger element stays the popup's anchor after the popup unmounts (only element
 	// values are synced); a kept-mounted Positioner clears it. Committed by `connect()` after each
 	// update, never while deriving.
-	readonly #lastReference = new CommittedValue<T["element"] | null>({ initial: null });
+	readonly #lastAnchor = new CommittedValue<T["element"] | null>({ initial: null });
 
 	/** The active trigger's id: the controlled `triggerId`, else the store's own. */
 	readonly id: string | null = $derived.by(() => this.#props().triggerId ?? this.#id);
 
-	readonly #anchor: T["element"] | null = $derived(this.element ?? this.#lastReference.current);
+	readonly #anchor: T["element"] | null = $derived(this.element ?? this.#lastAnchor.current);
 
 	/** Pure: `props` is called inside the deriveds and queries, so each value stays reactive. */
 	constructor(props: () => ActiveTriggerStoreProps, deps: ActiveTriggerStoreDeps<T>) {
@@ -174,7 +174,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 
 	/** Forgets the last trigger element (a kept-mounted popup that closed). */
 	forgetLastTrigger = (): void => {
-		this.#lastReference.commit(null);
+		this.#lastAnchor.commit(null);
 	};
 
 	/**
@@ -185,7 +185,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	connect(): void {
 		// The last trigger element seen while mounted: the anchor, which reads the element first, so
 		// when this commit runs doesn't change the answer.
-		this.#lastReference.follow(() => this.#anchor);
+		this.#lastAnchor.follow(() => this.#anchor);
 		// Keeps the active trigger in step with the registered ones while the popup is open.
 		$effect(() => {
 			const open = this.#props().open;
@@ -235,7 +235,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	 */
 	connectTriggerChange(waitForMove: TriggerChangeWait): void {
 		const instant = this.#instant;
-		// The last trigger the popup was anchored to. Not the watched previous value: a reference
+		// The last trigger the popup was anchored to. Not the watched previous value: an anchor
 		// cleared while closed keeps it, so the next opening still compares against it.
 		let lastTrigger: T["element"] | null = null;
 		let cancelPending: (() => void) | void = undefined;

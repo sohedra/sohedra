@@ -18,48 +18,48 @@ const move = (clientX: number, clientY: number, overrides = {}): SafePolygonInpu
 	clientX,
 	clientY,
 	isLeave: false,
-	isOverFloating: false,
-	isOverReference: false,
-	leavingIntoFloating: false,
+	isOverPopup: false,
+	isOverAnchor: false,
+	leavingIntoPopup: false,
 	hasOpenChild: false,
-	measure: () => ({ reference: box(100, 100, 100, 20), floating: box(50, 130, 200, 100) }),
+	measure: () => ({ anchor: box(100, 100, 100, 20), popup: box(50, 130, 200, 100) }),
 	now: 0,
 	...overrides,
 });
 
 /** A 100×100 trigger at the origin and a popup on `placement`, 20px away, with points to move to. */
 function createPlacementScenario(placement: "top" | "bottom" | "left" | "right") {
-	const referenceRect = box(0, 0, 100, 100);
+	const anchorRect = box(0, 0, 100, 100);
 
 	switch (placement) {
 		case "top":
 			return {
-				referenceRect,
-				floatingRect: box(0, -120, 100, 100),
+				anchorRect,
+				popupRect: box(0, -120, 100, 100),
 				leavePoint: [50, 0] as const,
 				troughPoint: [50, -10] as const,
 				outsidePoint: [50, 150] as const,
 			};
 		case "bottom":
 			return {
-				referenceRect,
-				floatingRect: box(0, 120, 100, 100),
+				anchorRect,
+				popupRect: box(0, 120, 100, 100),
 				leavePoint: [50, 100] as const,
 				troughPoint: [50, 110] as const,
 				outsidePoint: [50, -50] as const,
 			};
 		case "left":
 			return {
-				referenceRect,
-				floatingRect: box(-120, 0, 100, 100),
+				anchorRect,
+				popupRect: box(-120, 0, 100, 100),
 				leavePoint: [0, 50] as const,
 				troughPoint: [-10, 50] as const,
 				outsidePoint: [150, 50] as const,
 			};
 		case "right":
 			return {
-				referenceRect,
-				floatingRect: box(120, 0, 100, 100),
+				anchorRect,
+				popupRect: box(120, 0, 100, 100),
 				leavePoint: [100, 50] as const,
 				troughPoint: [110, 50] as const,
 				outsidePoint: [-50, 50] as const,
@@ -77,11 +77,11 @@ function createMouseMove(
 		clientX,
 		clientY,
 		isLeave: false,
-		isOverFloating: false,
-		isOverReference: false,
-		leavingIntoFloating: false,
+		isOverPopup: false,
+		isOverAnchor: false,
+		leavingIntoPopup: false,
 		hasOpenChild: false,
-		measure: () => ({ reference: scenario.referenceRect, floating: scenario.floatingRect }),
+		measure: () => ({ anchor: scenario.anchorRect, popup: scenario.popupRect }),
 		now: 10,
 	};
 }
@@ -102,7 +102,7 @@ describe("decideSafePolygon", () => {
 		expect(start).toEqual(snapshot);
 		expect(first.track).toMatchObject({ hasLanded: false, lastX: 95, lastY: 128, lastTime: 1 });
 
-		const landed = decideSafePolygon(first.track, move(95, 140, { isOverFloating: true, now: 2 }));
+		const landed = decideSafePolygon(first.track, move(95, 140, { isOverPopup: true, now: 2 }));
 		expect(landed.decision).toBe("stay");
 		expect(landed.track.hasLanded).toBe(true);
 		expect(first.track.hasLanded).toBe(false);
@@ -137,7 +137,7 @@ describe("SafePolygon", () => {
 	it("waits for the pointer inside the triangle, and stays once landed", () => {
 		const polygon = new SafePolygon("bottom", 150, 121, 0);
 		expect(polygon.decide(move(95, 128, { now: 1 }))).toBe("close-soon");
-		expect(polygon.decide(move(95, 140, { isOverFloating: true, now: 2 }))).toBe("stay");
+		expect(polygon.decide(move(95, 140, { isOverPopup: true, now: 2 }))).toBe("stay");
 	});
 
 	it("stays open while a nested child is open", () => {

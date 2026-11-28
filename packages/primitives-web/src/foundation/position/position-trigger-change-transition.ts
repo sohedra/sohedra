@@ -1,5 +1,5 @@
 import { waitForAnimations } from "../presence/index.js";
-import type { TriggerSwitchView } from "./position-types.js";
+import type { TriggerChangeView } from "./position-types.js";
 
 /**
  * When an open popup moves to another trigger, its transitions run once more (repositioning),
@@ -8,7 +8,7 @@ import type { TriggerSwitchView } from "./position-types.js";
  * tells core when they finished. `popup` is the behaviour's view of the popup; a part passes its
  * store. Call once during the Positioner's init.
  */
-export function useTriggerSwitchTransition(popup: TriggerSwitchView): void {
+export function useTriggerChangeTransition(popup: TriggerChangeView): void {
 	popup.activeTrigger.connectTriggerChange((finish) => {
 		const positioner = popup.positionerElement as HTMLElement | null;
 		if (!positioner) {

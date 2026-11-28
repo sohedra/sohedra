@@ -24,7 +24,7 @@ export function detachedPopupDeps(): PopupStoreDeps<PlatformTypes> {
 			() => false,
 			() => {},
 		),
-		floatingId: "",
+		defaultPopupId: "",
 		tree: null,
 		nested: false,
 		platform: inertPlatform,

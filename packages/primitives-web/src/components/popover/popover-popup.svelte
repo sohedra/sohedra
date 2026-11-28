@@ -40,7 +40,7 @@
 	state={popoverPopupState(popover, positioner)}
 	attrs={popoverPopupAttributes}
 	{...popup.props}
-	id={popover.floatingId}
+	id={popover.defaultPopupId}
 	role="dialog"
 	{...FOCUSABLE_POPUP_PROPS}
 	aria-labelledby={popover.titleId.current}

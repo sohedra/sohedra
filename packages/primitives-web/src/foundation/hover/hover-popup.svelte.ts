@@ -34,8 +34,8 @@ export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOp
 
 	// The pointer entering, leaving and pressing inside the popup's positioned element.
 	$effect(() => {
-		const floating = popup.floatingElement as HTMLElement | null;
-		if (!enabled || !floating) {
+		const positioner = popup.positionerElement as HTMLElement | null;
+		if (!enabled || !positioner) {
 			return;
 		}
 		const tree = popup.tree;
@@ -55,19 +55,19 @@ export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOp
 					isElement(relatedTarget) &&
 					tree
 						.children(popup.nodeId, false)
-						.some((node) => contains(node.context?.floatingElement, relatedTarget)),
+						.some((node) => contains(node.context?.positionerElement, relatedTarget)),
 				),
 			});
 		}
 
 		const onMouseEnter = () => hover.enter();
-		floating.addEventListener("mouseenter", onMouseEnter);
-		floating.addEventListener("mouseleave", onMouseLeave);
-		floating.addEventListener("pointerdown", onInteractInside, true);
+		positioner.addEventListener("mouseenter", onMouseEnter);
+		positioner.addEventListener("mouseleave", onMouseLeave);
+		positioner.addEventListener("pointerdown", onInteractInside, true);
 		return () => {
-			floating.removeEventListener("mouseenter", onMouseEnter);
-			floating.removeEventListener("mouseleave", onMouseLeave);
-			floating.removeEventListener("pointerdown", onInteractInside, true);
+			positioner.removeEventListener("mouseenter", onMouseEnter);
+			positioner.removeEventListener("mouseleave", onMouseLeave);
+			positioner.removeEventListener("pointerdown", onInteractInside, true);
 			hover.stop();
 		};
 	});

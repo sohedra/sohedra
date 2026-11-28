@@ -51,9 +51,9 @@ export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
 		}
 		// Let the pointer's entering fire first, in case the child closed because it moved here.
 		this.#childClosedTimeout.start(0, () => {
-			tree.events.off("floating.closed", this.#onNodeClosed);
+			tree.events.off("popup.closed", this.#onNodeClosed);
 			changeOpen(popup, this.#flush, false, event);
-			tree.events.emit("floating.closed", event);
+			tree.events.emit("popup.closed", event);
 		});
 	};
 
@@ -66,7 +66,7 @@ export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
 	enter = (): void => {
 		this.#popup.hover.openChangeTimeout.clear();
 		this.#childClosedTimeout.clear();
-		this.#popup.tree?.events.off("floating.closed", this.#onNodeClosed);
+		this.#popup.tree?.events.off("popup.closed", this.#onNodeClosed);
 	};
 
 	/**
@@ -77,7 +77,7 @@ export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
 		const shared = popup.hover;
 		const tree = popup.tree;
 		if (hasOpenChild(popup) && tree) {
-			tree.events.on("floating.closed", this.#onNodeClosed);
+			tree.events.on("popup.closed", this.#onNodeClosed);
 			return;
 		}
 		if (into.enabledTrigger || into.descendant) {
@@ -95,7 +95,7 @@ export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
 			const closeDelay = getDelay(this.#props().closeDelay, "close", shared.pointerType);
 			const close = () => {
 				changeOpen(popup, this.#flush, false, event);
-				tree?.events.emit("floating.closed", event);
+				tree?.events.emit("popup.closed", event);
 			};
 			if (closeDelay) {
 				shared.openChangeTimeout.start(closeDelay, close);
@@ -108,7 +108,7 @@ export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
 
 	/** The popup's listeners went away: drops the pending child-closed check. */
 	stop = (): void => {
-		this.#popup.tree?.events.off("floating.closed", this.#onNodeClosed);
+		this.#popup.tree?.events.off("popup.closed", this.#onNodeClosed);
 		this.#childClosedTimeout.clear();
 	};
 }

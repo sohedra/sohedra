@@ -4,6 +4,7 @@
 // means is decided here, with the plain functions of `dismiss-rules.ts`.
 
 import {
+	type ChangeEventDetails,
 	createChangeEventDetails,
 	type InteractionEventType,
 	type PlatformEvent,
@@ -14,7 +15,7 @@ import {
 	type Scheduler,
 	Timeout,
 } from "../kernel/index.js";
-import type { FloatingTree } from "../popup/index.js";
+import type { PopupTree } from "../popup/index.js";
 import {
 	hasBlockingChild,
 	isIgnoredOutsidePress,
@@ -31,8 +32,10 @@ type EscapeReason = typeof REASONS.escapeKey;
 type OutsidePressReason = typeof REASONS.outsidePress;
 
 /** The change details a dismissal closes with. */
-export type DismissChangeDetails<T extends PlatformTypes> = ReturnType<
-	typeof createChangeEventDetails<EscapeReason | OutsidePressReason, {}, T>
+export type DismissChangeDetails<T extends PlatformTypes> = ChangeEventDetails<
+	EscapeReason | OutsidePressReason,
+	{},
+	T
 >;
 
 /**
@@ -42,7 +45,7 @@ export type DismissChangeDetails<T extends PlatformTypes> = ReturnType<
 export interface DismissView<T extends PlatformTypes = PlatformTypes> {
 	readonly open: boolean;
 	/** The tree of nested popups: an open child may answer a dismissal before its parent. */
-	readonly tree: FloatingTree<T> | null;
+	readonly tree: PopupTree<T> | null;
 	/** The popup's node in {@link tree}. */
 	readonly nodeId: string | undefined;
 	readonly platform: { readonly scheduler: Scheduler };

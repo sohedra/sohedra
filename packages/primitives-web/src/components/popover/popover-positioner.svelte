@@ -27,7 +27,7 @@
 
 	// 3. Shared behaviours
 	// The shared Positioner part below places the popup. Beside it: the popover's node in the
-	// floating tree, transitions that run again when it moves to another trigger, and the page
+	// popup tree, transitions that run again when it moves to another trigger, and the page
 	// scroll lock of a modal popover.
 	usePopupPositioner(popover, () => ({ nodeId: sohedraId(uid) }));
 </script>

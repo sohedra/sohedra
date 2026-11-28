@@ -1,6 +1,6 @@
 <!--
-  The tree of "does not return focus while open when the reference changes": a Popover with two
-  triggers (`first`, `second`), where the Root's `triggerId` picks the reference while the popup
+  The tree of "does not return focus while open when the anchor changes": a Popover with two
+  triggers (`first`, `second`), where the Root's `triggerId` picks the anchor while the popup
   is open. The popup holds a `child` button and a `close` button.
 -->
 <script lang="ts">

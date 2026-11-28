@@ -1,16 +1,15 @@
 <!--
   The trees for the inert marker of a non-modal Popover. `outside-nodes` ("false - does not apply
-  inert to outside nodes") and `reference-siblings` ("false - keeps marker on top-level outside
-  ancestor when reference has siblings") keep the popup in the same parent as the rest: the
-  Portal's container is a `div` at the end of the tree. `portalled` ("does not mark reference
+  inert to outside nodes") and `anchor-siblings` ("false - keeps marker on top-level outside
+  ancestor when anchor has siblings") keep the popup in the same parent as the rest: the
+  Portal's container is a `div` at the end of the tree. `portalled` ("does not mark anchor
   siblings due to outside focus guards") portals the popup to the body.
 -->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";
 
-	let {
-		layout = "outside-nodes",
-	}: { layout?: "outside-nodes" | "reference-siblings" | "portalled" } = $props();
+	let { layout = "outside-nodes" }: { layout?: "outside-nodes" | "anchor-siblings" | "portalled" } =
+		$props();
 
 	let host = $state<HTMLElement>();
 
@@ -24,15 +23,15 @@
 
 <Popover.Root>
 	{#if layout === "outside-nodes"}
-		<Popover.Trigger data-testid="reference">reference</Popover.Trigger>
+		<Popover.Trigger data-testid="anchor">anchor</Popover.Trigger>
 		<div data-testid="outside-wrapper">
 			<div data-testid="aria-live" aria-live="polite"></div>
 			<button data-testid="btn-1">1</button>
 			<button data-testid="btn-2">2</button>
 		</div>
-	{:else if layout === "reference-siblings"}
+	{:else if layout === "anchor-siblings"}
 		<div data-testid="outside-wrapper">
-			<Popover.Trigger data-testid="reference">reference</Popover.Trigger>
+			<Popover.Trigger data-testid="anchor">anchor</Popover.Trigger>
 			<button data-testid="btn-1">1</button>
 			<button data-testid="btn-2">2</button>
 			<div data-testid="nested-wrapper">
@@ -41,16 +40,16 @@
 		</div>
 		<div data-testid="outside-sibling"></div>
 	{:else}
-		<div data-testid="reference-wrapper">
-			<Popover.Trigger data-testid="reference">reference</Popover.Trigger>
-			<span data-testid="reference-sibling-1"></span>
-			<span data-testid="reference-sibling-2"></span>
+		<div data-testid="anchor-wrapper">
+			<Popover.Trigger data-testid="anchor">anchor</Popover.Trigger>
+			<span data-testid="anchor-sibling-1"></span>
+			<span data-testid="anchor-sibling-2"></span>
 		</div>
 	{/if}
 	{#if layout !== "portalled"}<div {@attach attachHost}></div>{/if}
 	<Popover.Portal container={layout === "portalled" ? undefined : host}>
 		<Popover.Positioner>
-			<Popover.Popup data-testid="floating">
+			<Popover.Popup data-testid="popup">
 				{#if layout === "portalled"}
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 					<span tabindex="0" data-testid="inside"></span>

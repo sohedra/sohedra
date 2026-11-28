@@ -96,12 +96,12 @@ export function opensAtOnceOnEnter(
 	open: boolean,
 	closingAfterHover: boolean,
 	overInactiveTrigger: boolean,
-	withinReference: boolean,
+	withinAnchor: boolean,
 ): boolean {
 	if (overInactiveTrigger) {
 		return open || closingAfterHover;
 	}
-	return withinReference && closingAfterHover;
+	return withinAnchor && closingAfterHover;
 }
 
 /** Whether a popup nested in this one is open. */

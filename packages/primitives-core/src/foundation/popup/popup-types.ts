@@ -43,10 +43,10 @@ export type InstantType = "dismiss" | "click" | "focus" | "group" | "trigger-cha
 export interface OpenChangeDetails<T extends PlatformTypes = PlatformTypes> {
 	open: boolean;
 	reason: string;
-	nativeEvent: AnyPlatformEvent<T>;
-	/** Whether the popup is nested in another floating element. */
+	event: AnyPlatformEvent<T>;
+	/** Whether the popup is nested in another popup. */
 	nested: boolean;
-	triggerElement: T["element"] | undefined;
+	trigger: T["element"] | undefined;
 }
 
 /** A popup's own events: open changes, which its dismiss, focus and hover interactions follow. */

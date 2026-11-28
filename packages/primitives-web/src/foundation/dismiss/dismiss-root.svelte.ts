@@ -13,7 +13,7 @@ import {
 } from "../kernel/index.js";
 import { closeOnEscape } from "./dismiss-escape.js";
 import {
-	isEventWithinFloatingTree,
+	isEventWithinPopupTree,
 	isEventWithinOwnElements,
 	isSparedPressTarget,
 } from "./dismiss-press-target.js";
@@ -102,7 +102,7 @@ export function useDismissRoot(popup: DismissView): void {
 		dismiss.pressEnd({
 			canceled: event.type === "pointercancel",
 			get endedInTree() {
-				return isEventWithinFloatingTree(popup, event);
+				return isEventWithinPopupTree(popup, event);
 			},
 		});
 	}
@@ -153,11 +153,11 @@ export function useDismissRoot(popup: DismissView): void {
 	$effect(() => {
 		const open = popup.open;
 		const isEnabled = enabled;
-		const floating = popup.floatingElement;
+		const positioner = popup.positionerElement;
 		if (!open || !isEnabled) {
 			return;
 		}
-		const doc = ownerDocument(floating);
+		const doc = ownerDocument(positioner);
 		const listeners = [...keyListeners, ...pressListeners];
 		for (const [type, listener, listenerOptions] of listeners) {
 			doc.addEventListener(type, listener, listenerOptions);

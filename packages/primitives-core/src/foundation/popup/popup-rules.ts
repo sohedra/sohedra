@@ -11,16 +11,16 @@ export function isClickLikeEventType(type: InteractionEventType | undefined): bo
 
 /**
  * The open state a trigger press asks for: opens a closed popup or one owned by another
- * trigger (`isActiveReference` false); on the owning trigger, closes it, unless
+ * trigger (`isAnchor` false); on the owning trigger, closes it, unless
  * `stickIfOpen` and it was opened by something other than a press or a key (a hover).
  */
 export function pressOpenState(
 	open: boolean,
-	isActiveReference: boolean,
+	isAnchor: boolean,
 	openEventType: InteractionEventType | undefined,
 	stickIfOpen: boolean,
 ): boolean {
-	if (!open || !isActiveReference) {
+	if (!open || !isAnchor) {
 		return true;
 	}
 	if (openEventType !== undefined && stickIfOpen) {
@@ -129,12 +129,12 @@ export function awaitsUnmount(open: boolean, mounted: boolean, preventUnmount: b
 }
 
 /**
- * Whether a popup is nested in another floating element (its stores' `nested`), from the id of
- * its nearest floating-tree node and the dialog it is rendered in. A dialog is a node of the tree
- * but not a floating element: a popup directly under a dialog's node is nested only when that
+ * Whether a popup is nested in another popup (its stores' `nested`), from the id of
+ * its nearest popup-tree node and the dialog it is rendered in. A dialog is a node of the tree
+ * but not a popup: a popup directly under a dialog's node is nested only when that
  * dialog is.
  */
-export function isNestedInFloating(
+export function isNestedInPopup(
 	parentNodeId: string | null,
 	dialog: { readonly nodeId: string | undefined; readonly nested: boolean } | null,
 ): boolean {

@@ -3,7 +3,7 @@
 // the end of a press that began inside means, and which popup of a nested set answers.
 
 import type { InteractionEventType, PlatformTypes, PointerType } from "../kernel/index.js";
-import type { FloatingTree } from "../popup/index.js";
+import type { PopupTree } from "../popup/index.js";
 
 /**
  * How an outside press is detected: `intentional` dismisses on an outside `click` whose press
@@ -48,7 +48,7 @@ export function isIgnoredOutsidePress(
  * dismissal bubble to its ancestors.
  */
 export function hasBlockingChild<T extends PlatformTypes>(
-	tree: FloatingTree<T> | null,
+	tree: PopupTree<T> | null,
 	nodeId: string | undefined,
 	kind: "escapeKey" | "outsidePress",
 ): boolean {

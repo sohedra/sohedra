@@ -50,12 +50,12 @@ export function createHoverTrigger(overrides: Partial<HoverTriggerStoreProps> = 
 		trigger,
 		eventType: "mouseenter" as const,
 		overInactiveTrigger: false,
-		withinReference: true,
+		withinAnchor: true,
 	};
 	const leave = {
 		trigger,
 		intoEnabledTrigger: false,
-		intoFloating: false,
+		intoPopup: false,
 		clientX: 0,
 		clientY: 0,
 	};
@@ -98,12 +98,12 @@ export function createHoverTriggerWithAppOpen(overrides: Partial<HoverTriggerSto
 		trigger,
 		eventType: "mousemove" as const,
 		overInactiveTrigger: false,
-		withinReference: true,
+		withinAnchor: true,
 	};
 	const leave = {
 		trigger,
 		intoEnabledTrigger: false,
-		intoFloating: false,
+		intoPopup: false,
 		clientX: 0,
 		clientY: 0,
 	};

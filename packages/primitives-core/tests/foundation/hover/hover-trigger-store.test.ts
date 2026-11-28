@@ -78,7 +78,7 @@ describe("HoverTriggerStore", () => {
 		triggerStore.pointerType("touch");
 		triggerStore.enter(event("mouseenter"), target);
 		expect(store.open).toBe(true);
-		triggerStore.leave(event("mouseleave"), { ...leave, intoFloating: true });
+		triggerStore.leave(event("mouseleave"), { ...leave, intoPopup: true });
 		expect(store.open).toBe(true);
 		triggerStore.leave(event("mouseleave"), leave);
 		expect(store.open).toBe(false);

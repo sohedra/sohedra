@@ -15,7 +15,7 @@ import {
 	Controllable,
 	createChangeEventDetails,
 	type InteractionEventType,
-	OwnedValue,
+	ClaimedValue,
 	type Platform,
 	type PlatformEvent,
 	type PlatformTypes,
@@ -27,11 +27,6 @@ import { Presence, type TransitionStatus } from "../presence/index.js";
 import { ActiveTriggerStore } from "./popup-active-trigger-store.svelte.js";
 import type { PopupBehavior } from "./popup-behavior.js";
 import { EventEmitter } from "./popup-event-emitter.js";
-import type {
-	FloatingNode,
-	FloatingNodeContextValue,
-	FloatingTree,
-} from "./popup-floating-tree.js";
 import {
 	awaitsUnmount,
 	closesUnheard,
@@ -41,6 +36,7 @@ import {
 	openValuesToFollow,
 	visibleInstantType,
 } from "./popup-rules.js";
+import type { PopupNode, PopupNodeView, PopupTree } from "./popup-tree.js";
 import { PopupTriggerMap } from "./popup-trigger-map.js";
 import type {
 	InstantType,
@@ -106,10 +102,10 @@ export interface PopupStoreDeps<T extends PlatformTypes = PlatformTypes> {
 	/** The `open` binding. */
 	readonly open: Bound<boolean | undefined>;
 	/** The popup element's generated id. */
-	readonly floatingId: string;
+	readonly defaultPopupId: string;
 	/** The tree of nested popups, shared with ancestors. */
-	readonly tree: FloatingTree<T> | null;
-	/** Whether the popup is nested in another floating element. */
+	readonly tree: PopupTree<T> | null;
+	/** Whether the popup is nested in another popup. */
 	readonly nested: boolean;
 	/** The platform the popup runs on; its helpers and child stores use it too. */
 	readonly platform: Platform<T>;
@@ -131,7 +127,7 @@ export interface PopupStoreKind {
  * What every popup's parts and interactions share: the open state and the one pipeline that
  * changes it (`onOpenChange` first, which may cancel or call `preventUnmountOnClose()`, then the
  * open-change event, then the commit), the presence, the triggers and the payload of the one
- * that owns the popup, the popup and positioner elements and the node in the floating tree. A
+ * that owns the popup, the popup and positioner elements and the node in the popup tree. A
  * kind's store extends it once and passes its {@link hooks}; it writes no `setOpen` of its own.
  *
  * The platform reports both ends of the presence: {@link completeOpen} once the enter animations
@@ -142,7 +138,7 @@ export abstract class PopupStore<
 	T extends PlatformTypes = PlatformTypes,
 	Details extends PopupChangeEventDetails<T> = PopupChangeEventDetails<T>,
 	Source extends OpenChangeSource = OpenChangeSource,
-> implements FloatingNodeContextValue<T> {
+> implements PopupNodeView<T> {
 	// 1. Inputs
 	/** The kind's hooks for the open pipeline. A field: a change reads it when it runs. */
 	protected abstract readonly hooks: PopupHooks<Details, Source, this>;
@@ -157,10 +153,10 @@ export abstract class PopupStore<
 	/** The kind's row of the behaviour table: which interactions its parts wire. */
 	readonly behavior: PopupBehavior;
 	/** The popup element's generated id. */
-	readonly floatingId: string;
+	readonly defaultPopupId: string;
 	/** The tree of nested popups, shared with ancestors. */
-	readonly tree: FloatingTree<T> | null;
-	/** Whether the popup is nested in another floating element. */
+	readonly tree: PopupTree<T> | null;
+	/** Whether the popup is nested in another popup. */
 	readonly nested: boolean;
 	/** The platform the popup runs on; its helpers and child stores use it too. */
 	readonly platform: Platform<T>;
@@ -185,9 +181,11 @@ export abstract class PopupStore<
 	 */
 	readonly dismiss: DismissInteraction<T>;
 	/** The mounted Positioner's measured state (for the safe polygon's side). */
-	readonly positionerClaim: OwnedValue<PositionerStore<T>> = new OwnedValue<PositionerStore<T>>();
-	/** The popup element's id: the Popup part's (it may be the user's), else `floatingId`. */
-	readonly popupIdClaim: OwnedValue<string> = new OwnedValue<string>();
+	readonly positionerClaim: ClaimedValue<PositionerStore<T>> = new ClaimedValue<
+		PositionerStore<T>
+	>();
+	/** The popup element's id: the Popup part's (it may be the user's), else `defaultPopupId`. */
+	readonly popupIdClaim: ClaimedValue<string> = new ClaimedValue<string>();
 	/** Whether Escape and outside presses inside the popup also reach its ancestors. */
 	readonly dismissBubbles: { readonly escapeKey: boolean; readonly outsidePress: boolean } = {
 		escapeKey: false,
@@ -211,7 +209,7 @@ export abstract class PopupStore<
 	#openEvent: AnyPlatformEvent<T> | undefined = undefined;
 	/** That event's type, in core's words. Set and cleared with the open event. */
 	#openEventType: InteractionEventType | undefined = undefined;
-	/** The popup's node in the floating tree. Set when its Positioner joins the tree. */
+	/** The popup's node in the popup tree. Set when its Positioner joins the tree. */
 	#nodeId: string | undefined = undefined;
 
 	// An open change is running; an unmount asked for during it waits for its commit.
@@ -245,10 +243,8 @@ export abstract class PopupStore<
 	readonly awaitingUnmount: boolean = $derived.by(() =>
 		awaitsUnmount(this.open, this.presence.mounted, this.#preventUnmount),
 	);
-	/** The floating element: the Positioner. */
-	readonly floatingElement: T["element"] | null = $derived.by(() => this.#positionerElement);
 	readonly popupId: string | undefined = $derived.by(
-		() => this.popupIdClaim.current ?? (this.floatingId || undefined),
+		() => this.popupIdClaim.current ?? (this.defaultPopupId || undefined),
 	);
 
 	/** Pure: reads no context. `props` is called inside the deriveds, so each prop stays reactive. */
@@ -262,7 +258,7 @@ export abstract class PopupStore<
 		this.#imperativeEvent = deps.imperativeEvent ?? (() => undefined);
 		this.name = kind.name;
 		this.behavior = kind.behavior;
-		this.floatingId = deps.floatingId;
+		this.defaultPopupId = deps.defaultPopupId;
 		this.tree = deps.tree;
 		this.nested = deps.nested;
 		this.platform = platform;
@@ -328,7 +324,7 @@ export abstract class PopupStore<
 		return this.#openEventType;
 	}
 
-	/** The popup's node in the floating tree, once its Positioner joins it. */
+	/** The popup's node in the popup tree, once its Positioner joins it. */
 	get nodeId(): string | undefined {
 		return this.#nodeId;
 	}
@@ -337,6 +333,7 @@ export abstract class PopupStore<
 		return this.#popupElement;
 	}
 
+	/** The Positioner's element: the positioned element that holds the popup. */
 	get positionerElement(): T["element"] | null {
 		return this.#positionerElement;
 	}
@@ -517,19 +514,19 @@ export abstract class PopupStore<
 		this.events.emit("openchange", {
 			open,
 			reason: details.reason,
-			nativeEvent: details.event as AnyPlatformEvent<T>,
+			event: details.event as AnyPlatformEvent<T>,
 			nested: this.nested,
-			triggerElement: details.trigger,
+			trigger: details.trigger,
 		});
 	};
 
 	/**
-	 * Adds the popup's node to the floating tree, under `parentId`: popups nested in its Positioner
+	 * Adds the popup's node to the popup tree, under `parentId`: popups nested in its Positioner
 	 * are its children. Returns the removal. The Positioner's wiring calls it while it is mounted.
 	 */
-	joinFloatingTree = (id: string, parentId: string | null): (() => void) => {
+	joinPopupTree = (id: string, parentId: string | null): (() => void) => {
 		const tree = this.tree;
-		const node: FloatingNode<T> = { id, parentId, context: this };
+		const node: PopupNode<T> = { id, parentId, context: this };
 		tree?.addNode(node);
 		this.#nodeId = id;
 		return () => tree?.removeNode(node);

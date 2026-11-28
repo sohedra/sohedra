@@ -5,5 +5,5 @@ export { useAnchoredScrollLock } from "./position-anchored-scroll-lock.svelte.js
 export { default as AnchoredViewport } from "./position-anchored-viewport.svelte";
 export { PopupLayoutContext } from "./position-popup-layout.svelte.js";
 export type { Boundary } from "./position-positioner-middleware.js";
-export { useTriggerSwitchTransition } from "./position-trigger-switch-transition.js";
-export type { PositionerAnchor, TriggerSwitchView } from "./position-types.js";
+export { useTriggerChangeTransition } from "./position-trigger-change-transition.js";
+export type { PositionerAnchor, TriggerChangeView } from "./position-types.js";

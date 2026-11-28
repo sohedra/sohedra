@@ -22,18 +22,18 @@ export interface ViewportContentStoreDeps<T extends PlatformTypes = PlatformType
 }
 
 /** The open popup moving its content from one trigger to another. */
-export interface ViewportSwitch<T extends PlatformTypes = PlatformTypes> {
+export interface ViewportTriggerChange<T extends PlatformTypes = PlatformTypes> {
 	readonly from: T["element"];
 	readonly to: T["element"];
 }
 
 /**
- * Which content a popup Viewport shows, and when it switches:
+ * Which content a popup Viewport shows, and when the trigger changes:
  *
  * - {@link contentKey} changes whenever the content has to be created anew: on every new active
  *   trigger id, and once more when that trigger's payload arrives an update after the trigger.
- * - {@link switching} is set while the open popup's trigger differs from the one whose content it
- *   last showed. The platform shows the switch (snapshot, animation), then calls {@link settle}.
+ * - {@link triggerChange} is set while the open popup's trigger differs from the one whose content
+ *   it last showed. The platform shows the change (snapshot, animation), then calls {@link settle}.
  */
 export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #popup: ViewportContentPopupView<T>;
@@ -51,7 +51,7 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	// The trigger whose content the open popup showed when the platform last settled.
 	#shown: T["element"] | null = $state.raw(null);
 
-	readonly switching: ViewportSwitch<T> | null = $derived.by(() => {
+	readonly triggerChange: ViewportTriggerChange<T> | null = $derived.by(() => {
 		const from = this.#shown;
 		const to = this.#popup.activeTriggerElement;
 		if (!from || !to || from === to || !this.#popup.open || !this.#popup.mounted) {
@@ -75,8 +75,8 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	/**
-	 * The platform has shown the content for the current trigger (and the switch to it, if any).
-	 * A closed popup shows no trigger's content, so reopening never switches.
+	 * The platform has shown the content for the current trigger (and the change to it, if any).
+	 * A closed popup shows no trigger's content, so reopening is never a trigger change.
 	 */
 	settle = (): void => {
 		untrack(() => {

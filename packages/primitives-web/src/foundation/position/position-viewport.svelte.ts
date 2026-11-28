@@ -70,18 +70,19 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 	const content = new ViewportContentStore<WebTypes>({ popup });
 	content.connect();
 
-	// Where the content moves from, during the update that switches triggers. Measured while
+	// Where the content moves from, during the update that changes the trigger. Measured while
 	// deriving (a layout read in a derived, on purpose): the new container renders with its
 	// starting style and `data-activation-direction` in that same update, before the browser
 	// first styles it, whichever order Svelte runs block effects and effects in. An effect would
 	// be an update late.
 	const incomingOffset = $derived.by(() => {
-		const change = content.switching;
+		const change = content.triggerChange;
 		return change ? relativePosition(change.from, change.to) : null;
 	});
 	const anchoring = $derived(anchoringStyle(options().side, direction.direction === "rtl"));
 
-	// The inert copy of the content shown before the switch (`data-previous`), while it animates out.
+	// The inert copy of the content shown before the trigger change (`data-previous`), while it
+	// animates out.
 	let previousContent: HTMLElement | null = $state.raw(null);
 	let offset: TriggerOffset | null = $state.raw(null);
 	let previousDimensions: Dimensions | null = $state.raw(null);
@@ -92,25 +93,26 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 	let cleanupController: AbortController | null = null;
 	let committedDimensions: Dimensions | null = null;
 
-	// The `data-current` containers by the content key each was created for, until the switch
-	// effect moves past that key. A container that left the document keeps its children (Svelte
-	// removes only a destroyed block's top-level nodes, and an outroing one stays as it was), so the
-	// snapshot doesn't depend on whether the old container's teardown, the new one's attachment or
-	// the switch effect runs first. The teardown can run before the clone, though, so nodes that a
-	// teardown inside the old content removes (an attachment's cleanup, say) are missing from the
-	// snapshot.
+	// The `data-current` containers by the content key each was created for, until the
+	// trigger-change effect moves past that key. A container that left the document keeps its
+	// children (Svelte removes only a destroyed block's top-level nodes, and an outroing one stays
+	// as it was), so the snapshot doesn't depend on whether the old container's teardown, the new
+	// one's attachment or the trigger-change effect runs first. The teardown can run before the
+	// clone, though, so nodes that a teardown inside the old content removes (an attachment's
+	// cleanup, say) are missing from the snapshot.
 	//
 	// In Svelte's async mode, a container whose content awaits outside a `<svelte:boundary>` is
-	// attached only once that content resolves. A switch before then finds no container for the
-	// shown key: it keeps the earlier snapshot, and the earlier switch's offset.
+	// attached only once that content resolves. A trigger change before then finds no container
+	// for the shown key: it keeps the earlier snapshot, and the earlier trigger change's offset.
 	const containers = new Map<number, HTMLElement>();
 
-	// Takes the snapshot of a switch, after every update that can change what the popup shows
-	// (open state, trigger, content key): if it switched triggers, the content shown before the
-	// update is copied into the snapshot, then core is told the switch is shown. Every content key
-	// passes through here, payload re-creations included, so the previous key is always the key of
-	// the content that was on screen. The switch is read untracked, so settling it doesn't run
-	// this again. On mount nothing was shown yet, so there is no previous key and no switch.
+	// Takes the snapshot of a trigger change, after every update that can change what the popup
+	// shows (open state, trigger, content key): if the trigger changed, the content shown before
+	// the update is copied into the snapshot, then core is told the change is shown. Every content
+	// key passes through here, payload re-creations included, so the previous key is always the key
+	// of the content that was on screen. The trigger change is read untracked, so settling it
+	// doesn't run this again. On mount nothing was shown yet, so there is no previous key and no
+	// trigger change.
 	watch(
 		[
 			() => popup.open,
@@ -119,11 +121,11 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 			() => content.contentKey,
 		],
 		([, , , key], [, , , shownKey]) => {
-			const switchOffset = incomingOffset;
+			const changeOffset = incomingOffset;
 			const shown = shownKey === undefined ? undefined : containers.get(shownKey);
-			if (switchOffset && shown) {
+			if (changeOffset && shown) {
 				previousContent = cloneContent(shown);
-				offset = switchOffset;
+				offset = changeOffset;
 				settledKey = null;
 				fillPrevious();
 			}
@@ -258,9 +260,9 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 		};
 	});
 
-	// Shows the snapshot in the `data-previous` container, from whichever runs second: the switch
-	// effect that takes the snapshot, or the container's attachment. A copy, so showing it twice is
-	// harmless.
+	// Shows the snapshot in the `data-previous` container, from whichever runs second: the
+	// trigger-change effect that takes the snapshot, or the container's attachment. A copy, so
+	// showing it twice is harmless.
 	function fillPrevious() {
 		const snapshot = untrack(() => previousContent);
 		if (snapshot && previousContainer) {

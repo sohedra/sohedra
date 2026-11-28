@@ -1,6 +1,6 @@
 // PopupStore, through the Popover store and a kind without hover: unmounting from onOpenChange,
 // the open event it records, the press toggle, trigger registration and forwarded data, the exit
-// gate, the Popup's and Positioner's options, focus guards, its floating node, its hover state and
+// gate, the Popup's and Positioner's options, focus guards, its popup node, its hover state and
 // timers, and the outside press of its behaviour row.
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
@@ -12,11 +12,7 @@ import {
 } from "../../../src/components/popover/index.js";
 import { HoverInteraction } from "../../../src/foundation/hover/index.js";
 import { bound, createChangeEventDetails, REASONS } from "../../../src/foundation/kernel/index.js";
-import {
-	FloatingTree,
-	type PopupBehavior,
-	PopupStore,
-} from "../../../src/foundation/popup/index.js";
+import { PopupTree, type PopupBehavior, PopupStore } from "../../../src/foundation/popup/index.js";
 import { changeDetails as details } from "../../kit/kit-details.js";
 import { root } from "../../kit/kit-effects.svelte.js";
 import { createFakePlatform } from "../../kit/kit-fake-platform.js";
@@ -217,7 +213,7 @@ describe("PopupStore", () => {
 
 	// Svelte re-runs a derived read in an effect teardown with the values from before the flush.
 	// Return focus reads the active trigger in a teardown; while the presence and the trigger's
-	// reference wrote memory while deriving, that read rewound them, so the popup didn't unmount or
+	// anchor wrote memory while deriving, that read rewound them, so the popup didn't unmount or
 	// reopen.
 	it("closes, unmounts and reopens when an effect teardown reads the active trigger", () => {
 		const { store } = setup();
@@ -301,14 +297,14 @@ describe("PopupStore", () => {
 			openOnHover: true,
 			closeDelay: 0,
 		});
-		expect(store.hoverFloatingEnabled).toBe(true);
+		expect(store.hoverPopupEnabled).toBe(true);
 		store.applyTriggerData({
 			payload: undefined,
 			disabled: true,
 			openOnHover: true,
 			closeDelay: 0,
 		});
-		expect(store.hoverFloatingEnabled).toBe(false);
+		expect(store.hoverPopupEnabled).toBe(false);
 
 		expect(store.triggerHoverEnabled(true, false)).toBe(true);
 		expect(store.triggerHoverEnabled(true, true)).toBe(false);
@@ -375,10 +371,10 @@ describe("PopupStore", () => {
 		expect(store.guards.beforeContent).toBe(null);
 	});
 
-	it("adds its floating node while connected", () => {
+	it("adds its popup node while connected", () => {
 		const { store, tree } = setup();
 		const cleanup = root(() => {
-			$effect(() => store.joinFloatingTree("node", null));
+			$effect(() => store.joinPopupTree("node", null));
 		});
 		flushSync();
 		expect(tree.nodes.map((node) => node.id)).toEqual(["node"]);
@@ -409,8 +405,8 @@ describe("PopupStore", () => {
 					() => props.open,
 					(next) => (props.open = next),
 				),
-				floatingId: "popup",
-				tree: new FloatingTree(),
+				defaultPopupId: "popup",
+				tree: new PopupTree(),
 				nested: false,
 				platform: createFakePlatform(),
 				kind: { name: "Plain", behavior: plain },

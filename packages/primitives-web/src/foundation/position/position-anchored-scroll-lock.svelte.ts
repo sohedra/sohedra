@@ -28,13 +28,13 @@ export function useAnchoredScrollLock(options: () => AnchoredScrollLockOptions):
 		const { enabled, touchOpen } = options();
 		return enabled && !(touchOpen && !touchOpenShouldLock);
 	});
-	const referenceElement = $derived(options().referenceElement);
+	const triggerElement = $derived(options().triggerElement);
 
 	// Holds the page's scroll lock while the popup asks for it.
 	$effect(() => {
 		if (!locks) {
 			return;
 		}
-		return acquireScrollLock(referenceElement);
+		return acquireScrollLock(triggerElement);
 	});
 }

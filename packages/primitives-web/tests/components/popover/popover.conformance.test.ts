@@ -173,7 +173,7 @@ describeConformance("Popover.Arrow", () => arrowSetup);
 
 /**
  * Popover.Viewport as the conformance suite sees it: in Root > Portal > Positioner > Popup. Its
- * state (a trigger switch in progress) can't be set through props, so the suite
+ * state (a trigger change in progress) can't be set through props, so the suite
  * runs its stateless checks. The portal renders after mount only, so the server leaves it out.
  */
 const viewportSetup: ConformanceSetup<PopoverViewportState> = {

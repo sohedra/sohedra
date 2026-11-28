@@ -222,32 +222,26 @@ function getTabbableIn(container: HTMLElement, dir: 1 | -1): FocusableElement | 
 	return list[nextIndex];
 }
 
-export function getNextTabbable(referenceElement: Element | null): FocusableElement | null {
-	return (
-		getTabbableIn(ownerDocument(referenceElement).body, 1) ||
-		(referenceElement as FocusableElement | null)
-	);
+export function getNextTabbable(origin: Element | null): FocusableElement | null {
+	return getTabbableIn(ownerDocument(origin).body, 1) || (origin as FocusableElement | null);
 }
 
-export function getPreviousTabbable(referenceElement: Element | null): FocusableElement | null {
-	return (
-		getTabbableIn(ownerDocument(referenceElement).body, -1) ||
-		(referenceElement as FocusableElement | null)
-	);
+export function getPreviousTabbable(origin: Element | null): FocusableElement | null {
+	return getTabbableIn(ownerDocument(origin).body, -1) || (origin as FocusableElement | null);
 }
 
-/** The tabbable element next to `referenceElement` in `direction`, skipping `exclude`'s subtree. */
+/** The tabbable element next to `origin` in `direction`, skipping `exclude`'s subtree. */
 export function getTabbableNearElement(
-	referenceElement: Element | null,
+	origin: Element | null,
 	direction: 1 | -1,
 	exclude?: Element | null,
 ): FocusableElement | null {
-	if (!referenceElement) {
+	if (!origin) {
 		return null;
 	}
 	const list: FocusableElement[] = [];
-	appendCandidates(ownerDocument(referenceElement).body, list);
-	const index = list.indexOf(referenceElement as FocusableElement);
+	appendCandidates(ownerDocument(origin).body, list);
+	const index = list.indexOf(origin as FocusableElement);
 	if (index === -1) {
 		return null;
 	}

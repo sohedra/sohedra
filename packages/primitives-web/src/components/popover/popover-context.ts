@@ -1,5 +1,5 @@
 // Popover's contexts: defined here, on the web, and typed for the web. Core never reads a context.
-// The contexts Popover shares with other popups (the floating tree and its nodes, the portal) are
+// The contexts Popover shares with other popups (the popup tree and its nodes, the portal) are
 // the popup and portal jobs'.
 
 import type { PopoverStore } from "@sohedra/primitives-core/components/popover/index.js";

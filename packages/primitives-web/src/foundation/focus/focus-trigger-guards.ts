@@ -16,7 +16,7 @@ import type { TriggerFocusGuardProps, TriggerFocusGuardsView } from "./focus-typ
  * Tab from the trigger into the popup, and out of the popup to what follows the trigger. The
  * popup's focus manager holds the other end (its `bridge`).
  *
- * `popup` and `trigger` are read when a guard takes focus, so a trigger may switch popups. The
+ * `popup` and `trigger` are read when a guard takes focus, so a trigger may change popups. The
  * part renders `before` and `after` around its element while it owns the open popup.
  */
 export function useTriggerFocusGuards(

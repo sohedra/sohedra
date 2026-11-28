@@ -80,29 +80,29 @@ function isInsideAxisAlignedRect(
 }
 
 /**
- * Whether the pointer (`clientX`, `clientY`) is in the rectangular trough between the reference
- * and the floating element on `side`, which always keeps the popup open.
+ * Whether the pointer (`clientX`, `clientY`) is in the rectangular trough between the anchor
+ * and the popup on `side`, which always keeps the popup open.
  */
 function isInsideTrough(
 	side: PhysicalSide,
 	clientX: number,
 	clientY: number,
-	refRect: Box,
+	anchorRect: Box,
 	rect: Box,
 ): boolean {
-	const isFloatingWider = rect.width > refRect.width;
-	const isFloatingTaller = rect.height > refRect.height;
-	const left = (isFloatingWider ? refRect : rect).left;
-	const right = (isFloatingWider ? refRect : rect).right;
-	const top = (isFloatingTaller ? refRect : rect).top;
-	const bottom = (isFloatingTaller ? refRect : rect).bottom;
+	const isPopupWider = rect.width > anchorRect.width;
+	const isPopupTaller = rect.height > anchorRect.height;
+	const left = (isPopupWider ? anchorRect : rect).left;
+	const right = (isPopupWider ? anchorRect : rect).right;
+	const top = (isPopupTaller ? anchorRect : rect).top;
+	const bottom = (isPopupTaller ? anchorRect : rect).bottom;
 	switch (side) {
 		case "top":
 			return isInsideAxisAlignedRect(
 				clientX,
 				clientY,
 				left,
-				refRect.top + 1,
+				anchorRect.top + 1,
 				right,
 				rect.bottom - 1,
 			);
@@ -113,7 +113,7 @@ function isInsideTrough(
 				left,
 				rect.top + 1,
 				right,
-				refRect.bottom - 1,
+				anchorRect.bottom - 1,
 			);
 		case "left":
 			return isInsideAxisAlignedRect(
@@ -121,14 +121,14 @@ function isInsideTrough(
 				clientY,
 				rect.right - 1,
 				bottom,
-				refRect.left + 1,
+				anchorRect.left + 1,
 				top,
 			);
 		case "right":
 			return isInsideAxisAlignedRect(
 				clientX,
 				clientY,
-				refRect.right - 1,
+				anchorRect.right - 1,
 				bottom,
 				rect.left + 1,
 				top,
@@ -138,7 +138,7 @@ function isInsideTrough(
 
 /**
  * Whether the pointer (`clientX`, `clientY`) is in the safe triangle from where it left the
- * reference (`x`, `y`) to the floating element's near edge on `side`.
+ * anchor (`x`, `y`) to the popup's near edge on `side`.
  */
 function isInsideSafeTriangle(
 	side: PhysicalSide,
@@ -146,22 +146,22 @@ function isInsideSafeTriangle(
 	y: number,
 	clientX: number,
 	clientY: number,
-	refRect: Box,
+	anchorRect: Box,
 	rect: Box,
 ): boolean {
 	const cursorLeaveFromRight = x > rect.right - rect.width / 2;
 	const cursorLeaveFromBottom = y > rect.bottom - rect.height / 2;
-	const isFloatingWider = rect.width > refRect.width;
-	const isFloatingTaller = rect.height > refRect.height;
+	const isPopupWider = rect.width > anchorRect.width;
+	const isPopupTaller = rect.height > anchorRect.height;
 
 	if (side === "top" || side === "bottom") {
-		const cursorXOffset = isFloatingWider ? POLYGON_BUFFER / 2 : POLYGON_BUFFER * 4;
-		const pointOneX = isFloatingWider
+		const cursorXOffset = isPopupWider ? POLYGON_BUFFER / 2 : POLYGON_BUFFER * 4;
+		const pointOneX = isPopupWider
 			? x + cursorXOffset
 			: cursorLeaveFromRight
 				? x + cursorXOffset
 				: x - cursorXOffset;
-		const pointTwoX = isFloatingWider
+		const pointTwoX = isPopupWider
 			? x - cursorXOffset
 			: cursorLeaveFromRight
 				? x + cursorXOffset
@@ -170,11 +170,11 @@ function isInsideSafeTriangle(
 			const pointY = y + POLYGON_BUFFER + 1;
 			const commonYLeft = cursorLeaveFromRight
 				? rect.bottom - POLYGON_BUFFER
-				: isFloatingWider
+				: isPopupWider
 					? rect.bottom - POLYGON_BUFFER
 					: rect.top;
 			const commonYRight = cursorLeaveFromRight
-				? isFloatingWider
+				? isPopupWider
 					? rect.bottom - POLYGON_BUFFER
 					: rect.top
 				: rect.bottom - POLYGON_BUFFER;
@@ -194,11 +194,11 @@ function isInsideSafeTriangle(
 		const pointY = y - POLYGON_BUFFER;
 		const commonYLeft = cursorLeaveFromRight
 			? rect.top + POLYGON_BUFFER
-			: isFloatingWider
+			: isPopupWider
 				? rect.top + POLYGON_BUFFER
 				: rect.bottom;
 		const commonYRight = cursorLeaveFromRight
-			? isFloatingWider
+			? isPopupWider
 				? rect.top + POLYGON_BUFFER
 				: rect.bottom
 			: rect.top + POLYGON_BUFFER;
@@ -216,13 +216,13 @@ function isInsideSafeTriangle(
 		);
 	}
 
-	const cursorYOffset = isFloatingTaller ? POLYGON_BUFFER / 2 : POLYGON_BUFFER * 4;
-	const pointOneY = isFloatingTaller
+	const cursorYOffset = isPopupTaller ? POLYGON_BUFFER / 2 : POLYGON_BUFFER * 4;
+	const pointOneY = isPopupTaller
 		? y + cursorYOffset
 		: cursorLeaveFromBottom
 			? y + cursorYOffset
 			: y - cursorYOffset;
-	const pointTwoY = isFloatingTaller
+	const pointTwoY = isPopupTaller
 		? y - cursorYOffset
 		: cursorLeaveFromBottom
 			? y + cursorYOffset
@@ -231,11 +231,11 @@ function isInsideSafeTriangle(
 		const pointX = x + POLYGON_BUFFER + 1;
 		const commonXTop = cursorLeaveFromBottom
 			? rect.right - POLYGON_BUFFER
-			: isFloatingTaller
+			: isPopupTaller
 				? rect.right - POLYGON_BUFFER
 				: rect.left;
 		const commonXBottom = cursorLeaveFromBottom
-			? isFloatingTaller
+			? isPopupTaller
 				? rect.right - POLYGON_BUFFER
 				: rect.left
 			: rect.right - POLYGON_BUFFER;
@@ -255,11 +255,11 @@ function isInsideSafeTriangle(
 	const pointX = x - POLYGON_BUFFER;
 	const commonXTop = cursorLeaveFromBottom
 		? rect.left + POLYGON_BUFFER
-		: isFloatingTaller
+		: isPopupTaller
 			? rect.left + POLYGON_BUFFER
 			: rect.right;
 	const commonXBottom = cursorLeaveFromBottom
-		? isFloatingTaller
+		? isPopupTaller
 			? rect.left + POLYGON_BUFFER
 			: rect.right
 		: rect.left + POLYGON_BUFFER;
@@ -282,13 +282,13 @@ export interface SafePolygonInput {
 	readonly clientX: number;
 	readonly clientY: number;
 	readonly isLeave: boolean;
-	readonly isOverFloating: boolean;
-	readonly isOverReference: boolean;
-	/** Whether a leave's related target is inside the floating element. */
-	readonly leavingIntoFloating: boolean;
+	readonly isOverPopup: boolean;
+	readonly isOverAnchor: boolean;
+	/** Whether a leave's related target is inside the popup. */
+	readonly leavingIntoPopup: boolean;
 	readonly hasOpenChild: boolean;
 	/** Read lazily: only when the decision needs geometry. */
-	readonly measure: () => { reference: Box; floating: Box };
+	readonly measure: () => { anchor: Box; popup: Box };
 	readonly now: number;
 }
 
@@ -339,21 +339,21 @@ export function decideSafePolygon(
 		track: { side, x, y, hasLanded, lastX, lastY, lastTime },
 	});
 
-	if (input.isOverFloating) {
+	if (input.isOverPopup) {
 		hasLanded = true;
 		if (!isLeave) {
 			return decided("stay");
 		}
 	}
-	if (input.isOverReference) {
+	if (input.isOverAnchor) {
 		hasLanded = false;
 		if (!isLeave) {
 			hasLanded = true;
 			return decided("stay");
 		}
 	}
-	// An overlapping floating element must not get stuck in an open-close loop.
-	if (isLeave && input.leavingIntoFloating) {
+	// An overlapping popup must not get stuck in an open-close loop.
+	if (isLeave && input.leavingIntoPopup) {
 		return decided("stay");
 	}
 	// Any open nested child keeps it open.
@@ -361,24 +361,24 @@ export function decideSafePolygon(
 		return decided("stay");
 	}
 
-	const { reference: refRect, floating: rect } = input.measure();
+	const { anchor: anchorRect, popup: rect } = input.measure();
 
 	// Leaving from the opposite side: the buffer would otherwise keep it open.
 	if (
-		(side === "top" && y >= refRect.bottom - 1) ||
-		(side === "bottom" && y <= refRect.top + 1) ||
-		(side === "left" && x >= refRect.right - 1) ||
-		(side === "right" && x <= refRect.left + 1)
+		(side === "top" && y >= anchorRect.bottom - 1) ||
+		(side === "bottom" && y <= anchorRect.top + 1) ||
+		(side === "left" && x >= anchorRect.right - 1) ||
+		(side === "right" && x <= anchorRect.left + 1)
 	) {
 		return decided("close");
 	}
 
 	// The rectangular trough between the two elements always stays open.
-	if (isInsideTrough(side, clientX, clientY, refRect, rect)) {
+	if (isInsideTrough(side, clientX, clientY, anchorRect, rect)) {
 		return decided("stay");
 	}
 
-	if (hasLanded && !isInsideBox(clientX, clientY, refRect)) {
+	if (hasLanded && !isInsideBox(clientX, clientY, anchorRect)) {
 		return decided("close");
 	}
 
@@ -399,7 +399,7 @@ export function decideSafePolygon(
 		}
 	}
 
-	if (!isInsideSafeTriangle(side, x, y, clientX, clientY, refRect, rect)) {
+	if (!isInsideSafeTriangle(side, x, y, clientX, clientY, anchorRect, rect)) {
 		return decided("close");
 	}
 	return decided(hasLanded ? "stay" : "close-soon");

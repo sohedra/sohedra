@@ -14,10 +14,10 @@
 </script>
 
 <Popover.Root>
-	<Popover.Trigger data-testid="reference">reference</Popover.Trigger>
+	<Popover.Trigger data-testid="anchor">anchor</Popover.Trigger>
 	<Popover.Portal>
 		<Popover.Positioner>
-			<Popover.Popup data-testid="floating">
+			<Popover.Popup data-testid="popup">
 				{#if shown}<button data-testid="remove">remove</button>{/if}
 				<button data-testid="other">other</button>
 			</Popover.Popup>

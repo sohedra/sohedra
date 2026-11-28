@@ -36,30 +36,30 @@ export function isInsideEnabledTrigger(
 	return false;
 }
 
-/** Whether `currentTarget` (or `target` in it) is a registered trigger other than the reference. */
+/** Whether `currentTarget` (or `target` in it) is a registered trigger other than the anchor. */
 function isOverInactiveTrigger(
 	popup: HoverPopupView,
-	currentDomReference: Element | null,
+	anchorElement: Element | null,
 	currentTarget: Element,
 	target: EventTarget | null,
 ) {
 	if (popup.triggers.hasElement(currentTarget)) {
-		return !currentDomReference || !contains(currentDomReference, currentTarget);
+		return !anchorElement || !contains(anchorElement, currentTarget);
 	}
 	if (!isElement(target)) {
 		return false;
 	}
 	return (
 		popup.triggers.hasMatchingElement((trigger) => contains(trigger, target)) &&
-		(!currentDomReference || !contains(currentDomReference, target))
+		(!anchorElement || !contains(anchorElement, target))
 	);
 }
 
-/** The trigger the pointer is over: the registered one containing the target, or the reference. */
+/** The trigger the pointer is over: the registered one containing the target, or the anchor. */
 function resolveTarget(popup: HoverPopupView, event: MouseEvent): HoverTriggerTarget<WebTypes> {
 	const eventTarget = getTarget(event);
 	const currentTarget = event.currentTarget as Element;
-	const currentDomReference = popup.anchorElement;
+	const anchorElement = popup.anchorElement;
 	let trigger: Element = currentTarget;
 	// Wrapper or delegated listeners: resolve the trigger from the target.
 	if (isElement(eventTarget) && !popup.triggers.hasElement(eventTarget)) {
@@ -72,17 +72,17 @@ function resolveTarget(popup: HoverPopupView, event: MouseEvent): HoverTriggerTa
 	}
 	if (
 		isElement(currentTarget) &&
-		isElement(currentDomReference) &&
+		isElement(anchorElement) &&
 		!popup.triggers.hasElement(currentTarget) &&
-		contains(currentTarget, currentDomReference)
+		contains(currentTarget, anchorElement)
 	) {
-		trigger = currentDomReference;
+		trigger = anchorElement;
 	}
 	return {
 		trigger,
 		eventType: getInteractionEventType(event),
-		overInactiveTrigger: isOverInactiveTrigger(popup, currentDomReference, trigger, eventTarget),
-		withinReference: isElement(currentDomReference) && contains(currentDomReference, trigger),
+		overInactiveTrigger: isOverInactiveTrigger(popup, anchorElement, trigger, eventTarget),
+		withinAnchor: isElement(anchorElement) && contains(anchorElement, trigger),
 	};
 }
 
@@ -97,9 +97,9 @@ function trackSafePolygon(
 ) {
 	const doc = ownerDocument(popup.anchorElement);
 	const handler = (event: MouseEvent) => {
-		const domReference = popup.anchorElement;
-		const floating = popup.floatingElement as HTMLElement | null;
-		if (!domReference || !floating) {
+		const anchor = popup.anchorElement;
+		const positioner = popup.positionerElement as HTMLElement | null;
+		if (!anchor || !positioner) {
 			session.move(null);
 			return;
 		}
@@ -109,13 +109,13 @@ function trackSafePolygon(
 			clientX: event.clientX,
 			clientY: event.clientY,
 			isLeave,
-			isOverFloating: contains(floating, target),
-			isOverReference: contains(domReference, target),
-			leavingIntoFloating:
-				isLeave && isElement(event.relatedTarget) && contains(floating, event.relatedTarget),
+			isOverPopup: contains(positioner, target),
+			isOverAnchor: contains(anchor, target),
+			leavingIntoPopup:
+				isLeave && isElement(event.relatedTarget) && contains(positioner, event.relatedTarget),
 			measure: () => ({
-				reference: domReference.getBoundingClientRect(),
-				floating: floating.getBoundingClientRect(),
+				anchor: anchor.getBoundingClientRect(),
+				popup: positioner.getBoundingClientRect(),
 			}),
 		});
 	};
@@ -182,7 +182,7 @@ export function useHoverTrigger(
 				const session = hover.leave(event, {
 					trigger: ownTrigger,
 					intoEnabledTrigger: isInsideEnabledTrigger(event.relatedTarget, view.triggers),
-					intoFloating: contains(view.floatingElement, event.relatedTarget as Element | null),
+					intoPopup: contains(view.positionerElement, event.relatedTarget as Element | null),
 					clientX: event.clientX,
 					clientY: event.clientY,
 				});

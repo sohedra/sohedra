@@ -141,10 +141,10 @@ export interface Viewport {
 }
 
 /**
- * What the trigger-switch transition reads from a popup: the element whose animations it waits
+ * What the trigger-change transition reads from a popup: the element whose animations it waits
  * for, and the active trigger that decides when the popup moved. The names are a popup store's own.
  */
-export interface TriggerSwitchView {
+export interface TriggerChangeView {
 	readonly positionerElement: Element | null;
 	readonly activeTrigger: { connectTriggerChange(waitForMove: TriggerChangeWait): void };
 }
@@ -154,5 +154,5 @@ export interface AnchoredScrollLockOptions {
 	/** Whether the popup was opened by touch: then it locks only when it spans the viewport. */
 	readonly touchOpen: boolean;
 	readonly positionerElement: HTMLElement | null;
-	readonly referenceElement: Element | null;
+	readonly triggerElement: Element | null;
 }

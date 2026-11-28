@@ -10,8 +10,8 @@ import {
 	resolvePressType,
 	touchMoveOutcome,
 } from "../../../src/foundation/dismiss/dismiss-rules.js";
-import { FloatingTree } from "../../../src/foundation/popup/index.js";
-import { floatingNode as node } from "../../kit/kit-floating-tree.js";
+import { PopupTree } from "../../../src/foundation/popup/index.js";
+import { popupNode as node } from "../../kit/kit-popup-tree.js";
 
 describe("resolvePressType", () => {
 	it("resolves the press type per pointer type", () => {
@@ -38,12 +38,12 @@ describe("isIgnoredOutsidePress", () => {
 
 describe("hasBlockingChild", () => {
 	it("lets only the innermost open popup handle Escape unless the child bubbles", () => {
-		const tree = new FloatingTree();
+		const tree = new PopupTree();
 		tree.addNode(node("parent", null, true));
 		tree.addNode(node("child", "parent", true));
 		expect(hasBlockingChild(tree, "parent", "escapeKey")).toBe(true);
 		expect(hasBlockingChild(tree, "child", "escapeKey")).toBe(false);
-		const bubbling = new FloatingTree();
+		const bubbling = new PopupTree();
 		bubbling.addNode(node("parent", null, true));
 		bubbling.addNode(node("child", "parent", true, true));
 		expect(hasBlockingChild(bubbling, "parent", "escapeKey")).toBe(false);

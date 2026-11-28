@@ -3,7 +3,7 @@ import type { PlatformEvent, PlatformTypes } from "./kernel-platform.js";
 // Core never constructs or reads the event: the platform passes it in (an imperative change gets
 // the platform's event for a change with no native one), and core only forwards it.
 
-type ChangeEventDetail<
+type ChangeEventDetailsFields<
 	Reason extends string,
 	CustomProperties extends object,
 	T extends PlatformTypes,
@@ -32,7 +32,7 @@ export type ChangeEventDetails<
 	Reason extends string,
 	CustomProperties extends object,
 	T extends PlatformTypes,
-> = Reason extends string ? ChangeEventDetail<Reason, CustomProperties, T> & {} : never;
+> = Reason extends string ? ChangeEventDetailsFields<Reason, CustomProperties, T> & {} : never;
 
 /**
  * Creates change details with the given reason and utilities for preventing Sohedra's internal
@@ -51,7 +51,7 @@ export function createChangeEventDetails<
 ): ChangeEventDetails<Reason, CustomProperties, T> {
 	let canceled = false;
 	let allowPropagation = false;
-	const details: ChangeEventDetail<Reason, CustomProperties, T> = {
+	const details: ChangeEventDetailsFields<Reason, CustomProperties, T> = {
 		reason,
 		event,
 		cancel() {
@@ -72,7 +72,7 @@ export function createChangeEventDetails<
 	return details as ChangeEventDetails<Reason, CustomProperties, T>;
 }
 
-type GenericEventDetail<
+type GenericEventDetailsFields<
 	Reason extends string,
 	CustomProperties extends object,
 	T extends PlatformTypes,
@@ -88,7 +88,7 @@ export type GenericEventDetails<
 	Reason extends string,
 	CustomProperties extends object,
 	T extends PlatformTypes,
-> = Reason extends string ? GenericEventDetail<Reason, CustomProperties, T> & {} : never;
+> = Reason extends string ? GenericEventDetailsFields<Reason, CustomProperties, T> & {} : never;
 
 /** Creates generic event details: a reason and the event, nothing to cancel. */
 export function createGenericEventDetails<
@@ -100,7 +100,7 @@ export function createGenericEventDetails<
 	event: PlatformEvent<T, Reason>,
 	customProperties?: CustomProperties,
 ): GenericEventDetails<Reason, CustomProperties, T> {
-	const details: GenericEventDetail<Reason, CustomProperties, T> = {
+	const details: GenericEventDetailsFields<Reason, CustomProperties, T> = {
 		reason,
 		event,
 		...(customProperties as CustomProperties),
