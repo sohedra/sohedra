@@ -277,9 +277,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 					} else {
 						const state = portal.focusManagerState;
 						getNextTabbable(state?.domReference ?? null)?.focus();
-						if (state?.closeOnFocusOut) {
-							state.onOpenChange(false, event);
-						}
+						state?.onOpenChange(false, event);
 					}
 				},
 				{ "data-type": "outside" },

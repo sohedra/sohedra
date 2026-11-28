@@ -1,5 +1,5 @@
-// Presence: mounting, the starting and ending statuses with their frames, complete(), the idle
-// state and the deferred ending, reads in an effect teardown, and `step()`, the pure transition
+// Presence: mounting, the starting and ending statuses with their frames, complete(), reads in an
+// effect teardown, and `step()`, the pure transition
 // from a committed phase to the current `open`. Frames come from the fake platform's scheduler,
 // which the test steps.
 import { flushSync } from "svelte";
@@ -125,19 +125,6 @@ describe("Presence", () => {
 		expect(presence.transitionStatus).toBeUndefined();
 	});
 
-	it("goes through starting on the first render with animateInitialOpen", () => {
-		const { presence, scheduler } = setup({ open: true, animateInitialOpen: true });
-		expect(snapshot(presence)).toEqual({ mounted: true, status: "starting" });
-		scheduler.runFrames();
-		expect(snapshot(presence)).toEqual({ mounted: true, status: undefined });
-	});
-
-	it("ignores animateInitialOpen for an element that starts closed", () => {
-		const { presence, scheduler } = setup({ open: false, animateInitialOpen: true });
-		expect(snapshot(presence)).toEqual({ mounted: false, status: undefined });
-		expect(scheduler.pending.frames).toBe(0);
-	});
-
 	it("re-derives status for a reader effect", () => {
 		const { props, presence, scheduler } = setup({ open: false });
 		const seen: string[] = [];
@@ -159,52 +146,6 @@ describe("Presence", () => {
 	});
 
 	describe("with enableIdleState and deferEndingState", () => {
-		it("starts idle when open on the first render", () => {
-			const { presence, scheduler } = setup({ open: true, enableIdleState: true });
-			expect(snapshot(presence)).toEqual({ mounted: true, status: "idle" });
-			expect(scheduler.pending.frames).toBe(0);
-		});
-
-		it("settles on idle one frame after opening, and restarts when reopened while ending", () => {
-			const { props, presence, scheduler } = setup({ open: false, enableIdleState: true });
-			props.open = true;
-			flushSync();
-			expect(snapshot(presence)).toEqual({ mounted: true, status: "starting" });
-			scheduler.runFrames();
-			flushSync();
-			expect(snapshot(presence)).toEqual({ mounted: true, status: "idle" });
-			props.open = false;
-			flushSync();
-			expect(presence.transitionStatus).toBe("ending");
-			props.open = true;
-			flushSync();
-			expect(snapshot(presence)).toEqual({ mounted: true, status: "starting" });
-			scheduler.runFrames();
-			expect(presence.transitionStatus).toBe("idle");
-		});
-
-		it("enters ending one frame after closing with deferEndingState", () => {
-			const { props, presence, scheduler } = setup({ open: true, deferEndingState: true });
-			props.open = false;
-			flushSync();
-			expect(snapshot(presence)).toEqual({ mounted: true, status: undefined });
-			scheduler.runFrames();
-			flushSync();
-			expect(snapshot(presence)).toEqual({ mounted: true, status: "ending" });
-			presence.complete();
-			expect(snapshot(presence)).toEqual({ mounted: false, status: undefined });
-		});
-
-		it("cancels the deferred ending when reopened within the frame", () => {
-			const { props, presence, scheduler } = setup({ open: true, deferEndingState: true });
-			props.open = false;
-			flushSync();
-			props.open = true;
-			flushSync();
-			scheduler.runFrames();
-			expect(snapshot(presence)).toEqual({ mounted: true, status: undefined });
-		});
-
 		it("reports whether complete() unmounted", () => {
 			const { props, presence } = setup({ open: true });
 			expect(presence.complete()).toBe(false);
@@ -212,39 +153,6 @@ describe("Presence", () => {
 			flushSync();
 			expect(presence.complete()).toBe(true);
 			expect(presence.complete()).toBe(false);
-		});
-
-		describe("mountShown", () => {
-			it("opens an element mounted as shown without 'starting' or a frame", () => {
-				const { props, presence, scheduler } = setup({ open: false });
-				presence.mountShown();
-				props.open = true;
-				flushSync();
-				expect(snapshot(presence)).toEqual({ mounted: true, status: undefined });
-				expect(scheduler.pending.frames).toBe(0);
-			});
-
-			it("keeps the status of an element that is already mounted", () => {
-				const { props, presence } = setup({ open: false });
-				props.open = true;
-				flushSync();
-				presence.mountShown();
-				expect(snapshot(presence)).toEqual({ mounted: true, status: "starting" });
-			});
-
-			it("leaves later opens animating in once it closed and unmounted", () => {
-				const { props, presence } = setup({ open: false });
-				presence.mountShown();
-				props.open = true;
-				flushSync();
-				props.open = false;
-				flushSync();
-				expect(presence.transitionStatus).toBe("ending");
-				presence.complete();
-				props.open = true;
-				flushSync();
-				expect(snapshot(presence)).toEqual({ mounted: true, status: "starting" });
-			});
 		});
 	});
 
@@ -293,10 +201,6 @@ describe("Presence", () => {
 	});
 });
 
-const plain = { idle: false, defer: false };
-const idle = { idle: true, defer: false };
-const defer = { idle: false, defer: true };
-
 const phase = (open: boolean, mounted: boolean, status?: PresencePhase["status"]) => ({
 	open,
 	mounted,
@@ -306,45 +210,33 @@ const phase = (open: boolean, mounted: boolean, status?: PresencePhase["status"]
 describe("step", () => {
 	it("returns the committed phase itself while `open` is unchanged", () => {
 		const committed = phase(true, true, "starting");
-		expect(step(committed, true, plain)).toBe(committed);
+		expect(step(committed, true)).toBe(committed);
 		const closed = phase(false, true, "ending");
-		expect(step(closed, false, plain)).toBe(closed);
+		expect(step(closed, false)).toBe(closed);
 	});
 
 	it("mounts with 'starting' when opened from unmounted", () => {
-		expect(step(phase(false, false), true, plain)).toEqual(phase(true, true, "starting"));
+		expect(step(phase(false, false), true)).toEqual(phase(true, true, "starting"));
 	});
 
 	it("keeps the status when reopened while still mounted", () => {
-		expect(step(phase(false, true, "ending"), true, plain)).toEqual(phase(true, true, "ending"));
-		expect(step(phase(false, true), true, plain)).toEqual(phase(true, true, undefined));
-	});
-
-	it("restarts a reopened element that isn't idle, with enableIdleState", () => {
-		expect(step(phase(false, true, "ending"), true, idle)).toEqual(phase(true, true, "starting"));
-		expect(step(phase(false, true, "idle"), true, idle)).toEqual(phase(true, true, "idle"));
+		expect(step(phase(false, true, "ending"), true)).toEqual(phase(true, true, "ending"));
+		expect(step(phase(false, true), true)).toEqual(phase(true, true, undefined));
 	});
 
 	it("stays mounted with 'ending' when closed", () => {
-		expect(step(phase(true, true), false, plain)).toEqual(phase(false, true, "ending"));
-		expect(step(phase(true, true, "starting"), false, plain)).toEqual(phase(false, true, "ending"));
-	});
-
-	it("keeps the status when closed with deferEndingState (the frame enters 'ending')", () => {
-		expect(step(phase(true, true), false, defer)).toEqual(phase(false, true, undefined));
-		expect(step(phase(true, true, "starting"), false, defer)).toEqual(
-			phase(false, true, "starting"),
-		);
+		expect(step(phase(true, true), false)).toEqual(phase(false, true, "ending"));
+		expect(step(phase(true, true, "starting"), false)).toEqual(phase(false, true, "ending"));
 	});
 
 	it("stays unmounted when closed while unmounted, dropping a stale 'ending'", () => {
-		expect(step(phase(true, false, "ending"), false, plain)).toEqual(phase(false, false));
-		expect(step(phase(true, false), false, plain)).toEqual(phase(false, false));
+		expect(step(phase(true, false, "ending"), false)).toEqual(phase(false, false));
+		expect(step(phase(true, false), false)).toEqual(phase(false, false));
 	});
 
 	it("is a fixed point: stepping its own result changes nothing", () => {
 		const committed = phase(false, false);
-		const next = step(committed, true, plain);
-		expect(step(next, true, plain)).toBe(next);
+		const next = step(committed, true);
+		expect(step(next, true)).toBe(next);
 	});
 });

@@ -2,15 +2,8 @@
 
 import { untrack } from "svelte";
 
-import { type PlatformTypes, type Scheduler, watch } from "../kernel/index.js";
+import { type PlatformTypes, watch } from "../kernel/index.js";
 import type { PopupTriggerMap } from "./popup-trigger-map.js";
-
-/** How a popup closes when its active trigger unmounts while open. */
-export interface LostTriggerClose {
-	readonly scheduler: Scheduler;
-	/** Closes the popup; returns whether the close went through. */
-	readonly close: () => boolean;
-}
 
 /** What the active-trigger bookkeeping reads: its popup's open state and the Root's props. */
 export interface ActiveTriggerStoreProps {
@@ -64,11 +57,6 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	/** The active trigger, or the last one while unmounted. */
 	get anchor(): T["element"] | null {
 		return this.#anchor;
-	}
-
-	/** Whether the popup opened from a request that deliberately carried no trigger. */
-	get openedWithoutTrigger(): boolean {
-		return this.#openedWithoutTrigger;
 	}
 
 	/** Whether the open popup belongs to no trigger yet but has exactly one to claim it. */
@@ -177,25 +165,12 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		this.#lastReference = null;
 	}
 
-	// Waits for the current work, so a replacement trigger with the same id can register first. A
-	// canceled close keeps the trigger: the open popup isn't claimed by another one.
-	#closeLost(id: string, lost: LostTriggerClose): void {
-		lost.scheduler.microtask(() =>
-			untrack(() => {
-				if (this.#props().open && this.id === id && !this.#triggers.getById(id) && lost.close()) {
-					this.set(null, null);
-				}
-			}),
-		);
-	}
-
 	/**
 	 * Lifetime work: the commit of the last trigger element, and the reconciliation of the active
 	 * trigger with the registered ones, in an effect because registrations happen in attachments and
-	 * the open state and `triggerId` may be controlled. Each run while closed clears the no-trigger flag. With
-	 * `lost`, an active trigger that was registered and went away while open closes the popup.
+	 * the open state and `triggerId` may be controlled. Each run while closed clears the no-trigger flag.
 	 */
-	connect(lost?: LostTriggerClose): void {
+	connect(): void {
 		// The last trigger element seen while mounted. `#anchor` reads the element first, so
 		// when this commit runs doesn't change the answer.
 		watch.pre(
@@ -207,9 +182,6 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 			},
 			{ lazy: false },
 		);
-		// The active id once its trigger was seen registered: a later miss is an unmount, not a
-		// trigger that hasn't registered yet.
-		let resolvedId: string | null = null;
 		// Keeps the active trigger in step with the registered ones while the popup is open.
 		$effect(() => {
 			const open = this.#props().open;
@@ -218,14 +190,12 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 			const triggerCount = this.#triggers.size;
 			untrack(() => {
 				if (!open) {
-					resolvedId = null;
 					this.#openedWithoutTrigger = false;
 					return;
 				}
 				if (activeId) {
 					const registered = this.#triggers.getById(activeId);
 					if (registered) {
-						resolvedId = activeId;
 						if (registered !== activeElement) {
 							this.#element = registered;
 						}
@@ -234,22 +204,13 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 					// The active element may be registered under another id (its own element id).
 					const id = this.idOf(activeElement ?? undefined);
 					if (id) {
-						resolvedId = id;
 						this.#id = id;
-					} else if (resolvedId === activeId) {
-						if (lost) {
-							this.#closeLost(activeId, lost);
-						}
-					} else {
-						resolvedId = null;
 					}
 					return;
 				}
-				resolvedId = null;
 				if (!this.#openedWithoutTrigger && triggerCount === 1) {
 					const first = this.#triggers.entries().next();
 					if (!first.done) {
-						resolvedId = first.value[0];
 						this.set(...first.value);
 					}
 				}

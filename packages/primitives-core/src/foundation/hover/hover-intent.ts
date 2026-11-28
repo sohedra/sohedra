@@ -103,41 +103,10 @@ export class HoverInteraction<T extends PlatformTypes = PlatformTypes> {
 	/** The pending open once the pointer has rested on a trigger. */
 	readonly restTimeout: Timeout;
 	#tracker: CloseTracker<T> | undefined;
-	#blockPointerEvents = false;
-	#pointerBlock: { dispose(): void } | undefined;
 
 	constructor(scheduler: Scheduler) {
 		this.openChangeTimeout = new Timeout(scheduler);
 		this.restTimeout = new Timeout(scheduler);
-	}
-
-	/**
-	 * Whether the active trigger blocks pointer input outside it and the popup while hovering (a
-	 * menu's trigger, so the items the pointer crosses on its way to a submenu don't react).
-	 */
-	get blockPointerEvents(): boolean {
-		return this.#blockPointerEvents;
-	}
-
-	/** The active trigger's pointer-blocking choice (its forwarded data). */
-	setBlockPointerEvents(value: boolean): void {
-		this.#blockPointerEvents = value;
-	}
-
-	/**
-	 * Replaces the platform's pointer block: while the pointer travels from a trigger to a nested
-	 * popup (a submenu), only those two take pointer input, so the items it crosses don't react.
-	 */
-	setPointerBlock(block: { dispose(): void }): void {
-		this.clearPointerBlock();
-		this.#pointerBlock = block;
-	}
-
-	/** Lifts the pointer block. */
-	clearPointerBlock(): void {
-		const block = this.#pointerBlock;
-		this.#pointerBlock = undefined;
-		block?.dispose();
 	}
 
 	/** The active safe polygon's move handler. */
@@ -182,23 +151,18 @@ export class HoverInteraction<T extends PlatformTypes = PlatformTypes> {
 		this.blockMouseMove = true;
 	}
 
-	/** Forgets the pointer and the inside press once the popup closes, and lifts the block. */
+	/** Forgets the pointer and the inside press once the popup closes. */
 	resetAfterClose(): void {
 		this.pointerType = undefined;
 		this.restTimeoutPending = false;
 		this.interactedInside = false;
-		this.clearPointerBlock();
 	}
 
-	/**
-	 * Clears every timer, the safe polygon and the pointer block (the popup, a trigger or the Root
-	 * unmounted).
-	 */
+	/** Clears every timer and the safe polygon (the popup, a trigger or the Root unmounted). */
 	dispose = (): void => {
 		this.openChangeTimeout.clear();
 		this.restTimeout.clear();
 		this.clearCloseTracker();
-		this.clearPointerBlock();
 	};
 }
 
@@ -225,7 +189,6 @@ function changeOpen<T extends PlatformTypes>(
 	event: HoverEvent<T>,
 	trigger?: T["element"],
 	eventType?: InteractionEventType,
-	source?: object,
 ): void {
 	popup.setOpen(
 		open,
@@ -234,7 +197,7 @@ function changeOpen<T extends PlatformTypes>(
 			event,
 			trigger,
 		),
-		{ ...source, eventType },
+		{ eventType },
 	);
 	flush();
 }
@@ -313,7 +276,7 @@ export class SafePolygonSession<T extends PlatformTypes = PlatformTypes> {
 }
 
 /** A trigger's hover options. Read when a pointer event arrives, so they may change freely. */
-export interface HoverTriggerOptions<T extends PlatformTypes = PlatformTypes> {
+export interface HoverTriggerOptions {
 	readonly enabled: boolean;
 	/** Only mouse-like pointers open on hover. */
 	readonly mouseOnly: boolean;
@@ -322,15 +285,6 @@ export interface HoverTriggerOptions<T extends PlatformTypes = PlatformTypes> {
 	readonly delay: HoverDelay | undefined;
 	/** Whether the safe polygon keeps the popup open while the pointer travels to it. */
 	readonly safePolygon: boolean;
-	/** Asked before each hover open; `false` vetoes it. */
-	readonly shouldOpen?: (() => boolean) | undefined;
-	/**
-	 * What the platform measured for a hover open from `trigger`, passed with the open change
-	 * besides its event type (a preview card's hovered line). Absent, an open passes only that.
-	 */
-	readonly openSource?:
-		| ((event: HoverEvent<T>, trigger: T["element"]) => object | undefined)
-		| undefined;
 }
 
 /** What the platform knows about a pointer entering or moving over a trigger. */
@@ -352,11 +306,6 @@ export interface HoverTriggerTarget<T extends PlatformTypes = PlatformTypes> {
 export interface HoverTriggerLeave<T extends PlatformTypes = PlatformTypes> {
 	/** The trigger element the listener is on, if any. */
 	readonly trigger: T["element"] | null;
-	/**
-	 * The side of the trigger the popup sits on, when the platform measured it (a popup no
-	 * Positioner places); else the Positioner's side.
-	 */
-	readonly side?: PhysicalSide | undefined;
 	/** Whether the pointer moved into another enabled trigger. */
 	readonly intoEnabledTrigger: boolean;
 	/** Whether the pointer moved into the popup. */
@@ -372,12 +321,12 @@ export interface HoverTriggerLeave<T extends PlatformTypes = PlatformTypes> {
  */
 export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 	readonly #popup: () => HoverView<T>;
-	readonly #options: () => HoverTriggerOptions<T>;
+	readonly #options: () => HoverTriggerOptions;
 	readonly #flush: () => void;
 	/** Whether the popup's last close was a hover close this trigger heard about. */
 	#hoverCloseActive = false;
 
-	constructor(popup: () => HoverView<T>, options: () => HoverTriggerOptions<T>, flush: () => void) {
+	constructor(popup: () => HoverView<T>, options: () => HoverTriggerOptions, flush: () => void) {
 		this.#popup = popup;
 		this.#options = options;
 		this.#flush = flush;
@@ -403,12 +352,7 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 		event: HoverEvent<T>,
 		target: Omit<HoverTriggerTarget<T>, "withinReference">,
 	) {
-		const source = this.#options().openSource?.(event, target.trigger);
-		changeOpen(popup, this.#flush, true, event, target.trigger, target.eventType, source);
-	}
-
-	#mayOpen(): boolean {
-		return this.#options().shouldOpen?.() !== false;
+		changeOpen(popup, this.#flush, true, event, target.trigger, target.eventType);
 	}
 
 	/** The popup's open-change event: a close cancels pending delays and the safe polygon. */
@@ -458,9 +402,7 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 				target.withinReference,
 			)
 		) {
-			if (this.#mayOpen()) {
-				this.#open(popup, event, target);
-			}
+			this.#open(popup, event, target);
 			return;
 		}
 		// With a rest-only delay, the pointer's rest on the trigger opens, not its entering.
@@ -469,21 +411,13 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 		}
 		if (openDelay) {
 			shared.openChangeTimeout.start(openDelay, () => {
-				if (opens && this.#mayOpen()) {
+				if (opens) {
 					this.#open(popup, event, target);
 				}
 			});
-		} else if (opens && this.#mayOpen()) {
+		} else if (opens) {
 			this.#open(popup, event, target);
 		}
-	}
-
-	/**
-	 * The pointer left the trigger's subtree: a backup for a leave the platform dropped during a
-	 * fast sweep, which cancels the pending open.
-	 */
-	pointerOut(): void {
-		this.#popup().hover.cancelPendingOpen();
 	}
 
 	/**
@@ -510,11 +444,6 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 		if ((currentOpen && !isOverInactive) || options.restMs === 0) {
 			return;
 		}
-		// A move that may not open (over a nested tooltip trigger) doesn't arm the rest timer: a
-		// timer armed then would open later, even after the popup was opened another way.
-		if (!this.#mayOpen()) {
-			return;
-		}
 		if (!isOverInactive && shared.restTimeoutPending && !hasMovedEnough(movementX, movementY)) {
 			return;
 		}
@@ -525,7 +454,7 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 			if (isPinned(popup)) {
 				return;
 			}
-			if (!shared.blockMouseMove && (!popup.open || isOverInactive) && this.#mayOpen()) {
+			if (!shared.blockMouseMove && (!popup.open || isOverInactive)) {
 				this.#open(popup, event, target);
 			}
 		};
@@ -546,7 +475,6 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 		const popup = this.#popup();
 		const shared = popup.hover;
 		if (isPinned(popup)) {
-			shared.clearPointerBlock();
 			return undefined;
 		}
 		shared.clearCloseTracker();
@@ -556,7 +484,7 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 			return undefined;
 		}
 		const side = this.#options().safePolygon
-			? (leave.side ?? popup.positionerClaim.current?.position.physicalSide)
+			? popup.positionerClaim.current?.position.physicalSide
 			: undefined;
 		if (side) {
 			const polygon = new SafePolygon(
@@ -566,7 +494,6 @@ export class HoverTriggerIntent<T extends PlatformTypes = PlatformTypes> {
 				popup.platform.scheduler.now(),
 			);
 			const session = new SafePolygonSession(polygon, popup, () => {
-				shared.clearPointerBlock();
 				shared.clearCloseTracker();
 				if (this.#options().enabled && !isPinned(popup) && leave.trigger === popup.anchorElement) {
 					this.#closeWithDelay(popup, event);
@@ -629,9 +556,8 @@ export class HoverPopupIntent<T extends PlatformTypes = PlatformTypes> {
 		this.#popup.hover.interactedInside = interactive && opensPopup;
 	}
 
-	/** The pointer entered the popup: the pointer block it travelled through lifts. */
+	/** The pointer entered the popup. */
 	enter(): void {
-		this.#popup.hover.clearPointerBlock();
 		this.#popup.hover.openChangeTimeout.clear();
 		this.#childClosedTimeout.clear();
 		this.#popup.tree?.events.off("floating.closed", this.#onNodeClosed);
@@ -657,7 +583,6 @@ export class HoverPopupIntent<T extends PlatformTypes = PlatformTypes> {
 			handler(event);
 			return;
 		}
-		shared.clearPointerBlock();
 		// Only an open popup closes when the pointer leaves it: the recorded open event outlives a
 		// close the app makes itself, and that popup has nothing left to close.
 		if (popup.open && isHoverOpenEvent(popup.data.openEventType) && !isPinned(popup)) {

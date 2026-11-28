@@ -65,17 +65,13 @@ export interface FocusManagerOptions {
 	readonly modal?: boolean | undefined;
 	/** @default true */
 	readonly initialFocus?: FocusTarget;
-	/** @default true */
-	readonly returnFocus?: FocusTarget;
 	/**
-	 * Whether `returnFocus` is the user's explicit target, which takes focus even when it moved
-	 * elsewhere after opening. @default whether `returnFocus` isn't a boolean
+	 * Where focus returns on close. A target that isn't a boolean is the user's explicit one, which
+	 * takes focus even when it moved elsewhere after opening. @default true
 	 */
-	readonly explicitReturnFocus?: boolean | undefined;
+	readonly returnFocus?: FocusTarget;
 	/** Where focus goes when the focused element inside is removed. @default false */
 	readonly restoreFocus?: boolean | "popup" | undefined;
-	/** @default true */
-	readonly closeOnFocusOut?: boolean | undefined;
 	/** The kind of input that opened the popup. Only an explicit `null` is a programmatic open. */
 	readonly openInteractionType?: InteractionType | null | undefined;
 }
@@ -110,11 +106,6 @@ export interface FocusManagerDeps {
 	readonly portal: FloatingPortalState | null;
 	/** For a popup whose trigger renders focus guards. */
 	readonly bridge?: TriggerFocusBridge | undefined;
-	/**
-	 * Elements treated as inside the popup although rendered elsewhere. Called when input arrives
-	 * and when the popup closes, never tracked.
-	 */
-	readonly insideElements?: (() => readonly (Element | null | undefined)[]) | undefined;
 }
 
 /** The props of one focus guard `<span>`, with the attachment that registers it. */

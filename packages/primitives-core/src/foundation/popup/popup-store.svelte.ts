@@ -58,11 +58,6 @@ export interface PopupStoreDeps<T extends PlatformTypes = PlatformTypes> {
 	readonly platform: Platform<T>;
 	/** An inert store for a handle without a Root: it never opens. */
 	readonly detached?: boolean | undefined;
-	/**
-	 * Whether a popup open when it is created still plays its enter transition: decided from around
-	 * its Root (a submenu that opens while its parent animates in). @default false
-	 */
-	readonly animateInitialOpen?: boolean | undefined;
 }
 
 /** What a kind of popup fixes about its store. */
@@ -140,8 +135,8 @@ export abstract class PopupStore<
 	 * are the session's.
 	 */
 	readonly data: PopupInteractionData<T>;
-	/** Whether Escape and outside presses also reach ancestors; set by the dismiss interaction. */
-	dismissBubbles = { escapeKey: false, outsidePress: true };
+	/** Whether Escape and outside presses inside the popup also reach its ancestors. */
+	readonly dismissBubbles = { escapeKey: false, outsidePress: true };
 
 	readonly triggers: PopupTriggerMap<T>;
 	readonly presence: Presence;
@@ -151,7 +146,6 @@ export abstract class PopupStore<
 	readonly events: EventEmitter<PopupEvents<T>>;
 
 	readonly #outsidePress: OutsidePressEvent;
-	readonly #floatingIsPopup: boolean;
 	#popupElement: T["element"] | null = $state.raw(null);
 	#positionerElement: T["element"] | null = $state.raw(null);
 	#payload: Payload | undefined = $state.raw();
@@ -181,13 +175,8 @@ export abstract class PopupStore<
 	);
 	/** Whether a closed popup is waiting for its exit animations before unmounting. */
 	readonly awaitingUnmount: boolean = $derived.by(() => this.lifecycle.awaitingUnmount);
-	/**
-	 * The floating element: the Positioner, or the popup element for a kind whose behaviour row
-	 * says `floating: "popup"`.
-	 */
-	readonly floatingElement: T["element"] | null = $derived.by(() =>
-		this.#floatingIsPopup ? this.#popupElement : this.#positionerElement,
-	);
+	/** The floating element: the Positioner. */
+	readonly floatingElement: T["element"] | null = $derived.by(() => this.#positionerElement);
 	readonly popupId: string | undefined = $derived.by(
 		() => this.popupIdClaim.current ?? (this.floatingId || undefined),
 	);
@@ -202,7 +191,6 @@ export abstract class PopupStore<
 		this.nested = deps.nested;
 		this.platform = platform;
 		this.#outsidePress = kind.behavior.outsidePress;
-		this.#floatingIsPopup = kind.behavior.floating === "popup";
 		this.hover = kind.behavior.hover ? new HoverInteraction<T>(platform.scheduler) : null;
 		this.dismiss = new DismissInteraction<T>(
 			this,
@@ -218,8 +206,6 @@ export abstract class PopupStore<
 				name: kind.name,
 				nested: deps.nested,
 				detached: deps.detached,
-				animateInitialOpen: deps.animateInitialOpen,
-				lostTrigger: kind.behavior.lostTrigger,
 				extra: kind.extra,
 				hooks: () => this.hooks,
 				hover: this.hover,
@@ -276,19 +262,6 @@ export abstract class PopupStore<
 		return this.lifecycle.session.method;
 	}
 
-	/** The stored instant type, also a stale `trigger-change` while closed (to clear it). */
-	get rawInstantType(): InstantType {
-		return this.lifecycle.session.instant;
-	}
-
-	/**
-	 * Whether the Root's interactions (the prop bags the platform publishes for the triggers and
-	 * the popup) reach them now.
-	 */
-	get interactionPropsActive(): boolean {
-		return true;
-	}
-
 	/**
 	 * The kind's answers for its dismissal, asked whenever one is decided. The row of the
 	 * behaviour table gives the press type; a kind overrides this for an answer that depends on
@@ -328,13 +301,7 @@ export abstract class PopupStore<
 
 	/** Applies the owning trigger's forwarded data. */
 	applyTriggerData(data: PopupTriggerData<Payload>): void {
-		this.hover?.setBlockPointerEvents(data.blockPointerEvents === true);
 		this.#payload = data.payload;
-	}
-
-	/** Forgets the payload: a kind whose popup opens without a trigger has none then. */
-	protected clearPayload(): void {
-		this.#payload = undefined;
 	}
 
 	/**

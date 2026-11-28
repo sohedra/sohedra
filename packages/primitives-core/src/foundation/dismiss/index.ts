@@ -1,4 +1,4 @@
-// Dismiss: closing a popup with Escape, a press on a trigger or a press outside it, and the decisions behind it.
+// Dismiss: closing a popup with Escape or a press outside it, and the decisions behind it.
 export {
 	type DismissChangeDetails,
 	DismissInteraction,

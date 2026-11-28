@@ -30,28 +30,12 @@ export interface DismissView extends DismissPopupView, PressTargetView {
 	};
 }
 
-/** What the Root's dismiss wiring is given besides the popup. */
-export interface DismissRootOptions {
-	/**
-	 * The popup's kind's own test of an outside press: the part finds the facts in the event and
-	 * hands them to its store, which answers whether the press dismisses. Asked only when the press
-	 * would otherwise dismiss, while the event is still being dispatched. Absent, every such press
-	 * dismisses.
-	 */
-	readonly outsidePress?: ((event: MouseEvent | PointerEvent | TouchEvent) => boolean) | undefined;
-}
-
 export interface DismissPopup {
 	/** Spread on the popup's element. It holds an attachment. */
 	readonly props: HTMLAttributes<HTMLElement>;
 }
 
-export interface DismissTriggerOptions {
-	/** Whether a press on the trigger may close the popup; the popup's kind decides each time. */
-	readonly press?: boolean | undefined;
-}
-
 export interface DismissTrigger {
 	/** Spread on the trigger's element. */
-	readonly props: Pick<HTMLAttributes<HTMLElement>, "onkeydown" | "onpointerdown" | "onclick">;
+	readonly props: Pick<HTMLAttributes<HTMLElement>, "onkeydown">;
 }

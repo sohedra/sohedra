@@ -467,35 +467,6 @@ describe("PopoverStore", () => {
 			expect(store.hasTriggerFocusGuards("t")).toBe(false);
 		});
 	});
-
-	describe("report", () => {
-		it("commits a change that already happened: onOpenChange runs, cancel() has no effect", () => {
-			const onOpenChange = vi.fn((_open: boolean, details: { cancel(): void }) => details.cancel());
-			const { props, store } = setup({ defaultOpen: true, onOpenChange });
-			const seen = vi.fn();
-			store.events.on("openchange", seen);
-			// A platform reason (a back key) the web doesn't have.
-			store.report(false, createChangeEventDetails("back-button", event("back")));
-			expect(onOpenChange).toHaveBeenCalledWith(
-				false,
-				expect.objectContaining({ reason: "back-button", isCanceled: true }),
-			);
-			expect(seen).toHaveBeenCalledWith(expect.objectContaining({ open: false }));
-			expect(store.open).toBe(false);
-			expect(props.open).toBe(false);
-			expect(store.openChangeReason).toBe("back-button");
-		});
-
-		it("keeps the popup mounted for unmount() after preventUnmountOnClose()", () => {
-			const { store } = setup({
-				defaultOpen: true,
-				onOpenChange: (_open, details) => details.preventUnmountOnClose(),
-			});
-			flushSync();
-			store.report(false, createChangeEventDetails("back-button", event("back")));
-			expect(store.preventUnmountingOnClose).toBe(true);
-		});
-	});
 });
 
 describe("PopoverHandle", () => {

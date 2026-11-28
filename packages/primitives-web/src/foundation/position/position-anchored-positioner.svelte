@@ -8,7 +8,6 @@
   its attribute mapping. The placement props come with the user's props.
 -->
 <script lang="ts" generics="Instant extends string | undefined">
-	import type { Middleware } from "@floating-ui/dom";
 	import {
 		useClaim,
 		type DefinedContext,
@@ -37,11 +36,7 @@
 	import { DISABLED_TRANSITIONS_STYLE } from "../presence/index.js";
 	import { PopupLayoutContext, PopupLayoutState } from "./position-popup-layout.svelte.js";
 	import { usePositioner } from "./position-positioner.svelte.js";
-	import type {
-		AnchoredPositionerPlacement,
-		AnchoredPositionerView,
-		PositionerAnchor,
-	} from "./position-types.js";
+	import type { AnchoredPositionerPlacement, AnchoredPositionerView } from "./position-types.js";
 
 	/**
 	 * The Positioner's state, the same in every anchored popup; `instant` is each component's own
@@ -70,16 +65,6 @@
 		/** The side when the user gives none: a fixed answer of the kind of popup. */
 		defaultSide: Side;
 		/**
-		 * What the popup is anchored to when the user gives no `anchor`: the trigger when not given
-		 * (a tooltip that follows the cursor gives the cursor).
-		 */
-		defaultAnchor?: PositionerAnchor | undefined;
-		/**
-		 * A step that places the popup against one line box of a wrapped anchor (a preview card's
-		 * link), run before the others. None when not given.
-		 */
-		inline?: Middleware | undefined;
-		/**
 		 * Whether the internal backdrop of a modal popup is rendered. It sits beside the Positioner's
 		 * element, with the trigger cut out so it stays pressable.
 		 */
@@ -95,8 +80,6 @@
 		instant,
 		attrs,
 		defaultSide,
-		defaultAnchor,
-		inline,
 		backdrop = false,
 		ref = $bindable(null),
 		user,
@@ -123,8 +106,7 @@
 
 	const position = usePositioner(view, positioner, () => ({
 		layout,
-		inline,
-		anchor: user.anchor ?? defaultAnchor ?? undefined,
+		anchor: user.anchor,
 		positionMethod: user.positionMethod,
 		side: user.side ?? defaultSide,
 		align: user.align,

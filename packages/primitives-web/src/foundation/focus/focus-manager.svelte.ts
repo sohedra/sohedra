@@ -125,13 +125,11 @@ export function useFocusManager(
 	// Value-compared views of the options an effect depends on: the effect re-runs when the value
 	// changes, not when any signal the options object reads does (a close changes the reason a
 	// Popup's `disabled` reads). `options()` itself is never called from a teardown, where a read
-	// of derived state can go stale: a teardown reads plain copies and `deps.insideElements`.
+	// of derived state can go stale: a teardown reads plain copies.
 	const disabled = $derived(options().disabled);
 	const modal = $derived(options().modal ?? true);
-	const closeOnFocusOut = $derived(options().closeOnFocusOut ?? true);
 	const restoreFocus = $derived(options().restoreFocus ?? false);
 	const returnFocusOption = $derived(options().returnFocus);
-	const explicitReturnFocusOption = $derived(options().explicitReturnFocus);
 	const floatingFocusElement = $derived(
 		getFloatingFocusElement(popup.floatingElement as HTMLElement | null),
 	);
@@ -169,9 +167,8 @@ export function useFocusManager(
 
 	/** The elements treated as inside the popup although rendered elsewhere. */
 	function insideElements(): Element[] {
-		const given = deps.insideElements?.() ?? [];
-		const all = bridge ? [...given, bridge.guards.beforeTrigger] : given;
-		return all.filter((element): element is Element => element != null);
+		const guard = bridge?.guards.beforeTrigger;
+		return guard ? [guard] : [];
 	}
 
 	/** The element Tab goes to when leaving the popup backwards: the trigger. */
@@ -216,9 +213,7 @@ export function useFocusManager(
 		if (modal) {
 			enqueueFocus(tabbableContent()[0], { sync: true });
 		} else if (portal?.portalNode) {
-			if (closeOnFocusOut) {
-				preventReturnFocus = true;
-			}
+			preventReturnFocus = true;
 			if (isOutsideEvent(event, portal.portalNode)) {
 				getPreviousTabbable(popup.anchorElement)?.focus();
 			} else {
@@ -398,7 +393,7 @@ export function useFocusManager(
 		// Closes on focus out, and keeps focus inside the popup when its focused element
 		// disappears.
 		$effect(() => {
-			if (disabled || !closeOnFocusOut) {
+			if (disabled) {
 				return;
 			}
 			const floating = popup.floatingElement as HTMLElement | null;
@@ -640,14 +635,12 @@ export function useFocusManager(
 		// the active trigger. A teardown saw the values from before the flush anyway, which are the
 		// last ones read while mounted.
 		let returnFocus = untrack(() => returnFocusOption);
-		let explicitReturnFocus = untrack(() => explicitReturnFocusOption);
 		// Copies the return-focus options before the DOM updates, while mounted.
 		$effect.pre(() => {
 			if (!popup.mounted) {
 				return;
 			}
 			returnFocus = returnFocusOption;
-			explicitReturnFocus = explicitReturnFocusOption;
 		});
 
 		// Remembers where focus was before the popup opened and returns it on close.
@@ -746,7 +739,6 @@ export function useFocusManager(
 								.children(popup.data.nodeId, false)
 								.some((node) => contains(node.context?.floatingElement, activeEl)));
 					const returnValue = returnFocus ?? true;
-					const explicit = explicitReturnFocus;
 					const type = closeType;
 					// Resolved now: the return target and the reference's connection are read while the
 					// popup is still in the DOM.
@@ -758,7 +750,7 @@ export function useFocusManager(
 							pendingReturnFocus = null;
 						}
 						const tabbableReturnElement = getFirstTabbableElement(returnElement);
-						const hasExplicitReturnFocus = explicit ?? typeof returnValue !== "boolean";
+						const hasExplicitReturnFocus = typeof returnValue !== "boolean";
 						if (
 							!job.cancelled &&
 							returnValue &&
@@ -827,7 +819,6 @@ export function useFocusManager(
 			}
 			portal.focusManagerState = {
 				modal,
-				closeOnFocusOut,
 				open: popup.open,
 				domReference: popup.anchorElement,
 				onOpenChange: (open, event) => setOpen(open, event as FocusEvent),

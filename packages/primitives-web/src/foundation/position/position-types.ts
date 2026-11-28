@@ -1,4 +1,4 @@
-import type { Middleware, Padding, VirtualElement } from "@floating-ui/dom";
+import type { Padding, VirtualElement } from "@floating-ui/dom";
 import type { TriggerChangeWait } from "@sohedra/primitives-core/foundation/popup/index.js";
 import type {
 	Align,
@@ -12,7 +12,7 @@ import type { Attachment } from "svelte/attachments";
 
 import type { WebTypes } from "../kernel/index.js";
 import type { PopupLayoutState } from "./position-popup-layout.svelte.js";
-import type { Boundary, ShiftOptions } from "./position-positioner-middleware.js";
+import type { Boundary } from "./position-positioner-middleware.js";
 
 /** An anchor: an element, a virtual element, or a function returning one. */
 export type PositionerAnchor =
@@ -60,22 +60,8 @@ export interface PositionerOptions {
 	readonly rtl: boolean;
 	/** The layout a Viewport inside measures (sizes, far-edge placement). */
 	readonly layout?: PopupLayoutState | undefined;
-	/** Positions against one line box of a wrapped anchor (a preview card's link). */
-	readonly inline?: Middleware | undefined;
 	/** Whether the Positioner lets pointer input through (`pointer-events: none`). */
 	readonly inert?: boolean | undefined;
-	/**
-	 * Keeps a flipped placement while mounted, so content resizing the popup doesn't flip it back:
-	 * `true` keeps the side, `'placement'` the alignment too. @default false
-	 */
-	readonly lazyFlip?: boolean | "placement" | undefined;
-	/** Overrides the shift collision avoidance sets up (a context menu's). */
-	readonly shift?: ShiftOptions | undefined;
-	/**
-	 * The element cut out of the internal backdrop, so it stays pressable (a menubar's menu cuts out
-	 * the menubar). The active trigger when not given.
-	 */
-	readonly backdropCutout?: Element | null | undefined;
 }
 
 /** The placement props a user sets on a component's Positioner part. */

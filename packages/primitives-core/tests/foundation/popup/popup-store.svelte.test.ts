@@ -397,7 +397,7 @@ describe("PopupStore", () => {
 		expect(callback).not.toHaveBeenCalled();
 	});
 
-	const plain: PopupBehavior = { outsidePress: "sloppy", side: "bottom", lostTrigger: "keep" };
+	const plain: PopupBehavior = { outsidePress: "sloppy", side: "bottom" };
 
 	/** A kind whose behaviour row has no `hover`. */
 	class PlainStore extends PopupStore {

@@ -1,5 +1,6 @@
 import {
 	HoverPopupIntent,
+	type HoverPopupOptions,
 	HoverTriggerIntent,
 	type HoverTriggerTarget,
 	type SafePolygonSession,
@@ -18,13 +19,7 @@ import {
 	TYPEABLE_SELECTOR,
 	type WebTypes,
 } from "../kernel/index.js";
-import { blockPointerEventsOverTrigger, usePointerBlock } from "./hover-pointer-block.svelte.js";
-import type {
-	HoverPopupOptions,
-	HoverPopupView,
-	HoverTrigger,
-	HoverTriggerOptions,
-} from "./hover-types.js";
+import type { HoverPopupView, HoverTrigger, HoverTriggerOptions } from "./hover-types.js";
 
 /** Whether `target` is in a registered trigger that isn't disabled. */
 export function isInsideEnabledTrigger(
@@ -167,8 +162,6 @@ export function useHoverTrigger(
 	const enabled = $derived(options().enabled);
 	const isActiveTrigger = $derived(options().isActiveTrigger);
 	const triggerElement = $derived(options().triggerElement);
-	const move = $derived(options().move === true);
-	const guardStaleOpen = $derived(options().guardStaleOpen === true);
 
 	function startEffects(): void {
 		// Follows the popup's open changes while enabled: a close cancels this trigger's pending
@@ -199,7 +192,6 @@ export function useHoverTrigger(
 			function onMouseLeave(event: MouseEvent) {
 				const session = intent.leave(event, {
 					trigger: ownTrigger,
-					side: options().safePolygonSide?.(trigger as Element),
 					intoEnabledTrigger: isInsideEnabledTrigger(event.relatedTarget, view.triggers),
 					intoFloating: contains(view.floatingElement, event.relatedTarget as Element | null),
 					clientX: event.clientX,
@@ -209,31 +201,11 @@ export function useHoverTrigger(
 					trackSafePolygon(view, session, event);
 				}
 			}
-			// A backup for a `mouseleave` Chrome drops during a fast sweep: cancel the pending open.
-			function onMouseOut(event: MouseEvent) {
-				if (!contains(trigger, event.relatedTarget as Element | null)) {
-					intent.pointerOut();
-				}
-			}
-			const opensOnMove = move;
-			const guardsStaleOpen = guardStaleOpen;
 			trigger.addEventListener("mouseenter", onMouseEnter as EventListener);
 			trigger.addEventListener("mouseleave", onMouseLeave as EventListener);
-			if (opensOnMove) {
-				trigger.addEventListener("mousemove", onMouseEnter as EventListener, { once: true });
-			}
-			if (guardsStaleOpen) {
-				trigger.addEventListener("mouseout", onMouseOut as EventListener);
-			}
 			return () => {
 				trigger.removeEventListener("mouseenter", onMouseEnter as EventListener);
 				trigger.removeEventListener("mouseleave", onMouseLeave as EventListener);
-				if (opensOnMove) {
-					trigger.removeEventListener("mousemove", onMouseEnter as EventListener);
-				}
-				if (guardsStaleOpen) {
-					trigger.removeEventListener("mouseout", onMouseOut as EventListener);
-				}
 			};
 		});
 
@@ -256,22 +228,17 @@ export function useHoverTrigger(
 				}
 				const view = popup();
 				const trigger = event.currentTarget as Element;
-				const overInactiveTrigger = isOverInactiveTrigger(
-					view,
-					view.anchorElement,
-					trigger,
-					event.target,
-				);
-				// Another trigger of a popup that blocks pointer input: only it and the popup take input.
-				if (overInactiveTrigger) {
-					blockPointerEventsOverTrigger(view, trigger as HTMLElement, options().mouseOnly);
-				}
 				intent.move(
 					event,
 					{
 						trigger,
 						eventType: getInteractionEventType(event),
-						overInactiveTrigger,
+						overInactiveTrigger: isOverInactiveTrigger(
+							view,
+							view.anchorElement,
+							trigger,
+							event.target,
+						),
 					},
 					event.movementX,
 					event.movementY,
@@ -334,13 +301,6 @@ export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOp
 		};
 	});
 
-	// While a hover opened it, only the popup and its trigger take pointer input around it.
-	usePointerBlock(
-		popup,
-		() => enabled,
-		() => options().pointerBlockScope?.() ?? null,
-	);
-
-	// The popup's hover timers, safe polygon and pointer block never outlive the Popup.
+	// The popup's hover timers and safe polygon never outlive the Popup.
 	$effect(() => () => popup.hover.dispose());
 }

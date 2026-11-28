@@ -18,25 +18,6 @@ export type OutsidePressEvent =
 	| { mouse: PressType; touch: PressType }
 	| (() => PressType | { mouse: PressType; touch: PressType });
 
-/** Whether Escape and outside presses inside a popup also dismiss its ancestors. */
-export type DismissBubbles =
-	| boolean
-	| { escapeKey?: boolean | undefined; outsidePress?: boolean | undefined }
-	| undefined;
-
-/** {@link DismissBubbles} with both answers filled in. */
-export interface BubbleAnswers {
-	escapeKey: boolean;
-	outsidePress: boolean;
-}
-
-export function normalizeBubbles(bubbles: DismissBubbles): BubbleAnswers {
-	return {
-		escapeKey: typeof bubbles === "boolean" ? bubbles : (bubbles?.escapeKey ?? false),
-		outsidePress: typeof bubbles === "boolean" ? bubbles : (bubbles?.outsidePress ?? true),
-	};
-}
-
 /** The press type for the current pointer type (pen and unknown count as mouse). */
 export function resolvePressType(
 	pointerType: PointerType,
@@ -137,12 +118,4 @@ export function pressEndOutcome(end: PressEnd): "none" | "suppress-immediate" | 
 	}
 	// A prevented press start may make no click, but a browser can still emit one: absorb it.
 	return end.startPrevented ? "suppress-immediate" : "suppress-next";
-}
-
-/**
- * Whether an Escape that closed the popup stops there: not when the popup lets it bubble to its
- * ancestors, and not when `onOpenChange` allowed propagation.
- */
-export function escapeStopsHere(bubbles: BubbleAnswers, propagationAllowed: boolean): boolean {
-	return !bubbles.escapeKey && !propagationAllowed;
 }

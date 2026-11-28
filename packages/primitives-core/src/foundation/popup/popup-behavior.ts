@@ -32,11 +32,6 @@ export interface PopupBehavior {
 				readonly delay: "rest" | "enter";
 		  }
 		| undefined;
-	/**
-	 * Which element holds the popup for dismissal and focus: the Positioner (the default), or the
-	 * popup element itself, for a popup that no Positioner places.
-	 */
-	readonly floating?: "positioner" | "popup" | undefined;
 	/** The side of the anchor the popup is placed on by default. Absent for a popup with no anchor. */
 	readonly side?: Side | undefined;
 	/**
@@ -49,15 +44,8 @@ export interface PopupBehavior {
 				readonly recordsOpenMethod?: true | undefined;
 				/** Whether the trigger renders the focus guards that carry Tab into a portalled popup. */
 				readonly focusGuards?: true | undefined;
-				/** Whether keyboard focus on the trigger opens the popup. */
-				readonly opensOnFocus?: true | undefined;
 		  }
 		| undefined;
-	/**
-	 * What an open popup does when its active trigger unmounts: keeps the trigger's place, or
-	 * closes (the store's `lostTrigger` rule says with which details).
-	 */
-	readonly lostTrigger: "keep" | "close";
 }
 
 /** The rows, taken from what each kind's parts and wiring pass today. */
@@ -68,50 +56,6 @@ export const POPUP_BEHAVIOR = {
 		hover: { mouseOnly: true, delay: "rest" },
 		side: "bottom",
 		trigger: { recordsOpenMethod: true, focusGuards: true },
-		lostTrigger: "keep",
-	},
-	tooltip: {
-		outsidePress: "sloppy",
-		hover: { mouseOnly: true, delay: "rest" },
-		side: "top",
-		lostTrigger: "close",
-	},
-	dialog: {
-		outsidePress: { mouse: "intentional", touch: "sloppy" },
-		restoreFocus: "popup",
-		floating: "popup",
-		lostTrigger: "keep",
-	},
-	previewCard: {
-		outsidePress: "sloppy",
-		hover: { mouseOnly: true, delay: "enter" },
-		side: "bottom",
-		lostTrigger: "close",
-	},
-	select: {
-		outsidePress: "sloppy",
-		restoreFocus: true,
-		side: "bottom",
-		lostTrigger: "keep",
-	},
-	menu: {
-		outsidePress: "sloppy",
-		restoreFocus: true,
-		hover: { mouseOnly: true, delay: "rest" },
-		side: "bottom",
-		lostTrigger: "keep",
-	},
-	combobox: {
-		// The software keyboard shrinks the visual viewport: a touch outside may be a scroll.
-		outsidePress: { mouse: "sloppy", touch: "intentional" },
-		side: "bottom",
-		lostTrigger: "keep",
-	},
-	navigationMenu: {
-		outsidePress: "intentional",
-		hover: { mouseOnly: false, delay: "rest" },
-		side: "bottom",
-		lostTrigger: "keep",
 	},
 } as const satisfies Record<string, PopupBehavior>;
 

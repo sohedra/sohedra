@@ -42,8 +42,6 @@ export interface PopupRequest<Details, Source extends OpenChangeSource = OpenCha
 	readonly details: Details;
 	/** What the platform knows about the change. */
 	readonly source: Source;
-	/** The platform already made the change (a close it animated itself): `cancel()` has no effect. */
-	readonly happened: boolean;
 }
 
 /**
@@ -56,26 +54,14 @@ export interface PopupHooks<
 	Extra extends object = object,
 	Source extends OpenChangeSource = OpenChangeSource,
 > {
-	/** Before an opening: calls `proceed()` to let it through, and refuses by not calling it. */
-	open?(request: PopupRequest<Details, Source>, proceed: () => boolean): void;
-	/** Before a close: calls `proceed()` to let it through, and refuses by not calling it. */
-	close?(request: PopupRequest<Details, Source>, proceed: () => boolean): void;
+	/** Before an opening, which it may adjust (its details). */
+	open?(request: PopupRequest<Details, Source>): void;
+	/** Before a close, which it may adjust (its details). */
+	close?(request: PopupRequest<Details, Source>): void;
 	/** After an accepted opening. */
 	opened?(session: OpenSession<T, Extra>, request: PopupRequest<Details, Source>): void;
 	/** After an accepted close. */
 	closed?(session: OpenSession<T, Extra>, request: PopupRequest<Details, Source>): void;
-	/**
-	 * Whether the popup's interactions hear of an accepted change through the open-change event
-	 * (see `PopupLifecycle.announce`). They do when this is absent; a kind returns `false` for a
-	 * change it makes past them (Select's item press).
-	 */
-	announces?(request: PopupRequest<Details, Source>): boolean;
-	/**
-	 * Whether an accepted change records the request's trigger as the one the popup belongs to. It
-	 * does when this is absent; a kind whose open item's trigger claims the popup itself returns
-	 * `false` (NavigationMenu).
-	 */
-	commitsTrigger?(request: PopupRequest<Details, Source>): boolean;
 	/**
 	 * `open` turned true or false, by a request or from outside (a bound `open`). Runs in an
 	 * effect, after the update.
@@ -83,11 +69,6 @@ export interface PopupHooks<
 	openChanged?(open: boolean): void;
 	/** The popup unmounted: the session's `extra` are fresh again. */
 	unmounted?(session: OpenSession<T, Extra>): void;
-	/**
-	 * Closes the popup because its active trigger unmounted, and returns whether it closed. Asked
-	 * only when the kind's behaviour row says `lostTrigger: "close"`.
-	 */
-	lostTrigger?(): boolean;
 }
 
 /**
@@ -108,13 +89,6 @@ export interface PopupLifecycleOptions<
 	readonly nested: boolean;
 	/** An inert lifecycle for a handle without a Root: it never opens. */
 	readonly detached?: boolean | undefined;
-	/**
-	 * Whether a popup open when it is created still plays its enter transition (a submenu that opens
-	 * while its parent animates in). @default false
-	 */
-	readonly animateInitialOpen?: boolean | undefined;
-	/** The behaviour row's answer for an active trigger that unmounts while open. */
-	readonly lostTrigger: "keep" | "close";
 	/** The store's own extra fields of one opening, fresh for each. */
 	readonly extra?: (() => Extra) | undefined;
 	/** The store's hooks. A function: they are read when a change runs, not at construction. */
@@ -143,7 +117,6 @@ export class PopupLifecycle<
 	// 1. Inputs
 	readonly #props: () => PopupLifecycleProps<Details>;
 	readonly #options: PopupLifecycleOptions<Details, T, Extra, Source>;
-	readonly #platform: Platform<T>;
 
 	// 2. Owned objects
 	readonly #open: Controllable<boolean>;
@@ -180,7 +153,6 @@ export class PopupLifecycle<
 	) {
 		this.#props = props;
 		this.#options = options;
-		this.#platform = platform;
 		this.#open = new Controllable<boolean>(open, {
 			default: () => props().defaultOpen ?? false,
 			name: options.name,
@@ -204,7 +176,6 @@ export class PopupLifecycle<
 			get defaultTriggerId() {
 				return props().defaultTriggerId;
 			},
-			animateInitialOpen: options.animateInitialOpen,
 		};
 		this.presence = new Presence(view, platform.scheduler);
 		this.activeTrigger = new ActiveTriggerStore<T>(() => view, { triggers: this.triggers });
@@ -229,49 +200,25 @@ export class PopupLifecycle<
 
 	// 4. Intents
 	/**
-	 * Asks to open or close: the kind's `open` or `close` rule first, then `onOpenChange` (it may
-	 * cancel), then the open-change event, then the commit, then the `opened` or `closed` rule.
+	 * Asks to open or close: the kind's `open` or `close` hook first, then `onOpenChange` (it may
+	 * cancel), then the open-change event, then the commit, then the `opened` or `closed` hook.
 	 * Returns whether the change went through.
 	 */
 	request(
 		next: boolean,
-		details: Omit<Details, "preventUnmountOnClose">,
-		source?: Source,
-	): boolean {
-		return this.#change(next, details as Details, source, false);
-	}
-
-	/**
-	 * Commits an open change the platform already made (a close it animated itself): as
-	 * {@link request}, but `cancel()` in `onOpenChange` has no effect.
-	 */
-	report(next: boolean, details: Omit<Details, "preventUnmountOnClose">, source?: Source): boolean {
-		return this.#change(next, details as Details, source, true);
-	}
-
-	#change(
-		next: boolean,
-		details: Details,
+		eventDetails: Omit<Details, "preventUnmountOnClose">,
 		source: Source = {} as Source,
-		happened: boolean,
 	): boolean {
 		if (this.detached) {
 			return false;
 		}
+		const details = eventDetails as Details;
 		let accepted = false;
 		this.#run(() => {
 			const hooks = this.#options.hooks();
-			const request: PopupRequest<Details, Source> = { next, details, source, happened };
-			const proceed = () => {
-				accepted = this.#propose(request);
-				return accepted;
-			};
-			const gate = next ? hooks.open : hooks.close;
-			if (gate) {
-				gate.call(hooks, request, proceed);
-			} else {
-				proceed();
-			}
+			const request: PopupRequest<Details, Source> = { next, details, source };
+			(next ? hooks.open : hooks.close)?.call(hooks, request);
+			accepted = this.#propose(request);
 			if (accepted) {
 				(next ? hooks.opened : hooks.closed)?.call(hooks, this.session, request);
 			}
@@ -300,7 +247,7 @@ export class PopupLifecycle<
 
 	/** `onOpenChange`, the open-change event, then the commit. */
 	#propose(request: PopupRequest<Details, Source>): boolean {
-		const { next, details, source, happened } = request;
+		const { next, details, source } = request;
 		let preventUnmount = false;
 		(details as PopupChangeEventDetails<T>).preventUnmountOnClose = () => {
 			preventUnmount = true;
@@ -308,19 +255,12 @@ export class PopupLifecycle<
 		let accepted = false;
 		const notify = (value: boolean, eventDetails: Details) => {
 			callUser(this.#props().onOpenChange, value, eventDetails);
-			if (happened || !eventDetails.isCanceled) {
+			if (!eventDetails.isCanceled) {
 				accepted = true;
-				if (this.#options.hooks().announces?.(request) !== false) {
-					this.announce(value, eventDetails, source);
-				}
+				this.announce(value, eventDetails, source);
 			}
 		};
-		if (happened) {
-			notify(next, details);
-			this.#open.assign(next);
-		} else {
-			this.#open.set(next, details, notify);
-		}
+		this.#open.set(next, details, notify);
 		if (!accepted) {
 			return false;
 		}
@@ -333,9 +273,7 @@ export class PopupLifecycle<
 		}
 		session.reason = details.reason;
 		this.#hear(this.open);
-		if (this.#options.hooks().commitsTrigger?.(request) !== false) {
-			untrack(() => this.activeTrigger.commit(next, details.trigger, source.triggerId));
-		}
+		untrack(() => this.activeTrigger.commit(next, details.trigger, source.triggerId));
 		return true;
 	}
 
@@ -461,11 +399,7 @@ export class PopupLifecycle<
 		);
 
 		// The active trigger follows registrations.
-		const close =
-			this.#options.lostTrigger === "close"
-				? () => this.#options.hooks().lostTrigger?.() ?? false
-				: undefined;
-		this.activeTrigger.connect(close && { scheduler: this.#platform.scheduler, close });
+		this.activeTrigger.connect();
 	}
 
 	/**

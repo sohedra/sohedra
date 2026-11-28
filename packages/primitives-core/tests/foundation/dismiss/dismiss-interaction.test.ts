@@ -1,5 +1,4 @@
-// DismissInteraction: one popup's dismissal by Escape, a trigger press and an outside press of
-// either press type, driven by plain calls as a platform without a document makes them, in a tree
+// DismissInteraction: one popup's dismissal by Escape and an outside press of either press type, driven by plain calls as a platform without a document makes them, in a tree
 // of nested popups too.
 import { describe, expect, it, vi } from "vitest";
 
@@ -22,7 +21,6 @@ function setup(options: DismissOptions = {}, tree: FloatingTree | null = null) {
 		open: true,
 		tree,
 		data: { nodeId: "popup", insideTree: false },
-		dismissBubbles: { escapeKey: false, outsidePress: true },
 		platform,
 	};
 	const live = { ...options };
@@ -122,17 +120,6 @@ describe("DismissInteraction", () => {
 			expect(dismiss.escape(EVENT)).toBeNull();
 			child.open = false;
 			expect(dismiss.escape(EVENT)).not.toBeNull();
-		});
-	});
-
-	describe("a press on a trigger", () => {
-		it("closes only for a kind that closes on it", () => {
-			const { dismiss, reasons, options } = setup();
-			dismiss.triggerPress(EVENT);
-			expect(reasons).toEqual([]);
-			options.closesOnTriggerPress = true;
-			dismiss.triggerPress(EVENT);
-			expect(reasons).toEqual(["trigger-press"]);
 		});
 	});
 
@@ -303,13 +290,6 @@ describe("DismissInteraction", () => {
 		expect(parent.data.insideTree).toBe(true);
 		scheduler.advance(0);
 		expect(parent.data.insideTree).toBe(false);
-	});
-
-	it("tells the tree whether its dismissals reach its ancestors", () => {
-		const { dismiss, view } = setup();
-		view.dismissBubbles = { escapeKey: true, outsidePress: false };
-		dismiss.publishBubbles();
-		expect(view.dismissBubbles).toEqual({ escapeKey: false, outsidePress: true });
 	});
 
 	describe("a whole press, from a platform that reports a press as one event", () => {

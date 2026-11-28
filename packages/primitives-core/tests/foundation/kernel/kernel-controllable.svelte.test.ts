@@ -37,17 +37,12 @@ function binding<T>(initial: T | undefined, { declines = false } = {}) {
 }
 
 /** A Controllable on `binding(initial)`, with `fallback` as its default. */
-function setup<T>(
-	initial: T | undefined,
-	fallback: T,
-	options: { declines?: boolean; writeInitial?: boolean } = {},
-) {
+function setup<T>(initial: T | undefined, fallback: T, options: { declines?: boolean } = {}) {
 	const { parent, set, source } = binding<T>(initial, options);
 	const value = new Controllable<T>(source, {
 		default: () => fallback,
 		name: "Test",
 		state: "value",
-		writeInitial: options.writeInitial,
 	});
 	return { value, parent, set };
 }
@@ -73,12 +68,6 @@ describe("Controllable", () => {
 		const { value, set } = setup<string | undefined>(undefined, undefined, { declines: true });
 		expect(set).not.toHaveBeenCalled();
 		expect(value.current).toBeUndefined();
-	});
-
-	it("leaves an unset binding alone with writeInitial: false", () => {
-		const { value, parent } = setup<string>(undefined, "", { writeInitial: false });
-		expect(parent.value).toBeUndefined();
-		expect(value.current).toBe("");
 	});
 
 	it("does not track the source or default while constructing", () => {

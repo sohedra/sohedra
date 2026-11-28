@@ -1,5 +1,5 @@
-// PopupLifecycle: a change through its kind's hooks, an `open` set from outside, a lost trigger, a
-// detached lifecycle, what its open session keeps and for how long, the instant type of a new
+// PopupLifecycle: a change through its kind's hooks, an `open` set from outside, a detached
+// lifecycle, what its open session keeps and for how long, the instant type of a new
 // opening, a move to another trigger, and a request the app cancelled out.
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
@@ -45,7 +45,6 @@ function setup(
 	hooks: Hooks = {},
 	initial: Partial<MutableProps> = {},
 	options: {
-		lostTrigger?: "keep" | "close";
 		detached?: boolean;
 		hover?: PopupLifecycleOptions<Details, PlatformTypes, Extra>["hover"];
 	} = {},
@@ -62,7 +61,6 @@ function setup(
 			name: "Test",
 			nested: false,
 			detached: options.detached,
-			lostTrigger: options.lostTrigger ?? "keep",
 			extra: () => ({ visits: 0 }),
 			hooks: () => hooks,
 			hover: options.hover,
@@ -76,25 +74,11 @@ function setup(
 
 describe("PopupLifecycle", () => {
 	describe("its hooks", () => {
-		it("refuses a change whose rule doesn't call proceed", () => {
-			const onOpenChange = vi.fn();
-			const opened = vi.fn();
-			const { lifecycle } = setup({ open: () => {}, opened }, { onOpenChange });
-
-			expect(lifecycle.request(true, details(REASONS.triggerPress))).toBe(false);
-
-			expect(onOpenChange).not.toHaveBeenCalled();
-			expect(opened).not.toHaveBeenCalled();
-			expect(lifecycle.open).toBe(false);
-			expect(lifecycle.session.reason).toBe(null);
-		});
-
 		it("runs the rule, onOpenChange, the open-change event, the commit, then the hook", () => {
 			const order: string[] = [];
 			const hooks: Hooks = {
-				open: (_request, proceed) => {
+				open: () => {
 					order.push("rule");
-					proceed();
 				},
 				opened: (session) => order.push(`opened:${lifecycle.open}:${session.reason}`),
 			};
@@ -110,9 +94,8 @@ describe("PopupLifecycle", () => {
 			const trigger = element("t");
 			const onOpenChange = vi.fn();
 			const hooks: Hooks = {
-				close: (request, proceed) => {
+				close: (request) => {
 					request.details.trigger = trigger;
-					proceed();
 				},
 			};
 			const { lifecycle } = setup(hooks, { defaultOpen: true, onOpenChange });
@@ -150,24 +133,6 @@ describe("PopupLifecycle", () => {
 			flushSync();
 			expect(openChanged).toHaveBeenLastCalledWith(false);
 			expect(lifecycle.session.method).toBe(null);
-		});
-
-		it("closes for a lost trigger only when the kind's row says so", () => {
-			const run = (lostTrigger: "keep" | "close") => {
-				const rule = vi.fn(() => true);
-				const { lifecycle, scheduler } = setup({ lostTrigger: rule }, {}, { lostTrigger });
-				const trigger = element("t");
-				const unregister = lifecycle.activeTrigger.register("t", trigger, () => {});
-				lifecycle.request(true, details(REASONS.triggerPress, trigger));
-				flushSync();
-				unregister();
-				flushSync();
-				scheduler.runMicrotasks();
-				return rule;
-			};
-
-			expect(run("close")).toHaveBeenCalledOnce();
-			expect(run("keep")).not.toHaveBeenCalled();
 		});
 
 		it("never changes and announces nothing when detached", () => {

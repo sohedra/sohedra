@@ -1,4 +1,4 @@
-import type { Middleware, RootBoundary } from "@floating-ui/dom";
+import type { Middleware } from "@floating-ui/dom";
 import {
 	getSide,
 	type Measured,
@@ -19,17 +19,6 @@ export type Boundary =
 	| { x: number; y: number; width: number; height: number };
 
 /**
- * Overrides of the shift a popup's collision avoidance sets up (a context menu shifts along both
- * axes within the layout viewport, so it stays at the pointer instead of flipping).
- */
-export interface ShiftOptions {
-	/** Shifts along the cross axis too, and never flips to the other side. */
-	readonly crossAxis?: boolean | undefined;
-	/** The root boundary the shift keeps the popup within. */
-	readonly rootBoundary?: RootBoundary | undefined;
-}
-
-/**
  * The placement options of one computation, as plain values. `side`, `rtl` and `arrowElement`
  * are read again while the computation runs, so an object that keeps them current also sees an
  * Arrow that registered just after the computation started.
@@ -40,9 +29,6 @@ export interface MiddlewareConfig extends PositionerMiddlewareOptions {
 	readonly adaptiveOrigin: boolean;
 	/** The Arrow part's element. */
 	readonly arrowElement: HTMLElement | null;
-	/** Positions against one line box of a wrapped anchor; runs first. */
-	readonly inline?: Middleware | undefined;
-	readonly shift?: ShiftOptions | undefined;
 }
 
 export function getDevicePixelRatio(element: Element): number {
@@ -56,8 +42,8 @@ export function toPx(value: number): string {
 
 /**
  * The middleware of one computation: core's positioning steps, measured on the DOM, with the
- * web's own steps at either end (the inline anchor first and, for a Viewport, the far-edge
- * measurement last). What the steps measure lands in `measured`.
+ * web's own step at the end for a Viewport (the far-edge measurement). What the steps measure
+ * lands in `measured`.
  */
 export function createPositionerMiddleware(
 	config: MiddlewareConfig,
@@ -110,7 +96,6 @@ export function createPositionerMiddleware(
 			// A style read, so it is read only when the transform origin asks.
 			popupRtl: (state) =>
 				(state.platform.isRTL?.(state.elements.floating) as boolean | undefined) === true,
-			first: config.inline,
 			last: config.adaptiveOrigin ? adaptiveOriginMiddleware : null,
 		},
 		measured,

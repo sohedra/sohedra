@@ -31,11 +31,6 @@ export interface OpenChangeSource {
 /** What a trigger forwards to the popup while it owns it. */
 export interface PopupTriggerData<Payload> {
 	readonly payload: Payload | undefined;
-	/**
-	 * Whether, while the popup is hover-open, only this trigger and the popup take pointer input
-	 * (a submenu, so the parent's items the pointer crosses don't react). @default false
-	 */
-	readonly blockPointerEvents?: boolean | undefined;
 }
 
 /**

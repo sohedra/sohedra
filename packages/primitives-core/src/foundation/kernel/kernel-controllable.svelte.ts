@@ -17,13 +17,6 @@ export interface ControllableOptions<T> {
 	name: string;
 	/** The state name in warnings, e.g. `checked`. */
 	state: string;
-	/**
-	 * Whether an unset binding takes the initial (default) value at construction, as a native
-	 * `bind:checked` does. Pass `false` where native Svelte leaves it unset, e.g. a text control's
-	 * `bind:value` without `defaultValue`. An `undefined` initial value is never written.
-	 * @default true
-	 */
-	writeInitial?: boolean;
 }
 
 interface Cancelable {
@@ -61,8 +54,9 @@ export class Controllable<T> {
 		this.#initiallyUncontrolled = given === undefined;
 		const initial = given === undefined ? untrack(options.default) : given;
 		this.#local = initial;
-		if (given === undefined && initial !== undefined && options.writeInitial !== false) {
-			// Like a native `bind:checked`, an unset binding takes the initial value.
+		if (given === undefined && initial !== undefined) {
+			// Like a native `bind:checked`, an unset binding takes the initial value. An `undefined`
+			// initial value is never written.
 			this.#writeSource(initial, undefined);
 		}
 	}

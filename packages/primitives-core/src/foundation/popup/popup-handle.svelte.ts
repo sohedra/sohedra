@@ -84,15 +84,6 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	}
 
 	/**
-	 * The attached Root's store with the platform's event for an imperative change, or `null`
-	 * while no Root is attached.
-	 */
-	protected attachedChange(): { store: Store; event: unknown } | null {
-		const attached = this.#attached;
-		return attached ? { store: attached.store, event: attached.imperativeEvent() } : null;
-	}
-
-	/**
 	 * Attaches a Root's store; the newest attached store takes over. `imperativeEvent` makes the
 	 * event of the changes this handle requests: the Root's platform passes it, since a
 	 * handle call runs no platform code. Returns the detachment, which hands control back to the

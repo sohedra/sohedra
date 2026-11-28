@@ -3,7 +3,6 @@ import { keepShallowEqual, watch } from "@sohedra/primitives-core/foundation/ker
 import {
 	getAlignment,
 	getSide,
-	keepsPlacement,
 	logicalSide,
 	POSITIONER_DEFAULTS,
 	type PositionerStore,
@@ -55,21 +54,15 @@ export function usePositioner(
 	const collisionAvoidance = $derived.by(keepShallowEqual(() => options().collisionAvoidance));
 	const sticky = $derived(options().sticky ?? POSITIONER_DEFAULTS.sticky);
 	const arrowPadding = $derived(options().arrowPadding ?? POSITIONER_DEFAULTS.arrowPadding);
-	const shift = $derived.by(keepShallowEqual(() => options().shift));
 	const disableAnchorTracking = $derived(options().disableAnchorTracking ?? false);
 	const side = $derived(options().side ?? "bottom");
 	const align = $derived(options().align ?? "center");
 	const rtl = $derived(options().rtl);
-	const lazyFlip = $derived(options().lazyFlip ?? false);
 	const keepMounted = $derived(options().keepMounted);
 	const anchor = $derived(options().anchor);
-	const inline = $derived(options().inline);
 	const layout = $derived(options().layout);
 
-	// A flipped placement kept for the rest of the opening (lazy flipping).
-	let kept: string | null = $state.raw(null);
-
-	const placement = $derived(requestedPlacement({ side, align, rtl }, kept, lazyFlip));
+	const placement = $derived(requestedPlacement({ side, align, rtl }));
 
 	// The anchor the popup is positioned against: the `anchor` option, else the active trigger.
 	const anchorElement = $derived.by((): ReferenceElement | null => {
@@ -125,12 +118,6 @@ export function usePositioner(
 		get arrowElement() {
 			return untrack(() => positioner.arrowElement as HTMLElement | null);
 		},
-		get inline() {
-			return inline;
-		},
-		get shift() {
-			return shift;
-		},
 	};
 
 	// Local bookkeeping: a computation that a newer one or a resubscription superseded is dropped.
@@ -164,12 +151,6 @@ export function usePositioner(
 					...measured,
 					sides: (data.middlewareData.adaptiveOrigin as PositionState["sides"]) ?? undefined,
 				};
-				if (
-					next.isPositioned &&
-					untrack(() => popup.mounted && keepsPlacement(lazyFlip, requested, data.placement))
-				) {
-					kept = data.placement;
-				}
 				if (
 					!samePosition(
 						untrack(() => positioner.position),
@@ -220,7 +201,6 @@ export function usePositioner(
 				() => collisionAvoidance,
 				() => sticky,
 				() => arrowPadding,
-				() => shift,
 				() => positioner.arrowElement,
 				() => layout?.adaptiveOrigin,
 			],
@@ -233,14 +213,10 @@ export function usePositioner(
 			{ lazy: false },
 		);
 
-		// A kept-mounted popup's next opening starts unpositioned (a closing one unmounts instead),
-		// and an unmounted popup forgets a kept placement.
+		// A kept-mounted popup's next opening starts unpositioned (a closing one unmounts instead).
 		watch(
 			[() => keepMounted, () => popup.mounted],
 			([keepsMounted, mounted]) => {
-				if (!mounted) {
-					kept = null;
-				}
 				if (keepsMounted && !mounted) {
 					// While a kept-mounted popup is closed, it has no element it is anchored to.
 					popup.activeTrigger.clearDomReference();
@@ -265,8 +241,7 @@ export function usePositioner(
 	// too.
 	const backdropStyle = $derived.by(() => {
 		void positioner.position;
-		const cutout = options().backdropCutout;
-		return internalBackdropStyle(cutout === undefined ? popup.activeTriggerElement : cutout);
+		return internalBackdropStyle(popup.activeTriggerElement);
 	});
 
 	return {

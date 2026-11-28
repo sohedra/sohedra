@@ -9,7 +9,6 @@ import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.
 export interface PortalFocusManagerState {
 	readonly modal: boolean;
 	readonly open: boolean;
-	readonly closeOnFocusOut: boolean;
 	readonly domReference: Element | null;
 	readonly onOpenChange: (open: boolean, event: Event) => void;
 }

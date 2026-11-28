@@ -1,5 +1,4 @@
-// The dismiss rules as facts in and an outcome out: the bubbling answers, the press type per
-// pointer, which outside press dismisses, which popup answers Escape in a tree, a click after an
+// The dismiss rules as facts in and an outcome out: the press type per pointer, which outside press dismisses, which popup answers Escape in a tree, a click after an
 // earlier press, a touch's moves, and the end of a press that began inside.
 import { describe, expect, it } from "vitest";
 
@@ -7,21 +6,12 @@ import {
 	hasBlockingChild,
 	isIgnoredOutsidePress,
 	isTrailingClick,
-	normalizeBubbles,
 	pressEndOutcome,
 	resolvePressType,
 	touchMoveOutcome,
 } from "../../../src/foundation/dismiss/dismiss-rules.js";
 import { FloatingTree } from "../../../src/foundation/popup/index.js";
 import { floatingNode as node } from "../../kit/kit-floating-tree.js";
-
-describe("normalizeBubbles", () => {
-	it("normalizes bubbles", () => {
-		expect(normalizeBubbles(undefined)).toEqual({ escapeKey: false, outsidePress: true });
-		expect(normalizeBubbles(true)).toEqual({ escapeKey: true, outsidePress: true });
-		expect(normalizeBubbles({ escapeKey: true })).toEqual({ escapeKey: true, outsidePress: true });
-	});
-});
 
 describe("resolvePressType", () => {
 	it("resolves the press type per pointer type", () => {

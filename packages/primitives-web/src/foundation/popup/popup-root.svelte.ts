@@ -9,7 +9,7 @@ import {
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { getAbortSignal, untrack } from "svelte";
 
-import { type DismissRootOptions, type DismissView, useDismiss } from "../dismiss/index.js";
+import { type DismissView, useDismiss } from "../dismiss/index.js";
 import { fallbackEvent, webPlatform, type WebTypes } from "../kernel/index.js";
 import { waitForAnimations } from "../presence/index.js";
 import { DialogRootContext, FloatingNodeContext, FloatingTreeContext } from "./popup-context.js";
@@ -36,7 +36,7 @@ export interface PopupRootHandle {
 }
 
 /** What the Root tells `usePopupRoot`, from its options function. */
-export interface PopupRootOptions extends DismissRootOptions {
+export interface PopupRootOptions {
 	/** The `handle` prop: it holds the Root's store while the Root is mounted. */
 	readonly handle?: PopupRootHandle | undefined;
 }
@@ -78,7 +78,7 @@ export function usePopupRoot(
 	usePopupUnmount(store);
 
 	// Escape and outside presses, through the document listeners of the store's dismissal.
-	useDismiss(store, options);
+	useDismiss(store);
 }
 
 /**

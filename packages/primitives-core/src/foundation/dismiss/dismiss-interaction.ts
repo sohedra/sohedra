@@ -1,4 +1,4 @@
-// Closing a popup with Escape, a press on a trigger, or a press outside it. One popup's
+// Closing a popup with Escape or a press outside it. One popup's
 // dismissal: the press being followed, the timers around it and the calls a platform makes with
 // what happened. The platform finds out where a press landed and tells this; what the press
 // means is decided here, with the plain functions of `dismiss-rules.ts`.
@@ -15,14 +15,10 @@ import {
 } from "../kernel/index.js";
 import type { FloatingTree } from "../popup/index.js";
 import {
-	type BubbleAnswers,
-	type DismissBubbles,
-	escapeStopsHere,
 	hasBlockingChild,
 	isIgnoredOutsidePress,
 	isTrailingClick,
 	LONG_TOUCH_MS,
-	normalizeBubbles,
 	type OutsidePressEvent,
 	pressEndOutcome,
 	type PressType,
@@ -32,14 +28,10 @@ import {
 
 type EscapeReason = typeof REASONS.escapeKey;
 type OutsidePressReason = typeof REASONS.outsidePress;
-type TriggerPressReason = typeof REASONS.triggerPress;
-
-// How dismissals bubble unless a kind says otherwise.
-const DEFAULT_BUBBLES: BubbleAnswers = Object.freeze(normalizeBubbles(undefined));
 
 /** The change details a dismissal closes with. */
 export type DismissChangeDetails<T extends PlatformTypes> = ReturnType<
-	typeof createChangeEventDetails<EscapeReason | OutsidePressReason | TriggerPressReason, {}, T>
+	typeof createChangeEventDetails<EscapeReason | OutsidePressReason, {}, T>
 >;
 
 /**
@@ -57,8 +49,6 @@ export interface DismissView<T extends PlatformTypes = PlatformTypes> {
 		/** Whether a press is passing through the popup's own elements right now. */
 		insideTree: boolean;
 	};
-	/** Whether a dismissal inside the popup also reaches its ancestors; they read it in the tree. */
-	dismissBubbles: BubbleAnswers;
 	readonly platform: { readonly scheduler: Scheduler };
 }
 
@@ -66,20 +56,8 @@ export interface DismissView<T extends PlatformTypes = PlatformTypes> {
 export interface DismissOptions {
 	/** Whether Escape and outside presses dismiss at all. @default true */
 	readonly enabled?: boolean | undefined;
-	/**
-	 * Whether Escape dismisses: a dialog with an open dialog nested in it leaves the key to that
-	 * one. @default true
-	 */
-	readonly escapeKey?: boolean | undefined;
 	/** How an outside press is detected, per kind of pointer. @default 'sloppy' */
 	readonly outsidePressEvent?: OutsidePressEvent | undefined;
-	/** Whether a press on a trigger closes the popup. @default false */
-	readonly closesOnTriggerPress?: boolean | undefined;
-	/**
-	 * Whether Escape and outside presses inside the popup also reach its ancestors (a submenu's
-	 * `closeParentOnEsc`). @default Escape stops here, outside presses bubble
-	 */
-	readonly bubbles?: DismissBubbles | undefined;
 }
 
 /** An Escape that closed the popup: what the platform does with its event. */
@@ -175,12 +153,6 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 		return this.#options().enabled ?? true;
 	}
 
-	/** Whether a dismissal inside the popup also reaches its ancestors. */
-	get bubbles(): BubbleAnswers {
-		const bubbles = this.#options().bubbles;
-		return bubbles === undefined ? DEFAULT_BUBBLES : normalizeBubbles(bubbles);
-	}
-
 	/** The press type for the pointer of the press being followed. */
 	get pressType(): PressType {
 		return resolvePressType(this.#pointerType, this.#options().outsidePressEvent ?? "sloppy");
@@ -195,21 +167,21 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	 */
 	escape(event: PlatformEvent<T, EscapeReason>, composing = false): EscapeOutcome | null {
 		const view = this.#view;
-		if (!view.open || !this.enabled || !(this.#options().escapeKey ?? true)) {
+		if (!view.open || !this.enabled) {
 			return null;
 		}
 		if (this.#composing || composing) {
 			return null;
 		}
-		const bubbles = this.bubbles;
-		if (!bubbles.escapeKey && hasBlockingChild(view.tree, view.data.nodeId, "escapeKey")) {
+		// An open popup nested in this one answers Escape first.
+		if (hasBlockingChild(view.tree, view.data.nodeId, "escapeKey")) {
 			return null;
 		}
 		const details = createChangeEventDetails<EscapeReason, {}, T>(REASONS.escapeKey, event);
 		this.#close(details);
 		return {
 			preventDefault: !details.isCanceled,
-			stopPropagation: escapeStopsHere(bubbles, details.isPropagationAllowed),
+			stopPropagation: !details.isPropagationAllowed,
 		};
 	}
 
@@ -227,15 +199,6 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 		this.#compositionTimeout.start(settleMs, () => {
 			this.#composing = false;
 		});
-	}
-
-	// A press on a trigger
-
-	/** A trigger was pressed: closes the popup when its kind closes on that. */
-	triggerPress(event: PlatformEvent<T, TriggerPressReason>): void {
-		if (this.#options().closesOnTriggerPress) {
-			this.#close(createChangeEventDetails<TriggerPressReason, {}, T>(REASONS.triggerPress, event));
-		}
 	}
 
 	// Presses inside the popup
@@ -505,12 +468,6 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	// The popup's own changes
-
-	/** Tells the popups this one is nested in whether its dismissals reach them. */
-	publishBubbles(): void {
-		const { escapeKey, outsidePress } = this.bubbles;
-		this.#view.dismissBubbles = { escapeKey, outsidePress };
-	}
 
 	/** The popup closed for a moment, even without rendering closed: the next press is a new one. */
 	closed(): void {

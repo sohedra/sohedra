@@ -6,20 +6,11 @@ import { type Scheduler, watch } from "../kernel/index.js";
 export type TransitionStatus = "starting" | "ending" | "idle" | undefined;
 
 export interface PresenceProps {
-	/** Whether the element should be shown. */
+	/**
+	 * Whether the element should be shown. An element open on the first render doesn't go through
+	 * `'starting'`, so server-rendered or initially open content doesn't animate in.
+	 */
 	readonly open: boolean;
-	/**
-	 * Whether an element that is open on the first render still goes through `'starting'`. Off by
-	 * default, so server-rendered or initially open content doesn't animate in.
-	 */
-	readonly animateInitialOpen?: boolean | undefined;
-	/**
-	 * Whether an open element settles on `'idle'` (instead of `undefined`) after `'starting'`, and
-	 * starts out `'idle'` when open on the first render.
-	 */
-	readonly enableIdleState?: boolean | undefined;
-	/** Whether closing waits one frame before `'ending'`, so the closed state paints first. */
-	readonly deferEndingState?: boolean | undefined;
 }
 
 /** Where a presence stands: the `open` it reflects, whether it renders and its status. */
@@ -29,33 +20,17 @@ export interface PresencePhase {
 	readonly status: TransitionStatus;
 }
 
-/** The fixed options {@link step} needs. */
-export interface PresenceOptions {
-	/** `enableIdleState`. */
-	readonly idle: boolean;
-	/** `deferEndingState`. */
-	readonly defer: boolean;
-}
-
 /**
  * The phase an element moves to when `open` changes from the committed phase's: opening mounts it
  * with `'starting'`, closing keeps it mounted with `'ending'`. Pure: it returns `committed` itself
  * while `open` hasn't changed, so a commit of its result is a fixed point.
  */
-export function step(
-	committed: PresencePhase,
-	open: boolean,
-	options: PresenceOptions,
-): PresencePhase {
+export function step(committed: PresencePhase, open: boolean): PresencePhase {
 	if (open === committed.open) {
 		return committed;
 	}
 	if (open) {
 		if (!committed.mounted) {
-			return { open, mounted: true, status: "starting" };
-		}
-		if (options.idle && committed.status !== "idle") {
-			// The idle effect restarts a reopened element.
 			return { open, mounted: true, status: "starting" };
 		}
 		// Reopening while still mounted keeps the status; the frame in `connect()` clears it.
@@ -65,7 +40,7 @@ export function step(
 		return {
 			open,
 			mounted: true,
-			status: committed.status === "ending" || options.defer ? committed.status : "ending",
+			status: "ending",
 		};
 	}
 	return {
@@ -84,18 +59,14 @@ export function step(
 export class Presence {
 	#p: PresenceProps;
 	#scheduler: Scheduler;
-	#options: PresenceOptions;
 	// The phase the last update settled on. Written only by the commit in `connect()`, the frames
-	// that settle a status, `complete()` and `mountShown()`, never while deriving.
+	// that settle a status and `complete()`, never while deriving.
 	#committed: PresencePhase = $state.raw({ open: false, mounted: false, status: undefined });
 
 	readonly open: boolean = $derived.by(() => this.#p.open);
 	// A pure step from the committed phase to the current `open`, so `mounted` changes in the same
 	// update as `open`, and a re-run with older values (an effect teardown) changes nothing.
-	// `$derived.by` because `#options` is set in the constructor, after these initialisers.
-	readonly #phase: PresencePhase = $derived.by(() =>
-		step(this.#committed, this.open, this.#options),
-	);
+	readonly #phase: PresencePhase = $derived(step(this.#committed, this.open));
 	// Value-compared views of the phase: readers re-run when mounting or the status changes, not
 	// whenever a new phase object is committed.
 	readonly #mounted: boolean = $derived(this.#phase.mounted);
@@ -105,15 +76,7 @@ export class Presence {
 		this.#p = props;
 		this.#scheduler = scheduler;
 		const open = untrack(() => props.open);
-		const idle = untrack(() => props.enableIdleState) ?? false;
-		this.#options = { idle, defer: untrack(() => props.deferEndingState) ?? false };
-		let status: TransitionStatus;
-		if (open && untrack(() => props.animateInitialOpen)) {
-			status = "starting";
-		} else if (open && idle) {
-			status = "idle";
-		}
-		this.#committed = { open, mounted: open, status };
+		this.#committed = { open, mounted: open, status: undefined };
 	}
 
 	/** Whether the element is rendered. */
@@ -139,26 +102,9 @@ export class Presence {
 		});
 
 	/**
-	 * Mounts a closed element as already shown, so the open that follows skips `'starting'` (Base
-	 * UI's `setMounted(true)`): the platform painted it before this store knew, as an image that
-	 * finished loading before hydration. Does nothing while mounted.
-	 */
-	mountShown = (): void =>
-		untrack(() => {
-			if (!this.#phase.mounted) {
-				this.#committed = {
-					open: this.open,
-					mounted: true,
-					status: this.#options.idle ? "idle" : undefined,
-				};
-			}
-		});
-
-	/**
 	 * Commits each update's phase, and settles the status one frame after it changes: clears
-	 * `'starting'` (or a stale `'ending'` after a reopen), or moves to `'idle'`; with
-	 * `deferEndingState`, enters `'ending'` a frame after closing. Call once during component init
-	 * (it creates effects).
+	 * `'starting'` (or a stale `'ending'` after a reopen). Call once during component init (it
+	 * creates effects).
 	 */
 	connect(): void {
 		// The step reads committed state and the current `open`, so when this runs doesn't change the
@@ -176,19 +122,9 @@ export class Presence {
 			const open = this.open;
 			const mounted = this.#mounted;
 			const status = this.#status;
-			let next: TransitionStatus | null = null;
-			if (open) {
-				const settledStatus = this.#options.idle ? "idle" : undefined;
-				if (status !== settledStatus) {
-					next = settledStatus;
-				}
-			} else if (this.#options.defer && mounted && status !== "ending") {
-				next = "ending";
-			}
-			if (next === null) {
+			if (!open || status === undefined) {
 				return;
 			}
-			const settled = next;
 			// Flushing synchronously here is avoided because of Firefox.
 			let current = true;
 			const cancel = this.#scheduler.frame(() => {
@@ -201,7 +137,7 @@ export class Presence {
 					phase.mounted === mounted &&
 					phase.status === status
 				) {
-					this.#committed = { open, mounted, status: settled };
+					this.#committed = { open, mounted, status: undefined };
 				}
 			});
 			return () => {

@@ -7,7 +7,6 @@ import {
 	getAlignment,
 	getSide,
 	initialPosition,
-	keepsPlacement,
 	logicalSide,
 	measureFromFarEdges,
 	requestedPlacement,
@@ -93,22 +92,8 @@ describe("lazy flipping", () => {
 	const request = { side: "bottom", align: "start", rtl: false } as const;
 
 	it("asks for the requested placement while nothing is kept", () => {
-		expect(requestedPlacement(request, null, true)).toBe("bottom-start");
-		expect(requestedPlacement({ ...request, align: "center" }, null, false)).toBe("bottom");
-	});
-
-	it("keeps a flipped side, and the alignment only with 'placement'", () => {
-		expect(requestedPlacement(request, "top-end", true)).toBe("top-start");
-		expect(requestedPlacement(request, "top-end", "placement")).toBe("top-end");
-		expect(requestedPlacement(request, "top", "placement")).toBe("top");
-	});
-
-	it("keeps a result whose side changed, or whose alignment changed with 'placement'", () => {
-		expect(keepsPlacement(false, "bottom", "top")).toBe(false);
-		expect(keepsPlacement(true, "bottom", "top")).toBe(true);
-		expect(keepsPlacement(true, "bottom-start", "bottom-end")).toBe(false);
-		expect(keepsPlacement("placement", "bottom-start", "bottom-end")).toBe(true);
-		expect(keepsPlacement("placement", "bottom", "bottom")).toBe(false);
+		expect(requestedPlacement(request)).toBe("bottom-start");
+		expect(requestedPlacement({ ...request, align: "center" })).toBe("bottom");
 	});
 });
 

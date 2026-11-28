@@ -115,7 +115,7 @@ export class PopoverStore<
 		PopoverSessionExtra,
 		PopoverOpenChangeSource
 	> = {
-		close: (request, proceed) => {
+		close: (request) => {
 			const { details } = request;
 			const activeTriggerId = this.activeTriggerId;
 			if (
@@ -131,7 +131,6 @@ export class PopoverStore<
 					this.activeTriggerElement ??
 					undefined;
 			}
-			proceed();
 		},
 		opened: (_session, request) => this.#accepted(request),
 		closed: (_session, request) => this.#accepted(request),
@@ -375,18 +374,6 @@ export class PopoverStore<
 		this.#openOnHover = data.openOnHover;
 		this.#closeDelay = data.closeDelay;
 	}
-
-	/**
-	 * Commits an open change the platform already made (a close it animated itself): as
-	 * {@link setOpen}, but `cancel()` in `onOpenChange` has no effect.
-	 */
-	report = (
-		next: boolean,
-		details: Omit<Details<T>, "preventUnmountOnClose">,
-		source?: PopoverOpenChangeSource,
-	): void => {
-		this.lifecycle.report(next, details, source);
-	};
 
 	/** An accepted change, after the commit. */
 	#accepted({ next, details, source }: Request<T>): void {

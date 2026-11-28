@@ -142,37 +142,9 @@ export function normalizePadding(padding: PaddingInput): SideDistances {
 	};
 }
 
-/**
- * The placement to ask for: the requested side and alignment, unless a flipped placement is kept
- * (lazy flipping), whose side, and with `'placement'` its alignment too, wins.
- */
-export function requestedPlacement(
-	request: PositionerRequest,
-	kept: string | null,
-	lazyFlip: boolean | "placement",
-): Placement {
-	const side = kept ? getSide(kept) : physicalSide(request.side, request.rtl);
-	const keptAlign = kept && lazyFlip === "placement" ? getAlignment(kept) || "center" : null;
-	return toPlacement(side, keptAlign ?? request.align);
-}
-
-/**
- * Whether a positioned result is kept for the rest of the opening (lazy flipping): when its side
- * differs from the one asked for, and with `'placement'` when its alignment does. Content that
- * resizes the popup then doesn't make it jump back and forth.
- */
-export function keepsPlacement(
-	lazyFlip: boolean | "placement",
-	requested: string,
-	rendered: string,
-): boolean {
-	if (!lazyFlip) {
-		return false;
-	}
-	const sideChanged = getSide(rendered) !== getSide(requested);
-	const alignChanged =
-		(getAlignment(rendered) || "center") !== (getAlignment(requested) || "center");
-	return sideChanged || (lazyFlip === "placement" && alignChanged);
+/** The placement to ask for: the requested side and alignment. */
+export function requestedPlacement(request: PositionerRequest): Placement {
+	return toPlacement(physicalSide(request.side, request.rtl), request.align);
 }
 
 /** What a part's offset function is given for one computation. */

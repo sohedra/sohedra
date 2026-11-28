@@ -26,9 +26,7 @@ import {
 import type {
 	DismissPopup,
 	DismissPopupView,
-	DismissRootOptions,
 	DismissTrigger,
-	DismissTriggerOptions,
 	DismissTriggerView,
 	DismissView,
 } from "./dismiss-types.js";
@@ -69,10 +67,7 @@ function touchPoint(event: TouchEvent): TouchPoint | null {
  * and every press, and tell the popup's dismissal where each landed. It installs them when
  * called (once, while the Root initialises).
  */
-export function useDismiss(
-	popup: DismissView,
-	options: () => DismissRootOptions = () => ({}),
-): void {
+export function useDismiss(popup: DismissView): void {
 	const dismiss = popup.dismiss;
 	// Compared by value: the listeners are set up again only when the answer changes, not whenever
 	// something the popup's kind reads for it does.
@@ -94,9 +89,6 @@ export function useDismiss(
 			},
 			get spared() {
 				return isSparedPressTarget(popup, event);
-			},
-			get dismissible() {
-				return options().outsidePress?.(event);
 			},
 		};
 	}
@@ -128,9 +120,6 @@ export function useDismiss(
 			canceled: event.type === "pointercancel",
 			get endedInTree() {
 				return isEventWithinFloatingTree(popup, event);
-			},
-			get dismissible() {
-				return options().outsidePress?.(event);
 			},
 		});
 	}
@@ -204,7 +193,6 @@ export function useDismiss(
 			// trigger's focus guard) leaves the focus behaviour's pending focus-out check to read it.
 			return dismiss.clearInside;
 		}
-		dismiss.publishBubbles();
 		const doc = ownerDocument(floating);
 		const listeners = [...keyListeners, ...pressListeners];
 		for (const [type, listener, listenerOptions] of listeners) {
@@ -268,17 +256,10 @@ export function useDismissPopup(popup: DismissPopupView): DismissPopup {
 }
 
 /**
- * A trigger's side of dismissal: Escape while the trigger has focus and, with `press`, a press on
- * it. `getPopup` is asked on each event: a detached trigger's popup can change.
+ * A trigger's side of dismissal: Escape while the trigger has focus. `getPopup` is asked on each
+ * event: a detached trigger's popup can change.
  */
-export function useDismissTrigger(
-	getPopup: () => DismissTriggerView,
-	options: DismissTriggerOptions = {},
-): DismissTrigger {
+export function useDismissTrigger(getPopup: () => DismissTriggerView): DismissTrigger {
 	const onkeydown = (event: KeyboardEvent) => closeOnEscape(getPopup(), event);
-	if (!options.press) {
-		return { props: { onkeydown } };
-	}
-	const onPress = (event: MouseEvent | PointerEvent) => getPopup().dismiss.triggerPress(event);
-	return { props: { onkeydown, onpointerdown: onPress, onclick: onPress } };
+	return { props: { onkeydown } };
 }

@@ -10,7 +10,6 @@ export {
 	getAlignment,
 	getSide,
 	initialPosition,
-	keepsPlacement,
 	logicalSide,
 	measureFromFarEdges,
 	requestedPlacement,
