@@ -1,5 +1,5 @@
 // Reads the workaround tags of the repository: code that exists because of something outside our
-// control says so in a doc comment where it lives (see CONTRIBUTING.md § Code, Workarounds). The
+// control says so in a doc comment where it lives (see contributing/code.md § Workarounds). The
 // list of them is generated from the tags and is the checklist for a Lynx or Svelte upgrade.
 //
 //   node scripts/workarounds.ts           print the list

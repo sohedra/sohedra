@@ -1,5 +1,5 @@
 // The platform contract: everything core gets from the platform it runs on. A stable contract that
-// only grows (see "Platform" in ARCHITECTURE.md); changing a member needs the owner's sign-off.
+// only grows (contributing/architecture.md § The Platform contract), unless the maintainer agrees.
 
 /**
  * The types a platform plugs into core. Core reaches them only through a type parameter

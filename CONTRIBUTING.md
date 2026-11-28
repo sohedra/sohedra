@@ -64,11 +64,13 @@ pnpm build
 pnpm test
 ```
 
-`pnpm -F <package> test` runs one package's tests. `pnpm lint:fix` and `pnpm format` fix most
-problems automatically. `pnpm lint` also checks the repository itself (labels, agent files and
-package setup). CI also checks spelling with [typos](https://github.com/crate-ci/typos); with
-[pipx](https://pipx.pypa.io) installed, `pipx run typos` runs it locally. A word it flags that is
-spelled as it must be goes in `.typos.toml`, with the reason.
+`pnpm -F <package> test` runs one package's tests, and `pnpm test:affected` runs what your change
+reaches in every mode (see [contributing/tests.md](contributing/tests.md)). `pnpm lint:fix` and
+`pnpm format` fix most problems automatically. `pnpm lint` also checks the repository itself
+(labels, agent files and package setup). CI also checks spelling with
+[typos](https://github.com/crate-ci/typos); with [pipx](https://pipx.pypa.io) installed,
+`pipx run typos` runs it locally. A word it flags that is spelled as it must be goes in
+`.typos.toml`, with the reason.
 
 ## Pull requests
 
@@ -138,102 +140,10 @@ Issues and pull requests that don't meet these rules may be closed without revie
 
 ## Code
 
-- File names are kebab-case (`config-file.ts`), except Svelte components, which are PascalCase
-  (`Slider.svelte`).
-- Public APIs have doc comments; the API reference is generated from them.
-- Keep a comment only when the code can't show the constraint. The history of a bug goes in the pull
-  request's Why, not in a comment.
-- Code, docs, commits and pull requests are written in American English: second person, present
-  tense, active voice. Headings use sentence case and start at level 2. Name platforms in the order
-  "iOS, Android and web", write version ranges as "Lynx 3.9 and later", and use no emoji.
-
-### Shape
-
-- **Functions first.** Use a class only where state and identity live, such as a renderer or a
-  store.
-- **Named exports,** except where a host reads the default export: `.svelte` components, Svelte's
-  custom-renderer module, bundler loaders and tool config files.
-- **An exported function with more than two arguments takes an options object,** unless a standard,
-  Svelte, Lynx or a host dictates its signature, or it is a file-private function on a hot path.
-- **Exported functions state their types:** `isolatedDeclarations` is on.
-- **Type escapes** (`as`, `any`, `@ts-expect-error`) appear only at boundaries, such as thread
-  entries and untyped Svelte or Lynx APIs, each with a one-line comment that starts with `Boundary:`
-  and gives the reason.
-
-### Design
-
-- **Match by identity, not by position or text.** When two things must be paired (a drawn element
-  and the one that replaces it, a module and its package, a row and its data), pair them by an
-  identity the system gives you: a key, a mark, a resolved path. Order, shape and string patterns
-  are guesses.
-- **Ask the source of truth.** When a dependency already knows the answer (the bundler's resolved
-  module, the compiler's AST, a published type), use its answer instead of working it out again.
-- **A type escape names what is missing.** A `Boundary` comment says which published type does not
-  fit and why, and stays true for the installed version. Without that reason, use the published
-  type.
-- **Each decision lives in one place.** When two files decide the same thing, they drift; one owns
-  it and the other asks.
-- **No silent failure.** A `catch` reports, rethrows, or says in a comment why ignoring the error is
-  correct here.
-- **Wait for a condition, not for time.** No fixed timeouts, delays or round counts in code or
-  tests; wait for the state you need, with a bound that fails saying what it waited for.
-- **Handle the general case, or refuse it loudly.** Code that works only for the layouts or shapes
-  the tests use either handles the rest or reports them with an error. A known gap is a
-  `@workaround` or a test marked as a known failure, never an unmarked assumption.
-
-### Folders and imports
-
-- Each top folder of a package has one `index.ts`, its only face to the other folders. Inside a
-  folder, files import each other directly.
-- Which folder may import which is set per folder in the lint config (`no-restricted-imports`, and
-  `import/no-cycle` everywhere), so a wrong import fails `pnpm lint`.
-- Name every folder and file for what it holds. No catch-all folders: no `shared`, `helpers`,
-  `utils` or `common`.
-- A file over 400 lines must be one concept. The limit is a prompt in review, not a lint error.
-
-### Errors and warnings
-
-- **The first line is a plain sentence saying what went wrong,** in the developer's names: their
-  function, component or value. LogBox, logcat and a collapsed console show only the first line.
-- **Then where** (the thread, the component, `file:line:col`, and a code frame for build errors),
-  **one concrete next step,** and a docs link that carries a stable snake_case code.
-- **Never use the package's internal words** in a message.
-- Each area of a package keeps one catalogue of its messages, each entry with its fix line and its
-  docs page. A test fails when an entry lacks either, and every message has a snapshot test.
-- Warnings appear only in development builds, once per place. An error that repeats is shown once,
-  with a count, until it has been quiet for five seconds.
-- On Lynx, errors are reported into Lynx with `lynx.reportError`, using Lynx's codes and levels, not
-  through a separate system.
-
-### Workarounds
-
-Code that exists because of something outside our control carries a `@workaround` JSDoc tag where it
-lives: a descriptive name, a kind (`lynx-limit`, `lynx-bug`, `lynx-gap`, `svelte-internal` or
-`tooling`), a link to the public upstream issue if there is one, and when the code can be deleted.
-
-```ts
-/** @workaround proxy-accessor-setter kind=lynx-bug delete-when="Lynx calls a proxy's setter" */
-```
-
-A test reads every tag and generates the list, which is also the checklist for a Lynx or Svelte
-upgrade. A workaround gets its own file only when it is file-sized. Where an upstream change can be
-detected, a canary test fails when it happens (a dependency pins a new version, an engine bug is
-fixed) and says which workaround can go.
-
-### Tests
-
-- Tests live in the package's `tests/` folder, grouped by kind (`threads`, `unit`, `build`,
-  `library`, `contract`), with a subfolder per source area. Test public behavior through the public
-  entry.
-- Lynx packages use Rstest; web packages use Vitest.
-- Coverage is measured on every run and never drops below its last value.
-- Every package runs `publint` on its packed package, in its tests.
-- Every public entry has type tests, run against the packed package on TypeScript 6.0 and later, the
-  last two minors once there are two.
-- The binding (`@sohedra/lynx`) has size budgets as tests for its per-thread scripts: each thread's
-  runtime alone, and a minimal page's main-thread script (with its first frame) and background
-  script. Growth there usually means code leaking from one thread to the other, so raising a budget
-  is a deliberate change, explained in its pull request.
+[contributing/](contributing/README.md) holds everything about writing code here, for people and
+agents alike: the architecture, the code rules, the primitives' recipes, every kind of test and the
+exact command, and the pitfalls. Read [contributing/code.md](contributing/code.md) before you write
+code, and [contributing/tests.md](contributing/tests.md) before you write a test.
 
 ## Releases, deprecation and support
 
