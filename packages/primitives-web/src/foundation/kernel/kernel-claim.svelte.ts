@@ -1,6 +1,8 @@
+import type { OwnedValue } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import { untrack } from "svelte";
-import { createAttachmentKey, type Attachment } from "svelte/attachments";
+import type { Attachment } from "svelte/attachments";
 
+import { attachmentProps } from "./kernel-attachment-props.js";
 import { ownerDocument } from "./kernel-dom.js";
 import type { Props } from "./kernel-merged-props.js";
 
@@ -53,14 +55,6 @@ export function attachClaim<T>(
 	};
 }
 
-/** A props object holding {@link attachClaim} under its own attachment key. Create it once. */
-export function claimProps<T>(
-	claim: (token: object, value: T) => () => void,
-	get: () => T | undefined,
-) {
-	return { [createAttachmentKey()]: attachClaim(claim, get) };
-}
-
 /** What `useClaimedId` reads, from the part's options function. */
 export interface ClaimedIdOptions {
 	/** The `id` prop. */
@@ -69,26 +63,23 @@ export interface ClaimedIdOptions {
 	readonly defaultId: string;
 }
 
-/** An id an owner holds for the element that claimed it (an `OwnedValue<string>`). */
-export interface IdClaim {
-	claim(token: object, value: string): () => void;
-}
-
 /**
  * The props of a part whose id another element names (a Title, a Description, a Label): its `id`,
  * with the claim of that id by `owner` riding inside as an attachment, so the owner names it only
  * while the element is in the document. Spread once on the part's element. Call once while the
  * part initialises.
  */
-export function useClaimedId(owner: IdClaim, options: () => ClaimedIdOptions): Props {
+export function useClaimedId(owner: OwnedValue<string>, options: () => ClaimedIdOptions): Props {
 	const id = $derived(options().id ?? options().defaultId);
 	return {
 		get id() {
 			return id;
 		},
-		...claimProps(
-			(token, value: string) => owner.claim(token, value),
-			() => id,
+		...attachmentProps(
+			attachClaim(
+				(token, value: string) => owner.claim(token, value),
+				() => id,
+			),
 		),
 	};
 }

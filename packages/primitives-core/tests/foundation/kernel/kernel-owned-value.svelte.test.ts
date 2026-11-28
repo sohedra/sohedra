@@ -1,11 +1,7 @@
-// OwnedValue and useClaim: a slot the newest claim owns, released only by its owner, and a part's
-// claim that follows its value and lets go on teardown.
-import { flushSync } from "svelte";
-import { describe, expect, it, vi } from "vitest";
+// OwnedValue: a slot the newest claim owns, released only by its owner.
+import { describe, expect, it } from "vitest";
 
 import { OwnedValue } from "../../../src/foundation/kernel/index.js";
-import { useClaim } from "../../../src/foundation/kernel/kernel-owned-value.svelte.js";
-import { root } from "../../kit/kit-effects.svelte.js";
 
 describe("OwnedValue", () => {
 	it("is unclaimed at first", () => {
@@ -34,51 +30,5 @@ describe("OwnedValue", () => {
 		expect(slot.current).toBeUndefined();
 		second();
 		expect(slot.current).toBeUndefined();
-	});
-});
-
-describe("useClaim", () => {
-	it("claims after mount, re-claims on change, and releases on undefined and teardown", () => {
-		const slot = new OwnedValue<string>();
-		const claim = vi.spyOn(slot, "claim");
-		let id = $state<string | undefined>("a");
-		const cleanup = root(() =>
-			useClaim(
-				(token, value) => slot.claim(token, value),
-				() => id,
-			),
-		);
-		// Effect timing: nothing is claimed until the effects flush.
-		expect(slot.current).toBeUndefined();
-		flushSync();
-		expect(slot.current).toBe("a");
-
-		id = "b";
-		flushSync();
-		expect(slot.current).toBe("b");
-		// One token for the part's lifetime.
-		expect(claim.mock.calls[0][0]).toBe(claim.mock.calls[1][0]);
-
-		id = undefined;
-		flushSync();
-		expect(slot.current).toBeUndefined();
-
-		id = "c";
-		flushSync();
-		expect(slot.current).toBe("c");
-		cleanup();
-		expect(slot.current).toBeUndefined();
-	});
-
-	it("does not let an outgoing part clear its replacement's claim", () => {
-		const slot = new OwnedValue<string>();
-		const outgoing = root(() => useClaim(slot.claim.bind(slot), () => "old"));
-		flushSync();
-		root(() => useClaim(slot.claim.bind(slot), () => "new"));
-		flushSync();
-		expect(slot.current).toBe("new");
-		// The outgoing part tears down late (an `out:` transition).
-		outgoing();
-		expect(slot.current).toBe("new");
 	});
 });

@@ -35,7 +35,7 @@ export {
 } from "./kernel-change-details.js";
 export { type SohedraEvent, type WithSohedraEvent } from "./kernel-types.js";
 export { REASONS } from "./kernel-reasons.js";
-export { OwnedValue, useClaim } from "./kernel-owned-value.svelte.js";
+export { OwnedValue } from "./kernel-owned-value.svelte.js";
 export type { InteractionEventType, KeyInput, PointerType } from "./kernel-platform-values.js";
 export { keepShallowEqual } from "./kernel-shallow-equal.js";
 export { Timeout } from "./kernel-timeout.js";

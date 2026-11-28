@@ -2,6 +2,7 @@
 // opening after the enter animations, hears Escape and presses inside, keeps a hovered popup
 // open, and manages focus for a popup that takes it. Which of these a kind has is read from its
 // behaviour row.
+import type { OwnedValue } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import type {
 	InteractionType,
 	PopupBehavior,
@@ -23,7 +24,6 @@ import {
 	attachClaim,
 	attachmentProps,
 	attachRef,
-	type IdClaim,
 	mergeProps,
 	mergeStyles,
 	type Props,
@@ -56,7 +56,7 @@ interface PopupElementState {
 	/** How long a hover close waits once the pointer leaves the popup. */
 	readonly closeDelay: number;
 	/** The popup element's id, claimed while the element is in the document. */
-	readonly popupIdClaim: IdClaim;
+	readonly popupIdClaim: OwnedValue<string>;
 	/** The initial focus: the part's prop when given, else the kind's default. */
 	resolveInitialFocus<Target>(initialFocus: Target | undefined): unknown;
 	setPopupElement(element: Element | null): void;

@@ -74,4 +74,4 @@ export {
 	isTypeableCombobox,
 	tabbable,
 } from "./kernel-tabbable.js";
-export { type IdClaim, useClaimedId } from "./kernel-claim.svelte.js";
+export { useClaimedId } from "./kernel-claim.svelte.js";

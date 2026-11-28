@@ -8,10 +8,7 @@
   its attribute mapping. The placement props come with the user's props.
 -->
 <script lang="ts" generics="Instant extends string | undefined">
-	import {
-		useClaim,
-		type DefinedContext,
-	} from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import type { DefinedContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
 	import {
 		type Align,
 		type CollisionAvoidance,
@@ -24,6 +21,7 @@
 
 	import { INERT_MARKER } from "../focus/index.js";
 	import {
+		attachClaim,
 		attachRef,
 		DirectionContext,
 		LTR,
@@ -123,9 +121,9 @@
 		inert: view.positionerIgnoresPointer,
 	}));
 
-	// The popup reads this Positioner's measured state (for the safe polygon's side) while it is
-	// mounted.
-	useClaim(
+	// The popup reads this Positioner's measured state (for the safe polygon's side) while its
+	// element is in the document.
+	const attachPositionerClaim = attachClaim(
 		(token, value: PositionerStore<WebTypes>) => view.positionerClaim.claim(token, value),
 		() => positioner,
 	);
@@ -188,6 +186,7 @@
 	hidden={!view.mounted}
 	{style}
 	{@attach attachPositioner}
+	{@attach attachPositionerClaim}
 	{@attach position.attach}
 	user={elementProps}
 />
