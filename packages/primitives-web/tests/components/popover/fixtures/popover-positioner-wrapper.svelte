@@ -1,6 +1,6 @@
 <!--
-  Places a Popover part within Root > Portal > Positioner (and Popup with `inPopup`), as Base
-  UI's conformance renders Popup, Arrow and Viewport. The Root is open unless the part's props
+  The conformance wrapper of the parts that live in the positioned popup (Popup, Arrow, Viewport):
+  places the part within Root > Portal > Positioner (and Popup with `inPopup`). The Root is open unless the part's props
   say `open: false`, for its trigger from the first render (so the server renders the trigger
   as the client does); the Portal is kept mounted so a closed part stays in the DOM.
 -->

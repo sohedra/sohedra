@@ -9,28 +9,20 @@ import { userEvent } from "vitest/browser";
 
 import { expectNoAxeViolations } from "../kit/kit-axe.js";
 import { renderPartOnServer, ssrHydration } from "../kit/kit-server.js";
-import ConformanceHarness from "./conformance-harness.svelte";
 import {
 	harnessProps,
 	serverRenderProps,
 	type ConformanceSetup,
 	type HarnessOptions,
-	ssrFileName,
 } from "./conformance-setup.js";
+import ConformanceHarness from "./fixtures/conformance-harness.svelte";
 
 const RENDER_WITHOUT_SPREAD_WARNING =
 	"Sohedra: The render snippet must spread `props` onto an element.";
 
-const serverHtml = import.meta.glob<string>("./__ssr__/*.html", {
-	query: "?raw",
-	import: "default",
-	eager: true,
-});
-
 /**
- * The conformance suite every part runs in the browser. Its hydration case has the server render a
- * setup with `module` when it runs; for one without, it hydrates the `__ssr__` file that
- * `describeServerRender` (conformance-ssr.ts) writes in the ssr project, with the same `name`.
+ * The conformance suite every part runs in the browser. Its hydration case has the server render
+ * the part when it runs, from the modules the setup's `server` names.
  */
 export function describeConformance<State>(name: string, setup: () => ConformanceSetup<State>) {
 	// A part with empty state (Form) has no state to toggle: its state checks are skipped.
@@ -253,16 +245,7 @@ export function describeConformance<State>(name: string, setup: () => Conformanc
 		);
 
 		it("survives server rendering and hydration", async () => {
-			const file = ssrFileName(name);
-			const { module } = setup();
-			const html = module
-				? await renderPartOnServer(module.url, module.name)
-				: serverHtml[`./__ssr__/${file}`];
-			if (html === undefined) {
-				throw new Error(
-					`tests/conformance/__ssr__/${file} is missing. Run describeServerRender("${name}", …) in the ssr project to write it.`,
-				);
-			}
+			const html = await renderPartOnServer(setup());
 			const { state, clientOnly } = setup();
 			if (clientOnly) {
 				// The part renders only after mount, possibly outside the container (a Portal moves it).

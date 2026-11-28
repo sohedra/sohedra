@@ -4,7 +4,7 @@ import type { Component } from "svelte";
 import type { render } from "svelte/server";
 import type { BrowserCommand, TestProject } from "vitest/node";
 
-import type { ConformanceSetup } from "./conformance/conformance-setup.js";
+import type { ServerExport, ServerHarness } from "./conformance/conformance-setup.js";
 
 const TESTER_FRAME = "vitest-iframe";
 
@@ -56,33 +56,41 @@ const renderOnServer: BrowserCommand<[component: string, props: Record<string, u
 
 /**
  * Renders a part's conformance harness with Svelte's server renderer and returns its HTML. The
- * setup is the export `name` of the module at `module` (a path from the package root); the props
- * are the ones the conformance hydration test hydrates with.
+ * part and its wrapper are the exports `harness` names (modules by their path from the package
+ * root, exports by a dotted path); the props are the ones the conformance hydration test hydrates
+ * with, and the part is in its `on` state, so its `isOn` is `harness.stateful`.
  */
-const renderPartOnServer: BrowserCommand<[module: string, name: string]> = async (
+const renderPartOnServer: BrowserCommand<[harness: ServerHarness]> = async (
 	{ project },
-	module,
-	name,
+	harness,
 ) => {
 	const { render } = await loadServerRenderer(project);
-	// Boundary: Vite's module loader types a module as a record of `any`.
-	const harness = (await project.vite.ssrLoadModule(
-		"/tests/conformance/conformance-harness.svelte",
+	const load = async ({ url, name }: ServerExport) => {
+		// Boundary: Vite's module loader types a module as a record of `any`.
+		const module = (await project.vite.ssrLoadModule(url)) as Record<string, unknown>;
+		const found = name
+			.split(".")
+			.reduce<unknown>(
+				(value, key) => (value as Record<string, unknown> | undefined)?.[key],
+				module,
+			);
+		if (found === undefined) {
+			throw new Error(`${url} has no export ${name}.`);
+		}
+		// Boundary: an export a setup names as a component.
+		return found as Component<Record<string, unknown>>;
+	};
+	// Boundary: as above.
+	const component = (await project.vite.ssrLoadModule(
+		"/tests/conformance/fixtures/conformance-harness.svelte",
 	)) as { default: Component };
-	// Boundary: as above.
-	const { serverRenderProps } = (await project.vite.ssrLoadModule(
-		"/tests/conformance/conformance-setup.ts",
-	)) as { serverRenderProps: (setup: ConformanceSetup<unknown>) => Record<string, unknown> };
-	// Boundary: as above.
-	const setups = (await project.vite.ssrLoadModule(module)) as Record<
-		string,
-		ConformanceSetup<unknown> | undefined
-	>;
-	const setup = setups[name];
-	if (setup === undefined) {
-		throw new Error(`${module} has no export named ${name}.`);
-	}
-	return render(harness.default, { props: serverRenderProps(setup) }).body;
+	const props = {
+		...harness.props,
+		part: await load(harness.part),
+		wrapper: harness.wrapper && (await load(harness.wrapper)),
+		isOn: () => harness.stateful,
+	};
+	return render(component.default, { props }).body;
 };
 
 function loadServerRenderer(project: TestProject): Promise<{ render: typeof render }> {

@@ -1,27 +1,23 @@
-// The state recorder in the render snippet is a component with an `$effect.pre`; the
-// controlled case uses `open={true}` without `bind:` (nothing changes it in the test).
-
+// Popover.Backdrop: no entry phase for a popover that starts open, and pointer events by how the
+// popover opened.
 import { describe, expect, it } from "vitest";
+import { render } from "vitest-browser-svelte";
+import { page, userEvent } from "vitest/browser";
 
 import type { PopoverBackdropState } from "#lib/components/popover/popover-types.js";
 
-import { describeConformance } from "../../conformance/conformance-part.js";
-import { createRenderer, screen, waitFor } from "../../shim/index.js";
-import { popoverBackdropConformance } from "./fixtures/popover-backdrop-conformance.js";
-import PartBackdropHover from "./fixtures/popover-backdrop-hover.svelte";
-import PartBackdropRecord from "./fixtures/popover-backdrop-record.svelte";
+import PopoverBackdropStates from "./fixtures/popover-backdrop-states.svelte";
+import PopoverDemo from "./fixtures/popover-demo.svelte";
 
-describe("<Popover.Backdrop />", () => {
-	const { render } = createRenderer();
+const backdropStyle = () => page.getByTestId("backdrop").element().style;
 
-	describeConformance("Popover.Backdrop", () => popoverBackdropConformance);
-
+describe("Popover.Backdrop", () => {
 	it.each([false, true])(
 		"does not start an entry phase when initially open (controlled=%s)",
 		async (controlled) => {
 			const statuses = new Set<PopoverBackdropState["transitionStatus"]>();
 
-			await render(PartBackdropRecord, {
+			await render(PopoverBackdropStates, {
 				controlled,
 				onState: (state: PopoverBackdropState) => statuses.add(state.transitionStatus),
 			});
@@ -31,20 +27,27 @@ describe("<Popover.Backdrop />", () => {
 	);
 
 	it("sets `pointer-events: none` style on backdrop if opened by hover", async () => {
-		const { user } = await render(PartBackdropHover, { delay: 0 });
+		await render(PopoverDemo, {
+			triggers: ["Open"],
+			triggerProps: { openOnHover: true, delay: 0 },
+			backdropProps: {},
+		});
 
-		await user.hover(screen.getByText("Open"));
+		await userEvent.hover(page.getByRole("button", { name: "Open" }));
 
-		expect(screen.getByTestId("backdrop").style.pointerEvents).toBe("none");
+		await expect.poll(() => backdropStyle().pointerEvents).toBe("none");
 	});
 
 	it("does not set `pointer-events: none` style on backdrop if opened by click", async () => {
-		const { user } = await render(PartBackdropHover);
-
-		await user.click(screen.getByText("Open"));
-
-		await waitFor(() => {
-			expect(screen.getByTestId("backdrop").style.pointerEvents).not.toBe("none");
+		await render(PopoverDemo, {
+			triggers: ["Open"],
+			triggerProps: { openOnHover: true },
+			backdropProps: {},
 		});
+
+		await userEvent.click(page.getByRole("button", { name: "Open" }));
+
+		await expect.element(page.getByTestId("backdrop")).toBeInTheDocument();
+		await expect.poll(() => backdropStyle().pointerEvents).not.toBe("none");
 	});
 });

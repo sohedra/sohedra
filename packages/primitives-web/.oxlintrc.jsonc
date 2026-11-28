@@ -88,17 +88,5 @@
 				"vitest/valid-title": "off",
 			},
 		},
-		{
-			// Tests that pin behavior keep their code as written; only their imports and the calls
-			// whose signature changed are edited. These rules flag code in them that does no harm.
-			"files": ["tests/components/popover/popover-root.detached-triggers.test.ts"],
-			"rules": {
-				"typescript/await-thenable": "off",
-				"typescript/consistent-type-imports": "off",
-				"typescript/no-floating-promises": "off",
-				"vitest/no-conditional-expect": "off",
-				"vitest/no-disabled-tests": "off",
-			},
-		},
 	],
 }

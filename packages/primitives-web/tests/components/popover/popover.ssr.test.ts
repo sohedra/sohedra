@@ -1,51 +1,22 @@
-// The server halves of the Popover hydration tests: the conformance suites of the
-// popover-*.test.ts files, and the closed and initially open popovers of popover-trigger.test.ts.
-// The Portal resolves its container after mount, so the server renders only what
-// sits outside it.
-
+// What Popover's server HTML holds: the trigger only, closed, whether or not the popover starts
+// open, since the Portal resolves its container after mount.
 import { render } from "svelte/server";
 import { describe, expect, it } from "vitest";
 
-import { describeServerRender } from "../../conformance/conformance-ssr.js";
-import { popoverArrowConformance } from "./fixtures/popover-arrow-conformance.js";
-import { popoverBackdropConformance } from "./fixtures/popover-backdrop-conformance.js";
-import { popoverCloseConformance } from "./fixtures/popover-close-conformance.js";
-import { popoverDescriptionConformance } from "./fixtures/popover-description-conformance.js";
-import { popoverPopupConformance } from "./fixtures/popover-popup-conformance.js";
-import { popoverPortalConformance } from "./fixtures/popover-portal-conformance.js";
-import PartSsrPopover from "./fixtures/popover-ssr.svelte";
-import { popoverTitleConformance } from "./fixtures/popover-title-conformance.js";
-import { popoverTriggerConformance } from "./fixtures/popover-trigger-conformance.js";
-import { popoverViewportConformance } from "./fixtures/popover-viewport-conformance.js";
+import PopoverPage from "./fixtures/popover-page.svelte";
 
-describeServerRender("Popover.Trigger", () => popoverTriggerConformance);
-describeServerRender("Popover.Popup", () => popoverPopupConformance);
-describeServerRender("Popover.Close", () => popoverCloseConformance);
-describeServerRender("Popover.Backdrop", () => popoverBackdropConformance);
-describeServerRender("Popover.Title", () => popoverTitleConformance);
-describeServerRender("Popover.Description", () => popoverDescriptionConformance);
-describeServerRender("Popover.Arrow", () => popoverArrowConformance);
-describeServerRender("Popover.Portal", () => popoverPortalConformance);
-describeServerRender("Popover.Viewport", () => popoverViewportConformance);
-
-/** The elements of `body` as `<tag attr="value" …>` strings, without Svelte's comments. */
-function openingTags(body: string) {
-	return body.match(/<[a-z][^>]*>/g) ?? [];
+/** The page's elements as `<tag attr="value" …>` strings, its own landmark and heading aside. */
+function popoverTags(body: string) {
+	return (body.match(/<[a-z][^>]*>/g) ?? []).filter((tag) => !/^<(main|h1)\b/.test(tag));
 }
 
 describe.each([
-	{ name: "closed popover", file: "popover-closed.html", defaultOpen: false },
-	{ name: "defaultOpen popover", file: "popover-default-open.html", defaultOpen: true },
-])("$name server render", ({ file, defaultOpen }) => {
-	it("matches the HTML fixture the browser hydrates", async () => {
-		const { body } = render(PartSsrPopover, { props: { defaultOpen } });
-		const path = decodeURIComponent(new URL(`./__ssr__/${file}`, import.meta.url).pathname);
-		await expect(body).toMatchFileSnapshot(path);
-	});
-
+	{ name: "closed popover", defaultOpen: false },
+	{ name: "defaultOpen popover", defaultOpen: true },
+])("$name server render", ({ defaultOpen }) => {
 	it("renders only the trigger, closed", () => {
-		const { body } = render(PartSsrPopover, { props: { defaultOpen } });
-		const tags = openingTags(body);
+		const { body } = render(PopoverPage, { props: { defaultOpen } });
+		const tags = popoverTags(body);
 		expect(tags).toHaveLength(1);
 		const trigger = tags[0]!;
 		expect(trigger).toMatch(/^<button /);

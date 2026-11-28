@@ -5,10 +5,16 @@ import { type Component, flushSync, hydrate, unmount } from "svelte";
 import { onTestFinished, vi } from "vitest";
 import { commands } from "vitest/browser";
 
+import {
+	type ConformanceSetup,
+	type ServerHarness,
+	serverHarness,
+} from "../conformance/conformance-setup.js";
+
 declare module "vitest/browser" {
 	interface BrowserCommands {
 		renderOnServer: (component: string, props: Record<string, unknown>) => Promise<string>;
-		renderPartOnServer: (module: string, name: string) => Promise<string>;
+		renderPartOnServer: (harness: ServerHarness) => Promise<string>;
 	}
 }
 
@@ -24,11 +30,20 @@ export function renderOnServer(url: URL, props: Record<string, unknown> = {}): P
 }
 
 /**
- * The server HTML of a part's conformance harness, for the setup exported as `name` from the
- * module at `url` (a setup's `module`), rendered with the props the conformance suite hydrates.
+ * The server HTML of a part's conformance harness for `setup`, rendered with the props the
+ * conformance suite hydrates.
  */
-export function renderPartOnServer(url: string, name: string): Promise<string> {
-	return commands.renderPartOnServer(decodeURIComponent(new URL(url).pathname), name);
+export function renderPartOnServer<State>(setup: ConformanceSetup<State>): Promise<string> {
+	const harness = serverHarness(setup);
+	const path = (from: { url: string; name: string }) => ({
+		url: decodeURIComponent(new URL(from.url).pathname),
+		name: from.name,
+	});
+	return commands.renderPartOnServer({
+		...harness,
+		part: path(harness.part),
+		wrapper: harness.wrapper && path(harness.wrapper),
+	});
 }
 
 /** A container on the page holding `html`, as the browser parsed it. Removed when the test ends. */

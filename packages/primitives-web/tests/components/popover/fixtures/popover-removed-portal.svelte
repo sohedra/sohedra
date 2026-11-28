@@ -1,4 +1,7 @@
-<!-- A popover whose Portal a button inside it removes while the Root stays open. -->
+<!--
+  A popover whose Portal a button inside it removes while the Root stays open: the demo keeps its
+  Portal.
+-->
 <script lang="ts">
 	import { Popover } from "#lib/components/popover/index.js";
 

@@ -13,9 +13,8 @@ export default defineConfig(({ mode }) => ({
 		setupFiles: ["./tests/setup-reset.ts", ...(mode === "async" ? ["./tests/setup-async.ts"] : [])],
 		projects: [
 			{
-				// Server rendering in Node: what a component's server HTML leaves out, and the `__ssr__`
-				// files that tests not yet rewritten hydrate (conformance-ssr.ts). Hydration tests have
-				// the server render when they run, through the browser commands.
+				// Server rendering in Node: what a component's server HTML holds and leaves out.
+				// Hydration tests have the server render when they run, through the browser commands.
 				extends: true,
 				test: {
 					name: "ssr",

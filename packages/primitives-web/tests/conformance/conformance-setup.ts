@@ -15,10 +15,13 @@ export type ConformanceWrapperProps = {
 	partProps: Record<string, unknown>;
 };
 
+/** A module's export the server loads by itself: the module's URL and a dotted export path. */
+export type ServerExport = { url: string; name: string };
+
 /**
- * Describes a part to the conformance suite. Read by the browser suite (`describeConformance`) and,
- * in Node, by the server renders (`renderPartOnServer` in tests/browser-commands.ts, and
- * `describeServerRender`), so keep it in a module all of them can import.
+ * Describes a part to the conformance suite (`describeConformance`), written beside the call that
+ * runs it. The server render (`renderPartOnServer` in tests/browser-commands.ts) cannot load the
+ * test file, so `server` names the modules it renders from.
  */
 export type ConformanceSetup<State> = {
 	/** The part under test. */
@@ -83,11 +86,11 @@ export type ConformanceSetup<State> = {
 	 */
 	idsAssignedOnMount?: boolean;
 	/**
-	 * Where this setup is exported: `{ url: import.meta.url, name: "<its export name>" }`. With it,
-	 * the hydration test has the server render the part when it runs; without it, the test hydrates
-	 * the HTML that `describeServerRender` (conformance-ssr.ts) keeps in `__ssr__`.
+	 * Where the server finds `part` and `wrapper`, so the hydration test can have it render the part
+	 * when it runs: `{ part: { url, name: "Popover.Trigger" }, wrapper: { url, name: "default" } }`,
+	 * each `url` a `new URL(…, import.meta.url).href`.
 	 */
-	module?: { url: string; name: string };
+	server: { part: ServerExport; wrapper?: ServerExport };
 	/**
 	 * For the axe check: props that complete the part the way a page would (an accessible name for
 	 * a control rendered alone), and rules a part alone can't satisfy, each with the reason.
@@ -128,12 +131,36 @@ export function harnessProps<State>(setup: ConformanceSetup<State>, options: Har
 	};
 }
 
-/** The harness props the server-render fixture is made with, and later hydrated with. */
+/** The harness props the server renders a part with, and the browser later hydrates with. */
 export function serverRenderProps<State>(setup: ConformanceSetup<State>) {
 	return harnessProps(setup, { partProps: setup.state?.on, withChildren: true });
 }
 
-/** The `__ssr__` file `describeServerRender` keeps a part's server render in: `Switch.Root` → `switch-root.html`. */
-export function ssrFileName(name: string) {
-	return `${name.toLowerCase().replace(/\./g, "-")}.html`;
+/**
+ * What the server renders a part's harness from, as JSON: the part's and the wrapper's exports,
+ * and `serverRenderProps` without its functions. The server renders the part in its `on` state, so
+ * its `isOn` is `stateful`.
+ */
+export type ServerHarness = {
+	part: ServerExport;
+	wrapper?: ServerExport;
+	stateful: boolean;
+	props: Record<string, unknown>;
+};
+
+/** The `ServerHarness` of `setup`. */
+export function serverHarness<State>(setup: ConformanceSetup<State>): ServerHarness {
+	const {
+		part: _part,
+		wrapper: _wrapper,
+		isOn: _isOn,
+		attach: _attach,
+		...props
+	} = serverRenderProps(setup);
+	return {
+		part: setup.server.part,
+		wrapper: setup.server.wrapper,
+		stateful: setup.state !== undefined,
+		props,
+	};
 }
