@@ -1,7 +1,7 @@
 // useTriggerRegistration: a trigger's registration with its popup, driven as a trigger part drives
 // it, over getters of reactive values inside an effect root.
 import { flushSync } from "svelte";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { PopoverStore, PopoverTriggerData } from "../../../src/components/popover/index.js";
 import { createChangeEventDetails, REASONS } from "../../../src/foundation/kernel/index.js";
@@ -101,6 +101,29 @@ describe("useTriggerRegistration", () => {
 		flushSync();
 		expect(first.triggers.getById("t")).toBeUndefined();
 		expect(second.triggers.getById("t")).toBe(button);
+	});
+
+	it("registers again when its element changes, not when its data does", () => {
+		const store = createPopoverStore();
+		const register = vi.spyOn(store, "registerTrigger");
+		let current: Element | null = $state.raw(null);
+		let forwarded = $state.raw(data("one"));
+		// A new options object on each call, built from every value, as a trigger part builds it.
+		const stop = root(() =>
+			useTriggerRegistration(() => ({ store, id: "t", element: current, data: forwarded })),
+		);
+		current = element("button");
+		flushSync();
+		expect(register).toHaveBeenCalledTimes(1);
+
+		forwarded = data("two");
+		flushSync();
+		expect(register).toHaveBeenCalledTimes(1);
+
+		current = element("button");
+		flushSync();
+		expect(register).toHaveBeenCalledTimes(2);
+		stop();
 	});
 
 	it("forwards its data while it owns the mounted popup", () => {

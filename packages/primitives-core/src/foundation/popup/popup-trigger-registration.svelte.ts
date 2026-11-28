@@ -35,13 +35,17 @@ export function useTriggerRegistration<
 	T extends PlatformTypes,
 	Data extends PopupTriggerData<unknown>,
 >(options: () => TriggerRegistrationOptions<T, Data>): void {
-	// The popup the trigger reads now, compared by value: it is told when the trigger leaves it.
+	// Compared by value: the trigger registers again only when one of these changes, not when the
+	// data it forwards does (the effect below forwards that).
 	const store = $derived(options().store);
+	const id = $derived(options().id);
+	const element = $derived(options().element);
+
+	// The popup the trigger reads now is told when the trigger leaves it.
 	$effect(() => store.joinTrigger());
 
 	// The element is registered under the trigger's id while it is attached.
 	$effect(() => {
-		const { store, id, element } = options();
 		if (!element) {
 			return;
 		}
