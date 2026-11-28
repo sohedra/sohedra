@@ -4,15 +4,18 @@ import { defineConfig } from "vitest/config";
 
 import { browserCommands } from "./tests/browser-commands.js";
 
-// The same projects and modes as the old package, minus `core`, which is `primitives-core`'s own.
-// `vitest --mode async` compiles with Svelte's `experimental.async`. The browser commands are the
-// ones `tests/browser-setup.ts` calls.
+// Two projects: `ssr` runs the `*.ssr.test.ts` files in Node, `browser` every other test in the
+// browsers; the stores' own tests are `primitives-core`'s. `vitest --mode async` compiles with
+// Svelte's `experimental.async`. The browser commands are the ones `tests/setup-browser.ts` and
+// `tests/kit/kit-server.ts` call.
 export default defineConfig(({ mode }) => ({
 	test: {
-		setupFiles: ["./tests/setup.ts", ...(mode === "async" ? ["./tests/setup-async.ts"] : [])],
+		setupFiles: ["./tests/setup-reset.ts", ...(mode === "async" ? ["./tests/setup-async.ts"] : [])],
 		projects: [
 			{
-				// Server rendering: writes the HTML fixtures the browser project hydrates.
+				// Server rendering in Node: what a component's server HTML leaves out, and the `__ssr__`
+				// files that tests not yet rewritten hydrate (conformance-ssr.ts). Hydration tests have
+				// the server render when they run, through the browser commands.
 				extends: true,
 				test: {
 					name: "ssr",
@@ -25,7 +28,7 @@ export default defineConfig(({ mode }) => ({
 				test: {
 					name: "browser",
 					include: ["tests/**/*.test.ts"],
-					setupFiles: ["./tests/browser-setup.ts"],
+					setupFiles: ["./tests/setup-browser.ts"],
 					exclude: [
 						"tests/**/*.ssr.test.ts",
 						// `*.async.test.ts` render fixtures with `await` in markup, which needs async mode.

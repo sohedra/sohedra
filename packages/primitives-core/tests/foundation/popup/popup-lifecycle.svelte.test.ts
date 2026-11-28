@@ -26,7 +26,7 @@ import {
 } from "../../../src/foundation/popup/popup-lifecycle.svelte.js";
 import { visibleInstantType } from "../../../src/foundation/popup/popup-rules.js";
 import type { PopupChangeEventDetails } from "../../../src/foundation/popup/popup-types.js";
-import { createFakePlatform } from "../../fake-platform.js";
+import { createFakePlatform } from "../../kit/kit-fake-platform.js";
 
 type Details = PopupChangeEventDetails<PlatformTypes>;
 type Extra = { visits: number };

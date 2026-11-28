@@ -11,7 +11,7 @@ import {
 	startSafePolygon,
 } from "../../../src/foundation/hover/hover-safe-polygon-rules.js";
 import { getHoverTiming, HoverInteraction } from "../../../src/foundation/hover/index.js";
-import { createFakePlatform } from "../../fake-platform.js";
+import { createFakePlatform } from "../../kit/kit-fake-platform.js";
 
 describe("opensAtOnceOnEnter", () => {
 	it("opens at once when the pointer moves to another trigger of an open popup", () => {

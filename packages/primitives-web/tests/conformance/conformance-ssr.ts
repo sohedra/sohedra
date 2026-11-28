@@ -1,4 +1,6 @@
-// The server half of the server-render conformance test (see ssr-hydration.ts for why it is split).
+// `describeServerRender`: writes a part's server HTML to `tests/conformance/__ssr__/` in the ssr
+// project, for the conformance hydration case of a setup without `module`. It exists for the
+// `__ssr__` files of tests not yet rewritten, and goes with the last such file.
 import { render } from "svelte/server";
 import { describe, expect, it } from "vitest";
 
@@ -7,7 +9,8 @@ import { serverRenderProps, ssrFileName, type ConformanceSetup } from "./conform
 
 /**
  * Renders a part on the server and keeps the HTML in `tests/conformance/__ssr__/` (see `ssrFileName`),
- * where `describeConformance` picks it up to hydrate. Use the same `name` and `setup` for both.
+ * where `describeConformance` picks it up to hydrate. Use the same `name` and `setup` for both. A
+ * setup with `module` needs neither: its hydration case has the server render the part.
  * A missing file is written on a local run; CI fails instead, so commit the file.
  */
 export function describeServerRender<State>(name: string, setup: () => ConformanceSetup<State>) {

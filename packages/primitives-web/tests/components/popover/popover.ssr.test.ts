@@ -6,7 +6,7 @@
 import { render } from "svelte/server";
 import { describe, expect, it } from "vitest";
 
-import { describeServerRender } from "../../conformance/ssr-render.js";
+import { describeServerRender } from "../../conformance/conformance-ssr.js";
 import { popoverArrowConformance } from "./fixtures/popover-arrow-conformance.js";
 import { popoverBackdropConformance } from "./fixtures/popover-backdrop-conformance.js";
 import { popoverCloseConformance } from "./fixtures/popover-close-conformance.js";

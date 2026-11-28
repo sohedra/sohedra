@@ -4,8 +4,12 @@ import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 import { page } from "vitest/browser";
 
-import { ssrHydration } from "../../conformance/ssr-hydration.js";
-import { hydrateOnPage, renderOnServer, serverHtmlOnPage } from "../../kit/kit-server.js";
+import {
+	hydrateOnPage,
+	renderOnServer,
+	serverHtmlOnPage,
+	ssrHydration,
+} from "../../kit/kit-server.js";
 import SwitchPage from "./fixtures/switch-page.svelte";
 
 const PAGE = new URL("./fixtures/switch-page.svelte", import.meta.url);

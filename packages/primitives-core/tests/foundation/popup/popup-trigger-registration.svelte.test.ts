@@ -8,7 +8,7 @@ import { PopoverStore, type PopoverTriggerData } from "../../../src/components/p
 import { bound, createChangeEventDetails, REASONS } from "../../../src/foundation/kernel/index.js";
 import { FloatingTree } from "../../../src/foundation/popup/index.js";
 import { useTriggerRegistration } from "../../../src/foundation/popup/popup-trigger-registration.svelte.js";
-import { createFakePlatform } from "../../fake-platform.js";
+import { createFakePlatform } from "../../kit/kit-fake-platform.js";
 
 // Opaque stand-ins for trigger elements: core never reads them.
 const element = (name: string) => ({ name }) as unknown as Element;

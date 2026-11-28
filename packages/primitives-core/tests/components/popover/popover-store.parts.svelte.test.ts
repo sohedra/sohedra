@@ -19,7 +19,7 @@ import {
 } from "../../../src/foundation/kernel/index.js";
 import { FloatingTree } from "../../../src/foundation/popup/index.js";
 import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
-import { createFakePlatform } from "../../fake-platform.js";
+import { createFakePlatform } from "../../kit/kit-fake-platform.js";
 
 const event = (type = "click", detail = 1) => ({ type, detail }) as unknown as MouseEvent;
 // Opaque stand-ins for trigger elements: core never reads them.

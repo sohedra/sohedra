@@ -1,3 +1,7 @@
+<!--
+  The conformance suite's harness: renders the part with the props, render snippet, children and
+  attachment a case asks for, inside the setup's wrapper when it has one.
+-->
 <script lang="ts">
 	import type { Component, Snippet } from "svelte";
 	import type { Attachment } from "svelte/attachments";

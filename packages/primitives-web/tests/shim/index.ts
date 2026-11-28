@@ -1,4 +1,5 @@
-// The test utilities (`createRenderer`, `screen`, `act`, `fireEvent` and the like), as far as the tests use them.
+// The old test renderer (`createRenderer`, `screen`, `act`, `fireEvent` and the like), kept unchanged
+// for Popover's tests until their rewrite removes its last user.
 import { fireEvent as domFireEvent, screen, waitFor, within } from "@testing-library/dom";
 import { flushSync } from "svelte";
 import { vi } from "vitest";

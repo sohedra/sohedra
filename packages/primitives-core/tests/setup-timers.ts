@@ -1,6 +1,6 @@
-// Core runs on any platform: its time comes from `platform.scheduler`, never from the host's
-// timer globals. Each core test runs with them replaced by stubs that throw, so a global that
-// slipped past lint fails here. (`queueMicrotask` stays: Svelte schedules its flushes with it.)
+// Sets up the timer globals as stubs that throw, for each test: core takes its time from
+// `platform.scheduler`, never from the host's globals, so one that slipped past lint fails here.
+// (`queueMicrotask` stays: Svelte schedules its flushes with it.)
 import { afterEach, beforeEach, vi } from "vitest";
 
 const TIMER_GLOBALS = [

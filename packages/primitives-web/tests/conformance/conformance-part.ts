@@ -1,10 +1,14 @@
+// `describeConformance`: the contract every part keeps in the browser (its element, extra props,
+// handlers, class and style, state attributes, `bind:ref`, attachments, the render and children
+// snippets, and server rendering with hydration).
 import type { SohedraEvent } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
-import { commands, userEvent } from "vitest/browser";
+import { userEvent } from "vitest/browser";
 
-import { expectNoAxeViolations } from "../axe.js";
+import { expectNoAxeViolations } from "../kit/kit-axe.js";
+import { renderPartOnServer, ssrHydration } from "../kit/kit-server.js";
 import ConformanceHarness from "./conformance-harness.svelte";
 import {
 	harnessProps,
@@ -13,13 +17,6 @@ import {
 	type HarnessOptions,
 	ssrFileName,
 } from "./conformance-setup.js";
-import { ssrHydration } from "./ssr-hydration.js";
-
-declare module "vitest/browser" {
-	interface BrowserCommands {
-		renderPartOnServer: (module: string, name: string) => Promise<string>;
-	}
-}
 
 const RENDER_WITHOUT_SPREAD_WARNING =
 	"Sohedra: The render snippet must spread `props` onto an element.";
@@ -31,8 +28,9 @@ const serverHtml = import.meta.glob<string>("./__ssr__/*.html", {
 });
 
 /**
- * The conformance suite every part runs in the browser. Pair it with `describeServerRender`
- * (same `name` and `setup`) in a Node test, which writes the HTML the hydration test uses.
+ * The conformance suite every part runs in the browser. Its hydration case has the server render a
+ * setup with `module` when it runs; for one without, it hydrates the `__ssr__` file that
+ * `describeServerRender` (conformance-ssr.ts) writes in the ssr project, with the same `name`.
  */
 export function describeConformance<State>(name: string, setup: () => ConformanceSetup<State>) {
 	// A part with empty state (Form) has no state to toggle: its state checks are skipped.
@@ -258,10 +256,7 @@ export function describeConformance<State>(name: string, setup: () => Conformanc
 			const file = ssrFileName(name);
 			const { module } = setup();
 			const html = module
-				? await commands.renderPartOnServer(
-						decodeURIComponent(new URL(module.url).pathname),
-						module.name,
-					)
+				? await renderPartOnServer(module.url, module.name)
 				: serverHtml[`./__ssr__/${file}`];
 			if (html === undefined) {
 				throw new Error(

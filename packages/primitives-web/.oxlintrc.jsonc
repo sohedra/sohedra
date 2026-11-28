@@ -93,7 +93,6 @@
 			// whose signature changed are edited. These rules flag code in them that does no harm.
 			"files": [
 				"tests/components/popover/popover-root.detached-triggers.test.ts",
-				"tests/components/switch/switch-root.form.test.ts",
 				"tests/foundation/focus/focus-manager.iframe.test.ts",
 				"tests/foundation/kernel/kernel-event.virtual-pointer.test.ts",
 				"tests/foundation/kernel/kernel-merged-props.test.ts",

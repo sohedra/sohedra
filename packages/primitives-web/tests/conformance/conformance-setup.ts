@@ -1,7 +1,9 @@
+// A part as the conformance suite sees it (`ConformanceSetup`), and the props its harness renders
+// the part with, in the browser and on the server.
 import type { Component, Snippet } from "svelte";
 import type { Attachment } from "svelte/attachments";
 
-import type { AxeOptions } from "../axe.js";
+import type { AxeOptions } from "../kit/kit-axe.js";
 
 /** The props the harness gives a `wrapper`: the content, and the props the part is rendered with. */
 export type ConformanceWrapperProps = {
@@ -14,8 +16,9 @@ export type ConformanceWrapperProps = {
 };
 
 /**
- * Describes a part to the conformance suite. Shared by the browser suite (`describeConformance`)
- * and its server-render half (`describeServerRender`), so keep it in a module both can import.
+ * Describes a part to the conformance suite. Read by the browser suite (`describeConformance`) and,
+ * in Node, by the server renders (`renderPartOnServer` in tests/browser-commands.ts, and
+ * `describeServerRender`), so keep it in a module all of them can import.
  */
 export type ConformanceSetup<State> = {
 	/** The part under test. */
@@ -82,7 +85,7 @@ export type ConformanceSetup<State> = {
 	/**
 	 * Where this setup is exported: `{ url: import.meta.url, name: "<its export name>" }`. With it,
 	 * the hydration test has the server render the part when it runs; without it, the test hydrates
-	 * the HTML that `describeServerRender` keeps in `__ssr__`.
+	 * the HTML that `describeServerRender` (conformance-ssr.ts) keeps in `__ssr__`.
 	 */
 	module?: { url: string; name: string };
 	/**
@@ -130,7 +133,7 @@ export function serverRenderProps<State>(setup: ConformanceSetup<State>) {
 	return harnessProps(setup, { partProps: setup.state?.on, withChildren: true });
 }
 
-/** The `__ssr__` file a part's server render is kept in: `Switch.Root` → `switch-root.html`. */
+/** The `__ssr__` file `describeServerRender` keeps a part's server render in: `Switch.Root` → `switch-root.html`. */
 export function ssrFileName(name: string) {
 	return `${name.toLowerCase().replace(/\./g, "-")}.html`;
 }

@@ -31,7 +31,7 @@ import { FloatingTree } from "../../../src/foundation/popup/index.js";
 import { getNodeChildren } from "../../../src/foundation/popup/popup-floating-tree.js";
 import { hoverOpenInstantType } from "../../../src/foundation/popup/popup-rules.js";
 import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
-import { createFakePlatform, type FakeScheduler } from "../../fake-platform.js";
+import { createFakePlatform, type FakeScheduler } from "../../kit/kit-fake-platform.js";
 
 const event = (type = "click") => ({ type }) as unknown as MouseEvent;
 // Opaque stand-ins for elements: core never reads them.

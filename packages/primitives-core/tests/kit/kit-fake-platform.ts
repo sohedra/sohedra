@@ -8,7 +8,7 @@ import type {
 	Platform,
 	PlatformTypes,
 	Scheduler,
-} from "../src/foundation/kernel/index.js";
+} from "../../src/foundation/kernel/index.js";
 
 /** Any object is an element and any value an event: core never reads either. */
 export type FakeTypes = PlatformTypes;

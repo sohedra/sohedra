@@ -9,7 +9,7 @@ import { isInaccessible } from "@testing-library/dom";
 import type { Component } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { expectNoAxeViolations, type AxeOptions } from "../axe.js";
+import { expectNoAxeViolations, type AxeOptions } from "../kit/kit-axe.js";
 import {
 	act,
 	fireEvent,

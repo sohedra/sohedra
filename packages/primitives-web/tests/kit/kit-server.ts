@@ -1,5 +1,6 @@
-// Server HTML in a browser test: rendered when the test asks, by the project's Vite server, then
-// put on the page and hydrated. A mismatch that hydration logs fails the test.
+// Server HTML in a browser test: rendered when the test runs, by the project's Vite server through
+// a browser command, or given as a string, then put on the page and hydrated. A mismatch that
+// hydration logs fails the test.
 import { type Component, flushSync, hydrate, unmount } from "svelte";
 import { onTestFinished, vi } from "vitest";
 import { commands } from "vitest/browser";
@@ -7,8 +8,12 @@ import { commands } from "vitest/browser";
 declare module "vitest/browser" {
 	interface BrowserCommands {
 		renderOnServer: (component: string, props: Record<string, unknown>) => Promise<string>;
+		renderPartOnServer: (module: string, name: string) => Promise<string>;
 	}
 }
+
+/** The tag, id and `data-*` attributes of one element. */
+export type ElementSnapshot = { tag: string; id: string; data: Record<string, string> };
 
 /**
  * The server HTML of the component at `url` (`new URL("./fixtures/x.svelte", import.meta.url)`),
@@ -16,6 +21,14 @@ declare module "vitest/browser" {
  */
 export function renderOnServer(url: URL, props: Record<string, unknown> = {}): Promise<string> {
 	return commands.renderOnServer(decodeURIComponent(url.pathname), props);
+}
+
+/**
+ * The server HTML of a part's conformance harness, for the setup exported as `name` from the
+ * module at `url` (a setup's `module`), rendered with the props the conformance suite hydrates.
+ */
+export function renderPartOnServer(url: string, name: string): Promise<string> {
+	return commands.renderPartOnServer(decodeURIComponent(new URL(url).pathname), name);
 }
 
 /** A container on the page holding `html`, as the browser parsed it. Removed when the test ends. */
@@ -35,20 +48,85 @@ export function hydrateOnPage<Props extends Record<string, unknown>>(
 	Component: Component<Props>,
 	props: Props,
 ): void {
+	const app = hydrateChecked(container, Component, props);
+	onTestFinished(() => void unmount(app));
+}
+
+/**
+ * Puts the server HTML `html` on the page and hydrates `Component` with `props` over it, as
+ * `serverHtmlOnPage` and `hydrateOnPage` do, then unmounts it and removes the container before it
+ * returns. Returns every element's snapshot before and after hydration. `inspect` runs with the
+ * hydrated container, before it is unmounted, for checks that need the live DOM.
+ */
+export function ssrHydration<Props extends Record<string, unknown>>(
+	Component: Component<Props>,
+	props: Props,
+	html: string,
+	inspect?: (container: HTMLElement) => void,
+): { before: ElementSnapshot[]; after: ElementSnapshot[] } {
+	const container = document.body.appendChild(document.createElement("div"));
+	container.innerHTML = html;
+	let app: ReturnType<typeof hydrate> | undefined;
+	try {
+		const before = snapshotElements(container);
+		let after: ElementSnapshot[] = [];
+		app = hydrateChecked(container, Component, props, () => {
+			after = snapshotElements(container);
+			inspect?.(container);
+		});
+		return { before, after };
+	} finally {
+		if (app) {
+			void unmount(app);
+		}
+		container.remove();
+	}
+}
+
+/**
+ * Hydrates and applies the first update, runs `hydrated`, then throws if a `console.warn` or
+ * `console.error` mentioned hydration meanwhile: the one mismatch check of this file. On a throw,
+ * the component is unmounted.
+ */
+function hydrateChecked<Props extends Record<string, unknown>>(
+	container: HTMLElement,
+	Component: Component<Props>,
+	props: Props,
+	hydrated?: () => void,
+): ReturnType<typeof hydrate> {
 	const warn = vi.spyOn(console, "warn");
 	const error = vi.spyOn(console, "error");
 	try {
 		const app = hydrate(Component, { target: container, props });
-		onTestFinished(() => void unmount(app));
-		flushSync();
-		const messages = [...warn.mock.calls, ...error.mock.calls]
-			.map((args) => args.map(String).join(" "))
-			.filter((message) => message.includes("hydration"));
-		if (messages.length > 0) {
-			throw new Error(`Hydration logged:\n${messages.join("\n")}`);
+		try {
+			flushSync();
+			hydrated?.();
+			const messages = [...warn.mock.calls, ...error.mock.calls]
+				.map((args) => args.map(String).join(" "))
+				.filter((message) => message.includes("hydration"));
+			if (messages.length > 0) {
+				throw new Error(`Hydration logged:\n${messages.join("\n")}`);
+			}
+		} catch (failure) {
+			void unmount(app);
+			throw failure;
 		}
+		return app;
 	} finally {
 		warn.mockRestore();
 		error.mockRestore();
 	}
+}
+
+/** Every element in `container`, in document order: its tag, id and `data-*` attributes. */
+function snapshotElements(container: Element): ElementSnapshot[] {
+	return Array.from(container.querySelectorAll("*"), (element) => ({
+		tag: element.tagName.toLowerCase(),
+		id: element.id,
+		data: Object.fromEntries(
+			Array.from(element.attributes)
+				.filter((attribute) => attribute.name.startsWith("data-"))
+				.map((attribute) => [attribute.name, attribute.value]),
+		),
+	}));
 }

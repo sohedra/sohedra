@@ -17,7 +17,7 @@ import {
 	type OutsidePress,
 } from "../../../src/foundation/dismiss/index.js";
 import { FloatingTree } from "../../../src/foundation/popup/index.js";
-import { createFakePlatform, type FakeTypes } from "../../fake-platform.js";
+import { createFakePlatform, type FakeTypes } from "../../kit/kit-fake-platform.js";
 
 const EVENT = {} as never;
 

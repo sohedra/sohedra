@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";
 
-import { expectNoAxeViolations } from "../../axe.js";
+import { expectNoAxeViolations } from "../../kit/kit-axe.js";
 import AxePopover from "./fixtures/popover-axe.svelte";
 
 describe("Popover axe", () => {

@@ -14,12 +14,12 @@ export default defineConfig(({ mode }) => ({
 	resolve: { conditions: ["browser"] },
 	test: {
 		name: "core",
-		environment: "./tests/node-client-environment.ts",
+		environment: "./tests/setup-environment.ts",
 		include: ["tests/**/*.test.ts"],
 		setupFiles: [
-			"./tests/setup.ts",
+			"./tests/setup-reset.ts",
 			...(mode === "async" ? ["./tests/setup-async.ts"] : []),
-			"./tests/core/setup.ts",
+			"./tests/setup-timers.ts",
 		],
 	},
 }));

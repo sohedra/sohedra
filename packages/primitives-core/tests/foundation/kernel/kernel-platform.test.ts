@@ -4,7 +4,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { inertPlatform, Timeout } from "../../../src/foundation/kernel/index.js";
-import { createFakePlatform } from "../../fake-platform.js";
+import { createFakePlatform } from "../../kit/kit-fake-platform.js";
 
 // The shared setup sets this global; the web package declares its type, which this package does
 // not see.

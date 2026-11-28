@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { Presence } from "../../../src/foundation/presence/index.js";
 import type { PresenceProps } from "../../../src/foundation/presence/presence.svelte.js";
-import { createFakePlatform, type FakeScheduler } from "../../fake-platform.js";
+import { createFakePlatform, type FakeScheduler } from "../../kit/kit-fake-platform.js";
 
 let scheduler: FakeScheduler;
 

@@ -14,7 +14,7 @@ import { userEvent as browserUser } from "vitest/browser";
 import { Popover } from "#lib/components/popover/index.js";
 
 import { describeConformance } from "../../conformance/conformance-part.js";
-import { ssrHydration } from "../../conformance/ssr-hydration.js";
+import { ssrHydration } from "../../kit/kit-server.js";
 import { act, createRenderer, fireEvent, screen, waitFor } from "../../shim/index.js";
 import PartMultiTriggerPopover from "./fixtures/popover-multi-trigger.svelte";
 import PartSsrPopover from "./fixtures/popover-ssr.svelte";

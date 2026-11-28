@@ -30,7 +30,7 @@ import {
 } from "../../../src/foundation/kernel/index.js";
 import { FloatingTree } from "../../../src/foundation/popup/index.js";
 import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
-import { createFakePlatform, type FakeScheduler } from "../../fake-platform.js";
+import { createFakePlatform, type FakeScheduler } from "../../kit/kit-fake-platform.js";
 
 const event = (type = "click") => ({ type }) as unknown as MouseEvent;
 // Opaque stand-ins for elements: core never reads them.

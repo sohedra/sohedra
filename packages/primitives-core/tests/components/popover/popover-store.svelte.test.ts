@@ -17,7 +17,7 @@ import {
 	REASONS,
 } from "../../../src/foundation/kernel/index.js";
 import { FloatingTree } from "../../../src/foundation/popup/index.js";
-import { createFakePlatform, type FakeScheduler } from "../../fake-platform.js";
+import { createFakePlatform, type FakeScheduler } from "../../kit/kit-fake-platform.js";
 
 const event = (type = "click") => ({ type }) as unknown as Event;
 // Opaque stand-ins for trigger elements: core never reads them.

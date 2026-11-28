@@ -1,4 +1,4 @@
-// Server-side browser commands for `tests/browser-setup.ts` and the server renders of
+// Server-side browser commands for `tests/setup-browser.ts` and the server renders of
 // `tests/kit/kit-server.ts`. They run in Node, with Playwright's page for the test file's session.
 import type { Component } from "svelte";
 import type { render } from "svelte/server";
