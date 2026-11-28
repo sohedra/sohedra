@@ -13,6 +13,7 @@
 		"build": "pnpm -r build",
 		"check": "pnpm -r check",
 		"test": "pnpm -r test",
+		"test:affected": "node scripts/affected-tests.ts",
 		"lint": "oxlint --no-error-on-unmatched-pattern && node scripts/check-repo.ts",
 		"lint:fix": "oxlint --fix --no-error-on-unmatched-pattern",
 		"labels:sync": "node scripts/sync-labels.ts",
