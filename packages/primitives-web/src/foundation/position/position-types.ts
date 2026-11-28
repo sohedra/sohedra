@@ -83,13 +83,15 @@ export interface Viewport {
 	readonly state: AnchoredViewportState;
 	/** Changes when the content has to be created anew: the part keys its content on it. */
 	readonly contentKey: number;
-	/** Whether the current content shows its starting style. */
-	readonly showStartingStyle: boolean;
-	/** The inline style of the container that shows the previous content. */
-	readonly previousStyle: string;
-	/** For the container of the current content. It holds an attachment. */
+	/**
+	 * For the container of the current content: `data-current`, its starting style while it
+	 * transitions in, and an attachment.
+	 */
 	readonly current: HTMLAttributes<HTMLDivElement>;
-	/** For the container of the previous content. It holds an attachment. */
+	/**
+	 * For the inert container of the previous content: `data-previous`, its size and ending style,
+	 * and an attachment.
+	 */
 	readonly previous: HTMLAttributes<HTMLDivElement>;
 }
 

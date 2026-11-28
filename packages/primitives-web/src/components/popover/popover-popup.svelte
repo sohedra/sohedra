@@ -5,8 +5,7 @@
 <script lang="ts">
 	import { FOCUSABLE_POPUP_PROPS } from "../../foundation/focus/index.js";
 	import { Part } from "../../foundation/kernel/index.js";
-	import { usePopupElement } from "../../foundation/popup/index.js";
-	import { popoverPopupAttributes } from "./popover-attributes.js";
+	import { popupTransitionStateMapping, usePopupElement } from "../../foundation/popup/index.js";
 	import {
 		PopoverPopupContext,
 		PopoverPositionerContext,
@@ -36,7 +35,7 @@
 	tag="div"
 	bind:ref
 	state={positioner.popupState}
-	attrs={popoverPopupAttributes}
+	attrs={popupTransitionStateMapping}
 	{...popup.props}
 	id={popover.defaultPopupId}
 	role="dialog"

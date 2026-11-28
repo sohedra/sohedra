@@ -6,8 +6,8 @@
 	import { sohedraId } from "@sohedra/primitives-core/foundation/kernel/index.js";
 	import { POPUP_BEHAVIOR } from "@sohedra/primitives-core/foundation/popup/index.js";
 
+	import { popupStateMapping } from "../../foundation/popup/index.js";
 	import { AnchoredPositioner } from "../../foundation/position/index.js";
-	import { popoverPositionerAttributes } from "./popover-attributes.js";
 	import {
 		PopoverPortalContext,
 		PopoverPositionerContext,
@@ -31,7 +31,7 @@
 	nodeId={sohedraId(uid)}
 	context={PopoverPositionerContext}
 	keepMounted={portal.keepMounted}
-	attrs={popoverPositionerAttributes}
+	attrs={popupStateMapping}
 	defaultSide={POPUP_BEHAVIOR.popover.side}
 	backdrop={popover.internalBackdropMounted}
 	user={rest}

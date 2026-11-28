@@ -1,4 +1,5 @@
 import { getComputedStyle } from "../kernel/index.js";
+import { PopupSizeCssVariables, PositionerCssVariables } from "./position-attributes.js";
 
 export interface Dimensions {
 	width: number;
@@ -26,13 +27,18 @@ function override(element: HTMLElement | null, property: string, value: string):
 	return () => element.style.setProperty(property, original);
 }
 
+/** The size variables of the popup or of its Positioner, as declarations. */
 export function sizeVars(
-	prefix: "popup" | "positioner",
+	element: "popup" | "positioner",
 	size: Dimensions | "auto" | "max-content",
 ) {
 	const width = typeof size === "string" ? size : `${size.width}px`;
 	const height = typeof size === "string" ? size : `${size.height}px`;
-	return `--${prefix}-width: ${width}; --${prefix}-height: ${height}`;
+	const [widthVariable, heightVariable] =
+		element === "popup"
+			? [PopupSizeCssVariables.popupWidth, PopupSizeCssVariables.popupHeight]
+			: [PositionerCssVariables.positionerWidth, PositionerCssVariables.positionerHeight];
+	return `${widthVariable}: ${width}; ${heightVariable}: ${height}`;
 }
 
 /**
@@ -55,15 +61,15 @@ export function measurePopupSize(
 				const [property, value] = declaration.split(": ");
 				return override(popup, property, value);
 			}),
-		override(popup, "--popup-width", "auto"),
-		override(popup, "--popup-height", "auto"),
+		override(popup, PopupSizeCssVariables.popupWidth, "auto"),
+		override(popup, PopupSizeCssVariables.popupHeight, "auto"),
 		override(popup, "position", "static"),
 		override(popup, "transform", "none"),
 		override(popup, "scale", "1"),
-		override(positioner, "--available-width", "max-content"),
-		override(positioner, "--available-height", "max-content"),
-		override(positioner, "--positioner-width", "max-content"),
-		override(positioner, "--positioner-height", "max-content"),
+		override(positioner, PositionerCssVariables.availableWidth, "max-content"),
+		override(positioner, PositionerCssVariables.availableHeight, "max-content"),
+		override(positioner, PositionerCssVariables.positionerWidth, "max-content"),
+		override(positioner, PositionerCssVariables.positionerHeight, "max-content"),
 		// Measured without the containers' own animations.
 		override(currentContainer, "animation", "none"),
 		override(currentContainer, "transition", "none"),

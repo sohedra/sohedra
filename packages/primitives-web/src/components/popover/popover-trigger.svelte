@@ -16,8 +16,11 @@
 		Part,
 		type WebTypes,
 	} from "../../foundation/kernel/index.js";
-	import { usePopupTrigger } from "../../foundation/popup/index.js";
-	import { popoverTriggerAttributes } from "./popover-attributes.js";
+	import {
+		popupTriggerStateMapping,
+		pressedPopupTriggerStateMapping,
+		usePopupTrigger,
+	} from "../../foundation/popup/index.js";
 	import { PopoverRootContext } from "./popover-context.js";
 	import type { PopoverTriggerProps } from "./popover-types.js";
 
@@ -83,7 +86,7 @@
 	tag="button"
 	bind:ref
 	state={triggerState.state}
-	attrs={popoverTriggerAttributes(triggerState.pressed)}
+	attrs={triggerState.pressed ? pressedPopupTriggerStateMapping : popupTriggerStateMapping}
 	{...own}
 	{id}
 	aria-haspopup="dialog"

@@ -48,22 +48,10 @@
 -->
 {#snippet body({ state: viewportState }: { state: State })}
 	{#if viewport.state.transitioning}
-		<div
-			data-previous=""
-			inert
-			style={viewport.previousStyle}
-			data-ending-style={viewport.showStartingStyle ? undefined : ""}
-			{...viewport.previous}
-		></div>
+		<div {...viewport.previous}></div>
 	{/if}
 	{#key viewport.contentKey}
-		<div
-			data-current=""
-			data-starting-style={viewport.state.transitioning && viewport.showStartingStyle
-				? ""
-				: undefined}
-			{...viewport.current}
-		>
+		<div {...viewport.current}>
 			{@render user.children?.({ state: viewportState })}
 		</div>
 	{/key}

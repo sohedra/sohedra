@@ -8,7 +8,7 @@ import {
 } from "@sohedra/primitives-core/foundation/position/index.js";
 
 import { ownerDocument, ownerWindow } from "../kernel/index.js";
-import { PositionerCssVars } from "./position-attributes.js";
+import { PositionerCssVariables } from "./position-attributes.js";
 
 export type { Measured };
 
@@ -93,9 +93,12 @@ export function createPositionerMiddleware(
 				// Set right away too, so the rest of this computation (a flip after a capped height)
 				// measures the constrained popup.
 				const positionerElement: HTMLElement = elements.floating;
-				positionerElement.style.setProperty(PositionerCssVars.availableWidth, toPx(availableWidth));
 				positionerElement.style.setProperty(
-					PositionerCssVars.availableHeight,
+					PositionerCssVariables.availableWidth,
+					toPx(availableWidth),
+				);
+				positionerElement.style.setProperty(
+					PositionerCssVariables.availableHeight,
 					toPx(availableHeight),
 				);
 			},

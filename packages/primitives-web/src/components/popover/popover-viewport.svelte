@@ -3,8 +3,7 @@
   A viewport for displaying content transitions. Renders a `<div>` element.
 -->
 <script lang="ts">
-	import { AnchoredViewport } from "../../foundation/position/index.js";
-	import { popoverViewportAttributes } from "./popover-attributes.js";
+	import { AnchoredViewport, viewportStateMapping } from "../../foundation/position/index.js";
 	import { PopoverPositionerContext, PopoverRootContext } from "./popover-context.js";
 	import type { PopoverViewportProps } from "./popover-types.js";
 
@@ -21,6 +20,6 @@
 	part="Popover.Viewport"
 	popup={popover}
 	side={positioner.side}
-	attrs={popoverViewportAttributes}
+	attrs={viewportStateMapping}
 	user={rest}
 />

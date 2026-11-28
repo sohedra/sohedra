@@ -3,7 +3,7 @@ import type {
 	MeasuredPosition,
 } from "@sohedra/primitives-core/foundation/position/index.js";
 
-import { PositionerCssVars } from "./position-attributes.js";
+import { PositionerCssVariables } from "./position-attributes.js";
 import { getDevicePixelRatio, type Measured, toPx } from "./position-positioner-middleware.js";
 
 function formatOrigin(offset: OriginOffset) {
@@ -58,18 +58,20 @@ export function positionerStyle(
 		value === undefined ? fallback : toPx(value);
 	// Seeded so `max-height: var(--available-height)` resolves on the first pass.
 	declarations.push(
-		`${PositionerCssVars.availableWidth}: ${px(measured.availableWidth, "100vw")}`,
-		`${PositionerCssVars.availableHeight}: ${px(measured.availableHeight, "100vh")}`,
+		`${PositionerCssVariables.availableWidth}: ${px(measured.availableWidth, "100vw")}`,
+		`${PositionerCssVariables.availableHeight}: ${px(measured.availableHeight, "100vh")}`,
 	);
 	if (measured.anchorWidth !== undefined) {
-		declarations.push(`${PositionerCssVars.anchorWidth}: ${toPx(measured.anchorWidth)}`);
+		declarations.push(`${PositionerCssVariables.anchorWidth}: ${toPx(measured.anchorWidth)}`);
 	}
 	if (measured.anchorHeight !== undefined) {
-		declarations.push(`${PositionerCssVars.anchorHeight}: ${toPx(measured.anchorHeight)}`);
+		declarations.push(`${PositionerCssVariables.anchorHeight}: ${toPx(measured.anchorHeight)}`);
 	}
 	const origin = measured.transformOrigin;
 	if (origin) {
-		declarations.push(`${PositionerCssVars.transformOrigin}: ${formatTransformOrigin(origin)}`);
+		declarations.push(
+			`${PositionerCssVariables.transformOrigin}: ${formatTransformOrigin(origin)}`,
+		);
 	}
 	if (!position.isPositioned) {
 		declarations.push("opacity: 0");

@@ -33,7 +33,7 @@ export const SwitchRootDataAttributes = {
 export const SwitchThumbDataAttributes = SwitchRootDataAttributes;
 
 /** Switch state → data attributes, for both parts. */
-export const switchAttributes: StateAttributesMapping<SwitchRootState> = {
+export const switchStateMapping: StateAttributesMapping<SwitchRootState> = {
 	checked(value): Record<string, string> {
 		return value
 			? { [SwitchRootDataAttributes.checked]: "" }

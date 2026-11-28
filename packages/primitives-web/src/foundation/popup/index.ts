@@ -1,8 +1,11 @@
 // Popup: what every popup shares on the web: the Root's, the trigger's and the popup element's wiring, the unmount after the exit animations, the popup tree and layout contexts, the shared Backdrop part and styling hooks.
 export {
+	PopupDataAttributes,
 	popupStateMapping,
 	popupTransitionStateMapping,
-	popupViewportStateMapping,
+	PopupTriggerDataAttributes,
+	popupTriggerStateMapping,
+	pressedPopupTriggerStateMapping,
 } from "./popup-attributes.js";
 export { default as PopupBackdrop } from "./popup-backdrop.svelte";
 export { PopupNodeContext } from "./popup-context.js";

@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
 	import { Part } from "../../foundation/kernel/index.js";
-	import { switchAttributes } from "./switch-attributes.js";
+	import { switchStateMapping } from "./switch-attributes.js";
 	import { SwitchRootContext } from "./switch-context.js";
 	import type { SwitchThumbProps } from "./switch-types.js";
 
@@ -16,4 +16,4 @@
 	const sw = SwitchRootContext.get("Switch.Thumb");
 </script>
 
-<Part tag="span" bind:ref state={sw.state} attrs={switchAttributes} user={rest} />
+<Part tag="span" bind:ref state={sw.state} attrs={switchStateMapping} user={rest} />

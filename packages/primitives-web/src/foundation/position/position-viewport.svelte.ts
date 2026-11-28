@@ -18,7 +18,8 @@ import {
 	type WebTypes,
 } from "../kernel/index.js";
 import { PopupLayoutContext } from "../popup/index.js";
-import { waitForAnimations } from "../presence/index.js";
+import { TransitionStatusDataAttributes, waitForAnimations } from "../presence/index.js";
+import { ViewportDataAttributes } from "./position-attributes.js";
 import type { Viewport, ViewportOptions } from "./position-types.js";
 import { type Dimensions, measurePopupSize, sizeVars } from "./position-viewport-size.js";
 
@@ -300,6 +301,13 @@ export function useViewport(
 		};
 	};
 
+	// Made once, so the containers keep their attachments while their other props change.
+	const currentAttachment = attachmentProps(attachCurrent);
+	const previousAttachment = attachmentProps(attachPrevious);
+	// Whether the current content shows its starting style.
+	const showStartingStyle = () =>
+		content.incomingOffset != null || settledKey !== content.contentKey;
+
 	return {
 		get state() {
 			return content.state;
@@ -307,14 +315,23 @@ export function useViewport(
 		get contentKey() {
 			return content.contentKey;
 		},
-		get showStartingStyle() {
-			return content.incomingOffset != null || settledKey !== content.contentKey;
+		get current() {
+			const starting = content.state.transitioning && showStartingStyle();
+			return {
+				[ViewportDataAttributes.current]: "",
+				[TransitionStatusDataAttributes.startingStyle]: starting ? "" : undefined,
+				...currentAttachment,
+			};
 		},
-		get previousStyle() {
+		get previous() {
 			const size = previousDimensions ? `${sizeVars("popup", previousDimensions)}; ` : "";
-			return `${size}position: absolute`;
+			return {
+				[ViewportDataAttributes.previous]: "",
+				inert: true,
+				style: `${size}position: absolute`,
+				[TransitionStatusDataAttributes.endingStyle]: showStartingStyle() ? undefined : "",
+				...previousAttachment,
+			};
 		},
-		current: attachmentProps(attachCurrent),
-		previous: attachmentProps(attachPrevious),
 	};
 }

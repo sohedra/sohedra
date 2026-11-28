@@ -16,7 +16,7 @@
 		useCheckedControl,
 	} from "../../foundation/form/index.js";
 	import { Part, type WebTypes } from "../../foundation/kernel/index.js";
-	import { switchAttributes } from "./switch-attributes.js";
+	import { switchStateMapping } from "./switch-attributes.js";
 	import { SwitchRootContext } from "./switch-context.js";
 	import type { SwitchRootProps } from "./switch-types.js";
 
@@ -92,7 +92,7 @@
 	tag="span"
 	bind:ref
 	state={sw.state}
-	attrs={switchAttributes}
+	attrs={switchStateMapping}
 	id={control.id}
 	role="switch"
 	aria-checked={sw.checked}

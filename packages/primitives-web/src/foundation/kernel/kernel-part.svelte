@@ -67,7 +67,7 @@
 		tag: Tag;
 		/** The part's public state: the `render` snippet and `children` receive it. */
 		state: State;
-		/** The mapping from state to styling hooks, from the component's `attributes.ts`. */
+		/** The mapping from state to styling hooks: a job's or the component's `…StateMapping`. */
 		attrs?: StateAttributesMapping<State> | undefined;
 		/** The user's element binding (`bind:ref`). */
 		ref?: RefElement | null | undefined;

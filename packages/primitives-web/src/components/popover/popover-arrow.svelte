@@ -3,8 +3,8 @@
   Displays an element positioned against the popover anchor. Renders a `<div>` element.
 -->
 <script lang="ts">
+	import { popupStateMapping } from "../../foundation/popup/index.js";
 	import { AnchoredArrow } from "../../foundation/position/index.js";
-	import { popoverArrowAttributes } from "./popover-attributes.js";
 	import { PopoverPositionerContext, PopoverRootContext } from "./popover-context.js";
 	import type { PopoverArrowProps } from "./popover-types.js";
 
@@ -20,7 +20,7 @@
 <AnchoredArrow
 	bind:ref
 	state={positioner.arrowState}
-	attrs={popoverArrowAttributes}
+	attrs={popupStateMapping}
 	{positioner}
 	user={rest}
 />
