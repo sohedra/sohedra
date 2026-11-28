@@ -1,7 +1,4 @@
 // Popover's public namespace, types and styling hooks.
-export * as Popover from "./popover-parts.js";
-
-export type * from "./popover-types.js";
 export {
 	PopoverArrowDataAttributes,
 	PopoverBackdropDataAttributes,
@@ -13,3 +10,5 @@ export {
 	PopoverViewportCssVariables,
 	PopoverViewportDataAttributes,
 } from "./popover-attributes.js";
+export * as Popover from "./popover-parts.js";
+export type * from "./popover-types.js";

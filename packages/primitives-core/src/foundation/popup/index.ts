@@ -1,7 +1,7 @@
-// Popup: what every popup shares: its store and open pipeline, the session of an opening, the behaviour rows, triggers, the handle base, the floating tree and the popup's events.
+// Popup: what every popup shares: its store and open pipeline, the behaviour rows, trigger registration, the handle base, the floating tree and the open-change details.
 export { POPUP_BEHAVIOR, type PopupBehavior } from "./popup-behavior.js";
 export { type FloatingNode, FloatingTree } from "./popup-floating-tree.js";
-export { PopupHandle, detachedPopupDeps } from "./popup-handle.svelte.js";
+export { detachedPopupDeps, PopupHandle } from "./popup-handle.svelte.js";
 export type { PopupHooks, PopupRequest, TriggerChangeWait } from "./popup-lifecycle.svelte.js";
 export { isNestedInFloating, pressOpenState } from "./popup-rules.js";
 export {
