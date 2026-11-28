@@ -19,12 +19,14 @@ export interface PopupPortalStoreDeps<T extends PlatformTypes = PlatformTypes> {
  * closed, which the parts inside it (the Positioner) read through the component's context.
  */
 export class PopupPortalStore<T extends PlatformTypes = PlatformTypes> {
+	// 1. Inputs
 	readonly #props: () => PopupPortalStoreProps;
 	readonly #popup: PopupPortalStoreDeps<T>["popup"];
 
+	// 3. Public state. `$derived.by` because the inputs are assigned in the constructor, after these
+	// initialisers.
 	/** The Portal part's state: it has no fields. */
 	readonly state: PopupPortalState = {};
-	// `$derived.by` because the inputs are assigned in the constructor, after these initialisers.
 	/** Whether the portal renders: the popup is mounted, or the portal keeps it mounted. */
 	readonly mounted: boolean = $derived.by(() => this.#popup.mounted || this.#props().keepMounted);
 

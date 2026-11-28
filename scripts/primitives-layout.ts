@@ -36,24 +36,6 @@ const EXEMPTIONS: Record<string, string> = {
 		"A claim's second side: `attachClaim` makes the claim and `useClaimedId` hands out the claimed id, one idea in one file.",
 	"packages/primitives-core/src/foundation/presence/presence.svelte.ts#prefix":
 		"todo: rename to presence-store.svelte.ts, its class to PresenceStore, and their imports.",
-	"packages/primitives-core/src/components/popover/popover-store.svelte.ts#sections":
-		'todo: name its fifth section "// 5. Lifetime".',
-	"packages/primitives-core/src/foundation/popup/popup-store.svelte.ts#sections":
-		'todo: name its fifth section "// 5. Lifetime".',
-	"packages/primitives-core/src/foundation/hover/hover-popup-store.ts#sections":
-		"todo: give the store its numbered sections.",
-	"packages/primitives-core/src/foundation/hover/hover-trigger-store.ts#sections":
-		"todo: give the store its numbered sections.",
-	"packages/primitives-core/src/foundation/popup/popup-active-trigger-store.svelte.ts#sections":
-		"todo: give the store its numbered sections.",
-	"packages/primitives-core/src/foundation/popup/popup-portal-store.svelte.ts#sections":
-		"todo: give the store its numbered sections.",
-	"packages/primitives-core/src/foundation/popup/popup-trigger-store.svelte.ts#sections":
-		"todo: give the store its numbered sections.",
-	"packages/primitives-core/src/foundation/position/position-positioner-store.svelte.ts#sections":
-		"todo: give the store its numbered sections.",
-	"packages/primitives-core/src/foundation/position/position-viewport-content-store.svelte.ts#sections":
-		"todo: give the store its numbered sections.",
 };
 
 /** What breaks the layout in the primitives packages of `root`. */

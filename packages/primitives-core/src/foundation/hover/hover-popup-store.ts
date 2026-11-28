@@ -32,9 +32,12 @@ export interface HoverPopupStoreDeps<T extends PlatformTypes = PlatformTypes> {
  * or the popup was opened by a click.
  */
 export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
+	// 1. Inputs
 	readonly #popup: PopupView<T>;
 	readonly #props: () => HoverPopupStoreProps;
 	readonly #flush: () => void;
+
+	// 2. Owned objects
 	readonly #childClosedTimeout: Timeout;
 
 	/** `props` is read when a pointer event arrives. */
@@ -45,6 +48,7 @@ export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
 		this.#childClosedTimeout = new Timeout(deps.popup.platform.scheduler);
 	}
 
+	// 4. Intents
 	// Closes once the last open child closed, unless the pointer came back meanwhile.
 	readonly #onNodeClosed = (event: HoverEvent<T>) => {
 		const popup = this.#popup;

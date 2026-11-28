@@ -17,9 +17,11 @@ export interface PopupTriggerStoreProps<T extends PlatformTypes = PlatformTypes>
  * whether a press of it opened the popup (`data-pressed`, beside `data-popup-open`).
  */
 export class PopupTriggerStore<T extends PlatformTypes = PlatformTypes> {
+	// 1. Inputs
 	readonly #props: () => PopupTriggerStoreProps<T>;
 
-	// `$derived.by` because `#props` is assigned in the constructor, after these initialisers.
+	// 3. Public state. `$derived.by` because `#props` is assigned in the constructor, after these
+	// initialisers.
 	/** Whether the popup is open from this trigger. */
 	readonly #openedByThis: boolean = $derived.by(() => {
 		const { popup, id } = this.#props();

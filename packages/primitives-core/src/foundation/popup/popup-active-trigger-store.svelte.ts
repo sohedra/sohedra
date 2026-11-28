@@ -32,10 +32,12 @@ export interface ActiveTriggerStoreDeps<T extends PlatformTypes = PlatformTypes>
  * trigger. `PopupStore` owns one and decides when it changes.
  */
 export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
+	// 1. Inputs
 	readonly #props: () => ActiveTriggerStoreProps;
 	readonly #triggers: PopupTriggerMap<T>;
 	readonly #instant: Bound<InstantType>;
 
+	// 2. Owned objects
 	#id: string | null = $state(null);
 	#element: T["element"] | null = $state.raw(null);
 	#openedWithoutTrigger = $state(false);
@@ -45,6 +47,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	// update, never while deriving.
 	readonly #lastAnchor = new CommittedValue<T["element"] | null>({ initial: null });
 
+	// 3. Public state
 	/** The active trigger's id: the controlled `triggerId`, else the store's own. */
 	readonly id: string | null = $derived.by(() => this.#props().triggerId ?? this.#id);
 
@@ -114,6 +117,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		return null;
 	}
 
+	// 4. Intents
 	/** Writes the trigger the popup belongs to. */
 	set = (id: string | null, element: T["element"] | null): void => {
 		this.#id = id;
@@ -218,6 +222,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		this.#lastAnchor.commit(null);
 	};
 
+	// 5. Lifetime
 	/**
 	 * Lifetime work: the commit of the last trigger element, and the reconciliation of the active
 	 * trigger with the registered ones, in an effect because registrations happen in attachments and

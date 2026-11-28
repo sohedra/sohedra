@@ -629,8 +629,8 @@ export abstract class PopupStore<
 		this.#heardOpen = open;
 	}
 
-	// 5. Lifetime work: dev warnings, transition status frames, and the bookkeeping that follows
-	// open state. Called once by the Root part.
+	// 5. Lifetime: dev warnings, transition status frames, and the bookkeeping that follows open
+	// state. Called once by the Root part.
 	/** Starts the store's effects. Call once, while the Root initialises. */
 	connect(): void {
 		this.#open.connect();

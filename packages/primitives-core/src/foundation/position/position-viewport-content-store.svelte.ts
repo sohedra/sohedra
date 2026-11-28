@@ -33,22 +33,29 @@ export interface ViewportTriggerChange<T extends PlatformTypes = PlatformTypes> 
  * the platform has shown the change and calls {@link settle}.
  */
 export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
+	// 1. Inputs
 	readonly #popup: ViewportContentStoreDeps<T>["popup"];
 	readonly #measureTriggerOffset: ViewportContentStoreDeps<T>["measureTriggerOffset"];
 
+	// 2. Owned objects
 	// What the last update settled on; written only by the commit in `connect()`.
 	readonly #committed: CommittedValue<ContentKey>;
+	// The trigger whose content the open popup showed when the platform last settled.
+	#shown: T["element"] | null = $state.raw(null);
+	// The offset of the last trigger change whose previous content is shown, and whether it still
+	// is (on its way out).
+	#previousOffset: TriggerOffset | null = $state.raw(null);
+	#previousShown = $state(false);
+
+	// 3. Public state
 	// Derived, so the key changes in the same update as the trigger or payload, before anything
 	// renders with it. A re-run with older values (an effect teardown) changes nothing.
-	// `$derived.by` because `#props` is set in the constructor, after these initialisers.
+	// `$derived.by` because `#popup` is set in the constructor, after these initialisers.
 	readonly #next: ContentKey = $derived.by(() =>
 		nextContentKey(this.#committed.current, this.#popup.activeTriggerId, this.#popup.payload),
 	);
 	/** The key of the content shown: a new one means the content is created anew. */
 	readonly contentKey: number = $derived(this.#next.key);
-
-	// The trigger whose content the open popup showed when the platform last settled.
-	#shown: T["element"] | null = $state.raw(null);
 
 	/** The trigger change the platform has yet to show, from the shown content's trigger. */
 	readonly triggerChange: ViewportTriggerChange<T> | null = $derived.by(() => {
@@ -69,11 +76,6 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 		const change = this.triggerChange;
 		return change ? this.#measureTriggerOffset(change.from, change.to) : null;
 	});
-
-	// The offset of the last trigger change whose previous content is shown, and whether it still
-	// is (on its way out).
-	#previousOffset: TriggerOffset | null = $state.raw(null);
-	#previousShown = $state(false);
 
 	/** The Viewport part's state. */
 	readonly state: AnchoredViewportState = $derived.by(() => ({
@@ -97,6 +99,7 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 		});
 	}
 
+	// 4. Intents
 	/**
 	 * The platform has shown the content for the current trigger (and the change to it, if any).
 	 * A closed popup shows no trigger's content, so reopening is never a trigger change.
@@ -118,6 +121,7 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 		this.#previousShown = false;
 	};
 
+	// 5. Lifetime
 	/**
 	 * Commits each update's content key, so the next one is counted from it. The key is derived
 	 * from committed state plus the current trigger and payload, so when this runs doesn't change

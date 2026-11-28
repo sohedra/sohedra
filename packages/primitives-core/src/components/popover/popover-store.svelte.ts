@@ -323,7 +323,7 @@ export class PopoverStore<
 		this.setInstantType(popoverInstantType(next, details.reason, source.keyboardClick === true));
 	}
 
-	// 5. Lifetime work. Called once by Popover.Root.
+	// 5. Lifetime. Called once by Popover.Root.
 	/** Starts the store's effects. Call once, while the Root initialises. */
 	override connect(): void {
 		super.connect();

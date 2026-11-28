@@ -105,9 +105,12 @@ export interface HoverTriggerStoreDeps<T extends PlatformTypes = PlatformTypes> 
  * given another popup.
  */
 export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
+	// 1. Inputs
 	readonly #popup: () => PopupView<T>;
 	readonly #props: () => HoverTriggerStoreProps;
 	readonly #flush: () => void;
+
+	// 2. Owned objects
 	/** Whether the popup's last close was a hover close this trigger heard about. */
 	#hoverCloseActive = false;
 
@@ -118,6 +121,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		this.#flush = deps.flush;
 	}
 
+	// 4. Intents
 	#closeWithDelay(popup: PopupView<T>, event: HoverEvent<T>) {
 		const shared = popup.hover;
 		const closeDelay = getDelay(this.#props().delay, "close", shared.pointerType);

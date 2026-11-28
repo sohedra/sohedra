@@ -31,11 +31,15 @@ export interface PositionerStoreDeps<T extends PlatformTypes = PlatformTypes> {
  * computation (one object each); parts derive their styles from it.
  */
 export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
+	// 1. Inputs
 	readonly #props: () => PositionerStoreProps;
 	readonly #popup: PopupView<T>;
+
+	// 2. Owned objects
 	#position: MeasuredPosition = $state.raw() as MeasuredPosition;
 	#arrowElement: T["element"] | null = $state.raw(null);
 
+	// 3. Public state
 	// Compared by value: a part's state is derived again when one of these changes, not on every
 	// new position.
 	/** The side the popup is placed on, logical (`inline-start`) where asked so. */
@@ -88,6 +92,7 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 		return this.#arrowElement;
 	}
 
+	// 4. Intents
 	/** Writes a computed position. */
 	setPosition = (next: MeasuredPosition): void => {
 		this.#position = next;
@@ -106,6 +111,7 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 		this.#arrowElement = element;
 	};
 
+	// 5. Lifetime
 	/** Lifetime work. Called once by the Positioner part. */
 	connect(): void {
 		const popup = this.#popup;
