@@ -5,7 +5,7 @@ import { page, userEvent } from "vitest/browser";
 
 import SwitchThumb from "#lib/components/switch/switch-thumb.svelte";
 
-import { describeConformance } from "../../conformance/describe-conformance.js";
+import { describeConformance } from "../../conformance/conformance-part.js";
 import { ssrHydration } from "../../conformance/ssr-hydration.js";
 import SeveralSwitches from "./fixtures/several-switches.svelte";
 import { switchThumbConformance } from "./fixtures/switch-thumb-conformance.js";

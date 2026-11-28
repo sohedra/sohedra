@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import type { PopoverBackdropState } from "#lib/components/popover/popover-types.js";
 
-import { describeConformance } from "../../conformance/describe-conformance.js";
+import { describeConformance } from "../../conformance/conformance-part.js";
 import { createRenderer, screen, waitFor } from "../../shim/index.js";
 import { popoverBackdropConformance } from "./fixtures/popover-backdrop-conformance.js";
 import PartBackdropHover from "./fixtures/popover-backdrop-hover.svelte";

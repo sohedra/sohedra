@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { describeConformance } from "../../conformance/describe-conformance.js";
+import { describeConformance } from "../../conformance/conformance-part.js";
 import { createRenderer, screen } from "../../shim/index.js";
 import PartLabelledPopup from "./fixtures/popover-labelled-popup.svelte";
 import { popoverTitleConformance } from "./fixtures/popover-title-conformance.js";

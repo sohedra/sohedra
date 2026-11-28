@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { PopoverRootChangeEventDetails, Side } from "#lib/components/popover/popover-types.js";
 
-import { describeConformance } from "../../conformance/describe-conformance.js";
+import { describeConformance } from "../../conformance/conformance-part.js";
 import { act, createRenderer, screen, waitFor } from "../../shim/index.js";
 import { popoverViewportConformance } from "./fixtures/popover-viewport-conformance.js";
 import PartViewportPopover, { type ViewportTestTrigger } from "./fixtures/popover-viewport.svelte";
