@@ -43,7 +43,7 @@ const EXEMPTIONS: Record<string, string> = {
 	"packages/primitives-core/src/foundation/form/form-validity.ts#NULL_VALIDITY_SOURCE":
 		FIELD_FAMILY,
 	"packages/primitives-web/src/foundation/kernel/kernel-change-details.ts#createGenericEventDetails":
-		"todo: no part calls it yet; delete it and let the first family that needs it bring it back.",
+		"Form.Root, in the form family that moves in next, passes it to `onFormSubmit`.",
 };
 
 /** A module: what it declares, what it re-exports and what it imports. */
