@@ -1,6 +1,10 @@
 // The data attributes a popup's focus, portal, dismiss and trigger wiring find elements by.
 /** Marks the element a focus manager focuses inside a positioned wrapper. */
 export const FOCUSABLE_ATTRIBUTE = "data-sohedra-focusable";
+/** Says which side of its popup a focus guard sits on: `inside` or `outside`. */
+export const FOCUS_GUARD_TYPE_ATTRIBUTE = "data-type";
+/** Marks a tab stop a focus manager set on its popup, which it may change again. */
+export const POPUP_TABINDEX_ATTRIBUTE = "data-tabindex";
 /** Marks a portal node. */
 export const PORTAL_ATTRIBUTE = "data-sohedra-portal";
 /** Marks a trigger that opens its popup on click. */

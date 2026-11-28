@@ -19,14 +19,7 @@ const MARKER_CONSTANT = /^(?:export\s+)?const\s+[A-Z][A-Z0-9_]*_ATTRIBUTE\s*=\s*
 const HOME = /-(?:attributes|markers)\.ts$/;
 
 /** Literals outside a constant, keyed `<file>#<literal>`, each with why, or "todo:" to fix. */
-const EXEMPTIONS: Record<string, string> = {
-	"packages/primitives-web/src/foundation/focus/focus-manager.svelte.ts#data-type":
-		"todo: name the focus guards' inside and outside marker once, in focus-markers.ts.",
-	"packages/primitives-web/src/foundation/portal/portal-focus.svelte.ts#data-type":
-		"todo: name the focus guards' inside and outside marker once, in focus-markers.ts.",
-	"packages/primitives-web/src/foundation/focus/focus-tabbability.ts#data-tabindex":
-		"todo: name the popup's kept tabindex marker once, in focus-markers.ts.",
-};
+const EXEMPTIONS: Record<string, string> = {};
 
 /** Where code in the primitives' `src/` spells out a data attribute or CSS variable. */
 export function checkStylingHooks(root: string): string[] {

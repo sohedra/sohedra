@@ -5,7 +5,7 @@ import type { Attachment } from "svelte/attachments";
 import type { HTMLAttributes } from "svelte/elements";
 import { on } from "svelte/events";
 
-import { focusGuardProps, PORTAL_ATTRIBUTE } from "../focus/index.js";
+import { FOCUS_GUARD_TYPE_ATTRIBUTE, focusGuardProps, PORTAL_ATTRIBUTE } from "../focus/index.js";
 import {
 	attachmentProps,
 	attachRef,
@@ -252,7 +252,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 						getPreviousTabbable(portal.focusManagerState?.anchorElement ?? null)?.focus();
 					}
 				},
-				{ "data-type": "outside" },
+				{ [FOCUS_GUARD_TYPE_ATTRIBUTE]: "outside" },
 			),
 			...attachmentProps(
 				attachRef<HTMLElement>((element) => portal.setGuardBeforeOutside(element)),
@@ -270,7 +270,7 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 						state?.onOpenChange(false, event);
 					}
 				},
-				{ "data-type": "outside" },
+				{ [FOCUS_GUARD_TYPE_ATTRIBUTE]: "outside" },
 			),
 			...attachmentProps(attachRef<HTMLElement>((element) => portal.setGuardAfterOutside(element))),
 		},

@@ -3,6 +3,7 @@ export { focusGuardProps } from "./focus-guard.js";
 export { useFocusManager } from "./focus-manager.svelte.js";
 export {
 	CLICK_TRIGGER_IDENTIFIER,
+	FOCUS_GUARD_TYPE_ATTRIBUTE,
 	FOCUSABLE_POPUP_PROPS,
 	INERT_MARKER,
 	PORTAL_ATTRIBUTE,

@@ -2,7 +2,7 @@
 // popup's own tab stop.
 
 import { focusable, isTabbable } from "../kernel/index.js";
-import { FOCUSABLE_ATTRIBUTE } from "./focus-markers.js";
+import { FOCUSABLE_ATTRIBUTE, POPUP_TABINDEX_ATTRIBUTE } from "./focus-markers.js";
 
 /** The element focus lives on: the popup (marked focusable) inside its positioned wrapper. */
 export function getPopupFocusElement(
@@ -20,7 +20,7 @@ export function getPopupFocusElement(
 export function handleTabIndex(popupFocusElement: HTMLElement): void {
 	if (
 		popupFocusElement.hasAttribute("tabindex") &&
-		!popupFocusElement.hasAttribute("data-tabindex")
+		!popupFocusElement.hasAttribute(POPUP_TABINDEX_ATTRIBUTE)
 	) {
 		return;
 	}
@@ -28,24 +28,24 @@ export function handleTabIndex(popupFocusElement: HTMLElement): void {
 		return;
 	}
 	const tabbableContent = focusable(popupFocusElement).filter((element) => {
-		const dataTabIndex = element.getAttribute("data-tabindex") || "";
+		const dataTabIndex = element.getAttribute(POPUP_TABINDEX_ATTRIBUTE) || "";
 		return (
 			isTabbable(element) ||
-			(element.hasAttribute("data-tabindex") && !dataTabIndex.startsWith("-"))
+			(element.hasAttribute(POPUP_TABINDEX_ATTRIBUTE) && !dataTabIndex.startsWith("-"))
 		);
 	});
 	const tabIndex = popupFocusElement.getAttribute("tabindex");
 	if (tabbableContent.length === 0) {
 		if (tabIndex !== "0") {
 			popupFocusElement.setAttribute("tabindex", "0");
-			popupFocusElement.setAttribute("data-tabindex", "0");
+			popupFocusElement.setAttribute(POPUP_TABINDEX_ATTRIBUTE, "0");
 		}
 	} else if (
 		tabIndex !== "-1" ||
-		(popupFocusElement.hasAttribute("data-tabindex") &&
-			popupFocusElement.getAttribute("data-tabindex") !== "-1")
+		(popupFocusElement.hasAttribute(POPUP_TABINDEX_ATTRIBUTE) &&
+			popupFocusElement.getAttribute(POPUP_TABINDEX_ATTRIBUTE) !== "-1")
 	) {
 		popupFocusElement.setAttribute("tabindex", "-1");
-		popupFocusElement.setAttribute("data-tabindex", "-1");
+		popupFocusElement.setAttribute(POPUP_TABINDEX_ATTRIBUTE, "-1");
 	}
 }

@@ -45,7 +45,7 @@ import {
 	getPreviouslyFocusedElement,
 } from "./focus-history.js";
 import { focusedOtherPortal, markOutside, type OutsideMarking } from "./focus-mark-outside.js";
-import { CLICK_TRIGGER_IDENTIFIER } from "./focus-markers.js";
+import { CLICK_TRIGGER_IDENTIFIER, FOCUS_GUARD_TYPE_ATTRIBUTE } from "./focus-markers.js";
 import { getPopupFocusElement, handleTabIndex } from "./focus-tabbability.js";
 import type { FocusManagerFixed, FocusManagerGuards, FocusManagerOptions } from "./focus-types.js";
 
@@ -228,11 +228,11 @@ export function useFocusManager(
 	}
 
 	const guardBefore = {
-		...focusGuardProps(onGuardBeforeFocus, { "data-type": "inside" }),
+		...focusGuardProps(onGuardBeforeFocus, { [FOCUS_GUARD_TYPE_ATTRIBUTE]: "inside" }),
 		...attachmentProps(attachRef<HTMLElement>(setGuardBefore)),
 	};
 	const guardAfter = {
-		...focusGuardProps(onGuardAfterFocus, { "data-type": "inside" }),
+		...focusGuardProps(onGuardAfterFocus, { [FOCUS_GUARD_TYPE_ATTRIBUTE]: "inside" }),
 		...attachmentProps(attachRef<HTMLElement>(setGuardAfter)),
 	};
 
