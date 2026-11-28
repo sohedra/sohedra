@@ -13,15 +13,9 @@ import {
 	type FieldsetContextValue,
 	NULL_FIELD,
 } from "../../../src/foundation/form/index.js";
-import {
-	bound,
-	createChangeEventDetails,
-	type PlatformTypes,
-	REASONS,
-} from "../../../src/foundation/kernel/index.js";
+import { bound, type PlatformTypes } from "../../../src/foundation/kernel/index.js";
+import { changeDetails as details } from "../../kit/kit-details.js";
 import { track } from "../../kit/kit-effects.svelte.js";
-
-const details = () => createChangeEventDetails(REASONS.none, { type: "click" } as unknown as Event);
 
 /** Switch.Root's props as `$state`, the way the component exposes them, with the binding. */
 type Props = SwitchStoreProps<PlatformTypes> & { checked: boolean | undefined };

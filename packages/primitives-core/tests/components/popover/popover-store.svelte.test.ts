@@ -1,71 +1,63 @@
-// The popup open pipeline without a DOM.
-
+// PopoverStore: an open change with its callback, cancel and reasons, the active trigger, the
+// instant type, unmounting, a trigger press and a close, its parts' state, the trigger focus
+// guards, a change it reports, and the handle that drives it imperatively.
 import { flushSync } from "svelte";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, onTestFinished, vi } from "vitest";
 
 import {
 	createPopoverHandle,
 	PATIENT_CLICK_THRESHOLD,
+	popoverArrowState,
+	popoverPopupState,
 	type PopoverRootChangeEventDetails,
-	PopoverStore,
-	type PopoverStoreProps,
+	type PopoverStore,
 } from "../../../src/components/popover/index.js";
 import {
-	bound,
 	createChangeEventDetails,
 	type PlatformTypes,
 	REASONS,
 } from "../../../src/foundation/kernel/index.js";
-import { FloatingTree } from "../../../src/foundation/popup/index.js";
-import { createFakePlatform, type FakeScheduler } from "../../kit/kit-fake-platform.js";
+import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
+import { createPopover, type PopoverProps } from "../../kit/kit-popover.svelte.js";
+import { element, event } from "../../kit/kit-stand-ins.js";
 
-const event = (type = "click") => ({ type }) as unknown as Event;
-// Opaque stand-ins for trigger elements: core never reads them.
-const element = (name: string) => ({ name }) as unknown as Element;
-
-/** Popover.Root's props as `$state`, the way the component exposes them, with the binding. */
-type Props = PopoverStoreProps<unknown, PlatformTypes> & { open: boolean | undefined };
-type MutableProps = { -readonly [K in keyof Props]: Props[K] };
-
-const roots: (() => void)[] = [];
-
-function setup(initial: Partial<MutableProps> = {}) {
-	const props = $state<MutableProps>({
-		open: undefined,
-		defaultOpen: undefined,
-		triggerId: undefined,
-		defaultTriggerId: undefined,
-		onOpenChange: undefined,
-		onOpenChangeComplete: undefined,
-		modal: undefined,
-		...initial,
-	});
-	const platform = createFakePlatform();
-	scheduler = platform.scheduler;
-	const store = new PopoverStore(() => props, {
-		open: bound(
-			() => props.open,
-			(next) => (props.open = next),
-		),
-		floatingId: "popup",
-		tree: new FloatingTree(),
-		nested: false,
-		platform: platform,
-	});
-	roots.push($effect.root(() => store.connect()));
-	flushSync();
-	return { props, store };
+/** The store as Popover.Root builds it, connected; time comes from `scheduler`, which tests step. */
+function setup(initial: Partial<PopoverProps> = {}) {
+	return createPopover(initial);
 }
 
 const press = (trigger?: Element) =>
 	createChangeEventDetails(REASONS.triggerPress, event() as MouseEvent, trigger);
 
-// Time comes from the fake platform's scheduler, which the tests step.
-let scheduler: FakeScheduler;
+/** A trigger registered with the store, as Popover.Trigger registers it. */
+function register(store: PopoverStore, id: string) {
+	const trigger = element(id);
+	onTestFinished(
+		store.registerTrigger(id, trigger, {
+			payload: undefined,
+			disabled: false,
+			openOnHover: false,
+			closeDelay: 0,
+		}),
+	);
+	flushSync();
+	return trigger;
+}
 
-afterEach(() => {
-	roots.splice(0).forEach((cleanup) => cleanup());
-});
+/** A press on `trigger`, by a pointer or (`keyboard`) by Enter or Space. */
+function pressTrigger(store: PopoverStore, trigger: Element, keyboard = false) {
+	const accepted = store.pressTrigger(
+		trigger,
+		createChangeEventDetails(
+			REASONS.triggerPress,
+			event("click", { detail: keyboard ? 0 : 1 }) as MouseEvent,
+			trigger,
+		),
+		{ keyboardClick: keyboard, eventType: "click" },
+	);
+	flushSync();
+	return accepted;
+}
 
 describe("PopoverStore", () => {
 	it("calls onOpenChange first, then commits open, the reason and the active trigger", () => {
@@ -244,7 +236,7 @@ describe("PopoverStore", () => {
 	});
 
 	it("sticks a hover-opened popover open for the patient-click threshold", () => {
-		const { store } = setup();
+		const { store, scheduler } = setup();
 		store.stickIfOpen = false;
 		store.setOpen(
 			true,
@@ -284,34 +276,225 @@ describe("PopoverStore", () => {
 		release();
 		expect(store.focusManagerModal).toBe(false);
 	});
-});
 
-describe("PopoverStore.report", () => {
-	it("commits a change that already happened: onOpenChange runs, cancel() has no effect", () => {
-		const onOpenChange = vi.fn((_open: boolean, details: { cancel(): void }) => details.cancel());
-		const { props, store } = setup({ defaultOpen: true, onOpenChange });
-		const seen = vi.fn();
-		store.events.on("openchange", seen);
-		// A platform reason (a back key) the web doesn't have.
-		store.report(false, createChangeEventDetails("back-button", event("back")));
-		expect(onOpenChange).toHaveBeenCalledWith(
-			false,
-			expect.objectContaining({ reason: "back-button", isCanceled: true }),
-		);
-		expect(seen).toHaveBeenCalledWith(expect.objectContaining({ open: false }));
-		expect(store.open).toBe(false);
-		expect(props.open).toBe(false);
-		expect(store.openChangeReason).toBe("back-button");
+	describe("pressTrigger", () => {
+		it("opens a closed popover from the pressed trigger", () => {
+			const { store } = setup();
+			const trigger = register(store, "t");
+			expect(pressTrigger(store, trigger)).toBe(true);
+			expect(store.open).toBe(true);
+			expect(store.activeTrigger.isOpenedBy("t")).toBe(true);
+		});
+
+		it("closes the popover from the trigger that owns it", () => {
+			const { store } = setup();
+			const trigger = register(store, "t");
+			pressTrigger(store, trigger);
+			pressTrigger(store, trigger);
+			expect(store.open).toBe(false);
+		});
+
+		it("moves an open popover to another trigger that is pressed", () => {
+			const { store } = setup();
+			const first = register(store, "a");
+			const second = register(store, "b");
+			pressTrigger(store, first);
+			pressTrigger(store, second);
+			expect(store.open).toBe(true);
+			expect(store.activeTrigger.isOpenedBy("b")).toBe(true);
+		});
+
+		it("skips the transitions of a press without a pointer", () => {
+			const { store } = setup();
+			const trigger = register(store, "t");
+			pressTrigger(store, trigger, true);
+			expect(store.instantType).toBe("click");
+		});
+
+		it("returns false when onOpenChange cancels the press", () => {
+			const onOpenChange = vi.fn((_open: boolean, details: { cancel(): void }) => details.cancel());
+			const { store } = setup({ onOpenChange });
+			const trigger = register(store, "t");
+			expect(pressTrigger(store, trigger)).toBe(false);
+			expect(store.open).toBe(false);
+		});
 	});
 
-	it("keeps the popup mounted for unmount() after preventUnmountOnClose()", () => {
-		const { store } = setup({
-			defaultOpen: true,
-			onOpenChange: (_open, details) => details.preventUnmountOnClose(),
+	describe("close", () => {
+		it("closes an open popover with the given reason", () => {
+			const onOpenChange = vi.fn();
+			const { store } = setup({ defaultOpen: true, onOpenChange });
+			expect(
+				store.close(
+					createChangeEventDetails(REASONS.closePress, event("click", { detail: 1 }) as MouseEvent),
+				),
+			).toBe(true);
+			flushSync();
+			expect(store.open).toBe(false);
+			expect(onOpenChange).toHaveBeenCalledWith(
+				false,
+				expect.objectContaining({ reason: REASONS.closePress }),
+			);
 		});
-		flushSync();
-		store.report(false, createChangeEventDetails("back-button", event("back")));
-		expect(store.preventUnmountingOnClose).toBe(true);
+	});
+
+	describe("part state", () => {
+		it("gives a trigger its disabled flag and whether the popover is open from it", () => {
+			const { store } = setup();
+			const trigger = register(store, "t");
+			register(store, "other");
+			expect(store.triggerState("t", true)).toEqual({ disabled: true, open: false });
+			pressTrigger(store, trigger);
+			expect(store.triggerState("t", false)).toEqual({ disabled: false, open: true });
+			expect(store.triggerState("other", false)).toEqual({ disabled: false, open: false });
+		});
+
+		it("gives the Backdrop the open state and the transition status", () => {
+			const { store } = setup({ defaultOpen: true });
+			expect(store.backdropState).toEqual({
+				open: true,
+				transitionStatus: store.transitionStatus,
+			});
+		});
+
+		it("lets the pointer through the Backdrop of a hover-opened popover only", () => {
+			const { store } = setup();
+			const trigger = register(store, "t");
+			store.setOpen(
+				true,
+				createChangeEventDetails(
+					REASONS.triggerHover,
+					event("mouseenter", { detail: 1 }) as MouseEvent,
+					trigger,
+				),
+				{
+					eventType: "mouseenter",
+				},
+			);
+			flushSync();
+			expect(store.backdropPassesPointer).toBe(true);
+			store.setOpen(
+				false,
+				createChangeEventDetails(REASONS.outsidePress, event("click", { detail: 1 }) as MouseEvent),
+			);
+			flushSync();
+			pressTrigger(store, trigger);
+			expect(store.backdropPassesPointer).toBe(false);
+		});
+
+		it("gives the Popup and the Arrow the popover's state and the Positioner's placement", () => {
+			const { store } = setup({ defaultOpen: true });
+			const positioner = new PositionerStore({
+				initial: initialPosition({ side: "top", align: "start", rtl: false }),
+			});
+			expect(popoverPopupState(store, positioner)).toEqual({
+				open: true,
+				side: "top",
+				align: "start",
+				instant: store.instantType,
+				transitionStatus: store.transitionStatus,
+			});
+			expect(popoverArrowState(store, positioner)).toEqual({
+				open: true,
+				side: "top",
+				align: "start",
+				uncentered: positioner.arrowUncentered,
+			});
+		});
+	});
+
+	describe("hasTriggerFocusGuards", () => {
+		/** The store with one registered trigger, `t`, and the two ways to open it from `t`. */
+		function setupWithTrigger(initial: Partial<PopoverProps> = {}) {
+			const { store } = setup(initial);
+			const trigger = element("t");
+			store.triggers.add("t", trigger);
+			flushSync();
+			return {
+				store,
+				hover() {
+					store.setOpen(
+						true,
+						createChangeEventDetails(
+							REASONS.triggerHover,
+							event("mouseenter") as MouseEvent,
+							trigger,
+						),
+						{ eventType: "mouseenter" },
+					);
+					flushSync();
+				},
+				press() {
+					store.setOpen(
+						true,
+						createChangeEventDetails(REASONS.triggerPress, event("click") as MouseEvent, trigger),
+						{ eventType: "click" },
+					);
+					flushSync();
+				},
+			};
+		}
+
+		it("is true for the trigger that a press opened the popover from", () => {
+			const { store, press } = setupWithTrigger();
+			expect(store.hasTriggerFocusGuards("t")).toBe(false);
+			press();
+			expect(store.hasTriggerFocusGuards("t")).toBe(true);
+			expect(store.hasTriggerFocusGuards("other")).toBe(false);
+		});
+
+		it("is false while a hover holds the popover open, as its focus management is off", () => {
+			const { store, hover } = setupWithTrigger();
+			hover();
+			expect(store.open).toBe(true);
+			expect(store.focusManagerDisabled).toBe(true);
+			expect(store.hasTriggerFocusGuards("t")).toBe(false);
+		});
+
+		it("turns true once a press takes over a hover-opened popover", () => {
+			const { store, hover, press } = setupWithTrigger();
+			hover();
+			press();
+			expect(store.open).toBe(true);
+			expect(store.focusManagerDisabled).toBe(false);
+			expect(store.hasTriggerFocusGuards("t")).toBe(true);
+		});
+
+		it("is false for a popover that traps focus", () => {
+			const { store, press } = setupWithTrigger({ modal: true });
+			store.closeParts.register();
+			press();
+			expect(store.hasTriggerFocusGuards("t")).toBe(false);
+		});
+	});
+
+	describe("report", () => {
+		it("commits a change that already happened: onOpenChange runs, cancel() has no effect", () => {
+			const onOpenChange = vi.fn((_open: boolean, details: { cancel(): void }) => details.cancel());
+			const { props, store } = setup({ defaultOpen: true, onOpenChange });
+			const seen = vi.fn();
+			store.events.on("openchange", seen);
+			// A platform reason (a back key) the web doesn't have.
+			store.report(false, createChangeEventDetails("back-button", event("back")));
+			expect(onOpenChange).toHaveBeenCalledWith(
+				false,
+				expect.objectContaining({ reason: "back-button", isCanceled: true }),
+			);
+			expect(seen).toHaveBeenCalledWith(expect.objectContaining({ open: false }));
+			expect(store.open).toBe(false);
+			expect(props.open).toBe(false);
+			expect(store.openChangeReason).toBe("back-button");
+		});
+
+		it("keeps the popup mounted for unmount() after preventUnmountOnClose()", () => {
+			const { store } = setup({
+				defaultOpen: true,
+				onOpenChange: (_open, details) => details.preventUnmountOnClose(),
+			});
+			flushSync();
+			store.report(false, createChangeEventDetails("back-button", event("back")));
+			expect(store.preventUnmountingOnClose).toBe(true);
+		});
 	});
 });
 

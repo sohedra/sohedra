@@ -1,47 +1,20 @@
-// A trigger's registration with its popup, driven as a trigger part drives it: getters over
-// reactive values, inside an effect root.
-
+// useTriggerRegistration: a trigger's registration with its popup, driven as a trigger part drives
+// it, over getters of reactive values inside an effect root.
 import { flushSync } from "svelte";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { PopoverStore, type PopoverTriggerData } from "../../../src/components/popover/index.js";
-import { bound, createChangeEventDetails, REASONS } from "../../../src/foundation/kernel/index.js";
-import { FloatingTree } from "../../../src/foundation/popup/index.js";
+import type { PopoverStore, PopoverTriggerData } from "../../../src/components/popover/index.js";
+import { createChangeEventDetails, REASONS } from "../../../src/foundation/kernel/index.js";
 import { useTriggerRegistration } from "../../../src/foundation/popup/popup-trigger-registration.svelte.js";
-import { createFakePlatform } from "../../kit/kit-fake-platform.js";
+import { root } from "../../kit/kit-effects.svelte.js";
+import { createPopover } from "../../kit/kit-popover.svelte.js";
+import { element } from "../../kit/kit-stand-ins.js";
 
-// Opaque stand-ins for trigger elements: core never reads them.
-const element = (name: string) => ({ name }) as unknown as Element;
 const EVENT = {} as never;
 
-const roots: (() => void)[] = [];
-afterEach(() => {
-	roots.splice(0).forEach((cleanup) => cleanup());
-});
-
-function createPopover() {
-	let open: boolean | undefined = $state(false);
-	const props = {
-		defaultOpen: undefined,
-		triggerId: undefined,
-		defaultTriggerId: undefined,
-		onOpenChange: undefined,
-		onOpenChangeComplete: undefined,
-		modal: undefined,
-	};
-	const store = new PopoverStore(() => props, {
-		open: bound(
-			() => open,
-			(next) => (open = next),
-		),
-		floatingId: "popup",
-		tree: new FloatingTree(),
-		nested: false,
-		platform: createFakePlatform(),
-	});
-	roots.push($effect.root(() => store.connect()));
-	flushSync();
-	return store;
+/** A Popover store, connected, for the trigger to register with. */
+function createPopoverStore() {
+	return createPopover({ open: false }).store;
 }
 
 function data(payload: string): PopoverTriggerData<unknown> {
@@ -77,8 +50,7 @@ function createTrigger(initial: PopoverStore) {
 			forwarded = next;
 		},
 	};
-	const stop = $effect.root(() => useTriggerRegistration(() => trigger));
-	roots.push(stop);
+	const stop = root(() => useTriggerRegistration(() => trigger));
 	flushSync();
 	return { trigger, stop };
 }
@@ -92,7 +64,7 @@ function openBy(store: PopoverStore, by: Element) {
 
 describe("useTriggerRegistration", () => {
 	it("registers the element under the trigger's id once it is attached", () => {
-		const store = createPopover();
+		const store = createPopoverStore();
 		const { trigger } = createTrigger(store);
 		expect(store.triggers.getById("t")).toBeUndefined();
 
@@ -103,7 +75,7 @@ describe("useTriggerRegistration", () => {
 	});
 
 	it("unregisters when the element goes away and when the trigger does", () => {
-		const store = createPopover();
+		const store = createPopoverStore();
 		const { trigger, stop } = createTrigger(store);
 		trigger.element = element("button");
 		flushSync();
@@ -118,8 +90,8 @@ describe("useTriggerRegistration", () => {
 	});
 
 	it("moves to the store the trigger reads now", () => {
-		const first = createPopover();
-		const second = createPopover();
+		const first = createPopoverStore();
+		const second = createPopoverStore();
 		const { trigger } = createTrigger(first);
 		const button = element("button");
 		trigger.element = button;
@@ -132,7 +104,7 @@ describe("useTriggerRegistration", () => {
 	});
 
 	it("forwards its data while it owns the mounted popup", () => {
-		const store = createPopover();
+		const store = createPopoverStore();
 		const { trigger } = createTrigger(store);
 		const button = element("button");
 		trigger.element = button;

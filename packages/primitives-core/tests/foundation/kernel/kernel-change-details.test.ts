@@ -2,9 +2,10 @@
 import { describe, expect, it } from "vitest";
 
 import { createChangeEventDetails, REASONS } from "../../../src/foundation/kernel/index.js";
+import { event as platformEvent } from "../../kit/kit-stand-ins.js";
 
 // Core runs without a DOM: the event is whatever the platform passes in.
-const event = { type: "click" } as unknown as Event;
+const event = platformEvent("click");
 
 describe("createChangeEventDetails", () => {
 	it("carries the reason, event, trigger and custom properties", () => {

@@ -4,15 +4,9 @@
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 
-import {
-	bound,
-	Controllable,
-	createChangeEventDetails,
-	REASONS,
-} from "../../../src/foundation/kernel/index.js";
+import { bound, Controllable } from "../../../src/foundation/kernel/index.js";
+import { changeDetails as details } from "../../kit/kit-details.js";
 import { root, track } from "../../kit/kit-effects.svelte.js";
-
-const details = () => createChangeEventDetails(REASONS.none, { type: "click" } as unknown as Event);
 
 /**
  * A `$bindable` as a parent binds it: `bind:value={parent.value}` to a `$state`, which proxies an

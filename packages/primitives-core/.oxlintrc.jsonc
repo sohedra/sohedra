@@ -212,19 +212,5 @@
 				],
 			},
 		},
-		{
-			// Tests that pin behavior keep their code as written; only their imports and the calls
-			// whose signature changed are edited. These rules flag code in them that does no harm.
-			"files": [
-				"tests/foundation/popup/popup-trigger-map.production.test.ts",
-				"tests/foundation/popup/popup-trigger-map.test.ts",
-				"tests/foundation/popup/popup.decisions.svelte.test.ts",
-			],
-			"rules": {
-				"typescript/consistent-type-imports": "off",
-				"typescript/no-misused-spread": "off",
-				"vitest/no-identical-title": "off",
-			},
-		},
 	],
 }

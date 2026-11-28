@@ -1,15 +1,10 @@
-// One popup's dismissal driven by plain calls, as a platform without a document makes them, and the
-// decisions behind it.
-
+// DismissInteraction: one popup's dismissal by Escape, a trigger press and an outside press of
+// either press type, driven by plain calls as a platform without a document makes them, in a tree
+// of nested popups too.
 import { describe, expect, it, vi } from "vitest";
 
 import type { DismissView } from "../../../src/foundation/dismiss/dismiss-interaction.js";
-import {
-	isTrailingClick,
-	LONG_TOUCH_MS,
-	pressEndOutcome,
-	touchMoveOutcome,
-} from "../../../src/foundation/dismiss/dismiss-rules.js";
+import { LONG_TOUCH_MS } from "../../../src/foundation/dismiss/dismiss-rules.js";
 import {
 	type DismissChangeDetails,
 	DismissInteraction,
@@ -75,38 +70,6 @@ function press(fields: Partial<OutsidePress<FakeTypes>> = {}): OutsidePress<Fake
 		...fields,
 	};
 }
-
-describe("dismiss rules", () => {
-	it("lets a touch dismiss on its end once it moved, and at once when it moved far", () => {
-		expect(touchMoveOutcome(10, 10, 14, 10)).toBe("none");
-		expect(touchMoveOutcome(10, 10, 16, 10)).toBe("dismiss-on-end");
-		expect(touchMoveOutcome(10, 10, 10, 20)).toBe("dismiss-on-end");
-		expect(touchMoveOutcome(10, 10, 22, 10)).toBe("dismiss");
-		// The distance, not one axis: 8 across and 8 down is more than 10 away.
-		expect(touchMoveOutcome(10, 10, 18, 18)).toBe("dismiss");
-	});
-
-	it("counts a click as the tail of an earlier press only when no press was seen while open", () => {
-		expect(isTrailingClick(true, false)).toBe(true);
-		expect(isTrailingClick(true, true)).toBe(false);
-		// A click with no press behind it is always its own press.
-		expect(isTrailingClick(false, false)).toBe(false);
-	});
-
-	it("decides what the end of a press that began inside means for the next click", () => {
-		const end = { pressType: "intentional", canceled: false, startPrevented: false } as const;
-		expect(pressEndOutcome({ ...end, endedInTree: true })).toBe("none");
-		expect(pressEndOutcome({ ...end, endedInTree: false })).toBe("suppress-next");
-		expect(pressEndOutcome({ ...end, startPrevented: true, endedInTree: false })).toBe(
-			"suppress-immediate",
-		);
-		expect(pressEndOutcome({ ...end, canceled: true, endedInTree: false })).toBe("none");
-		expect(
-			pressEndOutcome({ ...end, canceled: true, startPrevented: true, endedInTree: false }),
-		).toBe("suppress-immediate");
-		expect(pressEndOutcome({ ...end, pressType: "sloppy", endedInTree: false })).toBe("none");
-	});
-});
 
 describe("DismissInteraction", () => {
 	describe("Escape", () => {
@@ -348,57 +311,61 @@ describe("DismissInteraction", () => {
 		dismiss.publishBubbles();
 		expect(view.dismissBubbles).toEqual({ escapeKey: false, outsidePress: true });
 	});
-});
 
-describe("a whole press, from a platform that reports a press as one event", () => {
-	it("closes for an outside press under either press type", () => {
-		const sloppy = setup({ outsidePressEvent: "sloppy" });
-		sloppy.dismiss.wholePress(press(), "touch");
-		expect(sloppy.reasons).toEqual(["outside-press"]);
+	describe("a whole press, from a platform that reports a press as one event", () => {
+		it("closes for an outside press under either press type", () => {
+			const sloppy = setup({ outsidePressEvent: "sloppy" });
+			sloppy.dismiss.wholePress(press(), "touch");
+			expect(sloppy.reasons).toEqual(["outside-press"]);
 
-		const intentional = setup({ outsidePressEvent: "intentional" });
-		intentional.dismiss.wholePress(press(), "touch");
-		expect(intentional.reasons).toEqual(["outside-press"]);
-	});
+			const intentional = setup({ outsidePressEvent: "intentional" });
+			intentional.dismiss.wholePress(press(), "touch");
+			expect(intentional.reasons).toEqual(["outside-press"]);
+		});
 
-	it("records the pointer that made it", () => {
-		const { dismiss } = setup({ outsidePressEvent: { mouse: "intentional", touch: "sloppy" } });
-		dismiss.wholePress(press({ inOwnElements: true }), "touch");
-		expect(dismiss.pressType).toBe("sloppy");
-	});
+		it("records the pointer that made it", () => {
+			const { dismiss } = setup({ outsidePressEvent: { mouse: "intentional", touch: "sloppy" } });
+			dismiss.wholePress(press({ inOwnElements: true }), "touch");
+			expect(dismiss.pressType).toBe("sloppy");
+		});
 
-	it("does nothing for a press in the popup's own elements or where one never dismisses", () => {
-		const { dismiss, reasons } = setup();
-		dismiss.wholePress(press({ inOwnElements: true }), "touch");
-		dismiss.wholePress(press({ spared: true }), "touch");
-		expect(reasons).toEqual([]);
-	});
+		it("does nothing for a press in the popup's own elements or where one never dismisses", () => {
+			const { dismiss, reasons } = setup();
+			dismiss.wholePress(press({ inOwnElements: true }), "touch");
+			dismiss.wholePress(press({ spared: true }), "touch");
+			expect(reasons).toEqual([]);
+		});
 
-	it("does nothing while the popup is closed or its dismissal is off", () => {
-		const closed = setup();
-		closed.view.open = false;
-		closed.dismiss.wholePress(press(), "touch");
-		expect(closed.reasons).toEqual([]);
+		it("does nothing while the popup is closed or its dismissal is off", () => {
+			const closed = setup();
+			closed.view.open = false;
+			closed.dismiss.wholePress(press(), "touch");
+			expect(closed.reasons).toEqual([]);
 
-		const off = setup({ enabled: false });
-		off.dismiss.wholePress(press(), "touch");
-		expect(off.reasons).toEqual([]);
-	});
+			const off = setup({ enabled: false });
+			off.dismiss.wholePress(press(), "touch");
+			expect(off.reasons).toEqual([]);
+		});
 
-	it("leaves a press that passed through the popup alone, and forgets it", () => {
-		const { dismiss, view, reasons } = setup();
-		dismiss.markInside();
-		dismiss.wholePress(press(), "touch");
-		expect(reasons).toEqual([]);
-		expect(view.data.insideTree).toBe(false);
-	});
+		it("leaves a press that passed through the popup alone, and forgets it", () => {
+			const { dismiss, view, reasons } = setup();
+			dismiss.markInside();
+			dismiss.wholePress(press(), "touch");
+			expect(reasons).toEqual([]);
+			expect(view.data.insideTree).toBe(false);
+		});
 
-	it("waits for an open child that keeps outside presses to itself", () => {
-		const tree = new FloatingTree();
-		const { dismiss, reasons } = setup({}, tree);
-		tree.addNode({ id: "popup", parentId: null, context: treeContext() });
-		tree.addNode({ id: "child", parentId: "popup", context: treeContext({ outsidePress: false }) });
-		dismiss.wholePress(press(), "touch");
-		expect(reasons).toEqual([]);
+		it("waits for an open child that keeps outside presses to itself", () => {
+			const tree = new FloatingTree();
+			const { dismiss, reasons } = setup({}, tree);
+			tree.addNode({ id: "popup", parentId: null, context: treeContext() });
+			tree.addNode({
+				id: "child",
+				parentId: "popup",
+				context: treeContext({ outsidePress: false }),
+			});
+			dismiss.wholePress(press(), "touch");
+			expect(reasons).toEqual([]);
+		});
 	});
 });

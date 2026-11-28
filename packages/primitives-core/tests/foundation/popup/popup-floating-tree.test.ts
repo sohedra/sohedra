@@ -1,5 +1,4 @@
-// The floating tree's own case: it finds open descendants and ancestors.
-
+// FloatingTree and its lookups: the open descendants and the ancestors of a node.
 import { describe, expect, it } from "vitest";
 
 import { type FloatingNode, FloatingTree } from "../../../src/foundation/popup/index.js";
@@ -22,7 +21,7 @@ function node(id: string, parentId: string | null, open: boolean, escapeKey = fa
 	};
 }
 
-describe("floating tree", () => {
+describe("getNodeChildren and getNodeAncestors", () => {
 	it("finds open descendants and ancestors", () => {
 		const tree = new FloatingTree();
 		const nodes = [

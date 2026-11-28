@@ -1,24 +1,16 @@
-// The Viewport's content rules: when the content is created anew (the content key) and when the
-// open popup switches from one trigger's content to another's. No DOM.
-
+// ViewportContentStore: when the Viewport's content is created anew (the content key) and when the
+// open popup switches from one trigger's content to another's.
 import { flushSync } from "svelte";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { ViewportContentStore } from "../../../src/foundation/position/index.js";
 import type { ViewportContentStoreProps } from "../../../src/foundation/position/position-viewport-content-store.svelte.js";
-
-// Opaque stand-ins for trigger elements: core never reads them.
-const trigger = (name: string) => ({ name }) as unknown as Element;
+import { root } from "../../kit/kit-effects.svelte.js";
+import { element as trigger } from "../../kit/kit-stand-ins.js";
 
 type MutableProps = {
 	-readonly [K in keyof ViewportContentStoreProps]: ViewportContentStoreProps[K];
 };
-
-const roots: (() => void)[] = [];
-
-afterEach(() => {
-	roots.splice(0).forEach((cleanup) => cleanup());
-});
 
 function setup(initial: Partial<MutableProps> = {}) {
 	const props = $state<MutableProps>({
@@ -31,15 +23,13 @@ function setup(initial: Partial<MutableProps> = {}) {
 	});
 	const store = new ViewportContentStore(() => props);
 	// Keep the deriveds connected, as the Viewport's `{#key}` block and data attributes do.
-	roots.push(
-		$effect.root(() => {
-			store.connect();
-			$effect(() => {
-				void store.contentKey;
-				void store.switching;
-			});
-		}),
-	);
+	root(() => {
+		store.connect();
+		$effect(() => {
+			void store.contentKey;
+			void store.switching;
+		});
+	});
 	flushSync();
 	return { props, store };
 }
@@ -107,16 +97,14 @@ describe("ViewportContentStore", () => {
 		it("changes once per trigger and once for its late payload", () => {
 			const { props, store } = setup({ activeTriggerId: "a", payload: "A" });
 			const keys: number[] = [];
-			roots.push(
-				$effect.root(() => {
-					$effect(() => {
-						void store.contentKey;
-						return () => {
-							keys.push(store.contentKey);
-						};
-					});
-				}),
-			);
+			root(() => {
+				$effect(() => {
+					void store.contentKey;
+					return () => {
+						keys.push(store.contentKey);
+					};
+				});
+			});
 			flushSync();
 			const first = store.contentKey;
 
@@ -148,14 +136,12 @@ describe("ViewportContentStore", () => {
 			const store = new ViewportContentStore(() => props);
 			const first = store.contentKey;
 			props.activeTriggerId = "b";
-			roots.push(
-				$effect.root(() => {
-					store.connect();
-					$effect(() => {
-						void store.contentKey;
-					});
-				}),
-			);
+			root(() => {
+				store.connect();
+				$effect(() => {
+					void store.contentKey;
+				});
+			});
 			flushSync();
 			expect(store.contentKey).toBe(first + 1);
 			props.payload = "B";

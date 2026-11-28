@@ -1,13 +1,11 @@
+// OwnedValue and useClaim: a slot the newest claim owns, released only by its owner, and a part's
+// claim that follows its value and lets go on teardown.
 import { flushSync } from "svelte";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { OwnedValue } from "../../../src/foundation/kernel/index.js";
 import { useClaim } from "../../../src/foundation/kernel/kernel-owned-value.svelte.js";
-
-const roots: (() => void)[] = [];
-afterEach(() => {
-	roots.splice(0).forEach((cleanup) => cleanup());
-});
+import { root } from "../../kit/kit-effects.svelte.js";
 
 describe("OwnedValue", () => {
 	it("is unclaimed at first", () => {
@@ -44,13 +42,12 @@ describe("useClaim", () => {
 		const slot = new OwnedValue<string>();
 		const claim = vi.spyOn(slot, "claim");
 		let id = $state<string | undefined>("a");
-		const cleanup = $effect.root(() =>
+		const cleanup = root(() =>
 			useClaim(
 				(token, value) => slot.claim(token, value),
 				() => id,
 			),
 		);
-		roots.push(cleanup);
 		// Effect timing: nothing is claimed until the effects flush.
 		expect(slot.current).toBeUndefined();
 		flushSync();
@@ -75,9 +72,9 @@ describe("useClaim", () => {
 
 	it("does not let an outgoing part clear its replacement's claim", () => {
 		const slot = new OwnedValue<string>();
-		const outgoing = $effect.root(() => useClaim(slot.claim.bind(slot), () => "old"));
+		const outgoing = root(() => useClaim(slot.claim.bind(slot), () => "old"));
 		flushSync();
-		roots.push($effect.root(() => useClaim(slot.claim.bind(slot), () => "new")));
+		root(() => useClaim(slot.claim.bind(slot), () => "new"));
 		flushSync();
 		expect(slot.current).toBe("new");
 		// The outgoing part tears down late (an `out:` transition).

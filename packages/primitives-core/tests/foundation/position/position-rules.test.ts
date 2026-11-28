@@ -1,5 +1,6 @@
-// The placement decisions, as pure functions.
-
+// The placement rules as facts in and an outcome out: sides and placements, lazy flipping,
+// collision avoidance, measuring, the arrow, the transform origin, and when two positions render
+// the same.
 import { describe, expect, it } from "vitest";
 
 import {

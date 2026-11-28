@@ -1,19 +1,14 @@
-// The pure decisions of the popup pipeline and of Popover, each as facts in and an outcome out.
-// `pressOpenState` and `hoverOpenInstantType` also run in the decisions test.
-
+// The popup rules as facts in and an outcome out: click-like events, the open event to keep, a
+// request naming or moving to another trigger, the press toggle, the instant type to show or set,
+// the exit gate, and what a session follows of an `open` set from outside.
 import { describe, expect, it } from "vitest";
 
-import {
-	closeTakesActiveTrigger,
-	isTouchPressOpen,
-	popoverInstantType,
-	popoverOutsidePress,
-} from "../../../src/components/popover/index.js";
 import { REASONS } from "../../../src/foundation/kernel/index.js";
 import { pressOpenState } from "../../../src/foundation/popup/index.js";
 import {
 	awaitsUnmount,
 	closesUnheard,
+	hoverOpenInstantType,
 	isClickLikeEventType,
 	keepsOpenEvent,
 	movesToOtherTrigger,
@@ -22,7 +17,7 @@ import {
 	visibleInstantType,
 } from "../../../src/foundation/popup/popup-rules.js";
 
-describe("popup rules", () => {
+describe("isClickLikeEventType", () => {
 	it("takes presses and keys as click-like", () => {
 		expect(isClickLikeEventType("click")).toBe(true);
 		expect(isClickLikeEventType("mousedown")).toBe(true);
@@ -32,7 +27,9 @@ describe("popup rules", () => {
 		expect(isClickLikeEventType(REASONS.imperativeAction)).toBe(false);
 		expect(isClickLikeEventType(undefined)).toBe(false);
 	});
+});
 
+describe("keepsOpenEvent", () => {
 	it("keeps the open event only for a hover-like opening of an open popup", () => {
 		expect(keepsOpenEvent(true, true, "mouseenter")).toBe(true);
 		expect(keepsOpenEvent(true, true, undefined)).toBe(true);
@@ -49,7 +46,9 @@ describe("popup rules", () => {
 		expect(keepsOpenEvent(true, true, "mouseenter", false)).toBe(true);
 		expect(keepsOpenEvent(true, true, "click", false)).toBe(false);
 	});
+});
 
+describe("namesOtherTrigger", () => {
 	it("names another trigger only when the request has one and it isn't the active one", () => {
 		expect(namesOtherTrigger("b", "a")).toBe(true);
 		expect(namesOtherTrigger("b", null)).toBe(true);
@@ -57,23 +56,9 @@ describe("popup rules", () => {
 		expect(namesOtherTrigger(null, "a")).toBe(false);
 		expect(namesOtherTrigger(null, null)).toBe(false);
 	});
+});
 
-	it("opens on a press unless the owning trigger is pressed again", () => {
-		expect(pressOpenState(false, true, undefined, true)).toBe(true);
-		expect(pressOpenState(true, false, "click", true)).toBe(true);
-		expect(pressOpenState(true, true, "click", true)).toBe(false);
-		// A sticking hover open stays; a patient click closes it.
-		expect(pressOpenState(true, true, "mouseenter", true)).toBe(true);
-		expect(pressOpenState(true, true, "mouseenter", false)).toBe(false);
-		expect(pressOpenState(true, true, undefined, true)).toBe(false);
-	});
-
-	it("shows trigger-change only while open", () => {
-		expect(visibleInstantType("trigger-change", true)).toBe("trigger-change");
-		expect(visibleInstantType("trigger-change", false)).toBeUndefined();
-		expect(visibleInstantType("dismiss", false)).toBe("dismiss");
-	});
-
+describe("movesToOtherTrigger", () => {
 	it("moves to another trigger only from one trigger to a different one while open", () => {
 		const a = { name: "a" };
 		const b = { name: "b" };
@@ -84,7 +69,45 @@ describe("popup rules", () => {
 		expect(movesToOtherTrigger(null, b, true)).toBe(false);
 		expect(movesToOtherTrigger(a, null, true)).toBe(false);
 	});
+});
 
+describe("pressOpenState", () => {
+	it("opens on a press unless the owning trigger is pressed again", () => {
+		expect(pressOpenState(false, true, undefined, true)).toBe(true);
+		expect(pressOpenState(true, false, "click", true)).toBe(true);
+		expect(pressOpenState(true, true, "click", true)).toBe(false);
+		// A sticking hover open stays; a patient click closes it.
+		expect(pressOpenState(true, true, "mouseenter", true)).toBe(true);
+		expect(pressOpenState(true, true, "mouseenter", false)).toBe(false);
+		expect(pressOpenState(true, true, undefined, true)).toBe(false);
+	});
+});
+
+describe("visibleInstantType", () => {
+	it("shows trigger-change only while open", () => {
+		expect(visibleInstantType("trigger-change", true)).toBe("trigger-change");
+		expect(visibleInstantType("trigger-change", false)).toBeUndefined();
+		expect(visibleInstantType("dismiss", false)).toBe("dismiss");
+	});
+});
+
+describe("hoverOpenInstantType", () => {
+	it("skips transitions for a focus opening and a press or Escape close", () => {
+		expect(hoverOpenInstantType(true, REASONS.triggerFocus, undefined)).toBe("focus");
+		expect(hoverOpenInstantType(false, REASONS.triggerPress, undefined)).toBe("dismiss");
+		expect(hoverOpenInstantType(false, REASONS.escapeKey, "focus")).toBe("dismiss");
+	});
+
+	it("clears it for a hover change and keeps it for any other change", () => {
+		expect(hoverOpenInstantType(true, REASONS.triggerHover, "focus")).toBe(undefined);
+		expect(hoverOpenInstantType(false, REASONS.triggerHover, "dismiss")).toBe(undefined);
+		expect(hoverOpenInstantType(false, REASONS.triggerFocus, "focus")).toBe("focus");
+		expect(hoverOpenInstantType(true, REASONS.triggerPress, "dismiss")).toBe("dismiss");
+		expect(hoverOpenInstantType(false, REASONS.outsidePress, "focus")).toBe("focus");
+	});
+});
+
+describe("awaitsUnmount", () => {
 	it("waits for the exit animations only while closed, mounted and not kept", () => {
 		expect(awaitsUnmount(false, true, false)).toBe(true);
 		expect(awaitsUnmount(true, true, false)).toBe(false);
@@ -93,47 +116,16 @@ describe("popup rules", () => {
 	});
 });
 
-describe("popover rules", () => {
-	it("skips transitions for a keyboard press, a dismissal and a focus-out", () => {
-		expect(popoverInstantType(true, REASONS.triggerPress, true)).toBe("click");
-		expect(popoverInstantType(true, REASONS.triggerPress, false)).toBeUndefined();
-		expect(popoverInstantType(false, REASONS.escapeKey, false)).toBe("dismiss");
-		expect(popoverInstantType(false, undefined, false)).toBe("dismiss");
-		expect(popoverInstantType(true, REASONS.escapeKey, false)).toBeUndefined();
-		expect(popoverInstantType(false, REASONS.focusOut, false)).toBe("focus");
-		expect(popoverInstantType(false, REASONS.outsidePress, false)).toBeUndefined();
-	});
-
-	it("gives a close press the active trigger only when it carried none", () => {
-		expect(closeTakesActiveTrigger(false, REASONS.closePress, false, "t")).toBe(true);
-		expect(closeTakesActiveTrigger(false, REASONS.closePress, true, "t")).toBe(false);
-		expect(closeTakesActiveTrigger(false, REASONS.closePress, false, null)).toBe(false);
-		expect(closeTakesActiveTrigger(false, REASONS.escapeKey, false, "t")).toBe(false);
-		expect(closeTakesActiveTrigger(true, REASONS.closePress, false, "t")).toBe(false);
-	});
-
-	it("tells a touch press on a hover-enabled trigger", () => {
-		expect(isTouchPressOpen(true, "touch", REASONS.triggerPress)).toBe(true);
-		expect(isTouchPressOpen(false, "touch", REASONS.triggerPress)).toBe(false);
-		expect(isTouchPressOpen(true, "mouse", REASONS.triggerPress)).toBe(false);
-		expect(isTouchPressOpen(true, "touch", REASONS.triggerHover)).toBe(false);
-	});
-
-	it("reads the outside press from the behaviour row, sloppy for a mouse while trapping focus", () => {
-		expect(popoverOutsidePress(false)).toEqual({ mouse: "intentional", touch: "sloppy" });
-		expect(popoverOutsidePress(true)).toEqual({ mouse: "intentional", touch: "sloppy" });
-		expect(popoverOutsidePress("trap-focus")).toEqual({ mouse: "sloppy", touch: "sloppy" });
-	});
-});
-
-describe("closes from outside", () => {
+describe("closesUnheard", () => {
 	it("tells a close the session did not hear of", () => {
 		expect(closesUnheard(false, true)).toBe(true);
 		expect(closesUnheard(false, false)).toBe(false);
 		expect(closesUnheard(true, true)).toBe(false);
 		expect(closesUnheard(true, false)).toBe(false);
 	});
+});
 
+describe("openValuesToFollow", () => {
 	it("follows the open value once when it changed", () => {
 		expect(openValuesToFollow(true, true, undefined)).toEqual([true]);
 		expect(openValuesToFollow(false, false, undefined)).toEqual([false]);

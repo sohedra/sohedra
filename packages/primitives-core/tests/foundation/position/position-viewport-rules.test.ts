@@ -1,5 +1,5 @@
-// The Viewport decisions, as plain functions.
-
+// The Viewport rules as facts in and an outcome out: the next content key, the direction a
+// trigger change activates from, and the edges a popup is pinned by.
 import { describe, expect, it } from "vitest";
 
 import { getActivationDirection, pinnedEdges } from "../../../src/foundation/position/index.js";
