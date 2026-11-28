@@ -163,6 +163,7 @@ describe("the types an app gets", () => {
 				isolatedModules: true,
 				verbatimModuleSyntax: true,
 				noEmit: true,
+				allowImportingTsExtensions: true,
 				skipLibCheck: false,
 				types: [],
 			},

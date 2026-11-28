@@ -2,9 +2,6 @@
 	// As the binding's README has an app's: its base, with `@sohedra/lynx-polyfill` imported first
 	// in the entry for the web's globals.
 	"extends": "@sohedra/lynx/tsconfig",
-	"compilerOptions": {
-		"allowImportingTsExtensions": true
-	},
 	"svelteOptions": { "namespace": "svelteLynx" },
 	"include": ["src"]
 }
