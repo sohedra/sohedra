@@ -16,3 +16,9 @@ type WithPreventSohedraHandler<T> = T extends (event: infer E) => infer R
 export type WithSohedraEvent<T> = {
 	[K in keyof T]: K extends `on${string}` ? WithPreventSohedraHandler<T[K]> : T[K];
 };
+
+/** The axis a component is laid out along. */
+export type Orientation = "horizontal" | "vertical";
+
+/** The direction text runs in: left to right, or right to left. */
+export type TextDirection = "ltr" | "rtl";

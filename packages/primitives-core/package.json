@@ -47,6 +47,7 @@
 		"test:async": "vitest run --mode async"
 	},
 	"dependencies": {
+		"@floating-ui/core": "1.8.0",
 		"esm-env": "^1.2.2"
 	},
 	"devDependencies": {

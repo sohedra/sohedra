@@ -158,6 +158,36 @@
 			},
 		},
 		{
+			// Placement runs on the platform-free half of Floating UI, imported only here.
+			"files": ["src/foundation/position/**"],
+			"rules": {
+				"no-restricted-imports": [
+					"error",
+					{
+						"patterns": [
+							{
+								"group": [
+									"**",
+									"!svelte",
+									"!svelte/reactivity",
+									"!esm-env",
+									"!@floating-ui/core",
+									"!./**",
+									"!../**",
+									"./index.js",
+									"../*/*",
+									"!../*/index.js",
+									"**/components/**",
+									"**/*.svelte",
+								],
+								"message": "Core imports only svelte, svelte/reactivity, esm-env and its own files, and the position job also @floating-ui/core; a job imports its own files by name, another job through its index.js, and no component.",
+							},
+						],
+					},
+				],
+			},
+		},
+		{
 			// The kernel imports nothing else of core.
 			"files": ["src/foundation/kernel/**"],
 			"rules": {
@@ -180,6 +210,20 @@
 						],
 					},
 				],
+			},
+		},
+		{
+			// Tests that pin behavior keep their code as written; only their imports and the calls
+			// whose signature changed are edited. These rules flag code in them that does no harm.
+			"files": [
+				"tests/foundation/popup/popup-trigger-map.production.test.ts",
+				"tests/foundation/popup/popup-trigger-map.test.ts",
+				"tests/foundation/popup/popup.decisions.svelte.test.ts",
+			],
+			"rules": {
+				"typescript/consistent-type-imports": "off",
+				"typescript/no-misused-spread": "off",
+				"vitest/no-identical-title": "off",
 			},
 		},
 	],

@@ -1,0 +1,75 @@
+// The types every popup shares: what an open change carries in and out, what a trigger forwards,
+// the bookkeeping the interactions share, and the popup's own events.
+
+import type {
+	AnyPlatformEvent,
+	ChangeEventDetails,
+	InteractionEventType,
+	PlatformTypes,
+	PointerType,
+} from "../kernel/index.js";
+
+/** Change details every popup's `onOpenChange` receives (`preventUnmountOnClose` included). */
+export type PopupChangeEventDetails<
+	T extends PlatformTypes,
+	Reason extends string = string,
+> = ChangeEventDetails<Reason, { preventUnmountOnClose: () => void }, T>;
+
+/** What the platform knows about an open change, passed with it. */
+export interface OpenChangeSource {
+	/**
+	 * The interaction that caused the change, in core's vocabulary (`click`, `mouseenter`,
+	 * `keydown`…), which the platform maps its native event onto (a tap is `click`): whether the
+	 * change came from a press or a hover. An imperative change passes `imperative-action`; none
+	 * for a change without an event or with one core doesn't interpret.
+	 */
+	readonly eventType?: InteractionEventType | undefined;
+	/** The trigger's id when the store may not know the element (a handle's other root). */
+	readonly triggerId?: string | undefined;
+}
+
+/** What a trigger forwards to the popup while it owns it. */
+export interface PopupTriggerData<Payload> {
+	readonly payload: Payload | undefined;
+	/**
+	 * Whether, while the popup is hover-open, only this trigger and the popup take pointer input
+	 * (a submenu, so the parent's items the pointer crosses don't react). @default false
+	 */
+	readonly blockPointerEvents?: boolean | undefined;
+}
+
+/**
+ * Bookkeeping the platform interactions share and that nothing renders from: the event that
+ * opened the popup, and whether an interaction started inside the popup's own elements.
+ */
+export interface PopupInteractionData<T extends PlatformTypes = PlatformTypes> {
+	/** The event that opened the popup; a click-like one isn't replaced by a later hover one. */
+	openEvent: AnyPlatformEvent<T> | undefined;
+	/** {@link openEvent}'s type, in core's vocabulary (the change's `eventType`). */
+	openEventType: InteractionEventType | undefined;
+	/** An event passed through the popup's own elements. */
+	insideTree: boolean;
+	/** The popup's node in the floating tree, once its Positioner registers it. */
+	nodeId: string | undefined;
+}
+
+/** The kind of input that opened or closed a popup: a pointer type, or the keyboard. */
+export type InteractionType = PointerType | "keyboard";
+
+/** Why a popup skips its CSS transitions (`data-instant`). */
+export type InstantType = "dismiss" | "click" | "focus" | "group" | "trigger-change" | undefined;
+
+/** What an open change tells the popup's interactions. */
+export interface OpenChangeDetails<T extends PlatformTypes = PlatformTypes> {
+	open: boolean;
+	reason: string;
+	nativeEvent: AnyPlatformEvent<T>;
+	/** Whether the popup is nested in another floating element. */
+	nested: boolean;
+	triggerElement: T["element"] | undefined;
+}
+
+/** A popup's own events: open changes, which its dismiss, focus and hover interactions follow. */
+export type PopupEvents<T extends PlatformTypes = PlatformTypes> = {
+	openchange: OpenChangeDetails<T>;
+};

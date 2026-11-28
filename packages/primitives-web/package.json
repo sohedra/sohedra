@@ -55,6 +55,7 @@
 		"test:webkit:async": "vitest run --mode async --project ssr --project \"browser (webkit)\""
 	},
 	"dependencies": {
+		"@floating-ui/dom": "1.8.0",
 		"@sohedra/primitives-core": "workspace:*",
 		"esm-env": "^1.2.2"
 	},

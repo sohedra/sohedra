@@ -1,4 +1,4 @@
-// Kernel: what every store uses: contexts, ids, logging, events, reactivity and the Platform contract.
+// Kernel: what every store uses: contexts, ids, logging, events, reactivity, timers and the Platform contract with the facts a platform passes in.
 export { type DefinedContext, defineContext } from "./kernel-context.js";
 export { sohedraId } from "./kernel-id.js";
 export { error, warn } from "./kernel-log.js";
@@ -35,3 +35,8 @@ export {
 } from "./kernel-change-details.js";
 export { type SohedraEvent, type WithSohedraEvent } from "./kernel-types.js";
 export { REASONS } from "./kernel-reasons.js";
+export { OwnedValue, useClaim } from "./kernel-owned-value.svelte.js";
+export type { InteractionEventType, KeyInput, PointerType } from "./kernel-platform-values.js";
+export { keepShallowEqual } from "./kernel-shallow-equal.js";
+export { Timeout } from "./kernel-timeout.js";
+export type { TextDirection } from "./kernel-types.js";
