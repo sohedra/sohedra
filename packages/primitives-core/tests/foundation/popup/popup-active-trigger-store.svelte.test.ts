@@ -47,7 +47,7 @@ describe("ActiveTriggerStore", () => {
 			flushSync();
 			expect(store.element).toBeNull();
 			expect(store.anchor).toBe(a);
-			store.clearDomReference();
+			store.forgetLastTrigger();
 			flushSync();
 			expect(store.anchor).toBeNull();
 		});

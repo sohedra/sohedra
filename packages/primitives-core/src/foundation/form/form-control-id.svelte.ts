@@ -16,6 +16,14 @@ export interface LabelableControlIdProps {
 	readonly enabled?: boolean | undefined;
 }
 
+/** What a control's id in its labelable scope is given once. */
+export interface LabelableControlIdDeps {
+	/** The labelable scope the control is in. */
+	readonly labelable: LabelableContextValue;
+	/** The id when neither the control nor its scope gives one. */
+	readonly defaultId: string;
+}
+
 /**
  * A control's id within a labelable scope. The scope's id wins until the control registers its
  * own after mount, so the label's `for` and the control's `id` agree in the server-rendered
@@ -38,14 +46,10 @@ export class LabelableControlId {
 	);
 
 	/** Pure: reads no context. `props` is called inside the deriveds, so each value stays live. */
-	constructor(
-		labelable: LabelableContextValue,
-		props: () => LabelableControlIdProps,
-		defaultId: string,
-	) {
-		this.#labelable = labelable;
+	constructor(props: () => LabelableControlIdProps, deps: LabelableControlIdDeps) {
+		this.#labelable = deps.labelable;
 		this.#props = props;
-		this.#defaultId = defaultId;
+		this.#defaultId = deps.defaultId;
 	}
 
 	#unregister() {

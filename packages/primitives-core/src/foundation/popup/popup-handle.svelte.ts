@@ -50,6 +50,16 @@ export interface HandleAttachableStore {
 	): void;
 }
 
+/** What a handle is given once. */
+export interface PopupHandleDeps<Store> {
+	/** The inert store detached triggers read while no Root is attached. */
+	readonly fallback: Store;
+	/** The component name in warnings, e.g. `Popover`. */
+	readonly name: string;
+	/** Whether opening by an unregistered trigger id throws (an anchored popup needs one). */
+	readonly throwOnMissingTrigger?: boolean | undefined;
+}
+
 interface Attachment<Store> {
 	readonly store: Store;
 	/** The platform's event for an imperative change (a handle call runs no platform code). */
@@ -68,10 +78,10 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	readonly #attachments: Attachment<Store>[] = [];
 	#attached: Attachment<Store> | null = $state.raw(null);
 
-	constructor(fallback: Store, name: string, throwOnMissingTrigger = true) {
-		this.#fallback = fallback;
-		this.#name = name;
-		this.#throwOnMissingTrigger = throwOnMissingTrigger;
+	constructor(deps: PopupHandleDeps<Store>) {
+		this.#fallback = deps.fallback;
+		this.#name = deps.name;
+		this.#throwOnMissingTrigger = deps.throwOnMissingTrigger ?? true;
 	}
 
 	/** The attached Root's store, or the fallback store. Reactive. */
@@ -89,7 +99,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	 * handle call runs no platform code. Returns the detachment, which hands control back to the
 	 * newest store still attached.
 	 */
-	attachStore(store: Store, imperativeEvent: () => unknown): () => void {
+	attachStore = (store: Store, imperativeEvent: () => unknown): (() => void) => {
 		const attachment: Attachment<Store> = { store, imperativeEvent };
 		this.#attachments.push(attachment);
 		this.#attached = attachment;
@@ -112,7 +122,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 			}
 			this.#attached = this.#attachments[this.#attachments.length - 1] ?? null;
 		};
-	}
+	};
 
 	protected openByTrigger(triggerId: string | null | undefined): void {
 		const attached = this.#attached;

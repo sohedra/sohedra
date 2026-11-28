@@ -139,13 +139,13 @@ function movePortalNode(
 		const root = node.getRootNode();
 		const release = isShadowRoot(root) && root.mode === "closed" ? delegateInto(root) : undefined;
 		untrack(() => {
-			portal.portalNode = node;
+			portal.setPortalNode(node);
 		});
 		return () => {
 			release?.();
 			node.remove();
 			if (untrack(() => portal.portalNode) === node) {
-				portal.portalNode = null;
+				portal.setPortalNode(null);
 			}
 		};
 	};
@@ -254,8 +254,8 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 				},
 				{ "data-type": "outside" },
 			),
-			[createAttachmentKey()]: attachRef<HTMLElement>(
-				(element) => (portal.beforeOutsideGuard = element),
+			[createAttachmentKey()]: attachRef<HTMLElement>((element) =>
+				portal.setBeforeOutsideGuard(element),
 			),
 		} as HTMLAttributes<HTMLSpanElement>,
 		afterOutsideGuardProps: {
@@ -272,8 +272,8 @@ export function useFocusPortal(options: () => PortalOptions): FocusPortal {
 				},
 				{ "data-type": "outside" },
 			),
-			[createAttachmentKey()]: attachRef<HTMLElement>(
-				(element) => (portal.afterOutsideGuard = element),
+			[createAttachmentKey()]: attachRef<HTMLElement>((element) =>
+				portal.setAfterOutsideGuard(element),
 			),
 		} as HTMLAttributes<HTMLSpanElement>,
 	};

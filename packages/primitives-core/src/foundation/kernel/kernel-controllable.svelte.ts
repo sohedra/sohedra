@@ -6,7 +6,10 @@ import { error } from "./kernel-log.js";
 import { callUser } from "./kernel-user-callback.js";
 import { watch } from "./kernel-watch.svelte.js";
 
-export interface ControllableOptions<T> {
+/** What a controllable value is given once. */
+export interface ControllableDeps<T> {
+	/** The `$bindable` prop: the value while it isn't `undefined`. */
+	readonly source: Bound<T | undefined>;
 	/** The default when the source is `undefined`. Read untracked, except by the dev warning. */
 	default: () => T;
 	/** The component name in warnings, e.g. `Switch`. */
@@ -27,7 +30,7 @@ interface Cancelable {
  */
 export class Controllable<T> {
 	#source: Bound<T | undefined>;
-	#options: ControllableOptions<T>;
+	#options: ControllableDeps<T>;
 	// Raw: a value is kept as given, never deep-proxied, so an object stays `===` to the one the
 	// parts compare it with (a tab's or a radio's value).
 	#local = $state.raw() as T;
@@ -43,12 +46,12 @@ export class Controllable<T> {
 	/** The current value: the source's, or the local one while the source is `undefined`. */
 	readonly current: T = $derived(this.#read());
 
-	constructor(source: Bound<T | undefined>, options: ControllableOptions<T>) {
-		this.#source = source;
-		this.#options = options;
-		const given = untrack(() => source.value);
+	constructor(deps: ControllableDeps<T>) {
+		this.#source = deps.source;
+		this.#options = deps;
+		const given = untrack(() => deps.source.value);
 		this.#initiallyUncontrolled = given === undefined;
-		const initial = given === undefined ? untrack(options.default) : given;
+		const initial = given === undefined ? untrack(deps.default) : given;
 		this.#local = initial;
 		if (given === undefined && initial !== undefined) {
 			// Like a native `bind:checked`, an unset binding takes the initial value. An `undefined`

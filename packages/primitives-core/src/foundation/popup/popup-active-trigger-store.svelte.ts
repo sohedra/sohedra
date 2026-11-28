@@ -46,7 +46,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	// The last trigger element stays the popup's reference after the popup unmounts (only element
 	// values are synced); a kept-mounted Positioner clears it. Committed by `connect()` after each
 	// update, never while deriving.
-	readonly #lastReference = new CommittedValue<T["element"] | null>(null);
+	readonly #lastReference = new CommittedValue<T["element"] | null>({ initial: null });
 
 	/** The active trigger's id: the controlled `triggerId`, else the store's own. */
 	readonly id: string | null = $derived.by(() => this.#props().triggerId ?? this.#id);
@@ -110,17 +110,17 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	/** Writes the trigger the popup belongs to. */
-	set(id: string | null, element: T["element"] | null): void {
+	set = (id: string | null, element: T["element"] | null): void => {
 		this.#id = id;
 		this.#element = element;
-	}
+	};
 
 	/**
 	 * Registers a trigger element under `id`: refreshes the active trigger's element, or claims an
 	 * open popup that has no active trigger; then `takeData` applies the trigger's data. Returns
 	 * the unregistration, which leaves a replacement registered under the same id alone.
 	 */
-	register(id: string, element: T["element"], takeData: () => void): () => void {
+	register = (id: string, element: T["element"], takeData: () => void): (() => void) => {
 		untrack(() => {
 			this.#triggers.add(id, element);
 			const activeId = this.id;
@@ -139,27 +139,27 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 				this.#triggers.delete(id);
 			}
 		};
-	}
+	};
 
 	/** While the trigger `id` owns the mounted popup, its element is the popup's (and its data). */
-	forward(id: string, element: T["element"] | null, takeData: () => void): void {
+	forward = (id: string, element: T["element"] | null, takeData: () => void): void => {
 		untrack(() => {
 			if (this.isMountedBy(id)) {
 				this.#element = element;
 				takeData();
 			}
 		});
-	}
+	};
 
 	/**
 	 * Commits an open change's trigger (part of the open change's commit). A trigger still
 	 * registered with another store (a handle moving between roots) comes with its id.
 	 */
-	commit(
+	commit = (
 		open: boolean,
 		trigger: T["element"] | undefined,
 		knownTriggerId: string | undefined,
-	): void {
+	): void => {
 		const triggerId = this.idOf(trigger) ?? (trigger ? (knownTriggerId ?? null) : null);
 		// A closing popup keeps its trigger, so exit animations and focus return still find it.
 		if (triggerId || open) {
@@ -170,12 +170,12 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		if (open) {
 			this.#openedWithoutTrigger = trigger == null;
 		}
-	}
+	};
 
 	/** Forgets the last trigger element (a kept-mounted popup that closed). */
-	clearDomReference(): void {
+	forgetLastTrigger = (): void => {
 		this.#lastReference.commit(null);
-	}
+	};
 
 	/**
 	 * Lifetime work: the commit of the last trigger element, and the reconciliation of the active

@@ -1,7 +1,5 @@
-import type {
-	OutsidePress,
-	TouchPoint,
-} from "@sohedra/primitives-core/foundation/dismiss/index.js";
+import type { OutsidePress } from "@sohedra/primitives-core/foundation/dismiss/index.js";
+import type { Point } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import { untrack } from "svelte";
 import { type Attachment, createAttachmentKey } from "svelte/attachments";
 
@@ -56,7 +54,7 @@ function closeOnEscape(popup: DismissTriggerView, event: KeyboardEvent): void {
 	}
 }
 
-function touchPoint(event: TouchEvent): TouchPoint | null {
+function touchPoint(event: TouchEvent): Point | null {
 	const touch = event.touches[0];
 	return touch ? { x: touch.clientX, y: touch.clientY } : null;
 }
@@ -182,7 +180,7 @@ export function useDismiss(popup: DismissView): void {
 			for (const [type, listener, listenerOptions] of listeners) {
 				doc.removeEventListener(type, listener, listenerOptions);
 			}
-			untrack(() => dismiss.release());
+			untrack(() => dismiss.listeningStopped());
 		};
 	});
 }

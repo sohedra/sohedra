@@ -132,9 +132,9 @@ function trackSafePolygon(
 	};
 	popup.hover.setCloseTracker({
 		handler,
-		dispose() {
+		stop() {
 			doc.removeEventListener("mousemove", handler);
-			session.dispose();
+			session.stop();
 		},
 	});
 	doc.addEventListener("mousemove", handler);
@@ -155,7 +155,7 @@ export function useHoverTrigger(
 	popup: () => HoverPopupView,
 	options: () => HoverTriggerOptions,
 ): HoverTrigger {
-	const intent = new HoverTriggerIntent<WebTypes>(popup, options, flushSync);
+	const intent = new HoverTriggerIntent<WebTypes>(options, { popup, flush: flushSync });
 
 	// Value-compared views of the options an effect depends on: the effect re-runs when the value
 	// changes, not when any signal the options object reads does.
@@ -253,7 +253,7 @@ export function useHoverTrigger(
  * `options` returns the Popup's hover options as a plain object.
  */
 export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOptions): void {
-	const intent = new HoverPopupIntent<WebTypes>(popup, options, flushSync);
+	const intent = new HoverPopupIntent<WebTypes>(options, { popup, flush: flushSync });
 
 	// Value-compared: the listeners are installed again only when this changes.
 	const enabled = $derived(options().enabled);
@@ -294,7 +294,7 @@ export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOp
 			floating.removeEventListener("mouseenter", onMouseEnter);
 			floating.removeEventListener("mouseleave", onMouseLeave);
 			floating.removeEventListener("pointerdown", onInteractInside, true);
-			intent.dispose();
+			intent.stop();
 		};
 	});
 }

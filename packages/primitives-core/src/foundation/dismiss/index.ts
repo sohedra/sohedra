@@ -4,6 +4,5 @@ export {
 	DismissInteraction,
 	type DismissOptions,
 	type OutsidePress,
-	type TouchPoint,
 } from "./dismiss-interaction.js";
 export type { OutsidePressEvent, PressType } from "./dismiss-rules.js";

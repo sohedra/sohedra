@@ -267,13 +267,14 @@ export abstract class PopupStore<
 		this.nested = deps.nested;
 		this.platform = platform;
 		this.#outsidePress = kind.behavior.outsidePress;
-		this.#open = new Controllable<boolean>(deps.open, {
+		this.#open = new Controllable<boolean>({
+			source: deps.open,
 			default: () => props().defaultOpen ?? false,
 			name: kind.name,
 			state: "open",
 		});
 		this.#heardOpen = untrack(() => this.#open.current);
-		this.presence = new Presence(this, platform.scheduler);
+		this.presence = new Presence(() => this, { scheduler: platform.scheduler });
 		this.activeTrigger = new ActiveTriggerStore<T>(
 			() => ({
 				open: this.open,
@@ -289,14 +290,15 @@ export abstract class PopupStore<
 				),
 			},
 		);
-		this.hover = kind.behavior.hover ? new HoverInteraction<T>(platform.scheduler) : null;
-		this.dismiss = new DismissInteraction<T>(
-			this,
-			() => this.dismissOptions,
+		this.hover = kind.behavior.hover
+			? new HoverInteraction<T>({ scheduler: platform.scheduler })
+			: null;
+		this.dismiss = new DismissInteraction<T>(() => this.dismissOptions, {
+			popup: this,
 			// A generic `Details` hides that the dismissal's reasons are among the store's.
-			(details: DismissChangeDetails<T>) =>
+			close: (details: DismissChangeDetails<T>) =>
 				this.setOpen(false, details as unknown as Omit<Details, "preventUnmountOnClose">),
-		);
+		});
 	}
 
 	get open(): boolean {
@@ -382,7 +384,7 @@ export abstract class PopupStore<
 	setPopupElement = (element: T["element"] | null): void => {
 		this.#popupElement = element;
 		if (element === null) {
-			this.hover?.dispose();
+			this.hover?.stop();
 		}
 	};
 
@@ -420,7 +422,7 @@ export abstract class PopupStore<
 	 * A trigger reads this popup until the returned leave: it unmounts, or its handle gives it
 	 * another popup. The popup's hover timers and safe polygon never outlive a trigger that left.
 	 */
-	joinTrigger = (): (() => void) => () => this.hover?.dispose();
+	joinTrigger = (): (() => void) => () => this.hover?.stop();
 
 	/** While the trigger `id` owns the mounted popup, its element and data are the popup's. */
 	forwardTriggerData = (
@@ -634,7 +636,7 @@ export abstract class PopupStore<
 		const hover = this.hover;
 		if (hover) {
 			// Hover timers and the safe polygon never outlive the popup.
-			$effect(() => () => hover.dispose());
+			$effect(() => () => hover.stop());
 		}
 		// Follows `open` however it changed. A bound `open` set from outside passes no request, so
 		// this is where the store hears of it: an opening starts a new close cycle and drops the
@@ -683,7 +685,7 @@ export abstract class PopupStore<
 			return () => this.events.off("openchange", onOpenChange);
 		});
 		// The Root unmounted: drops the dismissal's timers.
-		$effect(() => () => dismiss.dispose());
+		$effect(() => () => dismiss.stop());
 		// While closed or not dismissing: a close forgets the press, and the inside mark is cleared
 		// when this ends, not now (a close made while focus moves out, by a trigger's focus guard,
 		// leaves the focus behaviour's pending focus-out check to read it).

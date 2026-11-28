@@ -8,6 +8,7 @@ import {
 	type InteractionEventType,
 	type PlatformEvent,
 	type PlatformTypes,
+	type Point,
 	type PointerType,
 	REASONS,
 	type Scheduler,
@@ -89,15 +90,17 @@ export interface OutsidePress<T extends PlatformTypes = PlatformTypes> {
 	readonly dismissible?: boolean | undefined;
 }
 
-/** A touch point, in any one coordinate space. */
-export interface TouchPoint {
-	readonly x: number;
-	readonly y: number;
+/** What a popup's dismissal is given once. */
+export interface DismissInteractionDeps<T extends PlatformTypes = PlatformTypes> {
+	/** The popup it dismisses. A popup store is one as it is. */
+	readonly popup: DismissView<T>;
+	/** Closes the popup with the dismissal's details. */
+	readonly close: (details: DismissChangeDetails<T>) => void;
 }
 
 /**
  * One popup's dismissal, shared by its Root, its triggers and its popup element. A popup store
- * builds one; the platform layer calls it with what happened.
+ * builds one; the platform calls it with what happened.
  */
 export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	readonly #view: DismissView<T>;
@@ -127,18 +130,12 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	readonly #insideTimeout: Timeout;
 	readonly #compositionTimeout: Timeout;
 
-	/**
-	 * `options` is asked whenever a decision needs one, so its answers may change; `close` closes
-	 * the popup with the dismissal's details.
-	 */
-	constructor(
-		view: DismissView<T>,
-		options: () => DismissOptions,
-		close: (details: DismissChangeDetails<T>) => void,
-	) {
+	/** `options` is asked whenever a decision needs one, so its answers may change. */
+	constructor(options: () => DismissOptions, deps: DismissInteractionDeps<T>) {
+		const view = deps.popup;
 		this.#view = view;
 		this.#options = options;
-		this.#close = close;
+		this.#close = deps.close;
 		const scheduler = view.platform.scheduler;
 		this.#longTouchTimeout = new Timeout(scheduler);
 		this.#suppressionTimeout = new Timeout(scheduler);
@@ -172,7 +169,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	 * platform's own word that the key belongs to a text composition. Returns what to do with the
 	 * event when the popup closed for it, else `null`.
 	 */
-	escape(event: PlatformEvent<T, EscapeReason>, composing = false): EscapeOutcome | null {
+	escape = (event: PlatformEvent<T, EscapeReason>, composing = false): EscapeOutcome | null => {
 		const view = this.#view;
 		if (!view.open || !this.enabled) {
 			return null;
@@ -190,13 +187,13 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			preventDefault: !details.isCanceled,
 			stopPropagation: !details.isPropagationAllowed,
 		};
-	}
+	};
 
 	/**
 	 * A text composition ended. `settleMs` keeps it counted that long: a platform that reports the
 	 * end before the key that ended it passes a few milliseconds.
 	 */
-	compositionEnd(settleMs: number): void {
+	compositionEnd = (settleMs: number): void => {
 		if (settleMs <= 0) {
 			this.#compositionTimeout.clear();
 			this.#composing = false;
@@ -206,7 +203,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 		this.#compositionTimeout.start(settleMs, () => {
 			this.#composing = false;
 		});
-	}
+	};
 
 	// Presses inside the popup
 
@@ -214,7 +211,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	 * A press is passing through the popup's own elements: it isn't an outside press for the
 	 * popup or for the popups it is nested in, until the next task.
 	 */
-	markInside(): void {
+	markInside = (): void => {
 		const { tree, nodeId } = this.#view;
 		this.enterInside();
 		const ancestors = tree ? tree.ancestors(nodeId) : [];
@@ -231,7 +228,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 				}
 			}
 		});
-	}
+	};
 
 	/** Forgets the press that passed through the popup. */
 	clearInside = (): void => {
@@ -254,7 +251,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	};
 
 	/** A press began. `inPopup`: on the popup's own subtree, not a popup nested in it. */
-	pressStart(button: number, inPopup: boolean): void {
+	pressStart = (button: number, inPopup: boolean): void => {
 		if (!this.#view.open || !this.enabled || button !== 0 || !inPopup) {
 			return;
 		}
@@ -262,17 +259,17 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			this.#pressStartedInside = true;
 			this.#pressStartPrevented = false;
 		}
-	}
+	};
 
 	/** The start of a press on the popup had its default action prevented (a drag handle). */
-	pressStartPrevented(): void {
+	pressStartPrevented = (): void => {
 		if (!this.#view.open || !this.enabled) {
 			return;
 		}
 		if (this.#pressStartedInside) {
 			this.#pressStartPrevented = true;
 		}
-	}
+	};
 
 	// Presses anywhere, while the popup is open
 
@@ -282,11 +279,11 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	 * it (web: `mousedown`), which a touch makes too. Returns whether the event is followed to its
 	 * target: not the mouse press of a touch that lasted too long.
 	 */
-	pressSeen(press: {
+	pressSeen = (press: {
 		readonly button: number;
 		readonly pointerType?: PointerType | undefined;
 		readonly compatibility?: boolean | undefined;
-	}): boolean {
+	}): boolean => {
 		this.#longTouchTimeout.clear();
 		if (press.pointerType !== undefined) {
 			// Only the primary button's press is followed by a click.
@@ -296,13 +293,13 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			this.#pointerType = press.pointerType;
 		}
 		return !(press.compatibility && this.#touch && !this.#touch.dismissOnPress);
-	}
+	};
 
 	/**
 	 * The start of a press with a pointer reached its target. `touch`: the pointer is a finger,
 	 * whose press is followed as a touch instead.
 	 */
-	pointerPress(press: OutsidePress<T>, touch: boolean): void {
+	pointerPress = (press: OutsidePress<T>, touch: boolean): void => {
 		if (
 			this.pressType !== "sloppy" ||
 			touch ||
@@ -313,10 +310,10 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			return;
 		}
 		this.press(press);
-	}
+	};
 
 	/** A press reached its target: closes the popup when it is an outside press that dismisses. */
-	press(press: OutsidePress<T>): void {
+	press = (press: OutsidePress<T>): void => {
 		const view = this.#view;
 		const pressType = this.pressType;
 		if (isIgnoredOutsidePress(press.eventType, pressType)) {
@@ -356,7 +353,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			createChangeEventDetails<OutsidePressReason, {}, T>(REASONS.outsidePress, press.event),
 		);
 		this.clearInside();
-	}
+	};
 
 	/**
 	 * A whole press reached its target, on a platform that reports a press as one event (a tap)
@@ -365,7 +362,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	 * type: closes the popup unless the press landed in its own elements or where one never
 	 * dismisses.
 	 */
-	wholePress(press: OutsidePress<T>, pointerType: PointerType): void {
+	wholePress = (press: OutsidePress<T>, pointerType: PointerType): void => {
 		const view = this.#view;
 		this.#longTouchTimeout.clear();
 		this.#pointerType = pointerType;
@@ -386,7 +383,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			createChangeEventDetails<OutsidePressReason, {}, T>(REASONS.outsidePress, press.event),
 		);
 		this.clearInside();
-	}
+	};
 
 	/**
 	 * A press ended or was cancelled, anywhere. `endedInTree`: in the popup, its anchor or a popup
@@ -394,11 +391,11 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	 * the press, as for {@link OutsidePress}; read only for a press dragged out, whose next outside
 	 * click it otherwise keeps from dismissing.
 	 */
-	pressEnd(end: {
+	pressEnd = (end: {
 		readonly canceled: boolean;
 		readonly endedInTree: boolean;
 		readonly dismissible?: boolean | undefined;
-	}): void {
+	}): void => {
 		// A cancelled gesture makes no click; a finished one keeps the press for the click after it.
 		if (end.canceled) {
 			this.#sawPressWhileOpen = false;
@@ -428,17 +425,17 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			this.#suppressNextOutsideClick = true;
 			this.clearInside();
 		}
-	}
+	};
 
 	// Touches
 
 	/** A touch began somewhere: the press being followed is a finger's. */
-	touchSeen(): void {
+	touchSeen = (): void => {
 		this.#pointerType = "touch";
-	}
+	};
 
 	/** A touch reached its target. `point`: where it is, or `null` when the platform has none. */
-	touchStart(point: TouchPoint | null, inOwnElements: boolean): void {
+	touchStart = (point: Point | null, inOwnElements: boolean): void => {
 		if (this.pressType !== "sloppy" || !this.#view.open || !this.enabled || inOwnElements) {
 			return;
 		}
@@ -456,10 +453,10 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 				}
 			});
 		}
-	}
+	};
 
 	/** The touch moved: far enough, it dismisses when it ends, or at once. */
-	touchMove(point: TouchPoint | null, press: OutsidePress<T>): void {
+	touchMove = (point: Point | null, press: OutsidePress<T>): void => {
 		const touch = this.#touch;
 		if (this.pressType !== "sloppy" || !touch || press.inOwnElements || !point) {
 			return;
@@ -473,10 +470,10 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			this.#longTouchTimeout.clear();
 			this.#touch = null;
 		}
-	}
+	};
 
 	/** The touch ended. */
-	touchEnd(press: OutsidePress<T>): void {
+	touchEnd = (press: OutsidePress<T>): void => {
 		const touch = this.#touch;
 		if (this.pressType !== "sloppy" || !touch || press.inOwnElements) {
 			return;
@@ -486,36 +483,36 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 		}
 		this.#longTouchTimeout.clear();
 		this.#touch = null;
-	}
+	};
 
 	// The popup's own changes
 
 	/** The popup closed for a moment, even without rendering closed: the next press is a new one. */
-	closed(): void {
+	closed = (): void => {
 		this.#sawPressWhileOpen = false;
-	}
+	};
 
 	/** The popup is closed: forgets the press, the touch and the composition. */
-	reset(): void {
+	reset = (): void => {
 		this.#composing = false;
 		this.#sawPressWhileOpen = false;
 		this.#pointerType = "";
 		this.#touch = null;
-	}
+	};
 
 	/** The platform stopped listening for presses: drops the one in progress and its suppression. */
-	release(): void {
+	listeningStopped = (): void => {
 		this.#suppressionTimeout.clear();
 		this.#resetPressStart();
 		this.#suppressNextOutsideClick = false;
-	}
+	};
 
-	/** The popup's Root went away. */
-	dispose(): void {
+	/** The popup's Root went away: drops the timers. */
+	stop = (): void => {
 		this.clearInside();
 		this.#longTouchTimeout.clear();
 		this.#compositionTimeout.clear();
-	}
+	};
 
 	#resetPressStart(): void {
 		this.#pressStartedInside = false;

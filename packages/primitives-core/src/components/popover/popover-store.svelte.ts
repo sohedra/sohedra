@@ -116,13 +116,13 @@ export class PopoverStore<
 	readonly #stickTimeout: Timeout;
 	/** Close parts rendered inside the Popup; a modal popover traps focus only with one. */
 	readonly closeParts: ClosePartCount = closePartCount();
-	readonly titleId = new OwnedValue<string>();
-	readonly descriptionId = new OwnedValue<string>();
+	readonly titleId: OwnedValue<string> = new OwnedValue<string>();
+	readonly descriptionId: OwnedValue<string> = new OwnedValue<string>();
 	/**
 	 * The focus guards that bridge Tab between the active trigger and the portalled popup (set by
 	 * the trigger and the Popup's focus manager): bookkeeping nothing renders.
 	 */
-	readonly guards = new TriggerFocusGuards<T>();
+	readonly guards: TriggerFocusGuards<T> = new TriggerFocusGuards<T>();
 
 	/** Whether a press keeps a hovered popover open. Set by a hover opening; reset on unmount. */
 	#stick = true;

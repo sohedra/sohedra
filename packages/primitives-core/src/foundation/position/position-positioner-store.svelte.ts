@@ -15,7 +15,7 @@ export interface PositionerPopupView {
 	readonly mounted: boolean;
 	readonly activeTrigger: {
 		/** Forgets the last trigger element (a kept-mounted popup that closed). */
-		clearDomReference(): void;
+		forgetLastTrigger(): void;
 	};
 }
 
@@ -63,21 +63,21 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	/** Writes a computed position. */
-	setPosition(next: PositionState): void {
+	setPosition = (next: PositionState): void => {
 		this.#position = next;
-	}
+	};
 
 	/** The next opening starts unpositioned (a kept-mounted popup that closed). */
-	markUnpositioned(): void {
+	markUnpositioned = (): void => {
 		const position = untrack(() => this.#position);
 		if (position.isPositioned) {
 			this.#position = { ...position, isPositioned: false };
 		}
-	}
+	};
 
-	setArrowElement(element: T["element"] | null): void {
+	setArrowElement = (element: T["element"] | null): void => {
 		this.#arrowElement = element;
-	}
+	};
 
 	/** Lifetime work. Called once by the Positioner part. */
 	connect(): void {
@@ -87,7 +87,7 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 			([keepsMounted, mounted]) => {
 				if (keepsMounted && !mounted) {
 					// While a kept-mounted popup is closed, it has no element it is anchored to.
-					this.#popup.activeTrigger.clearDomReference();
+					this.#popup.activeTrigger.forgetLastTrigger();
 					this.markUnpositioned();
 				}
 			},

@@ -65,10 +65,12 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 		const popup = deps.popup;
 		this.#popup = popup;
 		this.#committed = new CommittedValue<ContentKeyState>({
-			triggerId: untrack(() => popup.activeTriggerId),
-			payload: untrack(() => popup.payload),
-			pendingPayload: false,
-			key: 0,
+			initial: {
+				triggerId: untrack(() => popup.activeTriggerId),
+				payload: untrack(() => popup.payload),
+				pendingPayload: false,
+				key: 0,
+			},
 		});
 	}
 
@@ -76,11 +78,11 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	 * The platform has shown the content for the current trigger (and the switch to it, if any).
 	 * A closed popup shows no trigger's content, so reopening never switches.
 	 */
-	settle(): void {
+	settle = (): void => {
 		untrack(() => {
 			this.#shown = this.#popup.open ? this.#popup.activeTriggerElement : null;
 		});
-	}
+	};
 
 	/**
 	 * Commits each update's content key, so the next one is counted from it. The key is derived

@@ -51,11 +51,10 @@ function setup(overrides: Partial<HoverTriggerOptions> = {}) {
 		openOnHover: true,
 		closeDelay: 0,
 	});
-	const intent = new HoverTriggerIntent(
-		() => result.store as unknown as HoverView,
-		() => config(overrides),
+	const intent = new HoverTriggerIntent(() => config(overrides), {
+		popup: () => result.store as unknown as HoverView,
 		flush,
-	);
+	});
 	const target = {
 		trigger,
 		eventType: "mouseenter" as const,
@@ -94,11 +93,10 @@ function setupWithAppOpen(overrides: Partial<HoverTriggerOptions> = {}) {
 		closeDelay: 0,
 	});
 	const view = store as unknown as HoverView;
-	const intent = new HoverTriggerIntent(
-		() => view,
-		() => config({ restMs: 50, ...overrides }),
-		flushSync,
-	);
+	const intent = new HoverTriggerIntent(() => config({ restMs: 50, ...overrides }), {
+		popup: () => view,
+		flush: flushSync,
+	});
 	// The trigger follows the popup's open changes, as the platform wires it.
 	store.events.on("openchange", (change) => intent.openChanged(change));
 
@@ -158,11 +156,11 @@ describe("HoverInteraction", () => {
 	describe("cancelPendingOpen", () => {
 		it("drops a pending delayed open and a pending rest open in one call", () => {
 			const { scheduler } = createFakePlatform();
-			const hover = new HoverInteraction(scheduler);
+			const hover = new HoverInteraction({ scheduler });
 			const callback = vi.fn();
 			hover.openChangeTimeout.start(100, callback);
 			hover.restTimeout.start(100, callback);
-			hover.restTimeoutPending = true;
+			hover.setRestTimeoutPending(true);
 			hover.cancelPendingOpen();
 			scheduler.advance(200);
 			expect(callback).not.toHaveBeenCalled();
@@ -173,13 +171,13 @@ describe("HoverInteraction", () => {
 	describe("cancelPending", () => {
 		it("drops a delayed change, a rest open and the safe polygon", () => {
 			const { scheduler: time } = createFakePlatform();
-			const hover = new HoverInteraction(time);
+			const hover = new HoverInteraction({ scheduler: time });
 			const callback = vi.fn();
 			const dispose = vi.fn();
 			hover.openChangeTimeout.start(100, callback);
 			hover.restTimeout.start(100, callback);
-			hover.restTimeoutPending = true;
-			hover.setCloseTracker({ handler: () => {}, dispose });
+			hover.setRestTimeoutPending(true);
+			hover.setCloseTracker({ handler: () => {}, stop: dispose });
 
 			hover.cancelPending();
 			time.advance(200);
@@ -194,14 +192,14 @@ describe("HoverInteraction", () => {
 	describe("closedFromOutside", () => {
 		it("drops what is pending as cancelPending does, and ignores pointer moves until an enter", () => {
 			const { scheduler: time } = createFakePlatform();
-			const hover = new HoverInteraction(time);
+			const hover = new HoverInteraction({ scheduler: time });
 			const callback = vi.fn();
 			const dispose = vi.fn();
-			hover.blockMouseMove = false;
+			hover.setMouseMoveBlocked(false);
 			hover.openChangeTimeout.start(100, callback);
 			hover.restTimeout.start(100, callback);
-			hover.restTimeoutPending = true;
-			hover.setCloseTracker({ handler: () => {}, dispose });
+			hover.setRestTimeoutPending(true);
+			hover.setCloseTracker({ handler: () => {}, stop: dispose });
 
 			hover.closedFromOutside();
 			time.advance(200);
@@ -215,13 +213,15 @@ describe("HoverInteraction", () => {
 	});
 
 	it("starts without a tracker", () => {
-		expect(new HoverInteraction(createFakePlatform().scheduler).handler).toBeUndefined();
+		expect(
+			new HoverInteraction({ scheduler: createFakePlatform().scheduler }).handler,
+		).toBeUndefined();
 	});
 
 	it("forgets the pointer and the inside press once closed", () => {
 		const { store } = createPopover({ defaultOpen: true });
-		store.hover.pointerType = "touch";
-		store.hover.interactedInside = true;
+		store.hover.setPointerType("touch");
+		store.hover.setInteractedInside(true);
 		store.setOpen(false, details(REASONS.outsidePress));
 		flushSync();
 		expect(store.hover.pointerType).toBeUndefined();
@@ -283,7 +283,7 @@ describe("HoverTriggerIntent", () => {
 
 		intent.enter(event("mouseenter"), target);
 		intent.leave(event("mouseleave"), leave);
-		store.hover.dispose();
+		store.hover.stop();
 		scheduler.advance(200);
 		expect(store.open).toBe(true);
 	});
@@ -321,11 +321,10 @@ describe("HoverTriggerIntent", () => {
 
 	it("starts a safe polygon on leave once the Positioner reports a side", () => {
 		const { store, target, leave } = setup();
-		const intent = new HoverTriggerIntent(
-			() => store as unknown as HoverView,
-			() => config({ safePolygon: true }),
-			() => {},
-		);
+		const intent = new HoverTriggerIntent(() => config({ safePolygon: true }), {
+			popup: () => store as unknown as HoverView,
+			flush: () => {},
+		});
 		intent.enter(event("mouseenter"), target);
 		expect(intent.leave(event("mouseleave"), leave)).toBeUndefined();
 		expect(store.open).toBe(false);
@@ -346,11 +345,10 @@ describe("HoverTriggerIntent", () => {
 describe("HoverPopupIntent", () => {
 	it("closes a hover-opened popup when the pointer leaves it, but not a click-opened one", () => {
 		const { store, scheduler } = setup();
-		const floating = new HoverPopupIntent(
-			store as unknown as HoverView,
-			() => ({ enabled: true, closeDelay: 30 }),
-			() => {},
-		);
+		const floating = new HoverPopupIntent(() => ({ enabled: true, closeDelay: 30 }), {
+			popup: store as unknown as HoverView,
+			flush: () => {},
+		});
 		const into = { enabledTrigger: false, descendant: false };
 		store.setOpen(true, details(REASONS.triggerHover, "mouseenter"), { eventType: "mouseenter" });
 		floating.leave(event("mouseleave"), into);
@@ -365,11 +363,10 @@ describe("HoverPopupIntent", () => {
 
 	it("treats a press on a popup-opening element inside as click-like", () => {
 		const { store } = setup();
-		const floating = new HoverPopupIntent(
-			store as unknown as HoverView,
-			() => ({ enabled: true, closeDelay: 0 }),
-			() => {},
-		);
+		const floating = new HoverPopupIntent(() => ({ enabled: true, closeDelay: 0 }), {
+			popup: store as unknown as HoverView,
+			flush: () => {},
+		});
 		store.setOpen(true, details(REASONS.triggerHover, "mouseenter"), { eventType: "mouseenter" });
 		floating.pressInside(true, true);
 		floating.leave(event("mouseleave"), { enabledTrigger: false, descendant: false });
@@ -396,7 +393,11 @@ describe("SafePolygonSession", () => {
 	it("closes 40ms after a close-soon move unless another move arrives", () => {
 		const { store, scheduler } = createPopover();
 		const onClose = vi.fn();
-		const session = new SafePolygonSession(new SafePolygon("bottom", 150, 121, 0), store, onClose);
+		const session = new SafePolygonSession({
+			polygon: new SafePolygon("bottom", 150, 121, 0),
+			popup: store,
+			close: onClose,
+		});
 		session.move(towardsPopup);
 		scheduler.advance(39);
 		expect(onClose).not.toHaveBeenCalled();
@@ -407,7 +408,11 @@ describe("SafePolygonSession", () => {
 	it("drops a pending close-soon on a move it can't measure", () => {
 		const { store, scheduler } = createPopover();
 		const onClose = vi.fn();
-		const session = new SafePolygonSession(new SafePolygon("bottom", 150, 121, 0), store, onClose);
+		const session = new SafePolygonSession({
+			polygon: new SafePolygon("bottom", 150, 121, 0),
+			popup: store,
+			close: onClose,
+		});
 		session.move(towardsPopup);
 		// The trigger or popup is gone: the handler clears its timer before bailing out.
 		session.move(null);
@@ -419,12 +424,16 @@ describe("SafePolygonSession", () => {
 		const { store, scheduler } = createPopover();
 		const onClose = vi.fn();
 		const removeListener = vi.fn();
-		const session = new SafePolygonSession(new SafePolygon("bottom", 150, 121, 0), store, onClose);
+		const session = new SafePolygonSession({
+			polygon: new SafePolygon("bottom", 150, 121, 0),
+			popup: store,
+			close: onClose,
+		});
 		store.hover.setCloseTracker({
 			handler: () => {},
-			dispose() {
+			stop() {
 				removeListener();
-				session.dispose();
+				session.stop();
 			},
 		});
 		session.move(towardsPopup);
@@ -450,7 +459,11 @@ describe("SafePolygonSession", () => {
 		});
 		expect(tree.children("parent")).toHaveLength(1);
 		const onClose = vi.fn();
-		const session = new SafePolygonSession(new SafePolygon("bottom", 150, 121, 0), store, onClose);
+		const session = new SafePolygonSession({
+			polygon: new SafePolygon("bottom", 150, 121, 0),
+			popup: store,
+			close: onClose,
+		});
 		session.move({ ...towardsPopup, clientY: 50 });
 		scheduler.advance(100);
 		expect(onClose).not.toHaveBeenCalled();
@@ -552,7 +565,10 @@ describe("a close from outside", () => {
 
 		it("doesn't close a popup pinned from inside when the pointer leaves it, only while open", () => {
 			const { store, view, hover, close, scheduler } = setupWithAppOpen();
-			const popup = new HoverPopupIntent(view, () => ({ enabled: true, closeDelay: 0 }), flushSync);
+			const popup = new HoverPopupIntent(() => ({ enabled: true, closeDelay: 0 }), {
+				popup: view,
+				flush: flushSync,
+			});
 			hover();
 			scheduler.advance(50);
 			popup.pressInside(true, true);
@@ -711,7 +727,7 @@ describe("a close from outside", () => {
 			const session = intent.leave(event("mouseleave"), leave);
 			expect(session).toBeInstanceOf(SafePolygonSession);
 			const dispose = vi.fn();
-			store.hover.setCloseTracker({ handler: () => {}, dispose });
+			store.hover.setCloseTracker({ handler: () => {}, stop: dispose });
 
 			close();
 			expect(dispose).toHaveBeenCalledTimes(1);
@@ -721,11 +737,10 @@ describe("a close from outside", () => {
 
 		it("reports no hover close when the pointer leaves the popup after a close from outside", () => {
 			const { store, view, hover, close, onOpenChange, scheduler } = setupWithAppOpen();
-			const popup = new HoverPopupIntent(
-				view,
-				() => ({ enabled: true, closeDelay: 30 }),
-				flushSync,
-			);
+			const popup = new HoverPopupIntent(() => ({ enabled: true, closeDelay: 30 }), {
+				popup: view,
+				flush: flushSync,
+			});
 			hover();
 			scheduler.advance(50);
 			expect(store.open).toBe(true);

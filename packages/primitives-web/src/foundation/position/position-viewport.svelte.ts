@@ -203,8 +203,8 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 			const dimensions = measure();
 			if (committedDimensions === null) {
 				committedDimensions = dimensions;
-				layout.popupStyle = [anchoringCss, sizeVars("popup", "auto")].filter(Boolean).join("; ");
-				layout.positionerStyle = sizeVars("positioner", dimensions);
+				layout.setPopupStyle([anchoringCss, sizeVars("popup", "auto")].filter(Boolean).join("; "));
+				layout.setPositionerStyle(sizeVars("positioner", dimensions));
 				// The first opening's content may follow the payload in a later batch of the same update
 				// (the Root's `children` render it): measure again once the update is done.
 				cancelRemeasure = webScheduler.microtask(() => {
@@ -214,7 +214,7 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 						(settled.width !== dimensions.width || settled.height !== dimensions.height)
 					) {
 						committedDimensions = settled;
-						layout.positionerStyle = sizeVars("positioner", settled);
+						layout.setPositionerStyle(sizeVars("positioner", settled));
 					}
 				});
 				return;
@@ -222,20 +222,20 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 			const previous = committedDimensions;
 			committedDimensions = dimensions;
 			previousDimensions = previous;
-			layout.popupStyle = [anchoringCss, sizeVars("popup", previous)].filter(Boolean).join("; ");
-			layout.positionerStyle = sizeVars("positioner", dimensions);
+			layout.setPopupStyle([anchoringCss, sizeVars("popup", previous)].filter(Boolean).join("; "));
+			layout.setPositionerStyle(sizeVars("positioner", dimensions));
 			cancelFrame = webScheduler.frame(() => {
-				layout.popupStyle = [anchoringCss, sizeVars("popup", dimensions)]
-					.filter(Boolean)
-					.join("; ");
+				layout.setPopupStyle(
+					[anchoringCss, sizeVars("popup", dimensions)].filter(Boolean).join("; "),
+				);
 				flushSync();
 				waitForAnimations(
 					popupElement,
 					{ waitForStartingStyleRemoved: true, signal: controller.signal },
 					() => {
-						layout.popupStyle = [anchoringCss, sizeVars("popup", "auto")]
-							.filter(Boolean)
-							.join("; ");
+						layout.setPopupStyle(
+							[anchoringCss, sizeVars("popup", "auto")].filter(Boolean).join("; "),
+						);
 					},
 				);
 			});
@@ -250,11 +250,11 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 	// Tells the Positioner to place a resizing popup from its far edges, while the Viewport is
 	// there.
 	$effect(() => {
-		layout.adaptiveOrigin = true;
+		layout.setAdaptiveOrigin(true);
 		return () => {
-			layout.adaptiveOrigin = false;
-			layout.popupStyle = "";
-			layout.positionerStyle = "";
+			layout.setAdaptiveOrigin(false);
+			layout.setPopupStyle("");
+			layout.setPositionerStyle("");
 		};
 	});
 

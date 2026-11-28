@@ -26,14 +26,13 @@ function setup(options: DismissOptions = {}, tree: FloatingTree | null = null) {
 	const live = { ...options };
 	const reasons: string[] = [];
 	let onClose: ((details: DismissChangeDetails<FakeTypes>) => void) | undefined;
-	const dismiss = new DismissInteraction<FakeTypes>(
-		view,
-		() => live,
-		(details) => {
+	const dismiss = new DismissInteraction<FakeTypes>(() => live, {
+		popup: view,
+		close: (details) => {
 			reasons.push(details.reason);
 			onClose?.(details);
 		},
-	);
+	});
 	return {
 		dismiss,
 		view: view as { -readonly [Key in keyof DismissView<FakeTypes>]: DismissView<FakeTypes>[Key] },

@@ -34,10 +34,10 @@ export interface SwitchStoreProps<T extends PlatformTypes> {
 	readonly id?: string | undefined;
 	/** Whether the visible element is a native button, and so the labelable control itself. */
 	readonly nativeButton?: boolean | undefined;
-	/** The user's own `aria-labelledby`. */
-	readonly ariaLabelledBy?: string | null | undefined;
-	/** The user's own `aria-label`. A non-blank one wins over associated labels. */
-	readonly ariaLabel?: string | null | undefined;
+	/** The ids of the elements the user names the switch with (web: `aria-labelledby`). */
+	readonly labelledBy?: string | null | undefined;
+	/** The user's own label text (web: `aria-label`). A non-blank one wins over associated labels. */
+	readonly label?: string | null | undefined;
 }
 
 /** What a switch is given once, when it is built. */
@@ -113,30 +113,33 @@ export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 		this.#props = props;
 		this.#field = deps.field;
 		this.#fieldset = deps.fieldset;
-		this.#checked = new Controllable<boolean>(deps.checked, {
+		this.#checked = new Controllable<boolean>({
+			source: deps.checked,
 			default: () => this.defaultChecked,
 			name: "Switch",
 			state: "checked",
 		});
-		this.link = new FieldControlLink(deps.field, () => ({
-			value: this.checked,
-			name: props().name,
-			filled: this.checked,
-			disabled: this.disabled,
-		}));
+		this.link = new FieldControlLink(
+			() => ({
+				value: this.checked,
+				name: props().name,
+				filled: this.checked,
+				disabled: this.disabled,
+			}),
+			{ field: deps.field },
+		);
 		const labelable = deps.labelable ?? NULL_LABELABLE;
 		this.labelable = labelable;
-		this.controlId = new LabelableControlId(
+		this.controlId = new LabelableControlId(() => ({ id: props().id }), {
 			labelable,
-			() => ({ id: props().id }),
-			deps.inputId ?? "",
-		);
+			defaultId: deps.inputId ?? "",
+		});
 		this.labels = new ControlLabels(() => {
-			const { ariaLabelledBy, ariaLabel, nativeButton } = props();
+			const { labelledBy, label, nativeButton } = props();
 			return {
-				explicit: ariaLabelledBy ?? undefined,
+				explicit: labelledBy ?? undefined,
 				labelId: labelable.labelId,
-				ariaLabel: ariaLabel ?? undefined,
+				label: label ?? undefined,
 				enableFallback: !nativeButton,
 				sourceId: nativeButton ? undefined : this.controlId.value,
 			};

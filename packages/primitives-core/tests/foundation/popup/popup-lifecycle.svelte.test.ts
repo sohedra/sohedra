@@ -84,7 +84,7 @@ function setup(
 ) {
 	const props = createProps(initial);
 	const store = new TestStore(props, hooks, options.hover ? HOVERING : PLAIN, options.detached);
-	const shared = store.hover ?? new HoverInteraction(store.platform.scheduler);
+	const shared = store.hover ?? new HoverInteraction({ scheduler: store.platform.scheduler });
 	const hover = {
 		closedFromOutside: vi.spyOn(shared, "closedFromOutside"),
 		resetAfterClose: vi.spyOn(shared, "resetAfterClose"),

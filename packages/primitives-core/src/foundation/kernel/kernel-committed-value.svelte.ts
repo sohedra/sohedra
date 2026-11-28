@@ -10,8 +10,9 @@ import { watch } from "./kernel-watch.svelte.js";
 export class CommittedValue<T> {
 	#current: T = $state.raw() as T;
 
-	constructor(initial: T) {
-		this.#current = initial;
+	/** `initial` is what the memory holds before the first update settles. */
+	constructor(deps: { readonly initial: T }) {
+		this.#current = deps.initial;
 	}
 
 	/** What the last update settled on. Reactive: a step derived from it re-runs when it moves. */

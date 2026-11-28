@@ -24,7 +24,7 @@ function createDetachedPopoverStore<Payload>(): PopoverStore<Payload> {
  */
 export class PopoverHandle<Payload = unknown> extends PopupHandle<PopoverStore<Payload>> {
 	constructor() {
-		super(createDetachedPopoverStore<Payload>(), "Popover");
+		super({ fallback: createDetachedPopoverStore<Payload>(), name: "Popover" });
 	}
 
 	/**

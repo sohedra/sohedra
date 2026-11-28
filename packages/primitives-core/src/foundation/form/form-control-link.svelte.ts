@@ -58,8 +58,11 @@ export class FieldControlLink<
 	 * Pure: reads no context. `props` is called inside the deriveds and getters, so each value stays
 	 * live; the two functions in it are read once, here.
 	 */
-	constructor(field: FieldRootContextValue<T>, props: () => FieldControlLinkProps<T>) {
-		this.#field = field;
+	constructor(
+		props: () => FieldControlLinkProps<T>,
+		deps: { readonly field: FieldRootContextValue<T> },
+	) {
+		this.#field = deps.field;
 		this.#props = props;
 		this.#seen = untrack(() => this.#value);
 		const { getFormValue, sameValue } = untrack(props);

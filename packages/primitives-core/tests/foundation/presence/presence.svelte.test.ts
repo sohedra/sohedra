@@ -19,7 +19,7 @@ type MutableProps = { -readonly [K in keyof PresenceProps]: PresenceProps[K] };
 function setup(initial: MutableProps) {
 	const props = $state<MutableProps>(initial);
 	const { scheduler } = createFakePlatform();
-	const presence = new Presence(props, scheduler);
+	const presence = new Presence(() => props, { scheduler });
 	root(() => presence.connect());
 	flushSync();
 	return { props, presence, scheduler };
@@ -190,7 +190,7 @@ describe("Presence", () => {
 		it("commits the phase `open` moved to before connect(), so a later close ends", () => {
 			const props = $state<MutableProps>({ open: false });
 			const { scheduler } = createFakePlatform();
-			const presence = new Presence(props, scheduler);
+			const presence = new Presence(() => props, { scheduler });
 			props.open = true;
 			root(() => presence.connect());
 			flushSync();

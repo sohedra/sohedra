@@ -4,8 +4,8 @@ export interface ControlLabelsProps {
 	readonly explicit: string | undefined;
 	/** The id of a `Field.Label`, when the control is in a labelable scope. */
 	readonly labelId: string | undefined;
-	/** The control's own `aria-label`. A non-blank one wins over associated labels. */
-	readonly ariaLabel: string | undefined;
+	/** The control's own label text (web: `aria-label`). A non-blank one wins over associated labels. */
+	readonly label: string | undefined;
 	/** Whether to fall back to a native `<label>` associated with `sourceId`'s element. */
 	readonly enableFallback: boolean;
 	/** The id of the element native labels associate with (a hidden input). */
@@ -24,14 +24,14 @@ export class ControlLabels {
 	/** The associated native label's id, found by the platform. */
 	#fallback: string | undefined = $state();
 
-	readonly #hasAriaLabel = $derived.by(() => Boolean(this.#props().ariaLabel?.trim()));
+	readonly #hasLabel = $derived.by(() => Boolean(this.#props().label?.trim()));
 
 	/** The id for an associated label that has none, or `undefined` when no fallback is wanted. */
 	readonly fallbackLabelId: string | undefined = $derived.by(() => {
 		const props = this.#props();
 		return props.explicit ||
 			props.labelId ||
-			this.#hasAriaLabel ||
+			this.#hasLabel ||
 			!props.enableFallback ||
 			!props.sourceId
 			? undefined
@@ -43,7 +43,7 @@ export class ControlLabels {
 		const props = this.#props();
 		return (
 			props.explicit ??
-			(this.#hasAriaLabel ? undefined : props.labelId) ??
+			(this.#hasLabel ? undefined : props.labelId) ??
 			(this.fallbackLabelId === undefined ? undefined : this.#fallback)
 		);
 	});

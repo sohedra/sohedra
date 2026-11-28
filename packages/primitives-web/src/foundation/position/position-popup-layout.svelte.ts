@@ -7,9 +7,39 @@ import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.
  * element's style outside a synchronous measurement.
  */
 export class PopupLayoutState {
-	popupStyle = $state("");
-	positionerStyle = $state("");
-	adaptiveOrigin = $state(false);
+	#popupStyle = $state("");
+	#positionerStyle = $state("");
+	#adaptiveOrigin = $state(false);
+
+	/** The Popup's size variables and pinned edges. */
+	get popupStyle(): string {
+		return this.#popupStyle;
+	}
+
+	/** The Positioner's size variables. */
+	get positionerStyle(): string {
+		return this.#positionerStyle;
+	}
+
+	/** Whether the Positioner places the popup from its far edges. */
+	get adaptiveOrigin(): boolean {
+		return this.#adaptiveOrigin;
+	}
+
+	/** A Viewport measured the Popup's style. */
+	setPopupStyle = (style: string): void => {
+		this.#popupStyle = style;
+	};
+
+	/** A Viewport measured the Positioner's style. */
+	setPositionerStyle = (style: string): void => {
+		this.#positionerStyle = style;
+	};
+
+	/** Whether the Positioner places the popup from its far edges from now on. */
+	setAdaptiveOrigin = (value: boolean): void => {
+		this.#adaptiveOrigin = value;
+	};
 }
 
 export const PopupLayoutContext = defineContext<PopupLayoutState>(

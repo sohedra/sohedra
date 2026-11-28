@@ -39,7 +39,8 @@ function binding<T>(initial: T | undefined, { declines = false } = {}) {
 /** A Controllable on `binding(initial)`, with `fallback` as its default. */
 function setup<T>(initial: T | undefined, fallback: T, options: { declines?: boolean } = {}) {
 	const { parent, set, source } = binding<T>(initial, options);
-	const value = new Controllable<T>(source, {
+	const value = new Controllable<T>({
+		source: source,
 		default: () => fallback,
 		name: "Test",
 		state: "value",
@@ -73,7 +74,13 @@ describe("Controllable", () => {
 	it("does not track the source or default while constructing", () => {
 		const { parent, source } = binding<boolean>(undefined);
 		const { runs } = track(
-			() => void new Controllable(source, { default: () => true, name: "Test", state: "value" }),
+			() =>
+				void new Controllable({
+					source: source,
+					default: () => true,
+					name: "Test",
+					state: "value",
+				}),
 		);
 		parent.value = false;
 		flushSync();
@@ -204,7 +211,8 @@ describe("Controllable", () => {
 				() => undefined,
 				() => {},
 			);
-			const value = new Controllable<Option | undefined>(unset, {
+			const value = new Controllable<Option | undefined>({
+				source: unset,
 				default: () => A,
 				name: "Test",
 				state: "value",
@@ -280,7 +288,8 @@ describe("Controllable", () => {
 			let fallback = $state(false);
 			const { source } = binding<boolean>(undefined);
 			root(() => {
-				const value = new Controllable(source, {
+				const value = new Controllable({
+					source: source,
 					default: () => fallback,
 					name: "Switch",
 					state: "checked",

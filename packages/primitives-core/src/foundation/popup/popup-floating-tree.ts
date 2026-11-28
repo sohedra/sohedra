@@ -32,7 +32,7 @@ export interface FloatingNode<T extends PlatformTypes = PlatformTypes> {
  */
 export class FloatingTree<T extends PlatformTypes = PlatformTypes> {
 	readonly nodes: FloatingNode<T>[] = [];
-	readonly events = new EventEmitter<FloatingTreeEvents<T>>();
+	readonly events: EventEmitter<FloatingTreeEvents<T>> = new EventEmitter<FloatingTreeEvents<T>>();
 	// The nodes a press inside a popup nested in them is passing through, until the next task.
 	// Read when input arrives and never rendered, so not reactive.
 	readonly #inside = new Set<string>();

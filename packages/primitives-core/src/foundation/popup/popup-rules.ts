@@ -67,8 +67,8 @@ export function keepsOpenEvent(
 }
 
 /**
- * Whether the popup is in an opening its session has not heard of yet: open now, closed when the
- * session last heard of it (`heardOpen`). Such an opening starts with no instant type: what is
+ * Whether the popup is in an opening its store has not heard of yet: open now, closed when the
+ * store last heard of it (`heardOpen`). Such an opening starts with no instant type: what is
  * stored belongs to an earlier opening or to the close before it.
  */
 export function opensUnheard(open: boolean, heardOpen: boolean): boolean {
@@ -76,7 +76,7 @@ export function opensUnheard(open: boolean, heardOpen: boolean): boolean {
 }
 
 /**
- * Whether the popup closed without its session hearing of it: closed now, open when the session
+ * Whether the popup closed without its store hearing of it: closed now, open when the store
  * last heard (`heardOpen`). Such a close came from outside (a bound `open`), so no open-change
  * event told the popup's interactions.
  */
@@ -85,12 +85,12 @@ export function closesUnheard(open: boolean, heardOpen: boolean): boolean {
 }
 
 /**
- * The open values a lifecycle's watch still has to follow, in order. `followed` is the value it
- * followed last (`undefined` before its first run), `heardOpen` what the session last heard.
+ * The open values a popup store's watch still has to follow, in order. `followed` is the value it
+ * followed last (`undefined` before its first run), `heardOpen` what the store last heard.
  * Normally that is `open`, once. Nothing when only `heardOpen` caught up with an `open` already
  * followed. And when a request and the app cancelled each other out in one update (a requested
  * close, then `open` set back to true from outside before effects ran), `open` is where it was but
- * the session heard of the change: that one is followed first, then the one back, as if the two
+ * the store heard of the change: that one is followed first, then the one back, as if the two
  * had come in separate updates.
  */
 export function openValuesToFollow(
@@ -105,8 +105,8 @@ export function openValuesToFollow(
 }
 
 /**
- * The instant type the parts render from the stored one: none in an opening the session has not
- * heard of yet (a bound `open` set from outside, until the lifecycle hears of it), and
+ * The instant type the parts render from the stored one: none in an opening the store has not
+ * heard of yet (a bound `open` set from outside, until the store hears of it), and
  * `trigger-change` only means something while open, so a closing popup never reports it.
  */
 export function visibleInstantType(

@@ -13,6 +13,12 @@ export interface PresenceProps {
 	readonly open: boolean;
 }
 
+/** What a presence is given once. */
+export interface PresenceDeps {
+	/** The platform's clock and frames: the status settles one frame after it changes. */
+	readonly scheduler: Scheduler;
+}
+
 /** Where a presence stands: the `open` it reflects, whether it renders and its status. */
 export interface PresencePhase {
 	readonly open: boolean;
@@ -57,13 +63,13 @@ export function step(committed: PresencePhase, open: boolean): PresencePhase {
  * detected is the platform's business (the web waits on `getAnimations()`).
  */
 export class Presence {
-	#p: PresenceProps;
-	#scheduler: Scheduler;
+	readonly #props: () => PresenceProps;
+	readonly #scheduler: Scheduler;
 	// The phase the last update settled on. Written only by the commit in `connect()`, the frames
 	// that settle a status and `complete()`, never while deriving.
 	readonly #committed: CommittedValue<PresencePhase>;
 
-	readonly open: boolean = $derived.by(() => this.#p.open);
+	readonly open: boolean = $derived.by(() => this.#props().open);
 	// A pure step from the committed phase to the current `open`, so `mounted` changes in the same
 	// update as `open`, and a re-run with older values (an effect teardown) changes nothing.
 	// `$derived.by` because `#committed` is set in the constructor, after these initialisers.
@@ -73,11 +79,14 @@ export class Presence {
 	readonly #mounted: boolean = $derived(this.#phase.mounted);
 	readonly #status: TransitionStatus = $derived(this.#phase.status);
 
-	constructor(props: PresenceProps, scheduler: Scheduler) {
-		this.#p = props;
-		this.#scheduler = scheduler;
-		const open = untrack(() => props.open);
-		this.#committed = new CommittedValue<PresencePhase>({ open, mounted: open, status: undefined });
+	/** Pure: `props` is called inside the deriveds, so `open` stays reactive. */
+	constructor(props: () => PresenceProps, deps: PresenceDeps) {
+		this.#props = props;
+		this.#scheduler = deps.scheduler;
+		const open = untrack(() => props().open);
+		this.#committed = new CommittedValue<PresencePhase>({
+			initial: { open, mounted: open, status: undefined },
+		});
 	}
 
 	/** Whether the element is rendered. */

@@ -54,8 +54,8 @@
 			uncheckedValue,
 			id,
 			nativeButton,
-			ariaLabelledBy,
-			ariaLabel: rest["aria-label"],
+			labelledBy: ariaLabelledBy,
+			label: rest["aria-label"],
 		}),
 		{
 			checked: bound(

@@ -9,7 +9,7 @@ import { root } from "../../kit/kit-effects.svelte.js";
 /** A step counted from the memory: how often the source moved since the memory last settled. */
 function setup() {
 	const source = $state({ value: 0 });
-	const memory = new CommittedValue({ value: 0, moves: 0 });
+	const memory = new CommittedValue({ initial: { value: 0, moves: 0 } });
 	// A step returns the memory itself while nothing moved, so committing it is a fixed point.
 	const step = $derived(
 		source.value === memory.current.value
@@ -22,7 +22,7 @@ function setup() {
 
 describe("CommittedValue", () => {
 	it("holds its initial value until it follows a step", () => {
-		const memory = new CommittedValue("start");
+		const memory = new CommittedValue({ initial: "start" });
 		expect(memory.current).toBe("start");
 	});
 

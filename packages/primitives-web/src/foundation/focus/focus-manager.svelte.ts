@@ -225,7 +225,7 @@ export function useFocusManager(
 	function setBeforeGuard(element: HTMLElement | null) {
 		beforeGuardElement = element;
 		if (portal) {
-			portal.beforeInsideGuard = element;
+			portal.setBeforeInsideGuard(element);
 		}
 		bridge?.guards.setBeforeContent(element);
 	}
@@ -233,7 +233,7 @@ export function useFocusManager(
 	function setAfterGuard(element: HTMLElement | null) {
 		afterGuardElement = element;
 		if (portal) {
-			portal.afterInsideGuard = element;
+			portal.setAfterInsideGuard(element);
 		}
 	}
 
@@ -817,14 +817,14 @@ export function useFocusManager(
 			if (disabled || !portal) {
 				return;
 			}
-			portal.focusManagerState = {
+			portal.setFocusManagerState({
 				modal,
 				open: popup.open,
 				domReference: popup.anchorElement,
 				onOpenChange: (open, event) => setOpen(open, event as FocusEvent),
-			};
+			});
 			return () => {
-				portal.focusManagerState = null;
+				portal.setFocusManagerState(null);
 			};
 		});
 
