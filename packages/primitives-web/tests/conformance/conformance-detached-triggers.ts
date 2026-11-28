@@ -422,11 +422,12 @@ export function describeDetachedTriggersConformance(
 						expect(handle.isOpen).toBe(false);
 						expect(popup().query()).toBe(null);
 
+						// Each warning is logged once per message.
 						consoleWarn.mockClear();
 						handle.open("trigger-1");
 						handle.close();
 						expect(handle.isOpen).toBe(false);
-						expect(countWarnings(consoleWarn, "no root using this handle is mounted")).toBe(2);
+						expect(countWarnings(consoleWarn, "no root using this handle is mounted")).toBe(0);
 
 						// A remounted root starts closed, without the previous payload, and is controllable.
 						await screen.rerender({ rootMounted: true });

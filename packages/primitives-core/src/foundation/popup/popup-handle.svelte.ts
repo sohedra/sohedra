@@ -3,16 +3,9 @@
 
 import { DEV } from "esm-env";
 
-import { bound, inertPlatform, type Platform, type PlatformTypes } from "../kernel/index.js";
+import { bound, inertPlatform, type Platform, type PlatformTypes, warn } from "../kernel/index.js";
 import type { PopupStoreDeps } from "./popup-store.svelte.js";
 import type { PopupTriggerMap } from "./popup-trigger-map.js";
-
-// A handle warns on every ignored call, not once per message as `warn` does.
-function warnEveryTime(...messages: string[]) {
-	if (DEV) {
-		console.warn(`Sohedra: ${messages.join(" ")}`);
-	}
-}
 
 /**
  * The deps of the inert store a handle exposes while no Root is attached: it never opens, has no
@@ -107,7 +100,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 			// An overlap is usually a transient route transition; warn only if it outlives a frame.
 			store.platform.scheduler.frame(() => {
 				if (this.#attachments.length > 1) {
-					warnEveryTime(
+					warn(
 						"A handle is attached to more than one mounted root at the same time.",
 						"The most recently mounted root takes over and the previous one stops being controlled by the handle.",
 						"A handle should be used by a single root that stays mounted for the lifetime of the handle.",
@@ -127,7 +120,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	protected openByTrigger(triggerId: string | null | undefined): void {
 		const attached = this.#attached;
 		if (attached === null) {
-			warnEveryTime(
+			warn(
 				`${this.#name}Handle.open() was called while no root using this handle is mounted.`,
 				"The call was ignored; mount a root with this handle before opening it imperatively.",
 			);
@@ -151,7 +144,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 						`Pass the id of a mounted ${this.#name}.Trigger that has this handle set on its "handle" prop.`,
 				);
 			}
-			warnEveryTime(
+			warn(
 				`${this.#name}Handle.open: No trigger found with id "${triggerId}".`,
 				"The popup will open, but the trigger will not be associated with it.",
 			);
@@ -167,7 +160,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	protected closePopup(): void {
 		const attached = this.#attached;
 		if (attached === null) {
-			warnEveryTime(
+			warn(
 				`${this.#name}Handle.close() was called while no root using this handle is mounted.`,
 				"The call was ignored.",
 			);

@@ -1,6 +1,6 @@
-// PopupTriggerMap in production, where one element under two ids is allowed. It reads `DEV` from
-// `esm-env`, so this file mocks `esm-env` with `DEV: false` (in a file of its own, as a mock applies
-// to the whole module graph).
+// PopupTriggerMap in production, where one element under two ids is refused as in development. The
+// file mocks `esm-env` with `DEV: false` (in a file of its own, as a mock applies to the whole
+// module graph).
 import type * as EsmEnv from "esm-env";
 import { describe, expect, it, vi } from "vitest";
 
@@ -13,15 +13,15 @@ vi.mock("esm-env", async (importOriginal) => ({
 }));
 
 describe("PopupTriggerMap", () => {
-	it("does not throw in production when the same element is registered under multiple ids", () => {
+	it("throws in production too when the same element is registered under multiple ids", () => {
 		const map = new PopupTriggerMap();
 		const button = element("trigger");
 
 		map.add("first", button);
-		expect(() => map.add("second", button)).not.toThrow();
+		expect(() => map.add("second", button)).toThrow(/multiple IDs/);
 		expect(map.getById("first")).toBe(button);
-		expect(map.getById("second")).toBe(button);
+		expect(map.getById("second")).toBeUndefined();
 		expect(map.hasElement(button)).toBe(true);
-		expect(map.size).toBe(2);
+		expect(map.size).toBe(1);
 	});
 });

@@ -1,6 +1,5 @@
 // A popup's registered triggers by id, reactive so the popup follows which ones are mounted.
 
-import { DEV } from "esm-env";
 import { SvelteMap } from "svelte/reactivity";
 
 import type { PlatformTypes } from "../kernel/index.js";
@@ -12,34 +11,32 @@ import type { PlatformTypes } from "../kernel/index.js";
  */
 export class PopupTriggerMap<T extends PlatformTypes = PlatformTypes> {
 	#ids = new SvelteMap<string, T["element"]>();
-	// Development-only reverse index, to report one element registered under two ids.
-	#devIds: WeakMap<T["element"], string> | undefined;
+	// The reverse index, to refuse one element registered under two ids.
+	readonly #idOf = new WeakMap<T["element"], string>();
 
-	/** Adds a trigger element under `id`. An element may be registered under one id only. */
+	/**
+	 * Adds a trigger element under `id`. An element may be registered under one id only: a second
+	 * id throws, in production too.
+	 */
 	add(id: string, element: T["element"]): void {
-		if (DEV) {
-			this.#devIds ??= new WeakMap();
-			const existingId = this.#devIds.get(element);
-			if (existingId !== undefined && existingId !== id) {
-				throw new Error("Sohedra: A trigger element cannot be registered under multiple IDs.");
-			}
-			// Reusing an id for a different element evicts the previous element's claim.
-			const previous = this.#ids.get(id);
-			if (previous !== undefined && previous !== element) {
-				this.#devIds.delete(previous);
-			}
-			this.#devIds.set(element, id);
+		const existingId = this.#idOf.get(element);
+		if (existingId !== undefined && existingId !== id) {
+			throw new Error("Sohedra: A trigger element cannot be registered under multiple IDs.");
 		}
+		// Reusing an id for a different element evicts the previous element's claim.
+		const previous = this.#ids.get(id);
+		if (previous !== undefined && previous !== element) {
+			this.#idOf.delete(previous);
+		}
+		this.#idOf.set(element, id);
 		this.#ids.set(id, element);
 	}
 
 	/** Removes the trigger registered under `id`. */
 	delete(id: string): void {
-		if (DEV) {
-			const element = this.#ids.get(id);
-			if (element !== undefined) {
-				this.#devIds?.delete(element);
-			}
+		const element = this.#ids.get(id);
+		if (element !== undefined) {
+			this.#idOf.delete(element);
 		}
 		this.#ids.delete(id);
 	}
