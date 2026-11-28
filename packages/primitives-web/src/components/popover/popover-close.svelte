@@ -21,7 +21,7 @@
 	}: PopoverCloseProps = $props();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get();
+	const popover = PopoverRootContext.get("Popover.Close");
 	const popup = PopoverPopupContext.getOr(null);
 
 	// 3. Shared behaviours

@@ -20,8 +20,8 @@
 	let { initialFocus, finalFocus, ref = $bindable(null), ...rest }: PopoverPopupProps = $props();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get();
-	const positioner = PopoverPositionerContext.get();
+	const popover = PopoverRootContext.get("Popover.Popup");
+	const positioner = PopoverPositionerContext.get("Popover.Popup");
 	// A modal popover traps focus only with a Close part inside this Popup.
 	PopoverPopupContext.set(popover);
 

@@ -42,7 +42,5 @@ export class PopupLayoutStore {
 	};
 }
 
-export const PopupLayoutContext = defineContext<PopupLayoutStore>(
-	"PopupLayoutContext",
-	"Viewport parts must be placed within a Positioner.",
-);
+/** The layout of the Positioner a Viewport sits in: the shared Positioner part sets its store. */
+export const PopupLayoutContext = defineContext<PopupLayoutStore>("Positioner");

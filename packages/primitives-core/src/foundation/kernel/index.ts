@@ -7,7 +7,7 @@ export {
 	type GenericEventDetails,
 } from "./kernel-change-details.js";
 export { CommittedValue } from "./kernel-committed-value.svelte.js";
-export { defineContext, type DefinedContext } from "./kernel-context.js";
+export { defineContext, type DefinedContext, missingProviderMessage } from "./kernel-context.js";
 export { Controllable } from "./kernel-controllable.svelte.js";
 export { sohedraId } from "./kernel-id.js";
 export { error, warn } from "./kernel-log.js";

@@ -10,16 +10,10 @@ import type { PopupTree } from "@sohedra/primitives-core/foundation/popup/index.
 import type { WebTypes } from "../kernel/index.js";
 
 /** The tree nested popups share; the outermost popup Root creates it. */
-export const PopupTreeContext = defineContext<PopupTree<WebTypes>>(
-	"PopupTreeContext",
-	"Floating parts must be placed within a popup Root.",
-);
+export const PopupTreeContext = defineContext<PopupTree<WebTypes>>("Root");
 
 /** The id of the nearest enclosing popup node (a Positioner), for its nested popups. */
-export const PopupNodeContext = defineContext<string>(
-	"PopupNodeContext",
-	"Floating parts must be placed within a Positioner.",
-);
+export const PopupNodeContext = defineContext<string>("Positioner");
 
 /**
  * What a popup Root reads of the dialog it is rendered in: the dialog's node in the popup tree,
@@ -31,7 +25,4 @@ export interface PopupDialogView {
 }
 
 /** The dialog a part is rendered in: Dialog.Root sets its store. */
-export const DialogRootContext = defineContext<PopupDialogView>(
-	"DialogRootContext",
-	"Dialog parts must be placed within <Dialog.Root>.",
-);
+export const DialogRootContext = defineContext<PopupDialogView>("Dialog.Root");

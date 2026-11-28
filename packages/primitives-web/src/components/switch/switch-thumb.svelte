@@ -13,7 +13,7 @@
 	let { ref = $bindable(null), ...rest }: SwitchThumbProps = $props();
 
 	// 2. Store and context
-	const sw = SwitchRootContext.get();
+	const sw = SwitchRootContext.get("Switch.Thumb");
 </script>
 
 <Part tag="span" bind:ref state={sw.state} attrs={switchAttributes} user={rest} />

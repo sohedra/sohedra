@@ -15,7 +15,7 @@
 	const uid = $props.id();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get();
+	const popover = PopoverRootContext.get("Popover.Description");
 
 	// 3. Shared behaviours
 	// The popup's `aria-describedby` names this id while the element is in the document: claimed in

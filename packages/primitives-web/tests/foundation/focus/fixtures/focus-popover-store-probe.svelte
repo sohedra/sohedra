@@ -8,5 +8,5 @@
 	let { onStore }: { onStore: (store: PopoverStore<unknown, WebTypes>) => void } = $props();
 
 	// svelte-ignore state_referenced_locally
-	onStore(PopoverRootContext.get());
+	onStore(PopoverRootContext.get("Popover.StoreProbe"));
 </script>

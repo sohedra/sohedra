@@ -9,16 +9,11 @@ import type { PositionerStore } from "@sohedra/primitives-core/foundation/positi
 import type { WebTypes } from "../../foundation/kernel/index.js";
 
 /** The popover a part sits in: Popover.Root sets its store. */
-export const PopoverRootContext = defineContext<PopoverStore<unknown, WebTypes>>(
-	"PopoverRootContext",
-	"Popover parts must be placed within <Popover.Root>.",
-);
+export const PopoverRootContext = defineContext<PopoverStore<unknown, WebTypes>>("Popover.Root");
 
 /** The Positioner a part sits in: Popover.Positioner sets its measured state. */
-export const PopoverPositionerContext = defineContext<PositionerStore<WebTypes>>(
-	"PopoverPositionerContext",
-	"PopoverPositioner parts must be placed within <Popover.Positioner>.",
-);
+export const PopoverPositionerContext =
+	defineContext<PositionerStore<WebTypes>>("Popover.Positioner");
 
 /** What Popover.Portal tells its descendants. */
 export interface PopoverPortalView {
@@ -27,15 +22,10 @@ export interface PopoverPortalView {
 }
 
 /** The Portal a part sits in. */
-export const PopoverPortalContext = defineContext<PopoverPortalView>("PopoverPortalContext", "", {
-	message: "Sohedra: <Popover.Portal> is missing.",
-});
+export const PopoverPortalContext = defineContext<PopoverPortalView>("Popover.Portal");
 
 /**
  * The Popup a part sits in: Popover.Popup sets its popover's store. A Close part counts only
  * inside one (a modal popover traps focus only with a Close part inside its Popup).
  */
-export const PopoverPopupContext = defineContext<PopoverStore<unknown, WebTypes>>(
-	"PopoverPopupContext",
-	"Popover parts must be placed within <Popover.Popup>.",
-);
+export const PopoverPopupContext = defineContext<PopoverStore<unknown, WebTypes>>("Popover.Popup");

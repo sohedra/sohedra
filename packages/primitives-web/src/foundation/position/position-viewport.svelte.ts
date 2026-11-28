@@ -66,7 +66,7 @@ function finishTransitions(element: HTMLElement) {
  */
 export function useViewport(popup: ViewportView, options: () => ViewportOptions): Viewport {
 	const direction = DirectionContext.getOr(LTR);
-	const layout = PopupLayoutContext.get();
+	const layout = PopupLayoutContext.get(options().part);
 	const content = new ViewportContentStore<WebTypes>({ popup });
 	content.connect();
 

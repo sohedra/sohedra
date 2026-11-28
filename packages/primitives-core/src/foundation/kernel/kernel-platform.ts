@@ -138,7 +138,7 @@ export interface Platform<T extends PlatformTypes = PlatformTypes> {
 const never = (): (() => void) => noop;
 function noop() {}
 function noLocale(): never {
-	throw new Error("Sohedra: a detached store has no locale.");
+	throw new Error("Sohedra: A store with no mounted Root has no locale.");
 }
 
 /**

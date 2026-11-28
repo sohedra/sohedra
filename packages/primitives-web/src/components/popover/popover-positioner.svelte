@@ -22,8 +22,8 @@
 	const uid = $props.id();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get();
-	const portal = PopoverPortalContext.get();
+	const popover = PopoverRootContext.get("Popover.Positioner");
+	const portal = PopoverPortalContext.get("Popover.Positioner");
 
 	// 3. Shared behaviours
 	// The shared Positioner part below places the popup. Beside it: the popover's node in the

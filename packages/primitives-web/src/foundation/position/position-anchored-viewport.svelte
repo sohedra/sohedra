@@ -1,8 +1,8 @@
 <!--
   The Viewport part of every anchored popup: it shows the content of the active trigger and, while
   the popup moves to another trigger, an inert copy of the previous content on its way out.
-  Renders a `<div>` element. A component's own Viewport file hands over its store, the side its
-  Positioner placed the popup on, its `instant` value and its attribute mapping.
+  Renders a `<div>` element. A component's own Viewport file hands over its public name, its store,
+  the side its Positioner placed the popup on, its `instant` value and its attribute mapping.
 -->
 <script lang="ts" generics="Instant">
 	import type { Side } from "@sohedra/primitives-core/foundation/position/index.js";
@@ -20,6 +20,8 @@
 	}
 
 	interface Props {
+		/** The Viewport part's public name (`Popover.Viewport`), for its errors. */
+		part: string;
 		/** The viewport's view of the popup: a component passes its store. */
 		popup: ViewportView;
 		/** The side the enclosing Positioner placed the popup on. */
@@ -30,12 +32,12 @@
 		user: PartUserProps<State>;
 	}
 
-	let { popup, side, instant, attrs, ref = $bindable(null), user }: Props = $props();
+	let { part, popup, side, instant, attrs, ref = $bindable(null), user }: Props = $props();
 
 	// A part's store never changes while it is mounted.
 	const viewport = useViewport(
 		untrack(() => popup),
-		() => ({ side }),
+		() => ({ part, side }),
 	);
 
 	const state: State = $derived({

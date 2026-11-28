@@ -12,7 +12,7 @@
 	let { ref = $bindable(null), ...rest }: PopoverBackdropProps = $props();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get();
+	const popover = PopoverRootContext.get("Popover.Backdrop");
 </script>
 
 <PopupBackdrop

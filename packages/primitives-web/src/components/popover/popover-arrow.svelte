@@ -14,8 +14,8 @@
 	let { ref = $bindable(null), ...rest }: PopoverArrowProps = $props();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get();
-	const positioner = PopoverPositionerContext.get();
+	const popover = PopoverRootContext.get("Popover.Arrow");
+	const positioner = PopoverPositionerContext.get("Popover.Arrow");
 </script>
 
 <AnchoredArrow

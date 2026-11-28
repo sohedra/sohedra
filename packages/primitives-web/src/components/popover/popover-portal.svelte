@@ -22,7 +22,7 @@
 	const uid = $props.id();
 
 	// 2. Store and context
-	const popover = PopoverRootContext.get();
+	const popover = PopoverRootContext.get("Popover.Portal");
 	PopoverPortalContext.set({
 		get keepMounted() {
 			return keepMounted;

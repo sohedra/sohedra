@@ -119,6 +119,8 @@ export interface ViewportView {
 
 /** A Viewport's options, as a plain object the part builds from its Positioner. */
 export interface ViewportOptions {
+	/** The Viewport part's public name, for the error outside a Positioner. Read once. */
+	readonly part: string;
 	/** The side the enclosing Positioner placed the popup on. */
 	readonly side: Side;
 }

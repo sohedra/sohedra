@@ -6,6 +6,7 @@ import { getHoverTiming } from "@sohedra/primitives-core/foundation/hover/index.
 import {
 	type DefinedContext,
 	keepShallowEqual,
+	missingProviderMessage,
 } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import {
 	type PopupBehavior,
@@ -112,10 +113,7 @@ export function usePopupTrigger<
 	const root = context.getOr(null);
 	const { part, handle } = untrack(options);
 	if (!root && !handle) {
-		const rootPart = `${part.split(".")[0]}.Root`;
-		throw new Error(
-			`Sohedra: <${part}> must be either used within a <${rootPart}> component or provided with a handle.`,
-		);
+		throw new Error(missingProviderMessage(part, "Root", "given a handle"));
 	}
 	// A handle is made at module scope, before any platform: its store is this platform's once a
 	// Root attaches, else an inert one. The one cast of a handle's store is here.

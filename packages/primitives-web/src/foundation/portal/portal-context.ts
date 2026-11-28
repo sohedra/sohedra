@@ -6,7 +6,4 @@ import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.
 import type { PortalStore } from "./portal-store.svelte.js";
 
 /** The portal a part is rendered in: a popup's Portal sets its store. */
-export const PortalContext = defineContext<PortalStore>(
-	"PortalContext",
-	"Focus managers read it through `getOr(null)`.",
-);
+export const PortalContext = defineContext<PortalStore>("Portal");

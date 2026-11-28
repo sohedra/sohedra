@@ -21,9 +21,7 @@ export class PopupTriggerMap<T extends PlatformTypes = PlatformTypes> {
 			this.#devIds ??= new WeakMap();
 			const existingId = this.#devIds.get(element);
 			if (existingId !== undefined && existingId !== id) {
-				throw new Error(
-					"Sohedra: A trigger element cannot be registered under multiple IDs in PopupTriggerMap.",
-				);
+				throw new Error("Sohedra: A trigger element cannot be registered under multiple IDs.");
 			}
 			// Reusing an id for a different element evicts the previous element's claim.
 			const previous = this.#ids.get(id);

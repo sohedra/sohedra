@@ -5,8 +5,7 @@ import { describe, expect, it } from "vitest";
 import { PopupTriggerMap } from "../../../src/foundation/popup/popup-trigger-map.js";
 import { element as button } from "../../kit/kit-stand-ins.js";
 
-const MULTIPLE_IDS_ERROR =
-	"Sohedra: A trigger element cannot be registered under multiple IDs in PopupTriggerMap.";
+const MULTIPLE_IDS_ERROR = "Sohedra: A trigger element cannot be registered under multiple IDs.";
 
 describe("PopupTriggerMap", () => {
 	it("does not duplicate when the same element is added twice with the same id", () => {

@@ -193,9 +193,9 @@ describe("Switch.Root", () => {
 			await expect.element(context).not.toHaveTextContent("unchecked");
 		});
 
-		it("throws SwitchRootContext's message outside Switch.Root", async () => {
+		it("throws the missing-root message outside Switch.Root", async () => {
 			await expect(render(SwitchRootContextValue)).rejects.toThrow(
-				"SwitchRootContext is missing. Switch parts must be placed within <Switch.Root>.",
+				"<Switch.ContextReader> must be placed within <Switch.Root>.",
 			);
 		});
 	});

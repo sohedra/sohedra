@@ -13,7 +13,7 @@ describe("Switch.Thumb", () => {
 	it("throws a descriptive error when rendered outside Switch.Root", async () => {
 		// Svelte's dev build appends the component stack to the message.
 		await expect(render(SwitchThumb)).rejects.toThrow(
-			"Sohedra: SwitchRootContext is missing. Switch parts must be placed within <Switch.Root>.",
+			"Sohedra: <Switch.Thumb> must be placed within <Switch.Root>.",
 		);
 	});
 

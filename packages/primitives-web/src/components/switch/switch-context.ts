@@ -5,7 +5,4 @@ import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.
 import type { WebTypes } from "../../foundation/kernel/index.js";
 
 /** The switch a part sits in: Switch.Root sets its store. */
-export const SwitchRootContext = defineContext<SwitchStore<WebTypes>>(
-	"SwitchRootContext",
-	"Switch parts must be placed within <Switch.Root>.",
-);
+export const SwitchRootContext = defineContext<SwitchStore<WebTypes>>("Switch.Root");

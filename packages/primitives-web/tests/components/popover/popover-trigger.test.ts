@@ -15,7 +15,7 @@ describe("Popover.Trigger", () => {
 
 		try {
 			await expect(render(Popover.Trigger as never)).rejects.toThrow(
-				"Sohedra: <Popover.Trigger> must be either used within a <Popover.Root> component or provided with a handle.",
+				"Sohedra: <Popover.Trigger> must be placed within <Popover.Root> or given a handle.",
 			);
 		} finally {
 			errorSpy.mockRestore();

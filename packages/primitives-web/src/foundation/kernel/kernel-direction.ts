@@ -21,7 +21,5 @@ export class DirectionStore {
 	}
 }
 
-export const DirectionContext = defineContext<DirectionStore>(
-	"DirectionContext",
-	"Direction-aware parts read it through `getOr(LTR)`.",
-);
+/** The text direction a part sits in: a DirectionProvider sets its store. */
+export const DirectionContext = defineContext<DirectionStore>("DirectionProvider");

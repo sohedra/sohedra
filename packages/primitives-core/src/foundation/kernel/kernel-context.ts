@@ -1,8 +1,11 @@
 import { createContext } from "svelte";
 
 export interface DefinedContext<T> {
-	/** Reads the context, throwing the missing-context error when it isn't set. */
-	get(): T;
+	/**
+	 * Reads the context. `part` is the reader's public name (`Popover.Title`), which the error
+	 * names when no provider set the context.
+	 */
+	get(part: string): T;
 	/** Reads the context, or `fallback` when it isn't set. */
 	getOr<F>(fallback: F): T | F;
 	/** Sets the context for the current component's descendants. */
@@ -10,23 +13,34 @@ export interface DefinedContext<T> {
 }
 
 /**
- * A typed context with a missing-context message: `Sohedra: <name> is missing. <hint>`.
- * Values are store instances (or null stores for optional contexts), never plain value objects.
- * Free of side effects, so a bundler drops a context nothing reads.
+ * The error of a part rendered outside the part it must be placed within:
+ * `Sohedra: <Popover.Trigger> must be placed within <Popover.Root>.` `provider` is a part's public
+ * name (`Dialog.Root`), or, for a part every component of a family has, its name inside the
+ * reader's component (`Root`, `Positioner`). `alternative` ends the sentence for a part that has
+ * another way in (`given a handle`).
+ */
+export function missingProviderMessage(
+	part: string,
+	provider: string,
+	alternative?: string,
+): string {
+	const within = provider.includes(".") ? provider : `${part.split(".")[0]}.${provider}`;
+	return `Sohedra: <${part}> must be placed within <${within}>${alternative ? ` or ${alternative}` : ""}.`;
+}
+
+/**
+ * A typed context that `provider` sets (see {@link missingProviderMessage} for how it is named). A
+ * part that reads it outside one throws, in development and in production alike, naming the part
+ * and its provider. Values are store instances (or null stores for optional contexts), never plain
+ * value objects. Free of side effects, so a bundler drops a context nothing reads.
  */
 /*#__NO_SIDE_EFFECTS__*/
-export function defineContext<T>(
-	name: string,
-	hint: string,
-	options?: { readonly message?: string },
-): DefinedContext<T> {
+export function defineContext<T>(provider: string): DefinedContext<T> {
 	const [get, set, has] = createContext<T>();
-	// A few contexts throw their own message (for example `<Popover.Portal> is missing.`).
-	const message = options?.message ?? `Sohedra: ${name} is missing. ${hint}`;
 	return {
-		get() {
+		get(part) {
 			if (!has()) {
-				throw new Error(message);
+				throw new Error(missingProviderMessage(part, provider));
 			}
 			return get();
 		},
