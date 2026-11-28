@@ -1,13 +1,15 @@
 // Popover.Portal: it moves its element into the container while the element stays in its Svelte
 // component tree, so removing a popover never removes the container's other children, across
 // Svelte's block boundaries ({#each}, {#if} component swaps, {#key}, nesting, keepMounted, render
-// snippets and container changes); and a Portal removed while its popover is open.
+// snippets and container changes); a Portal removed while its popover is open; and the user's own
+// handlers on the Portal and the Positioner.
 import { flushSync } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";
 
 import { nextFrame, nextTask, settle } from "../../kit/kit-frames.js";
+import PopoverDemo from "./fixtures/popover-demo.svelte";
 import PopoverPortalInto from "./fixtures/popover-portal-into.svelte";
 import PopoverPortalRenderSwap from "./fixtures/popover-portal-render-swap.svelte";
 import PopoverRemovedPortal from "./fixtures/popover-removed-portal.svelte";
@@ -241,6 +243,31 @@ describe("Popover.Portal", () => {
 			await nextFrame();
 			await nextTask();
 			expect(onOpenChangeComplete.mock.calls).toEqual([[true]]);
+		});
+	});
+
+	// The portal element sits outside the app's root, where Svelte's delegated handlers run from
+	// the document: a listener the popup adds on the way must not mark the event handled there.
+	describe("with the user's own handlers", () => {
+		it("runs a focusout and a pointerdown handler on the Portal and on the Positioner", async () => {
+			const portal = { onfocusout: vi.fn(), onpointerdown: vi.fn() };
+			const positioner = { onfocusout: vi.fn(), onpointerdown: vi.fn() };
+			await render(PopoverDemo, {
+				portalProps: portal,
+				positionerProps: positioner,
+				close: "Close",
+				outsideButton: "Outside",
+			});
+
+			await userEvent.click(page.getByRole("button", { name: "Toggle" }));
+			await expect.element(page.getByRole("button", { name: "Close" })).toHaveFocus();
+			await userEvent.click(page.getByRole("dialog"));
+			expect(positioner.onpointerdown).toHaveBeenCalledTimes(1);
+			expect(portal.onpointerdown).toHaveBeenCalledTimes(1);
+
+			await userEvent.click(page.getByRole("button", { name: "Outside" }));
+			expect(positioner.onfocusout).toHaveBeenCalled();
+			expect(portal.onfocusout).toHaveBeenCalled();
 		});
 	});
 });
