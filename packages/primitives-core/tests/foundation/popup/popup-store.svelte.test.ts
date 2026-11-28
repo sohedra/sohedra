@@ -361,18 +361,18 @@ describe("PopupStore", () => {
 		const before = element("before-trigger");
 		const after = element("after-trigger");
 		const content = element("before-content");
-		store.setBeforeTriggerGuard(before);
-		store.setTriggerFocusTarget(after);
-		store.setBeforeContentGuard(content);
-		expect(store.beforeTriggerGuard).toBe(before);
-		expect(store.triggerFocusTarget).toBe(after);
-		expect(store.beforeContentGuard).toBe(content);
-		store.setBeforeTriggerGuard(null);
-		store.setTriggerFocusTarget(null);
-		store.setBeforeContentGuard(null);
-		expect(store.beforeTriggerGuard).toBe(null);
-		expect(store.triggerFocusTarget).toBe(null);
-		expect(store.beforeContentGuard).toBe(null);
+		store.guards.setBeforeTrigger(before);
+		store.guards.setAfterTrigger(after);
+		store.guards.setBeforeContent(content);
+		expect(store.guards.beforeTrigger).toBe(before);
+		expect(store.guards.afterTrigger).toBe(after);
+		expect(store.guards.beforeContent).toBe(content);
+		store.guards.setBeforeTrigger(null);
+		store.guards.setAfterTrigger(null);
+		store.guards.setBeforeContent(null);
+		expect(store.guards.beforeTrigger).toBe(null);
+		expect(store.guards.afterTrigger).toBe(null);
+		expect(store.guards.beforeContent).toBe(null);
 	});
 
 	it("adds its floating node while connected", () => {

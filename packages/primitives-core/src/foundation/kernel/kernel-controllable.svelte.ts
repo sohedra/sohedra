@@ -1,14 +1,10 @@
 import { DEV } from "esm-env";
 import { untrack } from "svelte";
 
+import type { Bound } from "./kernel-bound.js";
 import { error } from "./kernel-log.js";
 import { callUser } from "./kernel-user-callback.js";
 import { watch } from "./kernel-watch.svelte.js";
-
-/** A `$bindable` prop seen through a getter and setter (a function binding may decline writes). */
-export interface ControllableSource<T> {
-	value: T | undefined;
-}
 
 export interface ControllableOptions<T> {
 	/** The default when the source is `undefined`. Read untracked, except by the dev warning. */
@@ -30,7 +26,7 @@ interface Cancelable {
  * skip the write when it cancels.
  */
 export class Controllable<T> {
-	#source: ControllableSource<T>;
+	#source: Bound<T | undefined>;
 	#options: ControllableOptions<T>;
 	// Raw: a value is kept as given, never deep-proxied, so an object stays `===` to the one the
 	// parts compare it with (a tab's or a radio's value).
@@ -47,7 +43,7 @@ export class Controllable<T> {
 	/** The current value: the source's, or the local one while the source is `undefined`. */
 	readonly current: T = $derived(this.#read());
 
-	constructor(source: ControllableSource<T>, options: ControllableOptions<T>) {
+	constructor(source: Bound<T | undefined>, options: ControllableOptions<T>) {
 		this.#source = source;
 		this.#options = options;
 		const given = untrack(() => source.value);

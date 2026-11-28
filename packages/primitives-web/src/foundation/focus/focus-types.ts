@@ -1,3 +1,4 @@
+import type { TriggerFocusGuards } from "@sohedra/primitives-core/foundation/focus/index.js";
 import type { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import type {
 	FloatingTree,
@@ -76,26 +77,13 @@ export interface FocusManagerOptions {
 	readonly openInteractionType?: InteractionType | null | undefined;
 }
 
-/** The focus guard elements a trigger and its popup share, kept by the popup's store. */
-export interface TriggerGuards {
-	/** The guard before the trigger, treated as inside the popup. */
-	readonly beforeTrigger: Element | null;
-	/** The guard after the trigger: Tab from the popup's end lands here. */
-	readonly afterTrigger: Element | null;
-	/** The guard before the popup's content. */
-	readonly beforeContent: Element | null;
-	setBeforeTrigger(element: Element | null): void;
-	setAfterTrigger(element: Element | null): void;
-	setBeforeContent(element: Element | null): void;
-}
-
 /**
  * The Tab bridge between a trigger and its portalled popup: the popup is elsewhere in the
  * document, so guards around the trigger and around the popup carry Tab from one to the other. A
  * store that keeps the guards satisfies it as it is.
  */
 export interface TriggerFocusBridge {
-	readonly guards: TriggerGuards;
+	readonly guards: TriggerFocusGuards<WebTypes>;
 	/** The trigger that owns the popup, while it is mounted. */
 	readonly activeTriggerElement: Element | null;
 }
@@ -123,7 +111,7 @@ export interface FocusManager {
 
 /** What the trigger's focus guards read from a popup, and the one thing they ask of it. */
 export interface TriggerFocusGuardsView {
-	readonly guards: TriggerGuards;
+	readonly guards: TriggerFocusGuards<WebTypes>;
 	/** The positioned element that holds the popup. */
 	readonly positionerElement: Element | null;
 	/** Closes the popup because focus left it. Only focus-out details are passed. */

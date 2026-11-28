@@ -258,21 +258,6 @@ export class PopoverStore<
 		this.lifecycle.session.extra.stick = value;
 	}
 
-	/** The guard before the active trigger, treated as inside the popup by the focus manager. */
-	get beforeTriggerGuard(): T["element"] | null {
-		return this.guards.beforeTrigger;
-	}
-
-	/** The guard after the active trigger: Tab from the popup's end lands here. */
-	get triggerFocusTarget(): T["element"] | null {
-		return this.guards.afterTrigger;
-	}
-
-	/** The guard before the popup's content. */
-	get beforeContentGuard(): T["element"] | null {
-		return this.guards.beforeContent;
-	}
-
 	/** A trigger's state: whether it is disabled, and whether the popover is open from it. */
 	triggerState(triggerId: string, disabled: boolean): PopoverTriggerState {
 		return { disabled, open: this.activeTrigger.isOpenedBy(triggerId) };
@@ -351,21 +336,6 @@ export class PopoverStore<
 	/** A close from outside a trigger: a Close part, or `close()` on the Root or the handle. */
 	close = (details: Omit<Details<T>, "preventUnmountOnClose">): boolean =>
 		this.setOpen(false, details);
-
-	/** Records the guard before the active trigger (or `null` when it goes away). */
-	setBeforeTriggerGuard(element: T["element"] | null): void {
-		this.guards.setBeforeTrigger(element);
-	}
-
-	/** Records the guard after the active trigger (or `null` when it goes away). */
-	setTriggerFocusTarget(element: T["element"] | null): void {
-		this.guards.setAfterTrigger(element);
-	}
-
-	/** Records the guard before the popup's content (or `null` when it goes away). */
-	setBeforeContentGuard(element: T["element"] | null): void {
-		this.guards.setBeforeContent(element);
-	}
 
 	/** Applies the owning trigger's forwarded data. */
 	override applyTriggerData(data: PopoverTriggerData<Payload>): void {

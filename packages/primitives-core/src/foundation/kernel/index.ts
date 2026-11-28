@@ -23,7 +23,7 @@ export {
 
 export { bound, type Bound } from "./kernel-bound.js";
 export { CommittedValue } from "./kernel-committed-value.svelte.js";
-export { Controllable, type ControllableSource } from "./kernel-controllable.svelte.js";
+export { Controllable } from "./kernel-controllable.svelte.js";
 export { watch, type WatchOptions } from "./kernel-watch.svelte.js";
 
 export { callUser } from "./kernel-user-callback.js";
