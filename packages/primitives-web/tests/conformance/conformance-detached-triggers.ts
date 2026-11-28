@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";
 
+import { nextFrame } from "../kit/kit-frames.js";
 import ConformanceDetachedOverlap from "./fixtures/conformance-detached-overlap.svelte";
 import ConformanceDetachedTriggersControlled from "./fixtures/conformance-detached-triggers-controlled.svelte";
 import ConformanceDetachedTriggers from "./fixtures/conformance-detached-triggers.svelte";
@@ -288,6 +289,9 @@ export function describeDetachedTriggersConformance(
 						await waitForContent("1");
 						await expectActiveTrigger(1);
 						await expectPositionerAlignedWith(1);
+						// The popup moves focus in a frame after it opens. Focusing the button before that frame
+						// lets the popup take focus back, and the Enter below presses inside the popup.
+						await nextFrame();
 
 						// A keyboard press, so the button holds focus as the popup opens: WebKit doesn't focus a
 						// pressed button.
