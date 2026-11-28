@@ -2,8 +2,10 @@
 
 import { untrack } from "svelte";
 
-import { CommittedValue, type PlatformTypes } from "../kernel/index.js";
+import { type Bound, CommittedValue, type PlatformTypes, watch } from "../kernel/index.js";
+import { movesToOtherTrigger } from "./popup-rules.js";
 import type { PopupTriggerMap } from "./popup-trigger-map.js";
+import type { InstantType } from "./popup-types.js";
 
 /** What the active-trigger bookkeeping reads: its popup's open state and the Root's props. */
 export interface ActiveTriggerStoreProps {
@@ -18,7 +20,15 @@ export interface ActiveTriggerStoreProps {
 export interface ActiveTriggerStoreDeps<T extends PlatformTypes = PlatformTypes> {
 	/** The popup's registered triggers. */
 	readonly triggers: PopupTriggerMap<T>;
+	/** The popup's stored instant type, which a move to another trigger sets. */
+	readonly instant: Bound<InstantType>;
 }
+
+/**
+ * How the platform waits for the animations of a move to another trigger: it calls `finish` once
+ * they are done, and returns a cancel that keeps `finish` from counting.
+ */
+export type TriggerChangeWait = (finish: () => void) => (() => void) | void;
 
 /**
  * Which registered trigger a popup belongs to, including the one it claims implicitly: the active
@@ -28,6 +38,7 @@ export interface ActiveTriggerStoreDeps<T extends PlatformTypes = PlatformTypes>
 export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #props: () => ActiveTriggerStoreProps;
 	readonly #triggers: PopupTriggerMap<T>;
+	readonly #instant: Bound<InstantType>;
 
 	#id: string | null = $state(null);
 	#element: T["element"] | null = $state.raw(null);
@@ -46,6 +57,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	constructor(props: () => ActiveTriggerStoreProps, deps: ActiveTriggerStoreDeps<T>) {
 		this.#props = props;
 		this.#triggers = deps.triggers;
+		this.#instant = deps.instant;
 		this.#id = untrack(() => props().defaultTriggerId) ?? null;
 	}
 
@@ -208,5 +220,66 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 				}
 			});
 		});
+	}
+
+	/**
+	 * Decides when the popup moved to another trigger: when the active trigger changes while the
+	 * popup is open, its transitions run once more (it repositions), so the instant type is cleared
+	 * and `waitForMove` is called; once the platform calls the `finish` it was given, the instant
+	 * type is `trigger-change` while the popup stays with that trigger. Closing drops a pending or
+	 * applied `trigger-change`. `waitForMove` returns a cancel, called when the move is superseded,
+	 * the popup closes, or the caller goes away.
+	 *
+	 * Call once during the init of the part that animates the move (the Positioner): what it
+	 * remembers lives as long as that part.
+	 */
+	connectTriggerChange(waitForMove: TriggerChangeWait): void {
+		const instant = this.#instant;
+		// The last trigger the popup was anchored to. Not the watched previous value: a reference
+		// cleared while closed keeps it, so the next opening still compares against it.
+		let lastTrigger: T["element"] | null = null;
+		let cancelPending: (() => void) | void = undefined;
+
+		// Closing drops a pending or applied trigger-change.
+		watch(
+			() => this.#props().open,
+			(open) => {
+				if (open) {
+					return;
+				}
+				cancelPending?.();
+				cancelPending = undefined;
+				if (instant.value === "trigger-change") {
+					instant.value = undefined;
+				}
+			},
+		);
+
+		// A new trigger while open: lets the transitions run, then marks the popup instant.
+		watch(
+			() => this.anchor,
+			(current) => {
+				const previous = lastTrigger;
+				if (current) {
+					lastTrigger = current;
+				}
+				if (!movesToOtherTrigger(previous, current, this.#props().open)) {
+					return;
+				}
+				instant.value = undefined;
+				let canceled = false;
+				const cancelWait = waitForMove(() => {
+					if (!canceled && this.#props().open) {
+						instant.value = "trigger-change";
+					}
+				});
+				const cancel = () => {
+					canceled = true;
+					cancelWait?.();
+				};
+				cancelPending = cancel;
+				return cancel;
+			},
+		);
 	}
 }

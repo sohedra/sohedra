@@ -9,7 +9,7 @@ import type { TriggerSwitchView } from "./position-types.js";
  * store. Call once during the Positioner's init.
  */
 export function useTriggerSwitchTransition(popup: TriggerSwitchView): void {
-	popup.lifecycle.connectTriggerChange((finish) => {
+	popup.activeTrigger.connectTriggerChange((finish) => {
 		const positioner = popup.positionerElement as HTMLElement | null;
 		if (!positioner) {
 			return;

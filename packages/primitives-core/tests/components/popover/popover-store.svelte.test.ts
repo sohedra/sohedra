@@ -237,11 +237,15 @@ describe("PopoverStore", () => {
 
 	it("sticks a hover-opened popover open for the patient-click threshold", () => {
 		const { store, scheduler } = setup();
-		store.stickIfOpen = false;
-		store.setOpen(
-			true,
-			createChangeEventDetails(REASONS.triggerHover, event("mouseenter") as MouseEvent),
-		);
+		const hover = () =>
+			store.setOpen(
+				true,
+				createChangeEventDetails(REASONS.triggerHover, event("mouseenter") as MouseEvent),
+			);
+		// The flag has no setter: a first hover opening's threshold clears it.
+		hover();
+		scheduler.advance(PATIENT_CLICK_THRESHOLD);
+		hover();
 		expect(store.stickIfOpen).toBe(true);
 		scheduler.advance(PATIENT_CLICK_THRESHOLD);
 		expect(store.stickIfOpen).toBe(false);

@@ -146,11 +146,11 @@ export interface Viewport {
 
 /**
  * What the trigger-switch transition reads from a popup: the element whose animations it waits
- * for, and the lifecycle that decides when the popup moved. The names are a popup store's own.
+ * for, and the active trigger that decides when the popup moved. The names are a popup store's own.
  */
 export interface TriggerSwitchView {
 	readonly positionerElement: Element | null;
-	readonly lifecycle: { connectTriggerChange(waitForMove: TriggerChangeWait): void };
+	readonly activeTrigger: { connectTriggerChange(waitForMove: TriggerChangeWait): void };
 }
 
 export interface AnchoredScrollLockOptions {

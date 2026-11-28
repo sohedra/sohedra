@@ -57,12 +57,6 @@ export interface PopoverOpenChangeSource extends OpenChangeSource {
 	readonly keyboardClick?: boolean | undefined;
 }
 
-/** A popover's own extra fields of one opening. */
-interface PopoverSessionExtra {
-	/** Whether a trigger press keeps a hover-opened popover open (an impatient click). */
-	stick: boolean;
-}
-
 type Details<T extends PlatformTypes> = PopoverRootChangeEventDetails<T>;
 
 /** The Close parts rendered inside a popup: a modal popover traps focus only with one to leave by. */
@@ -89,11 +83,10 @@ function closePartCount(): ClosePartCount {
 	};
 }
 
-/** Popover's kind of popup: its name, its behaviour row and its extra fields of one opening. */
-const POPOVER_KIND: PopupStoreKind<PopoverSessionExtra> = {
+/** Popover's kind of popup: its name and its behaviour row. */
+const POPOVER_KIND: PopupStoreKind = {
 	name: "Popover",
 	behavior: POPUP_BEHAVIOR.popover,
-	extra: () => ({ stick: true }),
 };
 type Request<T extends PlatformTypes> = PopupRequest<Details<T>, PopoverOpenChangeSource>;
 
@@ -101,7 +94,7 @@ type Request<T extends PlatformTypes> = PopupRequest<Details<T>, PopoverOpenChan
 export class PopoverStore<
 	Payload = unknown,
 	T extends PlatformTypes = PlatformTypes,
-> extends PopupStore<Payload, T, Details<T>, PopoverSessionExtra, PopoverOpenChangeSource> {
+> extends PopupStore<Payload, T, Details<T>, PopoverOpenChangeSource> {
 	// 1. Inputs
 	readonly #props: () => PopoverStoreProps<Payload, T>;
 
@@ -109,12 +102,7 @@ export class PopoverStore<
 	 * What Popover adds to the open pipeline: a close press without a trigger takes the active
 	 * one, and each accepted change sets the stick flag and the instant type.
 	 */
-	protected readonly hooks: PopupHooks<
-		Details<T>,
-		T,
-		PopoverSessionExtra,
-		PopoverOpenChangeSource
-	> = {
+	protected readonly hooks: PopupHooks<Details<T>, PopoverOpenChangeSource, this> = {
 		close: (request) => {
 			const { details } = request;
 			const activeTriggerId = this.activeTriggerId;
@@ -132,12 +120,15 @@ export class PopoverStore<
 					undefined;
 			}
 		},
-		opened: (_session, request) => this.#accepted(request),
-		closed: (_session, request) => this.#accepted(request),
+		opened: (_popover, request) => this.#accepted(request),
+		closed: (_popover, request) => this.#accepted(request),
 		openChanged: (open) => {
 			if (!open) {
 				this.#stickTimeout.clear();
 			}
+		},
+		unmounted: () => {
+			this.#stick = true;
 		},
 	};
 
@@ -154,6 +145,9 @@ export class PopoverStore<
 	 * the trigger and the Popup's focus manager): bookkeeping nothing renders.
 	 */
 	readonly guards = new TriggerFocusGuards<T>();
+
+	/** Whether a press keeps a hover-opened popover open. Set by a hover opening; reset on unmount. */
+	#stick = true;
 
 	// Forwarded from the trigger that owns the popup.
 	#disabled = $state(false);
@@ -251,11 +245,7 @@ export class PopoverStore<
 	 * the opening: only read when a trigger is pressed, so it isn't reactive.
 	 */
 	get stickIfOpen(): boolean {
-		return this.lifecycle.session.extra.stick;
-	}
-
-	set stickIfOpen(value: boolean) {
-		this.lifecycle.session.extra.stick = value;
+		return this.#stick;
 	}
 
 	/** A trigger's state: whether it is disabled, and whether the popover is open from it. */
@@ -301,12 +291,7 @@ export class PopoverStore<
 	 */
 	pressOpen(isActiveReference: boolean): boolean {
 		return untrack(() =>
-			pressOpenState(
-				this.open,
-				isActiveReference,
-				this.lifecycle.session.eventType,
-				this.stickIfOpen,
-			),
+			pressOpenState(this.open, isActiveReference, this.data.openEventType, this.stickIfOpen),
 		);
 	}
 
@@ -347,15 +332,14 @@ export class PopoverStore<
 
 	/** An accepted change, after the commit. */
 	#accepted({ next, details, source }: Request<T>): void {
-		const session = this.lifecycle.session;
 		if (details.reason === REASONS.triggerHover) {
 			// Only a "patient" click closes a hover-opened popover: one within the threshold sticks.
-			session.extra.stick = true;
+			this.#stick = true;
 			this.#stickTimeout.start(PATIENT_CLICK_THRESHOLD, () => {
-				this.stickIfOpen = false;
+				this.#stick = false;
 			});
 		}
-		session.instant = popoverInstantType(next, details.reason, source.keyboardClick === true);
+		this.setInstantType(popoverInstantType(next, details.reason, source.keyboardClick === true));
 	}
 
 	// 5. Lifetime work. Called once by Popover.Root.

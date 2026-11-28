@@ -3,11 +3,13 @@
 import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 
+import { bound } from "../../../src/foundation/kernel/index.js";
 import {
 	ActiveTriggerStore,
 	type ActiveTriggerStoreProps,
 } from "../../../src/foundation/popup/popup-active-trigger-store.svelte.js";
 import { PopupTriggerMap } from "../../../src/foundation/popup/popup-trigger-map.js";
+import type { InstantType } from "../../../src/foundation/popup/popup-types.js";
 import { root } from "../../kit/kit-effects.svelte.js";
 
 type MutableProps = { -readonly [K in keyof ActiveTriggerStoreProps]: ActiveTriggerStoreProps[K] };
@@ -19,7 +21,14 @@ function setup() {
 		triggerId: undefined,
 		defaultTriggerId: undefined,
 	});
-	const store = new ActiveTriggerStore(() => props, { triggers: new PopupTriggerMap() });
+	let instant: InstantType = $state();
+	const store = new ActiveTriggerStore(() => props, {
+		triggers: new PopupTriggerMap(),
+		instant: bound(
+			() => instant,
+			(value) => (instant = value),
+		),
+	});
 	root(() => store.connect());
 	flushSync();
 	return { props, store };
