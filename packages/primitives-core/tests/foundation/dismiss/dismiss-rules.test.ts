@@ -12,21 +12,8 @@ import {
 	resolvePressType,
 	touchMoveOutcome,
 } from "../../../src/foundation/dismiss/dismiss-rules.js";
-import { type FloatingNode, FloatingTree } from "../../../src/foundation/popup/index.js";
-
-function node(id: string, parentId: string | null, open: boolean, escapeKey = false): FloatingNode {
-	return {
-		id,
-		parentId,
-		context: {
-			open,
-			floatingElement: null,
-			anchorElement: null,
-			dismissBubbles: { escapeKey, outsidePress: true },
-			data: { insideTree: false },
-		},
-	};
-}
+import { FloatingTree } from "../../../src/foundation/popup/index.js";
+import { floatingNode as node } from "../../kit/kit-floating-tree.js";
 
 describe("normalizeBubbles", () => {
 	it("normalizes bubbles", () => {

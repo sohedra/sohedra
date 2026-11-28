@@ -1,25 +1,12 @@
 // FloatingTree and its lookups: the open descendants and the ancestors of a node.
 import { describe, expect, it } from "vitest";
 
-import { type FloatingNode, FloatingTree } from "../../../src/foundation/popup/index.js";
+import { FloatingTree } from "../../../src/foundation/popup/index.js";
 import {
 	getNodeAncestors,
 	getNodeChildren,
 } from "../../../src/foundation/popup/popup-floating-tree.js";
-
-function node(id: string, parentId: string | null, open: boolean, escapeKey = false): FloatingNode {
-	return {
-		id,
-		parentId,
-		context: {
-			open,
-			floatingElement: null,
-			anchorElement: null,
-			dismissBubbles: { escapeKey, outsidePress: true },
-			data: { insideTree: false },
-		},
-	};
-}
+import { floatingNode as node } from "../../kit/kit-floating-tree.js";
 
 describe("getNodeChildren and getNodeAncestors", () => {
 	it("finds open descendants and ancestors", () => {
