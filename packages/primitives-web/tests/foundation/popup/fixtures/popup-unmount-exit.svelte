@@ -5,10 +5,10 @@
   `awaitingUnmount` and its element itself, so the cases hold them on a stand-in instead.
 -->
 <script lang="ts">
-	import {
-		type PopupUnmountView,
-		usePopupUnmount,
-	} from "#lib/foundation/popup/popup-unmount.svelte.js";
+	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+
+	import type { WebTypes } from "#lib/foundation/kernel/index.js";
+	import { usePopupUnmount } from "#lib/foundation/popup/popup-unmount.svelte.js";
 
 	let {
 		awaiting,
@@ -27,7 +27,7 @@
 			return popup;
 		},
 		unmount: () => onUnmount(),
-	} as unknown as PopupUnmountView;
+	} as unknown as PopupView<WebTypes>;
 
 	// svelte-ignore state_referenced_locally
 	usePopupUnmount(store, awaitOther ? () => other : undefined);

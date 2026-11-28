@@ -2,7 +2,6 @@
 // of nested popups too.
 import { describe, expect, it, vi } from "vitest";
 
-import type { DismissView } from "../../../src/foundation/dismiss/dismiss-interaction.js";
 import { LONG_TOUCH_MS } from "../../../src/foundation/dismiss/dismiss-rules.js";
 import {
 	type DismissChangeDetails,
@@ -10,14 +9,17 @@ import {
 	type DismissInteractionProps,
 	type OutsidePress,
 } from "../../../src/foundation/dismiss/index.js";
-import { PopupTree } from "../../../src/foundation/popup/index.js";
+import { PopupTree, type PopupView } from "../../../src/foundation/popup/index.js";
 import { createFakePlatform, type FakeTypes } from "../../kit/kit-fake-platform.js";
 
 const EVENT = {} as never;
 
+/** What the dismissal reads of its popup. */
+type View = Pick<PopupView<FakeTypes>, "open" | "tree" | "nodeId" | "platform">;
+
 function setup(options: DismissInteractionProps = {}, tree: PopupTree | null = null) {
 	const platform = createFakePlatform();
-	const view: DismissView<FakeTypes> = {
+	const view: View = {
 		open: true,
 		tree,
 		nodeId: "popup",
@@ -35,7 +37,7 @@ function setup(options: DismissInteractionProps = {}, tree: PopupTree | null = n
 	});
 	return {
 		dismiss,
-		view: view as { -readonly [Key in keyof DismissView<FakeTypes>]: DismissView<FakeTypes>[Key] },
+		view: view as { -readonly [Key in keyof View]: View[Key] },
 		scheduler: platform.scheduler,
 		reasons,
 		options: live as {

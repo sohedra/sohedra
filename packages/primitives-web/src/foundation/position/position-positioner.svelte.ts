@@ -1,5 +1,6 @@
 import { autoUpdate, computePosition, type ReferenceElement } from "@floating-ui/dom";
 import { keepShallowEqual, watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import {
 	getAlignment,
 	getSide,
@@ -22,7 +23,7 @@ import {
 	type MiddlewareOptions,
 } from "./position-positioner-middleware.js";
 import { internalBackdropStyle, positionerStyle } from "./position-positioner-style.js";
-import type { Positioner, PositionerOptions, PositionerView } from "./position-types.js";
+import type { Positioner, PositionerOptions } from "./position-types.js";
 
 /**
  * Positions a popup against its anchor: it follows the anchor while the popup is mounted and
@@ -31,7 +32,7 @@ import type { Positioner, PositionerOptions, PositionerView } from "./position-t
  * `options` is called inside the deriveds below, so each option stays reactive.
  */
 export function usePositioner(
-	popup: PositionerView,
+	popup: PopupView<WebTypes>,
 	positioner: PositionerStore<WebTypes>,
 	options: () => PositionerOptions,
 ): Positioner {

@@ -2,23 +2,12 @@ import { untrack } from "svelte";
 
 import type { PlatformTypes } from "../kernel/index.js";
 import type { PopupTriggerData } from "./popup-types.js";
-
-/**
- * What a trigger's registration reads from its popup, and asks of it. The names are a popup
- * store's own, so a trigger part hands its store over as it is.
- */
-export interface TriggerRegistrationView<T extends PlatformTypes, Data> {
-	registerTrigger(id: string, element: T["element"], data: Data): () => void;
-	forwardTriggerData(id: string, element: T["element"] | null, data: Data): void;
-	readonly activeTrigger: { isMountedBy(id: string | undefined): boolean };
-	/** The trigger reads this popup until the returned leave. */
-	joinTrigger(): () => void;
-}
+import type { PopupView } from "./popup-view.js";
 
 /** What a trigger's registration reads, from the options function. */
 export interface TriggerRegistrationOptions<T extends PlatformTypes, Data> {
 	/** The store the trigger reads now: a handle's store changes when a Root attaches. */
-	readonly store: TriggerRegistrationView<T, Data>;
+	readonly store: PopupView<T>;
 	readonly id: string;
 	/** The trigger element, once attached. */
 	readonly element: T["element"] | null;

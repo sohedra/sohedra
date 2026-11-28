@@ -3,7 +3,10 @@ import {
 	HoverTriggerStore,
 	type SafePolygonSession,
 } from "@sohedra/primitives-core/foundation/hover/index.js";
-import type { OpenChangeDetails } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type {
+	OpenChangeDetails,
+	PopupView,
+} from "@sohedra/primitives-core/foundation/popup/index.js";
 import { flushSync } from "svelte";
 
 import {
@@ -15,12 +18,12 @@ import {
 	ownerDocument,
 	type WebTypes,
 } from "../kernel/index.js";
-import type { HoverPopupView, HoverTrigger, HoverTriggerOptions } from "./hover-types.js";
+import type { HoverTrigger, HoverTriggerOptions } from "./hover-types.js";
 
 /** Whether `target` is in a registered trigger. */
 export function isInsideEnabledTrigger(
 	target: EventTarget | null,
-	triggers: HoverPopupView["triggers"],
+	triggers: PopupView<WebTypes>["triggers"],
 ): boolean {
 	if (!isElement(target)) {
 		return false;
@@ -38,7 +41,7 @@ export function isInsideEnabledTrigger(
 
 /** Whether `currentTarget` (or `target` in it) is a registered trigger other than the anchor. */
 function isOverInactiveTrigger(
-	popup: HoverPopupView,
+	popup: PopupView<WebTypes>,
 	anchorElement: Element | null,
 	currentTarget: Element,
 	target: EventTarget | null,
@@ -56,7 +59,10 @@ function isOverInactiveTrigger(
 }
 
 /** The trigger the pointer is over: the registered one containing the target, or the anchor. */
-function resolveTarget(popup: HoverPopupView, event: MouseEvent): HoverTriggerTarget<WebTypes> {
+function resolveTarget(
+	popup: PopupView<WebTypes>,
+	event: MouseEvent,
+): HoverTriggerTarget<WebTypes> {
 	const eventTarget = getTarget(event);
 	const currentTarget = event.currentTarget as Element;
 	const anchorElement = popup.anchorElement;
@@ -91,7 +97,7 @@ function resolveTarget(popup: HoverPopupView, event: MouseEvent): HoverTriggerTa
  * measuring the trigger and popup on demand.
  */
 function trackSafePolygon(
-	popup: HoverPopupView,
+	popup: PopupView<WebTypes>,
 	session: SafePolygonSession<WebTypes>,
 	leave: MouseEvent,
 ) {
@@ -141,7 +147,7 @@ function trackSafePolygon(
  * initialises; `props` go on the trigger's element.
  */
 export function useHoverTrigger(
-	popup: () => HoverPopupView,
+	popup: () => PopupView<WebTypes>,
 	options: () => HoverTriggerOptions,
 ): HoverTrigger {
 	const hover = new HoverTriggerStore<WebTypes>(options, { popup, flush: flushSync });

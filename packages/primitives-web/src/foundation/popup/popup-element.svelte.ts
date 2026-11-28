@@ -2,24 +2,13 @@
 // opening after the enter animations, hears Escape and presses inside, keeps a hovered popup
 // open, and manages focus for a popup that takes it. Which of these a kind has is read from its
 // behaviour row.
-import type { ClaimedValue } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type {
-	InteractionType,
-	PopupBehavior,
-} from "@sohedra/primitives-core/foundation/popup/index.js";
-import type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { getAbortSignal, untrack } from "svelte";
 import type { Attachment } from "svelte/attachments";
 
-import { type DismissPopupView, useDismissPopup } from "../dismiss/index.js";
-import {
-	type FocusGuardProps,
-	type FocusManagerView,
-	type FocusTarget,
-	type TriggerFocusBridge,
-	useFocusManager,
-} from "../focus/index.js";
-import { type HoverPopupView, useHoverPopup } from "../hover/index.js";
+import { useDismissPopup } from "../dismiss/index.js";
+import { type FocusGuardProps, type FocusTarget, useFocusManager } from "../focus/index.js";
+import { useHoverPopup } from "../hover/index.js";
 import {
 	attachClaim,
 	attachmentProps,
@@ -27,42 +16,11 @@ import {
 	mergeProps,
 	mergeStyles,
 	type Props,
+	type WebTypes,
 } from "../kernel/index.js";
 import { PortalContext } from "../portal/index.js";
 import { PopupLayoutContext } from "../position/index.js";
 import { DISABLED_TRANSITIONS_STYLE, waitForAnimations } from "../presence/index.js";
-
-/** What `usePopupElement` reads of its store and asks of it. A popup store is one as it is. */
-export type PopupElementView = DismissPopupView &
-	HoverPopupView &
-	FocusManagerView &
-	TriggerFocusBridge &
-	PopupElementOwnView;
-
-/** What `usePopupElement` reads of its store beside the dismiss, hover and focus views. */
-interface PopupElementOwnView {
-	/** The kind's row of the behaviour table: whether it hovers and manages focus. */
-	readonly behavior: PopupBehavior;
-	readonly transitionStatus: TransitionStatus;
-	readonly popupElement: Element | null;
-	/** How the popup was opened, while it is open. */
-	readonly openMethod: InteractionType | null;
-	/** Whether the focus manager is off now. */
-	readonly focusManagerDisabled: boolean;
-	/** Whether the popup traps focus now. */
-	readonly focusManagerModal: boolean;
-	/** Whether a hovered popup stays open now. */
-	readonly hoverPopupEnabled: boolean;
-	/** How long a hover close waits once the pointer leaves the popup. */
-	readonly closeDelay: number;
-	/** The popup element's id, claimed while the element is in the document. */
-	readonly popupIdClaim: ClaimedValue<string>;
-	/** The initial focus: the part's prop when given, else the kind's default. */
-	resolveInitialFocus<Target>(initialFocus: Target | undefined): unknown;
-	setPopupElement(element: Element | null): void;
-	/** Reports a finished opening. */
-	completeOpen(): void;
-}
 
 /** What the Popup part tells `usePopupElement`, from its options function. */
 export interface PopupElementOptions {
@@ -93,7 +51,7 @@ export interface PopupElement {
  * On the popup element: reports a finished opening to `onOpenChangeComplete(true)` once the
  * popup's enter animations are done.
  */
-function attachOpenComplete(store: PopupElementView): Attachment<HTMLElement> {
+function attachOpenComplete(store: PopupView<WebTypes>): Attachment<HTMLElement> {
 	return (element) => {
 		// Waits for the enter animations of an open popup, then reports the opening complete.
 		$effect(() => {
@@ -121,7 +79,7 @@ const NO_GUARDS = { renderGuards: false, beforeGuard: {}, afterGuard: {} } as co
  * it reads the portal and layout contexts and starts its own effects.
  */
 export function usePopupElement(
-	store: PopupElementView,
+	store: PopupView<WebTypes>,
 	options: () => PopupElementOptions,
 ): PopupElement {
 	const behavior = store.behavior;
@@ -167,7 +125,7 @@ export function usePopupElement(
 			() => options().id,
 		),
 	);
-	const props = mergeProps(dismiss.props as Props, own);
+	const props = mergeProps(dismiss.props, own);
 	const style = $derived(
 		mergeStyles(
 			store.transitionStatus === "starting" ? DISABLED_TRANSITIONS_STYLE : undefined,

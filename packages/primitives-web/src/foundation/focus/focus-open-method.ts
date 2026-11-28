@@ -1,16 +1,18 @@
 // A trigger's record of how it is opening its popup, which the Popup's initial focus reads.
 
-import type { InteractionType } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type {
+	InteractionType,
+	PopupView,
+} from "@sohedra/primitives-core/foundation/popup/index.js";
 
-import { getPointerType, type Props, userAgent } from "../kernel/index.js";
-import type { OpenMethodView } from "./focus-types.js";
+import { getPointerType, type Props, userAgent, type WebTypes } from "../kernel/index.js";
 
 /**
  * A trigger's record of how it is opening its popup (`openMethod`, read by the Popup's initial
  * focus): the pointer type of the press, or `keyboard` for a click without one. Spread the
  * returned props onto the trigger.
  */
-export function useOpenMethod(getPopup: () => OpenMethodView): Props {
+export function useOpenMethod(getPopup: () => PopupView<WebTypes>): Props {
 	// Local bookkeeping: the press's pointer type, for the click after it.
 	let lastPressType: InteractionType = "";
 

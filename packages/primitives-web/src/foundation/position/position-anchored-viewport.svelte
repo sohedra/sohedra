@@ -5,11 +5,16 @@
   the side its Positioner placed the popup on, its `instant` value and its attribute mapping.
 -->
 <script lang="ts" generics="Instant">
+	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 	import type { Side } from "@sohedra/primitives-core/foundation/position/index.js";
 	import { untrack } from "svelte";
 
-	import { Part, type PartUserProps, type StateAttributesMapping } from "../kernel/index.js";
-	import type { ViewportView } from "./position-types.js";
+	import {
+		Part,
+		type PartUserProps,
+		type StateAttributesMapping,
+		type WebTypes,
+	} from "../kernel/index.js";
 	import { useViewport } from "./position-viewport.svelte.js";
 
 	/** The Viewport's state; `instant` is each component's own type. */
@@ -23,7 +28,7 @@
 		/** The Viewport part's public name (`Popover.Viewport`), for its errors. */
 		part: string;
 		/** The viewport's view of the popup: a component passes its store. */
-		popup: ViewportView;
+		popup: PopupView<WebTypes>;
 		/** The side the enclosing Positioner placed the popup on. */
 		side: Side;
 		instant: Instant;

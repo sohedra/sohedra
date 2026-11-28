@@ -36,7 +36,7 @@ import {
 	openValuesToFollow,
 	visibleInstantType,
 } from "./popup-rules.js";
-import type { PopupNode, PopupNodeView, PopupTree } from "./popup-tree.js";
+import type { PopupNode, PopupTree } from "./popup-tree.js";
 import { PopupTriggerMap } from "./popup-trigger-map.js";
 import type {
 	InstantType,
@@ -138,7 +138,7 @@ export abstract class PopupStore<
 	T extends PlatformTypes = PlatformTypes,
 	Details extends PopupChangeEventDetails<T> = PopupChangeEventDetails<T>,
 	Source extends OpenChangeSource = OpenChangeSource,
-> implements PopupNodeView<T> {
+> {
 	// 1. Inputs
 	/** The kind's hooks for the open pipeline. A field: a change reads it when it runs. */
 	protected abstract readonly hooks: PopupHooks<Details, Source, this>;

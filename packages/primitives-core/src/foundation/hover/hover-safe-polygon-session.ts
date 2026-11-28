@@ -1,10 +1,10 @@
 // One hover-out's safe polygon at work: what each pointer move decides, and the close it makes.
 
 import { type PlatformTypes, Timeout } from "../kernel/index.js";
+import type { PopupView } from "../popup/index.js";
 import { hasOpenChild } from "./hover-rules.js";
 import type { SafePolygonInput } from "./hover-safe-polygon-rules.js";
 import type { SafePolygon } from "./hover-safe-polygon.js";
-import type { HoverTreeView, HoverView } from "./hover-types.js";
 
 /** A pointer move the platform measured, for the safe polygon. */
 export type SafePolygonMove = Omit<SafePolygonInput, "hasOpenChild" | "now">;
@@ -14,7 +14,7 @@ export interface SafePolygonSessionDeps<T extends PlatformTypes = PlatformTypes>
 	/** Where the pointer left the trigger, against the popup's side. */
 	readonly polygon: SafePolygon;
 	/** The popup the pointer travels to: an open child keeps it open. */
-	readonly popup: HoverTreeView<T> & Pick<HoverView<T>, "platform">;
+	readonly popup: Pick<PopupView<T>, "tree" | "nodeId" | "platform">;
 	/** Closes the popup. */
 	readonly close: () => void;
 }
@@ -25,7 +25,7 @@ export interface SafePolygonSessionDeps<T extends PlatformTypes = PlatformTypes>
  */
 export class SafePolygonSession<T extends PlatformTypes = PlatformTypes> {
 	readonly #polygon: SafePolygon;
-	readonly #popup: HoverTreeView<T> & Pick<HoverView<T>, "platform">;
+	readonly #popup: Pick<PopupView<T>, "tree" | "nodeId" | "platform">;
 	readonly #onClose: () => void;
 	readonly #closeSoon: Timeout;
 

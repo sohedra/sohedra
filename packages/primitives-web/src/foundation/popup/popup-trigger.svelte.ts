@@ -9,23 +9,20 @@ import {
 	missingProviderMessage,
 } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import {
-	type PopupBehavior,
 	type PopupTriggerData,
-	type TriggerRegistrationView,
+	type PopupView,
 	useTriggerRegistration,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { untrack } from "svelte";
 
-import { type DismissTriggerView, useDismissTrigger } from "../dismiss/index.js";
+import { useDismissTrigger } from "../dismiss/index.js";
 import {
 	CLICK_TRIGGER_IDENTIFIER,
 	type FocusGuardProps,
-	type OpenMethodView,
-	type TriggerFocusGuardsView,
 	useOpenMethod,
 	useTriggerFocusGuards,
 } from "../focus/index.js";
-import { type HoverPopupView, useHoverTrigger } from "../hover/index.js";
+import { useHoverTrigger } from "../hover/index.js";
 import {
 	attachmentProps,
 	attachRef,
@@ -33,27 +30,6 @@ import {
 	type Props,
 	type WebTypes,
 } from "../kernel/index.js";
-
-/** What `usePopupTrigger` reads of the trigger's popup and asks of it. A popup store is one. */
-export type PopupTriggerView<Data> = HoverPopupView &
-	DismissTriggerView &
-	OpenMethodView &
-	TriggerFocusGuardsView &
-	TriggerRegistrationView<WebTypes, Data> &
-	PopupTriggerOwnView<Data>;
-
-/** What `usePopupTrigger` reads of its popup beside the hover, dismiss and focus views. */
-interface PopupTriggerOwnView<Data> {
-	/** The kind's row of the behaviour table: which interactions the trigger wires. */
-	readonly behavior: PopupBehavior;
-	readonly activeTrigger: TriggerRegistrationView<WebTypes, Data>["activeTrigger"] & {
-		isActive(triggerId: string | undefined): boolean;
-	};
-	/** Whether a trigger with these options opens the popup on hover now. */
-	triggerHoverEnabled(openOnHover: boolean, disabled: boolean): boolean;
-	/** Whether the trigger with `triggerId` renders the focus guards now. */
-	hasTriggerFocusGuards(triggerId: string | undefined): boolean;
-}
 
 /** A handle as a trigger reads it: the store of the Root attached to it, else an inert one. */
 export interface PopupTriggerHandle {
@@ -107,7 +83,7 @@ export interface PopupTrigger<Store> {
  * context, since a handle can give the trigger another store.
  */
 export function usePopupTrigger<
-	Store extends PopupTriggerView<Data>,
+	Store extends PopupView<WebTypes>,
 	Data extends PopupTriggerData<unknown>,
 >(context: DefinedContext<Store>, options: () => PopupTriggerOptions<Data>): PopupTrigger<Store> {
 	const root = context.getOr(null);
@@ -175,7 +151,7 @@ export function usePopupTrigger<
 
 	const props = mergePropsN([
 		hover,
-		dismiss.props as Props,
+		dismiss.props,
 		openMethod,
 		{ [CLICK_TRIGGER_IDENTIFIER]: "" },
 		attachmentProps(attachRef<HTMLElement>((trigger) => (element = trigger))),

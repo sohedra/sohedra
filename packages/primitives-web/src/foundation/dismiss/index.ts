@@ -3,4 +3,3 @@ export { attachAncestorsInsideMarker } from "./dismiss-inside-marker.js";
 export { useDismissPopup } from "./dismiss-popup.js";
 export { useDismissRoot } from "./dismiss-root.svelte.js";
 export { useDismissTrigger } from "./dismiss-trigger.js";
-export type { DismissPopupView, DismissTriggerView, DismissView } from "./dismiss-types.js";

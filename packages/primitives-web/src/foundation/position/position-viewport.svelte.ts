@@ -1,4 +1,5 @@
 import { watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import {
 	getActivationDirection,
 	pinnedEdges,
@@ -18,7 +19,7 @@ import {
 } from "../kernel/index.js";
 import { waitForAnimations } from "../presence/index.js";
 import { PopupLayoutContext } from "./position-popup-layout.svelte.js";
-import type { Viewport, ViewportOptions, ViewportView } from "./position-types.js";
+import type { Viewport, ViewportOptions } from "./position-types.js";
 import { type Dimensions, measurePopupSize, sizeVars } from "./position-viewport-size.js";
 
 function cloneContent(container: HTMLElement): HTMLElement {
@@ -64,7 +65,7 @@ function finishTransitions(element: HTMLElement) {
  * to the new one, written to the enclosing Positioner's layout. `popup` is the behaviour's view
  * of the popup; a part passes its store. Call once during the Viewport part's init.
  */
-export function useViewport(popup: ViewportView, options: () => ViewportOptions): Viewport {
+export function useViewport(popup: PopupView<WebTypes>, options: () => ViewportOptions): Viewport {
 	const direction = DirectionContext.getOr(LTR);
 	const layout = PopupLayoutContext.get(options().part);
 	const content = new ViewportContentStore<WebTypes>({ popup });

@@ -13,10 +13,7 @@ export {
 	type PopupStoreKind,
 	type PopupStoreProps,
 } from "./popup-store.svelte.js";
-export {
-	type TriggerRegistrationView,
-	useTriggerRegistration,
-} from "./popup-trigger-registration.svelte.js";
+export { useTriggerRegistration } from "./popup-trigger-registration.svelte.js";
 export type {
 	InstantType,
 	InteractionType,
@@ -24,3 +21,4 @@ export type {
 	OpenChangeSource,
 	PopupTriggerData,
 } from "./popup-types.js";
+export type { PopupView } from "./popup-view.js";

@@ -1,5 +1,6 @@
 import type { OutsidePress } from "@sohedra/primitives-core/foundation/dismiss/index.js";
 import type { Point } from "@sohedra/primitives-core/foundation/kernel/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { untrack } from "svelte";
 
 import {
@@ -17,7 +18,6 @@ import {
 	isEventWithinOwnElements,
 	isSparedPressTarget,
 } from "./dismiss-press-target.js";
-import type { DismissView } from "./dismiss-types.js";
 
 type Listener = [string, EventListener, AddEventListenerOptions | boolean];
 
@@ -50,7 +50,7 @@ function touchPoint(event: TouchEvent): Point | null {
  * and every press, and tell the popup's dismissal where each landed. It installs them when
  * called (once, while the Root initialises).
  */
-export function useDismissRoot(popup: DismissView): void {
+export function useDismissRoot(popup: PopupView<WebTypes>): void {
 	const dismiss = popup.dismiss;
 	// Compared by value: the listeners are set up again only when the answer changes, not whenever
 	// something the popup's kind reads for it does.

@@ -8,4 +8,3 @@ export {
 	HoverTriggerStore,
 	type HoverTriggerTarget,
 } from "./hover-trigger-store.js";
-export type { HoverView } from "./hover-types.js";

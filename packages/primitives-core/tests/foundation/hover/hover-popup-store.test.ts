@@ -1,8 +1,9 @@
 // HoverPopupStore: the popup's own hover, which keeps a hover-opened popup open while hovered.
 import { describe, expect, it } from "vitest";
 
-import { HoverPopupStore, type HoverView } from "../../../src/foundation/hover/index.js";
+import { HoverPopupStore } from "../../../src/foundation/hover/index.js";
 import { REASONS } from "../../../src/foundation/kernel/index.js";
+import type { PopupView } from "../../../src/foundation/popup/index.js";
 import { changeDetails as details } from "../../kit/kit-details.js";
 import { createHoverTrigger as setup } from "../../kit/kit-hover.js";
 import { event } from "../../kit/kit-stand-ins.js";
@@ -11,7 +12,7 @@ describe("HoverPopupStore", () => {
 	it("closes a hover-opened popup when the pointer leaves it, but not a click-opened one", () => {
 		const { store, scheduler } = setup();
 		const popupStore = new HoverPopupStore(() => ({ enabled: true, closeDelay: 30 }), {
-			popup: store as unknown as HoverView,
+			popup: store as unknown as PopupView,
 			flush: () => {},
 		});
 		const into = { enabledTrigger: false, descendant: false };
@@ -29,7 +30,7 @@ describe("HoverPopupStore", () => {
 	it("treats a press on a popup-opening element inside as click-like", () => {
 		const { store } = setup();
 		const popupStore = new HoverPopupStore(() => ({ enabled: true, closeDelay: 0 }), {
-			popup: store as unknown as HoverView,
+			popup: store as unknown as PopupView,
 			flush: () => {},
 		});
 		store.setOpen(true, details(REASONS.triggerHover, "mouseenter"), { eventType: "mouseenter" });

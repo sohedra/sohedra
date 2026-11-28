@@ -1,15 +1,16 @@
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { createAttachmentKey, type Attachment } from "svelte/attachments";
 
-import { contains, getTarget } from "../kernel/index.js";
+import { contains, getTarget, type WebTypes } from "../kernel/index.js";
 import { closeOnEscape } from "./dismiss-escape.js";
 import { PRESS_EVENTS } from "./dismiss-inside-marker.js";
-import type { DismissPopup, DismissPopupView } from "./dismiss-types.js";
+import type { DismissPopup } from "./dismiss-types.js";
 
 /**
  * The Popup part's side of dismissal: Escape while the popup has focus, and the markers that
  * tell the dismissal a press began in the popup or passed through it.
  */
-export function useDismissPopup(popup: DismissPopupView): DismissPopup {
+export function useDismissPopup(popup: PopupView<WebTypes>): DismissPopup {
 	const dismiss = popup.dismiss;
 
 	// A press on the popup whose default was prevented (a drag handle) may make no click.
@@ -45,7 +46,7 @@ export function useDismissPopup(popup: DismissPopupView): DismissPopup {
 
 	return {
 		props: {
-			onkeydown: (event) => closeOnEscape(popup, event),
+			onkeydown: (event: KeyboardEvent) => closeOnEscape(popup, event),
 			onpointerdown: onPressStart,
 			onmousedown: onPressStart,
 			[createAttachmentKey()]: attachInsideMarkers,

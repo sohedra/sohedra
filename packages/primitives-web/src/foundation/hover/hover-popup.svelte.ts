@@ -1,4 +1,5 @@
 import { HoverPopupStore } from "@sohedra/primitives-core/foundation/hover/index.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { flushSync } from "svelte";
 
 import {
@@ -10,7 +11,7 @@ import {
 	type WebTypes,
 } from "../kernel/index.js";
 import { isInsideEnabledTrigger } from "./hover-trigger.svelte.js";
-import type { HoverPopupOptions, HoverPopupView } from "./hover-types.js";
+import type { HoverPopupOptions } from "./hover-types.js";
 
 const INTERACTIVE_SELECTOR = `button,a[href],[role="button"],select,[tabindex]:not([tabindex="-1"]),${TYPEABLE_SELECTOR}`;
 
@@ -26,7 +27,7 @@ function isInteractiveElement(element: Element | null): boolean {
  * `popup` is what the behaviour reads of the popup (its store satisfies the view as it is);
  * `options` returns the Popup's hover options as a plain object.
  */
-export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOptions): void {
+export function useHoverPopup(popup: PopupView<WebTypes>, options: () => HoverPopupOptions): void {
 	const hover = new HoverPopupStore<WebTypes>(options, { popup, flush: flushSync });
 
 	// Value-compared: the listeners are installed again only when this changes.

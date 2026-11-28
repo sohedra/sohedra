@@ -1,6 +1,7 @@
 import { untrack } from "svelte";
 
 import { type PlatformTypes, watch } from "../kernel/index.js";
+import type { PopupView } from "../popup/index.js";
 import type { Align, MeasuredPosition, Side } from "./position-types.js";
 
 /** What a Positioner's state reads of its part. */
@@ -9,22 +10,12 @@ export interface PositionerStoreProps {
 	readonly keepMounted: boolean;
 }
 
-/** What a Positioner's state reads of its popup, and asks of it. A popup store is one. */
-export interface PositionerPopupView {
-	/** Whether the popup is in the document: open, or closing. */
-	readonly mounted: boolean;
-	readonly activeTrigger: {
-		/** Forgets the last trigger element (a kept-mounted popup that closed). */
-		forgetLastTrigger(): void;
-	};
-}
-
 /** What a Positioner's state is given once. */
-export interface PositionerStoreDeps {
+export interface PositionerStoreDeps<T extends PlatformTypes = PlatformTypes> {
 	/** The position before the first computation. */
 	readonly initial: MeasuredPosition;
 	/** The popup the Positioner places. */
-	readonly popup: PositionerPopupView;
+	readonly popup: PopupView<T>;
 }
 
 /**
@@ -34,7 +25,7 @@ export interface PositionerStoreDeps {
  */
 export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #props: () => PositionerStoreProps;
-	readonly #popup: PositionerPopupView;
+	readonly #popup: PopupView<T>;
 	#position: MeasuredPosition = $state.raw() as MeasuredPosition;
 	#arrowElement: T["element"] | null = $state.raw(null);
 
@@ -46,7 +37,7 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	/** Whether the arrow can't point at the anchor's centre (also before it is measured). */
 	readonly arrowUncentered: boolean = $derived(this.#position.arrow?.centerOffset !== 0);
 
-	constructor(props: () => PositionerStoreProps, deps: PositionerStoreDeps) {
+	constructor(props: () => PositionerStoreProps, deps: PositionerStoreDeps<T>) {
 		this.#props = props;
 		this.#popup = deps.popup;
 		this.#position = deps.initial;

@@ -2,9 +2,10 @@
 // and closes it when the pointer leaves.
 
 import { type PlatformTypes, Timeout } from "../kernel/index.js";
+import type { PopupView } from "../popup/index.js";
 import { getDelay, hasOpenChild, isHoverOpenEvent, isPinned } from "./hover-rules.js";
 import { changeOpen } from "./hover-trigger-store.js";
-import type { HoverEvent, HoverView } from "./hover-types.js";
+import type { HoverEvent } from "./hover-types.js";
 
 /** The popup element's hover props. Read when a pointer event arrives. */
 export interface HoverPopupStoreProps {
@@ -15,7 +16,7 @@ export interface HoverPopupStoreProps {
 /** What the popup's hover store is given once. */
 export interface HoverPopupStoreDeps<T extends PlatformTypes = PlatformTypes> {
 	/** The popup it keeps open and closes. */
-	readonly popup: HoverView<T>;
+	readonly popup: PopupView<T>;
 	/**
 	 * Lets the platform apply a committed hover change at once (web: `flushSync`), so running
 	 * animations see the new state.
@@ -29,7 +30,7 @@ export interface HoverPopupStoreDeps<T extends PlatformTypes = PlatformTypes> {
  * or the popup was opened by a click.
  */
 export class HoverPopupStore<T extends PlatformTypes = PlatformTypes> {
-	readonly #popup: HoverView<T>;
+	readonly #popup: PopupView<T>;
 	readonly #props: () => HoverPopupStoreProps;
 	readonly #flush: () => void;
 	readonly #childClosedTimeout: Timeout;

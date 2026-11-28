@@ -3,12 +3,9 @@
 import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 
-import {
-	HoverTriggerStore,
-	type HoverView,
-	SafePolygonSession,
-} from "../../../src/foundation/hover/index.js";
+import { HoverTriggerStore, SafePolygonSession } from "../../../src/foundation/hover/index.js";
 import { REASONS } from "../../../src/foundation/kernel/index.js";
+import type { PopupView } from "../../../src/foundation/popup/index.js";
 import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
 import { changeDetails as details } from "../../kit/kit-details.js";
 import { createHoverTrigger as setup, hoverTriggerProps as config } from "../../kit/kit-hover.js";
@@ -107,7 +104,7 @@ describe("HoverTriggerStore", () => {
 	it("starts a safe polygon on leave once the Positioner reports a side", () => {
 		const { store, target, leave } = setup();
 		const triggerStore = new HoverTriggerStore(() => config({ safePolygon: true }), {
-			popup: () => store as unknown as HoverView,
+			popup: () => store as unknown as PopupView,
 			flush: () => {},
 		});
 		triggerStore.enter(event("mouseenter"), target);

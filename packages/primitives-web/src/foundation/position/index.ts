@@ -6,4 +6,4 @@ export { default as AnchoredViewport } from "./position-anchored-viewport.svelte
 export { PopupLayoutContext } from "./position-popup-layout.svelte.js";
 export type { Boundary } from "./position-positioner-middleware.js";
 export { useTriggerChangeTransition } from "./position-trigger-change-transition.js";
-export type { PositionerAnchor, TriggerChangeView } from "./position-types.js";
+export type { PositionerAnchor } from "./position-types.js";

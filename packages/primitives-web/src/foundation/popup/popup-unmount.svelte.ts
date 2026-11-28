@@ -1,17 +1,9 @@
 // A closed popup's unmount on the web: once its exit animations finish, unless the store waits.
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 import { getAbortSignal, untrack } from "svelte";
 
+import type { WebTypes } from "../kernel/index.js";
 import { waitForAnimations } from "../presence/index.js";
-
-/** What `usePopupUnmount` reads of its store and asks of it. */
-export interface PopupUnmountView {
-	/** Whether a closed popup is waiting for its exit animations before unmounting. */
-	readonly awaitingUnmount: boolean;
-	/** The popup element, whose exit animations are awaited by default. */
-	readonly popupElement: Element | null;
-	/** Ends the closing phase. */
-	unmount(): void;
-}
 
 /**
  * Unmounts a closed popup once its exit animations finish, unless `preventUnmountOnClose()` was
@@ -19,7 +11,7 @@ export interface PopupUnmountView {
  * awaited when it isn't the popup. Call once while the Root initialises: it starts its own effect.
  */
 export function usePopupUnmount(
-	store: PopupUnmountView,
+	store: PopupView<WebTypes>,
 	element: () => HTMLElement | null = () => store.popupElement as HTMLElement | null,
 ): void {
 	// Waits for the exit animations of a closed popup, then unmounts it.

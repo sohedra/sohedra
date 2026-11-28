@@ -2,6 +2,7 @@ import { REASONS, Timeout } from "@sohedra/primitives-core/foundation/kernel/ind
 import type {
 	InteractionType,
 	OpenChangeDetails,
+	PopupView,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 /* oxlint-disable max-lines -- One idea: a popup's focus on open, while open and on close share state that six separate files had to pass around. */
 import { tick, untrack } from "svelte";
@@ -45,12 +46,7 @@ import {
 import { focusedOtherPortal, markOutside, type OutsideMarking } from "./focus-mark-outside.js";
 import { CLICK_TRIGGER_IDENTIFIER } from "./focus-markers.js";
 import { getPopupFocusElement, handleTabIndex } from "./focus-tabbability.js";
-import type {
-	FocusManager,
-	FocusManagerDeps,
-	FocusManagerOptions,
-	FocusManagerView,
-} from "./focus-types.js";
+import type { FocusManager, FocusManagerDeps, FocusManagerOptions } from "./focus-types.js";
 
 /** A resolved focus target, when it is an element. */
 function resolveTarget(target: HTMLElement | null | undefined | boolean | void) {
@@ -116,7 +112,7 @@ function isPreventScrollSupported(doc: Document): boolean {
  * `renderGuards`.
  */
 export function useFocusManager(
-	popup: FocusManagerView,
+	popup: PopupView<WebTypes>,
 	options: () => FocusManagerOptions,
 	deps: FocusManagerDeps,
 ): FocusManager {
@@ -167,7 +163,7 @@ export function useFocusManager(
 
 	/** The elements treated as inside the popup although rendered elsewhere. */
 	function insideElements(): Element[] {
-		const guard = bridge?.guards.beforeTrigger;
+		const guard = bridge?.guards?.beforeTrigger;
 		return guard ? [guard] : [];
 	}
 
@@ -179,7 +175,7 @@ export function useFocusManager(
 
 	/** The element Tab goes to when leaving the popup forwards: the guard after the trigger. */
 	function nextFocusable(): HTMLElement | null | undefined {
-		return bridge?.guards.afterTrigger as HTMLElement | null | undefined;
+		return bridge?.guards?.afterTrigger as HTMLElement | null | undefined;
 	}
 
 	function setOpen(open: boolean, event: FocusEvent): void {
@@ -227,7 +223,7 @@ export function useFocusManager(
 		if (portal) {
 			portal.setBeforeInsideGuard(element);
 		}
-		bridge?.guards.setBeforeContent(element);
+		bridge?.guards?.setBeforeContent(element);
 	}
 
 	function setAfterGuard(element: HTMLElement | null) {

@@ -4,26 +4,21 @@
 
 import type { PlatformEvent, PlatformTypes, REASONS } from "../kernel/index.js";
 import { EventEmitter } from "./popup-event-emitter.js";
+import type { PopupView } from "./popup-view.js";
 
 /** Events shared by a tree of nested popups (`popup.closed`, from a hover close). */
 export type PopupTreeEvents<T extends PlatformTypes = PlatformTypes> = {
 	"popup.closed": PlatformEvent<T, typeof REASONS.triggerHover>;
 };
 
-/** What the tree knows about a popup: enough to decide dismissal and focus across nesting. */
-export interface PopupNodeView<T extends PlatformTypes = PlatformTypes> {
-	readonly open: boolean;
-	/** The positioned element. */
-	readonly positionerElement: T["element"] | null;
-	readonly anchorElement: T["element"] | null;
-	/** Whether Escape / outside presses in this popup also reach its ancestors (`bubbles`). */
-	readonly dismissBubbles: { escapeKey: boolean; outsidePress: boolean };
-}
-
 export interface PopupNode<T extends PlatformTypes = PlatformTypes> {
 	readonly id: string;
 	readonly parentId: string | null;
-	context: PopupNodeView<T> | null;
+	/** What the tree knows about the popup: enough to decide dismissal and focus across nesting. */
+	context: Pick<
+		PopupView<T>,
+		"open" | "positionerElement" | "anchorElement" | "dismissBubbles"
+	> | null;
 }
 
 /**

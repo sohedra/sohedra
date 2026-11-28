@@ -3,13 +3,15 @@
 import { flushSync } from "svelte";
 import { describe, expect, it } from "vitest";
 
+import type { PopupView } from "../../../src/foundation/popup/index.js";
 import { ViewportContentStore } from "../../../src/foundation/position/index.js";
-import type { ViewportContentPopupView } from "../../../src/foundation/position/index.js";
 import { root } from "../../kit/kit-effects.svelte.js";
 import { element as trigger } from "../../kit/kit-stand-ins.js";
 
 type MutableProps = {
-	-readonly [K in keyof ViewportContentPopupView]: ViewportContentPopupView[K];
+	-readonly [
+		K in "open" | "mounted" | "activeTriggerId" | "activeTriggerElement" | "payload"
+	]: PopupView[K];
 };
 
 function setup(initial: Partial<MutableProps> = {}) {

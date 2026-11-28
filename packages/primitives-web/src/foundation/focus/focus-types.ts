@@ -1,9 +1,7 @@
-import type { TriggerFocusGuards } from "@sohedra/primitives-core/foundation/focus/index.js";
 import type { REASONS } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import type {
-	PopupTree,
 	InteractionType,
-	OpenChangeDetails,
+	PopupView,
 } from "@sohedra/primitives-core/foundation/popup/index.js";
 import type { HTMLAttributes } from "svelte/elements";
 
@@ -20,46 +18,6 @@ export type FocusTarget =
 	| null
 	| ((interactionType: InteractionType) => boolean | HTMLElement | null | void)
 	| undefined;
-
-/**
- * Everything the focus manager reads from a popup, and the one thing it asks of it. The names are
- * a popup store's own, so a part hands its store over as it is; the manager can reach nothing
- * else of it.
- */
-export interface FocusManagerView {
-	readonly open: boolean;
-	/** Whether the popup is in the document: open, or closing. */
-	readonly mounted: boolean;
-	/** The positioned element that holds the popup. */
-	readonly positionerElement: Element | null;
-	/** The element the popup is anchored to. Focus returns to it. */
-	readonly anchorElement: Element | null;
-	/** The tree of nested popups, so focus moving into a child or a parent isn't focus leaving. */
-	readonly tree: PopupTree<WebTypes> | null;
-	/** The popup's node in {@link tree}. */
-	readonly nodeId: string | undefined;
-	/** The event that opened the popup. */
-	readonly openEvent: Event | undefined;
-	/** Whether focus or a press is moving inside the popup's own elements right now. */
-	readonly dismiss: {
-		readonly insideTree: boolean;
-		/** Focus is moving inside the popup's own elements. */
-		enterInside(): void;
-		/** Nothing is moving inside the popup's elements any more. */
-		leaveInside(): void;
-	};
-	/** The popup's registered triggers. */
-	readonly triggers: {
-		hasMatchingElement(predicate: (element: Element) => boolean): boolean;
-	};
-	/** The popup's open changes, with the reason and the event of each. */
-	readonly events: {
-		on(event: "openchange", listener: (details: OpenChangeDetails<WebTypes>) => void): void;
-		off(event: "openchange", listener: (details: OpenChangeDetails<WebTypes>) => void): void;
-	};
-	/** Closes the popup because focus left it. The manager only ever passes focus-out details. */
-	setOpen(open: boolean, details: FocusOutDetails): void;
-}
 
 /** A popup's focus behaviour, as a plain object the part builds from its props and store. */
 export interface FocusManagerOptions {
@@ -80,23 +38,15 @@ export interface FocusManagerOptions {
 	readonly openInteractionType?: InteractionType | null | undefined;
 }
 
-/**
- * The Tab bridge between a trigger and its portalled popup: the popup is elsewhere in the
- * document, so guards around the trigger and around the popup carry Tab from one to the other. A
- * store that keeps the guards satisfies it as it is.
- */
-export interface TriggerFocusBridge {
-	readonly guards: TriggerFocusGuards<WebTypes>;
-	/** The trigger that owns the popup, while it is mounted. */
-	readonly activeTriggerElement: Element | null;
-}
-
 /** What a focus manager is given from around its Popup part. */
 export interface FocusManagerDeps {
 	/** The portal the popup renders in, if any. */
 	readonly portal: PortalStore | null;
-	/** For a popup whose trigger renders focus guards. */
-	readonly bridge?: TriggerFocusBridge | undefined;
+	/**
+	 * For a popup whose trigger renders focus guards: the Tab bridge between the trigger and the
+	 * portalled popup (its store, which keeps the guards).
+	 */
+	readonly bridge?: PopupView<WebTypes> | undefined;
 }
 
 /** The props of one focus guard `<span>`, with the attachment that registers it. */
@@ -112,25 +62,9 @@ export interface FocusManager {
 	readonly afterGuard: FocusGuardProps;
 }
 
-/** What the trigger's focus guards read from a popup, and the one thing they ask of it. */
-export interface TriggerFocusGuardsView {
-	readonly guards: TriggerFocusGuards<WebTypes>;
-	/** The positioned element that holds the popup. */
-	readonly positionerElement: Element | null;
-	/** Closes the popup because focus left it. Only focus-out details are passed. */
-	setOpen(open: boolean, details: FocusOutDetails): void;
-}
-
 export interface TriggerFocusGuardProps {
 	/** Spread on a `<span>` right before the trigger's element. */
 	readonly before: FocusGuardProps;
 	/** Spread on a `<span>` right after the trigger's element. */
 	readonly after: FocusGuardProps;
-}
-
-/** What a trigger's record of how it opens its popup reads from the popup and asks of it. */
-export interface OpenMethodView {
-	readonly open: boolean;
-	/** Records how the popup is being opened, before the open change. */
-	setOpenMethod(method: InteractionType | null): void;
 }

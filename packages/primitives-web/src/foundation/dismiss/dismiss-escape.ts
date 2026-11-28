@@ -1,6 +1,8 @@
 // Escape on a popup, its trigger or the page: the one handler every side of dismissal shares.
 
-import type { DismissTriggerView } from "./dismiss-types.js";
+import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
+
+import type { WebTypes } from "../kernel/index.js";
 
 // Events whose propagation a dismissal stopped: other popups' document listeners (on the same
 // node as Svelte's delegation root) must not handle them again. Module-level: one event is seen
@@ -9,7 +11,7 @@ import type { DismissTriggerView } from "./dismiss-types.js";
 const stoppedEvents = new WeakSet<Event>();
 
 /** Escape on the popup, a trigger or the page: closes the popup unless something else owns the key. */
-export function closeOnEscape(popup: DismissTriggerView, event: KeyboardEvent): void {
+export function closeOnEscape(popup: PopupView<WebTypes>, event: KeyboardEvent): void {
 	if (stoppedEvents.has(event) || event.cancelBubble || event.key !== "Escape") {
 		return;
 	}

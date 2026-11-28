@@ -10,7 +10,7 @@ import {
 	type PointerType,
 	REASONS,
 } from "../kernel/index.js";
-import type { OpenChangeDetails } from "../popup/index.js";
+import type { OpenChangeDetails, PopupView } from "../popup/index.js";
 import {
 	getDelay,
 	hasMovedEnough,
@@ -21,7 +21,7 @@ import {
 } from "./hover-rules.js";
 import { SafePolygonSession } from "./hover-safe-polygon-session.js";
 import { SafePolygon } from "./hover-safe-polygon.js";
-import type { HoverEvent, HoverView } from "./hover-types.js";
+import type { HoverEvent } from "./hover-types.js";
 
 /**
  * Commits a hover open change, then lets the platform apply it (a synchronous flush on the web,
@@ -29,7 +29,7 @@ import type { HoverEvent, HoverView } from "./hover-types.js";
  * knows how the popup was opened.
  */
 export function changeOpen<T extends PlatformTypes>(
-	popup: HoverView<T>,
+	popup: PopupView<T>,
 	flush: () => void,
 	open: boolean,
 	event: HoverEvent<T>,
@@ -90,7 +90,7 @@ export interface HoverTriggerLeave<T extends PlatformTypes = PlatformTypes> {
 /** What a trigger's hover store is given once. */
 export interface HoverTriggerStoreDeps<T extends PlatformTypes = PlatformTypes> {
 	/** The popup it opens and closes: a function, since a handle can give the trigger another. */
-	readonly popup: () => HoverView<T>;
+	readonly popup: () => PopupView<T>;
 	/**
 	 * Lets the platform apply a committed hover change at once (web: `flushSync`), so running
 	 * animations see the new state.
@@ -104,7 +104,7 @@ export interface HoverTriggerStoreDeps<T extends PlatformTypes = PlatformTypes> 
  * given another popup.
  */
 export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
-	readonly #popup: () => HoverView<T>;
+	readonly #popup: () => PopupView<T>;
 	readonly #props: () => HoverTriggerStoreProps;
 	readonly #flush: () => void;
 	/** Whether the popup's last close was a hover close this trigger heard about. */
@@ -117,7 +117,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		this.#flush = deps.flush;
 	}
 
-	#closeWithDelay(popup: HoverView<T>, event: HoverEvent<T>) {
+	#closeWithDelay(popup: PopupView<T>, event: HoverEvent<T>) {
 		const shared = popup.hover;
 		const closeDelay = getDelay(this.#props().delay, "close", shared.pointerType);
 		const close = () => {
@@ -133,7 +133,7 @@ export class HoverTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	#open(
-		popup: HoverView<T>,
+		popup: PopupView<T>,
 		event: HoverEvent<T>,
 		target: Omit<HoverTriggerTarget<T>, "withinAnchor">,
 	) {

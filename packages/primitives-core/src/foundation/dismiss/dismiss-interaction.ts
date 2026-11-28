@@ -12,10 +12,9 @@ import {
 	type Point,
 	type PointerType,
 	REASONS,
-	type Scheduler,
 	Timeout,
 } from "../kernel/index.js";
-import type { PopupTree } from "../popup/index.js";
+import type { PopupView } from "../popup/index.js";
 import {
 	hasBlockingChild,
 	isIgnoredOutsidePress,
@@ -37,19 +36,6 @@ export type DismissChangeDetails<T extends PlatformTypes> = ChangeEventDetails<
 	{},
 	T
 >;
-
-/**
- * Everything a popup's dismissal reads from the popup. The names are a popup store's own, so the
- * store that owns the dismissal is handed over as it is.
- */
-export interface DismissView<T extends PlatformTypes = PlatformTypes> {
-	readonly open: boolean;
-	/** The tree of nested popups: an open child may answer a dismissal before its parent. */
-	readonly tree: PopupTree<T> | null;
-	/** The popup's node in {@link tree}. */
-	readonly nodeId: string | undefined;
-	readonly platform: { readonly scheduler: Scheduler };
-}
 
 /** What a kind of popup fixes about its dismissal; its store answers them live. */
 export interface DismissInteractionProps {
@@ -95,8 +81,11 @@ export interface OutsidePress<T extends PlatformTypes = PlatformTypes> {
 
 /** What a popup's dismissal is given once. */
 export interface DismissInteractionDeps<T extends PlatformTypes = PlatformTypes> {
-	/** The popup it dismisses. A popup store is one as it is. */
-	readonly popup: DismissView<T>;
+	/**
+	 * The popup it dismisses, which builds it: an open child in its tree may answer a dismissal
+	 * before it.
+	 */
+	readonly popup: Pick<PopupView<T>, "open" | "tree" | "nodeId" | "platform">;
 	/** Closes the popup with the dismissal's details. */
 	readonly close: (details: DismissChangeDetails<T>) => void;
 }
@@ -106,7 +95,7 @@ export interface DismissInteractionDeps<T extends PlatformTypes = PlatformTypes>
  * builds one; the platform calls it with what happened.
  */
 export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
-	readonly #view: DismissView<T>;
+	readonly #view: DismissInteractionDeps<T>["popup"];
 	readonly #props: () => DismissInteractionProps;
 	readonly #close: (details: DismissChangeDetails<T>) => void;
 

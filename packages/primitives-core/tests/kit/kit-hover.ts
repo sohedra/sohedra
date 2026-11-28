@@ -6,9 +6,9 @@ import { vi } from "vitest";
 import {
 	HoverTriggerStore,
 	type HoverTriggerStoreProps,
-	type HoverView,
 } from "../../src/foundation/hover/index.js";
 import { REASONS } from "../../src/foundation/kernel/index.js";
+import type { PopupView } from "../../src/foundation/popup/index.js";
 import { changeDetails as details } from "./kit-details.js";
 import { createPopover } from "./kit-popover.svelte.js";
 import { element, event } from "./kit-stand-ins.js";
@@ -43,7 +43,7 @@ export function createHoverTrigger(overrides: Partial<HoverTriggerStoreProps> = 
 		closeDelay: 0,
 	});
 	const triggerStore = new HoverTriggerStore(() => hoverTriggerProps(overrides), {
-		popup: () => result.store as unknown as HoverView,
+		popup: () => result.store as unknown as PopupView,
 		flush,
 	});
 	const target = {
@@ -83,7 +83,7 @@ export function createHoverTriggerWithAppOpen(overrides: Partial<HoverTriggerSto
 		openOnHover: true,
 		closeDelay: 0,
 	});
-	const view = store as unknown as HoverView;
+	const view = store as unknown as PopupView;
 	const triggerStore = new HoverTriggerStore(
 		() => hoverTriggerProps({ restMs: 50, ...overrides }),
 		{

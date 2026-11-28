@@ -9,6 +9,7 @@
 -->
 <script lang="ts" generics="Instant extends string | undefined">
 	import type { DefinedContext } from "@sohedra/primitives-core/foundation/kernel/index.js";
+	import type { PopupView } from "@sohedra/primitives-core/foundation/popup/index.js";
 	import {
 		type Align,
 		type CollisionAvoidance,
@@ -34,7 +35,7 @@
 	import { DISABLED_TRANSITIONS_STYLE } from "../presence/index.js";
 	import { PopupLayoutContext, PopupLayoutStore } from "./position-popup-layout.svelte.js";
 	import { usePositioner } from "./position-positioner.svelte.js";
-	import type { AnchoredPositionerPlacement, AnchoredPositionerView } from "./position-types.js";
+	import type { AnchoredPositionerPlacement } from "./position-types.js";
 
 	/**
 	 * The Positioner's state, the same in every anchored popup; `instant` is each component's own
@@ -53,7 +54,7 @@
 
 	interface Props {
 		/** The Positioner's view of the popup: a component passes its store. */
-		popup: AnchoredPositionerView;
+		popup: PopupView<WebTypes>;
 		/** The component's context for this Positioner's state: its Popup, Arrow and Viewport read it. */
 		context: DefinedContext<PositionerStore<WebTypes>>;
 		/** Whether the component's Portal keeps the popup mounted while closed. */

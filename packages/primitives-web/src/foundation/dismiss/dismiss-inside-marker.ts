@@ -2,11 +2,14 @@
 // attaches them, and the dismissal reads them.
 
 import { Timeout } from "@sohedra/primitives-core/foundation/kernel/index.js";
-import type { PopupNode, PopupTree } from "@sohedra/primitives-core/foundation/popup/index.js";
+import type {
+	PopupNode,
+	PopupTree,
+	PopupView,
+} from "@sohedra/primitives-core/foundation/popup/index.js";
 import type { Attachment } from "svelte/attachments";
 
 import { webScheduler, type WebTypes } from "../kernel/index.js";
-import type { TreePlaceView } from "./dismiss-press-target.js";
 
 /** The events a press passes through, from its start to its click (and a touch's moves and end). */
 export const PRESS_EVENTS = [
@@ -61,7 +64,7 @@ function attachInsideMarker(
  * of its parent's element, so the parent can't see the press pass through itself. The popup
  * itself isn't marked: a press on its own backdrop still dismisses it.
  */
-export function attachAncestorsInsideMarker(popup: TreePlaceView): Attachment<HTMLElement> {
+export function attachAncestorsInsideMarker(popup: PopupView<WebTypes>): Attachment<HTMLElement> {
 	return attachInsideMarker(() => {
 		const tree = popup.tree;
 		return { tree, nodes: tree ? tree.ancestors(popup.nodeId) : [] };

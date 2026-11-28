@@ -1,24 +1,16 @@
 import { untrack } from "svelte";
 
 import { CommittedValue, type PlatformTypes } from "../kernel/index.js";
+import type { PopupView } from "../popup/index.js";
 import { type ContentKey, nextContentKey } from "./position-viewport-rules.js";
-
-/** What a popup Viewport's content bookkeeping reads from its popup. A popup store is one. */
-export interface ViewportContentPopupView<T extends PlatformTypes = PlatformTypes> {
-	readonly open: boolean;
-	readonly mounted: boolean;
-	/** The id of the trigger the popup belongs to. */
-	readonly activeTriggerId: string | null;
-	/** The trigger the popup belongs to; compared by identity only. */
-	readonly activeTriggerElement: T["element"] | null;
-	/** The active trigger's payload; compared by identity only. */
-	readonly payload: unknown;
-}
 
 /** What a popup Viewport's content bookkeeping is given once. */
 export interface ViewportContentStoreDeps<T extends PlatformTypes = PlatformTypes> {
-	/** The popup the Viewport is in. */
-	readonly popup: ViewportContentPopupView<T>;
+	/** The popup the Viewport is in: its trigger and payload are compared by identity only. */
+	readonly popup: Pick<
+		PopupView<T>,
+		"open" | "mounted" | "activeTriggerId" | "activeTriggerElement" | "payload"
+	>;
 }
 
 /** The open popup moving its content from one trigger to another. */
@@ -36,7 +28,7 @@ export interface ViewportTriggerChange<T extends PlatformTypes = PlatformTypes> 
  *   it last showed. The platform shows the change (snapshot, animation), then calls {@link settle}.
  */
 export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
-	readonly #popup: ViewportContentPopupView<T>;
+	readonly #popup: ViewportContentStoreDeps<T>["popup"];
 
 	// What the last update settled on; written only by the commit in `connect()`.
 	readonly #committed: CommittedValue<ContentKey>;
