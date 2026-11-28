@@ -18,7 +18,7 @@ export function getNodeName(node: Node | Window): string {
 	return isNode(node) ? (node.nodeName || "").toLowerCase() : "#document";
 }
 
-export function isNode(value: unknown): value is Node {
+function isNode(value: unknown): value is Node {
 	return typeof Node !== "undefined" && value instanceof Node;
 }
 

@@ -59,7 +59,7 @@ export class FloatingTree<T extends PlatformTypes = PlatformTypes> {
 }
 
 /** The descendants of node `id`, depth first; only open ones (and their subtrees) by default. */
-export function getNodeChildren<T extends PlatformTypes>(
+function getNodeChildren<T extends PlatformTypes>(
 	nodes: readonly FloatingNode<T>[],
 	id: string | undefined | null,
 	onlyOpenChildren = true,
@@ -72,7 +72,7 @@ export function getNodeChildren<T extends PlatformTypes>(
 }
 
 /** The ancestors of node `id`, nearest first. */
-export function getNodeAncestors<T extends PlatformTypes>(
+function getNodeAncestors<T extends PlatformTypes>(
 	nodes: readonly FloatingNode<T>[],
 	id: string | undefined | null,
 ): FloatingNode<T>[] {

@@ -1,6 +1,5 @@
 import type {
 	InteractionEventType,
-	KeyInput,
 	PointerType,
 } from "@sohedra/primitives-core/foundation/kernel/index.js";
 
@@ -71,19 +70,6 @@ export function isVirtualPointerEvent(event: PointerEvent): boolean {
 			event.detail === 0 &&
 			event.pointerType === "touch")
 	);
-}
-
-/** The web's mapping of a key event onto core's `KeyInput`. */
-export function getKeyInput(event: KeyboardEvent): KeyInput {
-	return {
-		key: event.key,
-		shiftKey: event.shiftKey,
-		ctrlKey: event.ctrlKey,
-		metaKey: event.metaKey,
-		altKey: event.altKey,
-		// Chrome fires a second arrow key while composing (`which` 229).
-		composing: event.which === 229,
-	};
 }
 
 /** The event change details carry when there is no native event. */

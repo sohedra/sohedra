@@ -68,9 +68,9 @@ export function isTrailingClick(pressBacked: boolean, sawPressWhileOpen: boolean
 /** How long a touch may last and still dismiss when it ends or on its compatibility press. */
 export const LONG_TOUCH_MS = 1000;
 /** How far a touch moves before its end dismisses. */
-export const TOUCH_END_DISTANCE = 5;
+const TOUCH_END_DISTANCE = 5;
 /** How far a touch moves before it dismisses at once: the user is scrolling away. */
-export const TOUCH_MOVE_DISTANCE = 10;
+const TOUCH_MOVE_DISTANCE = 10;
 
 /** What a moving touch outside the popup does, by how far it is from where it started. */
 export function touchMoveOutcome(

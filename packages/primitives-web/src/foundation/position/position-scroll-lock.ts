@@ -11,7 +11,7 @@ import {
 } from "../kernel/index.js";
 
 /** Present on `<html>` while the page scroll is locked with inset scrollbars. */
-export const SCROLL_LOCKED_ATTRIBUTE = "data-sohedra-scroll-locked";
+const SCROLL_LOCKED_ATTRIBUTE = "data-sohedra-scroll-locked";
 
 // The viewport's overflow comes from <html> when it scrolls itself, else from <body>.
 function getViewportScroller(html: HTMLElement, body: HTMLElement) {

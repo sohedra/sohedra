@@ -1,7 +1,7 @@
 // The decisions every popup shares, as pure functions: facts in, outcome out. No state, no Svelte
 // and no platform, so any thread can import them.
 
-import { type InteractionEventType, REASONS } from "../kernel/index.js";
+import type { InteractionEventType } from "../kernel/index.js";
 import type { InstantType } from "./popup-types.js";
 
 /** Whether an event of this type is a press or a key. */
@@ -64,25 +64,6 @@ export function keepsOpenEvent(
 	triggerChanged = false,
 ): boolean {
 	return next && wasOpen && !triggerChanged && !isClickLikeEventType(eventType);
-}
-
-/**
- * The instant type an accepted open change implies for a popup its triggers open by hovering or
- * focusing them: `focus` for a focus opening, `dismiss` for a close by a trigger press or
- * Escape, none for a hover change, else `current`.
- */
-export function hoverOpenInstantType(
-	open: boolean,
-	reason: string | null,
-	current: InstantType,
-): InstantType {
-	if (open && reason === REASONS.triggerFocus) {
-		return "focus";
-	}
-	if (!open && (reason === REASONS.triggerPress || reason === REASONS.escapeKey)) {
-		return "dismiss";
-	}
-	return reason === REASONS.triggerHover ? undefined : current;
 }
 
 /**

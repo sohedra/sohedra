@@ -59,16 +59,3 @@ export function contains(parent?: Element | null, child?: Element | null): boole
 export function getTarget(event: Event): EventTarget | null {
 	return event.composedPath()[0] ?? event.target;
 }
-
-/** Looks `id` up from `from`'s shadow root outwards, then in its document. */
-export function getElementByIdFrom(from: Element, id: string): HTMLElement | null {
-	let root = from.getRootNode();
-	while (isShadowRoot(root)) {
-		const element = root.getElementById(id);
-		if (element) {
-			return element;
-		}
-		root = root.host.getRootNode();
-	}
-	return (from.ownerDocument ?? document).getElementById(id);
-}

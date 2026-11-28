@@ -233,17 +233,3 @@ export function attachAncestorsInsideMarker(popup: TreePlaceView): Attachment<HT
 		return tree ? tree.ancestors(popup.data.nodeId) : [];
 	});
 }
-
-/**
- * On the Portal element of a popup that isn't a node of the floating tree (a tooltip): a press in
- * it is inside the enclosing popup `parentId` and that popup's ancestors.
- */
-export function attachEnclosingInsideMarker(
-	tree: FloatingTree<WebTypes> | null,
-	parentId: string | null,
-): Attachment<HTMLElement> {
-	return attachInsideMarker(() => {
-		const parent = tree?.nodes.find((node) => node.id === parentId);
-		return tree && parent ? [parent, ...tree.ancestors(parentId)] : [];
-	});
-}

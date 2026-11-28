@@ -8,7 +8,6 @@ import { pressOpenState } from "../../../src/foundation/popup/index.js";
 import {
 	awaitsUnmount,
 	closesUnheard,
-	hoverOpenInstantType,
 	isClickLikeEventType,
 	keepsOpenEvent,
 	movesToOtherTrigger,
@@ -88,22 +87,6 @@ describe("visibleInstantType", () => {
 		expect(visibleInstantType("trigger-change", true)).toBe("trigger-change");
 		expect(visibleInstantType("trigger-change", false)).toBeUndefined();
 		expect(visibleInstantType("dismiss", false)).toBe("dismiss");
-	});
-});
-
-describe("hoverOpenInstantType", () => {
-	it("skips transitions for a focus opening and a press or Escape close", () => {
-		expect(hoverOpenInstantType(true, REASONS.triggerFocus, undefined)).toBe("focus");
-		expect(hoverOpenInstantType(false, REASONS.triggerPress, undefined)).toBe("dismiss");
-		expect(hoverOpenInstantType(false, REASONS.escapeKey, "focus")).toBe("dismiss");
-	});
-
-	it("clears it for a hover change and keeps it for any other change", () => {
-		expect(hoverOpenInstantType(true, REASONS.triggerHover, "focus")).toBe(undefined);
-		expect(hoverOpenInstantType(false, REASONS.triggerHover, "dismiss")).toBe(undefined);
-		expect(hoverOpenInstantType(false, REASONS.triggerFocus, "focus")).toBe("focus");
-		expect(hoverOpenInstantType(true, REASONS.triggerPress, "dismiss")).toBe("dismiss");
-		expect(hoverOpenInstantType(false, REASONS.outsidePress, "focus")).toBe("focus");
 	});
 });
 

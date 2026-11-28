@@ -160,20 +160,3 @@ export function mergeStyles(ours: string | undefined, theirs: string | undefined
 function isEvent(value: unknown): value is Event {
 	return typeof Event !== "undefined" && value instanceof Event;
 }
-
-/**
- * Merges two class name strings, theirs first. Parts merge `class` as Svelte class arrays instead;
- * this string form is a public helper for code that works with class strings.
- */
-export function mergeClassNames(
-	ourClassName: string | undefined,
-	theirClassName: string | undefined,
-): string | undefined {
-	if (theirClassName) {
-		if (ourClassName) {
-			return `${theirClassName} ${ourClassName}`;
-		}
-		return theirClassName;
-	}
-	return ourClassName;
-}

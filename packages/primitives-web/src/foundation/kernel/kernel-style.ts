@@ -10,7 +10,7 @@ interface Declaration {
  * The declarations of a `style` attribute value, by property: the last declaration of a property
  * wins, as in the attribute, and a `;` inside parentheses or quotes (a data URL) doesn't split.
  */
-export function parseStyle(text: string | null | undefined): Map<string, Declaration> {
+function parseStyle(text: string | null | undefined): Map<string, Declaration> {
 	const declarations = new Map<string, Declaration>();
 	if (!text) {
 		return declarations;

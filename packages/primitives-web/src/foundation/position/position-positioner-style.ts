@@ -14,7 +14,7 @@ function formatOrigin(offset: OriginOffset) {
 }
 
 /** The `--transform-origin` value of a measured origin. */
-export function formatTransformOrigin(origin: { x: OriginOffset; y: OriginOffset }): string {
+function formatTransformOrigin(origin: { x: OriginOffset; y: OriginOffset }): string {
 	return `${formatOrigin(origin.x)} ${formatOrigin(origin.y)}`;
 }
 

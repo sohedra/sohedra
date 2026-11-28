@@ -18,7 +18,7 @@ export const TYPEABLE_SELECTOR =
 	"[contenteditable]:not([contenteditable='false']),textarea:not([disabled])";
 
 /** Whether `element` is one a user types into (a text field, a content-editable element). */
-export function isTypeableElement(element: Element | null): boolean {
+function isTypeableElement(element: Element | null): boolean {
 	return isHTMLElement(element) && element.matches(TYPEABLE_SELECTOR);
 }
 

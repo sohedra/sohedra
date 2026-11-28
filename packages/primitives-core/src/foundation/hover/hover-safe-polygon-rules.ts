@@ -59,7 +59,7 @@ export function isPointInQuadrilateral(
 }
 
 /** Whether a point lies inside `box`, edges included. */
-export function isInsideBox(pointX: number, pointY: number, box: Box): boolean {
+function isInsideBox(pointX: number, pointY: number, box: Box): boolean {
 	return pointX >= box.left && pointX <= box.right && pointY >= box.top && pointY <= box.bottom;
 }
 
@@ -83,7 +83,7 @@ function isInsideAxisAlignedRect(
  * Whether the pointer (`clientX`, `clientY`) is in the rectangular trough between the reference
  * and the floating element on `side`, which always keeps the popup open.
  */
-export function isInsideTrough(
+function isInsideTrough(
 	side: PhysicalSide,
 	clientX: number,
 	clientY: number,
@@ -140,7 +140,7 @@ export function isInsideTrough(
  * Whether the pointer (`clientX`, `clientY`) is in the safe triangle from where it left the
  * reference (`x`, `y`) to the floating element's near edge on `side`.
  */
-export function isInsideSafeTriangle(
+function isInsideSafeTriangle(
 	side: PhysicalSide,
 	x: number,
 	y: number,

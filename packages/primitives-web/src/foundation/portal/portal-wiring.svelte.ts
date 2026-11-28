@@ -172,16 +172,6 @@ function movePortalNode(
 }
 
 /**
- * A portal that only moves its element, for a popup that never takes focus (a tooltip). It
- * leaves its content's tab order alone and isn't the portal of the popups inside it: their
- * portals go where its own would. `options` is called inside the effect, so the container stays
- * reactive. Call during the Portal part's init.
- */
-export function usePortal(options: () => PortalOptions): Portal {
-	return movePortalNode(options, new FloatingPortalState(), FloatingPortalContext.getOr(null));
-}
-
-/**
  * A portal that also manages focus across it, for a popup that takes focus: it gives the focus
  * manager inside its state, keeps a non-modal popup's content out of the tab order until focus
  * enters it, and has the two outside guards a non-modal popup needs around its element. Popups

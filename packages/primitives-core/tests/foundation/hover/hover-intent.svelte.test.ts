@@ -17,7 +17,6 @@ import {
 	SafePolygonSession,
 } from "../../../src/foundation/hover/index.js";
 import { REASONS } from "../../../src/foundation/kernel/index.js";
-import { getNodeChildren } from "../../../src/foundation/popup/popup-floating-tree.js";
 import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
 import { changeDetails as details } from "../../kit/kit-details.js";
 import { createFakePlatform } from "../../kit/kit-fake-platform.js";
@@ -449,7 +448,7 @@ describe("SafePolygonSession", () => {
 				data: { insideTree: false },
 			},
 		});
-		expect(getNodeChildren(tree.nodes, "parent")).toHaveLength(1);
+		expect(tree.children("parent")).toHaveLength(1);
 		const onClose = vi.fn();
 		const session = new SafePolygonSession(new SafePolygon("bottom", 150, 121, 0), store, onClose);
 		session.move({ ...towardsPopup, clientY: 50 });

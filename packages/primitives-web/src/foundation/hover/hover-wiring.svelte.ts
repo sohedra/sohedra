@@ -21,8 +21,8 @@ import {
 } from "../kernel/index.js";
 import type { HoverPopupView, HoverTrigger, HoverTriggerOptions } from "./hover-types.js";
 
-/** Whether `target` is in a registered trigger that isn't disabled. */
-export function isInsideEnabledTrigger(
+/** Whether `target` is in a registered trigger. */
+function isInsideEnabledTrigger(
 	target: EventTarget | null,
 	triggers: HoverPopupView["triggers"],
 ): boolean {
@@ -30,11 +30,11 @@ export function isInsideEnabledTrigger(
 		return false;
 	}
 	if (triggers.hasElement(target)) {
-		return !target.hasAttribute("data-trigger-disabled");
+		return true;
 	}
 	for (const [, trigger] of triggers.entries()) {
 		if (contains(trigger, target)) {
-			return !trigger.hasAttribute("data-trigger-disabled");
+			return true;
 		}
 	}
 	return false;
@@ -43,7 +43,7 @@ export function isInsideEnabledTrigger(
 const INTERACTIVE_SELECTOR = `button,a[href],[role="button"],select,[tabindex]:not([tabindex="-1"]),${TYPEABLE_SELECTOR}`;
 
 /** Whether `element` is (inside) something a press activates or types into. */
-export function isInteractiveElement(element: Element | null): boolean {
+function isInteractiveElement(element: Element | null): boolean {
 	return closest(element, INTERACTIVE_SELECTOR) != null;
 }
 
