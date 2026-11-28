@@ -31,8 +31,8 @@ export function missingProviderMessage(
 /**
  * A typed context that `provider` sets (see {@link missingProviderMessage} for how it is named). A
  * part that reads it outside one throws, in development and in production alike, naming the part
- * and its provider. Values are store instances (or null stores for optional contexts), never plain
- * value objects. Free of side effects, so a bundler drops a context nothing reads.
+ * and its provider. A context holds a store, a `…View` of one, or a plain id, never an object made
+ * for it. Free of side effects, so a bundler drops a context nothing reads.
  */
 /*#__NO_SIDE_EFFECTS__*/
 export function defineContext<T>(provider: string): DefinedContext<T> {

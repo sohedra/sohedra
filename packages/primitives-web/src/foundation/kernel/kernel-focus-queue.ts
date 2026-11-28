@@ -1,5 +1,6 @@
-import { webScheduler } from "./kernel-platform.js";
 // Focus on the next frame, one pending focus per page: a newer request cancels the older.
+
+import { webScheduler } from "./kernel-platform.js";
 import type { FocusableElement } from "./kernel-tabbable.js";
 
 interface EnqueueFocusOptions {

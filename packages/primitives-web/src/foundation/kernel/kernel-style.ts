@@ -63,8 +63,7 @@ function parseStyle(text: string | null | undefined): Map<string, Declaration> {
 }
 
 /**
- * Applies a part's computed `style` to its element property by property, as React patches a
- * style object: a changed declaration is set, one this attachment set that is gone is removed,
+ * Applies a part's computed `style` to its element property by property: a changed declaration is set, one this attachment set that is gone is removed,
  * and inline styles others set (an attachment, a measuring wiring) are left alone. A spread
  * `style` string would replace the whole attribute on every change. The attachment re-runs when
  * the style changes; put it before the element's other attachments, so they see it applied.

@@ -24,7 +24,7 @@ export function focusGuardProps(
 		"aria-hidden": voiceOver ? undefined : "true",
 		style: visuallyHidden,
 		[FOCUS_GUARD_ATTRIBUTE]: "",
-		// `focusin` (React's `onFocus`), so a portal's capture-phase `focusin` listener re-enables
+		// `focusin`, so a portal's capture-phase `focusin` listener re-enables
 		// focus inside it first; `focus` fires before `focusin`. Not delegated: Svelte's delegated
 		// listener misses a focus move between two elements of one shadow root.
 		...attachmentProps<HTMLSpanElement>((element) => on(element, "focusin", onfocus)),

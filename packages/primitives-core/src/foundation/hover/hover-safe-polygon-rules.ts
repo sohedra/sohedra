@@ -277,7 +277,7 @@ function isInsideSafeTriangle(
 	);
 }
 
-/** One pointer move, measured by the platform layer. */
+/** One pointer move, measured by the platform. */
 export interface SafePolygonInput {
 	readonly clientX: number;
 	readonly clientY: number;

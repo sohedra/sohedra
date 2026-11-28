@@ -1,5 +1,5 @@
 <!--
-  A detached trigger whose `render` snippet replaces its host element when "Swap node" is pressed:
+  A detached trigger whose `render` snippet replaces its element when "Swap node" is pressed:
   the demo's triggers keep their element.
 -->
 <script lang="ts">

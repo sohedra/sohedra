@@ -1,4 +1,4 @@
-// What fields, fieldsets, forms and labelable scopes share with the controls in them, as types.
+// What fields, fieldsets, forms and labelables share with the controls in them, as types.
 // Each platform defines the contexts that carry these values; their null values are in
 // `form-null.ts`.
 import type { PlatformTypes, Scheduler } from "../kernel/index.js";
@@ -20,7 +20,7 @@ export interface FieldRootState {
 	focused: boolean;
 }
 
-/** A control as its field sees it. Getters are live; the platform layer sets `element`. */
+/** A control as its field sees it. Getters are live; the platform sets `element`. */
 export interface FieldControlRegistration<T extends PlatformTypes = PlatformTypes> {
 	/** The value the field validates and compares with its baseline. */
 	readonly value: unknown;
@@ -149,7 +149,7 @@ export type FormErrors = Record<string, string | string[]>;
 /** The values of a form's named fields, keyed by name. */
 export type FormValues = Record<string, unknown>;
 
-/** A field as a form sees it. `FieldStore` implements it; its getters are live. */
+/** A field as a form sees it. Its getters are live. */
 export interface FormField<T extends PlatformTypes = PlatformTypes> {
 	readonly name: string | undefined;
 	/** The field's validity combined with its external invalid state. */
@@ -162,7 +162,7 @@ export interface FormField<T extends PlatformTypes = PlatformTypes> {
 }
 
 /**
- * What a field reads from its form. `Form` provides a `FormStore` implementing it; outside a
+ * What a field reads from its form. `Form` provides a store implementing it; outside a
  * `Form` (including inside a plain `<form>`), fields read the null form.
  */
 export interface FormView<T extends PlatformTypes = PlatformTypes> {
@@ -183,11 +183,11 @@ export interface FormView<T extends PlatformTypes = PlatformTypes> {
 }
 
 /**
- * A labelable scope (Field.Root, Field.Item): the id of the control its label points at, the
+ * A labelable (Field.Root, Field.Item): the id of the control its label points at, the
  * label's id, and the ids of the messages that describe the control.
  */
 export interface LabelableView {
-	/** `true` for the null scope a control sees outside any labelable provider. */
+	/** `true` for the null labelable a control sees outside Field.Root and Field.Item. */
 	readonly isNull: boolean;
 	/**
 	 * The `id` of the labelable element. `null` makes the label omit `for` (the control is named
@@ -204,6 +204,6 @@ export interface LabelableView {
 	registerLabelId(token: object, id: string): () => void;
 	/** Adds a describing message id. Returns the removal function. */
 	addMessageId(id: string): () => void;
-	/** `aria-describedby` for the control: `external` ids, then the parent's and this scope's. */
+	/** `aria-describedby` for the control: `external` ids, then the parent's and this labelable's. */
 	describedBy(external: string | undefined | null): string | undefined;
 }

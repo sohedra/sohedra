@@ -75,11 +75,11 @@ describe("Popover.Root with detached triggers", () => {
 		expect(fallbackStore.triggers.size).toBe(0);
 		expect(handle[HANDLE_STORE].triggers.getById("trigger")).toBe(initialTrigger);
 
-		// Replacing the host node re-attaches the trigger's ref after the migration.
+		// Replacing the element re-attaches the trigger's ref after the migration.
 		await userEvent.click(page.getByRole("button", { name: "Swap node" }));
 
 		const swappedTrigger = page.getByRole("button", { name: "Trigger" }).element();
-		// Guards the setup: without a real host swap the rest of the test proves nothing.
+		// Guards the setup: without a real element swap the rest of the test proves nothing.
 		expect(swappedTrigger).not.toBe(initialTrigger);
 		expect(initialTrigger.isConnected).toBe(false);
 		expect(fallbackStore.triggers.size).toBe(0);

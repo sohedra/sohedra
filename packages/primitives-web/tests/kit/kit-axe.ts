@@ -22,7 +22,7 @@ const DISABLED_RULES: Record<string, string> = {
 	// Styling: whether a link inside text is told apart by more than colour depends on the
 	// consumer's stylesheet.
 	"link-in-text-block": "styling",
-	// Page structure: "all content is inside landmarks" is a rule for the host page. A fixture is not
+	// Page structure: "all content is inside landmarks" is a rule for the page around them. A fixture is not
 	// a page, no part renders a landmark of its own, and portals append to `body` by design.
 	region: "page structure",
 };

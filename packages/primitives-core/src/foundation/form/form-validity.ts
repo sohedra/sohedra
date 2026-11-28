@@ -69,7 +69,7 @@ export function getCombinedFieldValidityData(
 
 /**
  * What the platform reports about the control that represents a field: a native input's
- * `validity`, `validationMessage` and `willValidate`. Read by the platform layer after the pending
+ * `validity`, `validationMessage` and `willValidate`. Read by the platform after the pending
  * updates are flushed, so core never touches the element.
  */
 export interface NativeValidity {
@@ -78,7 +78,7 @@ export interface NativeValidity {
 	readonly willValidate: boolean;
 }
 
-/** The field's view of its controls' native validity, supplied by the platform layer. */
+/** The field's view of its controls' native validity, supplied by the platform. */
 export interface ValiditySource {
 	/** The representative input's validity, or `null` when the field has no eligible input. */
 	read(): NativeValidity | null;

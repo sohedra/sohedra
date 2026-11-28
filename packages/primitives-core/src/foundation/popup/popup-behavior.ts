@@ -48,7 +48,7 @@ export interface PopupBehavior {
 		| undefined;
 }
 
-/** The rows, taken from what each kind's parts and wiring pass today. */
+/** The rows, one per kind of popup. */
 export const POPUP_BEHAVIOR = {
 	popover: {
 		outsidePress: { mouse: "intentional", touch: "sloppy" },

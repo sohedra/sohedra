@@ -30,7 +30,7 @@ export interface SwitchStoreProps<T extends PlatformTypes> {
 	readonly name: string | undefined;
 	/** The value a form gets while the switch is off. */
 	readonly uncheckedValue: string | undefined;
-	/** The `id` prop: the labelable control's id, unless its scope gives one. */
+	/** The `id` prop: the labelable control's id, unless its labelable gives one. */
 	readonly id?: string | undefined;
 	/** Whether the visible element is a native button, and so the labelable control itself. */
 	readonly nativeButton?: boolean | undefined;
@@ -48,9 +48,9 @@ export interface SwitchStoreDeps<T extends PlatformTypes> {
 	readonly field: FieldRootView<T>;
 	/** The fieldset around the switch: disabling it disables the switch. Absent means not disabled. */
 	readonly fieldset?: FieldsetView | undefined;
-	/** The labelable scope the switch is in. Absent means none. */
+	/** The labelable the switch is in. Absent means none. */
 	readonly labelable?: LabelableView | undefined;
-	/** The hidden input's id when neither the `id` prop nor the scope gives one. */
+	/** The hidden input's id when neither the `id` prop nor the labelable gives one. */
 	readonly inputId?: string | undefined;
 }
 
@@ -66,9 +66,9 @@ export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #checked: Controllable<boolean>;
 	/** The switch as its field sees it: value, name, filled, disabled. */
 	readonly link: FieldControlLink<T>;
-	/** The labelable scope the switch is in. */
+	/** The labelable the switch is in. */
 	readonly labelable: LabelableView;
-	/** The labelable control's id in its scope. */
+	/** The labelable control's id in its labelable. */
 	readonly controlId: LabelableControlId;
 	/** The switch's `aria-labelledby`. */
 	readonly labels: ControlLabels;

@@ -1,5 +1,5 @@
 // Sets up the timer globals as stubs that throw, for each test: core takes its time from
-// `platform.scheduler`, never from the host's globals, so one that slipped past lint fails here.
+// `platform.scheduler`, never from the runtime's globals, so one that slipped past lint fails here.
 // (`queueMicrotask` stays: Svelte schedules its flushes with it.)
 import { afterEach, beforeEach, vi } from "vitest";
 

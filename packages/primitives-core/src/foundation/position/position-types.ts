@@ -55,7 +55,7 @@ export interface OriginOffset {
 }
 
 /**
- * The measured position of a popup: written by the platform layer after each computation and
+ * The measured position of a popup: written by the platform after each computation and
  * read by the Positioner, Popup and Arrow, which derive their styles and data attributes from it.
  */
 export interface MeasuredPosition {

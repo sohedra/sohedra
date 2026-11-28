@@ -1,4 +1,4 @@
-// What a control sees outside a field, a labelable scope, a form, a fieldset and a field item:
+// What a control sees outside a field, a labelable, a form, a fieldset and a field item:
 // values that do nothing and say `isNull`. A platform hands them to a store when its context holds
 // none. The field's null value carries the form's, and the field state a control has outside any
 // field.
@@ -76,7 +76,7 @@ export const NULL_FIELD: FieldRootView = /* @__PURE__ */ Object.freeze({
 	reset: noop,
 });
 
-/** The labelable scope a control sees outside `Field.Root` and `Field.Item`. */
+/** The labelable a control sees outside `Field.Root` and `Field.Item`. */
 export const NULL_LABELABLE: LabelableView = /* @__PURE__ */ Object.freeze({
 	isNull: true,
 	controlId: undefined,

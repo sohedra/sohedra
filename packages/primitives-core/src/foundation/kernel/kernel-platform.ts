@@ -142,7 +142,7 @@ function noLocale(): never {
 }
 
 /**
- * The platform of a store with no host, such as the fallback store of a handle created at module
+ * The platform of a store no platform runs yet, such as the fallback store of a handle created at module
  * scope: its timers never fire, its time stands still, document order and focus moves and form
  * submits do nothing, and asking it for a locale formatter or collator throws (a detached store
  * has no locale). Such a store never opens, so nothing asks it for more.

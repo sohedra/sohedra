@@ -1,4 +1,4 @@
-// inertPlatform: the platform of a store with no host, which never runs a callback, stands still
+// inertPlatform: the platform of a store no platform runs yet, which never runs a callback, stands still
 // and answers nothing.
 import { describe, expect, it, vi } from "vitest";
 

@@ -30,9 +30,9 @@ import { attachLabelFallback } from "./form-label-fallback.svelte.js";
 export interface CheckedControlView {
 	readonly field: FieldRootView<WebTypes>;
 	readonly link: FieldControlLink<WebTypes>;
-	/** The labelable scope the control is in. */
+	/** The labelable the control is in. */
 	readonly labelable: LabelableView;
-	/** The labelable control's id in its scope. */
+	/** The labelable control's id in its labelable. */
 	readonly controlId: LabelableControlId;
 	/** The control's `aria-labelledby`. */
 	readonly labels: ControlLabels;
@@ -95,7 +95,7 @@ export interface CheckedControl {
  * A control whose value is a checked state (Switch, Checkbox, Radio): its place in its field, its
  * labelling, the hidden input beside it and the forwarding of a press to that input, focus and
  * blur, and button semantics. Call it once while the part initialises. Its store holds the
- * control's id in its labelable scope and its labels.
+ * control's id in its labelable and its labels.
  *
  * The hidden input is a props object, not a component: a component beside the part's element
  * adds a hydration marker to the server HTML.
@@ -266,7 +266,7 @@ function attachCheckedInput(
 				return;
 			}
 			// The click dispatched from the visible control is an implementation detail and must not
-			// reach ancestors, which already received the original click.
+			// reach ancestors, which already received the user's click.
 			event.stopPropagation();
 			const details = createChangeEventDetails(REASONS.none, event);
 			if (!store.setChecked(input.checked, details)) {

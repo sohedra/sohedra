@@ -1,5 +1,5 @@
 // Placing a popup against its anchor, as pure functions: rectangles and plain values in, the
-// answer out. The platform layer measures, asks these, and applies what they say.
+// answer out. The platform measures, asks these, and applies what they say.
 
 import type {
 	Align,

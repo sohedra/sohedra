@@ -17,7 +17,7 @@ export { NULL_FIELDSET, NULL_LABELABLE } from "@sohedra/primitives-core/foundati
 /** The field a control sits in: Field.Root sets its store. */
 export const FieldRootContext = defineContext<FieldRootView<WebTypes>>("Field.Root");
 
-/** The labelable scope a control sits in: Field.Root and Field.Item set their stores. */
+/** The labelable a control sits in: Field.Root and Field.Item set their stores. */
 export const LabelableContext = defineContext<LabelableView>("Field.Root");
 
 /** The fieldset a part sits in: Fieldset.Root sets its store. */

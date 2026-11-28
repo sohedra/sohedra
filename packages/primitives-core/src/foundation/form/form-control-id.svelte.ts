@@ -2,30 +2,30 @@ import { untrack } from "svelte";
 
 import type { LabelableView } from "./form-types.js";
 
-/** What a control's id in its labelable scope reads of the control, from its props function. */
+/** What a control's id in its labelable reads of the control, from its props function. */
 export interface LabelableControlIdProps {
 	/**
-	 * The control's own `id`. `null` registers no id, so the scope's label omits `for` (a group
+	 * The control's own `id`. `null` registers no id, so the labelable's label omits `for` (a group
 	 * named through `aria-labelledby`).
 	 */
 	readonly id: string | null | undefined;
 	/**
-	 * Whether the control owns its scope's label association.
+	 * Whether the control owns its labelable's label association.
 	 * @default true
 	 */
 	readonly enabled?: boolean | undefined;
 }
 
-/** What a control's id in its labelable scope is given once. */
+/** What a control's id in its labelable is given once. */
 export interface LabelableControlIdDeps {
-	/** The labelable scope the control is in. */
+	/** The labelable the control is in. */
 	readonly labelable: LabelableView;
-	/** The id when neither the control nor its scope gives one. */
+	/** The id when neither the control nor its labelable gives one. */
 	readonly defaultId: string;
 }
 
 /**
- * A control's id within a labelable scope. The scope's id wins until the control registers its
+ * A control's id within a labelable. The labelable's id wins until the control registers its
  * own after mount, so the label's `for` and the control's `id` agree in the server-rendered
  * markup.
  */
@@ -62,7 +62,7 @@ export class LabelableControlId {
 
 	/** Registers the id after mount and on changes. Call once while the control initialises. */
 	connect(): void {
-		// Registers the control's id with its scope after mount, and again when the id changes.
+		// Registers the control's id with its labelable after mount, and again when the id changes.
 		$effect(() => {
 			const id = this.#id;
 			const enabled = this.#enabled;
@@ -78,7 +78,7 @@ export class LabelableControlId {
 				} else if (this.#hadExplicitId) {
 					next = this.#defaultId;
 				} else {
-					// An id-less replacement claims the scope's fallback, so a previously registered
+					// An id-less replacement claims the labelable's fallback, so an earlier registered
 					// explicit id isn't kept after its control unmounts.
 					this.#labelable.resetControlId();
 					return;
@@ -87,7 +87,7 @@ export class LabelableControlId {
 				this.#labelable.registerControlId(this.#source, next);
 			});
 		});
-		// The id leaves its scope when the control unmounts.
+		// The id leaves its labelable when the control unmounts.
 		$effect(() => () => this.#unregister());
 	}
 }

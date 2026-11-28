@@ -2,7 +2,7 @@
 export interface ControlLabelsProps {
 	/** The control's own `aria-labelledby`. */
 	readonly explicit: string | undefined;
-	/** The id of a `Field.Label`, when the control is in a labelable scope. */
+	/** The id of a `Field.Label`, when the control is in a labelable. */
 	readonly labelId: string | undefined;
 	/** The control's own label text (web: `aria-label`). A non-blank one wins over associated labels. */
 	readonly label: string | undefined;
@@ -13,7 +13,7 @@ export interface ControlLabelsProps {
 }
 
 /**
- * A control's `aria-labelledby`: its own, the labelable scope's label, or a native `<label>`
+ * A control's `aria-labelledby`: its own, its labelable's label, or a native `<label>`
  * associated with its hidden input. Finding that label is the platform's work: it reads
  * `fallbackLabelId` (the id to give the label when it has none) and reports the label's id with
  * `setFallback`.

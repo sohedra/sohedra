@@ -110,7 +110,7 @@ export type HarnessOptions = {
 	attach?: Attachment;
 };
 
-/** The props for `ConformanceHarness.svelte`. The part always gets `data-testid="part"` first. */
+/** The props for `conformance-harness.svelte`. The part always gets `data-testid="part"` first. */
 export function harnessProps<State>(setup: ConformanceSetup<State>, options: HarnessOptions = {}) {
 	return {
 		part: setup.part,
