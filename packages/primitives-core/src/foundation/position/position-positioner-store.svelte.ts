@@ -38,8 +38,11 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 
 	// Compared by value: a part's state is derived again when one of these changes, not on every
 	// new position.
+	/** The side the popup is placed on, logical (`inline-start`) where asked so. */
 	readonly side: Side = $derived(this.#position.side);
+	/** How the popup is aligned to its side. */
 	readonly align: Align = $derived(this.#position.align);
+	/** Whether the anchor is hidden from view. */
 	readonly anchorHidden: boolean = $derived(this.#position.anchorHidden);
 	/** Whether the arrow can't point at the anchor's centre (also before it is measured). */
 	readonly arrowUncentered: boolean = $derived(this.#position.arrow?.centerOffset !== 0);
@@ -98,6 +101,7 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 		}
 	};
 
+	/** Sets the Arrow part's element, `null` when it unmounts. */
 	setArrowElement = (element: T["element"] | null): void => {
 		this.#arrowElement = element;
 	};

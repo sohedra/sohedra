@@ -3,8 +3,10 @@ import type { InstantType } from "../../foundation/popup/index.js";
 import type { Align, Side } from "../../foundation/position/index.js";
 import type { TransitionStatus } from "../../foundation/presence/index.js";
 
+/** The state of Popover.Root, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverRootState {}
 
+/** Why the popover opened or closed. */
 export type PopoverRootChangeEventReason =
 	| typeof REASONS.triggerHover
 	| typeof REASONS.triggerFocus
@@ -25,6 +27,7 @@ export type PopoverRootChangeEventDetails<T extends PlatformTypes> = ChangeEvent
 	T
 >;
 
+/** The state of Popover.Trigger, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverTriggerState {
 	/** Whether the trigger is currently disabled. */
 	disabled: boolean;
@@ -32,8 +35,10 @@ export interface PopoverTriggerState {
 	open: boolean;
 }
 
+/** The state of Popover.Portal, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverPortalState {}
 
+/** The state of Popover.Positioner, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverPositionerState {
 	/** Whether the popover is currently open. */
 	open: boolean;
@@ -47,6 +52,7 @@ export interface PopoverPositionerState {
 	instant: InstantType;
 }
 
+/** The state of Popover.Popup, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverPopupState {
 	/** Whether the popover is currently open. */
 	open: boolean;
@@ -60,6 +66,7 @@ export interface PopoverPopupState {
 	instant: InstantType;
 }
 
+/** The state of Popover.Arrow, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverArrowState {
 	/** Whether the popover is currently open. */
 	open: boolean;
@@ -71,6 +78,7 @@ export interface PopoverArrowState {
 	uncentered: boolean;
 }
 
+/** The state of Popover.Backdrop, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverBackdropState {
 	/** Whether the popover is currently open. */
 	open: boolean;
@@ -78,10 +86,14 @@ export interface PopoverBackdropState {
 	transitionStatus: TransitionStatus;
 }
 
+/** The state of Popover.Title, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverTitleState {}
+/** The state of Popover.Description, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverDescriptionState {}
+/** The state of Popover.Close, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverCloseState {}
 
+/** The state of Popover.Viewport, which its `render` snippet, `class` and `style` receive. */
 export interface PopoverViewportState {
 	/** The direction the content moved in when the active trigger changed. */
 	activationDirection: string | undefined;

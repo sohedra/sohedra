@@ -49,11 +49,13 @@ export function changeOpen<T extends PlatformTypes>(
 
 /** A trigger's hover props. Read when a pointer event arrives, so they may change freely. */
 export interface HoverTriggerStoreProps {
+	/** Whether hovering the trigger opens the popup. */
 	readonly enabled: boolean;
 	/** Only mouse-like pointers open on hover. */
 	readonly mouseOnly: boolean;
 	/** Opens once the pointer rests this long on the trigger. */
 	readonly restMs: number;
+	/** How long to wait before opening and closing, in ms. */
 	readonly delay: HoverDelay | undefined;
 	/** Whether the safe polygon keeps the popup open while the pointer travels to it. */
 	readonly safePolygon: boolean;

@@ -51,11 +51,15 @@ import type {
 
 /** The popup Root props every popup store reads. The `open` binding is one of the deps. */
 export interface PopupStoreProps<Details> {
+	/** The `defaultOpen` prop: whether the popup is first open. */
 	readonly defaultOpen: boolean | undefined;
 	/** The controlled id of the trigger the popup belongs to. */
 	readonly triggerId: string | null | undefined;
+	/** The `defaultTriggerId` prop: the trigger the popup first belongs to. */
 	readonly defaultTriggerId: string | null | undefined;
+	/** Called when the popup is about to open or close; it may cancel the change. */
 	readonly onOpenChange: ((open: boolean, details: Details) => void) | undefined;
+	/** Called once the popup's enter or exit animations finished. */
 	readonly onOpenChangeComplete: ((open: boolean) => void) | undefined;
 	/** The handle that holds the store while it is connected, if any. */
 	readonly handle?:
@@ -159,6 +163,7 @@ export abstract class PopupStore<
 
 	// 2. Owned objects
 	readonly #open: Controllable<boolean>;
+	/** Whether the popup is mounted and where its transition is. */
 	readonly presence: Presence;
 	/** The popup's registered triggers. */
 	readonly triggers: PopupTriggerMap<T> = new PopupTriggerMap<T>();
@@ -218,7 +223,9 @@ export abstract class PopupStore<
 
 	// 3. Public state. `$derived.by` because the owned objects are built in the constructor, after
 	// these initialisers.
+	/** Whether the popup is mounted: while open, and while its exit runs. */
 	readonly mounted: boolean = $derived.by(() => this.presence.mounted);
+	/** Where the popup's enter or exit transition is. */
 	readonly transitionStatus: TransitionStatus = $derived.by(() => this.presence.transitionStatus);
 	/** The id of the trigger the popup belongs to: the controlled `triggerId`, else its own. */
 	readonly activeTriggerId: string | null = $derived.by(() => this.activeTrigger.id);
@@ -239,6 +246,7 @@ export abstract class PopupStore<
 	readonly awaitingUnmount: boolean = $derived.by(() =>
 		awaitsUnmount(this.open, this.presence.mounted, this.#preventUnmount),
 	);
+	/** The popup element's id: the one its part claims, else the generated one. */
 	readonly popupId: string | undefined = $derived.by(
 		() => this.popupIdClaim.current ?? (this.defaultPopupId || undefined),
 	);
@@ -293,6 +301,7 @@ export abstract class PopupStore<
 		});
 	}
 
+	/** Whether the popup is open. */
 	get open(): boolean {
 		return this.#open.current;
 	}
@@ -325,6 +334,7 @@ export abstract class PopupStore<
 		return this.#nodeId;
 	}
 
+	/** The Popup part's element, while it is mounted. */
 	get popupElement(): T["element"] | null {
 		return this.#popupElement;
 	}
@@ -381,6 +391,7 @@ export abstract class PopupStore<
 		}
 	};
 
+	/** Sets the Positioner part's element, `null` when it unmounts. */
 	setPositionerElement = (element: T["element"] | null): void => {
 		this.#positionerElement = element;
 	};
@@ -619,6 +630,7 @@ export abstract class PopupStore<
 
 	// 5. Lifetime work: dev warnings, transition status frames, and the bookkeeping that follows
 	// open state. Called once by the Root part.
+	/** Starts the store's effects. Call once, while the Root initialises. */
 	connect(): void {
 		this.#open.connect();
 		this.presence.connect();
@@ -649,6 +661,7 @@ export abstract class PopupStore<
 			this.hooks.openChanged?.(open);
 			followed = open;
 		};
+		// `open` and `heardOpen`, followed in the order `openValuesToFollow` gives.
 		watch([() => this.open, () => this.#heardOpen], ([open, heard]) => {
 			for (const value of openValuesToFollow(open, heard, followed)) {
 				follow(value);

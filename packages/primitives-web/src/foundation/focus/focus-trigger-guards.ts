@@ -25,8 +25,9 @@ export function useTriggerFocusGuards(
 		const popup = options().popup;
 		const positionerElement = popup.positionerElement;
 		popup.setOpen(false, createChangeEventDetails(REASONS.focusOut, event, guard));
+		// The close may change the tab order: apply it now, then resolve the next tabbable element
+		// from the guard, or from the trigger if the guard is gone.
 		flushSync();
-		// The close may change the tab order: resolve it now, from the trigger if the guard is gone.
 		getTabbableNearElement(
 			guard.isConnected ? guard : options().trigger,
 			direction,

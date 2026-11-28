@@ -53,26 +53,32 @@ export class PortalStore {
 		return this.#guardAfterInside;
 	}
 
+	/** Sets the portal node, `null` when it unmounts. */
 	setPortalNode = (value: HTMLElement | null): void => {
 		this.#portalNode = value;
 	};
 
+	/** Sets the state of the focus manager inside, `null` when it stops. */
 	setFocusManagerState = (value: PortalFocusManagerView | null): void => {
 		this.#focusManagerState = value;
 	};
 
+	/** Sets the guard before the portal. */
 	setGuardBeforeOutside = (value: HTMLElement | null): void => {
 		this.#guardBeforeOutside = value;
 	};
 
+	/** Sets the guard after the portal. */
 	setGuardAfterOutside = (value: HTMLElement | null): void => {
 		this.#guardAfterOutside = value;
 	};
 
+	/** Sets the guard before the popup, inside the portal. */
 	setGuardBeforeInside = (value: HTMLElement | null): void => {
 		this.#guardBeforeInside = value;
 	};
 
+	/** Sets the guard after the popup, inside the portal. */
 	setGuardAfterInside = (value: HTMLElement | null): void => {
 		this.#guardAfterInside = value;
 	};

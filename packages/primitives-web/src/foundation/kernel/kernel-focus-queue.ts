@@ -4,7 +4,9 @@ import { webScheduler } from "./kernel-platform.js";
 import type { FocusableElement } from "./kernel-tabbable.js";
 
 interface EnqueueFocusOptions {
+	/** Whether focusing doesn't scroll the element into view. */
 	preventScroll?: boolean | undefined;
+	/** Whether to focus at once instead of on the next frame. */
 	sync?: boolean | undefined;
 	/** Decides, when the frame runs, whether focus should still move. */
 	shouldFocus?: (() => boolean) | undefined;

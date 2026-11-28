@@ -34,6 +34,7 @@ export function getPointerType(event: Event): PointerType {
 	return type === "mouse" || type === "pen" || type === "touch" ? type : "";
 }
 
+/** Prevents the event's default and stops its propagation. */
 export function stopEvent(event: Event): void {
 	event.preventDefault();
 	event.stopPropagation();

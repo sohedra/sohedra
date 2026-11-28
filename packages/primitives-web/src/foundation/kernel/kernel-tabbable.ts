@@ -193,16 +193,19 @@ function appendMatchingElements(container: ParentNode, selector: string, list: H
 	});
 }
 
+/** Whether the element can take focus by Tab. */
 export function isTabbable(element: Element | null): boolean {
 	return isFocusableElement(element) && getTabIndex(element) >= 0;
 }
 
+/** The focusable elements in `container`, in document order, across shadow roots. */
 export function focusable(container: Element): FocusableElement[] {
 	const candidates: FocusableElement[] = [];
 	appendCandidates(container, candidates);
 	return candidates.filter(isFocusableElement);
 }
 
+/** The elements in `container` Tab moves through, in document order, one per radio group. */
 export function tabbable(container: Element): FocusableElement[] {
 	const candidates = focusable(container);
 	return candidates.filter(
@@ -222,10 +225,12 @@ function getTabbableIn(container: HTMLElement, dir: 1 | -1): FocusableElement | 
 	return list[nextIndex];
 }
 
+/** The tabbable element after the focused one in the document, else `origin`. */
 export function getNextTabbable(origin: Element | null): FocusableElement | null {
 	return getTabbableIn(ownerDocument(origin).body, 1) || (origin as FocusableElement | null);
 }
 
+/** The tabbable element before the focused one in the document, else `origin`. */
 export function getPreviousTabbable(origin: Element | null): FocusableElement | null {
 	return getTabbableIn(ownerDocument(origin).body, -1) || (origin as FocusableElement | null);
 }
@@ -266,6 +271,7 @@ export function isOutsideEvent(event: FocusEvent, container?: Element): boolean 
 	return !relatedTarget || !contains(containerElement, relatedTarget);
 }
 
+/** Takes the tabbable elements in `container` out of the tab order, keeping their tab index. */
 export function disableFocusInside(container: HTMLElement): void {
 	tabbable(container).forEach((element) => {
 		element.dataset.tabindex = element.getAttribute("tabindex") || "";
@@ -273,6 +279,7 @@ export function disableFocusInside(container: HTMLElement): void {
 	});
 }
 
+/** Gives the elements `disableFocusInside` took out their tab index back. */
 export function enableFocusInside(container: HTMLElement): void {
 	const elements: HTMLElement[] = [];
 	appendMatchingElements(container, "[data-tabindex]", elements);

@@ -51,8 +51,10 @@ export type {
 	PopoverViewportState,
 };
 
+/** The details of an open change: why and how it happened, and `cancel()` to refuse it. */
 export type PopoverRootChangeEventDetails = PlatformPopoverRootChangeEventDetails<WebTypes>;
 
+/** The props of Popover.Root. */
 export interface PopoverRootProps<Payload = unknown> {
 	/**
 	 * Whether the popover is initially open.
@@ -124,7 +126,9 @@ export interface PopoverRootComponent {
 		internals: ComponentInternals,
 		props: PopoverRootProps<Payload>,
 	): ReturnType<Component<PopoverRootProps<Payload>, PopoverRootActions>>;
+	/** The custom element class, as Svelte's `Component` type declares it. */
 	element?: typeof HTMLElement;
+	/** The bindable props, as Svelte's `Component` type declares them. */
 	z_$$bindings?: "open";
 }
 
@@ -138,10 +142,13 @@ export interface PopoverTriggerComponent {
 		internals: ComponentInternals,
 		props: PopoverTriggerProps<Payload>,
 	): ReturnType<Component<PopoverTriggerProps<Payload>>>;
+	/** The custom element class, as Svelte's `Component` type declares it. */
 	element?: typeof HTMLElement;
+	/** The bindable props, as Svelte's `Component` type declares them. */
 	z_$$bindings?: "ref";
 }
 
+/** The props of Popover.Trigger. */
 export interface PopoverTriggerProps<Payload = unknown>
 	extends
 		NativeButtonProps,
@@ -180,6 +187,7 @@ export interface PopoverTriggerProps<Payload = unknown>
 	disabled?: boolean | undefined;
 }
 
+/** The props of Popover.Portal. */
 export interface PopoverPortalProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLDivElement>,
 	PopoverPortalState,
@@ -194,6 +202,7 @@ export interface PopoverPortalProps extends SohedraComponentProps<
 	container?: PortalContainer | undefined;
 }
 
+/** The props of Popover.Positioner. */
 export interface PopoverPositionerProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLDivElement>,
 	PopoverPositionerState,
@@ -268,6 +277,7 @@ export interface PopoverPositionerProps extends SohedraComponentProps<
 	collisionAvoidance?: CollisionAvoidance | undefined;
 }
 
+/** The props of Popover.Popup. */
 export interface PopoverPopupProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLDivElement>,
 	PopoverPopupState,
@@ -298,30 +308,35 @@ export interface PopoverPopupProps extends SohedraComponentProps<
 	finalFocus?: FocusTarget | undefined;
 }
 
+/** The props of Popover.Arrow. */
 export interface PopoverArrowProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLDivElement>,
 	PopoverArrowState,
 	HTMLDivElement
 > {}
 
+/** The props of Popover.Backdrop. */
 export interface PopoverBackdropProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLDivElement>,
 	PopoverBackdropState,
 	HTMLDivElement
 > {}
 
+/** The props of Popover.Title. */
 export interface PopoverTitleProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLHeadingElement>,
 	PopoverTitleState,
 	HTMLHeadingElement
 > {}
 
+/** The props of Popover.Description. */
 export interface PopoverDescriptionProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLParagraphElement>,
 	PopoverDescriptionState,
 	HTMLParagraphElement
 > {}
 
+/** The props of Popover.Close. */
 export interface PopoverCloseProps
 	extends
 		NativeButtonProps,
@@ -333,6 +348,7 @@ export interface PopoverCloseProps
 	disabled?: boolean | undefined;
 }
 
+/** The props of Popover.Viewport. */
 export interface PopoverViewportProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLDivElement>,
 	PopoverViewportState,

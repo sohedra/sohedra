@@ -90,10 +90,16 @@ export type PartUserProps<State> = {
  * `ComponentConstructorOptions` is deprecated).
  */
 export interface ConstructorOptions<Props> {
+	/** Where the component mounts. */
 	target: Element | Document | ShadowRoot;
+	/** The node the component mounts before. */
 	anchor?: Element;
+	/** The component's props. */
 	props?: Props;
+	/** The contexts the component sees. */
 	context?: Map<unknown, unknown>;
+	/** Whether to hydrate server HTML. */
 	hydrate?: boolean;
+	/** Whether transitions play on the first render. */
 	intro?: boolean;
 }

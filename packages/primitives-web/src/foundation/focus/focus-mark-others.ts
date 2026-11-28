@@ -8,7 +8,9 @@ import { INERT_MARKER } from "./focus-markers.js";
 type Undo = () => void;
 
 interface MarkOthersOptions {
+	/** Whether outside elements get `aria-hidden`. */
 	ariaHidden?: boolean | undefined;
+	/** Whether outside elements get the inert marker. */
 	mark?: boolean | undefined;
 }
 

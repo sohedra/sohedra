@@ -76,12 +76,19 @@ export interface FocusService<T extends PlatformTypes> {
  * core doesn't read pass through to the platform untouched.
  */
 export interface NumberFormatOptions {
+	/** As `Intl.NumberFormat`'s `style`. */
 	readonly style?: string | undefined;
+	/** As `Intl.NumberFormat`'s `notation`. */
 	readonly notation?: string | undefined;
+	/** As `Intl.NumberFormat`'s `maximumFractionDigits`. */
 	readonly maximumFractionDigits?: number | undefined;
+	/** As `Intl.NumberFormat`'s `minimumFractionDigits`. */
 	readonly minimumFractionDigits?: number | undefined;
+	/** As `Intl.NumberFormat`'s `maximumSignificantDigits`. */
 	readonly maximumSignificantDigits?: number | undefined;
+	/** As `Intl.NumberFormat`'s `minimumSignificantDigits`. */
 	readonly minimumSignificantDigits?: number | undefined;
+	/** As `Intl.NumberFormat`'s `roundingMode`. */
 	readonly roundingMode?: string | undefined;
 }
 
@@ -90,8 +97,11 @@ export interface NumberFormatOptions {
  * read pass through to the platform untouched.
  */
 export interface CollatorOptions {
+	/** As `Intl.Collator`'s `usage`. */
 	readonly usage?: string | undefined;
+	/** As `Intl.Collator`'s `sensitivity`. */
 	readonly sensitivity?: string | undefined;
+	/** As `Intl.Collator`'s `ignorePunctuation`. */
 	readonly ignorePunctuation?: boolean | undefined;
 }
 

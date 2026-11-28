@@ -9,7 +9,9 @@ import type { HoverEvent } from "./hover-types.js";
 
 /** The popup element's hover props. Read when a pointer event arrives. */
 export interface HoverPopupStoreProps {
+	/** Whether hovering the popup keeps it open. */
 	readonly enabled: boolean;
+	/** How long to wait before closing once the pointer leaves, in ms. */
 	readonly closeDelay: number;
 }
 

@@ -31,19 +31,33 @@ export type PositionerAnchor =
 
 /** A Positioner's placement options, as a plain object the part builds from its props. */
 export interface PositionerOptions {
+	/** The element the popup is placed against, when it isn't the trigger. */
 	readonly anchor?: PositionerAnchor | undefined;
+	/** The CSS position strategy. */
 	readonly positionMethod?: "absolute" | "fixed" | undefined;
+	/** The side of the anchor the popup is placed on. */
 	readonly side?: Side | undefined;
+	/** The distance between the anchor and the popup, in pixels. */
 	readonly sideOffset?: number | OffsetFunction | undefined;
+	/** How the popup is aligned to its side. */
 	readonly align?: Align | undefined;
+	/** The offset along the alignment axis, in pixels. */
 	readonly alignOffset?: number | OffsetFunction | undefined;
+	/** The area the popup is kept within. */
 	readonly collisionBoundary?: Boundary | undefined;
+	/** The space between the popup and the edges of its collision boundary, in pixels. */
 	readonly collisionPadding?: Padding | undefined;
+	/** Whether the popup stays in view after the anchor scrolls out of it. */
 	readonly sticky?: boolean | undefined;
+	/** The minimum distance between the arrow and the popup's edges, in pixels. */
 	readonly arrowPadding?: number | undefined;
+	/** Whether the popup stops following the anchor's layout shifts. */
 	readonly disableAnchorTracking?: boolean | undefined;
+	/** How the popup handles collisions, per axis. */
 	readonly collisionAvoidance: CollisionAvoidance;
+	/** Whether the popup stays mounted while closed. */
 	readonly keepMounted: boolean;
+	/** Whether the text direction is right to left, which logical sides follow. */
 	readonly rtl: boolean;
 	/** The layout a Viewport inside measures (sizes, far-edge placement). */
 	readonly layout?: PopupLayoutStore | undefined;
@@ -106,9 +120,12 @@ export interface Viewport {
 }
 
 export interface AnchoredScrollLockOptions {
+	/** Whether the popup asks for the page's scroll to be locked. */
 	readonly enabled: boolean;
 	/** Whether the popup was opened by touch: then it locks only when it spans the viewport. */
 	readonly touchOpen: boolean;
+	/** The Positioner's element, whose width a touch opening measures. */
 	readonly positionerElement: HTMLElement | null;
+	/** The trigger, whose document's scroll is locked. */
 	readonly triggerElement: Element | null;
 }

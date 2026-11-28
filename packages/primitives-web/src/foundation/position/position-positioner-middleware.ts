@@ -19,6 +19,7 @@ export type { Measured };
  * Arrow that registered just after the computation started.
  */
 export interface MiddlewareOptions extends PositionerMiddlewareOptions {
+	/** The area the popup is kept within. */
 	readonly collisionBoundary: Boundary;
 	/** Whether a Viewport asks for the popup to be measured from its far edges. */
 	readonly adaptiveOrigin: boolean;
@@ -26,6 +27,7 @@ export interface MiddlewareOptions extends PositionerMiddlewareOptions {
 	readonly arrowElement: HTMLElement | null;
 }
 
+/** The device pixel ratio of the element's window; 1 when it reports none. */
 export function getDevicePixelRatio(element: Element): number {
 	return ownerWindow(element).devicePixelRatio || 1;
 }

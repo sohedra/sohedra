@@ -21,9 +21,11 @@ export interface ButtonOptions {
 	readonly focusableWhenDisabled?: boolean | undefined;
 	/**
 	 * Whether the button is an item of a composite widget (a menu item): Space presses it on
-	 * keydown, and the widget's roving focus owns its tab index. @default false
+	 * keydown, and the widget's roving focus owns its tab index.
+	 * @default false
 	 */
 	readonly composite?: boolean | undefined;
+	/** The tab index of a focusable element that isn't a native button. */
 	readonly tabIndex?: number | undefined;
 }
 

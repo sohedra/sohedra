@@ -1,4 +1,5 @@
 <!--
+  @component
   The Arrow part of every anchored popup: an element its Positioner measures and places against
   the anchor. Renders a `<div>` element. A component's own Arrow file hands over its Positioner's
   state, its public state and its attribute mapping.

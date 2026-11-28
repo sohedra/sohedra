@@ -1,8 +1,8 @@
 <!--
-  The Backdrop part of every popup: an overlay beneath the popup. Renders a `<div>` element.
-
-  A component's own Backdrop file hands over its state, its attribute mapping, whether the popup
-  is mounted and whether the backdrop lets pointer input through.
+  @component
+  The Backdrop part of every popup: an overlay beneath the popup. Renders a `<div>` element. A
+  component's own Backdrop file hands over its state, its attribute mapping, whether the popup is
+  mounted and whether the backdrop lets pointer input through.
 -->
 <script lang="ts" generics="State extends object">
 	import { Part, type PartUserProps, type StateAttributesMapping } from "../kernel/index.js";

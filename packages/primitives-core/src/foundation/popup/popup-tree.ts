@@ -26,16 +26,20 @@ export interface PopupNode<T extends PlatformTypes = PlatformTypes> {
  * inside a portalled child isn't outside the parent, and Escape closes only the innermost.
  */
 export class PopupTree<T extends PlatformTypes = PlatformTypes> {
+	/** The nodes of the tree, in the order they joined. */
 	readonly nodes: PopupNode<T>[] = [];
+	/** The tree's events, which nested popups follow. */
 	readonly events: EventEmitter<PopupTreeEvents<T>> = new EventEmitter<PopupTreeEvents<T>>();
 	// The nodes a press inside a popup nested in them is passing through, until the next task.
 	// Read when input arrives and never rendered, so not reactive.
 	readonly #inside = new Set<string>();
 
+	/** Adds a popup's node. */
 	addNode(node: PopupNode<T>): void {
 		this.nodes.push(node);
 	}
 
+	/** Removes a popup's node. */
 	removeNode(node: PopupNode<T>): void {
 		const index = this.nodes.indexOf(node);
 		if (index !== -1) {

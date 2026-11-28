@@ -41,6 +41,7 @@ export function waitForAnimations(
 
 	const done = () => {
 		callback();
+		// Applied before the next paint, so the intermediate state never shows.
 		flushSync();
 	};
 

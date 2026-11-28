@@ -147,6 +147,7 @@ export function useViewport(
 					finishTransitions(currentContainer);
 				}
 				settledKey = key;
+				// Applied now, so the starting styles are gone before the wait reads the animations.
 				flushSync();
 				cleanupController?.abort();
 				const controller = new AbortController();
@@ -213,6 +214,7 @@ export function useViewport(
 				layout.setPopupStyle(
 					[anchoringCss, sizeVars("popup", dimensions)].filter(Boolean).join("; "),
 				);
+				// Applied now, so the size transition has started when the wait reads the animations.
 				flushSync();
 				waitForAnimations(
 					popupElement,

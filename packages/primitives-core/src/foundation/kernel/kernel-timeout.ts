@@ -14,6 +14,7 @@ export class Timeout {
 		this.#scheduler = scheduler;
 	}
 
+	/** Runs `callback` after `delay` ms, replacing a pending run. */
 	start(delay: number, callback: () => void): void {
 		this.clear();
 		const generation = this.#generation;
@@ -27,10 +28,12 @@ export class Timeout {
 		}, delay);
 	}
 
+	/** Whether a run is pending. */
 	isStarted(): boolean {
 		return this.#cancel !== undefined;
 	}
 
+	/** Cancels the pending run, if any. */
 	clear = (): void => {
 		this.#generation += 1;
 		const cancel = this.#cancel;

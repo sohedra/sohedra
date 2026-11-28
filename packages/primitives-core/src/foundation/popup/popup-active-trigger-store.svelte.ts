@@ -8,10 +8,13 @@ import type { InstantType } from "./popup-types.js";
 
 /** What the active-trigger bookkeeping reads: its popup's open state and the Root's props. */
 export interface ActiveTriggerStoreProps {
+	/** Whether the popup is open. */
 	readonly open: boolean;
+	/** Whether the popup is mounted. */
 	readonly mounted: boolean;
 	/** The controlled `triggerId` prop. */
 	readonly triggerId: string | null | undefined;
+	/** The `defaultTriggerId` prop: the trigger the popup first belongs to. */
 	readonly defaultTriggerId: string | null | undefined;
 }
 

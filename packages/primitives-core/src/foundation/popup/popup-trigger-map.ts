@@ -61,6 +61,7 @@ export class PopupTriggerMap<T extends PlatformTypes = PlatformTypes> {
 		return false;
 	}
 
+	/** The element of the trigger registered under `id`. */
 	getById(id: string): T["element"] | undefined {
 		return this.#ids.get(id);
 	}
@@ -70,10 +71,12 @@ export class PopupTriggerMap<T extends PlatformTypes = PlatformTypes> {
 		return this.#ids.entries();
 	}
 
+	/** The registered trigger elements. */
 	elements(): IterableIterator<T["element"]> {
 		return this.#ids.values();
 	}
 
+	/** How many triggers are registered. */
 	get size(): number {
 		return this.#ids.size;
 	}

@@ -10,6 +10,7 @@ export interface FieldControlLinkProps<T extends PlatformTypes = PlatformTypes> 
 	readonly value: unknown;
 	/** The control's own name. */
 	readonly name: string | undefined;
+	/** Whether the control holds a value. */
 	readonly filled: boolean;
 	/** The control's effective disabled state (its field's or its own). */
 	readonly disabled: boolean;
@@ -47,7 +48,9 @@ export class FieldControlLink<
 		return Array.isArray(value) ? value.slice() : value;
 	});
 
+	/** The control's value as its form submits it, when it differs from `value`; read once. */
 	readonly getFormValue: (() => unknown) | undefined;
+	/** How the field compares two values for dirtiness, when not by identity; read once. */
 	readonly sameValue: ((a: unknown, b: unknown) => boolean) | undefined;
 
 	/**
@@ -63,22 +66,27 @@ export class FieldControlLink<
 		this.sameValue = sameValue;
 	}
 
+	/** Whether the control counts as its field's form value; `true` unless the props say not. */
 	get formField(): boolean {
 		return this.#props().formField ?? true;
 	}
 
+	/** The control's value; an array value is a copy, so changing its items in place is a change. */
 	get value(): unknown {
 		return this.#value;
 	}
 
+	/** The control's own name. */
 	get name(): string | undefined {
 		return this.#props().name;
 	}
 
+	/** Whether the control holds a value. */
 	get filled(): boolean {
 		return this.#props().filled;
 	}
 
+	/** The control's effective disabled state. */
 	get disabled(): boolean {
 		return this.#props().disabled;
 	}

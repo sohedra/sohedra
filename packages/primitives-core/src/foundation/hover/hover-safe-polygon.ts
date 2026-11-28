@@ -18,6 +18,7 @@ export class SafePolygon {
 		this.#track = startSafePolygon(side, x, y, now);
 	}
 
+	/** Decides one pointer move against the polygon and keeps the track it leads to. */
 	decide(input: SafePolygonInput): SafePolygonDecision {
 		const next = decideSafePolygon(this.#track, input);
 		this.#track = next.track;

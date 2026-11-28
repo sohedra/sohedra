@@ -25,6 +25,7 @@ export type PortalContainer = HTMLElement | ShadowRoot | null | undefined;
 
 /** A portal's options, as a plain object the part builds from its props. */
 export interface PortalOptions {
+	/** The container the portal moves its element into. */
 	readonly container: PortalContainer;
 }
 

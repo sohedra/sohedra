@@ -45,6 +45,7 @@ import type {
 export interface PopoverStoreProps<Payload, T extends PlatformTypes> extends PopupStoreProps<
 	PopoverRootChangeEventDetails<T>
 > {
+	/** The `modal` prop. */
 	readonly modal: boolean | "trap-focus" | undefined;
 	/** The handle that controls the popover and its detached triggers. */
 	readonly handle?: PopoverHandle<Payload> | undefined;
@@ -118,12 +119,14 @@ export class PopoverStore<
 	};
 
 	// 2. Owned objects
-	// Popover's behaviour row has `hover`, so the hover state is always built.
+	/** The popover's hover state, always built: Popover's behaviour row has `hover`. */
 	declare readonly hover: HoverInteraction<T>;
 	readonly #stickTimeout: Timeout;
 	/** Close parts rendered inside the Popup; a modal popover traps focus only with one. */
 	readonly closeParts: ClosePartCount = closePartCount();
+	/** The id of the Title part in the document, which the popup's `aria-labelledby` names. */
 	readonly titleId: ClaimedValue<string> = new ClaimedValue<string>();
+	/** The id of the Description part in the document, which the popup's `aria-describedby` names. */
 	readonly descriptionId: ClaimedValue<string> = new ClaimedValue<string>();
 	/**
 	 * The focus guards that bridge Tab between the active trigger and the portalled popup (set by
@@ -141,6 +144,7 @@ export class PopoverStore<
 
 	// 3. Public state. `$derived.by` because `#props` is assigned in the constructor, after these
 	// initialisers.
+	/** The `modal` prop: whether the popover is modal, or only traps focus. */
 	readonly modal: boolean | "trap-focus" = $derived.by(() => this.#props().modal ?? false);
 	/** Whether the Popup traps focus: modal, with a Close part inside it. */
 	readonly focusManagerModal: boolean = $derived.by(
@@ -320,6 +324,7 @@ export class PopoverStore<
 	}
 
 	// 5. Lifetime work. Called once by Popover.Root.
+	/** Starts the store's effects. Call once, while the Root initialises. */
 	override connect(): void {
 		super.connect();
 		// The stick timer never outlives the Root.

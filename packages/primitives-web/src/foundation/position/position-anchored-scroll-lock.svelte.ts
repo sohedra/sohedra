@@ -10,6 +10,7 @@ const VIEWPORT_WIDTH_TOLERANCE_PX = 20;
  * and the effect, so each option stays reactive. Call once during the Positioner's init.
  */
 export function useAnchoredScrollLock(options: () => AnchoredScrollLockOptions): void {
+	// Reads layout when the options change (an opening), not on resize: only the opening decides.
 	const touchOpenShouldLock = $derived.by(() => {
 		const { enabled, touchOpen, positionerElement } = options();
 		if (!enabled || !touchOpen || positionerElement == null) {

@@ -26,6 +26,7 @@ export interface FieldValidityData {
 	initialValue: unknown;
 }
 
+/** The validity flags of a field nothing has invalidated. */
 export const DEFAULT_VALIDITY_STATE: Readonly<FieldValidityFlags> = /* @__PURE__ */ Object.freeze({
 	badInput: false,
 	customError: false,

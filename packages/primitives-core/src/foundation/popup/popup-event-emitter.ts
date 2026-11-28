@@ -6,10 +6,12 @@ type Listener = (data: never) => void;
 export class EventEmitter<Events extends Record<string, unknown>> {
 	#map = new Map<keyof Events, Set<Listener>>();
 
+	/** Calls every listener of `event` with `data`. */
 	emit<K extends keyof Events>(event: K, data: Events[K]): void {
 		this.#map.get(event)?.forEach((listener) => (listener as (data: Events[K]) => void)(data));
 	}
 
+	/** Adds `listener` for `event`. */
 	on<K extends keyof Events>(event: K, listener: (data: Events[K]) => void): void {
 		let listeners = this.#map.get(event);
 		if (!listeners) {
@@ -19,6 +21,7 @@ export class EventEmitter<Events extends Record<string, unknown>> {
 		listeners.add(listener as Listener);
 	}
 
+	/** Removes `listener` for `event`. */
 	off<K extends keyof Events>(event: K, listener: (data: Events[K]) => void): void {
 		this.#map.get(event)?.delete(listener as Listener);
 	}

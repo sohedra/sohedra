@@ -17,13 +17,44 @@ export type PhysicalSide = "top" | "right" | "bottom" | "left";
 /** How a positioned popup avoids collisions with its boundary. */
 export type CollisionAvoidance =
 	| {
+			/**
+			 * How to avoid collisions on the side axis.
+			 * - `'flip'`: If there is not enough space, place the popup on the opposite side.
+			 * - `'none'`: Keep the preferred side even if it overflows.
+			 */
 			side?: "flip" | "none" | undefined;
+			/**
+			 * How to avoid collisions on the align axis.
+			 * - `'flip'`: If there is not enough space, swap `'start'` and `'end'` alignment.
+			 * - `'shift'`: Keep the alignment and shift the popup to fit within the boundary.
+			 * - `'none'`: Keep the preferred alignment even if it overflows.
+			 */
 			align?: "flip" | "shift" | "none" | undefined;
+			/**
+			 * If both sides on the preferred axis do not fit, whether to fall back to a side on the
+			 * perpendicular axis, and which logical side to prefer (`'start'`, `'end'`, or `'none'`
+			 * for no fallback).
+			 */
 			fallbackAxisSide?: "start" | "end" | "none" | undefined;
 	  }
 	| {
+			/**
+			 * How to avoid collisions on the side axis.
+			 * - `'shift'`: Keep the preferred side and shift the popup to fit within the boundary.
+			 * - `'none'`: Keep the preferred side even if it overflows.
+			 */
 			side?: "shift" | "none" | undefined;
+			/**
+			 * How to avoid collisions on the align axis.
+			 * - `'shift'`: Keep the alignment and shift the popup to fit within the boundary.
+			 * - `'none'`: Keep the preferred alignment even if it overflows.
+			 */
 			align?: "shift" | "none" | undefined;
+			/**
+			 * If both sides on the preferred axis do not fit, whether to fall back to a side on the
+			 * perpendicular axis, and which logical side to prefer (`'start'`, `'end'`, or `'none'`
+			 * for no fallback).
+			 */
 			fallbackAxisSide?: "start" | "end" | "none" | undefined;
 	  };
 

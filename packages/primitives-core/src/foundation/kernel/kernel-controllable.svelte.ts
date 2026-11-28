@@ -161,6 +161,7 @@ export class Controllable<T> {
 			return;
 		}
 		const { name, state } = this.#options;
+		// The default the user passes: a change after the first render has no effect.
 		watch(
 			this.#options.default,
 			() => {

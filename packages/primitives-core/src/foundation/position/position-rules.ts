@@ -121,6 +121,7 @@ export function toPlacement(side: PhysicalSide, align: Align): Placement {
 	return align === "center" ? side : `${side}-${align}`;
 }
 
+/** The padding on each side: a number for all four, or the sides given and 0 for the rest. */
 export function normalizePadding(padding: Padding): SideDistances {
 	if (typeof padding === "number") {
 		return { top: padding, right: padding, bottom: padding, left: padding };

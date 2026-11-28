@@ -8,6 +8,7 @@ import type { PopupView } from "./popup-view.js";
 export interface TriggerRegistrationOptions<T extends PlatformTypes, Data> {
 	/** The popup the trigger reads now: a handle's store changes when a Root attaches. */
 	readonly popup: PopupView<T>;
+	/** The trigger's id, under which it registers. */
 	readonly id: string;
 	/** The trigger element, once attached. */
 	readonly element: T["element"] | null;

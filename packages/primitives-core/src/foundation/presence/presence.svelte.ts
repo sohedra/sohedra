@@ -68,6 +68,7 @@ export class Presence {
 	// that settle a status and `complete()`, never while deriving.
 	readonly #committed: CommittedValue<PresencePhase>;
 
+	/** Whether the element should be shown, from the props. */
 	readonly open: boolean = $derived.by(() => this.#props().open);
 	// A pure step from the committed phase to the current `open`, so `mounted` changes in the same
 	// update as `open`, and a re-run with older values (an effect teardown) changes nothing.
@@ -93,6 +94,7 @@ export class Presence {
 		return this.#mounted;
 	}
 
+	/** Where the enter or exit transition is. */
 	get transitionStatus(): TransitionStatus {
 		return this.#status;
 	}

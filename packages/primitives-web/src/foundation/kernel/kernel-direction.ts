@@ -13,6 +13,7 @@ export class DirectionStore {
 		this.#get = get;
 	}
 
+	/** The text direction. */
 	get direction(): TextDirection {
 		return this.#get();
 	}

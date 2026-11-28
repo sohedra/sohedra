@@ -18,18 +18,28 @@ export type FocusTarget =
 
 /** A popup's focus behaviour, as a plain object the part builds from its props and store. */
 export interface FocusManagerOptions {
-	/** Whether the manager is off: while the popup is unmounted, or for an opening that never takes focus. */
+	/** Whether the manager is off: while unmounted, or for an opening that never takes focus. */
 	readonly disabled: boolean;
-	/** Whether focus is trapped and outside content hidden. @default true */
+	/**
+	 * Whether focus is trapped and outside content hidden.
+	 * @default true
+	 */
 	readonly modal?: boolean | undefined;
-	/** @default true */
+	/**
+	 * Where focus goes on open.
+	 * @default true
+	 */
 	readonly initialFocus?: FocusTarget | undefined;
 	/**
 	 * Where focus returns on close. A target that isn't a boolean is the user's explicit one, which
-	 * takes focus even when it moved elsewhere after opening. @default true
+	 * takes focus even when it moved elsewhere after opening.
+	 * @default true
 	 */
 	readonly returnFocus?: FocusTarget | undefined;
-	/** Where focus goes when the focused element inside is removed. @default false */
+	/**
+	 * Where focus goes when the focused element inside is removed.
+	 * @default false
+	 */
 	readonly restoreFocus?: boolean | "popup" | undefined;
 	/** The kind of input that opened the popup. Only an explicit `null` is a programmatic open. */
 	readonly openInteractionType?: InteractionType | null | undefined;

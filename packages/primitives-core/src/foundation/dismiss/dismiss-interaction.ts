@@ -38,9 +38,15 @@ export type DismissChangeDetails<T extends PlatformTypes> = ChangeEventDetails<
 
 /** What a kind of popup fixes about its dismissal; its store answers them live. */
 export interface DismissInteractionProps {
-	/** Whether Escape and outside presses dismiss at all. @default true */
+	/**
+	 * Whether Escape and outside presses dismiss at all.
+	 * @default true
+	 */
 	readonly enabled?: boolean | undefined;
-	/** How an outside press is detected, per kind of pointer. @default 'sloppy' */
+	/**
+	 * How an outside press is detected, per kind of pointer.
+	 * @default 'sloppy'
+	 */
 	readonly outsidePressEvent?: OutsidePressEvent | undefined;
 }
 

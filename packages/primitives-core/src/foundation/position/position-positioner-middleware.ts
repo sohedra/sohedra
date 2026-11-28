@@ -45,14 +45,23 @@ export type StepResult = MiddlewareReturn | Promise<MiddlewareReturn>;
  * that keeps them current is followed; the others are read once, when the steps are built.
  */
 export interface PositionerMiddlewareOptions {
+	/** The side the popup is asked for. */
 	readonly side: Side;
+	/** How the popup is aligned to its side. */
 	readonly align: Align;
+	/** Whether the text direction is right to left, which logical sides follow. */
 	readonly rtl: boolean;
+	/** The distance between the anchor and the popup, in pixels. */
 	readonly sideOffset: number | OffsetFunction;
+	/** The offset along the alignment axis, in pixels. */
 	readonly alignOffset: number | OffsetFunction;
+	/** Whether the popup stays in view after the anchor scrolls out of it. */
 	readonly sticky: boolean;
+	/** The minimum distance between the arrow and the popup's edges, in pixels. */
 	readonly arrowPadding: number;
+	/** The space between the popup and the edges of its collision boundary, in pixels. */
 	readonly collisionPadding: Padding;
+	/** How the popup handles collisions, per axis. */
 	readonly collisionAvoidance: CollisionAvoidance;
 	/**
 	 * Overrides of the shift collision avoidance sets up (a context menu shifts along both axes

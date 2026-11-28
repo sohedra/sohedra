@@ -44,11 +44,13 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #next: ContentKey = $derived.by(() =>
 		nextContentKey(this.#committed.current, this.#popup.activeTriggerId, this.#popup.payload),
 	);
+	/** The key of the content shown: a new one means the content is created anew. */
 	readonly contentKey: number = $derived(this.#next.key);
 
 	// The trigger whose content the open popup showed when the platform last settled.
 	#shown: T["element"] | null = $state.raw(null);
 
+	/** The trigger change the platform has yet to show, from the shown content's trigger. */
 	readonly triggerChange: ViewportTriggerChange<T> | null = $derived.by(() => {
 		const from = this.#shown;
 		const to = this.#popup.activeTriggerElement;

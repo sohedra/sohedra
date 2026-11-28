@@ -162,6 +162,7 @@ export function usePositioner(
 				)
 			) {
 				positioner.setPosition(next);
+				// Applied now, not a microtask later, so the styles land before the next paint.
 				flushSync();
 			}
 		});

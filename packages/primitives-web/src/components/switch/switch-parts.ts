@@ -9,6 +9,7 @@ import type {
 	SwitchThumbState,
 } from "./switch-types.js";
 
+/** Represents the switch itself. Renders a `<span>` element and a hidden `<input>` beside it. */
 export const Root = SwitchRoot;
 export declare namespace Root {
 	export type Props = SwitchRootProps;
@@ -17,6 +18,10 @@ export declare namespace Root {
 	export type ChangeEventDetails = SwitchRootChangeEventDetails;
 }
 
+/**
+ * The movable part of the switch that indicates whether the switch is on or off. Renders a
+ * `<span>`.
+ */
 export const Thumb = SwitchThumb;
 export declare namespace Thumb {
 	export type Props = SwitchThumbProps;

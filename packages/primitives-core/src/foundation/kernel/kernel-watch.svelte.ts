@@ -77,6 +77,7 @@ function create(
 		cleanup = undefined;
 	};
 
+	// The callback runs when a source changes; its last cleanup runs on destroy.
 	if (pre) {
 		$effect.pre(run);
 		$effect.pre(destroy);

@@ -14,8 +14,10 @@ import type {
 
 export type { SwitchRootChangeEventReason, SwitchRootState, SwitchThumbState };
 
+/** The details of a checked change: why and how it happened, and `cancel()` to refuse it. */
 export type SwitchRootChangeEventDetails = PlatformSwitchRootChangeEventDetails<WebTypes>;
 
+/** The props of Switch.Root. */
 export interface SwitchRootProps
 	extends
 		NonNativeButtonProps,
@@ -82,6 +84,7 @@ export interface SwitchRootProps
 	uncheckedValue?: string | undefined;
 }
 
+/** The props of Switch.Thumb. */
 export interface SwitchThumbProps extends SohedraComponentProps<
 	HTMLAttributes<HTMLSpanElement>,
 	SwitchThumbState,
