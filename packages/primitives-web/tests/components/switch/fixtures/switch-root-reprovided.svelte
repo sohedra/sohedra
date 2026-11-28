@@ -1,7 +1,7 @@
 <!--
   A parent that spreads a props object into Switch.Root and can replace it with an equal one
   (`setProps`), as a re-rendering list or a wrapper does. Optionally renders a native button
-  through the render snippet.
+  through the render snippet. The demo takes its props from the test and can't re-provide them.
 -->
 <script lang="ts">
 	import type { Attachment } from "svelte/attachments";

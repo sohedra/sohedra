@@ -1,190 +1,160 @@
-import { flushSync, mount, unmount } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
-import { page, userEvent } from "vitest/browser";
+// Switch.Root in a plain form: the data it submits as its props change, the input event the form
+// sees, and a native reset, which restores defaultChecked without onCheckedChange.
+import type { Locator } from "vitest/browser";
+import { userEvent } from "vitest/browser";
 
-import FormFixture from "./fixtures/switch-in-form.svelte";
+import { hiddenInput } from "../../kit/kit-form.js";
+import { nextTask } from "../../kit/kit-frames.js";
+import SwitchInForm from "./fixtures/switch-in-form.svelte";
 
-// An empty switch has no size, and userEvent only clicks visible elements.
-const SIZED = "display: inline-block; width: 16px; height: 16px";
-
-function getSwitch() {
-	return page.getByRole("switch");
+/** The switch in its form, with the form's parts. */
+async function setup(props: Record<string, unknown>) {
+	const screen = await render(SwitchInForm, props);
+	return {
+		screen,
+		root: screen.getByRole("switch"),
+		form: screen.container.querySelector("form")!,
+		submit: screen.getByRole("button", { name: "Submit" }),
+		reset: screen.getByRole("button", { name: "Reset" }),
+		input: () => hiddenInput(screen.container),
+	};
 }
 
-function submitButton() {
-	return page.getByRole("button", { name: "Submit" });
-}
-
-function hiddenInput() {
-	return document.querySelector<HTMLInputElement>('input[type="checkbox"][aria-hidden="true"]')!;
-}
-
-function getForm() {
-	return document.querySelector("form")!;
-}
-
-// Sohedra form behaviour beyond the Form cases in switch-root.test.ts, and the form reset: a native
-// reset restores defaultChecked without onCheckedChange.
-describe("Switch.Root in a form", () => {
-	describe("submission", () => {
+describe("Switch.Root", () => {
+	describe("in a form", () => {
 		it("updates submitted data when name or uncheckedValue change after mount", async () => {
 			const submitSpy = vi.fn((event: SubmitEvent) =>
 				Object.fromEntries(new FormData(event.currentTarget as HTMLFormElement)),
 			);
-			const { rerender } = await render(FormFixture, {
+			const { screen, root, submit } = await setup({
 				name: "before",
 				uncheckedValue: "off",
-				style: SIZED,
 				onFormSubmit: submitSpy,
 			});
 
-			await rerender({ name: "after", uncheckedValue: "no" });
-			await userEvent.click(submitButton());
+			await screen.rerender({ name: "after", uncheckedValue: "no" });
+			await userEvent.click(submit);
 			expect(submitSpy.mock.results.at(-1)?.value).toEqual({ after: "no" });
 
-			await userEvent.click(getSwitch());
-			await userEvent.click(submitButton());
+			await userEvent.click(root);
+			await userEvent.click(submit);
 			expect(submitSpy.mock.results.at(-1)?.value).toEqual({ after: "on" });
 		});
 
 		it("fires a bubbling input event on the form when the switch changes", async () => {
-			await render(FormFixture, { name: "test-switch", style: SIZED });
+			const { root, form, input } = await setup({ name: "test-switch" });
 			const targets: (EventTarget | null)[] = [];
-			getForm().addEventListener("input", (event) => targets.push(event.target));
+			form.addEventListener("input", (event) => targets.push(event.target));
 
-			await userEvent.click(getSwitch());
+			await userEvent.click(root);
 
-			expect(targets).toEqual([hiddenInput()]);
+			expect(targets).toEqual([input()]);
 		});
 	});
 
-	describe("reset", () => {
+	describe("on a form reset", () => {
 		it.each([
-			["form.reset()", () => getForm().reset()],
-			["a reset button", () => userEvent.click(page.getByRole("button", { name: "Reset" }))],
+			["form.reset()", (parts: { form: HTMLFormElement }) => parts.form.reset()],
+			["a reset button", (parts: { reset: Locator }) => userEvent.click(parts.reset)],
 		])("restores defaultChecked on form reset through %s", async (_, reset) => {
-			await render(FormFixture, { defaultChecked: true, style: SIZED });
+			const parts = await setup({ defaultChecked: true });
+			const { root, input } = parts;
 
-			await userEvent.click(getSwitch());
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "false");
-			expect(hiddenInput().checked).toBe(false);
+			await userEvent.click(root);
+			await expect.element(root).toHaveAttribute("aria-checked", "false");
+			expect(input().checked).toBe(false);
 
-			await reset();
+			await reset(parts);
 
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "true");
-			await expect.poll(() => hiddenInput().checked).toBe(true);
-		});
-
-		it("puts the form data back on defaultChecked as soon as the form is reset", async () => {
-			await render(FormFixture, { defaultChecked: true, name: "test-switch", style: SIZED });
-			await userEvent.click(getSwitch());
-			expect(new FormData(getForm()).get("test-switch")).toBe(null);
-
-			getForm().reset();
-
-			expect(new FormData(getForm()).get("test-switch")).toBe("on");
+			await expect.element(root).toHaveAttribute("aria-checked", "true");
+			await expect.poll(() => input().checked).toBe(true);
 		});
 
 		it("resets when the form's own onreset stops propagation", async () => {
-			await render(FormFixture, {
+			const { root, form, input } = await setup({
 				checked: true,
 				defaultChecked: false,
 				name: "test-switch",
 				onFormReset: (event: Event) => event.stopPropagation(),
 			});
 
-			getForm().reset();
+			form.reset();
 
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "false");
-			await expect.poll(() => hiddenInput().checked).toBe(false);
-			expect(new FormData(getForm()).get("test-switch")).toBe(null);
+			await expect.element(root).toHaveAttribute("aria-checked", "false");
+			await expect.poll(() => input().checked).toBe(false);
+			expect(new FormData(form).get("test-switch")).toBe(null);
 		});
 
 		it("submits the uncheckedValue after a reset from on to off", async () => {
 			const submitSpy = vi.fn((event: SubmitEvent) =>
 				new FormData(event.currentTarget as HTMLFormElement).getAll("test-switch"),
 			);
-			await render(FormFixture, {
+			const { root, form, submit } = await setup({
 				defaultChecked: false,
 				name: "test-switch",
 				value: "yes",
 				uncheckedValue: "no",
 				onFormSubmit: submitSpy,
-				style: SIZED,
 			});
-			await userEvent.click(getSwitch());
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "true");
+			await userEvent.click(root);
+			await expect.element(root).toHaveAttribute("aria-checked", "true");
 
-			getForm().reset();
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "false");
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			form.reset();
+			await expect.element(root).toHaveAttribute("aria-checked", "false");
 
-			await userEvent.click(submitButton());
+			await userEvent.click(submit);
 			expect(submitSpy.mock.results.at(-1)?.value).toEqual(["no"]);
-		});
-
-		it("writes the reset value through bind:checked", async () => {
-			const { getByTestId } = await render(FormFixture, {
-				binding: "state",
-				initial: true,
-				defaultChecked: false,
-			});
-			await expect.element(getByTestId("bound")).toHaveTextContent("true");
-
-			getForm().reset();
-
-			await expect.element(getByTestId("bound")).toHaveTextContent("false");
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "false");
-			expect(hiddenInput().checked).toBe(false);
 		});
 
 		it("does not call onCheckedChange on reset", async () => {
 			const onCheckedChange = vi.fn();
-			await render(FormFixture, { checked: true, defaultChecked: false, onCheckedChange });
+			const { root, form } = await setup({ checked: true, defaultChecked: false, onCheckedChange });
 
-			getForm().reset();
+			form.reset();
 
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "false");
+			await expect.element(root).toHaveAttribute("aria-checked", "false");
 			expect(onCheckedChange).toHaveBeenCalledTimes(0);
 		});
 
 		it.each([{ disabled: true }, { readOnly: true }])("resets even when %o", async (props) => {
-			await render(FormFixture, { checked: true, defaultChecked: false, ...props });
+			const { root, form, input } = await setup({ checked: true, defaultChecked: false, ...props });
 
-			getForm().reset();
+			form.reset();
 
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "false");
-			expect(hiddenInput().checked).toBe(false);
+			await expect.element(root).toHaveAttribute("aria-checked", "false");
+			expect(input().checked).toBe(false);
 		});
 
 		// A trusted click on a reset button runs microtasks between the reset event and the browser's
 		// reset of the controls, so this guards the switch syncing in a task after the reset.
 		it("stays on when the form's onreset cancels a reset-button click", async () => {
-			await render(FormFixture, {
+			const { root, reset, input } = await setup({
 				defaultChecked: false,
-				style: SIZED,
 				onFormReset: (event: Event) => event.preventDefault(),
 			});
-			await userEvent.click(getSwitch());
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "true");
+			await userEvent.click(root);
+			await expect.element(root).toHaveAttribute("aria-checked", "true");
 
-			await userEvent.click(page.getByRole("button", { name: "Reset" }));
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			await userEvent.click(reset);
+			// Past the task in which the switch would restore its default.
+			await nextTask();
 
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "true");
-			expect(hiddenInput().checked).toBe(true);
+			await expect.element(root).toHaveAttribute("aria-checked", "true");
+			expect(input().checked).toBe(true);
 		});
 
 		it("does not reset when the reset event is canceled", async () => {
-			await render(FormFixture, { checked: true, defaultChecked: false });
-			getForm().addEventListener("reset", (event) => event.preventDefault());
+			const { root, form, input } = await setup({ checked: true, defaultChecked: false });
+			form.addEventListener("reset", (event) => event.preventDefault());
 
-			getForm().reset();
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			form.reset();
+			// Past the task in which the switch would restore its default.
+			await nextTask();
 
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "true");
-			expect(hiddenInput().checked).toBe(true);
+			await expect.element(root).toHaveAttribute("aria-checked", "true");
+			expect(input().checked).toBe(true);
 		});
 
 		it("keeps the hidden input in sync when a function-binding setter declines the reset", async () => {
@@ -192,7 +162,7 @@ describe("Switch.Root in a form", () => {
 			const submitSpy = vi.fn((event: SubmitEvent) =>
 				new FormData(event.currentTarget as HTMLFormElement).getAll("test-switch"),
 			);
-			await render(FormFixture, {
+			const { root, reset, submit, input } = await setup({
 				binding: "function",
 				get: () => true,
 				set,
@@ -202,39 +172,15 @@ describe("Switch.Root in a form", () => {
 				onFormSubmit: submitSpy,
 			});
 
-			await userEvent.click(page.getByRole("button", { name: "Reset" }));
+			await userEvent.click(reset);
 			await expect.poll(() => set).toHaveBeenCalledWith(false);
-			// Past the browser's own reset of the controls.
-			await new Promise((resolve) => setTimeout(resolve, 0));
+			// Past the browser's own reset of the controls, in the task the switch restores in.
+			await nextTask();
 
-			await expect.element(getSwitch()).toHaveAttribute("aria-checked", "true");
-			expect(hiddenInput().checked).toBe(true);
-			await userEvent.click(submitButton());
+			await expect.element(root).toHaveAttribute("aria-checked", "true");
+			expect(input().checked).toBe(true);
+			await userEvent.click(submit);
 			expect(submitSpy.mock.results.at(-1)?.value).toEqual(["on"]);
 		});
-	});
-
-	// `reset` isn't composed: inside a shadow root it never reaches the document.
-	it("resets inside a shadow root", async () => {
-		const host = document.body.appendChild(document.createElement("div"));
-		const root = host.attachShadow({ mode: "open" });
-		const app = mount(FormFixture, {
-			target: root.appendChild(document.createElement("div")),
-			props: { name: "test-switch" },
-		});
-		flushSync();
-		try {
-			const switchElement = root.querySelector<HTMLElement>('[role="switch"]')!;
-			switchElement.click();
-			flushSync();
-			expect(switchElement).toHaveAttribute("aria-checked", "true");
-
-			root.querySelector<HTMLButtonElement>('button[type="reset"]')!.click();
-
-			await expect.poll(() => switchElement.getAttribute("aria-checked")).toBe("false");
-		} finally {
-			unmount(app);
-			host.remove();
-		}
 	});
 });

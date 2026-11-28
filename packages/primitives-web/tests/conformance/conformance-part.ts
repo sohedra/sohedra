@@ -2,7 +2,7 @@ import type { SohedraEvent } from "@sohedra/primitives-core/foundation/kernel/in
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
-import { userEvent } from "vitest/browser";
+import { commands, userEvent } from "vitest/browser";
 
 import { expectNoAxeViolations } from "../axe.js";
 import ConformanceHarness from "./conformance-harness.svelte";
@@ -14,6 +14,12 @@ import {
 	ssrFileName,
 } from "./conformance-setup.js";
 import { ssrHydration } from "./ssr-hydration.js";
+
+declare module "vitest/browser" {
+	interface BrowserCommands {
+		renderPartOnServer: (module: string, name: string) => Promise<string>;
+	}
+}
 
 const RENDER_WITHOUT_SPREAD_WARNING =
 	"Sohedra: The render snippet must spread `props` onto an element.";
@@ -248,9 +254,15 @@ export function describeConformance<State>(name: string, setup: () => Conformanc
 			},
 		);
 
-		it("survives server rendering and hydration", () => {
+		it("survives server rendering and hydration", async () => {
 			const file = ssrFileName(name);
-			const html = serverHtml[`./__ssr__/${file}`];
+			const { module } = setup();
+			const html = module
+				? await commands.renderPartOnServer(
+						decodeURIComponent(new URL(module.url).pathname),
+						module.name,
+					)
+				: serverHtml[`./__ssr__/${file}`];
 			if (html === undefined) {
 				throw new Error(
 					`tests/conformance/__ssr__/${file} is missing. Run describeServerRender("${name}", …) in the ssr project to write it.`,

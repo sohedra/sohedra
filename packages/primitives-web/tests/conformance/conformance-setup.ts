@@ -80,6 +80,12 @@ export type ConformanceSetup<State> = {
 	 */
 	idsAssignedOnMount?: boolean;
 	/**
+	 * Where this setup is exported: `{ url: import.meta.url, name: "<its export name>" }`. With it,
+	 * the hydration test has the server render the part when it runs; without it, the test hydrates
+	 * the HTML that `describeServerRender` keeps in `__ssr__`.
+	 */
+	module?: { url: string; name: string };
+	/**
 	 * For the axe check: props that complete the part the way a page would (an accessible name for
 	 * a control rendered alone), and rules a part alone can't satisfy, each with the reason.
 	 */

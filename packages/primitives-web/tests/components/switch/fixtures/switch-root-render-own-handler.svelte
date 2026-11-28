@@ -1,4 +1,4 @@
-<!-- A render snippet that writes its own `onclick` after the spread. -->
+<!-- A render snippet that writes its own `onclick` after the spread: markup the demo doesn't have. -->
 <script lang="ts">
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
 

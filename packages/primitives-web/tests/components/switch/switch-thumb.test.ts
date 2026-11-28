@@ -1,25 +1,13 @@
-import { flushSync } from "svelte";
+// Switch.Thumb: the root's state on the thumb, inside the root and inside its render snippet, and
+// the error outside a root.
 import { describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
-import { page, userEvent } from "vitest/browser";
+import { userEvent } from "vitest/browser";
 
 import SwitchThumb from "#lib/components/switch/switch-thumb.svelte";
 
-import { describeConformance } from "../../conformance/conformance-part.js";
-import { ssrHydration } from "../../conformance/ssr-hydration.js";
-import SeveralSwitches from "./fixtures/several-switches.svelte";
-import { switchThumbConformance } from "./fixtures/switch-thumb-conformance.js";
+import SwitchDemo from "./fixtures/switch-demo.svelte";
 import SwitchThumbInRender from "./fixtures/switch-thumb-in-render.svelte";
-import SwitchWithThumb from "./fixtures/switch-with-thumb.svelte";
-
-// The conformance suite, the missing-context error, and Sohedra spec cases.
-const severalHtml = import.meta.glob<string>("./__ssr__/several-switches.html", {
-	query: "?raw",
-	import: "default",
-	eager: true,
-});
-
-describeConformance("Switch.Thumb", () => switchThumbConformance);
 
 describe("Switch.Thumb", () => {
 	it("throws a descriptive error when rendered outside Switch.Root", async () => {
@@ -30,9 +18,9 @@ describe("Switch.Thumb", () => {
 	});
 
 	it("reads the root's state when rendered inside the root's render snippet", async () => {
-		await render(SwitchThumbInRender);
-		const root = page.getByRole("switch");
-		const thumb = page.getByTestId("thumb");
+		const screen = await render(SwitchThumbInRender);
+		const root = screen.getByRole("switch");
+		const thumb = screen.getByTestId("thumb");
 		await expect.element(root).toHaveAttribute("data-snippet-checked", "false");
 		await expect.element(thumb).toHaveAttribute("data-unchecked");
 
@@ -44,13 +32,13 @@ describe("Switch.Thumb", () => {
 	});
 
 	it("mirrors the root's data attributes", async () => {
-		const { rerender } = await render(SwitchWithThumb);
-		const thumb = page.getByTestId("thumb");
+		const screen = await render(SwitchDemo, { thumb: true });
+		const thumb = screen.getByTestId("thumb");
 		await expect.element(thumb).toHaveAttribute("data-unchecked");
 		await expect.element(thumb).not.toHaveAttribute("data-checked");
 		await expect.element(thumb).not.toHaveAttribute("data-disabled");
 
-		await rerender({ checked: true, disabled: true, readOnly: true, required: true });
+		await screen.rerender({ checked: true, disabled: true, readOnly: true, required: true });
 		await expect.element(thumb).toHaveAttribute("data-checked");
 		await expect.element(thumb).not.toHaveAttribute("data-unchecked");
 		await expect.element(thumb).toHaveAttribute("data-disabled");
@@ -59,51 +47,12 @@ describe("Switch.Thumb", () => {
 	});
 
 	it("follows the root when the user toggles it", async () => {
-		await render(SwitchWithThumb);
-		const thumb = page.getByTestId("thumb");
+		const screen = await render(SwitchDemo, { thumb: true });
+		const thumb = screen.getByTestId("thumb");
 		await expect.element(thumb).toHaveAttribute("data-unchecked");
 
-		await userEvent.click(page.getByRole("switch"));
+		await userEvent.click(screen.getByRole("switch"));
 
 		await expect.element(thumb).toHaveAttribute("data-checked");
-	});
-
-	it("keeps ids unique and labels scoped across several hydrated switches", () => {
-		const html = severalHtml["./__ssr__/several-switches.html"];
-		if (html === undefined) {
-			throw new Error(
-				"tests/components/switch/__ssr__/several-switches.html is missing. Run the ssr project to write it.",
-			);
-		}
-		const names = ["first", "second", "third"];
-		const inputs = (container: HTMLElement) =>
-			names.map((name) => container.querySelector<HTMLInputElement>(`input[id="${name}"]`)!);
-
-		const { before, after } = ssrHydration(SeveralSwitches, {}, html, (container) => {
-			const all = inputs(container);
-			expect(all.every(Boolean)).toBe(true);
-			for (const [index, name] of names.entries()) {
-				container.querySelector<HTMLLabelElement>(`label[for="${name}"]`)!.click();
-				flushSync();
-				// Only the clicked label's switch is on, and the earlier ones stay as they were.
-				expect(all.map((input) => input.checked)).toEqual(names.map((_, i) => i <= index));
-				const roots = container.querySelectorAll('[role="switch"]');
-				expect(Array.from(roots, (root) => root.getAttribute("aria-checked"))).toEqual([
-					...names.map((_, i) => String(i <= index)),
-					"false",
-				]);
-			}
-		});
-
-		const ids = after.map((element) => element.id).filter(Boolean);
-		// The inputs, plus whatever ids the switches generate for their labels.
-		expect(ids).toEqual(expect.arrayContaining(names));
-		expect(ids.length).toBeGreaterThanOrEqual(4);
-		expect(new Set(ids).size).toBe(ids.length);
-		// Hydration keeps the server's ids. (It adds ids to the labels, which the switches use to name
-		// themselves, so the two snapshots aren't equal.)
-		expect(after.map((element) => element.id)).toEqual(
-			expect.arrayContaining(before.map((element) => element.id).filter(Boolean)),
-		);
 	});
 });

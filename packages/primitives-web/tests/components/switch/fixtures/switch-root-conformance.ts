@@ -9,6 +9,7 @@ import type { ConformanceSetup } from "../../../conformance/conformance-setup.js
 export const switchRootConformance: ConformanceSetup<SwitchRootState> = {
 	part: SwitchRoot as Component<Record<string, unknown>>,
 	defaultTag: "span",
+	module: { url: import.meta.url, name: "switchRootConformance" },
 	// The render snippet renders a <button>, which Switch.Root only accepts as a native button.
 	renderProps: { nativeButton: true },
 	state: {

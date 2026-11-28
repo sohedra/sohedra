@@ -1,4 +1,7 @@
-<!-- An onclick that skips the switch's own handler. Unannotated, so `pnpm check` guards the type. -->
+<!--
+  An onclick that skips the switch's own handler. Written inline and unannotated, so `pnpm check`
+  guards the handler's type, which a prop passed to the demo would not.
+-->
 <script lang="ts">
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
 </script>

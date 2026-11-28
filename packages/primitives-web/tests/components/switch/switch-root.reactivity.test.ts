@@ -1,22 +1,22 @@
-// The slice 1 "must prove" claims about Svelte that the docs don't settle, and the regressions
-// the previous library had: attachments and listeners that churn, effects that re-run on equal
-// props, and registrations torn down in the wrong order on a component swap.
+// What Switch.Root re-runs and tears down: its user's attachment and its listeners across props
+// that are re-derived or re-provided equal, its effects on equal props, and a swap for another
+// switch with the old one's teardown last.
 import { flushSync } from "svelte";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { render } from "vitest-browser-svelte";
+import { userEvent } from "vitest/browser";
 
-import {
-	createRenderer,
-	fireEvent,
-	screen,
-	flushAfterMicrotask,
-	waitFor,
-} from "../../shim/index.js";
+import { hiddenInput } from "../../kit/kit-form.js";
+import { settle } from "../../kit/kit-frames.js";
 import SwitchRootReprovided from "./fixtures/switch-root-reprovided.svelte";
 import SwitchRootSwap from "./fixtures/switch-root-swap.svelte";
 
 afterEach(() => {
 	vi.restoreAllMocks();
 });
+
+// An empty switch has no size, and userEvent only clicks visible elements.
+const SIZED = "display: inline-block; width: 16px; height: 16px";
 
 /** Calls to a prototype accessor's setter (or getter) made on `target`. */
 function spyOnAccessor<T extends object>(
@@ -43,53 +43,54 @@ function spyOnAccessor<T extends object>(
 	};
 }
 
-describe("Switch.Root reactivity", () => {
-	const { render } = createRenderer();
-
+describe("Switch.Root", () => {
 	describe.each([false, true])("renderButton=%s", (renderButton) => {
 		it("runs a user attachment once across state changes and re-provided props", async () => {
 			const attach = vi.fn();
-			const { component } = await render(SwitchRootReprovided, {
+			const screen = await render(SwitchRootReprovided, {
 				attach,
 				renderButton,
-				initial: { disabled: false, required: false, onfocus: () => {} },
+				initial: { disabled: false, required: false, onfocus: () => {}, style: SIZED },
 			});
-			const switchElement = screen.getByRole("switch");
+			const root = screen.getByRole("switch");
 			expect(attach).toHaveBeenCalledTimes(1);
-			expect(attach).toHaveBeenCalledWith(switchElement);
+			expect(attach).toHaveBeenCalledWith(root.element());
 
-			fireEvent.click(switchElement);
-			fireEvent.click(switchElement);
-			component.setProps({ disabled: false, required: false, onfocus: () => {} });
+			await userEvent.click(root);
+			await userEvent.click(root);
+			screen.component.setProps({ disabled: false, required: false, onfocus: () => {} });
 			flushSync();
-			component.setProps({ required: true, onfocus: () => {} });
+			screen.component.setProps({ required: true, onfocus: () => {} });
 			flushSync();
 
-			expect(switchElement).toHaveAttribute("aria-required", "true");
+			await expect.element(root).toHaveAttribute("aria-required", "true");
 			expect(attach).toHaveBeenCalledTimes(1);
 		});
 
 		it("does not rebind its listeners when its props are re-derived", async () => {
 			const onfocus = vi.fn();
-			const { component } = await render(SwitchRootReprovided, {
+			const screen = await render(SwitchRootReprovided, {
 				attach: () => {},
 				renderButton,
 				initial: { onfocus },
 			});
-			const switchElement = screen.getByRole("switch");
-			const add = vi.spyOn(switchElement, "addEventListener");
-			const remove = vi.spyOn(switchElement, "removeEventListener");
+			const root = screen.getByRole("switch").element() as HTMLElement;
+			const add = vi.spyOn(root, "addEventListener");
+			const remove = vi.spyOn(root, "removeEventListener");
 
 			const latest = vi.fn();
-			fireEvent.click(switchElement);
-			component.setProps({ onfocus: latest, readOnly: false });
+			// Script clicks: a real one would also focus the switch, and the test counts focus calls.
+			root.click();
 			flushSync();
-			fireEvent.click(switchElement);
+			screen.component.setProps({ onfocus: latest, readOnly: false });
+			flushSync();
+			root.click();
+			flushSync();
 
 			expect(add).not.toHaveBeenCalled();
 			expect(remove).not.toHaveBeenCalled();
 			// The stable listener calls the latest handler.
-			switchElement.focus();
+			root.focus();
 			expect(latest).toHaveBeenCalledTimes(1);
 			expect(onfocus).not.toHaveBeenCalled();
 		});
@@ -105,24 +106,28 @@ describe("Switch.Root reactivity", () => {
 		);
 		const labels = spyOnAccessor(HTMLInputElement.prototype, "labels", "get", () => input);
 		try {
-			const { component } = await render(SwitchRootReprovided, {
+			const screen = await render(SwitchRootReprovided, {
 				attach: () => {},
 				initial: { defaultChecked: false, disabled: false, "aria-label": undefined },
 			});
-			input = screen.getByRole<HTMLInputElement>("checkbox", { hidden: true });
-			const label = screen.getByText("Label");
-			expect(screen.getByRole("switch")).toHaveAttribute("aria-labelledby", label.id);
+			input = hiddenInput(screen.container);
+			const label = screen.getByText("Label").element();
+			await expect.element(screen.getByRole("switch")).toHaveAttribute("aria-labelledby", label.id);
 
-			component.setProps({ defaultChecked: false, disabled: false, "aria-label": undefined });
+			screen.component.setProps({
+				defaultChecked: false,
+				disabled: false,
+				"aria-label": undefined,
+			});
 			flushSync();
-			component.setProps({ defaultChecked: undefined, disabled: undefined });
+			screen.component.setProps({ defaultChecked: undefined, disabled: undefined });
 			flushSync();
-			await flushAfterMicrotask();
+			await settle();
 
 			expect(defaultChecked.calls).toEqual([]);
 			expect(labels.calls).toEqual([]);
 
-			component.setProps({ defaultChecked: true });
+			screen.component.setProps({ defaultChecked: true });
 			flushSync();
 			expect(defaultChecked.calls).toEqual([true]);
 		} finally {
@@ -131,7 +136,7 @@ describe("Switch.Root reactivity", () => {
 		}
 	});
 
-	describe("component swap", () => {
+	describe("swapped for another switch", () => {
 		it.each([
 			{ mode: "if" as const, outro: 0 },
 			{ mode: "if" as const, outro: 80 },
@@ -140,26 +145,23 @@ describe("Switch.Root reactivity", () => {
 			"leaves bind:ref and the form reset to the new switch ($mode, outro $outro)",
 			async ({ mode, outro }) => {
 				const errors = vi.spyOn(console, "error");
-				const { component } = await render(SwitchRootSwap, { mode, outro });
-				expect(component.getRef()).toBe(screen.getByTestId("a"));
+				const screen = await render(SwitchRootSwap, { mode, outro });
+				expect(screen.component.getRef()).toBe(screen.getByTestId("a").element());
 
-				component.swap();
+				screen.component.swap();
 				flushSync();
 				const b = screen.getByTestId("b");
-				expect(component.getRef()).toBe(b);
+				expect(screen.component.getRef()).toBe(b.element());
 
 				// Past the old switch's outro, if any: its teardown must not clear the new switch's ref.
 				// The outro ends on the browser's animation clock, which a loaded machine stretches.
-				await waitFor(() => {
-					expect(screen.queryByTestId("a")).toBeNull();
-				});
-				expect(component.getRef()).toBe(b);
+				await expect.poll(() => screen.container.querySelector('[data-testid="a"]')).toBeNull();
+				expect(screen.component.getRef()).toBe(b.element());
 
-				fireEvent.click(b);
-				expect(b).toHaveAttribute("aria-checked", "true");
-				document.querySelector("form")!.reset();
-				await new Promise((resolve) => setTimeout(resolve, 0));
-				expect(b).toHaveAttribute("aria-checked", "false");
+				await userEvent.click(b);
+				await expect.element(b).toHaveAttribute("aria-checked", "true");
+				screen.container.querySelector("form")!.reset();
+				await expect.element(b).toHaveAttribute("aria-checked", "false");
 				expect(errors).not.toHaveBeenCalled();
 			},
 		);

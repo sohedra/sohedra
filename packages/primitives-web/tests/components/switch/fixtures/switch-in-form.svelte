@@ -1,6 +1,6 @@
 <!--
-  A switch in a plain `<form>` with Submit and Reset buttons. Submitting is always prevented, then
-  reported through `onFormSubmit`.
+  A switch in a plain `<form>` with Submit and Reset buttons, sized so a real pointer can press it.
+  Submitting is always prevented, then reported through `onFormSubmit`.
   - `form`: the switch is rendered outside the form, which gets this id.
   - `binding`: `"state"` binds `checked` to a `$state` starting at `initial`, shown in
     `data-testid="bound"`; `"function"` binds it to `get` / `set`.
@@ -20,6 +20,7 @@
 		nativeCheckbox,
 		onFormSubmit,
 		onFormReset,
+		style = "display: inline-block; width: 16px; height: 16px",
 		...rest
 	}: {
 		binding?: "state" | "function";
@@ -42,11 +43,11 @@
 
 {#snippet control()}
 	{#if binding === "state"}
-		<SwitchRoot bind:checked {form} {...rest} />
+		<SwitchRoot bind:checked {form} {style} {...rest} />
 	{:else if binding === "function"}
-		<SwitchRoot bind:checked={get, set} {form} {...rest} />
+		<SwitchRoot bind:checked={get, set} {form} {style} {...rest} />
 	{:else}
-		<SwitchRoot {form} {...rest} />
+		<SwitchRoot {form} {style} {...rest} />
 	{/if}
 {/snippet}
 

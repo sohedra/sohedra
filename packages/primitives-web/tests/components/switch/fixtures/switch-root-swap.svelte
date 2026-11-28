@@ -1,7 +1,8 @@
 <!--
   Swaps one Switch.Root for another inside a form, through `{#if}` (the old one optionally playing
   an `out:` transition, so its teardown runs after the new one mounts) or `{#key}`. Both bind the
-  same `ref`.
+  same `ref`. The demo is one switch and can't be swapped. Each switch is sized so a real pointer
+  can press it.
 -->
 <script lang="ts">
 	import { fade } from "svelte/transition";
@@ -9,6 +10,8 @@
 	import SwitchRoot from "#lib/components/switch/switch-root.svelte";
 
 	let { mode = "if", outro = 0 }: { mode?: "if" | "key"; outro?: number } = $props();
+
+	const style = "display: inline-block; width: 16px; height: 16px";
 
 	let which = $state<"a" | "b">("a");
 	let ref: HTMLElement | null = $state(null);
@@ -26,14 +29,20 @@
 	{#if mode === "if"}
 		{#if which === "a"}
 			<span out:fade={{ duration: outro }}>
-				<SwitchRoot bind:ref name="a" data-testid="a" defaultChecked />
+				<SwitchRoot bind:ref name="a" data-testid="a" defaultChecked {style} />
 			</span>
 		{:else}
-			<SwitchRoot bind:ref name="b" data-testid="b" />
+			<SwitchRoot bind:ref name="b" data-testid="b" {style} />
 		{/if}
 	{:else}
 		{#key which}
-			<SwitchRoot bind:ref name={which} data-testid={which} defaultChecked={which === "a"} />
+			<SwitchRoot
+				bind:ref
+				name={which}
+				data-testid={which}
+				defaultChecked={which === "a"}
+				{style}
+			/>
 		{/key}
 	{/if}
 	<button type="reset">Reset</button>

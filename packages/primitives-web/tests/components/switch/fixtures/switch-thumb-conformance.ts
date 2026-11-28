@@ -11,6 +11,7 @@ export const switchThumbConformance: ConformanceSetup<SwitchThumbState> = {
 	part: SwitchThumb as Component<Record<string, unknown>>,
 	wrapper: SwitchThumbWrapper,
 	defaultTag: "span",
+	module: { url: import.meta.url, name: "switchThumbConformance" },
 	state: {
 		attribute: "data-checked",
 		on: { checked: true },
