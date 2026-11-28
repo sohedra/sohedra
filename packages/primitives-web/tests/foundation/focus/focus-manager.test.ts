@@ -22,11 +22,9 @@ import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { server, userEvent } from "vitest/browser";
 
-import type {
-	InteractionType,
-	PopoverRootChangeEventDetails,
-} from "#lib/components/popover/popover-types.js";
+import type { PopoverRootChangeEventDetails } from "#lib/components/popover/popover-types.js";
 import type { WebTypes } from "#lib/foundation/kernel/index.js";
+import type { InteractionType } from "#lib/index.js";
 
 import { dispatch } from "../../kit/kit-events.js";
 import { holdFrames, nextFrame, nextTask, settle } from "../../kit/kit-frames.js";

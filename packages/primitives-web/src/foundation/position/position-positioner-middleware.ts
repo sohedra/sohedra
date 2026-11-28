@@ -9,14 +9,9 @@ import {
 
 import { ownerDocument, ownerWindow } from "../kernel/index.js";
 import { PositionerCssVariables } from "./position-attributes.js";
+import type { Boundary } from "./position-types.js";
 
 export type { Measured };
-
-export type Boundary =
-	| "clipping-ancestors"
-	| Element
-	| Element[]
-	| { x: number; y: number; width: number; height: number };
 
 /**
  * The placement options of one computation, as plain values. `side`, `rtl` and `arrowElement`

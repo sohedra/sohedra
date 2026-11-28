@@ -1,4 +1,4 @@
-// Position: the Positioner on the web: the shared Positioner, Arrow and Viewport parts, the page scroll lock of a modal popup, and the styling hooks they write.
+// Position: the Positioner on the web: the shared Positioner, Arrow and Viewport parts, the page scroll lock of a modal popup, the styling hooks they write, and the positioning types of an anchored popup's props.
 export { default as AnchoredArrow } from "./position-anchored-arrow.svelte";
 export { default as AnchoredPositioner } from "./position-anchored-positioner.svelte";
 export { useAnchoredScrollLock } from "./position-anchored-scroll-lock.svelte.js";
@@ -9,5 +9,12 @@ export {
 	ViewportDataAttributes,
 	viewportStateMapping,
 } from "./position-attributes.js";
-export type { Boundary } from "./position-positioner-middleware.js";
-export type { PositionerAnchor } from "./position-types.js";
+export type {
+	Align,
+	Boundary,
+	CollisionAvoidance,
+	OffsetFunction,
+	Padding,
+	PositionerAnchor,
+	Side,
+} from "./position-types.js";

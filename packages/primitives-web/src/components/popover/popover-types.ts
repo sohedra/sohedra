@@ -1,4 +1,3 @@
-import type { Padding } from "@floating-ui/dom";
 import type {
 	PopoverArrowState,
 	PopoverBackdropState,
@@ -15,33 +14,28 @@ import type {
 	PopoverTriggerState,
 	PopoverViewportState,
 } from "@sohedra/primitives-core/components/popover/index.js";
-import type { InteractionType } from "@sohedra/primitives-core/foundation/popup/index.js";
-import type {
-	Align,
-	CollisionAvoidance,
-	OffsetFunction,
-	Side,
-} from "@sohedra/primitives-core/foundation/position/index.js";
 import type { Component, ComponentInternals, Snippet, SvelteComponent } from "svelte";
 import type { HTMLAttributes, HTMLButtonAttributes } from "svelte/elements";
 
 import type { FocusTarget } from "../../foundation/focus/index.js";
 import type {
 	ConstructorOptions,
-	NonNativeButtonProps,
+	NativeButtonProps,
 	SohedraComponentProps,
 	WebTypes,
 } from "../../foundation/kernel/index.js";
 import type { PortalContainer } from "../../foundation/portal/index.js";
-import type { Boundary, PositionerAnchor } from "../../foundation/position/index.js";
-
-export type {
+import type {
 	Align,
 	Boundary,
 	CollisionAvoidance,
-	InteractionType,
 	OffsetFunction,
 	Padding,
+	PositionerAnchor,
+	Side,
+} from "../../foundation/position/index.js";
+
+export type {
 	PopoverArrowState,
 	PopoverBackdropState,
 	PopoverCloseState,
@@ -55,7 +49,6 @@ export type {
 	PopoverTitleState,
 	PopoverTriggerState,
 	PopoverViewportState,
-	Side,
 };
 
 export type PopoverRootChangeEventDetails = PlatformPopoverRootChangeEventDetails<WebTypes>;
@@ -148,13 +141,9 @@ export interface PopoverTriggerComponent {
 }
 
 export interface PopoverTriggerProps<Payload = unknown>
-	extends NonNativeButtonProps, SohedraComponentProps<HTMLButtonAttributes, PopoverTriggerState> {
-	/**
-	 * Whether the component renders a native `<button>` element when replacing it via the
-	 * `render` snippet. Set to `false` if the rendered element is not a button (e.g. `<div>`).
-	 * @default true
-	 */
-	nativeButton?: boolean | undefined;
+	extends
+		NativeButtonProps,
+		SohedraComponentProps<HTMLButtonAttributes, PopoverTriggerState, HTMLElement> {
 	/** A handle to associate the trigger with a popover. */
 	handle?: PopoverHandle<Payload> | undefined;
 	/** A payload to pass to the popover when it is opened. */
@@ -182,7 +171,10 @@ export interface PopoverTriggerProps<Payload = unknown>
 	 * @default 0
 	 */
 	closeDelay?: number | undefined;
-	/** Whether the component should ignore user interaction. @default false */
+	/**
+	 * Whether the component should ignore user interaction.
+	 * @default false
+	 */
 	disabled?: boolean | undefined;
 }
 
@@ -197,7 +189,7 @@ export interface PopoverPortalProps extends SohedraComponentProps<
 	 */
 	keepMounted?: boolean | undefined;
 	/** A parent element to render the portal element into. */
-	container?: PortalContainer;
+	container?: PortalContainer | undefined;
 }
 
 export interface PopoverPositionerProps extends SohedraComponentProps<
@@ -281,6 +273,9 @@ export interface PopoverPopupProps extends SohedraComponentProps<
 > {
 	/**
 	 * Determines the element to focus when the popover is opened.
+	 * By default, focus moves to the first tabbable element inside the popup, except when the
+	 * popover is opened by touch: then the popup itself is focused to avoid opening the virtual
+	 * keyboard.
 	 * - `false`: Do not move focus.
 	 * - `true`: Move focus based on the default behavior (first tabbable element or popup).
 	 * - an element: Move focus to it.
@@ -288,7 +283,7 @@ export interface PopoverPopupProps extends SohedraComponentProps<
 	 *   Return an element to focus, `true` to use the default behavior, or `false`/`undefined` to
 	 *   do nothing.
 	 */
-	initialFocus?: FocusTarget;
+	initialFocus?: FocusTarget | undefined;
 	/**
 	 * Determines the element to focus when the popover is closed.
 	 * - `false`: Do not move focus.
@@ -298,7 +293,7 @@ export interface PopoverPopupProps extends SohedraComponentProps<
 	 *   Return an element to focus, `true` to use the default behavior, or `false`/`undefined` to
 	 *   do nothing.
 	 */
-	finalFocus?: FocusTarget;
+	finalFocus?: FocusTarget | undefined;
 }
 
 export interface PopoverArrowProps extends SohedraComponentProps<
@@ -327,15 +322,12 @@ export interface PopoverDescriptionProps extends SohedraComponentProps<
 
 export interface PopoverCloseProps
 	extends
-		NonNativeButtonProps,
+		NativeButtonProps,
 		SohedraComponentProps<HTMLButtonAttributes, PopoverCloseState, HTMLButtonElement> {
 	/**
-	 * Whether the component renders a native `<button>` element when replacing it via the
-	 * `render` snippet. Set to `false` if the rendered element is not a button (e.g. `<div>`).
-	 * @default true
+	 * Whether the button should ignore user interaction.
+	 * @default false
 	 */
-	nativeButton?: boolean | undefined;
-	/** Whether the button should ignore user interaction. @default false */
 	disabled?: boolean | undefined;
 }
 

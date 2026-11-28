@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page, userEvent } from "vitest/browser";
 
-import type { PopoverRootChangeEventDetails, Side } from "#lib/components/popover/popover-types.js";
+import type { PopoverRootChangeEventDetails } from "#lib/components/popover/popover-types.js";
+import type { Side } from "#lib/index.js";
 
 import { nextFrame } from "../../kit/kit-frames.js";
 import PopoverViewport, { type ViewportTestTrigger } from "./fixtures/popover-viewport.svelte";

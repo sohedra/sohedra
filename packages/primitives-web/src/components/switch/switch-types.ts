@@ -19,7 +19,10 @@ export type SwitchRootChangeEventDetails = PlatformSwitchRootChangeEventDetails<
 export interface SwitchRootProps
 	extends
 		NonNativeButtonProps,
-		Omit<SohedraComponentProps<HTMLAttributes<HTMLSpanElement>, SwitchRootState>, "onchange"> {
+		Omit<
+			SohedraComponentProps<HTMLAttributes<HTMLSpanElement>, SwitchRootState, HTMLElement>,
+			"onchange"
+		> {
 	/**
 	 * The id of the hidden input element.
 	 *

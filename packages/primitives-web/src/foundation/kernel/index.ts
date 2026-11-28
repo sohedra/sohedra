@@ -65,6 +65,7 @@ export {
 export type {
 	ClassProp,
 	ConstructorOptions,
+	NativeButtonProps,
 	NonNativeButtonProps,
 	PartUserProps,
 	RenderProps,

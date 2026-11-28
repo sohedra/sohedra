@@ -51,6 +51,17 @@ export type SohedraComponentProps<
 	ref?: RefElement | null | undefined;
 };
 
+/** The `nativeButton` prop of a part that renders a `<button>`. */
+export interface NativeButtonProps {
+	/**
+	 * Whether the component renders a native `<button>` element when replacing it via the
+	 * `render` snippet. Set to `false` if the rendered element is not a button (e.g. `<div>`).
+	 * @default true
+	 */
+	nativeButton?: boolean | undefined;
+}
+
+/** The `nativeButton` prop of a part that renders another element, such as a `<span>`. */
 export interface NonNativeButtonProps {
 	/**
 	 * Whether the component renders a native `<button>` element when replacing it via the

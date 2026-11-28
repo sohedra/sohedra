@@ -1,12 +1,6 @@
-// The package entry: every component's exports by name, one statement per component. Popover's
-// carries the positioning types every anchored popup's props use.
+// The package entry: every component's exports by name, one statement per component, then the
+// shared types the components' public props and state use, one statement per job that holds them.
 export {
-	type Align,
-	type Boundary,
-	type CollisionAvoidance,
-	type InteractionType,
-	type OffsetFunction,
-	type Padding,
 	Popover,
 	PopoverArrowDataAttributes,
 	type PopoverArrowProps,
@@ -45,7 +39,6 @@ export {
 	PopoverViewportDataAttributes,
 	type PopoverViewportProps,
 	type PopoverViewportState,
-	type Side,
 } from "./components/popover/index.js";
 export {
 	Switch,
@@ -58,3 +51,19 @@ export {
 	type SwitchThumbProps,
 	type SwitchThumbState,
 } from "./components/switch/index.js";
+export type {
+	InstantType,
+	InteractionType,
+} from "@sohedra/primitives-core/foundation/popup/index.js";
+export type { TransitionStatus } from "@sohedra/primitives-core/foundation/presence/index.js";
+export type { FocusTarget } from "./foundation/focus/index.js";
+export type { PortalContainer } from "./foundation/portal/index.js";
+export type {
+	Align,
+	Boundary,
+	CollisionAvoidance,
+	OffsetFunction,
+	Padding,
+	PositionerAnchor,
+	Side,
+} from "./foundation/position/index.js";

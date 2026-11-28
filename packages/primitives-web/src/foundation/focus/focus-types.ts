@@ -26,12 +26,12 @@ export interface FocusManagerOptions {
 	/** Whether focus is trapped and outside content hidden. @default true */
 	readonly modal?: boolean | undefined;
 	/** @default true */
-	readonly initialFocus?: FocusTarget;
+	readonly initialFocus?: FocusTarget | undefined;
 	/**
 	 * Where focus returns on close. A target that isn't a boolean is the user's explicit one, which
 	 * takes focus even when it moved elsewhere after opening. @default true
 	 */
-	readonly returnFocus?: FocusTarget;
+	readonly returnFocus?: FocusTarget | undefined;
 	/** Where focus goes when the focused element inside is removed. @default false */
 	readonly restoreFocus?: boolean | "popup" | undefined;
 	/** The kind of input that opened the popup. Only an explicit `null` is a programmatic open. */

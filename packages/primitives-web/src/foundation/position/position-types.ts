@@ -1,16 +1,26 @@
-import type { Padding, VirtualElement } from "@floating-ui/dom";
+import type { VirtualElement } from "@floating-ui/dom";
 import type {
 	Align,
 	AnchoredViewportState,
 	CollisionAvoidance,
 	OffsetFunction,
+	Padding,
 	Side,
 } from "@sohedra/primitives-core/foundation/position/index.js";
 import type { HTMLAttributes } from "svelte/elements";
 
 import type { Props } from "../kernel/index.js";
 import type { PopupLayoutStore } from "../popup/index.js";
-import type { Boundary } from "./position-positioner-middleware.js";
+
+// The positioning types every anchored popup's public props use, from core and of the web's own.
+export type { Align, CollisionAvoidance, OffsetFunction, Padding, Side };
+
+/** An element or a rectangle that delimits the area a popup is confined to. */
+export type Boundary =
+	| "clipping-ancestors"
+	| Element
+	| Element[]
+	| { x: number; y: number; width: number; height: number };
 
 /** An anchor: an element, a virtual element, or a function returning one. */
 export type PositionerAnchor =
