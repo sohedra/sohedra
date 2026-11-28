@@ -6,7 +6,6 @@
 		"part:positioner": "Placement spans the popup and its trigger: popover.position and popover.position.async.",
 		"part:root": "The Root's behavior spans its parts: popover.dismiss, popover.hover, popover.focus and popover.detached-triggers.",
 		"part:title": "The part contract in popover.conformance; the popup it names in popover.a11y.",
-		"scheme:popover.hover.test.ts": "todo: move the comment that says what the file covers to its first line, and split the file by topic below 600 lines.",
 		"scheme:fixtures/svelte.config.js": "svelte-check reads the fixtures' Svelte config from here, to type the `await` the late-content fixtures use."
 	},
 	"switch": {
