@@ -45,7 +45,9 @@ export function useTriggerRegistration<
 		);
 	});
 
-	// While this trigger owns the mounted popup, its element and data are the popup's.
+	// While this trigger owns the mounted popup, its element and data are the popup's. The payload
+	// lands an update after the trigger change on purpose: in the same update, async content that
+	// waits on the payload would hold the whole trigger change until it loads.
 	$effect(() => {
 		const { popup, id, element, data } = options();
 		if (popup.activeTrigger.isMountedBy(id)) {
