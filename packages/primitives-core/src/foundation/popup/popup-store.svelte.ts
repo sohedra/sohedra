@@ -27,6 +27,7 @@ import { Presence, type TransitionStatus } from "../presence/index.js";
 import { ActiveTriggerStore } from "./popup-active-trigger-store.svelte.js";
 import type { PopupBehavior } from "./popup-behavior.js";
 import { EventEmitter } from "./popup-event-emitter.js";
+import { HANDLE_ATTACH } from "./popup-handle.svelte.js";
 import {
 	awaitsUnmount,
 	closesUnheard,
@@ -58,7 +59,7 @@ export interface PopupStoreProps<Details> {
 	readonly onOpenChangeComplete: ((open: boolean) => void) | undefined;
 	/** The handle that holds the store while it is connected, if any. */
 	readonly handle?:
-		| { attachStore(store: never, imperativeEvent: () => unknown): () => void }
+		| { [HANDLE_ATTACH](store: never, imperativeEvent: () => unknown): () => void }
 		| undefined;
 }
 
@@ -699,6 +700,6 @@ export abstract class PopupStore<
 		// The handle holds this store while it is connected. Attached before the parts inside
 		// initialise (a pre-effect runs first), so they can use the handle in their first effects.
 		const imperativeEvent = this.#imperativeEvent;
-		$effect.pre(() => this.#handle?.attachStore(this as never, imperativeEvent));
+		$effect.pre(() => this.#handle?.[HANDLE_ATTACH](this as never, imperativeEvent));
 	}
 }

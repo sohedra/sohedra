@@ -8,6 +8,7 @@ import {
 	missingProviderMessage,
 } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import {
+	HANDLE_STORE,
 	type PopupTriggerData,
 	type PopupView,
 	useTriggerRegistration,
@@ -28,7 +29,7 @@ import {
 
 /** A handle as a trigger reads it: the store of the Root attached to it, else an inert one. */
 export interface PopupTriggerHandle {
-	readonly store: unknown;
+	readonly [HANDLE_STORE]: unknown;
 }
 
 /** What the trigger part tells `usePopupTrigger`, from its options function. */
@@ -93,7 +94,7 @@ export function usePopupTrigger<
 	// Root attaches, else an inert one. The one cast of a handle's store is here.
 	const popup: Store = $derived.by(() => {
 		const current = options().handle;
-		return current ? (current.store as Store) : (root as Store);
+		return current ? (current[HANDLE_STORE] as Store) : (root as Store);
 	});
 	const behavior = untrack(() => popup.behavior);
 

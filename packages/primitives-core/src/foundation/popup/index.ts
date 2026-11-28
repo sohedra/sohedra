@@ -2,7 +2,12 @@
 export { POPUP_BEHAVIOR, type PopupBehavior } from "./popup-behavior.js";
 export { type ClosePartCount, closePartCount, useClosePart } from "./popup-close-parts.svelte.js";
 export { type PopupNode, PopupTree } from "./popup-tree.js";
-export { detachedPopupDeps, PopupHandle } from "./popup-handle.svelte.js";
+export {
+	detachedPopupDeps,
+	HANDLE_ATTACH,
+	HANDLE_STORE,
+	PopupHandle,
+} from "./popup-handle.svelte.js";
 export { isNestedInPopup, movesToOtherTrigger, pressOpenState } from "./popup-rules.js";
 export {
 	type PopupHooks,

@@ -1,5 +1,6 @@
 // The base of every popup's handle: a Root's store attached from outside it, the triggers rendered
-// outside the Root, and the imperative open and close.
+// outside the Root, and the imperative open and close. A handle's public members are its kind's
+// imperative ones; the store and its attachment sit under symbol keys, for our own parts only.
 
 import { DEV } from "esm-env";
 
@@ -24,6 +25,12 @@ export function detachedPopupDeps(): PopupStoreDeps<PlatformTypes> {
 		detached: true,
 	};
 }
+
+/** The key of a handle's store, which detached triggers read. Not public API. */
+export const HANDLE_STORE = Symbol("handle store");
+
+/** The key of a handle's attachment of a Root's store, which the Root calls. Not public API. */
+export const HANDLE_ATTACH = Symbol("handle attach");
 
 /** What a handle needs from a Root's store. */
 export interface HandleAttachableStore {
@@ -61,8 +68,9 @@ interface Attachment<Store> {
 
 /**
  * Connects a Root with triggers rendered outside it and opens or closes it imperatively. Its
- * constructor is pure, so handles can be created at module scope. Detached triggers read
- * {@link store}: the attached Root's store, or an inert fallback while no Root is attached.
+ * constructor is pure, so handles can be created at module scope. Detached triggers read the store
+ * under {@link HANDLE_STORE}: the attached Root's store, or an inert fallback while no Root is
+ * attached.
  */
 export class PopupHandle<Store extends HandleAttachableStore> {
 	readonly #fallback: Store;
@@ -78,7 +86,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	}
 
 	/** The attached Root's store, or the fallback store. Reactive. */
-	get store(): Store {
+	get [HANDLE_STORE](): Store {
 		return this.#attached?.store ?? this.#fallback;
 	}
 
@@ -92,7 +100,7 @@ export class PopupHandle<Store extends HandleAttachableStore> {
 	 * handle call runs no platform code. Returns the detachment, which hands control back to the
 	 * newest store still attached.
 	 */
-	attachStore = (store: Store, imperativeEvent: () => unknown): (() => void) => {
+	[HANDLE_ATTACH] = (store: Store, imperativeEvent: () => unknown): (() => void) => {
 		const attachment: Attachment<Store> = { store, imperativeEvent };
 		this.#attachments.push(attachment);
 		this.#attached = attachment;

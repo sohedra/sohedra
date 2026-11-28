@@ -1,3 +1,4 @@
+import { HANDLE_STORE } from "@sohedra/primitives-core/foundation/popup/index.js";
 // Popover's triggers outside the Root, on a handle: opening from a mount effect, registration when
 // a trigger's element changes, the active trigger's press state and focus guards, and the
 // `instant` state when the popup moves between triggers.
@@ -50,12 +51,12 @@ describe("Popover.Root with detached triggers", () => {
 
 	it("hands off hover between detached triggers when the rendered component retains a stale ref", async () => {
 		const handle = Popover.createHandle<number>();
-		const fallbackStore = handle.store;
+		const fallbackStore = handle[HANDLE_STORE];
 
 		await render(PopoverRenderTriggers, { handle });
 
 		expect(fallbackStore.triggers.size).toBe(0);
-		expect(handle.store.triggers.size).toBe(2);
+		expect(handle[HANDLE_STORE].triggers.size).toBe(2);
 
 		await userEvent.hover(page.getByRole("button", { name: "Trigger 1" }));
 		await expect.element(popup()).toHaveTextContent("1");
@@ -66,13 +67,13 @@ describe("Popover.Root with detached triggers", () => {
 
 	it("keeps registration on the attached store when a stale-ref component swaps its host node", async () => {
 		const handle = Popover.createHandle<number>();
-		const fallbackStore = handle.store;
+		const fallbackStore = handle[HANDLE_STORE];
 
 		await render(PopoverSwappedTrigger, { handle });
 
 		const initialTrigger = page.getByRole("button", { name: "Trigger" }).element();
 		expect(fallbackStore.triggers.size).toBe(0);
-		expect(handle.store.triggers.getById("trigger")).toBe(initialTrigger);
+		expect(handle[HANDLE_STORE].triggers.getById("trigger")).toBe(initialTrigger);
 
 		// Replacing the host node re-attaches the trigger's ref after the migration.
 		await userEvent.click(page.getByRole("button", { name: "Swap node" }));
@@ -82,14 +83,14 @@ describe("Popover.Root with detached triggers", () => {
 		expect(swappedTrigger).not.toBe(initialTrigger);
 		expect(initialTrigger.isConnected).toBe(false);
 		expect(fallbackStore.triggers.size).toBe(0);
-		expect(handle.store.triggers.getById("trigger")).toBe(swappedTrigger);
+		expect(handle[HANDLE_STORE].triggers.getById("trigger")).toBe(swappedTrigger);
 
 		// `open()` searches attached stores first, so a registration left on the wrong store would
 		// anchor the popup to the removed node.
 		handle.open("trigger");
 
 		await expect.element(popup()).toBeVisible();
-		expect(handle.store.activeTriggerElement).toBe(swappedTrigger);
+		expect(handle[HANDLE_STORE].activeTriggerElement).toBe(swappedTrigger);
 	});
 
 	it("does not detach the consumer ref when the handle attaches to a root", async () => {
@@ -103,7 +104,7 @@ describe("Popover.Root with detached triggers", () => {
 			},
 		});
 
-		expect(handle.store.triggers.getById("trigger")).toBe(
+		expect(handle[HANDLE_STORE].triggers.getById("trigger")).toBe(
 			page.getByRole("button", { name: "Trigger" }).element(),
 		);
 		// Migrating from the fallback store to the root's store must not churn the bound ref, which

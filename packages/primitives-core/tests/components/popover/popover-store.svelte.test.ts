@@ -15,7 +15,11 @@ import {
 	type PlatformTypes,
 	REASONS,
 } from "../../../src/foundation/kernel/index.js";
-import { PopupTriggerStore } from "../../../src/foundation/popup/index.js";
+import {
+	HANDLE_ATTACH,
+	HANDLE_STORE,
+	PopupTriggerStore,
+} from "../../../src/foundation/popup/index.js";
 import { initialPosition, PositionerStore } from "../../../src/foundation/position/index.js";
 import { createPopover, type PopoverProps } from "../../kit/kit-popover.svelte.js";
 import { element, event } from "../../kit/kit-stand-ins.js";
@@ -480,13 +484,13 @@ describe("PopoverHandle", () => {
 	it("ignores imperative calls while no root is attached, and follows the attached root", () => {
 		const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 		const handle = createPopoverHandle();
-		const detached = handle.store;
+		const detached = handle[HANDLE_STORE];
 		handle.open("x");
 		expect(warn).toHaveBeenCalled();
 		expect(handle.isOpen).toBe(false);
 		const { store } = setup();
-		const detach = handle.attachStore(store, () => event("sohedra"));
-		expect(handle.store).toBe(store);
+		const detach = handle[HANDLE_ATTACH](store, () => event("sohedra"));
+		expect(handle[HANDLE_STORE]).toBe(store);
 		const trigger = element("x");
 		store.triggers.add("x", trigger);
 		handle.open("x");
@@ -495,14 +499,14 @@ describe("PopoverHandle", () => {
 		handle.close();
 		expect(handle.isOpen).toBe(false);
 		detach();
-		expect(handle.store).toBe(detached);
+		expect(handle[HANDLE_STORE]).toBe(detached);
 		warn.mockRestore();
 	});
 
 	it("throws when opened with an unregistered trigger id", () => {
 		const handle = createPopoverHandle();
 		const { store } = setup();
-		handle.attachStore(store, () => event("sohedra"));
+		handle[HANDLE_ATTACH](store, () => event("sohedra"));
 		expect(() => handle.open("missing")).toThrow(/no matching trigger is registered/);
 	});
 
@@ -511,7 +515,7 @@ describe("PopoverHandle", () => {
 		const handle = createPopoverHandle();
 		const { store } = setup({ onOpenChange });
 		const imperative = event("sohedra");
-		handle.attachStore(store, () => imperative);
+		handle[HANDLE_ATTACH](store, () => imperative);
 		store.triggers.add("x", element("x"));
 		handle.open("x");
 		expect(onOpenChange).toHaveBeenLastCalledWith(
