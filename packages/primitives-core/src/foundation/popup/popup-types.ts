@@ -1,5 +1,5 @@
 // The types every popup shares: what an open change carries in and out, what a trigger forwards,
-// the bookkeeping the interactions share, and the popup's own events.
+// and the popup's own events.
 
 import type {
 	AnyPlatformEvent,
@@ -31,21 +31,6 @@ export interface OpenChangeSource {
 /** What a trigger forwards to the popup while it owns it. */
 export interface PopupTriggerData<Payload> {
 	readonly payload: Payload | undefined;
-}
-
-/**
- * Bookkeeping the platform interactions share and that nothing renders from: the event that
- * opened the popup, and whether an interaction started inside the popup's own elements.
- */
-export interface PopupInteractionData<T extends PlatformTypes = PlatformTypes> {
-	/** The event that opened the popup; a click-like one isn't replaced by a later hover one. */
-	openEvent: AnyPlatformEvent<T> | undefined;
-	/** {@link openEvent}'s type, in core's vocabulary (the change's `eventType`). */
-	openEventType: InteractionEventType | undefined;
-	/** An event passed through the popup's own elements. */
-	insideTree: boolean;
-	/** The popup's node in the floating tree, once its Positioner registers it. */
-	nodeId: string | undefined;
 }
 
 /** The kind of input that opened or closed a popup: a pointer type, or the keyboard. */

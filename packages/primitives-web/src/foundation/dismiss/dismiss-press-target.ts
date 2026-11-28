@@ -28,7 +28,8 @@ import {
 /** The popup's place in the tree of nested popups. */
 export interface TreePlaceView {
 	readonly tree: FloatingTree<WebTypes> | null;
-	readonly data: { readonly nodeId: string | undefined };
+	/** The popup's node in {@link tree}. */
+	readonly nodeId: string | undefined;
 }
 
 /**
@@ -121,7 +122,7 @@ export function isEventWithinFloatingTree(popup: PressTargetView, event: Event):
 	const inChild =
 		tree != null &&
 		tree
-			.children(popup.data.nodeId)
+			.children(popup.nodeId)
 			.some((node) => isEventTargetWithin(event, node.context?.floatingElement));
 	return isEventWithinOwnElements(popup, event) || inChild;
 }
@@ -189,21 +190,26 @@ export const PRESS_EVENTS = [
 	"touchmove",
 ] as const;
 
-/** Marks `nodes` as pressed inside on every press passing through the element, until the next task. */
-function attachInsideMarker(getNodes: () => FloatingNode<WebTypes>[]): Attachment<HTMLElement> {
+/**
+ * Marks `nodes` in their tree as pressed inside on every press passing through the element, until
+ * the next task.
+ */
+function attachInsideMarker(
+	getNodes: () => { tree: FloatingTree<WebTypes> | null; nodes: FloatingNode<WebTypes>[] },
+): Attachment<HTMLElement> {
 	return (element) => {
 		const clearTimeout = new Timeout(webScheduler);
 		const mark = () => {
-			const nodes = getNodes();
+			const { tree, nodes } = getNodes();
 			for (const node of nodes) {
 				if (node.context) {
-					node.context.data.insideTree = true;
+					tree?.markInside(node.id);
 				}
 			}
 			clearTimeout.start(0, () => {
 				for (const node of nodes) {
 					if (node.context) {
-						node.context.data.insideTree = false;
+						tree?.clearInside(node.id);
 					}
 				}
 			});
@@ -230,6 +236,6 @@ function attachInsideMarker(getNodes: () => FloatingNode<WebTypes>[]): Attachmen
 export function attachAncestorsInsideMarker(popup: TreePlaceView): Attachment<HTMLElement> {
 	return attachInsideMarker(() => {
 		const tree = popup.tree;
-		return tree ? tree.ancestors(popup.data.nodeId) : [];
+		return { tree, nodes: tree ? tree.ancestors(popup.nodeId) : [] };
 	});
 }

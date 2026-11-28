@@ -515,7 +515,7 @@ describe("PopoverHandle", () => {
 			true,
 			expect.objectContaining({ reason: REASONS.imperativeAction, event: imperative }),
 		);
-		expect(store.data.openEventType).toBe(REASONS.imperativeAction);
+		expect(store.openEventType).toBe(REASONS.imperativeAction);
 		// Not click-like: a press on the owning trigger keeps an imperatively opened popover open.
 		expect(store.pressOpen(true)).toBe(true);
 		handle.close();

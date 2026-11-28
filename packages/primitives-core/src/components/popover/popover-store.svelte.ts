@@ -146,7 +146,7 @@ export class PopoverStore<
 	 */
 	readonly guards = new TriggerFocusGuards<T>();
 
-	/** Whether a press keeps a hover-opened popover open. Set by a hover opening; reset on unmount. */
+	/** Whether a press keeps a hovered popover open. Set by a hover opening; reset on unmount. */
 	#stick = true;
 
 	// Forwarded from the trigger that owns the popup.
@@ -291,7 +291,7 @@ export class PopoverStore<
 	 */
 	pressOpen(isActiveReference: boolean): boolean {
 		return untrack(() =>
-			pressOpenState(this.open, isActiveReference, this.data.openEventType, this.stickIfOpen),
+			pressOpenState(this.open, isActiveReference, this.openEventType, this.stickIfOpen),
 		);
 	}
 

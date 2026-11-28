@@ -48,7 +48,6 @@ import type {
 	OpenChangeSource,
 	PopupChangeEventDetails,
 	PopupEvents,
-	PopupInteractionData,
 	PopupTriggerData,
 } from "./popup-types.js";
 
@@ -179,11 +178,6 @@ export abstract class PopupStore<
 	readonly positionerClaim: OwnedValue<PositionerStore<T>> = new OwnedValue<PositionerStore<T>>();
 	/** The popup element's id: the Popup part's (it may be the user's), else `floatingId`. */
 	readonly popupIdClaim: OwnedValue<string> = new OwnedValue<string>();
-	/**
-	 * Bookkeeping the interactions share and nothing renders from. The open event and its type
-	 * are the store's.
-	 */
-	readonly data: PopupInteractionData<T>;
 	/** Whether Escape and outside presses inside the popup also reach its ancestors. */
 	readonly dismissBubbles: { readonly escapeKey: boolean; readonly outsidePress: boolean } = {
 		escapeKey: false,
@@ -207,6 +201,8 @@ export abstract class PopupStore<
 	#openEvent: AnyPlatformEvent<T> | undefined = undefined;
 	/** That event's type, in core's words. Set and cleared with the open event. */
 	#openEventType: InteractionEventType | undefined = undefined;
+	/** The popup's node in the floating tree. Set when its Positioner joins the tree. */
+	#nodeId: string | undefined = undefined;
 
 	// An open change is running; an unmount asked for during it waits for its commit.
 	#changing = false;
@@ -290,31 +286,6 @@ export abstract class PopupStore<
 			(details: DismissChangeDetails<T>) =>
 				this.setOpen(false, details as unknown as Omit<Details, "preventUnmountOnClose">),
 		);
-		// The bag's accessors live in an object literal, where `this` is the literal.
-		const event = {
-			get: () => this.#openEvent,
-			set: (value?: AnyPlatformEvent<T>) => (this.#openEvent = value),
-		};
-		const type = {
-			get: () => this.#openEventType,
-			set: (value?: InteractionEventType) => (this.#openEventType = value),
-		};
-		this.data = {
-			get openEvent() {
-				return event.get();
-			},
-			set openEvent(value) {
-				event.set(value);
-			},
-			get openEventType() {
-				return type.get();
-			},
-			set openEventType(value) {
-				type.set(value);
-			},
-			insideTree: false,
-			nodeId: undefined,
-		};
 	}
 
 	get open(): boolean {
@@ -332,6 +303,21 @@ export abstract class PopupStore<
 	/** Why the popup skips its transitions, as stored: also a stale `trigger-change` while closed. */
 	get storedInstantType(): InstantType {
 		return this.#instant;
+	}
+
+	/** The event that opened the popup; a click-like one isn't replaced by a later hover one. */
+	get openEvent(): AnyPlatformEvent<T> | undefined {
+		return this.#openEvent;
+	}
+
+	/** {@link openEvent}'s type, in core's vocabulary (the change's `eventType`). */
+	get openEventType(): InteractionEventType | undefined {
+		return this.#openEventType;
+	}
+
+	/** The popup's node in the floating tree, once its Positioner joins it. */
+	get nodeId(): string | undefined {
+		return this.#nodeId;
 	}
 
 	get popupElement(): T["element"] | null {
@@ -522,7 +508,7 @@ export abstract class PopupStore<
 		const tree = this.tree;
 		const node: FloatingNode<T> = { id, parentId, context: this };
 		tree?.addNode(node);
-		this.data.nodeId = id;
+		this.#nodeId = id;
 		return () => tree?.removeNode(node);
 	};
 

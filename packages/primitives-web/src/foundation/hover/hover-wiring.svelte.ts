@@ -283,7 +283,7 @@ export function useHoverPopup(popup: HoverPopupView, options: () => HoverPopupOp
 					tree &&
 					isElement(relatedTarget) &&
 					tree
-						.children(popup.data.nodeId, false)
+						.children(popup.nodeId, false)
 						.some((node) => contains(node.context?.floatingElement, relatedTarget)),
 				),
 			});

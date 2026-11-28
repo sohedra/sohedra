@@ -55,13 +55,10 @@ export interface HoverView<T extends PlatformTypes = PlatformTypes> {
 	readonly hover: HoverInteraction<T>;
 	/** The tree of nested popups: an open child keeps its parent open. */
 	readonly tree: FloatingTree<T> | null;
-	/** Bookkeeping the popup's behaviours share. */
-	readonly data: {
-		/** The popup's node in {@link tree}. */
-		readonly nodeId: string | undefined;
-		/** The kind of event that opened the popup: a hover never closes a click-opened one. */
-		readonly openEventType: InteractionEventType | undefined;
-	};
+	/** The popup's node in {@link tree}. */
+	readonly nodeId: string | undefined;
+	/** The kind of event that opened the popup: a hover never closes a click-opened one. */
+	readonly openEventType: InteractionEventType | undefined;
 	/** The element the popup is anchored to: its owning trigger. */
 	readonly anchorElement: T["element"] | null;
 	/** The mounted Positioner's measured state: its side is the safe polygon's. */
@@ -77,7 +74,7 @@ export interface HoverView<T extends PlatformTypes = PlatformTypes> {
 }
 
 /** What the nested-popup checks read of a popup. */
-type TreeView<T extends PlatformTypes> = Pick<HoverView<T>, "tree" | "data">;
+type TreeView<T extends PlatformTypes> = Pick<HoverView<T>, "tree" | "nodeId">;
 
 /** A platform listener tracking the safe polygon (web: a document `mousemove`), and its removal. */
 export interface CloseTracker<T extends PlatformTypes = PlatformTypes> {
@@ -169,12 +166,12 @@ export class HoverInteraction<T extends PlatformTypes = PlatformTypes> {
 /** Whether a popup nested in this one is open. */
 function hasOpenChild<T extends PlatformTypes>(popup: TreeView<T>): boolean {
 	const tree = popup.tree;
-	return Boolean(tree && tree.children(popup.data.nodeId).length > 0);
+	return Boolean(tree && tree.children(popup.nodeId).length > 0);
 }
 
 /** Whether a click holds the open popup open, which a hover never closes or reopens. */
 function isPinned<T extends PlatformTypes>(popup: HoverView<T>): boolean {
-	return isPinnedByClick(popup.open, popup.data.openEventType, popup.hover.interactedInside);
+	return isPinnedByClick(popup.open, popup.openEventType, popup.hover.interactedInside);
 }
 
 /**
@@ -585,7 +582,7 @@ export class HoverPopupIntent<T extends PlatformTypes = PlatformTypes> {
 		}
 		// Only an open popup closes when the pointer leaves it: the recorded open event outlives a
 		// close the app makes itself, and that popup has nothing left to close.
-		if (popup.open && isHoverOpenEvent(popup.data.openEventType) && !isPinned(popup)) {
+		if (popup.open && isHoverOpenEvent(popup.openEventType) && !isPinned(popup)) {
 			const closeDelay = getDelay(this.#options().closeDelay, "close", shared.pointerType);
 			const close = () => {
 				changeOpen(popup, this.#flush, false, event);

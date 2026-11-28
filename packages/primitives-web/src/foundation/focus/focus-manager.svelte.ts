@@ -253,7 +253,7 @@ export function useFocusManager(
 		floating: HTMLElement | null,
 		domReference: Element | null,
 	) {
-		const nodeId = popup.data.nodeId;
+		const nodeId = popup.nodeId;
 		const tree = popup.tree;
 		const isRelatedFocusGuard =
 			relatedTarget?.hasAttribute(FOCUS_GUARD_ATTRIBUTE) &&
@@ -308,7 +308,7 @@ export function useFocusManager(
 		portalNode: HTMLElement | null | undefined,
 	): OutsideMarking {
 		const tree = popup.tree;
-		const ancestors = tree ? tree.ancestors(popup.data.nodeId) : [];
+		const ancestors = tree ? tree.ancestors(popup.nodeId) : [];
 		const rootAncestorComboboxReference = ancestors.find((node) =>
 			isTypeableCombobox(node.context?.anchorElement || null),
 		)?.context?.anchorElement;
@@ -461,8 +461,8 @@ export function useFocusManager(
 							return;
 						}
 					}
-					if (popup.data.insideTree) {
-						popup.data.insideTree = false;
+					if (popup.dismiss.insideTree) {
+						popup.dismiss.leaveInside();
 						return;
 					}
 					// Focus left the popup tree, and no portal guard handles closing.
@@ -485,9 +485,9 @@ export function useFocusManager(
 				if (pointerDownOutside) {
 					return;
 				}
-				popup.data.insideTree = true;
+				popup.dismiss.enterInside();
 				blurTimeout.start(0, () => {
-					popup.data.insideTree = false;
+					popup.dismiss.leaveInside();
 				});
 			};
 
@@ -593,7 +593,7 @@ export function useFocusManager(
 					elementToFocus = elementToFocus || getDefaultFocusElement();
 					const hadFocusInside = contains(focusElement, activeElement(doc));
 					// A screen reader re-syncs focus right after a synthesized press: focus synchronously.
-					const openEvent = popup.data.openEvent;
+					const openEvent = popup.openEvent;
 					const openedByVirtualPress =
 						openEvent?.type === "mousedown" && isVirtualClick(openEvent as MouseEvent);
 					const focusInitial = (target: FocusableElement, sync: boolean) => {
@@ -736,7 +736,7 @@ export function useFocusManager(
 						) ||
 						(tree != null &&
 							tree
-								.children(popup.data.nodeId, false)
+								.children(popup.nodeId, false)
 								.some((node) => contains(node.context?.floatingElement, activeEl)));
 					const returnValue = returnFocus ?? true;
 					const type = closeType;

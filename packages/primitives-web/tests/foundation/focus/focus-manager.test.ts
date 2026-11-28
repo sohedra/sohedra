@@ -406,7 +406,7 @@ describe("FocusManager", () => {
 			// records for it is the case.
 			dispatch(child, "focusout", { relatedTarget: screen.getByTestId("after").element() });
 
-			expect(store?.data.insideTree).toBe(true);
+			expect(store?.dismiss.insideTree).toBe(true);
 		});
 	});
 

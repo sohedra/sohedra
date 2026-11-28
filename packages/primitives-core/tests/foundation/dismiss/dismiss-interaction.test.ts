@@ -20,7 +20,7 @@ function setup(options: DismissOptions = {}, tree: FloatingTree | null = null) {
 	const view: DismissView<FakeTypes> = {
 		open: true,
 		tree,
-		data: { nodeId: "popup", insideTree: false },
+		nodeId: "popup",
 		platform,
 	};
 	const live = { ...options };
@@ -47,13 +47,12 @@ function setup(options: DismissOptions = {}, tree: FloatingTree | null = null) {
 }
 
 /** A popup as a node of the tree of nested popups reads it. */
-function treeContext(fields: { outsidePress?: boolean; data?: { insideTree: boolean } } = {}) {
+function treeContext(fields: { outsidePress?: boolean } = {}) {
 	return {
 		open: true,
 		floatingElement: null,
 		anchorElement: null,
 		dismissBubbles: { escapeKey: false, outsidePress: fields.outsidePress ?? true },
-		data: fields.data ?? { insideTree: false },
 	};
 }
 
@@ -204,18 +203,18 @@ describe("DismissInteraction", () => {
 		});
 
 		it("doesn't take a press that passed through the popup for an outside press", () => {
-			const { dismiss, reasons, view, scheduler } = setup({ outsidePressEvent: "intentional" });
+			const { dismiss, reasons, scheduler } = setup({ outsidePressEvent: "intentional" });
 			dismiss.pressSeen({ button: 0, pointerType: "mouse" });
 			dismiss.markInside();
-			expect(view.data.insideTree).toBe(true);
+			expect(dismiss.insideTree).toBe(true);
 			dismiss.press(press({ eventType: "click" }));
 			expect(reasons).toEqual([]);
-			expect(view.data.insideTree).toBe(false);
+			expect(dismiss.insideTree).toBe(false);
 
 			// Left alone, the mark lasts until the next task.
 			dismiss.markInside();
 			scheduler.advance(0);
-			expect(view.data.insideTree).toBe(false);
+			expect(dismiss.insideTree).toBe(false);
 		});
 
 		it("absorbs one outside click after a press that was dragged out of the popup", () => {
@@ -282,14 +281,14 @@ describe("DismissInteraction", () => {
 
 	it("marks the popups it is nested in when a press passes through it", () => {
 		const tree = new FloatingTree();
-		const { dismiss, view, scheduler } = setup({}, tree);
+		const { dismiss, scheduler } = setup({}, tree);
 		const parent = treeContext();
 		tree.addNode({ id: "parent", parentId: null, context: parent });
-		tree.addNode({ id: "popup", parentId: "parent", context: treeContext({ data: view.data }) });
+		tree.addNode({ id: "popup", parentId: "parent", context: treeContext() });
 		dismiss.markInside();
-		expect(parent.data.insideTree).toBe(true);
+		expect(tree.isInside("parent")).toBe(true);
 		scheduler.advance(0);
-		expect(parent.data.insideTree).toBe(false);
+		expect(tree.isInside("parent")).toBe(false);
 	});
 
 	describe("a whole press, from a platform that reports a press as one event", () => {
@@ -328,11 +327,11 @@ describe("DismissInteraction", () => {
 		});
 
 		it("leaves a press that passed through the popup alone, and forgets it", () => {
-			const { dismiss, view, reasons } = setup();
+			const { dismiss, reasons } = setup();
 			dismiss.markInside();
 			dismiss.wholePress(press(), "touch");
 			expect(reasons).toEqual([]);
-			expect(view.data.insideTree).toBe(false);
+			expect(dismiss.insideTree).toBe(false);
 		});
 
 		it("waits for an open child that keeps outside presses to itself", () => {

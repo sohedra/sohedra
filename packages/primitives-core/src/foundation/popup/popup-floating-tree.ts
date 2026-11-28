@@ -18,8 +18,6 @@ export interface FloatingNodeContextValue<T extends PlatformTypes = PlatformType
 	readonly anchorElement: T["element"] | null;
 	/** Whether Escape / outside presses in this popup also reach its ancestors (`bubbles`). */
 	readonly dismissBubbles: { escapeKey: boolean; outsidePress: boolean };
-	/** Whether an interaction is passing through the popup's own elements right now. */
-	readonly data: { insideTree: boolean };
 }
 
 export interface FloatingNode<T extends PlatformTypes = PlatformTypes> {
@@ -35,6 +33,9 @@ export interface FloatingNode<T extends PlatformTypes = PlatformTypes> {
 export class FloatingTree<T extends PlatformTypes = PlatformTypes> {
 	readonly nodes: FloatingNode<T>[] = [];
 	readonly events = new EventEmitter<FloatingTreeEvents<T>>();
+	// The nodes a press inside a popup nested in them is passing through, until the next task.
+	// Read when input arrives and never rendered, so not reactive.
+	readonly #inside = new Set<string>();
 
 	addNode(node: FloatingNode<T>): void {
 		this.nodes.push(node);
@@ -56,6 +57,21 @@ export class FloatingTree<T extends PlatformTypes = PlatformTypes> {
 	ancestors(id: string | undefined | null): FloatingNode<T>[] {
 		return getNodeAncestors(this.nodes, id);
 	}
+
+	/** Whether a press from a popup nested in node `id` is passing through it. */
+	isInside(id: string | undefined): boolean {
+		return id !== undefined && this.#inside.has(id);
+	}
+
+	/** A press from a popup nested in node `id` is passing through it. */
+	markInside = (id: string): void => {
+		this.#inside.add(id);
+	};
+
+	/** No press from a nested popup is passing through node `id` any more. */
+	clearInside = (id: string): void => {
+		this.#inside.delete(id);
+	};
 }
 
 /** The descendants of node `id`, depth first; only open ones (and their subtrees) by default. */

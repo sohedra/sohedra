@@ -42,13 +42,8 @@ export interface DismissView<T extends PlatformTypes = PlatformTypes> {
 	readonly open: boolean;
 	/** The tree of nested popups: an open child may answer a dismissal before its parent. */
 	readonly tree: FloatingTree<T> | null;
-	/** Bookkeeping the popup's behaviours share. */
-	readonly data: {
-		/** The popup's node in {@link tree}. */
-		readonly nodeId: string | undefined;
-		/** Whether a press is passing through the popup's own elements right now. */
-		insideTree: boolean;
-	};
+	/** The popup's node in {@link tree}. */
+	readonly nodeId: string | undefined;
 	readonly platform: { readonly scheduler: Scheduler };
 }
 
@@ -123,6 +118,9 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	} | null = null;
 	// Text is being composed: its Escape closes the composition, not the popup.
 	#composing = false;
+	// A press or focus is passing through the popup's own elements right now. A press from a popup
+	// nested in this one marks this one's node in the tree instead.
+	#inside = false;
 
 	readonly #longTouchTimeout: Timeout;
 	readonly #suppressionTimeout: Timeout;
@@ -153,6 +151,15 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 		return this.#options().enabled ?? true;
 	}
 
+	/**
+	 * Whether a press or focus is passing through the popup's own elements, or a press from a popup
+	 * nested in it, right now: it isn't an outside press. The focus behaviour reads it too.
+	 */
+	get insideTree(): boolean {
+		const view = this.#view;
+		return this.#inside || (view.tree?.isInside(view.nodeId) ?? false);
+	}
+
 	/** The press type for the pointer of the press being followed. */
 	get pressType(): PressType {
 		return resolvePressType(this.#pointerType, this.#options().outsidePressEvent ?? "sloppy");
@@ -174,7 +181,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			return null;
 		}
 		// An open popup nested in this one answers Escape first.
-		if (hasBlockingChild(view.tree, view.data.nodeId, "escapeKey")) {
+		if (hasBlockingChild(view.tree, view.nodeId, "escapeKey")) {
 			return null;
 		}
 		const details = createChangeEventDetails<EscapeReason, {}, T>(REASONS.escapeKey, event);
@@ -208,19 +215,19 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	 * popup or for the popups it is nested in, until the next task.
 	 */
 	markInside(): void {
-		const view = this.#view;
-		view.data.insideTree = true;
-		const ancestors = view.tree ? view.tree.ancestors(view.data.nodeId) : [];
+		const { tree, nodeId } = this.#view;
+		this.enterInside();
+		const ancestors = tree ? tree.ancestors(nodeId) : [];
 		for (const node of ancestors) {
 			if (node.context) {
-				node.context.data.insideTree = true;
+				tree?.markInside(node.id);
 			}
 		}
 		this.#insideTimeout.start(0, () => {
 			this.clearInside();
 			for (const node of ancestors) {
 				if (node.context) {
-					node.context.data.insideTree = false;
+					tree?.clearInside(node.id);
 				}
 			}
 		});
@@ -229,7 +236,21 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	/** Forgets the press that passed through the popup. */
 	clearInside = (): void => {
 		this.#insideTimeout.clear();
-		this.#view.data.insideTree = false;
+		this.leaveInside();
+	};
+
+	/** Focus or a press is passing through the popup's own elements (until `leaveInside`). */
+	enterInside = (): void => {
+		this.#inside = true;
+	};
+
+	/** Nothing passes through the popup any more; its pending mark, if any, still runs out. */
+	leaveInside = (): void => {
+		const { tree, nodeId } = this.#view;
+		this.#inside = false;
+		if (nodeId !== undefined) {
+			tree?.clearInside(nodeId);
+		}
 	};
 
 	/** A press began. `inPopup`: on the popup's own subtree, not a popup nested in it. */
@@ -307,7 +328,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 			this.clearInside();
 			return;
 		}
-		if (view.data.insideTree) {
+		if (this.insideTree) {
 			this.clearInside();
 			return;
 		}
@@ -328,7 +349,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 		if (press.dismissible === false) {
 			return;
 		}
-		if (hasBlockingChild(view.tree, view.data.nodeId, "outsidePress")) {
+		if (hasBlockingChild(view.tree, view.nodeId, "outsidePress")) {
 			return;
 		}
 		this.#close(
@@ -351,14 +372,14 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 		if (!view.open || !this.enabled) {
 			return;
 		}
-		if (view.data.insideTree) {
+		if (this.insideTree) {
 			this.clearInside();
 			return;
 		}
 		if (press.inOwnElements || press.spared || press.dismissible === false) {
 			return;
 		}
-		if (hasBlockingChild(view.tree, view.data.nodeId, "outsidePress")) {
+		if (hasBlockingChild(view.tree, view.nodeId, "outsidePress")) {
 			return;
 		}
 		this.#close(

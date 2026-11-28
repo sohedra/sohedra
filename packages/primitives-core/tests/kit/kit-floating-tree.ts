@@ -19,7 +19,6 @@ export function floatingNode(
 			floatingElement: null,
 			anchorElement: null,
 			dismissBubbles: { escapeKey, outsidePress: true },
-			data: { insideTree: false },
 		},
 	};
 }

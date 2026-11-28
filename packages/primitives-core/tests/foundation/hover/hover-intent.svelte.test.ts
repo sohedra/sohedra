@@ -261,7 +261,7 @@ describe("HoverTriggerIntent", () => {
 		store.setOpen(true, details(REASONS.triggerPress, "click"), { eventType: "click" });
 		scheduler.advance(50);
 		expect(onOpenChange).toHaveBeenCalledTimes(1);
-		expect(store.data.openEventType).toBe("click");
+		expect(store.openEventType).toBe("click");
 	});
 
 	it("ignores non-mouse pointers when mouse-only", () => {
@@ -436,7 +436,7 @@ describe("SafePolygonSession", () => {
 
 	it("stays open while a nested popup is open", () => {
 		const { store, tree, scheduler } = createPopover();
-		store.data.nodeId = "parent";
+		store.joinFloatingTree("parent", null);
 		tree.addNode({
 			id: "child",
 			parentId: "parent",
@@ -445,7 +445,6 @@ describe("SafePolygonSession", () => {
 				floatingElement: null,
 				anchorElement: null,
 				dismissBubbles: { escapeKey: false, outsidePress: true },
-				data: { insideTree: false },
 			},
 		});
 		expect(tree.children("parent")).toHaveLength(1);
@@ -470,13 +469,13 @@ describe("a close from outside", () => {
 			close();
 			expect(store.open).toBe(false);
 			// The open event is kept: a reopen from outside still relies on it.
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 
 			hover();
 			scheduler.advance(50);
 			expect(store.open).toBe(true);
 			expect(store.openChangeReason).toBe(REASONS.triggerHover);
-			expect(store.data.openEventType).toBe("mousemove");
+			expect(store.openEventType).toBe("mousemove");
 		});
 
 		it("opens again on hover after a click pinned a hover-opened popup", () => {
@@ -488,7 +487,7 @@ describe("a close from outside", () => {
 			scheduler.advance(PATIENT_CLICK_THRESHOLD - 1);
 			press();
 			expect(store.open).toBe(true);
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 
 			close();
 			hover();
@@ -526,7 +525,7 @@ describe("a close from outside", () => {
 			close();
 			reopen();
 			expect(store.open).toBe(true);
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 
 			// Open again and still held by its click: hovering in and out changes nothing.
 			intent.enter(event("mouseenter"), target);
@@ -546,7 +545,7 @@ describe("a close from outside", () => {
 			store.unmount();
 			reopen();
 			// The hover that opened it is still on record, so a press keeps it open.
-			expect(store.data.openEventType).toBe("mousemove");
+			expect(store.openEventType).toBe("mousemove");
 			expect(store.pressOpen(true)).toBe(true);
 		});
 

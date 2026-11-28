@@ -36,14 +36,17 @@ export interface FocusManagerView {
 	readonly anchorElement: Element | null;
 	/** The tree of nested popups, so focus moving into a child or a parent isn't focus leaving. */
 	readonly tree: FloatingTree<WebTypes> | null;
-	/** Bookkeeping the popup's behaviours share. */
-	readonly data: {
-		/** The popup's node in {@link tree}. */
-		readonly nodeId: string | undefined;
-		/** Whether focus is moving inside the popup's own elements right now. Dismissal reads it. */
-		insideTree: boolean;
-		/** The event that opened the popup. */
-		readonly openEvent: Event | undefined;
+	/** The popup's node in {@link tree}. */
+	readonly nodeId: string | undefined;
+	/** The event that opened the popup. */
+	readonly openEvent: Event | undefined;
+	/** Whether focus or a press is moving inside the popup's own elements right now. */
+	readonly dismiss: {
+		readonly insideTree: boolean;
+		/** Focus is moving inside the popup's own elements. */
+		enterInside(): void;
+		/** Nothing is moving inside the popup's elements any more. */
+		leaveInside(): void;
 	};
 	/** The popup's registered triggers. */
 	readonly triggers: {

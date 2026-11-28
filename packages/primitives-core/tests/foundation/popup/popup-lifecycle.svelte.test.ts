@@ -195,18 +195,18 @@ describe("PopupLifecycle", () => {
 			const click: OpenChangeSource = { eventType: "click" };
 
 			store.setOpen(true, details(REASONS.triggerPress), click);
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 
 			// No request passed, so nothing announced the close: as before the session existed.
 			props.open = false;
 			flushSync();
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 
 			store.setOpen(true, details(REASONS.triggerHover), { eventType: "mouseenter" });
-			expect(store.data.openEventType).toBe("mouseenter");
+			expect(store.openEventType).toBe("mouseenter");
 			store.setOpen(false, details(REASONS.outsidePress));
-			expect(store.data.openEventType).toBeUndefined();
-			expect(store.data.openEvent).toBeUndefined();
+			expect(store.openEventType).toBeUndefined();
+			expect(store.openEvent).toBeUndefined();
 		});
 
 		it("records the hover that moves an open popup to another trigger, not one on its own trigger", () => {
@@ -218,23 +218,23 @@ describe("PopupLifecycle", () => {
 			const hover: OpenChangeSource = { eventType: "mouseenter" };
 
 			store.setOpen(true, details(REASONS.triggerPress, a), { eventType: "click" });
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 
 			// A hover on the trigger the popup belongs to doesn't take the press away.
 			store.setOpen(true, details(REASONS.triggerHover, a), hover);
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 
 			// A hover on the other trigger moves the popup: a new opening, by hover.
 			const moved = details(REASONS.triggerHover, b);
 			store.setOpen(true, moved, hover);
 			expect(store.activeTrigger.id).toBe("b");
-			expect(store.data.openEventType).toBe("mouseenter");
-			expect(store.data.openEvent).toBe(moved.event);
+			expect(store.openEventType).toBe("mouseenter");
+			expect(store.openEvent).toBe(moved.event);
 
 			// And back, by hover again.
 			store.setOpen(true, details(REASONS.triggerHover, a), hover);
 			expect(store.activeTrigger.id).toBe("a");
-			expect(store.data.openEventType).toBe("mouseenter");
+			expect(store.openEventType).toBe("mouseenter");
 		});
 
 		it("keeps the open event for a hover request that names no trigger", () => {
@@ -245,7 +245,7 @@ describe("PopupLifecycle", () => {
 			store.setOpen(true, details(REASONS.triggerPress, a), { eventType: "click" });
 			store.setOpen(true, details(REASONS.triggerHover), { eventType: "mouseenter" });
 
-			expect(store.data.openEventType).toBe("click");
+			expect(store.openEventType).toBe("click");
 		});
 
 		it("starts a new close cycle when `open` is set from outside after a kept close", () => {

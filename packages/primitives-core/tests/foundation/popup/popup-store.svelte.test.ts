@@ -115,38 +115,38 @@ describe("PopupStore", () => {
 			createChangeEventDetails(reason, undefined as unknown as MouseEvent);
 		store.setOpen(true, withoutEvent(REASONS.imperativeAction));
 		expect(store.open).toBe(true);
-		expect(store.data.openEvent).toBeUndefined();
-		expect(store.data.openEventType).toBeUndefined();
+		expect(store.openEvent).toBeUndefined();
+		expect(store.openEventType).toBeUndefined();
 		store.setOpen(false, details(REASONS.outsidePress));
 		store.setOpen(true, details(REASONS.triggerPress, "click"), { eventType: "click" });
 		// Not click-like, so it doesn't replace the click open event.
 		store.setOpen(true, withoutEvent(REASONS.imperativeAction));
-		expect(store.data.openEventType).toBe("click");
+		expect(store.openEventType).toBe("click");
 	});
 
 	it("keeps a click-like open event over a later hover open, and forgets it on close", () => {
 		const { store } = setup();
 		store.setOpen(true, details(REASONS.triggerPress, "click"), { eventType: "click" });
-		expect(store.data.openEventType).toBe("click");
+		expect(store.openEventType).toBe("click");
 		store.setOpen(true, details(REASONS.triggerHover, "mouseenter"), { eventType: "mouseenter" });
-		expect(store.data.openEventType).toBe("click");
+		expect(store.openEventType).toBe("click");
 		store.setOpen(false, details(REASONS.outsidePress, "pointerdown"));
-		expect(store.data.openEventType).toBeUndefined();
-		expect(store.data.openEvent).toBeUndefined();
+		expect(store.openEventType).toBeUndefined();
+		expect(store.openEvent).toBeUndefined();
 	});
 
 	it("lets a click upgrade a hover open event", () => {
 		const { store } = setup();
 		store.setOpen(true, details(REASONS.triggerHover, "mouseenter"), { eventType: "mouseenter" });
-		expect(store.data.openEventType).toBe("mouseenter");
+		expect(store.openEventType).toBe("mouseenter");
 		store.setOpen(true, details(REASONS.triggerPress, "click"), { eventType: "click" });
-		expect(store.data.openEventType).toBe("click");
+		expect(store.openEventType).toBe("click");
 	});
 
 	it("records the open event before the open-change listeners run", () => {
 		const { store } = setup();
 		const seen: (string | undefined)[] = [];
-		store.events.on("openchange", () => seen.push(store.data.openEventType));
+		store.events.on("openchange", () => seen.push(store.openEventType));
 		store.setOpen(true, details(REASONS.triggerPress, "click"), { eventType: "click" });
 		expect(seen).toEqual(["click"]);
 	});
@@ -382,7 +382,7 @@ describe("PopupStore", () => {
 		});
 		flushSync();
 		expect(tree.nodes.map((node) => node.id)).toEqual(["node"]);
-		expect(store.data.nodeId).toBe("node");
+		expect(store.nodeId).toBe("node");
 		cleanup();
 		expect(tree.nodes).toEqual([]);
 	});
