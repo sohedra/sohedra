@@ -145,7 +145,7 @@ describe("Presence", () => {
 		expect(seen).toEqual(["false:none", "true:starting", "true:none", "true:ending", "false:none"]);
 	});
 
-	describe("with enableIdleState and deferEndingState", () => {
+	describe("complete()", () => {
 		it("reports whether complete() unmounted", () => {
 			const { props, presence } = setup({ open: true });
 			expect(presence.complete()).toBe(false);

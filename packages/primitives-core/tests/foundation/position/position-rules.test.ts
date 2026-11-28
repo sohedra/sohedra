@@ -88,10 +88,10 @@ describe("sides and placements", () => {
 	});
 });
 
-describe("lazy flipping", () => {
+describe("the requested placement", () => {
 	const request = { side: "bottom", align: "start", rtl: false } as const;
 
-	it("asks for the requested placement while nothing is kept", () => {
+	it("joins the side and the alignment, leaving out a centred one", () => {
 		expect(requestedPlacement(request)).toBe("bottom-start");
 		expect(requestedPlacement({ ...request, align: "center" })).toBe("bottom");
 	});

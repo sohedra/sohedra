@@ -7,7 +7,7 @@ import { watch } from "../../../src/foundation/kernel/index.js";
 import { root } from "../../kit/kit-effects.svelte.js";
 
 describe("watch", () => {
-	it("is lazy by default: skips the first run and compares with the value at the call", () => {
+	it("with `lazy: true`, skips the first run and compares with the value at the call", () => {
 		let value = $state(1);
 		const calls: [number, number][] = [];
 		root(() =>
