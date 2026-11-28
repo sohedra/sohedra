@@ -9,7 +9,7 @@ import {
 export type { TextDirection };
 
 /** Holds the text direction a DirectionProvider sets for its descendants. */
-export class DirectionState {
+export class DirectionStore {
 	#get: () => TextDirection;
 
 	constructor(get: () => TextDirection) {
@@ -21,10 +21,7 @@ export class DirectionState {
 	}
 }
 
-/** The text direction outside any provider. */
-export const LTR = new DirectionState(() => "ltr");
-
-export const DirectionContext = defineContext<DirectionState>(
+export const DirectionContext = defineContext<DirectionStore>(
 	"DirectionContext",
 	"Direction-aware parts read it through `getOr(LTR)`.",
 );

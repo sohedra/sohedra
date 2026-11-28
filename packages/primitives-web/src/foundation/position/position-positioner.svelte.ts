@@ -6,7 +6,7 @@ import {
 	logicalSide,
 	POSITIONER_DEFAULTS,
 	type PositionerStore,
-	type PositionState,
+	type MeasuredPosition,
 	requestedPlacement,
 	roundToDevicePixels,
 	samePosition,
@@ -19,7 +19,7 @@ import {
 	createPositionerMiddleware,
 	getDevicePixelRatio,
 	type Measured,
-	type MiddlewareConfig,
+	type MiddlewareOptions,
 } from "./position-positioner-middleware.js";
 import { internalBackdropStyle, positionerStyle } from "./position-positioner-style.js";
 import type { Positioner, PositionerOptions, PositionerView } from "./position-types.js";
@@ -81,7 +81,7 @@ export function usePositioner(
 
 	// The options one computation reads: when it is created, and (side, rtl, the arrow) while it
 	// runs.
-	const middlewareConfig: MiddlewareConfig = {
+	const middlewareOptions: MiddlewareOptions = {
 		get side() {
 			return side;
 		},
@@ -128,7 +128,7 @@ export function usePositioner(
 		const measured: Measured = {};
 		const requested = untrack(() => placement);
 		const strategy = untrack(() => positionMethod);
-		const middleware = untrack(() => createPositionerMiddleware(middlewareConfig, measured));
+		const middleware = untrack(() => createPositionerMiddleware(middlewareOptions, measured));
 		void computePosition(reference, floating, { placement: requested, strategy, middleware }).then(
 			(data) => {
 				if (current !== generation) {
@@ -137,7 +137,7 @@ export function usePositioner(
 				const renderedSide = getSide(data.placement);
 				const dpr = getDevicePixelRatio(floating);
 				const arrow = data.middlewareData.arrow;
-				const next: PositionState = {
+				const next: MeasuredPosition = {
 					// A kept-mounted popup computed while closed must start unpositioned on the next open.
 					isPositioned: untrack(() => !keepMounted || popup.mounted),
 					x: roundToDevicePixels(data.x, dpr),
@@ -149,7 +149,7 @@ export function usePositioner(
 					anchorHidden: Boolean(data.middlewareData.hide?.referenceHidden),
 					arrow: arrow ? { x: arrow.x, y: arrow.y, centerOffset: arrow.centerOffset } : null,
 					...measured,
-					sides: (data.middlewareData.adaptiveOrigin as PositionState["sides"]) ?? undefined,
+					sides: (data.middlewareData.adaptiveOrigin as MeasuredPosition["sides"]) ?? undefined,
 				};
 				if (
 					!samePosition(

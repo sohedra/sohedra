@@ -2,7 +2,7 @@
 export {
 	type DismissChangeDetails,
 	DismissInteraction,
-	type DismissOptions,
+	type DismissInteractionProps,
 	type OutsidePress,
 } from "./dismiss-interaction.js";
 export type { OutsidePressEvent, PressType } from "./dismiss-rules.js";

@@ -9,8 +9,8 @@ import {
 	type SwitchStoreProps,
 } from "../../../src/components/switch/index.js";
 import {
-	type FieldRootContextValue,
-	type FieldsetContextValue,
+	type FieldRootView,
+	type FieldsetView,
 	NULL_FIELD,
 } from "../../../src/foundation/form/index.js";
 import { bound, type PlatformTypes } from "../../../src/foundation/kernel/index.js";
@@ -35,7 +35,7 @@ const DEFAULTS: MutableProps = {
 /** The store as Switch.Root builds it, in `field` and `fieldset` when given. */
 function setup(
 	initial: Partial<MutableProps> = {},
-	deps: { field?: FieldRootContextValue; fieldset?: FieldsetContextValue } = {},
+	deps: { field?: FieldRootView; fieldset?: FieldsetView } = {},
 ) {
 	const onCheckedChange = vi.fn();
 	const props = $state<MutableProps>({ ...DEFAULTS, onCheckedChange, ...initial });
@@ -51,7 +51,7 @@ function setup(
 }
 
 /** A field that records what the switch tells it. */
-function recordingField(validationMode: FieldRootContextValue["validationMode"] = "onSubmit") {
+function recordingField(validationMode: FieldRootView["validationMode"] = "onSubmit") {
 	return {
 		...NULL_FIELD,
 		isNull: false,
@@ -59,7 +59,7 @@ function recordingField(validationMode: FieldRootContextValue["validationMode"] 
 		setTouched: vi.fn(),
 		blur: vi.fn(),
 		commit: vi.fn(async () => {}),
-	} satisfies FieldRootContextValue;
+	} satisfies FieldRootView;
 }
 
 describe("SwitchStore", () => {
@@ -165,7 +165,7 @@ describe("SwitchStore", () => {
 		});
 
 		it("takes disabled and name from its field", () => {
-			const field: FieldRootContextValue = {
+			const field: FieldRootView = {
 				...NULL_FIELD,
 				isNull: false,
 				disabled: true,

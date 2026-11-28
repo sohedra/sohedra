@@ -4,12 +4,12 @@ import { describe, expect, it } from "vitest";
 
 import { getActivationDirection, pinnedEdges } from "../../../src/foundation/position/index.js";
 import {
-	type ContentKeyState,
+	type ContentKey,
 	nextContentKey,
 } from "../../../src/foundation/position/position-viewport-rules.js";
 
 describe("nextContentKey", () => {
-	const committed: ContentKeyState = {
+	const committed: ContentKey = {
 		triggerId: "a",
 		payload: 1,
 		pendingPayload: false,

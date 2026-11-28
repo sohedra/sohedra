@@ -1,7 +1,7 @@
 import { untrack } from "svelte";
 
 import { type PlatformTypes, watch } from "../kernel/index.js";
-import type { Align, PositionState, Side } from "./position-types.js";
+import type { Align, MeasuredPosition, Side } from "./position-types.js";
 
 /** What a Positioner's state reads of its part. */
 export interface PositionerStoreProps {
@@ -22,7 +22,7 @@ export interface PositionerPopupView {
 /** What a Positioner's state is given once. */
 export interface PositionerStoreDeps {
 	/** The position before the first computation. */
-	readonly initial: PositionState;
+	readonly initial: MeasuredPosition;
 	/** The popup the Positioner places. */
 	readonly popup: PositionerPopupView;
 }
@@ -35,7 +35,7 @@ export interface PositionerStoreDeps {
 export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #props: () => PositionerStoreProps;
 	readonly #popup: PositionerPopupView;
-	#position: PositionState = $state.raw() as PositionState;
+	#position: MeasuredPosition = $state.raw() as MeasuredPosition;
 	#arrowElement: T["element"] | null = $state.raw(null);
 
 	// Compared by value: a part's state is derived again when one of these changes, not on every
@@ -53,7 +53,7 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	/** The last computed position (one object per computation). */
-	get position(): PositionState {
+	get position(): MeasuredPosition {
 		return this.#position;
 	}
 
@@ -63,7 +63,7 @@ export class PositionerStore<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	/** Writes a computed position. */
-	setPosition = (next: PositionState): void => {
+	setPosition = (next: MeasuredPosition): void => {
 		this.#position = next;
 	};
 

@@ -1,7 +1,7 @@
 // A field's validity as plain data, and the platform's view of its controls' native validity.
 
 /** A native `ValidityState` as plain data, with `valid` `null` until the field is validated. */
-export interface FieldValidityState {
+export interface FieldValidityFlags {
 	badInput: boolean;
 	customError: boolean;
 	patternMismatch: boolean;
@@ -16,17 +16,17 @@ export interface FieldValidityState {
 }
 
 /** A `ValidityState` flag other than `valid`. */
-export type ValidityFlag = Exclude<keyof FieldValidityState, "valid">;
+export type ValidityFlag = Exclude<keyof FieldValidityFlags, "valid">;
 
 export interface FieldValidityData {
-	state: FieldValidityState;
+	state: FieldValidityFlags;
 	error: string;
 	errors: string[];
 	value: unknown;
 	initialValue: unknown;
 }
 
-export const DEFAULT_VALIDITY_STATE: Readonly<FieldValidityState> = /* @__PURE__ */ Object.freeze({
+export const DEFAULT_VALIDITY_STATE: Readonly<FieldValidityFlags> = /* @__PURE__ */ Object.freeze({
 	badInput: false,
 	customError: false,
 	patternMismatch: false,
@@ -42,11 +42,11 @@ export const DEFAULT_VALIDITY_STATE: Readonly<FieldValidityState> = /* @__PURE__
 
 /** The keys of a validity state, in a fixed order (`valid` included). */
 export const VALIDITY_KEYS = /* @__PURE__ */ Object.keys(DEFAULT_VALIDITY_STATE) as Array<
-	keyof FieldValidityState
+	keyof FieldValidityFlags
 >;
 
 /** A validity state that is valid, or invalid through a custom error only. */
-export function makeValidityState(customError: boolean): FieldValidityState {
+export function makeValidityState(customError: boolean): FieldValidityFlags {
 	return { ...DEFAULT_VALIDITY_STATE, valid: !customError, customError };
 }
 
@@ -73,7 +73,7 @@ export function getCombinedFieldValidityData(
  * updates are flushed, so core never touches the element.
  */
 export interface NativeValidity {
-	readonly state: Readonly<Record<keyof FieldValidityState, boolean>>;
+	readonly state: Readonly<Record<keyof FieldValidityFlags, boolean>>;
 	readonly message: string;
 	readonly willValidate: boolean;
 }

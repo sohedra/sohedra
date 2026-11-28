@@ -23,7 +23,7 @@ export type Boundary =
  * are read again while the computation runs, so an object that keeps them current also sees an
  * Arrow that registered just after the computation started.
  */
-export interface MiddlewareConfig extends PositionerMiddlewareOptions {
+export interface MiddlewareOptions extends PositionerMiddlewareOptions {
 	readonly collisionBoundary: Boundary;
 	/** Whether a Viewport asks for the popup to be measured from its far edges. */
 	readonly adaptiveOrigin: boolean;
@@ -46,17 +46,17 @@ export function toPx(value: number): string {
  * lands in `measured`.
  */
 export function createPositionerMiddleware(
-	config: MiddlewareConfig,
+	options: MiddlewareOptions,
 	measured: Measured,
 ): Middleware[] {
-	const boundary = config.collisionBoundary;
+	const boundary = options.collisionBoundary;
 	return positionerMiddleware(
-		config,
+		options,
 		{
 			boundary: boundary === "clipping-ancestors" ? "clippingAncestors" : boundary,
 			arrow: {
 				box() {
-					const arrowElement = config.arrowElement;
+					const arrowElement = options.arrowElement;
 					if (!arrowElement) {
 						return null;
 					}
@@ -64,14 +64,14 @@ export function createPositionerMiddleware(
 					return { width, height };
 				},
 				inner() {
-					const arrowElement = config.arrowElement;
+					const arrowElement = options.arrowElement;
 					return arrowElement
 						? { width: arrowElement.clientWidth || 0, height: arrowElement.clientHeight || 0 }
 						: null;
 				},
 				// Without an Arrow part an empty element is measured.
 				async measure(state, place) {
-					const realElement = config.arrowElement;
+					const realElement = options.arrowElement;
 					const element =
 						realElement || ownerDocument(state.elements.floating).createElement("div");
 					const floating: HTMLElement = state.elements.floating;
@@ -96,7 +96,7 @@ export function createPositionerMiddleware(
 			// A style read, so it is read only when the transform origin asks.
 			popupRtl: (state) =>
 				(state.platform.isRTL?.(state.elements.floating) as boolean | undefined) === true,
-			last: config.adaptiveOrigin ? adaptiveOriginMiddleware : null,
+			last: options.adaptiveOrigin ? adaptiveOriginMiddleware : null,
 		},
 		measured,
 	);

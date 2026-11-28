@@ -4,7 +4,7 @@
 import type { Side } from "./position-types.js";
 
 /** What the content key last settled on: the trigger and payload it was created for. */
-export interface ContentKeyState {
+export interface ContentKey {
 	readonly triggerId: string | null;
 	readonly payload: unknown;
 	/** The trigger id changed but its payload didn't (yet): it is expected an update later. */
@@ -18,10 +18,10 @@ export interface ContentKeyState {
  * Returns `committed` itself while neither changed.
  */
 export function nextContentKey(
-	committed: ContentKeyState,
+	committed: ContentKey,
 	triggerId: string | null,
 	payload: unknown,
-): ContentKeyState {
+): ContentKey {
 	const payloadChanged = payload !== committed.payload;
 	if (triggerId !== committed.triggerId) {
 		return { triggerId, payload, pendingPayload: !payloadChanged, key: committed.key + 1 };

@@ -1,9 +1,9 @@
 import type {
 	ControlLabels,
 	FieldControlLink,
-	FieldRootContextValue,
+	FieldRootView,
 	LabelableControlId,
-	LabelableContextValue,
+	LabelableView,
 } from "@sohedra/primitives-core/foundation/form/index.js";
 import { type Bound, REASONS, watch } from "@sohedra/primitives-core/foundation/kernel/index.js";
 import { untrack } from "svelte";
@@ -28,10 +28,10 @@ import { attachLabelFallback } from "./form-label-fallback.svelte.js";
 
 /** What the wiring reads of a checked control's store (Switch, Checkbox, Radio). */
 export interface CheckedControlView {
-	readonly field: FieldRootContextValue<WebTypes>;
+	readonly field: FieldRootView<WebTypes>;
 	readonly link: FieldControlLink<WebTypes>;
 	/** The labelable scope the control is in. */
-	readonly labelable: LabelableContextValue;
+	readonly labelable: LabelableView;
 	/** The labelable control's id in its scope. */
 	readonly controlId: LabelableControlId;
 	/** The control's `aria-labelledby`. */
@@ -210,7 +210,7 @@ function attachFocusTarget(link: FieldControlLink<WebTypes>): Attachment<HTMLEle
 
 /** Registers the hidden input with the field, for its native validity. */
 function attachFieldInput(
-	field: FieldRootContextValue<WebTypes>,
+	field: FieldRootView<WebTypes>,
 	link: FieldControlLink<WebTypes>,
 ): Attachment<HTMLInputElement> {
 	// A `render` snippet may render an element without constraint validation (a `<div>`).
@@ -226,8 +226,8 @@ function attachFieldInput(
  * the control is disabled.
  */
 function fieldValidationProps(
-	field: FieldRootContextValue<WebTypes>,
-	labelable: LabelableContextValue,
+	field: FieldRootView<WebTypes>,
+	labelable: LabelableView,
 	control: { readonly disabled: boolean },
 ): (props: Props) => Props {
 	return (props) => {

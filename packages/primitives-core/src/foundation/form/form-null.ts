@@ -4,14 +4,14 @@
 // field.
 import { inertPlatform } from "../kernel/index.js";
 import type {
-	FieldRootContextValue,
+	FieldRootView,
 	FieldRootState,
-	FormContextValue,
+	FormView,
 	FormErrors,
 	FormValidationMode,
-	FieldItemContextValue,
-	FieldsetContextValue,
-	LabelableContextValue,
+	FieldItemView,
+	FieldsetView,
+	LabelableView,
 } from "./form-types.js";
 import { DEFAULT_VALIDITY_STATE, type FieldValidityData } from "./form-validity.js";
 
@@ -32,7 +32,7 @@ const EMPTY_SET: ReadonlySet<string> = new Set<string>();
  * The form a field sees outside `Form` (including inside a plain `<form>`): it holds no errors and
  * registers nothing.
  */
-export const NULL_FORM: FormContextValue = /* @__PURE__ */ Object.freeze({
+export const NULL_FORM: FormView = /* @__PURE__ */ Object.freeze({
 	isNull: true,
 	errors: /* @__PURE__ */ Object.freeze({}) as FormErrors,
 	validationMode: "onSubmit" as FormValidationMode,
@@ -47,7 +47,7 @@ export const NULL_FORM: FormContextValue = /* @__PURE__ */ Object.freeze({
  * The field a control sees outside `Field.Root`: every method does nothing and the state is
  * Field's initial state, so a control reads its own props only.
  */
-export const NULL_FIELD: FieldRootContextValue = /* @__PURE__ */ Object.freeze({
+export const NULL_FIELD: FieldRootView = /* @__PURE__ */ Object.freeze({
 	isNull: true,
 	scheduler: inertPlatform.scheduler,
 	disabled: false,
@@ -77,7 +77,7 @@ export const NULL_FIELD: FieldRootContextValue = /* @__PURE__ */ Object.freeze({
 });
 
 /** The labelable scope a control sees outside `Field.Root` and `Field.Item`. */
-export const NULL_LABELABLE: LabelableContextValue = /* @__PURE__ */ Object.freeze({
+export const NULL_LABELABLE: LabelableView = /* @__PURE__ */ Object.freeze({
 	isNull: true,
 	controlId: undefined,
 	labelId: undefined,
@@ -90,12 +90,12 @@ export const NULL_LABELABLE: LabelableContextValue = /* @__PURE__ */ Object.free
 });
 
 /** The fieldset a field sees outside `Fieldset.Root`. */
-export const NULL_FIELDSET: FieldsetContextValue = /* @__PURE__ */ Object.freeze({
+export const NULL_FIELDSET: FieldsetView = /* @__PURE__ */ Object.freeze({
 	isNull: true,
 	disabled: false,
 });
 
 /** The item a part sees outside Field.Item: never disabled. */
-export const NULL_FIELD_ITEM: FieldItemContextValue = /* @__PURE__ */ Object.freeze({
+export const NULL_FIELD_ITEM: FieldItemView = /* @__PURE__ */ Object.freeze({
 	disabled: false,
 });

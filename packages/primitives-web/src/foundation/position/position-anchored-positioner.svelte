@@ -32,7 +32,7 @@
 		type WebTypes,
 	} from "../kernel/index.js";
 	import { DISABLED_TRANSITIONS_STYLE } from "../presence/index.js";
-	import { PopupLayoutContext, PopupLayoutState } from "./position-popup-layout.svelte.js";
+	import { PopupLayoutContext, PopupLayoutStore } from "./position-popup-layout.svelte.js";
 	import { usePositioner } from "./position-positioner.svelte.js";
 	import type { AnchoredPositionerPlacement, AnchoredPositionerView } from "./position-types.js";
 
@@ -100,7 +100,7 @@
 		popup: view,
 	});
 	positioner.connect();
-	const layout = new PopupLayoutState();
+	const layout = new PopupLayoutStore();
 	untrack(() => context).set(positioner);
 	PopupLayoutContext.set(layout);
 

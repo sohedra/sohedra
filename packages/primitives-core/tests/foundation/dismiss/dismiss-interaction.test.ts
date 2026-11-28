@@ -7,7 +7,7 @@ import { LONG_TOUCH_MS } from "../../../src/foundation/dismiss/dismiss-rules.js"
 import {
 	type DismissChangeDetails,
 	DismissInteraction,
-	type DismissOptions,
+	type DismissInteractionProps,
 	type OutsidePress,
 } from "../../../src/foundation/dismiss/index.js";
 import { FloatingTree } from "../../../src/foundation/popup/index.js";
@@ -15,7 +15,7 @@ import { createFakePlatform, type FakeTypes } from "../../kit/kit-fake-platform.
 
 const EVENT = {} as never;
 
-function setup(options: DismissOptions = {}, tree: FloatingTree | null = null) {
+function setup(options: DismissInteractionProps = {}, tree: FloatingTree | null = null) {
 	const platform = createFakePlatform();
 	const view: DismissView<FakeTypes> = {
 		open: true,
@@ -38,7 +38,9 @@ function setup(options: DismissOptions = {}, tree: FloatingTree | null = null) {
 		view: view as { -readonly [Key in keyof DismissView<FakeTypes>]: DismissView<FakeTypes>[Key] },
 		scheduler: platform.scheduler,
 		reasons,
-		options: live as { -readonly [Key in keyof DismissOptions]: DismissOptions[Key] },
+		options: live as {
+			-readonly [Key in keyof DismissInteractionProps]: DismissInteractionProps[Key];
+		},
 		whenClosing(callback: (details: DismissChangeDetails<FakeTypes>) => void) {
 			onClose = callback;
 		},

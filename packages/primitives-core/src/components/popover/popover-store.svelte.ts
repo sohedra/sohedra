@@ -1,6 +1,6 @@
 import { untrack } from "svelte";
 
-import type { DismissOptions, PressType } from "../../foundation/dismiss/index.js";
+import type { DismissInteractionProps, PressType } from "../../foundation/dismiss/index.js";
 import { TriggerFocusGuards } from "../../foundation/focus/index.js";
 import type { HoverInteraction } from "../../foundation/hover/index.js";
 import { OwnedValue, type PlatformTypes, REASONS, Timeout } from "../../foundation/kernel/index.js";
@@ -199,7 +199,7 @@ export class PopoverStore<
 	}
 
 	/** A mouse press outside dismisses differently while the popover traps focus. */
-	protected override get dismissOptions(): DismissOptions {
+	protected override get dismissProps(): DismissInteractionProps {
 		return { outsidePressEvent: this.outsidePressEvent };
 	}
 

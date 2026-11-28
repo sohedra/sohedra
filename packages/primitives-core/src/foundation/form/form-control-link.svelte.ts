@@ -2,7 +2,7 @@
 import { untrack } from "svelte";
 
 import { type PlatformTypes, watch } from "../kernel/index.js";
-import type { FieldControlRegistration, FieldRootContextValue } from "./form-types.js";
+import type { FieldControlRegistration, FieldRootView } from "./form-types.js";
 
 /** What a field-aware control's link reads of it, from its props function. */
 export interface FieldControlLinkProps<T extends PlatformTypes = PlatformTypes> {
@@ -38,7 +38,7 @@ export interface FieldControlLinkProps<T extends PlatformTypes = PlatformTypes> 
 export class FieldControlLink<
 	T extends PlatformTypes = PlatformTypes,
 > implements FieldControlRegistration<T> {
-	readonly #field: FieldRootContextValue<T>;
+	readonly #field: FieldRootView<T>;
 	readonly #props: () => FieldControlLinkProps<T>;
 	#seen: unknown;
 
@@ -58,10 +58,7 @@ export class FieldControlLink<
 	 * Pure: reads no context. `props` is called inside the deriveds and getters, so each value stays
 	 * live; the two functions in it are read once, here.
 	 */
-	constructor(
-		props: () => FieldControlLinkProps<T>,
-		deps: { readonly field: FieldRootContextValue<T> },
-	) {
+	constructor(props: () => FieldControlLinkProps<T>, deps: { readonly field: FieldRootView<T> }) {
 		this.#field = deps.field;
 		this.#props = props;
 		this.#seen = untrack(() => this.#value);

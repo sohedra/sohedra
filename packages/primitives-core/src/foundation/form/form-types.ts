@@ -70,7 +70,7 @@ export interface TextInputSource {
 }
 
 /** What field parts and field-aware controls read from their Field.Root. */
-export interface FieldRootContextValue<T extends PlatformTypes = PlatformTypes> {
+export interface FieldRootView<T extends PlatformTypes = PlatformTypes> {
 	/** `true` for the null field a control sees outside `Field.Root`. */
 	readonly isNull: boolean;
 	/** The field's scheduler, for the timing of its parts. */
@@ -82,7 +82,7 @@ export interface FieldRootContextValue<T extends PlatformTypes = PlatformTypes> 
 	readonly invalid: boolean;
 	readonly validityData: FieldValidityData;
 	readonly validationMode: FormValidationMode;
-	readonly form: FormContextValue<T>;
+	readonly form: FormView<T>;
 	/**
 	 * Attaches the field's control. The newest attachment owns the field; a release only detaches
 	 * while `token` still owns it. Returns the release function.
@@ -127,7 +127,7 @@ export interface FieldRootContextValue<T extends PlatformTypes = PlatformTypes> 
 }
 
 /** What a Field and a nested Fieldset.Root read from their Fieldset.Root. */
-export interface FieldsetContextValue {
+export interface FieldsetView {
 	/** `true` for the null fieldset seen outside any Fieldset.Root. */
 	readonly isNull: boolean;
 	readonly disabled: boolean;
@@ -136,7 +136,7 @@ export interface FieldsetContextValue {
 }
 
 /** What labels, descriptions and controls read from their Field.Item. */
-export interface FieldItemContextValue {
+export interface FieldItemView {
 	readonly disabled: boolean;
 }
 
@@ -165,7 +165,7 @@ export interface FormField<T extends PlatformTypes = PlatformTypes> {
  * What a field reads from its form. `Form` provides a `FormStore` implementing it; outside a
  * `Form` (including inside a plain `<form>`), fields read the null form.
  */
-export interface FormContextValue<T extends PlatformTypes = PlatformTypes> {
+export interface FormView<T extends PlatformTypes = PlatformTypes> {
 	/** `true` for the null form a field sees outside `Form`. */
 	readonly isNull: boolean;
 	readonly errors: FormErrors;
@@ -186,7 +186,7 @@ export interface FormContextValue<T extends PlatformTypes = PlatformTypes> {
  * A labelable scope (Field.Root, Field.Item): the id of the control its label points at, the
  * label's id, and the ids of the messages that describe the control.
  */
-export interface LabelableContextValue {
+export interface LabelableView {
 	/** `true` for the null scope a control sees outside any labelable provider. */
 	readonly isNull: boolean;
 	/**

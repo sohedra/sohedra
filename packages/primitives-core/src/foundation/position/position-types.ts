@@ -44,7 +44,7 @@ export interface OriginOffset {
  * The measured position of a popup: written by the platform layer after each computation and
  * read by the Positioner, Popup and Arrow, which derive their styles and data attributes from it.
  */
-export interface PositionState {
+export interface MeasuredPosition {
 	/** Whether the position was computed for the current opening. */
 	readonly isPositioned: boolean;
 	readonly x: number;

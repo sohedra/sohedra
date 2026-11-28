@@ -26,7 +26,7 @@ export type {
 	OffsetFunction,
 	OriginOffset,
 	PhysicalSide,
-	PositionState,
+	MeasuredPosition,
 	Side,
 } from "./position-types.js";
 export {

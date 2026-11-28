@@ -6,7 +6,7 @@ import type {
 	CollisionAvoidance,
 	OriginOffset,
 	PhysicalSide,
-	PositionState,
+	MeasuredPosition,
 	Side,
 } from "./position-types.js";
 
@@ -95,7 +95,7 @@ export function logicalSide(requested: Side, rendered: PhysicalSide, rtl: boolea
 }
 
 /** The position before the first measurement: the requested placement, not yet positioned. */
-export function initialPosition(request: PositionerRequest): PositionState {
+export function initialPosition(request: PositionerRequest): MeasuredPosition {
 	const rendered = physicalSide(request.side, request.rtl);
 	return {
 		isPositioned: false,
@@ -421,7 +421,7 @@ function sameOrigin(a: OriginOffset | undefined, b: OriginOffset | undefined) {
 }
 
 /** Whether two computed positions render the same. */
-export function samePosition(a: PositionState, b: PositionState): boolean {
+export function samePosition(a: MeasuredPosition, b: MeasuredPosition): boolean {
 	if (
 		a.isPositioned !== b.isPositioned ||
 		a.x !== b.x ||

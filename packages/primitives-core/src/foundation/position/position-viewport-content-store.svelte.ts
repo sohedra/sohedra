@@ -1,7 +1,7 @@
 import { untrack } from "svelte";
 
 import { CommittedValue, type PlatformTypes } from "../kernel/index.js";
-import { type ContentKeyState, nextContentKey } from "./position-viewport-rules.js";
+import { type ContentKey, nextContentKey } from "./position-viewport-rules.js";
 
 /** What a popup Viewport's content bookkeeping reads from its popup. A popup store is one. */
 export interface ViewportContentPopupView<T extends PlatformTypes = PlatformTypes> {
@@ -39,11 +39,11 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #popup: ViewportContentPopupView<T>;
 
 	// What the last update settled on; written only by the commit in `connect()`.
-	readonly #committed: CommittedValue<ContentKeyState>;
+	readonly #committed: CommittedValue<ContentKey>;
 	// Derived, so the key changes in the same update as the trigger or payload, before anything
 	// renders with it. A re-run with older values (an effect teardown) changes nothing.
 	// `$derived.by` because `#props` is set in the constructor, after these initialisers.
-	readonly #next: ContentKeyState = $derived.by(() =>
+	readonly #next: ContentKey = $derived.by(() =>
 		nextContentKey(this.#committed.current, this.#popup.activeTriggerId, this.#popup.payload),
 	);
 	readonly contentKey: number = $derived(this.#next.key);
@@ -64,7 +64,7 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	constructor(deps: ViewportContentStoreDeps<T>) {
 		const popup = deps.popup;
 		this.#popup = popup;
-		this.#committed = new CommittedValue<ContentKeyState>({
+		this.#committed = new CommittedValue<ContentKey>({
 			initial: {
 				triggerId: untrack(() => popup.activeTriggerId),
 				payload: untrack(() => popup.payload),

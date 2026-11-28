@@ -37,10 +37,10 @@ export type PopupElementView = DismissPopupView &
 	HoverPopupView &
 	FocusManagerView &
 	TriggerFocusBridge &
-	PopupElementState;
+	PopupElementOwnView;
 
 /** What `usePopupElement` reads of its store beside the dismiss, hover and focus views. */
-interface PopupElementState {
+interface PopupElementOwnView {
 	/** The kind's row of the behaviour table: whether it hovers and manages focus. */
 	readonly behavior: PopupBehavior;
 	readonly transitionStatus: TransitionStatus;

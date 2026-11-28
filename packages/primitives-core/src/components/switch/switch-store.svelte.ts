@@ -3,10 +3,10 @@ import { untrack } from "svelte";
 import {
 	ControlLabels,
 	FieldControlLink,
-	type FieldRootContextValue,
-	type FieldsetContextValue,
+	type FieldRootView,
+	type FieldsetView,
 	LabelableControlId,
-	type LabelableContextValue,
+	type LabelableView,
 	NULL_LABELABLE,
 } from "../../foundation/form/index.js";
 import { type Bound, Controllable, type PlatformTypes } from "../../foundation/kernel/index.js";
@@ -45,11 +45,11 @@ export interface SwitchStoreDeps<T extends PlatformTypes> {
 	/** The `checked` binding. */
 	readonly checked: Bound<boolean | undefined>;
 	/** The field the switch is in: `NULL_FIELD` outside a Field. */
-	readonly field: FieldRootContextValue<T>;
+	readonly field: FieldRootView<T>;
 	/** The fieldset around the switch: disabling it disables the switch. Absent means not disabled. */
-	readonly fieldset?: FieldsetContextValue | undefined;
+	readonly fieldset?: FieldsetView | undefined;
 	/** The labelable scope the switch is in. Absent means none. */
-	readonly labelable?: LabelableContextValue | undefined;
+	readonly labelable?: LabelableView | undefined;
 	/** The hidden input's id when neither the `id` prop nor the scope gives one. */
 	readonly inputId?: string | undefined;
 }
@@ -58,8 +58,8 @@ export interface SwitchStoreDeps<T extends PlatformTypes> {
 export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 	// 1. Inputs
 	readonly #props: () => SwitchStoreProps<T>;
-	readonly #field: FieldRootContextValue<T>;
-	readonly #fieldset: FieldsetContextValue | undefined;
+	readonly #field: FieldRootView<T>;
+	readonly #fieldset: FieldsetView | undefined;
 
 	// 2. Owned objects
 	/** The checked state: the `checked` binding when controlled, else the store's own. */
@@ -67,7 +67,7 @@ export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 	/** The switch as its field sees it: value, name, filled, disabled. */
 	readonly link: FieldControlLink<T>;
 	/** The labelable scope the switch is in. */
-	readonly labelable: LabelableContextValue;
+	readonly labelable: LabelableView;
 	/** The labelable control's id in its scope. */
 	readonly controlId: LabelableControlId;
 	/** The switch's `aria-labelledby`. */
@@ -147,7 +147,7 @@ export class SwitchStore<T extends PlatformTypes = PlatformTypes> {
 	}
 
 	/** The field the switch is in. */
-	get field(): FieldRootContextValue<T> {
+	get field(): FieldRootView<T> {
 		return this.#field;
 	}
 

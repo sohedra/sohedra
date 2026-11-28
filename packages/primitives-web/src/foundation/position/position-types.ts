@@ -12,7 +12,7 @@ import type { TransitionStatus } from "@sohedra/primitives-core/foundation/prese
 import type { Attachment } from "svelte/attachments";
 
 import type { WebTypes } from "../kernel/index.js";
-import type { PopupLayoutState } from "./position-popup-layout.svelte.js";
+import type { PopupLayoutStore } from "./position-popup-layout.svelte.js";
 import type { Boundary } from "./position-positioner-middleware.js";
 
 /** An anchor: an element, a virtual element, or a function returning one. */
@@ -55,7 +55,7 @@ export interface PositionerOptions {
 	readonly keepMounted: boolean;
 	readonly rtl: boolean;
 	/** The layout a Viewport inside measures (sizes, far-edge placement). */
-	readonly layout?: PopupLayoutState | undefined;
+	readonly layout?: PopupLayoutStore | undefined;
 	/** Whether the Positioner lets pointer input through (`pointer-events: none`). */
 	readonly inert?: boolean | undefined;
 }

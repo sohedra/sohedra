@@ -1,6 +1,6 @@
 import { untrack } from "svelte";
 
-import type { LabelableContextValue } from "./form-types.js";
+import type { LabelableView } from "./form-types.js";
 
 /** What a control's id in its labelable scope reads of the control, from its props function. */
 export interface LabelableControlIdProps {
@@ -19,7 +19,7 @@ export interface LabelableControlIdProps {
 /** What a control's id in its labelable scope is given once. */
 export interface LabelableControlIdDeps {
 	/** The labelable scope the control is in. */
-	readonly labelable: LabelableContextValue;
+	readonly labelable: LabelableView;
 	/** The id when neither the control nor its scope gives one. */
 	readonly defaultId: string;
 }
@@ -30,7 +30,7 @@ export interface LabelableControlIdDeps {
  * markup.
  */
 export class LabelableControlId {
-	readonly #labelable: LabelableContextValue;
+	readonly #labelable: LabelableView;
 	readonly #props: () => LabelableControlIdProps;
 	readonly #defaultId: string;
 	readonly #source = Symbol();

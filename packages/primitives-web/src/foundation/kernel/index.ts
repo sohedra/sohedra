@@ -7,7 +7,7 @@ export {
 	type SohedraGenericEventDetails,
 } from "./kernel-change-details.js";
 export { attachClaim, useClaimedId } from "./kernel-claim.svelte.js";
-export { DirectionContext, LTR } from "./kernel-direction.js";
+export { DirectionContext } from "./kernel-direction.js";
 export {
 	getComputedStyle,
 	getNodeName,
@@ -30,6 +30,7 @@ export {
 	stopEvent,
 } from "./kernel-event.js";
 export { enqueueFocus } from "./kernel-focus-queue.js";
+export { LTR } from "./kernel-null.js";
 export {
 	mergeClasses,
 	mergeProps,

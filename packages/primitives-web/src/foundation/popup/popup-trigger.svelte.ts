@@ -39,10 +39,10 @@ export type PopupTriggerView<Data> = HoverPopupView &
 	OpenMethodView &
 	TriggerFocusGuardsView &
 	TriggerRegistrationView<WebTypes, Data> &
-	PopupTriggerState<Data>;
+	PopupTriggerOwnView<Data>;
 
 /** What `usePopupTrigger` reads of its popup beside the hover, dismiss and focus views. */
-interface PopupTriggerState<Data> {
+interface PopupTriggerOwnView<Data> {
 	/** The kind's row of the behaviour table: which interactions the trigger wires. */
 	readonly behavior: PopupBehavior;
 	readonly activeTrigger: TriggerRegistrationView<WebTypes, Data>["activeTrigger"] & {

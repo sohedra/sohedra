@@ -49,7 +49,7 @@ export interface DismissView<T extends PlatformTypes = PlatformTypes> {
 }
 
 /** What a kind of popup fixes about its dismissal; its store answers them live. */
-export interface DismissOptions {
+export interface DismissInteractionProps {
 	/** Whether Escape and outside presses dismiss at all. @default true */
 	readonly enabled?: boolean | undefined;
 	/** How an outside press is detected, per kind of pointer. @default 'sloppy' */
@@ -104,7 +104,7 @@ export interface DismissInteractionDeps<T extends PlatformTypes = PlatformTypes>
  */
 export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	readonly #view: DismissView<T>;
-	readonly #options: () => DismissOptions;
+	readonly #props: () => DismissInteractionProps;
 	readonly #close: (details: DismissChangeDetails<T>) => void;
 
 	// The press being followed.
@@ -130,11 +130,11 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 	readonly #insideTimeout: Timeout;
 	readonly #compositionTimeout: Timeout;
 
-	/** `options` is asked whenever a decision needs one, so its answers may change. */
-	constructor(options: () => DismissOptions, deps: DismissInteractionDeps<T>) {
+	/** `props` is asked whenever a decision needs one, so its answers may change. */
+	constructor(props: () => DismissInteractionProps, deps: DismissInteractionDeps<T>) {
 		const view = deps.popup;
 		this.#view = view;
-		this.#options = options;
+		this.#props = props;
 		this.#close = deps.close;
 		const scheduler = view.platform.scheduler;
 		this.#longTouchTimeout = new Timeout(scheduler);
@@ -145,7 +145,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 
 	/** Whether Escape and outside presses dismiss now. */
 	get enabled(): boolean {
-		return this.#options().enabled ?? true;
+		return this.#props().enabled ?? true;
 	}
 
 	/**
@@ -159,7 +159,7 @@ export class DismissInteraction<T extends PlatformTypes = PlatformTypes> {
 
 	/** The press type for the pointer of the press being followed. */
 	get pressType(): PressType {
-		return resolvePressType(this.#pointerType, this.#options().outsidePressEvent ?? "sloppy");
+		return resolvePressType(this.#pointerType, this.#props().outsidePressEvent ?? "sloppy");
 	}
 
 	// Escape

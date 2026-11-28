@@ -49,7 +49,7 @@
 		PopoverViewportProps,
 	} from "#lib/components/popover/popover-types.js";
 	import { DirectionContext } from "#lib/foundation/kernel/index.js";
-	import { DirectionState } from "#lib/foundation/kernel/kernel-direction.js";
+	import { DirectionStore } from "#lib/foundation/kernel/kernel-direction.js";
 
 	let {
 		open = $bindable(),
@@ -77,7 +77,7 @@
 
 	// svelte-ignore state_referenced_locally
 	if (direction) {
-		DirectionContext.set(new DirectionState(() => direction ?? "ltr"));
+		DirectionContext.set(new DirectionStore(() => direction ?? "ltr"));
 	}
 
 	/** A `<style>` element holding `css`, which the attachment adds and removes. */

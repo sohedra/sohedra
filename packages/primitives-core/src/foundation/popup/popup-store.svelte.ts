@@ -3,7 +3,7 @@ import { untrack } from "svelte";
 import {
 	type DismissChangeDetails,
 	DismissInteraction,
-	type DismissOptions,
+	type DismissInteractionProps,
 	type OutsidePressEvent,
 } from "../dismiss/index.js";
 import { HoverInteraction } from "../hover/index.js";
@@ -181,7 +181,7 @@ export abstract class PopupStore<
 	readonly hover: HoverInteraction<T> | null;
 	/**
 	 * The popup's dismissal: Escape, a press on a trigger and presses outside. The platform calls
-	 * it with what happened; {@link dismissOptions} are the kind's answers.
+	 * it with what happened; {@link dismissProps} are the kind's answers.
 	 */
 	readonly dismiss: DismissInteraction<T>;
 	/** The mounted Positioner's measured state (for the safe polygon's side). */
@@ -293,7 +293,7 @@ export abstract class PopupStore<
 		this.hover = kind.behavior.hover
 			? new HoverInteraction<T>({ scheduler: platform.scheduler })
 			: null;
-		this.dismiss = new DismissInteraction<T>(() => this.dismissOptions, {
+		this.dismiss = new DismissInteraction<T>(() => this.dismissProps, {
 			popup: this,
 			// A generic `Details` hides that the dismissal's reasons are among the store's.
 			close: (details: DismissChangeDetails<T>) =>
@@ -366,7 +366,7 @@ export abstract class PopupStore<
 	 * behaviour table gives the press type; a kind overrides this for an answer that depends on
 	 * its state.
 	 */
-	protected get dismissOptions(): DismissOptions {
+	protected get dismissProps(): DismissInteractionProps {
 		return { outsidePressEvent: this.#outsidePress };
 	}
 

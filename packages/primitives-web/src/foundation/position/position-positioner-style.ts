@@ -1,6 +1,6 @@
 import type {
 	OriginOffset,
-	PositionState,
+	MeasuredPosition,
 } from "@sohedra/primitives-core/foundation/position/index.js";
 
 import { PositionerCssVars } from "./position-attributes.js";
@@ -24,7 +24,7 @@ function formatTransformOrigin(origin: { x: OriginOffset; y: OriginOffset }): st
  * and no pointer input while `inert`.
  */
 export function positionerStyle(
-	position: PositionState,
+	position: MeasuredPosition,
 	element: HTMLElement | null,
 	positionMethod: "absolute" | "fixed",
 	layoutStyle: string | undefined,
@@ -84,7 +84,7 @@ export function positionerStyle(
 }
 
 /** An Arrow's inline style: placed at the computed arrow offsets. */
-export function arrowStyle(arrow: PositionState["arrow"]): string {
+export function arrowStyle(arrow: MeasuredPosition["arrow"]): string {
 	const declarations = ["position: absolute"];
 	if (arrow?.y != null) {
 		declarations.push(`top: ${arrow.y}px`);

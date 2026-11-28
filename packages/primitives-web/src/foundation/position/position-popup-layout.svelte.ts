@@ -6,7 +6,7 @@ import { defineContext } from "@sohedra/primitives-core/foundation/kernel/index.
  * and Positioner put the styles in their declarative `style`, so nothing is written to an
  * element's style outside a synchronous measurement.
  */
-export class PopupLayoutState {
+export class PopupLayoutStore {
 	#popupStyle = $state("");
 	#positionerStyle = $state("");
 	#adaptiveOrigin = $state(false);
@@ -42,7 +42,7 @@ export class PopupLayoutState {
 	};
 }
 
-export const PopupLayoutContext = defineContext<PopupLayoutState>(
+export const PopupLayoutContext = defineContext<PopupLayoutStore>(
 	"PopupLayoutContext",
 	"Viewport parts must be placed within a Positioner.",
 );
