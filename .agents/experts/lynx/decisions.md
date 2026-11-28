@@ -3,8 +3,8 @@
 What's already decided about the binding, the modules and the Lynx primitives, and what's known and
 open. The expert never re-raises a **Settled** item as a finding.
 
-Last reviewed: none yet. Pass `--base` to `scripts/expert-scope.ts` until the first review sets a
-commit here.
+Last reviewed: `443e94f7` (2026-11-28, the commit that adds the experts). Until a review moves it,
+`scripts/expert-scope.ts` reports what changed since.
 
 ## Settled
 
