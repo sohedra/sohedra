@@ -21,6 +21,7 @@ export function usePopupUnmount(
 		}
 		const awaited = options ? options().element : (store.popupElement as HTMLElement | null);
 		const signal = getAbortSignal();
+		// With animations off, `waitForAnimations` calls back at once, inside this effect.
 		untrack(() => {
 			// Without a popup element (its Portal was removed) there is nothing to wait for: the
 			// close never completes.

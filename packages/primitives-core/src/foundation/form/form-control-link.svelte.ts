@@ -60,8 +60,8 @@ export class FieldControlLink<
 	constructor(props: () => FieldControlLinkProps<T>, deps: { readonly field: FieldRootView<T> }) {
 		this.#field = deps.field;
 		this.#props = props;
-		this.#seen = untrack(() => this.#value);
-		const { getFormValue, sameValue } = untrack(props);
+		this.#seen = this.#value;
+		const { getFormValue, sameValue } = props();
 		this.getFormValue = getFormValue;
 		this.sameValue = sameValue;
 	}
@@ -104,7 +104,7 @@ export class FieldControlLink<
 	attachElement = (element: T["element"]): (() => void) => {
 		this.#element = element;
 		return () => {
-			if (untrack(() => this.#element) === element) {
+			if (this.#element === element) {
 				this.#element = null;
 			}
 		};

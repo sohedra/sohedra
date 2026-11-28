@@ -89,8 +89,8 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 		this.#measureTriggerOffset = deps.measureTriggerOffset;
 		this.#committed = new CommittedValue<ContentKey>({
 			initial: {
-				triggerId: untrack(() => popup.activeTriggerId),
-				payload: untrack(() => popup.payload),
+				triggerId: popup.activeTriggerId,
+				payload: popup.payload,
 				pendingPayload: false,
 				key: 0,
 			},

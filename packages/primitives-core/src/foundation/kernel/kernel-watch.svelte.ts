@@ -54,6 +54,7 @@ function create(
 	const getters: readonly (() => unknown)[] = multiple ? sources : [sources as () => unknown];
 	// Every source is read on every run, so each one stays tracked.
 	const read = () => getters.map((get) => get());
+	// A watch can start inside an attachment, which must not depend on its sources.
 	let previous = options?.lazy ? untrack(read) : undefined;
 	let cleanup: WatchCleanup;
 
@@ -73,7 +74,7 @@ function create(
 	// An effect's teardown also runs before each re-run, so the cleanup lives in a second effect
 	// that never re-runs: it tears down only on destroy.
 	const destroy = () => () => {
-		untrack(() => cleanup?.());
+		cleanup?.();
 		cleanup = undefined;
 	};
 

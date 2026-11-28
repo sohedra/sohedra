@@ -107,6 +107,7 @@
 			return;
 		}
 		const signal = getAbortSignal();
+		// With animations off, `waitForAnimations` calls back at once, inside this effect.
 		untrack(() => {
 			const element = view.positionerElement as HTMLElement | null;
 			if (element) {

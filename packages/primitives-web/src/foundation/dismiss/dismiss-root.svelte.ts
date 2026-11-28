@@ -1,7 +1,6 @@
 import type { OutsidePress } from "@sohedra/primitives-core/foundation/dismiss";
 import type { Point } from "@sohedra/primitives-core/foundation/kernel";
 import type { PopupView } from "@sohedra/primitives-core/foundation/popup";
-import { untrack } from "svelte";
 import { on } from "svelte/events";
 
 import {
@@ -155,7 +154,7 @@ export function useDismissRoot(popup: PopupView<WebTypes>): void {
 			for (const off of offs) {
 				off();
 			}
-			untrack(() => dismiss.listeningStopped());
+			dismiss.listeningStopped();
 		};
 	});
 }

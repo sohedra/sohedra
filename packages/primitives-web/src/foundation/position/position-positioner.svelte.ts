@@ -117,7 +117,7 @@ export function usePositioner(
 			return layout?.adaptiveOrigin ?? false;
 		},
 		get arrowElement() {
-			return untrack(() => positioner.arrowElement as HTMLElement | null);
+			return positioner.arrowElement as HTMLElement | null;
 		},
 	};
 
@@ -127,13 +127,10 @@ export function usePositioner(
 	function update(currentAnchor: ReferenceElement, positionerElement: HTMLElement) {
 		const current = ++generation;
 		const measured: Measured = {};
-		const requested = untrack(() => placement);
-		const strategy = untrack(() => positionMethod);
-		const middleware = untrack(() => createPositionerMiddleware(middlewareOptions, measured));
 		void computePosition(currentAnchor, positionerElement, {
-			placement: requested,
-			strategy,
-			middleware,
+			placement,
+			strategy: positionMethod,
+			middleware: createPositionerMiddleware(middlewareOptions, measured),
 		}).then((data) => {
 			if (current !== generation) {
 				return;
@@ -143,11 +140,11 @@ export function usePositioner(
 			const arrow = data.middlewareData.arrow;
 			const next: MeasuredPosition = {
 				// A kept-mounted popup computed while closed must start unpositioned on the next open.
-				isPositioned: untrack(() => !keepMounted || popup.mounted),
+				isPositioned: !keepMounted || popup.mounted,
 				x: roundToDevicePixels(data.x, dpr),
 				y: roundToDevicePixels(data.y, dpr),
 				strategy: data.strategy,
-				side: untrack(() => logicalSide(side, renderedSide, rtl)),
+				side: logicalSide(side, renderedSide, rtl),
 				physicalSide: renderedSide,
 				align: getAlignment(data.placement) || "center",
 				anchorHidden: Boolean(data.middlewareData.hide?.referenceHidden),
@@ -155,12 +152,7 @@ export function usePositioner(
 				...measured,
 				sides: (data.middlewareData.adaptiveOrigin as MeasuredPosition["sides"]) ?? undefined,
 			};
-			if (
-				!samePosition(
-					untrack(() => positioner.position),
-					next,
-				)
-			) {
+			if (!samePosition(positioner.position, next)) {
 				positioner.setPosition(next);
 				// Applied now, not a microtask later, so the styles land before the next paint.
 				flushSync();

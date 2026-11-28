@@ -21,7 +21,7 @@ export function closePartCount(): ClosePartCount {
 			untrack(() => {
 				count += 1;
 				return () => {
-					count = Math.max(0, untrack(() => count) - 1);
+					count = Math.max(0, count - 1);
 				};
 			}),
 	};

@@ -55,7 +55,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		this.#props = props;
 		this.#triggers = deps.triggers;
 		this.#instant = deps.instant;
-		this.#id = untrack(() => props().defaultTriggerId) ?? null;
+		this.#id = props().defaultTriggerId ?? null;
 	}
 
 	/** The active trigger element, while the popup is mounted. */
@@ -106,7 +106,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 		if (!element) {
 			return null;
 		}
-		for (const [id, registered] of untrack(() => this.#triggers.entries())) {
+		for (const [id, registered] of this.#triggers.entries()) {
 			if (registered === element) {
 				return id;
 			}
@@ -140,7 +140,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 			}
 		});
 		return () => {
-			if (untrack(() => this.#triggers.getById(id)) === element) {
+			if (this.#triggers.getById(id) === element) {
 				this.#triggers.delete(id);
 			}
 		};

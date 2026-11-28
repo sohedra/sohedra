@@ -83,7 +83,7 @@ export class Presence {
 	constructor(props: () => PresenceProps, deps: PresenceDeps) {
 		this.#props = props;
 		this.#scheduler = deps.scheduler;
-		const open = untrack(() => props().open);
+		const open = props().open;
 		this.#committed = new CommittedValue<PresencePhase>({
 			initial: { open, mounted: open, status: undefined },
 		});
@@ -135,7 +135,7 @@ export class Presence {
 			const cancel = this.#scheduler.frame(() => {
 				// Settles only the phase the frame was requested for. After any other change this effect
 				// re-runs (it reads all three) and decides again.
-				const phase = untrack(() => this.#phase);
+				const phase = this.#phase;
 				if (
 					current &&
 					phase.open === open &&

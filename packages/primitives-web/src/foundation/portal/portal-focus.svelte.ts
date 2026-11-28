@@ -145,7 +145,7 @@ function movePortalNode(
 		return () => {
 			release?.();
 			node.remove();
-			if (untrack(() => portal.portalNode) === node) {
+			if (portal.portalNode === node) {
 				portal.setPortalNode(null);
 			}
 		};

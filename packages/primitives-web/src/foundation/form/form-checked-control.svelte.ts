@@ -267,7 +267,7 @@ function attachCheckedInput(
 				// Canceling reverts the native toggle only when the event is cancelable, so the input is
 				// also set back to the store's value.
 				event.preventDefault();
-				input.checked = untrack(() => store.checked);
+				input.checked = store.checked;
 			}
 		});
 
@@ -278,7 +278,7 @@ function attachCheckedInput(
 		const offReset = onFormReset(input, () => {
 			store.reset();
 			// A function binding may have declined the reset; the input follows the store.
-			input.checked = untrack(() => store.checked);
+			input.checked = store.checked;
 		});
 
 		return () => {

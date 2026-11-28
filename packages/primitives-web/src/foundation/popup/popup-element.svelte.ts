@@ -59,6 +59,7 @@ function attachOpenComplete(store: PopupView<WebTypes>): Attachment<HTMLElement>
 				return;
 			}
 			const signal = getAbortSignal();
+			// With animations off, `waitForAnimations` calls back at once, inside this effect.
 			untrack(() =>
 				waitForAnimations(
 					element,

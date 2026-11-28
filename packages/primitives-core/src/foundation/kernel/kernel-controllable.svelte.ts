@@ -47,6 +47,7 @@ export class Controllable<T> {
 	constructor(deps: ControllableDeps<T>) {
 		this.#source = deps.source;
 		this.#options = deps;
+		// A store can be built inside a reaction (a handle made in a `$derived`): it must not track.
 		const given = untrack(() => deps.source.value);
 		this.#initiallyUncontrolled = given === undefined;
 		const initial = given === undefined ? untrack(deps.default) : given;
@@ -181,6 +182,7 @@ function echoedItems(written: unknown, readBack: object): Map<unknown, unknown> 
 		return null;
 	}
 	const items = new Map<unknown, unknown>();
+	// The constructor writes the source too, and it can run inside a reaction.
 	untrack(() => {
 		written.forEach((item, index) => {
 			const echoed: unknown = readBack[index];

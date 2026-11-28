@@ -536,7 +536,7 @@ export function useFocusManager(
 				}
 			};
 			const cancel = webScheduler.microtask(() => {
-				marking = untrack(() => hideOutside(positioner, isModal, anchor, untrapped, portalNode));
+				marking = hideOutside(positioner, isModal, anchor, untrapped, portalNode);
 			});
 			const off = on(doc, "focusin", onFocusIn, { capture: true });
 			return () => {
@@ -623,7 +623,7 @@ export function useFocusManager(
 		// The options while mounted, kept as plain values for the close's teardown: a teardown read of
 		// state derived from an unbound `$bindable` `open`, in the flush that wrote it, is stale
 		// (sveltejs/svelte#19099).
-		let returnFocus = untrack(() => returnFocusOption);
+		let returnFocus = returnFocusOption;
 		// Copies the return-focus options before the DOM updates, while mounted.
 		$effect.pre(() => {
 			if (!popup.mounted) {

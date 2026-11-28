@@ -273,7 +273,7 @@ export abstract class PopupStore<
 			name: kind.name,
 			state: "open",
 		});
-		this.#heardOpen = untrack(() => this.#open.current);
+		this.#heardOpen = this.#open.current;
 		this.presence = new Presence(() => this, { scheduler: platform.scheduler });
 		this.activeTrigger = new ActiveTriggerStore<T>(
 			() => ({
@@ -567,8 +567,9 @@ export abstract class PopupStore<
 	};
 
 	/**
-	 * Runs an open change untracked. An {@link unmount} called during it (from `onOpenChange`,
-	 * before the close is committed) waits for the outermost change to finish.
+	 * Runs an open change untracked, since a handle's `open()` may be called in an effect. An
+	 * {@link unmount} called during it (from `onOpenChange`, before the close is committed) waits
+	 * for the outermost change to finish.
 	 */
 	#run(change: () => void): void {
 		const outer = this.#changing;
@@ -612,7 +613,7 @@ export abstract class PopupStore<
 		}
 		this.#reason = details.reason;
 		this.#hear(this.open);
-		untrack(() => this.activeTrigger.commit(next, details.trigger, source.triggerId));
+		this.activeTrigger.commit(next, details.trigger, source.triggerId);
 		return true;
 	}
 

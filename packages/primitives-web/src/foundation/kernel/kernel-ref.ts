@@ -22,7 +22,7 @@ export function attachRef<T extends Element>(
 			}
 			current = null;
 			if (!get) {
-				untrack(() => set(null));
+				set(null);
 				return;
 			}
 			// The bound ref is read a microtask later, as `bind:this` does: a `$bindable` read in a
@@ -32,9 +32,9 @@ export function attachRef<T extends Element>(
 				if (current !== null) {
 					return;
 				}
-				const bound = untrack(get);
+				const bound = get();
 				if (bound === element || bound == null) {
-					untrack(() => set(null));
+					set(null);
 				}
 			});
 		};

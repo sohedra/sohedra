@@ -92,6 +92,7 @@ export function usePopupTrigger<
 		const current = options().handle;
 		return current ? (current[HANDLE_STORE] as Store) : (root as Store);
 	});
+	// Read once: a popup kind's behavior never changes.
 	const behavior = untrack(() => popup.behavior);
 
 	// The trigger element, for the hover behaviour, the registration and the focus guards.
