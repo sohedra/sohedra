@@ -171,6 +171,7 @@ export class FieldControlLink<
 				this.#seen = value;
 				this.#field.valueChanged(value, true);
 			},
+			{ lazy: true },
 		);
 	}
 }

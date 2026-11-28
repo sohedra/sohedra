@@ -222,7 +222,6 @@ export function useButton(options: () => ButtonOptions): Button {
 						element.disabled = false;
 					}
 				},
-				{ lazy: false },
 			);
 		}
 		if (!DEV) {

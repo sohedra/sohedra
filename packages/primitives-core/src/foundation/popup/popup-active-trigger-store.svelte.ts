@@ -2,7 +2,7 @@
 
 import { untrack } from "svelte";
 
-import { type PlatformTypes, watch } from "../kernel/index.js";
+import { CommittedValue, type PlatformTypes } from "../kernel/index.js";
 import type { PopupTriggerMap } from "./popup-trigger-map.js";
 
 /** What the active-trigger bookkeeping reads: its popup's open state and the Root's props. */
@@ -33,14 +33,14 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	#element: T["element"] | null = $state.raw(null);
 	#openedWithoutTrigger = $state(false);
 	// The last trigger element stays the popup's reference after the popup unmounts (only element
-	// values are synced); a kept-mounted Positioner clears it. Committed by
-	// `connect()` after each update, never while deriving.
-	#lastReference: T["element"] | null = $state.raw(null);
+	// values are synced); a kept-mounted Positioner clears it. Committed by `connect()` after each
+	// update, never while deriving.
+	readonly #lastReference = new CommittedValue<T["element"] | null>(null);
 
 	/** The active trigger's id: the controlled `triggerId`, else the store's own. */
 	readonly id: string | null = $derived.by(() => this.#props().triggerId ?? this.#id);
 
-	readonly #anchor: T["element"] | null = $derived(this.element ?? this.#lastReference);
+	readonly #anchor: T["element"] | null = $derived(this.element ?? this.#lastReference.current);
 
 	/** Pure: `props` is called inside the deriveds and queries, so each value stays reactive. */
 	constructor(props: () => ActiveTriggerStoreProps, deps: ActiveTriggerStoreDeps<T>) {
@@ -162,7 +162,7 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 
 	/** Forgets the last trigger element (a kept-mounted popup that closed). */
 	clearDomReference(): void {
-		this.#lastReference = null;
+		this.#lastReference.commit(null);
 	}
 
 	/**
@@ -171,17 +171,9 @@ export class ActiveTriggerStore<T extends PlatformTypes = PlatformTypes> {
 	 * the open state and `triggerId` may be controlled. Each run while closed clears the no-trigger flag.
 	 */
 	connect(): void {
-		// The last trigger element seen while mounted. `#anchor` reads the element first, so
+		// The last trigger element seen while mounted: the anchor, which reads the element first, so
 		// when this commit runs doesn't change the answer.
-		watch.pre(
-			() => this.element,
-			(element) => {
-				if (element) {
-					this.#lastReference = element;
-				}
-			},
-			{ lazy: false },
-		);
+		this.#lastReference.follow(() => this.#anchor);
 		// Keeps the active trigger in step with the registered ones while the popup is open.
 		$effect(() => {
 			const open = this.#props().open;

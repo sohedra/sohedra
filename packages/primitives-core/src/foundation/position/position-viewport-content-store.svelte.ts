@@ -1,6 +1,6 @@
 import { untrack } from "svelte";
 
-import { type PlatformTypes, watch } from "../kernel/index.js";
+import { CommittedValue, type PlatformTypes } from "../kernel/index.js";
 import { type ContentKeyState, nextContentKey } from "./position-viewport-rules.js";
 
 /** What a popup Viewport's content bookkeeping reads from its popup. */
@@ -33,17 +33,12 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	readonly #props: () => ViewportContentStoreProps<T>;
 
 	// What the last update settled on; written only by the commit in `connect()`.
-	#committed: ContentKeyState = $state.raw({
-		triggerId: null,
-		payload: undefined,
-		pendingPayload: false,
-		key: 0,
-	});
+	readonly #committed: CommittedValue<ContentKeyState>;
 	// Derived, so the key changes in the same update as the trigger or payload, before anything
 	// renders with it. A re-run with older values (an effect teardown) changes nothing.
 	// `$derived.by` because `#props` is set in the constructor, after these initialisers.
 	readonly #next: ContentKeyState = $derived.by(() =>
-		nextContentKey(this.#committed, this.#props().activeTriggerId, this.#props().payload),
+		nextContentKey(this.#committed.current, this.#props().activeTriggerId, this.#props().payload),
 	);
 	readonly contentKey: number = $derived(this.#next.key);
 
@@ -62,12 +57,12 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	/** Pure: `props` is called inside the deriveds, so each value stays reactive. */
 	constructor(props: () => ViewportContentStoreProps<T>) {
 		this.#props = props;
-		this.#committed = {
+		this.#committed = new CommittedValue<ContentKeyState>({
 			triggerId: untrack(() => props().activeTriggerId),
 			payload: untrack(() => props().payload),
 			pendingPayload: false,
 			key: 0,
-		};
+		});
 	}
 
 	/**
@@ -88,12 +83,6 @@ export class ViewportContentStore<T extends PlatformTypes = PlatformTypes> {
 	connect(): void {
 		// Keeps the committed key in step with the derived one, before the platform renders. Also on
 		// mount: `open` (or the trigger) may have moved since the constructor.
-		watch.pre(
-			() => this.#next,
-			(next) => {
-				this.#committed = next;
-			},
-			{ lazy: false },
-		);
+		this.#committed.follow(() => this.#next);
 	}
 }

@@ -226,7 +226,6 @@ function attachFocusTarget(link: FieldControlLink<WebTypes>): Attachment<HTMLEle
 				}
 				return link.releaseFocus;
 			},
-			{ lazy: false },
 		);
 		return releaseElement;
 	};

@@ -388,15 +388,11 @@ export class PopupLifecycle<
 			this.#options.hooks().openChanged?.(open);
 			followed = open;
 		};
-		watch(
-			[() => this.open, () => this.#heardOpen],
-			([open, heard]) => {
-				for (const value of openValuesToFollow(open, heard, followed)) {
-					follow(value);
-				}
-			},
-			{ lazy: false },
-		);
+		watch([() => this.open, () => this.#heardOpen], ([open, heard]) => {
+			for (const value of openValuesToFollow(open, heard, followed)) {
+				follow(value);
+			}
+		});
 
 		// The active trigger follows registrations.
 		this.activeTrigger.connect();
@@ -433,7 +429,6 @@ export class PopupLifecycle<
 					session.instant = undefined;
 				}
 			},
-			{ lazy: false },
 		);
 
 		// A new trigger while open: lets the transitions run, then marks the popup instant.
@@ -461,7 +456,6 @@ export class PopupLifecycle<
 				cancelPending = cancel;
 				return cancel;
 			},
-			{ lazy: false },
 		);
 	}
 }

@@ -1,6 +1,6 @@
 // The API is modelled on runed's `watch` (https://github.com/svecosystem/runed, MIT); no code is
 // copied. Unlike runed, each source is compared with `Object.is` and the callback runs only when
-// one of them changed, and `lazy` is the default.
+// one of them changed.
 import { untrack } from "svelte";
 
 /** What a watch callback may return: a cleanup to run before the next call and on destroy. */
@@ -12,9 +12,9 @@ type Unset<T extends readonly unknown[]> = { [K in keyof T]: T[K] | undefined };
 export interface WatchOptions {
 	/**
 	 * Skip the first run: the callback runs only once a source differs from its value when `watch`
-	 * was called, and `previous` is that value. With `lazy: false` the callback also runs on the
-	 * first run, with `previous` `undefined`.
-	 * @default true
+	 * was called, and `previous` is that value. Without it the callback also runs on the first
+	 * run, with `previous` `undefined`.
+	 * @default false
 	 */
 	lazy?: boolean;
 }
@@ -23,22 +23,22 @@ interface WatchFunction {
 	<T>(
 		source: () => T,
 		callback: (value: T, previous: T) => WatchCleanup,
-		options?: WatchOptions & { lazy?: true },
+		options: WatchOptions & { lazy: true },
 	): void;
 	<T>(
 		source: () => T,
 		callback: (value: T, previous: T | undefined) => WatchCleanup,
-		options: WatchOptions,
+		options?: WatchOptions,
 	): void;
 	<const T extends readonly unknown[]>(
 		sources: Getters<T>,
 		callback: (values: T, previous: T) => WatchCleanup,
-		options?: WatchOptions & { lazy?: true },
+		options: WatchOptions & { lazy: true },
 	): void;
 	<const T extends readonly unknown[]>(
 		sources: Getters<T>,
 		callback: (values: T, previous: Unset<T>) => WatchCleanup,
-		options: WatchOptions,
+		options?: WatchOptions,
 	): void;
 }
 
@@ -54,7 +54,7 @@ function create(
 	const getters: readonly (() => unknown)[] = multiple ? sources : [sources as () => unknown];
 	// Every source is read on every run, so each one stays tracked.
 	const read = () => getters.map((get) => get());
-	let previous = (options?.lazy ?? true) ? untrack(read) : undefined;
+	let previous = options?.lazy ? untrack(read) : undefined;
 	let cleanup: WatchCleanup;
 
 	const run = () => {
@@ -90,8 +90,9 @@ function create(
  * Runs `callback(value, previous)` when `source()` changes (`Object.is`), or, given an array of
  * sources, `callback(values, previous)` when at least one of them changes. Only the sources are
  * tracked: the callback runs inside `untrack`. It may return a cleanup, which runs before the next
- * call and on destroy. Lazy by default (see `WatchOptions.lazy`). `watch.pre` does the same in an
- * `$effect.pre`. Call during component init or inside `$effect.root`.
+ * call and on destroy. It runs on the first run too, unless `lazy` (see `WatchOptions.lazy`).
+ * `watch.pre` does the same in an `$effect.pre`. Call during component init or inside
+ * `$effect.root`.
  */
 export const watch: WatchFunction & { readonly pre: WatchFunction } = Object.assign(
 	((sources: never, callback: AnyCallback, options?: WatchOptions) =>

@@ -141,7 +141,6 @@ export function useViewport(popup: ViewportView, options: () => ViewportOptions)
 			}
 			content.settle();
 		},
-		{ lazy: false },
 	);
 
 	// The snapshot's pending removal dies with the Viewport.

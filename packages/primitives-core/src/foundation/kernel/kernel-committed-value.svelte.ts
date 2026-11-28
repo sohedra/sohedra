@@ -31,6 +31,6 @@ export class CommittedValue<T> {
 	 */
 	follow(next: () => T): void {
 		// Keeps the memory in step with the derived step, before the platform draws the update.
-		watch.pre(next, (value) => this.commit(value), { lazy: false });
+		watch.pre(next, (value) => this.commit(value));
 	}
 }

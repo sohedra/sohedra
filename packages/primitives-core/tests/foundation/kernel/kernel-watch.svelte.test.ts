@@ -14,6 +14,7 @@ describe("watch", () => {
 			watch(
 				() => value,
 				(next, previous) => void calls.push([next, previous]),
+				{ lazy: true },
 			),
 		);
 		flushSync();
@@ -31,6 +32,7 @@ describe("watch", () => {
 			watch(
 				() => value,
 				(next, previous) => void calls.push([next, previous]),
+				{ lazy: true },
 			),
 		);
 		value = 2;
@@ -68,6 +70,7 @@ describe("watch", () => {
 				() => {
 					runs++;
 				},
+				{ lazy: true },
 			),
 		);
 		flushSync();
@@ -86,9 +89,13 @@ describe("watch", () => {
 		let nan = $state(Number.NaN);
 		let runs = 0;
 		root(() =>
-			watch([() => value, () => nan], () => {
-				runs++;
-			}),
+			watch(
+				[() => value, () => nan],
+				() => {
+					runs++;
+				},
+				{ lazy: true },
+			),
 		);
 		flushSync();
 		nan = Number.NaN;
@@ -105,9 +112,13 @@ describe("watch", () => {
 		let b = $state("x");
 		const calls: unknown[] = [];
 		root(() =>
-			watch([() => a, () => b], (values, previous) => {
-				calls.push([values, previous]);
-			}),
+			watch(
+				[() => a, () => b],
+				(values, previous) => {
+					calls.push([values, previous]);
+				},
+				{ lazy: true },
+			),
 		);
 		flushSync();
 
@@ -227,6 +238,7 @@ describe("watch", () => {
 						log.push(`run ${value} from ${previous}`);
 						return () => log.push(`cleanup ${value}`);
 					},
+					{ lazy: true },
 				),
 			);
 			flushSync();

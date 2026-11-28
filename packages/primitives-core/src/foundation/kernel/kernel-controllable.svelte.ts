@@ -168,12 +168,16 @@ export class Controllable<T> {
 			return;
 		}
 		const { name, state } = this.#options;
-		watch(this.#options.default, () => {
-			error(
-				`A component is changing the default ${state} state of an uncontrolled ${name} after being initialized.`,
-				`To suppress this warning opt to use a controlled ${name}.`,
-			);
-		});
+		watch(
+			this.#options.default,
+			() => {
+				error(
+					`A component is changing the default ${state} state of an uncontrolled ${name} after being initialized.`,
+					`To suppress this warning opt to use a controlled ${name}.`,
+				);
+			},
+			{ lazy: true },
+		);
 	}
 }
 

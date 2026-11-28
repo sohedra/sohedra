@@ -1,6 +1,6 @@
 import { untrack } from "svelte";
 
-import { type Scheduler, watch } from "../kernel/index.js";
+import { CommittedValue, type Scheduler } from "../kernel/index.js";
 
 /** The transition status of an element that animates in and out. */
 export type TransitionStatus = "starting" | "ending" | "idle" | undefined;
@@ -61,12 +61,13 @@ export class Presence {
 	#scheduler: Scheduler;
 	// The phase the last update settled on. Written only by the commit in `connect()`, the frames
 	// that settle a status and `complete()`, never while deriving.
-	#committed: PresencePhase = $state.raw({ open: false, mounted: false, status: undefined });
+	readonly #committed: CommittedValue<PresencePhase>;
 
 	readonly open: boolean = $derived.by(() => this.#p.open);
 	// A pure step from the committed phase to the current `open`, so `mounted` changes in the same
 	// update as `open`, and a re-run with older values (an effect teardown) changes nothing.
-	readonly #phase: PresencePhase = $derived(step(this.#committed, this.open));
+	// `$derived.by` because `#committed` is set in the constructor, after these initialisers.
+	readonly #phase: PresencePhase = $derived.by(() => step(this.#committed.current, this.open));
 	// Value-compared views of the phase: readers re-run when mounting or the status changes, not
 	// whenever a new phase object is committed.
 	readonly #mounted: boolean = $derived(this.#phase.mounted);
@@ -76,7 +77,7 @@ export class Presence {
 		this.#p = props;
 		this.#scheduler = scheduler;
 		const open = untrack(() => props.open);
-		this.#committed = { open, mounted: open, status: undefined };
+		this.#committed = new CommittedValue<PresencePhase>({ open, mounted: open, status: undefined });
 	}
 
 	/** Whether the element is rendered. */
@@ -95,7 +96,7 @@ export class Presence {
 	complete = (): boolean =>
 		untrack(() => {
 			if (!this.open && this.#phase.mounted) {
-				this.#committed = { open: false, mounted: false, status: undefined };
+				this.#committed.commit({ open: false, mounted: false, status: undefined });
 				return true;
 			}
 			return false;
@@ -108,15 +109,9 @@ export class Presence {
 	 */
 	connect(): void {
 		// The step reads committed state and the current `open`, so when this runs doesn't change the
-		// answer; committing its result is a fixed point of the step.
-		watch.pre(
-			() => this.#phase,
-			(phase) => {
-				this.#committed = phase;
-			},
-			// Also on mount: `open` (or the trigger) may have moved since the constructor.
-			{ lazy: false },
-		);
+		// answer; committing its result is a fixed point of the step. Also on mount: `open` (or the
+		// trigger) may have moved since the constructor.
+		this.#committed.follow(() => this.#phase);
 		// The transition status follows `open` and `mounted` through the scheduler's frames.
 		$effect(() => {
 			const open = this.open;
@@ -137,7 +132,7 @@ export class Presence {
 					phase.mounted === mounted &&
 					phase.status === status
 				) {
-					this.#committed = { open, mounted, status: undefined };
+					this.#committed.commit({ open, mounted, status: undefined });
 				}
 			});
 			return () => {
